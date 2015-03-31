@@ -1,0 +1,4 @@
+pbr>=0.10.0
+six>=1.7.0
+sqlalchemy>=0.9.9
+sqlalchemy-utils>=0.29.8
