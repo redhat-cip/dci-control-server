@@ -1,4 +1,5 @@
-# UUID          Group Name
-9562193e1f1647ee1c2004b4fb7996e84ae7e717 	Non-Interactive Users
-d7f5c52099314b9e8ca4f3488bfd0b5f11dc9609       	dci-control-server-core
-0347b4d116e707c12e8901af51f4b41121533b9a        	dci-control-server-ptl
+# UUID                                  	Group Name
+#
+0347b4d116e707c12e8901af51f4b41121533b9a	dci-control-server-ptl
+9562193e1f1647ee1c2004b4fb7996e84ae7e717	Non-Interactive Users
+d7f5c52099314b9e8ca4f3488bfd0b5f11dc9609	dci-control-server-core
