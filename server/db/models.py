@@ -13,3 +13,24 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.orm import Session
+from sqlalchemy import create_engine
+from sqlalchemy import MetaData
+
+engine = create_engine("postgresql://boa:boa@localhost:5432/dci_control_server")
+
+metadata = MetaData()
+
+metadata.reflect(engine)
+
+Base = automap_base(metadata=metadata)
+Base.prepare()
+Job = Base.classes.jobs
+File = Base.classes.files
+Environment = Base.classes.environments
+Platform = Base.classes.platforms
+Scenario = Base.classes.scenarios
+Jobstate = Base.classes.jobstates
+session = Session(engine)
