@@ -14,9 +14,58 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import flask
+from pprint import pprint
 
-# Define the WSGI application object
-app = flask.Flask(__name__)
+from server.db.models import Base
+from server.db.models import engine
+from server.db.models import metadata
 
-app.run(host='0.0.0.0', port=5000, debug=True)
+
+from eve import Eve
+from eve_sqlalchemy.decorators import registerSchema
+from eve_sqlalchemy import SQL
+from eve_sqlalchemy.validation import ValidatorSQL
+
+from eve.utils import config
+
+config.ID_FIELD = 'id'
+config.ITEM_URL = 'regex("[-a-z0-9]{36,64}")'
+
+DOMAIN = {}
+for table in metadata.tables:
+    DB = getattr(Base.classes, table)
+    registerSchema(table)(DB)
+    DOMAIN[table] = DB._eve_schema[table]
+    DOMAIN[table].update({
+        'id_field': config.ID_FIELD,
+        'item_url': config.ITEM_URL,
+        'item_lookup_field': config.ID_FIELD,
+    })
+    if hasattr(DB, 'name'):
+        DOMAIN[table].update({
+            'additional_lookup': {
+                'url': 'regex("[\S]+")',
+                'field': 'name'
+            }})
+
+SETTINGS = {
+    'DOMAIN': DOMAIN,
+    'SQLALCHEMY_DATABASE_URI':
+        "postgresql://boa:boa@127.0.0.1/dci_control_server",
+    'DEBUG': True,
+}
+
+app = Eve(settings=SETTINGS, validator=ValidatorSQL, data=SQL)
+db = app.data.driver
+Base.metadata.bind = engine
+db.Model = Base
+
+
+def site_map():
+    for rule in app.url_map.iter_rules():
+        pprint(rule)
+
+site_map()
+
+
+app.run(debug=True)
