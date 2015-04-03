@@ -14,10 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.orm import Session
 from sqlalchemy import create_engine
+from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
+from sqlalchemy.orm import Session
 
 engine = create_engine("postgresql://boa:boa@localhost:5432/dci_control_server")
 
