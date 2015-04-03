@@ -20,9 +20,9 @@ from server.db.models import engine
 from server.db.models import Environment
 from server.db.models import File
 from server.db.models import Job
+from server.db.models import Jobstate
 from server.db.models import Platform
 from server.db.models import Scenario
-from server.db.models import Jobstate
 from server.db.models import session
 
 

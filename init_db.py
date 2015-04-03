@@ -14,13 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import server.db.api as api
 from server.db.models import Environment
 from server.db.models import File
 from server.db.models import Job
 from server.db.models import Platform
 from server.db.models import Scenario
 from server.db.models import session
-import server.db.api as api
+
 
 session.query(Job).delete()
 session.query(File).delete()

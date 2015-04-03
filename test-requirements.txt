@@ -1,4 +1,6 @@
-flake8>=2.1.0
+flake8==2.2.4
+pep8==1.5.7
+mccabe==0.2.1
 hacking>=0.10.1
 mock>=1.0.1
 pytest>=2.6.2
