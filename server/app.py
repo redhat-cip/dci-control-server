@@ -14,17 +14,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+
+import server.db.api as api
 from server.db.models import Base
 from server.db.models import engine
 from server.db.models import metadata
-
 
 from eve import Eve
 from eve_sqlalchemy.decorators import registerSchema
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
-
 from eve.utils import config
+from flask import jsonify
 
 config.ID_FIELD = 'id'
 config.ITEM_URL = 'regex("[-a-z0-9]{36,64}")'
@@ -68,6 +69,11 @@ def site_map():
         pprint(rule)
 
 site_map()
+
+
+@app.route('/jobs/get_job_by_platform/<platform_id>')
+def get_job_by_platform(platform_id):
+    return jsonify(api.get_job_by_platform(platform_id))
 
 
 app.run(debug=True)
