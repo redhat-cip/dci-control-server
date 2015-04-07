@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a486d77_434f4693",
+        "filename": "server/app.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-04-07T15:42:14Z",
+      "side": 1,
+      "message": "This should be done in server/api/v1 no ?",
+      "revId": "d2e69a01db3a7fe927f3d9d7ae2efed3aa2820c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
