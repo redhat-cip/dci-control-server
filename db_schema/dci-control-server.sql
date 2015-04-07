@@ -61,10 +61,26 @@ ALTER FUNCTION public.jobstate_status_in_list() OWNER TO boa;
 
 CREATE FUNCTION refresh_update_at_column() RETURNS trigger
     LANGUAGE plpgsql
-    AS $$ BEGIN NEW.updated_at = now(); RETURN NEW; END; $$;
+    AS $$
+BEGIN
+IF NEW.updated_at IS NULL OR (OLD.updated_at = NEW.updated_at) THEN
+    NEW.updated_at = now();
+END IF;
+IF NEW.etag IS NULL OR (OLD.etag = NEW.etag) THEN
+    NEW.etag = md5(random()::text);
+END IF;
+    RETURN NEW;
+END; $$;
 
 
 ALTER FUNCTION public.refresh_update_at_column() OWNER TO postgres;
+
+--
+-- Name: FUNCTION refresh_update_at_column(); Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON FUNCTION refresh_update_at_column() IS 'Refresh the etag and the updated_at on UPDATE.';
+
 
 SET default_tablespace = '';
 
@@ -77,8 +93,9 @@ SET default_with_oids = false;
 CREATE TABLE environments (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone,
-    name character varying(255) NOT NULL
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    name character varying(255) NOT NULL,
+    etag character varying(40) DEFAULT md5((random())::text) NOT NULL
 );
 
 
@@ -91,12 +108,13 @@ ALTER TABLE public.environments OWNER TO boa;
 CREATE TABLE files (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(512) NOT NULL,
     content text NOT NULL,
     mime character varying(100) DEFAULT 'text/plain'::character varying NOT NULL,
     md5 character varying(32),
-    jobstate_id uuid NOT NULL
+    jobstate_id uuid NOT NULL,
+    etag character varying(40) DEFAULT md5((random())::text) NOT NULL
 );
 
 
@@ -109,10 +127,11 @@ ALTER TABLE public.files OWNER TO boa;
 CREATE TABLE jobs (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
     platform_id uuid NOT NULL,
     scenario_id uuid NOT NULL,
-    environment_id uuid NOT NULL
+    environment_id uuid NOT NULL,
+    etag character varying(40) DEFAULT md5((random())::text) NOT NULL
 );
 
 
@@ -125,10 +144,11 @@ ALTER TABLE public.jobs OWNER TO boa;
 CREATE TABLE jobstates (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
     status character varying,
     comment text,
-    job_id uuid NOT NULL
+    job_id uuid NOT NULL,
+    etag character varying(40) DEFAULT md5((random())::text) NOT NULL
 );
 
 
@@ -141,8 +161,9 @@ ALTER TABLE public.jobstates OWNER TO boa;
 CREATE TABLE platforms (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone,
-    name character varying(255)
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    name character varying(255),
+    etag character varying(40) DEFAULT md5((random())::text) NOT NULL
 );
 
 
@@ -155,9 +176,10 @@ ALTER TABLE public.platforms OWNER TO boa;
 CREATE TABLE scenarios (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255) NOT NULL,
-    content text NOT NULL
+    content text NOT NULL,
+    etag character varying(40) DEFAULT md5((random())::text) NOT NULL
 );
 
 
