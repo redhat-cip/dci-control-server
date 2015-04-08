@@ -47,7 +47,8 @@ for table in metadata.tables:
         'id_field': ID_FIELD,
         'item_url': ITEM_URL,
         'item_lookup_field': ID_FIELD,
-        'item_methods': ['PATCH', 'DELETE', 'GET'],
+        'resource_methods': ['GET', 'POST', 'DELETE'],
+        'item_methods': ['PATCH', 'DELETE', 'PUT', 'GET'],
     })
     DOMAIN[table]['schema']['created_at']['required'] = False
     DOMAIN[table]['schema']['updated_at']['required'] = False
