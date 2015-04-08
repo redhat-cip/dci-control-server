@@ -10,14 +10,14 @@ SET check_function_bodies = false;
 SET client_min_messages = warning;
 
 --
--- Name: plpgsql; Type: EXTENSION; Schema: -; Owner:
+-- Name: plpgsql; Type: EXTENSION; Schema: -; Owner: -
 --
 
 CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 
 
 --
--- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner:
+-- Name: EXTENSION plpgsql; Type: COMMENT; Schema: -; Owner: -
 --
 
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
@@ -26,7 +26,7 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 SET search_path = public, pg_catalog;
 
 --
--- Name: gen_uuid(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: gen_uuid(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION gen_uuid() RETURNS uuid
@@ -34,10 +34,8 @@ CREATE FUNCTION gen_uuid() RETURNS uuid
     AS $$SELECT uuid_in(md5(random()::text)::cstring)$$;
 
 
-ALTER FUNCTION public.gen_uuid() OWNER TO postgres;
-
 --
--- Name: jobstate_status_in_list(); Type: FUNCTION; Schema: public; Owner: boa
+-- Name: jobstate_status_in_list(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION jobstate_status_in_list() RETURNS trigger
@@ -53,10 +51,8 @@ END;
 $$;
 
 
-ALTER FUNCTION public.jobstate_status_in_list() OWNER TO boa;
-
 --
--- Name: refresh_update_at_column(); Type: FUNCTION; Schema: public; Owner: postgres
+-- Name: refresh_update_at_column(); Type: FUNCTION; Schema: public; Owner: -
 --
 
 CREATE FUNCTION refresh_update_at_column() RETURNS trigger
@@ -73,10 +69,8 @@ END IF;
 END; $$;
 
 
-ALTER FUNCTION public.refresh_update_at_column() OWNER TO postgres;
-
 --
--- Name: FUNCTION refresh_update_at_column(); Type: COMMENT; Schema: public; Owner: postgres
+-- Name: FUNCTION refresh_update_at_column(); Type: COMMENT; Schema: public; Owner: -
 --
 
 COMMENT ON FUNCTION refresh_update_at_column() IS 'Refresh the etag and the updated_at on UPDATE.';
@@ -87,7 +81,7 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: environments; Type: TABLE; Schema: public; Owner: boa; Tablespace:
+-- Name: environments; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
 CREATE TABLE environments (
@@ -99,10 +93,8 @@ CREATE TABLE environments (
 );
 
 
-ALTER TABLE public.environments OWNER TO boa;
-
 --
--- Name: files; Type: TABLE; Schema: public; Owner: boa; Tablespace:
+-- Name: files; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
 CREATE TABLE files (
@@ -118,10 +110,8 @@ CREATE TABLE files (
 );
 
 
-ALTER TABLE public.files OWNER TO boa;
-
 --
--- Name: jobs; Type: TABLE; Schema: public; Owner: boa; Tablespace:
+-- Name: jobs; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
 CREATE TABLE jobs (
@@ -135,10 +125,8 @@ CREATE TABLE jobs (
 );
 
 
-ALTER TABLE public.jobs OWNER TO boa;
-
 --
--- Name: jobstates; Type: TABLE; Schema: public; Owner: boa; Tablespace:
+-- Name: jobstates; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
 CREATE TABLE jobstates (
@@ -152,10 +140,8 @@ CREATE TABLE jobstates (
 );
 
 
-ALTER TABLE public.jobstates OWNER TO boa;
-
 --
--- Name: platforms; Type: TABLE; Schema: public; Owner: boa; Tablespace:
+-- Name: platforms; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
 CREATE TABLE platforms (
@@ -167,10 +153,8 @@ CREATE TABLE platforms (
 );
 
 
-ALTER TABLE public.platforms OWNER TO boa;
-
 --
--- Name: scenarios; Type: TABLE; Schema: public; Owner: boa; Tablespace:
+-- Name: scenarios; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
 CREATE TABLE scenarios (
@@ -183,10 +167,8 @@ CREATE TABLE scenarios (
 );
 
 
-ALTER TABLE public.scenarios OWNER TO boa;
-
 --
--- Name: environments_name_key; Type: CONSTRAINT; Schema: public; Owner: boa; Tablespace:
+-- Name: environments_name_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
 ALTER TABLE ONLY environments
@@ -194,7 +176,7 @@ ALTER TABLE ONLY environments
 
 
 --
--- Name: environments_pkey; Type: CONSTRAINT; Schema: public; Owner: boa; Tablespace:
+-- Name: environments_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
 ALTER TABLE ONLY environments
@@ -202,7 +184,7 @@ ALTER TABLE ONLY environments
 
 
 --
--- Name: files_pkey; Type: CONSTRAINT; Schema: public; Owner: boa; Tablespace:
+-- Name: files_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
 ALTER TABLE ONLY files
@@ -210,7 +192,7 @@ ALTER TABLE ONLY files
 
 
 --
--- Name: jobs_pkey; Type: CONSTRAINT; Schema: public; Owner: boa; Tablespace:
+-- Name: jobs_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
 ALTER TABLE ONLY jobs
@@ -218,7 +200,7 @@ ALTER TABLE ONLY jobs
 
 
 --
--- Name: platforms_pkey; Type: CONSTRAINT; Schema: public; Owner: boa; Tablespace:
+-- Name: platforms_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
 ALTER TABLE ONLY platforms
@@ -226,7 +208,7 @@ ALTER TABLE ONLY platforms
 
 
 --
--- Name: scenarios_name_key; Type: CONSTRAINT; Schema: public; Owner: boa; Tablespace:
+-- Name: scenarios_name_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
 ALTER TABLE ONLY scenarios
@@ -234,7 +216,7 @@ ALTER TABLE ONLY scenarios
 
 
 --
--- Name: scenarios_pkey; Type: CONSTRAINT; Schema: public; Owner: boa; Tablespace:
+-- Name: scenarios_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
 ALTER TABLE ONLY scenarios
@@ -242,7 +224,7 @@ ALTER TABLE ONLY scenarios
 
 
 --
--- Name: status_pkey; Type: CONSTRAINT; Schema: public; Owner: boa; Tablespace:
+-- Name: status_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
 ALTER TABLE ONLY jobstates
@@ -250,56 +232,56 @@ ALTER TABLE ONLY jobstates
 
 
 --
--- Name: refresh_environments_update_at_column; Type: TRIGGER; Schema: public; Owner: boa
+-- Name: refresh_environments_update_at_column; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER refresh_environments_update_at_column BEFORE UPDATE ON environments FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 
 
 --
--- Name: refresh_files_update_at_column; Type: TRIGGER; Schema: public; Owner: boa
+-- Name: refresh_files_update_at_column; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER refresh_files_update_at_column BEFORE UPDATE ON files FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 
 
 --
--- Name: refresh_jobs_update_at_column; Type: TRIGGER; Schema: public; Owner: boa
+-- Name: refresh_jobs_update_at_column; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER refresh_jobs_update_at_column BEFORE UPDATE ON jobs FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 
 
 --
--- Name: refresh_jobstates_update_at_column; Type: TRIGGER; Schema: public; Owner: boa
+-- Name: refresh_jobstates_update_at_column; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER refresh_jobstates_update_at_column BEFORE UPDATE ON jobstates FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 
 
 --
--- Name: refresh_platforms_update_at_column; Type: TRIGGER; Schema: public; Owner: boa
+-- Name: refresh_platforms_update_at_column; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER refresh_platforms_update_at_column BEFORE UPDATE ON platforms FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 
 
 --
--- Name: refresh_scenarios_update_at_column; Type: TRIGGER; Schema: public; Owner: boa
+-- Name: refresh_scenarios_update_at_column; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER refresh_scenarios_update_at_column BEFORE UPDATE ON jobs FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 
 
 --
--- Name: verify_jobstates_status; Type: TRIGGER; Schema: public; Owner: boa
+-- Name: verify_jobstates_status; Type: TRIGGER; Schema: public; Owner: -
 --
 
 CREATE TRIGGER verify_jobstates_status BEFORE INSERT OR UPDATE ON jobstates FOR EACH ROW EXECUTE PROCEDURE jobstate_status_in_list();
 
 
 --
--- Name: files_status_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boa
+-- Name: files_status_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY files
@@ -307,7 +289,7 @@ ALTER TABLE ONLY files
 
 
 --
--- Name: jobs_environment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boa
+-- Name: jobs_environment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY jobs
@@ -315,7 +297,7 @@ ALTER TABLE ONLY jobs
 
 
 --
--- Name: jobs_platform_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boa
+-- Name: jobs_platform_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY jobs
@@ -323,7 +305,7 @@ ALTER TABLE ONLY jobs
 
 
 --
--- Name: jobs_scenario_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boa
+-- Name: jobs_scenario_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY jobs
@@ -331,7 +313,7 @@ ALTER TABLE ONLY jobs
 
 
 --
--- Name: status_job_fkey; Type: FK CONSTRAINT; Schema: public; Owner: boa
+-- Name: status_job_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY jobstates
@@ -339,7 +321,7 @@ ALTER TABLE ONLY jobstates
 
 
 --
--- Name: public; Type: ACL; Schema: -; Owner: postgres
+-- Name: public; Type: ACL; Schema: -; Owner: -
 --
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
