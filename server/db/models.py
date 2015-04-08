@@ -22,7 +22,9 @@ from sqlalchemy import MetaData
 from sqlalchemy.orm import Session
 
 # TODO(Gonéri): Load the value for a configuration file
-engine = create_engine(os.environ['OPENSHIFT_POSTGRESQL_DB_URL'])
+engine = create_engine(os.environ.get(
+    'OPENSHIFT_POSTGRESQL_DB_URL',
+    'postgresql://boa:boa@localhost:5432/dci_control_server'))
 
 metadata = MetaData()
 

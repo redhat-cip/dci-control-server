@@ -17,8 +17,8 @@
 """
     Normal settings file for Eve.
 
-    Differently from a configuration file for an Eve application backed by Mongo
-    we need to define the schema using the registerSchema decorator.
+    Differently from a configuration file for an Eve application backed by
+    Mongo we need to define the schema using the registerSchema decorator.
 
 """
 
@@ -36,7 +36,9 @@ ITEM_URL = 'regex("[-a-z0-9]{36,64}")'
 LAST_UPDATED = "updated_at"
 DATE_CREATED = "created_at"
 ETAG = "etag"
-SQLALCHEMY_DATABASE_URI = os.environ['OPENSHIFT_POSTGRESQL_DB_URL']
+SQLALCHEMY_DATABASE_URI = os.environ.get(
+    'OPENSHIFT_POSTGRESQL_DB_URL',
+    'postgresql://boa:boa@localhost:5432/dci_control_server')
 
 
 DOMAIN = {}
