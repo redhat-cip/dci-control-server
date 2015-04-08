@@ -14,12 +14,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os
+
 from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
 from sqlalchemy.orm import Session
 
-engine = create_engine("postgresql://boa:boa@localhost:5432/dci_control_server")
+# TODO(Gonéri): Load the value for a configuration file
+engine = create_engine(os.environ['OPENSHIFT_POSTGRESQL_DB_URL'])
 
 metadata = MetaData()
 

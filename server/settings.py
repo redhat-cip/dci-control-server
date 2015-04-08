@@ -22,6 +22,8 @@
 
 """
 
+import os
+
 from server.db.models import Base
 from server.db.models import metadata
 
@@ -34,7 +36,7 @@ ITEM_URL = 'regex("[-a-z0-9]{36,64}")'
 LAST_UPDATED = "updated_at"
 DATE_CREATED = "created_at"
 ETAG = "etag"
-SQLALCHEMY_DATABASE_URI = 'postgresql://boa:boa@127.0.0.1/dci_control_server'
+SQLALCHEMY_DATABASE_URI = os.environ['OPENSHIFT_POSTGRESQL_DB_URL']
 
 
 DOMAIN = {}

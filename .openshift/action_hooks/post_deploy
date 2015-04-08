@@ -1,0 +1,8 @@
+#!/bin/sh
+# Reinitialize the database with random data
+echo "
+    DROP SCHEMA public CASCADE;
+    CREATE SCHEMA public;
+    \\i ${OPENSHIFT_REPO_DIR}/db_schema/dci-control-server.sql
+" | psql
+python ${OPENSHIFT_REPO_DIR}/init_db.py

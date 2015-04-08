@@ -43,5 +43,5 @@ site_map()
 def get_job_by_platform(platform_id):
     return jsonify(api.get_job_by_platform(platform_id))
 
-
-app.run(debug=True)
+if __name__ == "__main__":
+    app.run(debug=True)
