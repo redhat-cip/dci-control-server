@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a486d77_e66c0039",
+        "filename": "client/dci_client.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-04-09T15:23:16Z",
+      "side": 1,
+      "message": "shutil.rmtree",
+      "revId": "35a4024b3f7a527ff36f8d80230bc01d526263cd",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
