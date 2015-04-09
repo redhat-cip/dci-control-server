@@ -1,7 +1,7 @@
-Eve
 -e git://github.com/goneri/eve-sqlalchemy.git#egg=Eve-SQLAlchemy
 # Eve-SQLAlchemy
 pbr>=0.10.0
+PrettyTable>=0.7,<0.8
 six>=1.7.0
 sqlalchemy>=0.9.9
 sqlalchemy-utils>=0.29.8

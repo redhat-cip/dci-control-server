@@ -47,8 +47,8 @@ Restart PostgreSQL with the new settings:
 
 Connect with the postgres user:
 
-    # su - postgres
-        $ createuser -P boa
+    sudo su - postgres
+    $ createuser -P boa
     Enter password for new role:
     Enter it again:
 
@@ -100,3 +100,26 @@ Content-Type: application/json
 ## Get the updated platform
 
 GET http://127.0.0.1:5000/platforms/Jim
+
+# DCI - CLI
+
+First you can specify the DCI control-server url by using an environment
+variable:
+
+    $ export DCI_CONTROL_SERVER=http://zorglub.com
+
+By default it is http://127.0.0.1:5000
+
+## List the platforms
+
+    $ dci --list-platforms
+
+## Get a job
+
+    $ dci --get-job <platform-uuid>
+
+## Get a job and execute it
+
+    $ dci --auto <platform-uuid>
+
+The parameter platform-uuid should be the id of the platform which will run the job.
