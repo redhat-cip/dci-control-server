@@ -33,7 +33,7 @@ platform = Platform(name='boa2')
 environment = Environment(name="RH7.0-3nodes")
 scenario = Scenario(
     name='my test scenario',
-    content='#!/bin/sh\necho roberto\n')
+    content='#!/bin/sh\necho roberto > /tmp/roberto\n')
 
 session.add_all([
     platform,
