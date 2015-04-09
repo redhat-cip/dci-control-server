@@ -89,8 +89,16 @@ CREATE TABLE environments (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255) NOT NULL,
-    etag character varying(40) DEFAULT md5((random())::text) NOT NULL
+    etag character varying(40) DEFAULT md5((random())::text) NOT NULL,
+    url text
 );
+
+
+--
+-- Name: COLUMN environments.url; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN environments.url IS 'Location to a remote archive with the environment.';
 
 
 --
