@@ -73,7 +73,7 @@ LIMIT 1""")
 
     return {'job_id': job.id,
             'content': scenario.content,
-            'url': environment.name}
+            'url': environment.url}
 
 
 def create_file(name, jobstate_id, content, mime, checksum=None):

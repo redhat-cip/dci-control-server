@@ -85,6 +85,7 @@ def main():
 
         # 2. Execute the job
         # 2.1. create temporary shell script and execute it
+        os.environ["DCI_ENVIRONMENT_URL"] = job["url"]
         job_errno = _exec_shell_script(job["content"])
 
         # 3. Report status
