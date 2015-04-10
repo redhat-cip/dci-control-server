@@ -26,6 +26,15 @@ COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 SET search_path = public, pg_catalog;
 
 --
+-- Name: gen_etag(); Type: FUNCTION; Schema: public; Owner: -
+--
+
+CREATE FUNCTION gen_etag() RETURNS text
+    LANGUAGE sql IMMUTABLE
+    AS $$select substring(encode(md5(random()::text)::bytea, 'hex') from 0 for 37)$$;
+
+
+--
 -- Name: gen_uuid(); Type: FUNCTION; Schema: public; Owner: -
 --
 
@@ -89,7 +98,7 @@ CREATE TABLE environments (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255) NOT NULL,
-    etag character varying(40) NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
     url text
 );
 
@@ -114,7 +123,7 @@ CREATE TABLE files (
     mime character varying(100) DEFAULT 'text/plain'::character varying NOT NULL,
     md5 character varying(32),
     jobstate_id uuid NOT NULL,
-    etag character varying(40) NOT NULL
+    etag character varying(40) DEFAULT gen_etag() NOT NULL
 );
 
 
@@ -129,7 +138,7 @@ CREATE TABLE jobs (
     platform_id uuid NOT NULL,
     scenario_id uuid NOT NULL,
     environment_id uuid NOT NULL,
-    etag character varying(40) NOT NULL
+    etag character varying(40) DEFAULT gen_etag() NOT NULL
 );
 
 
@@ -144,7 +153,7 @@ CREATE TABLE jobstates (
     status character varying,
     comment text,
     job_id uuid NOT NULL,
-    etag character varying(40) NOT NULL
+    etag character varying(40) DEFAULT gen_etag() NOT NULL
 );
 
 
@@ -157,7 +166,7 @@ CREATE TABLE platforms (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255),
-    etag character varying(40) NOT NULL
+    etag character varying(40) DEFAULT gen_etag() NOT NULL
 );
 
 
@@ -171,7 +180,7 @@ CREATE TABLE scenarios (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255) NOT NULL,
     content text NOT NULL,
-    etag character varying(40) NOT NULL
+    etag character varying(40) DEFAULT gen_etag() NOT NULL
 );
 
 
