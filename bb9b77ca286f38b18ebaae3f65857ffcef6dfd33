@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa82b9bf_62ba56e3",
+        "filename": "client/dci_client.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-04-10T15:37:13Z",
+      "side": 1,
+      "message": "Since these action parameters are mandatory, they should not be prefixed with --.",
+      "revId": "bb9b77ca286f38b18ebaae3f65857ffcef6dfd33",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
