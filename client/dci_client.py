@@ -35,6 +35,15 @@ def _init_conf():
     parser.add_argument('--list-platforms', action="store_true",
                         default=False,
                         help='List existing platforms.')
+    parser.add_argument('--list-jobs', action="store_true",
+                        default=False,
+                        help='List existing jobs.')
+    parser.add_argument('--list-jobstates', action="store_true",
+                        default=False,
+                        help='List existing jobstates.')
+    parser.add_argument('--list-scenarios', action="store_true",
+                        default=False,
+                        help='List existing scenarios.')
     parser.add_argument('--get-job', type=str,
                         help='Get a job.')
     parser.add_argument('--auto', type=str,
@@ -62,14 +71,49 @@ def main():
     conf = _init_conf()
 
     if conf.list_platforms:
-        table_result = prettytable.PrettyTable(["identifier", "name", "etag",
+        table_result = prettytable.PrettyTable(["identifier", "name",
                                                 "created_at", "updated_at"])
         platforms = requests.get("%s/platforms" % _DCI_CONTROL_SERVER).json()
 
         for platform in platforms["_items"]:
-            table_result.add_row([platform["id"], platform["name"],
-                                  platform["etag"], platform["created_at"],
+            table_result.add_row([platform["id"],
+                                  platform["name"],
+                                  platform["created_at"],
                                   platform["updated_at"]])
+        print(table_result)
+    if conf.list_jobs:
+        table_result = prettytable.PrettyTable(["identifier",
+                                                "platform", "scenario",
+                                                "updated_at"])
+        jobs = requests.get("%s/jobs" % _DCI_CONTROL_SERVER).json()
+
+        for job in jobs["_items"]:
+            table_result.add_row([job["id"],
+                                  job["platform_id"],
+                                  job["scenario_id"],
+                                  job["updated_at"]])
+        print(table_result)
+    if conf.list_jobstates:
+        table_result = prettytable.PrettyTable(["identifier", "status",
+                                                "comment", "job", "updated_at"])
+        jobstates = requests.get("%s/jobstates" % _DCI_CONTROL_SERVER).json()
+
+        for jobstate in jobstates["_items"]:
+            table_result.add_row([jobstate["id"],
+                                  jobstate["status"],
+                                  jobstate["comment"],
+                                  jobstate["job_id"],
+                                  jobstate["updated_at"]])
+        print(table_result)
+    if conf.list_scenarios:
+        table_result = prettytable.PrettyTable(["identifier", "name",
+                                                "updated_at"])
+        scenarios = requests.get("%s/scenarios" % _DCI_CONTROL_SERVER).json()
+
+        for scenario in scenarios["_items"]:
+            table_result.add_row([scenario["id"],
+                                  scenario["name"],
+                                  scenario["updated_at"]])
         print(table_result)
     elif conf.get_job:
         job = requests.get("%s/jobs/get_job_by_platform/%s" %
