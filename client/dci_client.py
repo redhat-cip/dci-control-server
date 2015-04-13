@@ -32,23 +32,41 @@ _DCI_CONTROL_SERVER = os.environ.get("DCI_CONTROL_SERVER",
 
 def _init_conf():
     parser = argparse.ArgumentParser(description='DCI client.')
-    parser.add_argument('--list-platforms', action="store_true",
-                        default=False,
-                        help='List existing platforms.')
-    parser.add_argument('--list-jobs', action="store_true",
-                        default=False,
-                        help='List existing jobs.')
-    parser.add_argument('--list-jobstates', action="store_true",
-                        default=False,
-                        help='List existing jobstates.')
-    parser.add_argument('--list-scenarios', action="store_true",
-                        default=False,
-                        help='List existing scenarios.')
-    parser.add_argument('--get-job', type=str,
-                        help='Get a job.')
-    parser.add_argument('--auto', type=str,
-                        default=False,
-                        help='Run automatically a job.')
+    command_subparser = parser.add_subparsers(help='commands',
+                                              dest='command')
+    # register platform command
+    register_platform_parser = command_subparser.add_parser(
+        'register-platform', help='Register a platform.')
+    register_platform_parser.add_argument('--name', action='store',
+                                          help='Name of the platform.')
+
+    # list command
+    list_parser = command_subparser.add_parser('list', help='List resources.')
+    list_parser.add_argument('--platforms', action='store_true',
+                             default=False,
+                             help='List existing platforms.')
+    list_parser.add_argument('--jobs', action="store_true",
+                             default=False,
+                             help='List existing jobs.')
+    list_parser.add_argument('--jobstates', action="store_true",
+                             default=False,
+                             help='List existing jobstates.')
+    list_parser.add_argument('--scenarios', action="store_true",
+                             default=False,
+                             help='List existing scenarios.')
+    list_parser.add_argument('--job', type=str,
+                             help='Get a job.')
+
+    # auto command
+    auto_parser = command_subparser.add_parser('auto', help='Automated mode.')
+    auto_parser.add_argument('platform', action='store',
+                             help='Id of the platform')
+
+    # get command
+    auto_parser = command_subparser.add_parser('get', help='Get a job.')
+    auto_parser.add_argument('platform', action='store',
+                             help='Id of the platform')
+
     return parser.parse_args()
 
 
@@ -70,62 +88,65 @@ def _exec_shell_script(content):
 def main():
     conf = _init_conf()
 
-    if conf.list_platforms:
-        table_result = prettytable.PrettyTable(["identifier", "name",
-                                                "created_at", "updated_at"])
-        platforms = requests.get("%s/platforms" % _DCI_CONTROL_SERVER).json()
+    print conf
 
-        for platform in platforms["_items"]:
-            table_result.add_row([platform["id"],
-                                  platform["name"],
-                                  platform["created_at"],
-                                  platform["updated_at"]])
-        print(table_result)
-    if conf.list_jobs:
-        table_result = prettytable.PrettyTable(["identifier",
-                                                "platform", "scenario",
-                                                "updated_at"])
-        jobs = requests.get("%s/jobs" % _DCI_CONTROL_SERVER).json()
+    if conf.command == 'list':
+        if conf.platforms:
+            table_result = prettytable.PrettyTable(["identifier", "name",
+                                                    "created_at", "updated_at"])
+            platforms = requests.get("%s/platforms" %
+                                     _DCI_CONTROL_SERVER).json()
 
-        for job in jobs["_items"]:
-            table_result.add_row([job["id"],
-                                  job["platform_id"],
-                                  job["scenario_id"],
-                                  job["updated_at"]])
-        print(table_result)
-    if conf.list_jobstates:
-        table_result = prettytable.PrettyTable(["identifier", "status",
-                                                "comment", "job", "updated_at"])
-        jobstates = requests.get("%s/jobstates" % _DCI_CONTROL_SERVER).json()
+            for platform in platforms["_items"]:
+                table_result.add_row([platform["id"],
+                                     platform["name"],
+                                     platform["created_at"],
+                                     platform["updated_at"]])
+            print(table_result)
+        elif conf.jobs:
+            table_result = prettytable.PrettyTable(["identifier",
+                                                    "platform", "scenario",
+                                                    "updated_at"])
+            jobs = requests.get("%s/jobs" % _DCI_CONTROL_SERVER).json()
 
-        for jobstate in jobstates["_items"]:
-            table_result.add_row([jobstate["id"],
-                                  jobstate["status"],
-                                  jobstate["comment"],
-                                  jobstate["job_id"],
-                                  jobstate["updated_at"]])
-        print(table_result)
-    if conf.list_scenarios:
-        table_result = prettytable.PrettyTable(["identifier", "name",
-                                                "updated_at"])
-        scenarios = requests.get("%s/scenarios" % _DCI_CONTROL_SERVER).json()
+            for job in jobs["_items"]:
+                table_result.add_row([job["id"],
+                                      job["platform_id"],
+                                      job["scenario_id"],
+                                      job["updated_at"]])
+            print(table_result)
+        elif conf.jobstates:
+            table_result = prettytable.PrettyTable(["identifier", "status",
+                                                    "comment", "job", "updated_at"])
+            jobstates = requests.get("%s/jobstates" % _DCI_CONTROL_SERVER).json()
 
-        for scenario in scenarios["_items"]:
-            table_result.add_row([scenario["id"],
-                                  scenario["name"],
-                                  scenario["updated_at"]])
-        print(table_result)
-    elif conf.get_job:
-        job = requests.get("%s/jobs/get_job_by_platform/%s" %
-                           (_DCI_CONTROL_SERVER, conf.get_job)).json()
+            for jobstate in jobstates["_items"]:
+                table_result.add_row([jobstate["id"],
+                                      jobstate["status"],
+                                      jobstate["comment"],
+                                      jobstate["job_id"],
+                                      jobstate["updated_at"]])
+            print(table_result)
+        elif conf.scenarios:
+            table_result = prettytable.PrettyTable(["identifier", "name",
+                                                    "updated_at"])
+            scenarios = requests.get("%s/scenarios" % _DCI_CONTROL_SERVER).json()
 
-        table_result = prettytable.PrettyTable(["job", "environment"])
-        table_result.add_row([job["job_id"], job["url"]])
-        print(table_result)
-    elif conf.auto:
+            for scenario in scenarios["_items"]:
+                table_result.add_row([scenario["id"],
+                                      scenario["name"],
+                                      scenario["updated_at"]])
+            print(table_result)
+    elif conf.command == 'register-platform':
+        new_platform = {"name": conf.name}
+        requests.post("%s/platforms" % _DCI_CONTROL_SERVER,
+                      data=new_platform).json()
+        print("Platform '%s' created successfully." % conf.name)
+    elif conf.command == 'auto':
+        print conf
         # 1. Get a job
         job = requests.get("%s/jobs/get_job_by_platform/%s" %
-                           (_DCI_CONTROL_SERVER, conf.auto)).json()
+                           (_DCI_CONTROL_SERVER, conf.platform)).json()
 
         # 2. Execute the job
         # 2.1. create temporary shell script and execute it
@@ -151,7 +172,13 @@ def main():
                              data=logs_data).json()
 
         print("[*] logs created: %s\n" % logs["id"])
+    elif conf.command == 'get':
+        job = requests.get("%s/jobs/get_job_by_platform/%s" %
+                           (_DCI_CONTROL_SERVER, conf.platform)).json()
 
+        table_result = prettytable.PrettyTable(["job", "environment"])
+        table_result.add_row([job["job_id"], job["url"]])
+        print(table_result)
 
 if __name__ == '__main__':
     main()
