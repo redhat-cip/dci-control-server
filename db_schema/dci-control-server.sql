@@ -89,7 +89,7 @@ CREATE TABLE environments (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255) NOT NULL,
-    etag character varying(40) DEFAULT md5((random())::text) NOT NULL,
+    etag character varying(40) NOT NULL,
     url text
 );
 
@@ -114,7 +114,7 @@ CREATE TABLE files (
     mime character varying(100) DEFAULT 'text/plain'::character varying NOT NULL,
     md5 character varying(32),
     jobstate_id uuid NOT NULL,
-    etag character varying(40) DEFAULT md5((random())::text) NOT NULL
+    etag character varying(40) NOT NULL
 );
 
 
@@ -129,7 +129,7 @@ CREATE TABLE jobs (
     platform_id uuid NOT NULL,
     scenario_id uuid NOT NULL,
     environment_id uuid NOT NULL,
-    etag character varying(40) DEFAULT md5((random())::text) NOT NULL
+    etag character varying(40) NOT NULL
 );
 
 
@@ -144,7 +144,7 @@ CREATE TABLE jobstates (
     status character varying,
     comment text,
     job_id uuid NOT NULL,
-    etag character varying(40) DEFAULT md5((random())::text) NOT NULL
+    etag character varying(40) NOT NULL
 );
 
 
@@ -157,7 +157,7 @@ CREATE TABLE platforms (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255),
-    etag character varying(40) DEFAULT md5((random())::text) NOT NULL
+    etag character varying(40) NOT NULL
 );
 
 
@@ -171,7 +171,7 @@ CREATE TABLE scenarios (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255) NOT NULL,
     content text NOT NULL,
-    etag character varying(40) DEFAULT md5((random())::text) NOT NULL
+    etag character varying(40) NOT NULL
 );
 
 
