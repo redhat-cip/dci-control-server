@@ -15,11 +15,13 @@
 # under the License.
 
 import os
+import re
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
 from sqlalchemy.orm import Session
+from sqlalchemy.orm import relationship
 
 # TODO(Gonéri): Load the value for a configuration file
 engine = create_engine(os.environ.get(
@@ -39,3 +41,16 @@ Platform = Base.classes.platforms
 Scenario = Base.classes.scenarios
 Jobstate = Base.classes.jobstates
 session = Session(engine)
+
+# NOT(Gonéri): Create the foreign table attribue to be able to
+# do job.platform.name
+for table in metadata.tables:
+    cur_db = getattr(Base.classes, table)
+    for column in cur_db.__table__.columns:
+        m = re.search(r"\.(\w+)_id$", str(column))
+        if not m:
+            continue
+        foreign_table_name = m.group(1)
+        foreign_table_object = getattr(Base.classes, foreign_table_name + 's')
+        setattr(cur_db, foreign_table_name,
+                relationship(foreign_table_object, uselist=False))
