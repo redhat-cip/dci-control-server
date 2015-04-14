@@ -99,7 +99,8 @@ CREATE TABLE environments (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255) NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
-    url text
+    url text,
+    environment_id uuid
 );
 
 
@@ -295,6 +296,14 @@ CREATE TRIGGER refresh_scenarios_update_at_column BEFORE UPDATE ON jobs FOR EACH
 --
 
 CREATE TRIGGER verify_jobstates_status BEFORE INSERT OR UPDATE ON jobstates FOR EACH ROW EXECUTE PROCEDURE jobstate_status_in_list();
+
+
+--
+-- Name: environments_environment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY environments
+    ADD CONSTRAINT environments_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE;
 
 
 --

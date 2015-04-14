@@ -82,9 +82,15 @@ LIMIT 1""")
     )
     session.commit()
 
+    # NOTE(Gonéri): loop to get the father environments URL
+    url_list = [environment.url]
+    while environment.environment:
+        environment = environment.environment
+        url_list.insert(0, environment.url)
+
     return {'job_id': job.id,
             'content': scenario.content,
-            'url': environment.url}
+            'url': url_list}
 
 
 def create_file(name, jobstate_id, content, mime, checksum=None):
