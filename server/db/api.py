@@ -33,7 +33,7 @@ def get_job_by_platform(platform_id):
         """
 SELECT
 
-  scenarios.id, environments.id, jobs.created_at
+  scenarios.id, environments.id, MAX(jobstates.created_at)
 
 FROM
 
@@ -53,7 +53,15 @@ AND jobs.environment_id=environments.id
 
 AND jobs.platform_id=:platform_id
 
-ORDER BY jobs.created_at ASC NULLS FIRST
+LEFT JOIN
+
+jobstates AS jobstates
+
+ON jobstates.job_id=jobs.id
+
+GROUP BY scenarios.id, environments.id
+
+ORDER BY MAX(jobstates.created_at) ASC NULLS FIRST
 
 LIMIT 1""")
 
@@ -69,6 +77,9 @@ LIMIT 1""")
     session.add(job)
     session.commit()
     session.refresh(job)
+    session.add(
+        Jobstate(job_id=job.id, status='new')
+    )
     session.commit()
 
     return {'job_id': job.id,
