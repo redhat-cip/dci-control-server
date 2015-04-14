@@ -141,35 +141,35 @@ def main():
                       data=new_platform).json()
         print("Platform '%s' created successfully." % conf.name)
     elif conf.command == 'auto':
-        print conf
         # 1. Get a job
         job = requests.get("%s/jobs/get_job_by_platform/%s" %
                            (_DCI_CONTROL_SERVER, conf.platform)).json()
 
         # 2. Execute the job
         # 2.1. create temporary shell script and execute it
-        os.environ["DCI_ENVIRONMENT_URL"] = job["url"]
-        job_errno = _exec_shell_script(job["content"])
+        for environment_url in job["url"]:
+            os.environ["DCI_ENVIRONMENT_URL"] = environment_url
+            job_errno = _exec_shell_script(job["content"])
 
-        # 3. Report status
-        status = "success"
-        if job_errno != 0:
-            status = "failure"
-        state = {"job_id": job["job_id"],
-                 "status": status,
-                 "comment": "no comments"}
-        jobstate = requests.post("%s/jobstates" % _DCI_CONTROL_SERVER,
-                                 data=state).json()
-        print("[*] jobstate created: %s\n" % jobstate["id"])
+            # 3. Report status
+            status = "success"
+            if job_errno != 0:
+                status = "failure"
+            state = {"job_id": job["job_id"],
+                     "status": status,
+                     "comment": "no comments"}
+            jobstate = requests.post("%s/jobstates" % _DCI_CONTROL_SERVER,
+                                     data=state).json()
+            print("[*] jobstate created: %s\n" % jobstate["id"])
 
-        logs_data = {"name": "SPS_logs",
-                     "content": "log generated",
-                     "mime": "text/plain",
-                     "jobstate_id": jobstate["id"]}
-        logs = requests.post("%s/files" % _DCI_CONTROL_SERVER,
-                             data=logs_data).json()
+            logs_data = {"name": "SPS_logs",
+                         "content": "log generated",
+                         "mime": "text/plain",
+                         "jobstate_id": jobstate["id"]}
+            logs = requests.post("%s/files" % _DCI_CONTROL_SERVER,
+                                 data=logs_data).json()
 
-        print("[*] logs created: %s\n" % logs["id"])
+            print("[*] logs created: %s\n" % logs["id"])
     elif conf.command == 'get':
         job = requests.get("%s/jobs/get_job_by_platform/%s" %
                            (_DCI_CONTROL_SERVER, conf.platform)).json()
