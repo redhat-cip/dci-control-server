@@ -141,7 +141,6 @@ def main():
                       data=new_platform).json()
         print("Platform '%s' created successfully." % conf.name)
     elif conf.command == 'auto':
-        print conf
         # 1. Get a job
         job = requests.get("%s/jobs/get_job_by_platform/%s" %
                            (_DCI_CONTROL_SERVER, conf.platform)).json()
