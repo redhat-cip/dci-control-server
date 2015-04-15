@@ -22,36 +22,42 @@ from server.db.models import File
 from server.db.models import Job
 from server.db.models import Jobstate
 from server.db.models import Platform
+from server.db.models import Scenario
 from server.db.models import session
 
 
 def get_job_by_platform(platform_id):
-    """Return the first environment_id that has not be associated to this platform.
+    """Return the first scenario_id that has not be associated to this platform.
     """
     s = text(
         """
 SELECT
-  environments.id, MAX(jobstates.created_at)
+  scenarios.id, environments.id, MAX(jobstates.created_at)
 FROM
+  scenarios
+CROSS JOIN
   environments
 LEFT JOIN
   jobs
-ON jobs.environment_id=environments.id
+ON jobs.scenario_id=scenarios.id
+AND jobs.environment_id=environments.id
 AND jobs.platform_id=:platform_id
 LEFT JOIN
   jobstates AS jobstates
 ON jobstates.job_id=jobs.id
-GROUP BY environments.id
+GROUP BY scenarios.id, environments.id
 ORDER BY MAX(jobstates.created_at) ASC NULLS FIRST
 LIMIT 1""")
 
     r = engine.execute(s, platform_id=platform_id)
     record = r.fetchone()
-    environment = session.query(Environment).get(str(record[0]))
+    scenario = session.query(Scenario).get(str(record[0]))
+    environment = session.query(Environment).get(str(record[1]))
     platform = session.query(Platform).get(platform_id)
     job = Job(
         environment_id=environment.id,
-        platform_id=platform.id)
+        platform_id=platform.id,
+        scenario_id=scenario.id)
     session.add(job)
     session.commit()
     session.refresh(job)
@@ -67,6 +73,7 @@ LIMIT 1""")
         url_list.insert(0, environment.url)
 
     return {'job_id': job.id,
+            'content': scenario.content,
             'url': url_list}
 
 

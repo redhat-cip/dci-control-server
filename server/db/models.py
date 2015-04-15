@@ -38,6 +38,7 @@ Job = Base.classes.jobs
 File = Base.classes.files
 Environment = Base.classes.environments
 Platform = Base.classes.platforms
+Scenario = Base.classes.scenarios
 Jobstate = Base.classes.jobstates
 session = Session(engine)
 
