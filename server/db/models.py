@@ -42,7 +42,9 @@ Scenario = Base.classes.scenarios
 Jobstate = Base.classes.jobstates
 session = Session(engine)
 
-# NOT(Gonéri): Create the foreign table attribue to be able to
+# engine.echo = True
+
+# NOTE(Gonéri): Create the foreign table attribue to be able to
 # do job.platform.name
 for table in metadata.tables:
     cur_db = getattr(Base.classes, table)
