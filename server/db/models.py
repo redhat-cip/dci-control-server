@@ -52,5 +52,11 @@ for table in metadata.tables:
             continue
         foreign_table_name = m.group(1)
         foreign_table_object = getattr(Base.classes, foreign_table_name + 's')
-        setattr(cur_db, foreign_table_name,
-                relationship(foreign_table_object, uselist=False))
+        remote_side = None
+        # NOTE(Gonéri): environment.environment is a Self-Referential
+        # relationship. We have to be explicite about that or SQLAlchemy will
+        # use environment_id as the primary key (instead of id) and go in the
+        # wrong direction.
+        remote_side = [foreign_table_object.id]
+        setattr(cur_db, foreign_table_name, relationship(
+            foreign_table_object, uselist=False, remote_side=remote_side))
