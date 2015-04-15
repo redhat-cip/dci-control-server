@@ -19,7 +19,6 @@ from server.db.models import Environment
 from server.db.models import File
 from server.db.models import Job
 from server.db.models import Platform
-from server.db.models import Scenario
 from server.db.models import session
 
 
@@ -27,5 +26,4 @@ session.query(Job).delete()
 session.query(File).delete()
 session.query(Environment).delete()
 session.query(Platform).delete()
-session.query(Scenario).delete()
 
