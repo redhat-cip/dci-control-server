@@ -18,7 +18,6 @@ from sqlalchemy.sql import text
 
 from server.db.models import engine
 from server.db.models import Environment
-from server.db.models import File
 from server.db.models import Job
 from server.db.models import Jobstate
 from server.db.models import Platform
@@ -68,23 +67,3 @@ LIMIT 1""")
 
     return {'job_id': job.id,
             'url': url_list}
-
-
-def create_file(name, jobstate_id, content, mime, checksum=None):
-    filen = File(
-        name=name,
-        content=content,
-        mime=mime,
-        jobstate_id=jobstate_id)
-    session.add(filen)
-    session.flush()
-    session.refresh(filen)
-    return {'file_id': filen.id}
-
-
-def create_jobstate(job_id, status='ongoing', comment=None):
-    jobstate = Jobstate(job_id=job_id, status=status, comment=comment)
-    session.add(jobstate)
-    session.commit()
-    session.refresh(jobstate)
-    return {'jobstate_id': jobstate.id}
