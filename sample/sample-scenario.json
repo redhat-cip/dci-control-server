@@ -1,6 +1,0 @@
-[
-    {
-	"name": "virtualize.sh",
-	"content": "#!/bin/bash\n\nwget --recursive --continue --no-directories --no-parent --directory-prefix=environment ${DCI_ENVIRONMENT_URL}\n\ngit clone https://github.com/enovance/infra-virt.git\nvirtualenv --system-site-packages venv\n\nsource venv/bin/activate\npip install -r infra-virt/requirements.txt\n\nexport PYTHONPATH=infra-virt\n# Disabled to speed up the demo\necho ./infra-virt/virtualize.sh environment\n"
-    }
-]

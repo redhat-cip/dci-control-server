@@ -144,7 +144,6 @@ CREATE TABLE jobs (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     platform_id uuid NOT NULL,
-    scenario_id uuid NOT NULL,
     environment_id uuid NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL
 );
@@ -174,20 +173,6 @@ CREATE TABLE platforms (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255),
-    etag character varying(40) DEFAULT gen_etag() NOT NULL
-);
-
-
---
--- Name: scenarios; Type: TABLE; Schema: public; Owner: -; Tablespace:
---
-
-CREATE TABLE scenarios (
-    id uuid DEFAULT gen_uuid() NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    name character varying(255) NOT NULL,
-    content text NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL
 );
 
@@ -230,22 +215,6 @@ ALTER TABLE ONLY jobs
 
 ALTER TABLE ONLY platforms
     ADD CONSTRAINT platforms_pkey PRIMARY KEY (id);
-
-
---
--- Name: scenarios_name_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
---
-
-ALTER TABLE ONLY scenarios
-    ADD CONSTRAINT scenarios_name_key UNIQUE (name);
-
-
---
--- Name: scenarios_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
---
-
-ALTER TABLE ONLY scenarios
-    ADD CONSTRAINT scenarios_pkey PRIMARY KEY (id);
 
 
 --
@@ -335,14 +304,6 @@ ALTER TABLE ONLY jobs
 
 ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_platform_id_fkey FOREIGN KEY (platform_id) REFERENCES platforms(id) ON DELETE CASCADE;
-
-
---
--- Name: jobs_scenario_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY jobs
-    ADD CONSTRAINT jobs_scenario_fkey FOREIGN KEY (scenario_id) REFERENCES scenarios(id) ON DELETE CASCADE;
 
 
 --
