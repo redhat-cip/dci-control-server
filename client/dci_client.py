@@ -18,10 +18,10 @@
 import argparse
 import glob
 import os
-import tempfile
 import shutil
 import stat
 import subprocess
+import tempfile
 
 import prettytable
 import requests
@@ -116,8 +116,10 @@ def main():
             print(table_result)
         elif conf.jobstates:
             table_result = prettytable.PrettyTable(["identifier", "status",
-                                                    "comment", "job", "updated_at"])
-            jobstates = requests.get("%s/jobstates" % _DCI_CONTROL_SERVER).json()
+                                                    "comment", "job",
+                                                    "updated_at"])
+            jobstates = requests.get(
+                "%s/jobstates" % _DCI_CONTROL_SERVER).json()
 
             for jobstate in jobstates["_items"]:
                 table_result.add_row([jobstate["id"],
@@ -129,7 +131,8 @@ def main():
         elif conf.scenarios:
             table_result = prettytable.PrettyTable(["identifier", "name",
                                                     "updated_at"])
-            scenarios = requests.get("%s/scenarios" % _DCI_CONTROL_SERVER).json()
+            scenarios = requests.get(
+                "%s/scenarios" % _DCI_CONTROL_SERVER).json()
 
             for scenario in scenarios["_items"]:
                 table_result.add_row([scenario["id"],

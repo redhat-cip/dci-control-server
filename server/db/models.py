@@ -20,8 +20,8 @@ import re
 from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
-from sqlalchemy.orm import Session
 from sqlalchemy.orm import relationship
+from sqlalchemy.orm import Session
 
 # TODO(Gonéri): Load the value for a configuration file
 engine = create_engine(os.environ.get(
