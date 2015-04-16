@@ -155,32 +155,41 @@ def main():
                              "robots=off", "--reject", "index.html",
                              environment_url])
 
-        job_errno = 0
-        for directory in ('configure.d', 'test.d'):
-            for file_path in glob.glob('environment/%s/*' % directory):
-                job_errno = subprocess.call(["/bin/bash", file_path])
-                if job_errno != 0:
-                    break
+        status = "ongoing"
+        scripts = glob.glob('environment/configure.d/*.sh')
+        scripts += glob.glob('environment/test.d/*.sh')
+        for script in scripts:
+            print("script: %s" % script)
+            try:
+                output = subprocess.check_output(
+                    ["/bin/bash", script], stderr=subprocess.STDOUT)
+            except subprocess.CalledProcessError:
+                status = "failure"
 
-        # 3. Report status
-        status = "success"
-        if job_errno != 0:
-            status = "failure"
+            # 3. Report status
+            state = {"job_id": job["job_id"],
+                     "status": status,
+                     "comment": "no comments"}
+            jobstate = requests.post("%s/jobstates" % _DCI_CONTROL_SERVER,
+                                     data=state).json()
+            print("[*] jobstate created: %s\n" % jobstate["id"])
+
+            logs_data = {"name": script + '_log',
+                         "content": output,
+                         "mime": "text/plain",
+                         "jobstate_id": jobstate["id"]}
+            logs = requests.post("%s/files" % _DCI_CONTROL_SERVER,
+                                 data=logs_data).json()
+
+            print("[*] logs created: %s\n" % logs["id"])
+            if status == "failure":
+                break
+
         state = {"job_id": job["job_id"],
-                 "status": status,
+                 "status": "success",
                  "comment": "no comments"}
         jobstate = requests.post("%s/jobstates" % _DCI_CONTROL_SERVER,
                                  data=state).json()
-        print("[*] jobstate created: %s\n" % jobstate["id"])
-
-        logs_data = {"name": "SPS_logs",
-                     "content": "log generated",
-                     "mime": "text/plain",
-                     "jobstate_id": jobstate["id"]}
-        logs = requests.post("%s/files" % _DCI_CONTROL_SERVER,
-                             data=logs_data).json()
-
-        print("[*] logs created: %s\n" % logs["id"])
     elif conf.command == 'get':
         job = requests.get("%s/jobs/get_job_by_platform/%s" %
                            (_DCI_CONTROL_SERVER, conf.platform)).json()
