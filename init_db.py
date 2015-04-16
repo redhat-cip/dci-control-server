@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import server.db.api as api
 from server.db.models import Environment
 from server.db.models import File
 from server.db.models import Job
@@ -28,4 +27,3 @@ session.query(File).delete()
 session.query(Environment).delete()
 session.query(Platform).delete()
 session.query(Scenario).delete()
-
