@@ -112,6 +112,13 @@ COMMENT ON COLUMN environments.url IS 'Location to a remote archive with the env
 
 
 --
+-- Name: COLUMN environments.environment_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN environments.environment_id IS 'key to the upstream environment';
+
+
+--
 -- Name: files; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
