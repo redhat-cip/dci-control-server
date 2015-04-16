@@ -37,6 +37,7 @@ Base.prepare()
 Job = Base.classes.jobs
 File = Base.classes.files
 Environment = Base.classes.environments
+Notification = Base.classes.notifications
 Platform = Base.classes.platforms
 Jobstate = Base.classes.jobstates
 session = Session(engine)
@@ -61,3 +62,6 @@ for table in metadata.tables:
         remote_side = [foreign_table_object.id]
         setattr(cur_db, foreign_table_name, relationship(
             foreign_table_object, uselist=False, remote_side=remote_side))
+
+setattr(Environment, 'notifications', relationship(
+    Notification, uselist=True, lazy='dynamic'))

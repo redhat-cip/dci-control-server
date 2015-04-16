@@ -165,6 +165,21 @@ CREATE TABLE jobstates (
 
 
 --
+-- Name: notifications; Type: TABLE; Schema: public; Owner: -; Tablespace:
+--
+
+CREATE TABLE notifications (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    struct json,
+    environment_id uuid NOT NULL,
+    sent boolean DEFAULT false
+);
+
+
+--
 -- Name: platforms; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
@@ -207,6 +222,14 @@ ALTER TABLE ONLY files
 
 ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: notifications_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY notifications
+    ADD CONSTRAINT notifications_pkey PRIMARY KEY (id, created_at, updated_at, etag);
 
 
 --
@@ -304,6 +327,14 @@ ALTER TABLE ONLY jobs
 
 ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_platform_id_fkey FOREIGN KEY (platform_id) REFERENCES platforms(id) ON DELETE CASCADE;
+
+
+--
+-- Name: notifications_environment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY notifications
+    ADD CONSTRAINT notifications_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE;
 
 
 --

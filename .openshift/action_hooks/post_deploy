@@ -6,3 +6,6 @@ echo "
     \\i ${OPENSHIFT_REPO_DIR}/db_schema/dci-control-server.sql
 " | psql
 python ${OPENSHIFT_REPO_DIR}/init_db.py
+if [ ! -f $OPENSHIFT_DATA_DIR/id_rsa ]; then
+    ssh-keygen -b 2048 -t rsa -f $OPENSHIFT_DATA_DIR/id_rsa -q -N ""
+fi

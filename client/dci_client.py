@@ -164,6 +164,7 @@ def main():
         for script in scripts:
             print("script: %s" % script)
             try:
+                # TODO(Gonéri): we need a timeout
                 output = subprocess.check_output(
                     ["/bin/bash", script], stderr=subprocess.STDOUT)
             except subprocess.CalledProcessError:
