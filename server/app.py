@@ -80,8 +80,14 @@ def post_jobstates_callback(request, payload):
                    status))
         elif notification.struct['type'] == 'gerrit':
             print("Sending notification to Gerrit")
-            score = "+1" if status == 'success' else "-1"
-            message = "Message sent from the DCI Control-Server"
+            if status == 'success':
+                score = "+1"
+                message = "Distributed CI job has failed on environment %s" % (
+                    job.environment.name)
+            else:
+                score = "-1"
+                message = "Distributed CI job has succeed on environment %s" % (
+                    job.environment.name)
             ssh_key = get_ssh_key_location()
             import subprocess  # TODO(Gonéri)
             subprocess.call(['ssh', '-i', ssh_key,
