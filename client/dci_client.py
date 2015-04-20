@@ -154,8 +154,10 @@ def main():
         for environment_url in job["url"]:
             subprocess.call(["wget", "--recursive", "--continue", "--no-parent",
                              "--directory-prefix=environment", "-nH",
-                             "--mirror", "--cut-dirs=2", "--no-verbose", "-e",
-                             "robots=off", "--reject", "index.html",
+                             "--mirror", "--cut-dirs=2", "--quiet",
+                             "--no-verbose",
+                             "-e", "robots=off", "--reject", "index.html*",
+#                            "--show-progress",
                              environment_url])
 
         status = "ongoing"
