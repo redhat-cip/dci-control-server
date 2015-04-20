@@ -66,4 +66,5 @@ LIMIT 1""")
         url_list.insert(0, environment.url)
 
     return {'job_id': job.id,
+            'environment_id': environment.id,
             'url': url_list}
