@@ -144,8 +144,8 @@ CREATE TABLE jobs (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     remoteci_id uuid NOT NULL,
-    environment_id uuid NOT NULL,
-    etag character varying(40) DEFAULT gen_etag() NOT NULL
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    version_id uuid NOT NULL
 );
 
 
@@ -180,6 +180,20 @@ CREATE TABLE notifications (
 
 
 --
+-- Name: products; Type: TABLE; Schema: public; Owner: -; Tablespace:
+--
+
+CREATE TABLE products (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    name character varying(255) NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    data_structure json
+);
+
+
+--
 -- Name: remotecis; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
@@ -189,6 +203,21 @@ CREATE TABLE remotecis (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255),
     etag character varying(40) DEFAULT gen_etag() NOT NULL
+);
+
+
+--
+-- Name: versions; Type: TABLE; Schema: public; Owner: -; Tablespace:
+--
+
+CREATE TABLE versions (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    name character varying(255) NOT NULL,
+    etag character varying(40) NOT NULL,
+    "values" json,
+    product_id uuid NOT NULL
 );
 
 
@@ -230,6 +259,14 @@ ALTER TABLE ONLY jobs
 
 ALTER TABLE ONLY notifications
     ADD CONSTRAINT notifications_pkey PRIMARY KEY (id, created_at, updated_at, etag);
+
+
+--
+-- Name: products_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY products
+    ADD CONSTRAINT products_pkey PRIMARY KEY (id);
 
 
 --
@@ -314,14 +351,6 @@ ALTER TABLE ONLY files
 
 
 --
--- Name: jobs_environment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY jobs
-    ADD CONSTRAINT jobs_environment_fkey FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE;
-
-
---
 -- Name: jobs_remoteci_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -343,6 +372,14 @@ ALTER TABLE ONLY notifications
 
 ALTER TABLE ONLY jobstates
     ADD CONSTRAINT status_job_fkey FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: versions_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY versions
+    ADD CONSTRAINT versions_product_id_fkey FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE;
 
 
 --
