@@ -148,6 +148,7 @@ def main():
         # 1. Get a job
         job = requests.get("%s/jobs/get_job_by_platform/%s" %
                            (_DCI_CONTROL_SERVER, conf.platform)).json()
+        print("Testing environment: %s" % job['environment_id'])
 
         # 2. Execute the job
         # 2.1. create temporary shell script and execute it
@@ -178,7 +179,7 @@ def main():
                      "comment": "no comments"}
             jobstate = requests.post("%s/jobstates" % _DCI_CONTROL_SERVER,
                                      data=state).json()
-            print("[*] jobstate created: %s\n" % jobstate["id"])
+            print("[*] jobstate created: %s" % jobstate["id"])
 
             logs_data = {"name": script + '_log',
                          "content": output,
@@ -187,7 +188,7 @@ def main():
             logs = requests.post("%s/files" % _DCI_CONTROL_SERVER,
                                  data=logs_data).json()
 
-            print("[*] logs created: %s\n" % logs["id"])
+            print("[*] logs created: %s" % logs["id"])
             if status == "failure":
                 break
 
