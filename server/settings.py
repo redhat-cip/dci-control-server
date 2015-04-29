@@ -44,6 +44,8 @@ SQLALCHEMY_DATABASE_URI = os.environ.get(
 DOMAIN = {}
 for table in metadata.tables:
     print("table: %s" % table)
+    if table == 'files':
+        continue
     DB = getattr(Base.classes, table)
     registerSchema(table)(DB)
     DOMAIN[table] = DB._eve_schema[table]
