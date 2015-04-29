@@ -17,13 +17,14 @@
 from sqlalchemy.sql import text
 
 from server.db.models import engine
-from server.db.models import Environment
 from server.db.models import Job
 from server.db.models import Jobstate
+from server.db.models import Product
 from server.db.models import RemoteCI
+from server.db.models import Version
 from server.db.models import session
 
-
+# TODO(Gonéri): this is broken
 def get_job_by_remoteci(remoteci_id):
     """Return the first environment_id that has not be associated to this RemoteCI.
     """
@@ -46,10 +47,10 @@ LIMIT 1""")
 
     r = engine.execute(s, remoteci_id=remoteci_id)
     record = r.fetchone()
-    environment = session.query(Environment).get(str(record[0]))
+    version = session.query(Version).get(str(record[0]))
     remoteci = session.query(RemoteCI).get(remoteci_id)
     job = Job(
-        environment_id=environment.id,
+        version_id=version.id,
         remoteci_id=remoteci.id)
     session.add(job)
     session.commit()
@@ -60,11 +61,9 @@ LIMIT 1""")
     session.commit()
 
     # NOTE(Gonéri): loop to get the father environments URL
-    url_list = [environment.url]
-    while environment.environment:
-        environment = environment.environment
-        url_list.insert(0, environment.url)
+#    url_list = [environment.url]
+#    while environment.environment:
+#        environment = environment.environment
+#        url_list.insert(0, environment.url)
 
-    return {'job_id': job.id,
-            'environment_id': environment.id,
-            'url': url_list}
+    return {'job_id': job.id}

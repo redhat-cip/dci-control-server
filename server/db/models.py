@@ -39,10 +39,11 @@ Base = automap_base(metadata=metadata)
 Base.prepare()
 Job = Base.classes.jobs
 File = Base.classes.files
-Environment = Base.classes.environments
 Notification = Base.classes.notifications
+Product = Base.classes.products
 RemoteCI = Base.classes.remotecis
 Jobstate = Base.classes.jobstates
+Version = Base.classes.versions
 session = Session(engine)
 
 # engine.echo = True
@@ -58,6 +59,7 @@ for table in metadata.tables:
         foreign_table_name = m.group(1)
         foreign_table_object = getattr(Base.classes, foreign_table_name + 's')
         remote_side = None
+        # TODO(Gonéri): environment.environment doesn't exist anymore
         # NOTE(Gonéri): environment.environment is a Self-Referential
         # relationship. We have to be explicite about that or SQLAlchemy will
         # use environment_id as the primary key (instead of id) and go in the
@@ -66,5 +68,7 @@ for table in metadata.tables:
         setattr(cur_db, foreign_table_name, relationship(
             foreign_table_object, uselist=False, remote_side=remote_side))
 
-setattr(Environment, 'notifications', relationship(
+setattr(Product, 'versions', relationship(
+    Version, uselist=True, lazy='dynamic'))
+setattr(Version, 'notifications', relationship(
     Notification, uselist=True, lazy='dynamic'))
