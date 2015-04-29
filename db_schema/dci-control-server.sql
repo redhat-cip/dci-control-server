@@ -143,7 +143,7 @@ CREATE TABLE jobs (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    platform_id uuid NOT NULL,
+    remoteci_id uuid NOT NULL,
     environment_id uuid NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL
 );
@@ -180,10 +180,10 @@ CREATE TABLE notifications (
 
 
 --
--- Name: platforms; Type: TABLE; Schema: public; Owner: -; Tablespace:
+-- Name: remotecis; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
-CREATE TABLE platforms (
+CREATE TABLE remotecis (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -233,11 +233,11 @@ ALTER TABLE ONLY notifications
 
 
 --
--- Name: platforms_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- Name: remotecis_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
-ALTER TABLE ONLY platforms
-    ADD CONSTRAINT platforms_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY remotecis
+    ADD CONSTRAINT remotecis_pkey PRIMARY KEY (id);
 
 
 --
@@ -277,10 +277,10 @@ CREATE TRIGGER refresh_jobstates_update_at_column BEFORE UPDATE ON jobstates FOR
 
 
 --
--- Name: refresh_platforms_update_at_column; Type: TRIGGER; Schema: public; Owner: -
+-- Name: refresh_remotecis_update_at_column; Type: TRIGGER; Schema: public; Owner: -
 --
 
-CREATE TRIGGER refresh_platforms_update_at_column BEFORE UPDATE ON platforms FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
+CREATE TRIGGER refresh_remotecis_update_at_column BEFORE UPDATE ON remotecis FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 
 
 --
@@ -322,11 +322,11 @@ ALTER TABLE ONLY jobs
 
 
 --
--- Name: jobs_platform_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: jobs_remoteci_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY jobs
-    ADD CONSTRAINT jobs_platform_id_fkey FOREIGN KEY (platform_id) REFERENCES platforms(id) ON DELETE CASCADE;
+    ADD CONSTRAINT jobs_remoteci_id_fkey FOREIGN KEY (remoteci_id) REFERENCES remotecis(id) ON DELETE CASCADE;
 
 
 --

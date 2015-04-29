@@ -44,9 +44,9 @@ def site_map():
 site_map()
 
 
-@app.route('/jobs/get_job_by_platform/<platform_id>')
-def get_job_by_platform(platform_id):
-    return jsonify(api.get_job_by_platform(platform_id))
+@app.route('/jobs/get_job_by_remoteci/<remoteci_id>')
+def get_job_by_remoteci(remoteci_id):
+    return jsonify(api.get_job_by_remoteci(remoteci_id))
 
 
 def get_ssh_key_location():
@@ -76,7 +76,7 @@ def post_jobstates_callback(request, payload):
         if notification.struct['type'] == 'stdout':
             print("Environment %s has been built on %s with status %s" %
                   (job.environment.name,
-                   job.platform.name,
+                   job.remoteci.name,
                    status))
         elif notification.struct['type'] == 'gerrit':
             print("Sending notification to Gerrit")

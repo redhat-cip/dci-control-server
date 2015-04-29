@@ -35,17 +35,17 @@ def _init_conf():
     parser = argparse.ArgumentParser(description='DCI client.')
     command_subparser = parser.add_subparsers(help='commands',
                                               dest='command')
-    # register platform command
-    register_platform_parser = command_subparser.add_parser(
-        'register-platform', help='Register a platform.')
-    register_platform_parser.add_argument('--name', action='store',
-                                          help='Name of the platform.')
+    # register remoteci command
+    register_remoteci_parser = command_subparser.add_parser(
+        'register-remoteci', help='Register a remoteci.')
+    register_remoteci_parser.add_argument('--name', action='store',
+                                          help='Name of the remoteci.')
 
     # list command
     list_parser = command_subparser.add_parser('list', help='List resources.')
-    list_parser.add_argument('--platforms', action='store_true',
+    list_parser.add_argument('--remotecis', action='store_true',
                              default=False,
-                             help='List existing platforms.')
+                             help='List existing remotecis.')
     list_parser.add_argument('--jobs', action="store_true",
                              default=False,
                              help='List existing jobs.')
@@ -60,13 +60,13 @@ def _init_conf():
 
     # auto command
     auto_parser = command_subparser.add_parser('auto', help='Automated mode.')
-    auto_parser.add_argument('platform', action='store',
-                             help='Id of the platform')
+    auto_parser.add_argument('remoteci', action='store',
+                             help='Id of the remoteci')
 
     # get command
     auto_parser = command_subparser.add_parser('get', help='Get a job.')
-    auto_parser.add_argument('platform', action='store',
-                             help='Id of the platform')
+    auto_parser.add_argument('remoteci', action='store',
+                             help='Id of the remoteci')
 
     return parser.parse_args()
 
@@ -90,27 +90,27 @@ def main():
     conf = _init_conf()
 
     if conf.command == 'list':
-        if conf.platforms:
+        if conf.remotecis:
             table_result = prettytable.PrettyTable(["identifier", "name",
                                                     "created_at", "updated_at"])
-            platforms = requests.get("%s/platforms" %
+            remotecis = requests.get("%s/remotecis" %
                                      _DCI_CONTROL_SERVER).json()
 
-            for platform in platforms["_items"]:
-                table_result.add_row([platform["id"],
-                                     platform["name"],
-                                     platform["created_at"],
-                                     platform["updated_at"]])
+            for remoteci in remotecis["_items"]:
+                table_result.add_row([remoteci["id"],
+                                     remoteci["name"],
+                                     remoteci["created_at"],
+                                     remoteci["updated_at"]])
             print(table_result)
         elif conf.jobs:
             table_result = prettytable.PrettyTable(["identifier",
-                                                    "platform", "scenario",
+                                                    "remoteci", "scenario",
                                                     "updated_at"])
             jobs = requests.get("%s/jobs" % _DCI_CONTROL_SERVER).json()
 
             for job in jobs["_items"]:
                 table_result.add_row([job["id"],
-                                      job["platform_id"],
+                                      job["remoteci_id"],
                                       job["scenario_id"],
                                       job["updated_at"]])
             print(table_result)
@@ -139,15 +139,15 @@ def main():
                                       scenario["name"],
                                       scenario["updated_at"]])
             print(table_result)
-    elif conf.command == 'register-platform':
-        new_platform = {"name": conf.name}
-        requests.post("%s/platforms" % _DCI_CONTROL_SERVER,
-                      data=new_platform).json()
-        print("Platform '%s' created successfully." % conf.name)
+    elif conf.command == 'register-remoteci':
+        new_remoteci = {"name": conf.name}
+        requests.post("%s/remotecis" % _DCI_CONTROL_SERVER,
+                      data=new_remoteci).json()
+        print("RemoteCI '%s' created successfully." % conf.name)
     elif conf.command == 'auto':
         # 1. Get a job
-        job = requests.get("%s/jobs/get_job_by_platform/%s" %
-                           (_DCI_CONTROL_SERVER, conf.platform)).json()
+        job = requests.get("%s/jobs/get_job_by_remoteci/%s" %
+                           (_DCI_CONTROL_SERVER, conf.remoteci)).json()
         print("Testing environment: %s" % job['environment_id'])
 
         # 2. Execute the job
@@ -198,8 +198,8 @@ def main():
         jobstate = requests.post("%s/jobstates" % _DCI_CONTROL_SERVER,
                                  data=state).json()
     elif conf.command == 'get':
-        job = requests.get("%s/jobs/get_job_by_platform/%s" %
-                           (_DCI_CONTROL_SERVER, conf.platform)).json()
+        job = requests.get("%s/jobs/get_job_by_remoteci/%s" %
+                           (_DCI_CONTROL_SERVER, conf.remoteci)).json()
 
         table_result = prettytable.PrettyTable(["job", "environment"])
         table_result.add_row([job["job_id"], job["url"]])

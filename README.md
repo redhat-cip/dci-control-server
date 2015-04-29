@@ -60,46 +60,46 @@ Connect with the postgres user:
 
 The REST API is available for any type of objects:
 
-- platform
+- remoteci
 - environment
 - file
 - job
 - jobstate
 - scenario
 
-## Create a platforms
+## Create a remotecis
 
-POST http://127.0.0.1:5000/platforms
+POST http://127.0.0.1:5000/remotecis
 Content-Type: application/json
 
 [{"name": "barack"}, {"name": "mitt"}]
 
-## List the existing platforms with a limit
+## List the existing remotecis with a limit
 
-GET http://127.0.0.1:5000/platforms?max_results=1
+GET http://127.0.0.1:5000/remotecis?max_results=1
 
-## Search a given platform
+## Search a given remoteci
 
-GET http://127.0.0.1:5000/platforms?where={"id":"9f97593b-d263-c1e4-f2de-b1b4e36ba87c"}
+GET http://127.0.0.1:5000/remotecis?where={"id":"9f97593b-d263-c1e4-f2de-b1b4e36ba87c"}
 
-## Retrieve a platform using its UUID
+## Retrieve a remoteci using its UUID
 
-GET http://127.0.0.1:5000/platforms/9f97593b-d263-c1e4-f2de-b1b4e36ba87c
+GET http://127.0.0.1:5000/remotecis/9f97593b-d263-c1e4-f2de-b1b4e36ba87c
 
-## Update a platform
+## Update a remoteci
 
 Here we reuse the ETAG from the command bellow in the
 `If-Match` line.
 
-PATCH http://127.0.0.1:5000/platforms/9f97593b-d263-c1e4-f2de-b1b4e36ba87c
+PATCH http://127.0.0.1:5000/remotecis/9f97593b-d263-c1e4-f2de-b1b4e36ba87c
 If-Match: 7fd095f13e88793f985f760269cc608960228779
 Content-Type: application/json
 
 {"name": "Jim", "etag": "bibi"}
 
-## Get the updated platform
+## Get the updated remoteci
 
-GET http://127.0.0.1:5000/platforms/Jim
+GET http://127.0.0.1:5000/remotecis/Jim
 
 # DCI - CLI
 
@@ -110,16 +110,16 @@ variable:
 
 By default it is http://127.0.0.1:5000
 
-## List the platforms
+## List the remotecis
 
-    $ dci --list-platforms
+    $ dci --list-remotecis
 
 ## Get a job
 
-    $ dci --get-job <platform-uuid>
+    $ dci --get-job <remoteci-uuid>
 
 ## Get a job and execute it
 
-    $ dci --auto <platform-uuid>
+    $ dci --auto <remoteci-uuid>
 
-The parameter platform-uuid should be the id of the platform which will run the job.
+The parameter remoteci-uuid should be the id of the remoteci which will run the job.
