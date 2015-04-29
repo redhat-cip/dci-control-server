@@ -32,20 +32,23 @@ metadata = MetaData()
 
 metadata.reflect(engine)
 
+for table in metadata.tables:
+    print(table)
+
 Base = automap_base(metadata=metadata)
 Base.prepare()
 Job = Base.classes.jobs
 File = Base.classes.files
 Environment = Base.classes.environments
 Notification = Base.classes.notifications
-Platform = Base.classes.platforms
+RemoteCI = Base.classes.remotecis
 Jobstate = Base.classes.jobstates
 session = Session(engine)
 
 # engine.echo = True
 
 # NOTE(Gonéri): Create the foreign table attribue to be able to
-# do job.platform.name
+# do job.remoteci.name
 for table in metadata.tables:
     cur_db = getattr(Base.classes, table)
     for column in cur_db.__table__.columns:

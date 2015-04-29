@@ -18,7 +18,7 @@ from server.db.models import Environment
 from server.db.models import File
 from server.db.models import Job
 from server.db.models import Notification
-from server.db.models import Platform
+from server.db.models import Remoteci
 from server.db.models import session
 
 
@@ -26,4 +26,4 @@ session.query(Job).delete()
 session.query(File).delete()
 session.query(Environment).delete()
 session.query(Notification).delete()
-session.query(Platform).delete()
+session.query(Remoteci).delete()

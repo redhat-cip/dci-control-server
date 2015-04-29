@@ -20,12 +20,12 @@ from server.db.models import engine
 from server.db.models import Environment
 from server.db.models import Job
 from server.db.models import Jobstate
-from server.db.models import Platform
+from server.db.models import RemoteCI
 from server.db.models import session
 
 
-def get_job_by_platform(platform_id):
-    """Return the first environment_id that has not be associated to this platform.
+def get_job_by_remoteci(remoteci_id):
+    """Return the first environment_id that has not be associated to this RemoteCI.
     """
     s = text(
         """
@@ -36,7 +36,7 @@ FROM
 LEFT JOIN
   jobs
 ON jobs.environment_id=environments.id
-AND jobs.platform_id=:platform_id
+AND jobs.remoteci_id=:remoteci_id
 LEFT JOIN
   jobstates AS jobstates
 ON jobstates.job_id=jobs.id
@@ -44,13 +44,13 @@ GROUP BY environments.id
 ORDER BY MAX(jobstates.created_at) ASC NULLS FIRST
 LIMIT 1""")
 
-    r = engine.execute(s, platform_id=platform_id)
+    r = engine.execute(s, remoteci_id=remoteci_id)
     record = r.fetchone()
     environment = session.query(Environment).get(str(record[0]))
-    platform = session.query(Platform).get(platform_id)
+    remoteci = session.query(RemoteCI).get(remoteci_id)
     job = Job(
         environment_id=environment.id,
-        platform_id=platform.id)
+        remoteci_id=remoteci.id)
     session.add(job)
     session.commit()
     session.refresh(job)
