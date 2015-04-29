@@ -90,35 +90,6 @@ SET default_tablespace = '';
 SET default_with_oids = false;
 
 --
--- Name: environments; Type: TABLE; Schema: public; Owner: -; Tablespace:
---
-
-CREATE TABLE environments (
-    id uuid DEFAULT gen_uuid() NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    name character varying(255) NOT NULL,
-    etag character varying(40) DEFAULT gen_etag() NOT NULL,
-    url text,
-    environment_id uuid
-);
-
-
---
--- Name: COLUMN environments.url; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON COLUMN environments.url IS 'Location to a remote archive with the environment.';
-
-
---
--- Name: COLUMN environments.environment_id; Type: COMMENT; Schema: public; Owner: -
---
-
-COMMENT ON COLUMN environments.environment_id IS 'key to the upstream environment';
-
-
---
 -- Name: files; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
@@ -144,8 +115,9 @@ CREATE TABLE jobs (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     remoteci_id uuid NOT NULL,
-    environment_id uuid NOT NULL,
-    etag character varying(40) DEFAULT gen_etag() NOT NULL
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    version_id uuid NOT NULL,
+    test_id uuid NOT NULL
 );
 
 
@@ -174,8 +146,22 @@ CREATE TABLE notifications (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
     struct json,
-    environment_id uuid NOT NULL,
-    sent boolean DEFAULT false
+    sent boolean DEFAULT false,
+    version_id uuid NOT NULL
+);
+
+
+--
+-- Name: products; Type: TABLE; Schema: public; Owner: -; Tablespace:
+--
+
+CREATE TABLE products (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    name character varying(255) NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    data json
 );
 
 
@@ -193,19 +179,32 @@ CREATE TABLE remotecis (
 
 
 --
--- Name: environments_name_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- Name: tests; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
-ALTER TABLE ONLY environments
-    ADD CONSTRAINT environments_name_key UNIQUE (name);
+CREATE TABLE tests (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    name character varying(255) NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    data json
+);
 
 
 --
--- Name: environments_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+-- Name: versions; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
-ALTER TABLE ONLY environments
-    ADD CONSTRAINT environments_pkey PRIMARY KEY (id);
+CREATE TABLE versions (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    name character varying(255) NOT NULL,
+    etag character varying(40) NOT NULL,
+    product_id uuid NOT NULL,
+    data json
+);
 
 
 --
@@ -233,6 +232,14 @@ ALTER TABLE ONLY notifications
 
 
 --
+-- Name: products_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY products
+    ADD CONSTRAINT products_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: remotecis_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
@@ -249,10 +256,19 @@ ALTER TABLE ONLY jobstates
 
 
 --
--- Name: refresh_environments_update_at_column; Type: TRIGGER; Schema: public; Owner: -
+-- Name: tests_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
-CREATE TRIGGER refresh_environments_update_at_column BEFORE UPDATE ON environments FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
+ALTER TABLE ONLY tests
+    ADD CONSTRAINT tests_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: versions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY versions
+    ADD CONSTRAINT versions_pkey PRIMARY KEY (id);
 
 
 --
@@ -298,27 +314,11 @@ CREATE TRIGGER verify_jobstates_status BEFORE INSERT OR UPDATE ON jobstates FOR 
 
 
 --
--- Name: environments_environment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY environments
-    ADD CONSTRAINT environments_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE;
-
-
---
 -- Name: files_status_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY files
     ADD CONSTRAINT files_status_fkey FOREIGN KEY (jobstate_id) REFERENCES jobstates(id) ON DELETE CASCADE;
-
-
---
--- Name: jobs_environment_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY jobs
-    ADD CONSTRAINT jobs_environment_fkey FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE;
 
 
 --
@@ -330,11 +330,27 @@ ALTER TABLE ONLY jobs
 
 
 --
--- Name: notifications_environment_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: jobs_test_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY jobs
+    ADD CONSTRAINT jobs_test_id_fkey FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE;
+
+
+--
+-- Name: jobs_version_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY jobs
+    ADD CONSTRAINT jobs_version_id_fkey FOREIGN KEY (version_id) REFERENCES versions(id) ON DELETE CASCADE;
+
+
+--
+-- Name: notifications_version_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY notifications
-    ADD CONSTRAINT notifications_environment_id_fkey FOREIGN KEY (environment_id) REFERENCES environments(id) ON DELETE CASCADE;
+    ADD CONSTRAINT notifications_version_id_fkey FOREIGN KEY (version_id) REFERENCES versions(id) ON DELETE CASCADE;
 
 
 --
@@ -343,6 +359,14 @@ ALTER TABLE ONLY notifications
 
 ALTER TABLE ONLY jobstates
     ADD CONSTRAINT status_job_fkey FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: versions_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY versions
+    ADD CONSTRAINT versions_product_id_fkey FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE;
 
 
 --
