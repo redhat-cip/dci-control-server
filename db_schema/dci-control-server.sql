@@ -116,8 +116,7 @@ CREATE TABLE jobs (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     remoteci_id uuid NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
-    version_id uuid NOT NULL,
-    test_id uuid NOT NULL
+    testversion_id uuid NOT NULL
 );
 
 
@@ -192,12 +191,30 @@ CREATE TABLE tests (
 );
 
 
+SET default_with_oids = true;
+
+--
+-- Name: testversions; Type: TABLE; Schema: public; Owner: -; Tablespace:
+--
+
+CREATE TABLE testversions (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    test_id uuid NOT NULL,
+    version_id uuid NOT NULL
+);
+
+
+SET default_with_oids = false;
+
 --
 -- Name: versions; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
 CREATE TABLE versions (
-    id uuid NOT NULL,
+    id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone NOT NULL,
     updated_at timestamp with time zone NOT NULL,
     name character varying(255) NOT NULL,
@@ -264,6 +281,14 @@ ALTER TABLE ONLY tests
 
 
 --
+-- Name: testsversions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY testversions
+    ADD CONSTRAINT testsversions_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: versions_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
@@ -307,6 +332,13 @@ CREATE TRIGGER refresh_scenarios_update_at_column BEFORE UPDATE ON jobs FOR EACH
 
 
 --
+-- Name: refresh_testsversions_update_at_column; Type: TRIGGER; Schema: public; Owner: -
+--
+
+CREATE TRIGGER refresh_testsversions_update_at_column BEFORE UPDATE ON testversions FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
+
+
+--
 -- Name: verify_jobstates_status; Type: TRIGGER; Schema: public; Owner: -
 --
 
@@ -330,19 +362,11 @@ ALTER TABLE ONLY jobs
 
 
 --
--- Name: jobs_test_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- Name: jobs_testversion_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY jobs
-    ADD CONSTRAINT jobs_test_id_fkey FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE;
-
-
---
--- Name: jobs_version_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY jobs
-    ADD CONSTRAINT jobs_version_id_fkey FOREIGN KEY (version_id) REFERENCES versions(id) ON DELETE CASCADE;
+    ADD CONSTRAINT jobs_testversion_id_fkey FOREIGN KEY (testversion_id) REFERENCES testversions(id) ON DELETE CASCADE;
 
 
 --
@@ -359,6 +383,22 @@ ALTER TABLE ONLY notifications
 
 ALTER TABLE ONLY jobstates
     ADD CONSTRAINT status_job_fkey FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE;
+
+
+--
+-- Name: testsversions_test_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY testversions
+    ADD CONSTRAINT testsversions_test_id_fkey FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE;
+
+
+--
+-- Name: testsversions_version_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY testversions
+    ADD CONSTRAINT testsversions_version_id_fkey FOREIGN KEY (version_id) REFERENCES versions(id) ON DELETE CASCADE;
 
 
 --
