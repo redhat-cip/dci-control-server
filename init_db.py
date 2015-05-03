@@ -14,16 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from server.db.models import Environment
 from server.db.models import File
 from server.db.models import Job
 from server.db.models import Notification
-from server.db.models import Remoteci
+from server.db.models import RemoteCI
 from server.db.models import session
+from server.db.models import TestVersion
 
 
 session.query(Job).delete()
 session.query(File).delete()
-session.query(Environment).delete()
 session.query(Notification).delete()
-session.query(Remoteci).delete()
+session.query(RemoteCI).delete()
+session.query(TestVersion).delete()
