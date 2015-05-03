@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/bash
 
 set -eux
 
@@ -9,29 +9,33 @@ export DCI_CONTROL_SERVER
 
 #git push openshift master:master -f
 
-curl -H "Content-Type: application/json" -X POST -d '[{"name": "father", "url": "http://127.0.0.1/environments/env-product1-generic//"}]' $DCI_CONTROL_SERVER/environments
 
-environment_father_id=$(curl $DCI_CONTROL_SERVER/environments?where{"name":"father"}|jq '._items[0].id'|sed 's,",,g')
+# create a remote ci
+remoteci_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"name": "rhci"}]' ${DCI_CONTROL_SERVER}/remotecis |jq '.id'|sed 's,",,g')
 
-curl -H "Content-Type: application/json" -X POST -d '[{"name": "children", "url": "http://127.0.0.1/environments/env-product1-partner1/","environment_id":"'$environment_father_id'"}]' $DCI_CONTROL_SERVER/environments
+echo $remoteci_id
 
-environment_children_id=$(curl $DCI_CONTROL_SERVER/environments?where{"name":"father"}|jq '._items[0].id'|sed 's,",,g')
+# create a product
+product_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"name": "rhel-osp", "data": {}}]' ${DCI_CONTROL_SERVER}/products |jq '.id'|sed 's,",,g')
 
-curl -H "Content-Type: application/json" -X POST -d '[{"name": "boa-2"}]' $DCI_CONTROL_SERVER/remotecis
+echo $product_id
 
-curl $DCI_CONTROL_SERVER/remotecis?where{"name":"boa-2"}|jq '._items[0]'
+# create a version
+version_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"product_id": "'${product_id}'", "data": {}, "name": "version7"}]' ${DCI_CONTROL_SERVER}/versions |jq '.id'|sed 's,",,g')
 
-curl $DCI_CONTROL_SERVER/remotecis/boa-2|jq '.'
-#
+echo $version_id
 
-environment_id=$(curl $DCI_CONTROL_SERVER/environments?where{"name":"SPS-I.1.3-RH7.0-3nodes"}|jq '._items[0].id'|sed 's,",,g')
-echo $environment_id
+# create a test
+test_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"data": {}, "name":"tempest"}]' ${DCI_CONTROL_SERVER}/tests |jq '.id'|sed 's,",,g')
 
-curl -H "Content-Type: application/json" -X POST -d '[{"environment_id":"'$environment_father_id'","struct":{"type":"gerrit","server":"softwarefactory.enovance.com","account":"goneri","gitsha1":"c5855449a73b423643571a1d77f017983909495d","port":29418}}]' $DCI_CONTROL_SERVER/notifications
+echo $test_id
 
-curl -H "Content-Type: application/json" -X POST -d '[{"environment_id":"'$environment_children_id'","struct":{"type":"gerrit","server":"softwarefactory.enovance.com","account":"goneri","gitsha1":"c5855449a73b423643571a1d77f017983909495d","port":29418}}]' $DCI_CONTROL_SERVER/notifications
 
-remoteci_id=$(curl "$DCI_CONTROL_SERVER/remotecis?where{\"name\":\"boa-2\"}"|jq '._items[0].id'|sed 's,",,g')
+# associate a test to a version
+test_version_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"test_id": "'${test_id}'", "version_id": "'${version_id}'"}]' ${DCI_CONTROL_SERVER}/testversions |jq '.id'|sed 's,",,g')
 
-client/dci_client.py auto $remoteci_id
-client/dci_client.py auto $remoteci_id
+# get a job
+
+job=$(curl http://127.0.0.1:5000/jobs/get_job_by_remoteci/${remoteci_id})
+
+echo ${job}
