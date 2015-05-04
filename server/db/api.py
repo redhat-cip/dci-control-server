@@ -20,7 +20,7 @@ from server.db.models import engine
 from server.db.models import Job
 from server.db.models import Jobstate
 from server.db.models import Product
-from server.db.models import RemoteCI
+from server.db.models import Remoteci
 from server.db.models import Version
 from server.db.models import session
 
@@ -48,7 +48,7 @@ LIMIT 1""")
     r = engine.execute(s, remoteci_id=remoteci_id)
     record = r.fetchone()
     version = session.query(Version).get(str(record[0]))
-    remoteci = session.query(RemoteCI).get(remoteci_id)
+    remoteci = session.query(Remoteci).get(remoteci_id)
     job = Job(
         version_id=version.id,
         remoteci_id=remoteci.id)
