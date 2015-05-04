@@ -16,8 +16,8 @@
 # under the License.
 
 import argparse
-import glob
 import os
+import time
 import shutil
 import stat
 import subprocess
@@ -25,6 +25,7 @@ import tempfile
 
 import prettytable
 import requests
+import six
 
 
 _DCI_CONTROL_SERVER = os.environ.get("DCI_CONTROL_SERVER",
@@ -71,6 +72,7 @@ def _init_conf():
     return parser.parse_args()
 
 
+# NOTE(Gonéri): Note used anymore
 def _exec_shell_script(content):
     """Execute the shell script from a string.
     :param content: The script to execute.
@@ -84,6 +86,59 @@ def _exec_shell_script(content):
     shutil.rmtree(temp_dir_path)
 
     return ret
+
+
+def _call_command(args, job, cwd=None, env=None):
+    # TODO(Gonéri): Catch exception in subprocess.Popen
+    p = subprocess.Popen(args,
+                         stdout=subprocess.PIPE,
+                         stderr=subprocess.STDOUT,
+                         cwd=cwd,
+                         env=env)
+    state = {"job_id": job["job_id"],
+             "status": "ongoing",
+             "comment": "calling: " + " ".join(args)}
+    jobstate = requests.post("%s/jobstates" %
+                             _DCI_CONTROL_SERVER,
+                             data=state).json()
+
+    f = tempfile.TemporaryFile()
+    while p.returncode is None:
+        # TODO(Gonéri): print on STDOUT p.stdout
+        time.sleep(0.5)
+        for c in p.stdout:
+            print(c.decode("UTF-8"))
+            f.write(c)
+        p.poll()
+
+    f.seek(0)
+    output = ""
+    for l in f:
+        output += l.decode("UTF-8")
+    logs_data = {"name": 'ksgen_log',
+                 "content": output,
+                 "mime": "text/plain",
+                 "jobstate_id": jobstate["id"]}
+    logs = requests.post("%s/files" % _DCI_CONTROL_SERVER,
+                         data=logs_data).json()
+    print("[*] logs created: %s" % logs["id"])
+
+    try:
+        if p.returncode != 0:
+            state = {
+                "job_id": job["job_id"],
+                "status": "failure",
+                "comment": "call failed w/ code %s" % p.returncode}
+            raise RuntimeError
+        else:
+            state = {
+                "job_id": job["job_id"],
+                "status": "ongoing",
+                "comment": "call successed w/ code %s" % p.returncode}
+    finally:
+        jobstate = requests.post("%s/jobstates" %
+                                 _DCI_CONTROL_SERVER,
+                                 data={}).json()
 
 
 def main():
@@ -146,52 +201,45 @@ def main():
         print("RemoteCI '%s' created successfully." % conf.name)
     elif conf.command == 'auto':
         # 1. Get a job
-        job = requests.get("%s/jobs/get_job_by_remoteci/%s" %
-                           (_DCI_CONTROL_SERVER, conf.remoteci)).json()
-        print("Testing environment: %s" % job['environment_id'])
+        job = requests.get(
+            "%s/jobs/get_job_by_remoteci/%s" %
+            (_DCI_CONTROL_SERVER, conf.remoteci)).json()
 
-        # 2. Execute the job
-        # 2.1. create temporary shell script and execute it
-        for environment_url in job["url"]:
-            subprocess.call(["wget", "--recursive", "--continue", "--no-parent",
-                             "--directory-prefix=environment", "-nH",
-                             "--mirror", "--cut-dirs=2", "--quiet",
-                             "--no-verbose",
-                             "-e", "robots=off", "--reject", "index.html*",
-#                            "--show-progress",
-                             environment_url])
+        structure_from_server = job['data']
 
-        status = "ongoing"
-        scripts = glob.glob('environment/configure.d/*.sh')
-        scripts += glob.glob('environment/test.d/*.sh')
-        for script in scripts:
-            print("script: %s" % script)
-            try:
-                # TODO(Gonéri): we need a timeout
-                output = subprocess.check_output(
-                    ["/bin/bash", script], stderr=subprocess.STDOUT)
-            except subprocess.CalledProcessError:
-                status = "failure"
+        # TODO(Gonéri): Create a log_config() method or something similar
+        import yaml
+        settings = yaml.load(open('local_settings.yml', 'r'))
 
-            # 3. Report status
-            state = {"job_id": job["job_id"],
-                     "status": status,
-                     "comment": "no comments"}
-            jobstate = requests.post("%s/jobstates" % _DCI_CONTROL_SERVER,
-                                     data=state).json()
-            print("[*] jobstate created: %s" % jobstate["id"])
+        for k, v in six.iteritems(structure_from_server['ksgen_args']):
+            settings['ksgen_args'][k] = v.replace(
+                '%%KHALEESI_SETTINGS%%',
+                settings['location']['khaleesi_settings'])
+        args = [settings['location'].get('python_bin', 'python'),
+                './tools/ksgen/ksgen/core.py',
+                '--config-dir=%s/settings' % (
+                    settings['location']['khaleesi_settings']),
+                'generate']
+        for k, v in six.iteritems(settings['ksgen_args']):
+            args.append('--%s=%s' % (k, v))
+        ksgen_settings_file = tempfile.NamedTemporaryFile()
+        args.append(ksgen_settings_file.name)
+        environ = os.environ
+        environ['PYTHONPATH'] = './tools/ksgen'
 
-            logs_data = {"name": script + '_log',
-                         "content": output,
-                         "mime": "text/plain",
-                         "jobstate_id": jobstate["id"]}
-            logs = requests.post("%s/files" % _DCI_CONTROL_SERVER,
-                                 data=logs_data).json()
+        _call_command(args,
+                      job,
+                      cwd=settings['location']['khaleesi'],
+                      env=environ)
 
-            print("[*] logs created: %s" % logs["id"])
-            if status == "failure":
-                break
+        args = [
+            './run.sh', '-vv', '--use',
+            ksgen_settings_file.name,
+            'playbooks/packstack.yml']
 
+        _call_command(args,
+                      job,
+                      cwd=settings['location']['khaleesi'])
         state = {"job_id": job["job_id"],
                  "status": "success",
                  "comment": "no comments"}
