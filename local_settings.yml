@@ -1,0 +1,9 @@
+---
+ksgen_args:
+  provisioner-site: enocloud-ca
+  provisioner-site-user: goneri
+  extra-vars: provisioner.key_file=/home/goneri/.ssh/id_rsa
+location:
+  khaleesi: /home/goneri/enovance/khaleesi
+  khaleesi_settings: /home/goneri/enovance/khaleesi-settings
+  python_bin: /home/goneri/venv/py27/bin/python
