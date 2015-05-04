@@ -1,0 +1,9 @@
+---
+ksgen_args:
+  provisioner-site: openstack
+  provisioner-site-user: user
+  extra-vars: provisioner.key_file=/home/user/.ssh/id_rsa
+location:
+  khaleesi: /opt/khaleesi
+  khaleesi_settings: /opt/khaleesi-settings
+  python_bin: /opt/venv/py27/bin/python
