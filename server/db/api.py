@@ -60,4 +60,6 @@ LIMIT 1""")
     )
     session.commit()
 
-    return {'job_id': job.id}
+    data = job.testversion.version.data
+    data.update(job.testversion.test.data)
+    return {'job_id': job.id, 'data': data}
