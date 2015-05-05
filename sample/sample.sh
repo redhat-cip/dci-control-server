@@ -16,17 +16,17 @@ remoteci_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"name": "rh
 echo $remoteci_id
 
 # create a product
-product_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"name": "rhel-osp", "data": {}}]' ${DCI_CONTROL_SERVER}/products |jq '.id'|sed 's,",,g')
+product_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"name": "packstack-rdo", "data": {"ksgen_args": {"rules-file": "%%KHALEESI_SETTINGS%%/rules/packstack-rdo-aio.yml"}}}]' ${DCI_CONTROL_SERVER}/products |jq '.id'|sed 's,",,g')
 
 echo $product_id
 
 # create a version
-version_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"product_id": "'${product_id}'", "data": {"repository": {"url": "http://trunk-mgt.rdoproject.org/repos//69/78/69782ff2f7015c5c5122cdde22291075abb72d32_1b8315e1/"}}, "name": "version7"}]' ${DCI_CONTROL_SERVER}/versions |jq '.id'|sed 's,",,g')
+version_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"product_id": "'${product_id}'", "data": {"ksgen_args": {"product-version-build": "latest"}}, "name": "lastest"}]' ${DCI_CONTROL_SERVER}/versions |jq '.id'|sed 's,",,g')
 
 echo $version_id
 
 # create a test
-test_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"data": {"ksgen_args": {"product-version-build": "latest", "provisioner-options": "execute_provision", "rules-file": "%%KHALEESI_SETTINGS%%/rules/packstack-rdo-aio.yml", "product-version-workaround": "centos-7.0", "provisioner": "openstack", "distro": "centos-7.0", "tester": "tempest", "installer-network-variant": "ml2-vxlan", "product-version": "kilo", "tester-setup": "rpm", "installer-network": "neutron", "tester-tests": "all", "product-version-repo": "delorean", "workarounds": "enabled"}}, "name":"tempest"}]' ${DCI_CONTROL_SERVER}/tests |jq '.id'|sed 's,",,g')
+test_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"data": {"ksgen_args": {"provisioner-options": "execute_provision", "product-version-workaround": "centos-7.0", "provisioner": "openstack", "distro": "centos-7.0", "tester": "tempest", "installer-network-variant": "ml2-vxlan", "product-version": "kilo", "tester-setup": "rpm", "installer-network": "neutron", "tester-tests": "all", "product-version-repo": "delorean", "workarounds": "enabled"}}, "name":"centos-7.0"}]' ${DCI_CONTROL_SERVER}/tests |jq '.id'|sed 's,",,g')
 
 echo $test_id
 

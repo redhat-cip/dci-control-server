@@ -14,7 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import copy
+
 from sqlalchemy.sql import text
+import six
 
 from server.db.models import engine
 from server.db.models import Job
@@ -24,6 +27,21 @@ from server.db.models import Remoteci
 from server.db.models import Version
 from server.db.models import session
 from server.db.models import TestVersion
+
+
+def dict_merge(a, b):
+    '''recursively merges dict's. not just simple a['key'] = b['key'], if
+    both a and bhave a key who's value is a dict then dict_merge is called
+    on both values and the result stored in the returned dictionary.'''
+    if not isinstance(b, dict):
+        return b
+    result = copy.deepcopy(a)
+    for k, v in six.iteritems(b):
+        if k in result and isinstance(result[k], dict):
+                result[k] = dict_merge(result[k], v)
+        else:
+            result[k] = copy.deepcopy(v)
+    return result
 
 
 def get_job_by_remoteci(remoteci_id):
@@ -60,6 +78,11 @@ LIMIT 1""")
     )
     session.commit()
 
-    data = job.testversion.version.data
-    data.update(job.testversion.test.data)
+    data = {}
+    my_datas = (
+        job.testversion.version.product.data,
+        job.testversion.version.data,
+        job.testversion.test.data)
+    for my_data in my_datas:
+        data = dict_merge(data, my_data)
     return {'job_id': job.id, 'data': data}
