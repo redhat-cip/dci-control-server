@@ -233,7 +233,7 @@ def main():
                       env=environ)
 
         args = [
-            './run.sh', '-vv', '--use',
+            './run.sh', '-vvvv', '--use',
             ksgen_settings_file.name,
             'playbooks/packstack.yml']
 
