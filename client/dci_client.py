@@ -205,6 +205,10 @@ def main():
             "%s/jobs/get_job_by_remoteci/%s" %
             (_DCI_CONTROL_SERVER, conf.remoteci)).json()
 
+        if 'data' not in job:
+            print("No job to processed")
+            return
+
         structure_from_server = job['data']
 
         # TODO(Gonéri): Create a log_config() method or something similar
