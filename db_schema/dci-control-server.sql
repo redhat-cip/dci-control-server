@@ -257,6 +257,14 @@ ALTER TABLE ONLY products
 
 
 --
+-- Name: remotecis_name_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY remotecis
+    ADD CONSTRAINT remotecis_name_key UNIQUE (name);
+
+
+--
 -- Name: remotecis_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
