@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba8cc1f7_60ffb202",
+        "filename": "client/dci_client.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 211,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-05-06T15:32:20Z",
+      "side": 1,
+      "message": "the key \u0027data\u0027 is always in job, see http://softwarefactory.enovance.com/r/#/c/733/6/server/db/api.py   L65\n\ns/\u0027data\u0027 not in job:/not job[\u0027data]:/",
+      "revId": "827fb455204907d189808718127ec47e615c122d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
