@@ -5,3 +5,5 @@ PrettyTable
 six
 sqlalchemy
 sqlalchemy-utils
+requests
+PyYAML
