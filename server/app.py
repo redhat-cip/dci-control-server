@@ -20,8 +20,8 @@ from pprint import pprint
 
 import server.db.api as api
 from server.db.models import Base
-from server.db.models import Job
 from server.db.models import engine
+from server.db.models import Job
 from server.db.models import Notification
 from server.db.models import session
 

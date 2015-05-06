@@ -18,11 +18,11 @@
 import argparse
 import glob
 import os
-import time
 import shutil
 import stat
 import subprocess
 import tempfile
+import time
 
 import prettytable
 import requests
