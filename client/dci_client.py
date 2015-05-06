@@ -15,6 +15,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+# NOTE(Gonéri): to be able to mock print with Py27
+from __future__ import print_function
+
 import argparse
 import glob
 import os
@@ -32,7 +35,7 @@ _DCI_CONTROL_SERVER = os.environ.get("DCI_CONTROL_SERVER",
                                      "http://127.0.0.1:5000")
 
 
-def _init_conf():
+def _init_conf(args=None):
     parser = argparse.ArgumentParser(description='DCI client.')
     command_subparser = parser.add_subparsers(help='commands',
                                               dest='command')
@@ -69,7 +72,8 @@ def _init_conf():
     auto_parser.add_argument('remoteci', action='store',
                              help='Id of the remoteci')
 
-    return parser.parse_args()
+    print("args: %s" % args)
+    return parser.parse_args(args)
 
 
 def _upload_file(fd, jobstate, mime='text/plain', name=None):
@@ -129,8 +133,8 @@ def _call_command(args, job, cwd=None, env=None):
     return jobstate
 
 
-def main():
-    conf = _init_conf()
+def main(args=None):
+    conf = _init_conf(args)
 
     if conf.command == 'list':
         if conf.remotecis:
