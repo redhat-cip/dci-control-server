@@ -16,15 +16,13 @@
 
 import copy
 
-from sqlalchemy.sql import text
 import six
+from sqlalchemy.sql import text
 
 from server.db.models import engine
 from server.db.models import Job
 from server.db.models import Jobstate
-from server.db.models import Product
 from server.db.models import Remoteci
-from server.db.models import Version
 from server.db.models import session
 from server.db.models import TestVersion
 
@@ -32,7 +30,8 @@ from server.db.models import TestVersion
 def dict_merge(a, b):
     '''recursively merges dict's. not just simple a['key'] = b['key'], if
     both a and bhave a key who's value is a dict then dict_merge is called
-    on both values and the result stored in the returned dictionary.'''
+    on both values and the result stored in the returned dictionary.
+    '''
     if not isinstance(b, dict):
         return b
     result = copy.deepcopy(a)
@@ -46,7 +45,8 @@ def dict_merge(a, b):
 
 def get_job_by_remoteci(remoteci_id):
     """Return a job id which reference a testversion that has not been
-    associated to this remote CI."""
+    associated to this remote CI.
+    """
     query = text(
         """
 SELECT
