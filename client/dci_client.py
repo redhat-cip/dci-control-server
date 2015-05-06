@@ -16,6 +16,7 @@
 # under the License.
 
 import argparse
+import glob
 import os
 import time
 import shutil
@@ -88,6 +89,19 @@ def _exec_shell_script(content):
     return ret
 
 
+def _upload_file(fd, jobstate, mime='text/plain', name=None):
+    fd.seek(0)
+    output = ""
+    for l in fd:
+        output += l.decode("UTF-8")
+    logs_data = {"name": name,
+                 "content": output,
+                 "mime": mime,
+                 "jobstate_id": jobstate["id"]}
+    return requests.post("%s/files" % _DCI_CONTROL_SERVER,
+                         data=logs_data).json()
+
+
 def _call_command(args, job, cwd=None, env=None):
     # TODO(Gonéri): Catch exception in subprocess.Popen
     p = subprocess.Popen(args,
@@ -111,17 +125,7 @@ def _call_command(args, job, cwd=None, env=None):
             f.write(c)
         p.poll()
 
-    f.seek(0)
-    output = ""
-    for l in f:
-        output += l.decode("UTF-8")
-    logs_data = {"name": 'ksgen_log',
-                 "content": output,
-                 "mime": "text/plain",
-                 "jobstate_id": jobstate["id"]}
-    logs = requests.post("%s/files" % _DCI_CONTROL_SERVER,
-                         data=logs_data).json()
-    print("[*] logs created: %s" % logs["id"])
+    _upload_file(f, jobstate, name='ksgen_log')
 
     try:
         if p.returncode != 0:
@@ -139,6 +143,7 @@ def _call_command(args, job, cwd=None, env=None):
         jobstate = requests.post("%s/jobstates" %
                                  _DCI_CONTROL_SERVER,
                                  data=state).json()
+    return jobstate
 
 
 def main():
@@ -231,6 +236,10 @@ def main():
         environ = os.environ
         environ['PYTHONPATH'] = './tools/ksgen'
 
+        collected_files_path = ("%s/collected_files" %
+                                settings['location']['khaleesi'])
+        if os.path.exists(collected_files_path):
+            shutil.rmtree(collected_files_path)
         _call_command(args,
                       job,
                       cwd=settings['location']['khaleesi'],
@@ -240,15 +249,19 @@ def main():
             './run.sh', '-vvvv', '--use',
             ksgen_settings_file.name,
             'playbooks/packstack.yml']
-
         _call_command(args,
                       job,
                       cwd=settings['location']['khaleesi'])
+        for log in glob.glob(collected_files_path + '/*'):
+            with open(log) as f:
+                _upload_file(f, jobstate)
+
         state = {"job_id": job["job_id"],
                  "status": "success",
                  "comment": "no comments"}
         jobstate = requests.post("%s/jobstates" % _DCI_CONTROL_SERVER,
                                  data=state).json()
+
     elif conf.command == 'get':
         job = requests.get("%s/jobs/get_job_by_remoteci/%s" %
                            (_DCI_CONTROL_SERVER, conf.remoteci)).json()
