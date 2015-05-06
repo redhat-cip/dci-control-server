@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da87b5cf_21444e73",
+        "filename": "client/dci_client.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-05-06T11:47:38Z",
+      "side": 1,
+      "message": "Dead code should be removed.",
+      "revId": "b92af28dc756a8a02cbbdf7b3281642dfacd6b10",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da87b5cf_4149528a",
+        "filename": "local_settings.yml",
+        "patchSetId": 4
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-05-06T11:47:38Z",
+      "side": 1,
+      "message": "you can rename local_setting.yml to local_settings.yml.sample  and then\nreplace your user values by someting generic like \u003csite-user\u003e etc...",
+      "revId": "b92af28dc756a8a02cbbdf7b3281642dfacd6b10",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
