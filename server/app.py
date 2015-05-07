@@ -30,8 +30,27 @@ from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 from flask import jsonify
 
+import bcrypt
+from eve.auth import BasicAuth
 
-app = Eve(validator=ValidatorSQL, data=SQL)
+
+class adminOnlyCrypt(BasicAuth):
+    def check_auth(self, name, password, allowed_roles, resource, method):
+        # use Eve's own db driver; no additional connections/resources are used
+        User = Base.classes.users
+        user = session.query(User).filter_by(name=name).one()
+        roles = set([ur.role.name for ur in user.user_roles])
+        if not user:
+            return False
+        if bcrypt.hashpw(password, user.password) != user.password:
+            return False
+        if allowed_roles:
+            if not roles & set(allowed_roles):
+                return False
+        return True
+
+
+app = Eve(validator=ValidatorSQL, data=SQL, auth=adminOnlyCrypt)
 db = app.data.driver
 Base.metadata.bind = engine
 db.Model = Base
@@ -40,6 +59,7 @@ db.Model = Base
 def site_map():
     for rule in app.url_map.iter_rules():
         pprint(rule)
+
 
 site_map()
 
