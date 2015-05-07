@@ -249,8 +249,8 @@ def main(args=None):
         job = requests.get("%s/jobs/get_job_by_remoteci/%s" %
                            (_DCI_CONTROL_SERVER, conf.remoteci)).json()
 
-        table_result = prettytable.PrettyTable(["job", "environment"])
-        table_result.add_row([job["job_id"], job["url"]])
+        table_result = prettytable.PrettyTable(["job", "data"])
+        table_result.add_row([job["job_id"], job["data"]])
         print(table_result)
 
 if __name__ == '__main__':
