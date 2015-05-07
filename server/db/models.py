@@ -22,7 +22,7 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Session
-
+from sqlalchemy.engine import reflection
 # TODO(Gonéri): Load the value for a configuration file
 engine = create_engine(os.environ.get(
     'OPENSHIFT_POSTGRESQL_DB_URL',
@@ -44,11 +44,14 @@ Product = Base.classes.products
 Remoteci = Base.classes.remotecis
 Test = Base.classes.tests
 Jobstate = Base.classes.jobstates
-Version = Base.classes.versions
+Role = Base.classes.roles
 TestVersion = Base.classes.testversions
+User = Base.classes.users
+UserRoles = Base.classes.user_roles
+Version = Base.classes.versions
 session = Session(engine)
 
-# engine.echo = True
+engine.echo = True
 
 # NOTE(Gonéri): Create the foreign table attribue to be able to
 # do job.remoteci.name
@@ -62,6 +65,7 @@ for table in metadata.tables:
         foreign_table_object = getattr(Base.classes, foreign_table_name + 's')
         remote_side = None
         remote_side = [foreign_table_object.id]
+        print(" %s.%s" % (table, foreign_table_name))
         setattr(cur_db, foreign_table_name, relationship(
             foreign_table_object, uselist=False, remote_side=remote_side))
 
@@ -69,3 +73,11 @@ setattr(Product, 'versions', relationship(
     Version, uselist=True, lazy='dynamic'))
 setattr(Version, 'notifications', relationship(
     Notification, uselist=True, lazy='dynamic'))
+setattr(User, 'user_roles', relationship(
+    UserRoles, uselist=True, lazy='dynamic'))
+
+for user in session.query(User).all():
+    print(user.name)
+    for ur in user.user_roles:
+        print("  %s" % ur.role.name)
+    roles = [ur.role.name for ur in user.user_roles]

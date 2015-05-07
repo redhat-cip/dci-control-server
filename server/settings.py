@@ -52,6 +52,9 @@ for table in metadata.tables:
         'item_lookup_field': ID_FIELD,
         'resource_methods': ['GET', 'POST', 'DELETE'],
         'item_methods': ['PATCH', 'DELETE', 'PUT', 'GET'],
+        'public_methods': [],
+        'public_item_methods': [],
+        'allowed_roles': ['admin'],
     })
     DOMAIN[table]['schema']['created_at']['required'] = False
     DOMAIN[table]['schema']['updated_at']['required'] = False
