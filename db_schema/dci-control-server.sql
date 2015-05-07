@@ -210,6 +210,36 @@ CREATE TABLE testversions (
 SET default_with_oids = false;
 
 --
+-- Name: user_remotecis; Type: TABLE; Schema: public; Owner: -; Tablespace:
+--
+
+CREATE TABLE user_remotecis (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    user_id uuid NOT NULL,
+    remoteci_id uuid NOT NULL
+);
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: -; Tablespace:
+--
+
+CREATE TABLE users (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    is_admin boolean DEFAULT false,
+    name character varying(100),
+    login character varying(100) NOT NULL,
+    token character varying(32) DEFAULT md5(((''::text || (now())::text) || (random())::text))
+);
+
+
+--
 -- Name: versions; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
@@ -294,6 +324,22 @@ ALTER TABLE ONLY tests
 
 ALTER TABLE ONLY testversions
     ADD CONSTRAINT testsversions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_remotecis_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY user_remotecis
+    ADD CONSTRAINT user_remotecis_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: users_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
 
 --
@@ -407,6 +453,22 @@ ALTER TABLE ONLY testversions
 
 ALTER TABLE ONLY testversions
     ADD CONSTRAINT testsversions_version_id_fkey FOREIGN KEY (version_id) REFERENCES versions(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_remotecis_remoteci_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY user_remotecis
+    ADD CONSTRAINT user_remotecis_remoteci_id_fkey FOREIGN KEY (remoteci_id) REFERENCES remotecis(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_remotecis_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY user_remotecis
+    ADD CONSTRAINT user_remotecis_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
 
 --
