@@ -74,20 +74,20 @@ def post_jobstates_callback(request, payload):
     for notification in job.version.notifications.filter(
             Notification.sent == False):  # NOQA
         if notification.struct['type'] == 'stdout':
-            print("Environment %s has been built on %s with status %s" %
-                  (job.environment.name,
+            print("job %s has been built on %s with status %s" %
+                  (job.id,
                    job.remoteci.name,
                    status))
         elif notification.struct['type'] == 'gerrit':
             print("Sending notification to Gerrit")
             if status == 'success':
                 score = "+1"
-                message = "Distributed CI job has failed on environment %s" % (
-                    job.environment.name)
+                message = "Distributed CI job has failed on  %s" % (
+                    job.remoteci.name)
             else:
                 score = "-1"
-                message = "Distributed CI job has succeed on environment %s" % (
-                    job.environment.name)
+                message = "Distributed CI job has succeed on remoteci %s" % (
+                    job.remoteci.name)
             ssh_key = get_ssh_key_location()
             import subprocess  # TODO(Gonéri)
             subprocess.call(['ssh', '-i', ssh_key,
