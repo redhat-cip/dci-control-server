@@ -74,8 +74,8 @@ def post_jobstates_callback(request, payload):
     for notification in job.testversion.version.notifications.filter(
             Notification.sent == False):  # NOQA
         if notification.struct['type'] == 'stdout':
-            print("Environment %s has been built on %s with status %s" %
-                  (job.environment.name,
+            print("job %s has been built on %s with status %s" %
+                  (job.id,
                    job.remoteci.name,
                    status))
         elif notification.struct['type'] == 'gerrit':
