@@ -22,7 +22,7 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Session
-
+from sqlalchemy.engine import reflection
 # TODO(Gonéri): Load the value for a configuration file
 engine = create_engine(os.environ.get(
     'OPENSHIFT_POSTGRESQL_DB_URL',
@@ -44,8 +44,11 @@ Product = Base.classes.products
 Remoteci = Base.classes.remotecis
 Test = Base.classes.tests
 Jobstate = Base.classes.jobstates
-Version = Base.classes.versions
+Role = Base.classes.roles
 TestVersion = Base.classes.testversions
+User = Base.classes.users
+UserRoles = Base.classes.user_roles
+Version = Base.classes.versions
 session = Session(engine)
 
 # engine.echo = True
@@ -69,3 +72,5 @@ setattr(Product, 'versions', relationship(
     Version, uselist=True, lazy='dynamic'))
 setattr(Version, 'notifications', relationship(
     Notification, uselist=True, lazy='dynamic'))
+setattr(User, 'user_roles', relationship(
+    UserRoles, uselist=True, lazy='dynamic'))
