@@ -44,8 +44,11 @@ Product = Base.classes.products
 Remoteci = Base.classes.remotecis
 Test = Base.classes.tests
 Jobstate = Base.classes.jobstates
-Version = Base.classes.versions
+Role = Base.classes.roles
 TestVersion = Base.classes.testversions
+User = Base.classes.users
+UserRoles = Base.classes.user_roles
+Version = Base.classes.versions
 session = Session(engine)
 
 # engine.echo = True
@@ -69,3 +72,5 @@ setattr(Product, 'versions', relationship(
     Version, uselist=True, lazy='dynamic'))
 setattr(Version, 'notifications', relationship(
     Notification, uselist=True, lazy='dynamic'))
+setattr(User, 'user_roles', relationship(
+    UserRoles, uselist=True, lazy='dynamic'))
