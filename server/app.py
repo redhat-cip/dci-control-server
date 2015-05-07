@@ -24,14 +24,69 @@ from server.db.models import engine
 from server.db.models import Job
 from server.db.models import Notification
 from server.db.models import session
+from server.db.models import User
 
 from eve import Eve
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 from flask import jsonify
+from flask import abort
+from flask import request
+import sqlalchemy.orm.exc
+
+# WARNING(Gonéri): both python-bcrypt and bcrypt provide a bcrypt package
+import bcrypt
+from eve.auth import BasicAuth
 
 
-app = Eve(validator=ValidatorSQL, data=SQL)
+class adminOnlyCrypt(BasicAuth):
+    def check_auth(self, name, password, allowed_roles, resource, method):
+        try:
+            user = session.query(User).filter_by(name=name).one()
+        except sqlalchemy.orm.exc.NoResultFound:
+            return False
+
+        if bcrypt.hashpw(
+                password.encode('utf-8'),
+                user.password.encode('utf-8')
+        ) == user.password.encode('utf-8'):
+            return True
+        return False
+
+    def authorized(self, allowed_roles, resource, method):
+        auth = request.authorization
+        if not hasattr(auth, 'username') or not hasattr(auth, 'password'):
+            abort(401, description='Unauthorized: username required')
+        if not self.check_auth(auth.username, auth.password, None,
+                               resource, method):
+            abort(401, description='Unauthorized')
+
+        user = session.query(User).filter_by(name=auth.username).one()
+        roles = set([ur.role.name for ur in user.user_roles])
+
+        if 'admin' in roles:
+            return True
+
+        # NOTE(Gonéri): We may find useful to store this matrice directly in
+        # the role entrt in the DB
+        acl = {
+            'partner': {
+                'remotecis': ['GET'],
+                'jobs': ['GET'],
+                'jobstates': ['GET', 'POST']
+            }
+        }
+
+        for role in roles:
+            try:
+                if method in acl[role][resource]:
+                    return True
+            except KeyError:
+                pass
+        abort(403, description='Forbidden')
+
+
+app = Eve(validator=ValidatorSQL, data=SQL, auth=adminOnlyCrypt)
 db = app.data.driver
 Base.metadata.bind = engine
 db.Model = Base
@@ -40,6 +95,7 @@ db.Model = Base
 def site_map():
     for rule in app.url_map.iter_rules():
         pprint(rule)
+
 
 site_map()
 

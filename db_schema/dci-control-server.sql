@@ -23,6 +23,20 @@ CREATE EXTENSION IF NOT EXISTS plpgsql WITH SCHEMA pg_catalog;
 COMMENT ON EXTENSION plpgsql IS 'PL/pgSQL procedural language';
 
 
+--
+-- Name: pgcrypto; Type: EXTENSION; Schema: -; Owner: -
+--
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto WITH SCHEMA public;
+
+
+--
+-- Name: EXTENSION pgcrypto; Type: COMMENT; Schema: -; Owner: -
+--
+
+COMMENT ON EXTENSION pgcrypto IS 'cryptographic functions';
+
+
 SET search_path = public, pg_catalog;
 
 --
@@ -178,6 +192,19 @@ CREATE TABLE remotecis (
 
 
 --
+-- Name: roles; Type: TABLE; Schema: public; Owner: -; Tablespace:
+--
+
+CREATE TABLE roles (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    name character varying(100)
+);
+
+
+--
 -- Name: tests; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
@@ -208,6 +235,48 @@ CREATE TABLE testversions (
 
 
 SET default_with_oids = false;
+
+--
+-- Name: user_remotecis; Type: TABLE; Schema: public; Owner: -; Tablespace:
+--
+
+CREATE TABLE user_remotecis (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    user_id uuid NOT NULL,
+    remoteci_id uuid NOT NULL
+);
+
+
+--
+-- Name: user_roles; Type: TABLE; Schema: public; Owner: -; Tablespace:
+--
+
+CREATE TABLE user_roles (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    user_id uuid NOT NULL,
+    role_id uuid NOT NULL
+);
+
+
+--
+-- Name: users; Type: TABLE; Schema: public; Owner: -; Tablespace:
+--
+
+CREATE TABLE users (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    name character varying(100),
+    password text
+);
+
 
 --
 -- Name: versions; Type: TABLE; Schema: public; Owner: -; Tablespace:
@@ -273,6 +342,22 @@ ALTER TABLE ONLY remotecis
 
 
 --
+-- Name: roles_name_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY roles
+    ADD CONSTRAINT roles_name_key UNIQUE (name);
+
+
+--
+-- Name: roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY roles
+    ADD CONSTRAINT roles_pkey PRIMARY KEY (id);
+
+
+--
 -- Name: status_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
@@ -294,6 +379,46 @@ ALTER TABLE ONLY tests
 
 ALTER TABLE ONLY testversions
     ADD CONSTRAINT testsversions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_remotecis_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY user_remotecis
+    ADD CONSTRAINT user_remotecis_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_remotecis_user_id_remoteci_id_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY user_remotecis
+    ADD CONSTRAINT user_remotecis_user_id_remoteci_id_key UNIQUE (user_id, remoteci_id);
+
+
+--
+-- Name: user_roles_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY user_roles
+    ADD CONSTRAINT user_roles_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: user_roles_user_id_role_id_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY user_roles
+    ADD CONSTRAINT user_roles_user_id_role_id_key UNIQUE (user_id, role_id);
+
+
+--
+-- Name: users_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_pkey PRIMARY KEY (id);
 
 
 --
@@ -410,6 +535,38 @@ ALTER TABLE ONLY testversions
 
 
 --
+-- Name: user_remotecis_remoteci_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY user_remotecis
+    ADD CONSTRAINT user_remotecis_remoteci_id_fkey FOREIGN KEY (remoteci_id) REFERENCES remotecis(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_remotecis_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY user_remotecis
+    ADD CONSTRAINT user_remotecis_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_roles_role_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY user_roles
+    ADD CONSTRAINT user_roles_role_id_fkey FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE CASCADE;
+
+
+--
+-- Name: user_roles_user_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY user_roles
+    ADD CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+
+--
 -- Name: versions_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -431,3 +588,10 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 -- PostgreSQL database dump complete
 --
 
+INSERT INTO users (name, password) VALUES ('admin', crypt('admin', gen_salt('bf', 8)));
+INSERT INTO users (name, password) values ('partner', crypt('partner', gen_salt('bf', 8)));
+INSERT INTO roles (name) VALUES ('admin');
+INSERT INTO roles (name) VALUES ('partner');
+INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='admin'));
+INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='partner'));
+INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='partner'), (SELECT id from roles WHERE name='partner'));
