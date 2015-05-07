@@ -1,3 +1,4 @@
+bcrypt
 Eve-SQLAlchemy>=0.3.2
 # pbr==0.10
 -e git+https://github.com/openstack-dev/pbr#egg=pbr
