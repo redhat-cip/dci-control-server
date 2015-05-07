@@ -19,7 +19,6 @@ import argparse
 import glob
 import os
 import shutil
-import stat
 import subprocess
 import tempfile
 import time
@@ -71,22 +70,6 @@ def _init_conf():
                              help='Id of the remoteci')
 
     return parser.parse_args()
-
-
-# NOTE(Gonéri): Note used anymore
-def _exec_shell_script(content):
-    """Execute the shell script from a string.
-    :param content: The script to execute.
-    """
-    temp_dir_path = tempfile.mkdtemp()
-    with open("%s/job.sh" % temp_dir_path, "w") as f:
-        f.write(content)
-
-    os.chmod("%s/job.sh" % temp_dir_path, stat.S_IRWXU)
-    ret = subprocess.call(["%s/job.sh" % temp_dir_path])
-    shutil.rmtree(temp_dir_path)
-
-    return ret
 
 
 def _upload_file(fd, jobstate, mime='text/plain', name=None):
