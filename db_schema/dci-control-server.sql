@@ -245,7 +245,7 @@ ALTER TABLE ONLY jobs
 --
 
 ALTER TABLE ONLY notifications
-    ADD CONSTRAINT notifications_pkey PRIMARY KEY (id, created_at, updated_at, etag);
+    ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
 
 
 --
