@@ -248,16 +248,15 @@ def main():
         _call_command(args,
                       job,
                       cwd=settings['location']['khaleesi'])
-        for log in glob.glob(collected_files_path + '/*'):
-            with open(log) as f:
-                _upload_file(f, jobstate)
 
         state = {"job_id": job["job_id"],
                  "status": "success",
                  "comment": "no comments"}
         jobstate = requests.post("%s/jobstates" % _DCI_CONTROL_SERVER,
                                  data=state).json()
-
+        for log in glob.glob(collected_files_path + '/*'):
+            with open(log) as f:
+                _upload_file(f, jobstate)
     elif conf.command == 'get':
         job = requests.get("%s/jobs/get_job_by_remoteci/%s" %
                            (_DCI_CONTROL_SERVER, conf.remoteci)).json()
