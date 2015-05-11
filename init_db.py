@@ -17,7 +17,7 @@
 from server.db.models import File
 from server.db.models import Job
 from server.db.models import Notification
-from server.db.models import RemoteCI
+from server.db.models import Remoteci
 from server.db.models import session
 from server.db.models import TestVersion
 
@@ -25,5 +25,5 @@ from server.db.models import TestVersion
 session.query(Job).delete()
 session.query(File).delete()
 session.query(Notification).delete()
-session.query(RemoteCI).delete()
+session.query(Remoteci).delete()
 session.query(TestVersion).delete()
