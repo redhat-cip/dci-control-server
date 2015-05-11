@@ -201,16 +201,25 @@ def main():
         settings = yaml.load(open('local_settings.yml', 'r'))
 
         for k, v in six.iteritems(structure_from_server['ksgen_args']):
-            settings['ksgen_args'][k] = v.replace(
-                '%%KHALEESI_SETTINGS%%',
-                settings['location']['khaleesi_settings'])
+            if isinstance(v, dict):
+                settings['ksgen_args'][k] = v
+            else:
+                settings['ksgen_args'][k] = v.replace(
+                    '%%KHALEESI_SETTINGS%%',
+                    settings['location']['khaleesi_settings'])
         args = [settings['location'].get('python_bin', 'python'),
                 './tools/ksgen/ksgen/core.py',
                 '--config-dir=%s/settings' % (
                     settings['location']['khaleesi_settings']),
                 'generate']
         for k, v in six.iteritems(settings['ksgen_args']):
-            args.append('--%s=%s' % (k, v))
+            if isinstance(v, dict):
+                for sk, sv in six.iteritems(v):
+                    args.append('--%s' % (k))
+                    args.append('%s=%s' % (sk, sv))
+            else:
+                args.append('--%s' % (k))
+                args.append('%s' % (v))
         ksgen_settings_file = tempfile.NamedTemporaryFile()
         args.append(ksgen_settings_file.name)
         environ = os.environ
