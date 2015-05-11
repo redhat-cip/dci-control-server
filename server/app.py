@@ -82,12 +82,12 @@ def post_jobstates_callback(request, payload):
             print("Sending notification to Gerrit")
             if status == 'success':
                 score = "+1"
-                message = "Distributed CI job has failed on environment %s" % (
-                    job.environment.name)
+                message = ("Distributed CI job has failed ",
+                           "on environment %s" % job.environment.name)
             else:
                 score = "-1"
-                message = "Distributed CI job has succeed on environment %s" % (
-                    job.environment.name)
+                message = ("Distributed CI job has succeed ",
+                           "on environment %s" % job.environment.name)
             ssh_key = get_ssh_key_location()
             import subprocess  # TODO(Gonéri)
             subprocess.call(['ssh', '-i', ssh_key,
@@ -103,10 +103,11 @@ def post_jobstates_callback(request, payload):
                                  notification.struct['server']
                              ),
                              '-p', str(notification.struct['port']),
-                             'gerrit review --verified %s %s --message "%s"' % (
-                                 score,
-                                 notification.struct['gitsha1'],
-                                 message)])
+                             ('gerrit review --verified ',
+                              '%s %s --message "%s"' % (
+                                  score,
+                                  notification.struct['gitsha1'],
+                                  message))])
         notification.sent = True
         session.commit()
     print('A get on "jobevents" was just performed!')
