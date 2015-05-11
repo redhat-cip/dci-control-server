@@ -134,8 +134,9 @@ def main():
 
     if conf.command == 'list':
         if conf.remotecis:
-            table_result = prettytable.PrettyTable(["identifier", "name",
-                                                    "created_at", "updated_at"])
+            table_result = prettytable.PrettyTable([
+                "identifier", "name",
+                "created_at", "updated_at"])
             remotecis = requests.get("%s/remotecis" %
                                      _DCI_CONTROL_SERVER).json()
 
