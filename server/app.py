@@ -71,7 +71,7 @@ def post_jobstates_callback(request, payload):
         return
     job = session.query(Job).get(job_id)
     pprint(job.id)
-    for notification in job.version.notifications.filter(
+    for notification in job.testversion.version.notifications.filter(
             Notification.sent == False):  # NOQA
         if notification.struct['type'] == 'stdout':
             print("Environment %s has been built on %s with status %s" %
