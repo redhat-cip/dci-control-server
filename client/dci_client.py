@@ -110,22 +110,19 @@ def _call_command(args, job, cwd=None, env=None):
 
     _upload_file(f, jobstate, name='ksgen_log')
 
-    try:
-        if p.returncode != 0:
-            state = {
-                "job_id": job["job_id"],
-                "status": "failure",
-                "comment": "call failed w/ code %s" % p.returncode}
-            raise RuntimeError
-        else:
-            state = {
-                "job_id": job["job_id"],
-                "status": "ongoing",
-                "comment": "call successed w/ code %s" % p.returncode}
-    finally:
-        jobstate = requests.post("%s/jobstates" %
-                                 _DCI_CONTROL_SERVER,
-                                 data=state).json()
+    if p.returncode != 0:
+        state = {
+            "job_id": job["job_id"],
+            "status": "failure",
+            "comment": "call failed w/ code %s" % p.returncode}
+    else:
+        state = {
+            "job_id": job["job_id"],
+            "status": "ongoing",
+            "comment": "call successed w/ code %s" % p.returncode}
+    jobstate = requests.post("%s/jobstates" %
+                             _DCI_CONTROL_SERVER,
+                             data=state).json()
     return jobstate
 
 
@@ -238,16 +235,17 @@ def main():
             './run.sh', '-vvvv', '--use',
             ksgen_settings_file.name,
             'playbooks/packstack.yml']
-        _call_command(args,
-                      job,
-                      cwd=settings['location']['khaleesi'])
+        jobstate = _call_command(args,
+                                 job,
+                                 cwd=settings['location']['khaleesi'])
         for log in glob.glob(collected_files_path + '/*'):
             with open(log) as f:
                 _upload_file(f, jobstate)
 
+        final_status = 'success' if jobstate['_status'] == 'OK' else 'failure'
         state = {"job_id": job["job_id"],
-                 "status": "success",
-                 "comment": "no comments"}
+                 "status": final_status,
+                 "comment": "Job has been processed"}
         jobstate = requests.post("%s/jobstates" % _DCI_CONTROL_SERVER,
                                  data=state).json()
 
