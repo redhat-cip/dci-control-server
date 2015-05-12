@@ -17,16 +17,9 @@
 import copy
 
 import six
-from sqlalchemy.sql import text
-
-from server.db.models import engine
-from server.db.models import Job
-from server.db.models import Jobstate
-from server.db.models import Remoteci
-from server.db.models import session
-from server.db.models import TestVersion
 
 
+# TODO(Gonéri): move this method in a server.utils file
 def dict_merge(a, b):
     '''recursively merges dict's. not just simple a['key'] = b['key'], if
     both a and bhave a key who's value is a dict then dict_merge is called
@@ -41,48 +34,3 @@ def dict_merge(a, b):
         else:
             result[k] = copy.deepcopy(v)
     return result
-
-
-def get_job_by_remoteci(remoteci_id):
-    """Return a job id which reference a testversion that has not been
-    associated to this remote CI.
-    """
-    query = text(
-        """
-SELECT
-    testversions.id
-FROM
-    testversions
-WHERE testversions.id NOT IN (
-    SELECT
-        jobs.testversion_id
-    FROM jobs
-    WHERE jobs.remoteci_id=:remoteci_id
-)
-LIMIT 1""")
-
-    r = engine.execute(query, remoteci_id=remoteci_id)
-    record = r.fetchone()
-    if record is None:
-        return {}
-    test_version = session.query(TestVersion).get(str(record[0]))
-    remoteci = session.query(Remoteci).get(remoteci_id)
-    job = Job(
-        remoteci_id=remoteci.id,
-        testversion_id=test_version.id)
-    session.add(job)
-    session.commit()
-    session.refresh(job)
-    session.add(
-        Jobstate(job_id=job.id, status='new')
-    )
-    session.commit()
-
-    data = {}
-    my_datas = (
-        job.testversion.version.product.data,
-        job.testversion.version.data,
-        job.testversion.test.data)
-    for my_data in my_datas:
-        data = dict_merge(data, my_data)
-    return {'job_id': job.id, 'data': data}

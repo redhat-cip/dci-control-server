@@ -24,15 +24,16 @@ from server.db.models import engine
 from server.db.models import Job
 from server.db.models import Notification
 from server.db.models import session
+from server.db.models import TestVersion
 from server.db.models import User
 
 from eve import Eve
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
-from flask import jsonify
 from flask import abort
 from flask import request
 import sqlalchemy.orm.exc
+from sqlalchemy.sql import text
 
 # WARNING(Gonéri): both python-bcrypt and bcrypt provide a bcrypt package
 import bcrypt
@@ -95,14 +96,6 @@ db.Model = Base
 def site_map():
     for rule in app.url_map.iter_rules():
         pprint(rule)
-
-
-site_map()
-
-
-@app.route('/jobs/get_job_by_remoteci/<remoteci_id>')
-def get_job_by_remoteci(remoteci_id):
-    return jsonify(api.get_job_by_remoteci(remoteci_id))
 
 
 def get_ssh_key_location():
@@ -170,7 +163,47 @@ def post_jobstates_callback(request, payload):
     print('A get on "jobevents" was just performed!')
 
 
+def pick_jobs(documents):
+    query = text(
+        """
+SELECT
+    testversions.id
+FROM
+    testversions
+WHERE testversions.id NOT IN (
+    SELECT
+        jobs.testversion_id
+    FROM jobs
+    WHERE jobs.remoteci_id=:remoteci_id
+)
+LIMIT 1""")
+
+    for d in documents:
+        if 'testversion_id' in d:
+            continue
+        r = engine.execute(query, remoteci_id=d['remoteci_id']).fetchone()
+        if r is None:
+            abort(412, "No test to run left.")
+        testversion = session.query(TestVersion).get(str(r[0]))
+        d['testversion_id'] = testversion.id
+
+
+def aggregate_job_data(response):
+    data = {}
+    job = session.query(Job).get(response['id'])
+    my_datas = (
+        job.testversion.version.product.data,
+        job.testversion.version.data,
+        job.testversion.test.data)
+    for my_data in my_datas:
+        data = api.dict_merge(data, my_data)
+    response['data'] = data
+
+
+app.on_insert_jobs += pick_jobs
+app.on_fetched_item_jobs += aggregate_job_data
 app.on_post_POST_jobstates += post_jobstates_callback
 
 if __name__ == "__main__":
+    site_map()
     app.run(debug=True)
