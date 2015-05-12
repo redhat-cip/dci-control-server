@@ -19,6 +19,7 @@ In this example `mydomain` is your domain as returned by the `rhc domain list` c
       SSH to:     552643edfcf933d464000135@dcistable-mydomain.rhcloud.com
       Git remote: ssh://blablabla@dcistable-mydomain.rhcloud.com/~/git/dcistable.git/
       Cloned to:  /home/goneri/dcistable
+	$ rhc env set --app stable ADMIN_PASSWORD=admin
     $ git push ssh://blablabla@dcistable-mydomain.rhcloud.com/~/git/dcistable.git/ master:master -f
 
 Your website should be able on the http://dcistable-mydomain.rhcloud.com/ URL. If it's not the
