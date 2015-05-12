@@ -71,4 +71,8 @@ for table in metadata.tables:
 # SQLALCHEMY_ECHO = True
 # SQLALCHEMY_RECORD_QUERIES = True
 
+# NOTE(Gonéri): optional, if the key is missing, we dynamically pick
+# a testversion that fit.
+DOMAIN['jobs']['schema']['testversion_id']['required'] = False
+
 DEBUG = True
