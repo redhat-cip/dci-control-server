@@ -67,16 +67,11 @@ def _init_conf(args=None):
     auto_parser.add_argument('remoteci', action='store',
                              help='Id of the remoteci')
 
-    # get command
-    auto_parser = command_subparser.add_parser('get', help='Get a job.')
-    auto_parser.add_argument('remoteci', action='store',
-                             help='Id of the remoteci')
-
     print("args: %s" % args)
     return parser.parse_args(args)
 
 
-def _upload_file(fd, jobstate, mime='text/plain', name=None):
+def _upload_file(s, fd, jobstate, mime='text/plain', name=None):
     fd.seek(0)
     output = ""
     for l in fd:
@@ -85,23 +80,23 @@ def _upload_file(fd, jobstate, mime='text/plain', name=None):
                  "content": output,
                  "mime": mime,
                  "jobstate_id": jobstate["id"]}
-    return requests.post("%s/files" % _DCI_CONTROL_SERVER,
-                         data=logs_data).json()
+    return s.post("%s/files" % _DCI_CONTROL_SERVER,
+                  data=logs_data).json()
 
 
-def _call_command(args, job, cwd=None, env=None):
+def _call_command(s, args, job, cwd=None, env=None):
     # TODO(Gonéri): Catch exception in subprocess.Popen
     p = subprocess.Popen(args,
                          stdout=subprocess.PIPE,
                          stderr=subprocess.STDOUT,
                          cwd=cwd,
                          env=env)
-    state = {"job_id": job["job_id"],
+    state = {"job_id": job["id"],
              "status": "ongoing",
              "comment": "calling: " + " ".join(args)}
-    jobstate = requests.post("%s/jobstates" %
-                             _DCI_CONTROL_SERVER,
-                             data=state).json()
+    jobstate = s.post("%s/jobstates" %
+                      _DCI_CONTROL_SERVER,
+                      data=state).json()
 
     f = tempfile.TemporaryFile()
     while p.returncode is None:
@@ -112,34 +107,34 @@ def _call_command(args, job, cwd=None, env=None):
             f.write(c)
         p.poll()
 
-    _upload_file(f, jobstate, name='ksgen_log')
+    _upload_file(s, f, jobstate, name='ksgen_log')
 
     if p.returncode != 0:
         state = {
-            "job_id": job["job_id"],
+            "job_id": job["id"],
             "status": "failure",
             "comment": "call failed w/ code %s" % p.returncode}
     else:
         state = {
-            "job_id": job["job_id"],
+            "job_id": job["id"],
             "status": "ongoing",
             "comment": "call successed w/ code %s" % p.returncode}
-    jobstate = requests.post("%s/jobstates" %
-                             _DCI_CONTROL_SERVER,
-                             data=state).json()
+    jobstate = s.post("%s/jobstates" % _DCI_CONTROL_SERVER,
+                      data=state).json()
     return jobstate
 
 
 def main(args=None):
     conf = _init_conf(args)
+    s = requests.Session()
+    s.auth = ('partner', 'partner')
 
     if conf.command == 'list':
         if conf.remotecis:
             table_result = prettytable.PrettyTable([
                 "identifier", "name",
                 "created_at", "updated_at"])
-            remotecis = requests.get("%s/remotecis" %
-                                     _DCI_CONTROL_SERVER).json()
+            remotecis = s.get("%s/remotecis" % _DCI_CONTROL_SERVER).json()
 
             for remoteci in remotecis["_items"]:
                 table_result.add_row([remoteci["id"],
@@ -151,7 +146,7 @@ def main(args=None):
             table_result = prettytable.PrettyTable(["identifier",
                                                     "remoteci", "scenario",
                                                     "updated_at"])
-            jobs = requests.get("%s/jobs" % _DCI_CONTROL_SERVER).json()
+            jobs = s.get("%s/jobs" % _DCI_CONTROL_SERVER).json()
 
             for job in jobs["_items"]:
                 table_result.add_row([job["id"],
@@ -163,7 +158,7 @@ def main(args=None):
             table_result = prettytable.PrettyTable(["identifier", "status",
                                                     "comment", "job",
                                                     "updated_at"])
-            jobstates = requests.get(
+            jobstates = s.get(
                 "%s/jobstates" % _DCI_CONTROL_SERVER).json()
 
             for jobstate in jobstates["_items"]:
@@ -176,7 +171,7 @@ def main(args=None):
         elif conf.scenarios:
             table_result = prettytable.PrettyTable(["identifier", "name",
                                                     "updated_at"])
-            scenarios = requests.get(
+            scenarios = s.get(
                 "%s/scenarios" % _DCI_CONTROL_SERVER).json()
 
             for scenario in scenarios["_items"]:
@@ -186,18 +181,21 @@ def main(args=None):
             print(table_result)
     elif conf.command == 'register-remoteci':
         new_remoteci = {"name": conf.name}
-        requests.post("%s/remotecis" % _DCI_CONTROL_SERVER,
-                      data=new_remoteci).json()
+        s.post("%s/remotecis" % _DCI_CONTROL_SERVER,
+               data=new_remoteci).json()
         print("RemoteCI '%s' created successfully." % conf.name)
     elif conf.command == 'auto':
         # 1. Get a job
-        job = requests.get(
-            "%s/jobs/get_job_by_remoteci/%s" %
-            (_DCI_CONTROL_SERVER, conf.remoteci)).json()
-
+        ret = s.post("%s/jobs" % _DCI_CONTROL_SERVER,
+                     data={"remoteci_id": conf.remoteci})
+        if ret.status_code == 412:
+            print("Nothing to do...")
+            exit(0)
+        job_id = ret.json()['id']
+        job = s.get("%s/jobs/%s" % (_DCI_CONTROL_SERVER, job_id)).json()
         structure_from_server = job['data']
 
-        # TODO(Gonéri): Create a log_config() method or something similar
+        # TODO(Gonéri): Create a load_config() method or something similar
         import yaml
         settings = yaml.load(open('local_settings.yml', 'r'))
 
@@ -230,7 +228,8 @@ def main(args=None):
                                 settings['location']['khaleesi'])
         if os.path.exists(collected_files_path):
             shutil.rmtree(collected_files_path)
-        _call_command(args,
+        _call_command(s,
+                      args,
                       job,
                       cwd=settings['location']['khaleesi'],
                       env=environ)
@@ -239,27 +238,20 @@ def main(args=None):
             './run.sh', '-vvvv', '--use',
             ksgen_settings_file.name,
             'playbooks/packstack.yml']
-        jobstate = _call_command(args,
+        jobstate = _call_command(s,
+                                 args,
                                  job,
                                  cwd=settings['location']['khaleesi'])
         for log in glob.glob(collected_files_path + '/*'):
             with open(log) as f:
-                _upload_file(f, jobstate)
+                _upload_file(s, f, jobstate)
 
         final_status = 'success' if jobstate['_status'] == 'OK' else 'failure'
-        state = {"job_id": job["job_id"],
+        state = {"job_id": job["id"],
                  "status": final_status,
                  "comment": "Job has been processed"}
-        jobstate = requests.post("%s/jobstates" % _DCI_CONTROL_SERVER,
-                                 data=state).json()
-
-    elif conf.command == 'get':
-        job = requests.get("%s/jobs/get_job_by_remoteci/%s" %
-                           (_DCI_CONTROL_SERVER, conf.remoteci)).json()
-
-        table_result = prettytable.PrettyTable(["job", "data"])
-        table_result.add_row([job["job_id"], job["data"]])
-        print(table_result)
+        jobstate = s.post("%s/jobstates" % _DCI_CONTROL_SERVER,
+                          data=state).json()
 
 if __name__ == '__main__':
     main()
