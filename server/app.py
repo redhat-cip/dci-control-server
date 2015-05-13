@@ -30,6 +30,7 @@ from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 from flask import jsonify
 
+# WARNING(Gonéri): both python-bcrypt and bcrypt provide a bcrypt package
 import bcrypt
 from eve.auth import BasicAuth
 
@@ -42,7 +43,9 @@ class adminOnlyCrypt(BasicAuth):
         roles = set([ur.role.name for ur in user.user_roles])
         if not user:
             return False
-        if bcrypt.hashpw(password, user.password) != user.password:
+        if bcrypt.hashpw(
+                password.encode('utf-8'),
+                user.password.encode('utf-8')) != user.password:
             return False
         if allowed_roles:
             if not roles & set(allowed_roles):
