@@ -33,7 +33,9 @@ class TestClient(testtools.TestCase):
         response.json.return_value = {'_items': [
             {'id': 'id', 'name': 'name',
              'created_at': 'created_at', 'updated_at': 'updated_at'}]}
-        client.requests.get = mock.Mock(return_value=response)
+        session = mock.Mock()
+        session.get.return_value = response
+        client.requests.Session = mock.Mock(return_value=session)
         setattr(client, 'print', self._catch_print_call)
         client.main(args=['list', '--remotecis'])
         self.assertEqual([
@@ -50,7 +52,9 @@ class TestClient(testtools.TestCase):
         response.json.return_value = {'_items': [
             {'id': 'id', 'name': 'name',
              'created_at': 'created_at', 'updated_at': 'updated_at'}]}
-        client.requests.post = mock.Mock(return_value=response)
+        session = mock.Mock()
+        session.get.return_value = response
+        client.requests.Session = mock.Mock(return_value=session)
         setattr(client, 'print', self._catch_print_call)
         client.main(args=['register-remoteci', '--name', 'bob'])
         self.assertEqual([
@@ -65,8 +69,10 @@ class TestClient(testtools.TestCase):
             'data': {'ksgen_args': {}},
             '_status': 'OK'
         }
-        client.requests.get = mock.Mock(return_value=response)
-        client.requests.post = mock.Mock(return_value=response)
+        session = mock.Mock()
+        session.post.return_value = response
+        session.get.return_value = response
+        client.requests.Session = mock.Mock(return_value=session)
         popenobj = mock.Mock()
         popenobj.returncode = 0
         client.subprocess = mock.Mock()
