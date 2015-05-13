@@ -1,5 +1,5 @@
 Eve-SQLAlchemy>=0.3.2
-pbr
+pbr==0.10
 PrettyTable
 six
 sqlalchemy
