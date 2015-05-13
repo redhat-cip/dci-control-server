@@ -29,6 +29,7 @@ from eve import Eve
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 from flask import jsonify
+import six
 
 import bcrypt
 from eve.auth import BasicAuth
@@ -42,7 +43,8 @@ class adminOnlyCrypt(BasicAuth):
         roles = set([ur.role.name for ur in user.user_roles])
         if not user:
             return False
-        if bcrypt.hashpw(password, user.password) != user.password:
+        if bcrypt.hashpw(six.b(password),
+                         six.b(user.password)) != six.b(user.password):
             return False
         if allowed_roles:
             if not roles & set(allowed_roles):
