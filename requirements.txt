@@ -1,6 +1,6 @@
 -e git://github.com/goneri/eve-sqlalchemy.git#egg=Eve-SQLAlchemy
 # Eve-SQLAlchemy
-pbr
+pbr==0.10
 PrettyTable
 six
 sqlalchemy
