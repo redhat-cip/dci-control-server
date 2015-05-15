@@ -76,3 +76,4 @@ for table in metadata.tables:
 DOMAIN['jobs']['schema']['testversion_id']['required'] = False
 
 DEBUG = True
+URL_PREFIX = 'api'
