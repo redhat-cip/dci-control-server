@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-DCI_CONTROL_SERVER=${DCI_CONTROL_SERVER:-'https://stable-dcics.rhcloud.com'}
+DCI_CONTROL_SERVER=${DCI_CONTROL_SERVER:-'https://stable-dcics.rhcloud.com/api'}
 ADMIN_PASSWORD=${ADMIN_PASSWORD,-'admin'}
 CURL="curl --user 'admin:admin' -H 'Content-Type: application/json' --silent"
 set -eux
