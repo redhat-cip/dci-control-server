@@ -1,0 +1,28 @@
+<p>Jobs</p>
+<div ng-controller="ListJobsController">
+  <table>
+    <thead>
+      <tr>
+        <th>RemoteCI</th>
+        <th>Creation date</th>
+        <th>Last update date</th>
+        <th>Test name</th>
+        <th>Tested version</th>
+        <th>Last known status</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="job in jobs">
+        <td>{{job.remoteci.name}}</td>
+        <td>{{job.created_at}}</td>
+        <td>{{job.jobstates[job.jobstates.length-1].created_at}}</td>
+        <td>{{job.test.name}}</td>
+        <td>{{job.version.name}}</td>
+        <td>{{job.jobstates[job.jobstates.length-1].status}}</td>
+      </tr>
+    </tbody>
+  </table>
+  <td>{{_meta.page }} / {{(_meta.total / _meta.max_results) | number:0}}</td>
+  <td>{{_link}}</td>
+
+</div>
