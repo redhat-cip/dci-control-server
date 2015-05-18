@@ -1,0 +1,49 @@
+<!doctype html >
+<html ng-app="app">
+<head>
+    <title>Restangular Test</title>
+
+    <!-- Angular, restangular and Underscore -->
+    <script
+       src="http://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.min.js">
+    </script>
+
+    <script
+       src="http://cdn.jsdelivr.net/restangular/1.1.3/restangular.min.js">
+    </script>
+
+    <script
+       src="http://cdn.jsdelivr.net/underscorejs/1.8.2/underscore-min.js">
+    </script>
+
+    <script src="client/app.js"></script>
+</head>
+<body>
+    <p>Jobs</p>
+    <div ng-controller="mainCtrl">
+    <table>
+        <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Link</th>
+            </tr>
+        </thead>
+        <tbody>
+          <tr ng-repeat="job in jobs">
+            <td>remoteci_name: {{job.remoteci.name}}</td>
+            <td>created_at: {{job.created_at}}</td>
+            <td>last_update: {{job.jobstates[job.jobstates.length-1].created_at}}</td>
+            <td>test_name: {{job.test.name}}</td>
+            <td>version_name: {{job.version.name}}</td>
+            <td>last_jobstate: {{job.jobstates[0].status}}</td>
+          </tr>
+        </tbody>
+    </table>
+    <td>{{_meta.page }} / {{(_meta.total / _meta.max_results) | number:0}}</td>
+    <td>{{_link}}</td>
+
+    </div>
+
+</body>
+</html>
