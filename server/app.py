@@ -33,6 +33,8 @@ from flask import request
 import sqlalchemy.orm.exc
 from sqlalchemy.sql import text
 
+from dci_databrowser import dci_databrowser
+
 # WARNING(Gonéri): both python-bcrypt and bcrypt provide a bcrypt package
 import bcrypt
 from eve.auth import BasicAuth
@@ -135,6 +137,8 @@ def aggregate_job_data(response):
 
 app.on_insert_jobs += pick_jobs
 app.on_fetched_item_jobs += aggregate_job_data
+
+app.register_blueprint(dci_databrowser, url_prefix='/client')
 
 if __name__ == "__main__":
     site_map()

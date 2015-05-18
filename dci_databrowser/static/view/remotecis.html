@@ -1,0 +1,20 @@
+<p>Remote CI</p>
+<div ng-controller="ListRemotecisController">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Creation date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="remoteci in remotecis">
+        <td>{{remoteci.name}}</td>
+        <td>{{remoteci.created_at}}</td>
+      </tr>
+    </tbody>
+  </table>
+  <td>{{_meta.page }} / {{(_meta.total / _meta.max_results) | number:0}}</td>
+  <td>{{_link}}</td>
+
+</div>
