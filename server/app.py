@@ -73,7 +73,7 @@ class AdminOnlyCrypt(BasicAuth):
         acl = {
             'partner': {
                 'remotecis': ['GET'],
-                'jobs': ['GET'],
+                'jobs': ['GET', 'POST'],
                 'jobstates': ['GET', 'POST']
             }
         }
