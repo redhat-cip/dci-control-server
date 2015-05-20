@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a93c517_a3f05eca",
+        "filename": "server/app.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-05-20T08:39:40Z",
+      "side": 1,
+      "message": "AdminOnlyCrypt",
+      "revId": "e66413d5e8fc1b778e00d421fb412a01e64dfeb5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
