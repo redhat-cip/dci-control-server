@@ -2,8 +2,8 @@ bcrypt
 Eve-SQLAlchemy>=0.3.2
 pbr
 PrettyTable
-six
-sqlalchemy
-sqlalchemy-utils
+six>=1.9
+SQLAlchemy
+SQLAlchemy-Utils
 requests
 PyYAML
