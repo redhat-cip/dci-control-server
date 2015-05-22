@@ -62,9 +62,7 @@ class AdminOnlyCrypt(BasicAuth):
             abort(401, description='Unauthorized')
 
         user = session.query(User).filter_by(name=auth.username).one()
-        roles = set([ur.role.name for ur in user.user_roles])
-
-        if 'admin' in roles:
+        if 'admin' in user.roles:
             return True
 
         # NOTE(Gonéri): We may find useful to store this matrice directly in
@@ -77,7 +75,7 @@ class AdminOnlyCrypt(BasicAuth):
             }
         }
 
-        for role in roles:
+        for role in user.roles:
             try:
                 if method in acl[role][resource]:
                     return True
