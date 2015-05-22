@@ -28,7 +28,6 @@ from eve import Eve
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 from flask import abort
-from flask import jsonify
 from flask import request
 import sqlalchemy.orm.exc
 from sqlalchemy.sql import text
