@@ -18,6 +18,7 @@ import os
 import re
 
 from sqlalchemy import create_engine
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
 from sqlalchemy.orm import relationship
@@ -66,11 +67,13 @@ for table in metadata.tables:
         remote_side = None
         remote_side = [foreign_table_object.id]
         setattr(cur_db, foreign_table_name, relationship(
-            foreign_table_object, uselist=False, remote_side=remote_side))
+            foreign_table_object, uselist=False,
+            remote_side=remote_side))
 
 setattr(Product, 'versions', relationship(
     Version, uselist=True, lazy='dynamic'))
 setattr(Version, 'notifications', relationship(
     Notification, uselist=True, lazy='dynamic'))
-setattr(User, 'user_roles', relationship(
-    UserRoles, uselist=True, lazy='dynamic'))
+
+setattr(User, 'roles', association_proxy(
+        'user_roles_collection', 'role'))

@@ -62,8 +62,7 @@ class AdminOnlyCrypt(BasicAuth):
             abort(401, description='Unauthorized')
 
         user = session.query(User).filter_by(name=auth.username).one()
-        roles = set([ur.role.name for ur in user.user_roles])
-
+        roles = [r.name for r in user.roles]
         if 'admin' in roles:
             return True
 
