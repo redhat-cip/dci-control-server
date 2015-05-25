@@ -24,9 +24,12 @@ report_regex='s,.*\(.\{46\}_.\{8\}\)_\(.\{10\}\).*,http://trunk-mgt.rdoproject.o
 
 curl --user 'admin:admin' -X DELETE ${DCI_CONTROL_SERVER}/products
 curl --user 'admin:admin' -X DELETE ${DCI_CONTROL_SERVER}/jobs
+curl --user 'admin:admin' -X DELETE ${DCI_CONTROL_SERVER}/remotecis
+
+team_id=$(curl --user 'admin:admin' ${DCI_CONTROL_SERVER}/teams/partner |jq -r '.id')
 
 # create a remote ci
-remoteci_id=$(curl --user 'admin:admin' -H 'Content-Type: application/json' --silent -X POST -d '[{"name": "boa-2"}]' ${DCI_CONTROL_SERVER}/remotecis |jq -r '.id')
+remoteci_id=$(curl --user 'admin:admin' -H 'Content-Type: application/json' --silent -X POST -d '[{"name": "boa-2", "team_id": "'${team_id}'"}]' ${DCI_CONTROL_SERVER}/remotecis |jq -r '.id')
 
 echo "remoteci_id: $remoteci_id"
 

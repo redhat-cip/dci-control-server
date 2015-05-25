@@ -25,6 +25,7 @@ from server.db.models import TestVersion
 from server.db.models import User
 
 from eve import Eve
+import eve.auth
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 from flask import abort
@@ -63,6 +64,7 @@ class AdminOnlyCrypt(BasicAuth):
 
         user = session.query(User).filter_by(name=auth.username).one()
         roles = [r.name for r in user.roles]
+        self.set_request_auth_value(user.team_id)
         if 'admin' in roles:
             return True
 

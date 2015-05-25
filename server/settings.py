@@ -58,6 +58,9 @@ for table in metadata.tables:
     DOMAIN[table]['schema']['created_at']['required'] = False
     DOMAIN[table]['schema']['updated_at']['required'] = False
     DOMAIN[table]['schema']['etag']['required'] = False
+    if 'team_id' in DOMAIN[table]['schema']:
+        DOMAIN[table]['schema']['team_id']['required'] = False
+        DOMAIN[table]['auth_field'] = 'team_id'
     if hasattr(DB, 'name'):
         DOMAIN[table].update({
             'additional_lookup': {
