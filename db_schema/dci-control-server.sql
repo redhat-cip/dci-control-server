@@ -116,7 +116,8 @@ CREATE TABLE files (
     mime character varying(100) DEFAULT 'text/plain'::character varying NOT NULL,
     md5 character varying(32),
     jobstate_id uuid NOT NULL,
-    etag character varying(40) DEFAULT gen_etag() NOT NULL
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    team_id uuid NOT NULL
 );
 
 
@@ -130,7 +131,8 @@ CREATE TABLE jobs (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     remoteci_id uuid NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
-    testversion_id uuid NOT NULL
+    testversion_id uuid NOT NULL,
+    team_id uuid NOT NULL
 );
 
 
@@ -145,7 +147,8 @@ CREATE TABLE jobstates (
     status character varying,
     comment text,
     job_id uuid NOT NULL,
-    etag character varying(40) DEFAULT gen_etag() NOT NULL
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    team_id uuid NOT NULL
 );
 
 
@@ -187,7 +190,8 @@ CREATE TABLE remotecis (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255),
-    etag character varying(40) DEFAULT gen_etag() NOT NULL
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    team_id uuid NOT NULL
 );
 
 
@@ -196,6 +200,19 @@ CREATE TABLE remotecis (
 --
 
 CREATE TABLE roles (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    name character varying(100)
+);
+
+
+--
+-- Name: teams; Type: TABLE; Schema: public; Owner: -; Tablespace:
+--
+
+CREATE TABLE teams (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -274,7 +291,8 @@ CREATE TABLE users (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
     name character varying(100),
-    password text
+    password text,
+    team_id uuid NOT NULL
 );
 
 
@@ -366,6 +384,22 @@ ALTER TABLE ONLY jobstates
 
 
 --
+-- Name: team_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY teams
+    ADD CONSTRAINT team_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: teams_name_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY teams
+    ADD CONSTRAINT teams_name_key UNIQUE (name);
+
+
+--
 -- Name: tests_pkey; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
 --
 
@@ -411,6 +445,14 @@ ALTER TABLE ONLY user_roles
 
 ALTER TABLE ONLY user_roles
     ADD CONSTRAINT user_roles_user_id_role_id_key UNIQUE (user_id, role_id);
+
+
+--
+-- Name: users_name_key; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_name_key UNIQUE (name);
 
 
 --
@@ -487,11 +529,27 @@ ALTER TABLE ONLY files
 
 
 --
+-- Name: files_team_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY files
+    ADD CONSTRAINT files_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
+
+
+--
 -- Name: jobs_remoteci_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_remoteci_id_fkey FOREIGN KEY (remoteci_id) REFERENCES remotecis(id) ON DELETE CASCADE;
+
+
+--
+-- Name: jobs_team_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY jobs
+    ADD CONSTRAINT jobs_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
 
 
 --
@@ -503,11 +561,27 @@ ALTER TABLE ONLY jobs
 
 
 --
+-- Name: jobstates_team_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY jobstates
+    ADD CONSTRAINT jobstates_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
+
+
+--
 -- Name: notifications_version_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
 ALTER TABLE ONLY notifications
     ADD CONSTRAINT notifications_version_id_fkey FOREIGN KEY (version_id) REFERENCES versions(id) ON DELETE CASCADE;
+
+
+--
+-- Name: remotecis_team_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY remotecis
+    ADD CONSTRAINT remotecis_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
 
 
 --
@@ -567,6 +641,14 @@ ALTER TABLE ONLY user_roles
 
 
 --
+-- Name: users_team_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY users
+    ADD CONSTRAINT users_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
+
+
+--
 -- Name: versions_product_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
 --
 
@@ -588,8 +670,10 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 -- PostgreSQL database dump complete
 --
 
-INSERT INTO users (name, password) VALUES ('admin', crypt('admin', gen_salt('bf', 8)));
-INSERT INTO users (name, password) values ('partner', crypt('partner', gen_salt('bf', 8)));
+INSERT INTO teams (name) VALUES ('admin');
+INSERT INTO teams (name) VALUES ('partner');
+INSERT INTO users (name, password, team_id) VALUES ('admin', crypt('admin', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='partner'));
+INSERT INTO users (name, password, team_id) values ('partner', crypt('partner', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='partner'));
 INSERT INTO roles (name) VALUES ('admin');
 INSERT INTO roles (name) VALUES ('partner');
 INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='admin'));

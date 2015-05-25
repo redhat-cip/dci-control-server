@@ -25,6 +25,7 @@ from server.db.models import TestVersion
 from server.db.models import User
 
 from eve import Eve
+import eve.auth
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 from flask import abort
@@ -64,7 +65,12 @@ class AdminOnlyCrypt(BasicAuth):
         user = session.query(User).filter_by(name=auth.username).one()
         roles = [r.name for r in user.roles]
         if 'admin' in roles:
+            # NOTE(Gonéri): we preserve auth_value undefined for GET,
+            # this way, admin use can read all the field from the database
+            if method != 'GET':
+                self.set_request_auth_value(user.team_id)
             return True
+        self.set_request_auth_value(user.team_id)
 
         # NOTE(Gonéri): We may find useful to store this matrice directly in
         # the role entrt in the DB
