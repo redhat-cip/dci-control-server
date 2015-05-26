@@ -3,7 +3,7 @@
 set -eux
 
 #DCI_CONTROL_SERVER=http://dci-boboa.rhcloud.com
-DCI_CONTROL_SERVER=http://127.0.0.1:5000
+DCI_CONTROL_SERVER=http://127.0.0.1:5000/api
 
 export DCI_CONTROL_SERVER
 
@@ -34,8 +34,7 @@ echo $test_id
 # associate a test to a version
 test_version_id=$(curl -H "Content-Type: application/json" -X POST -d '[{"test_id": "'${test_id}'", "version_id": "'${version_id}'"}]' ${DCI_CONTROL_SERVER}/testversions |jq '.id'|sed 's,",,g')
 
-# get a job
-
-job=$(curl http://127.0.0.1:5000/jobs/get_job_by_remoteci/${remoteci_id})
+# create a job
+job=$(curl -H "Content-Type: application/json" -X POST -d '[{"remoteci_id": "'${remoteci_id}'", "testversion_id": "'${testversion_id}'"}]' ${DCI_CONTROL_SERVER}/jobs)
 
 echo ${job}
