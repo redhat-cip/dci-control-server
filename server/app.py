@@ -16,81 +16,28 @@
 
 from pprint import pprint
 
+import server.auth
 import server.db.api as api
 from server.db.models import Base
 from server.db.models import engine
 from server.db.models import Job
 from server.db.models import session
 from server.db.models import TestVersion
-from server.db.models import User
 
 from eve import Eve
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 from flask import abort
-from flask import request
-import sqlalchemy.orm.exc
 from sqlalchemy.sql import text
 
 from dci_databrowser import dci_databrowser
 
-# WARNING(Gonéri): both python-bcrypt and bcrypt provide a bcrypt package
-import bcrypt
-from eve.auth import BasicAuth
+import os
 
-
-class AdminOnlyCrypt(BasicAuth):
-    def check_auth(self, name, password, allowed_roles, resource, method):
-        try:
-            user = session.query(User).filter_by(name=name).one()
-        except sqlalchemy.orm.exc.NoResultFound:
-            return False
-
-        if bcrypt.hashpw(
-                password.encode('utf-8'),
-                user.password.encode('utf-8')
-        ) == user.password.encode('utf-8'):
-            return True
-        return False
-
-    def authorized(self, allowed_roles, resource, method):
-        auth = request.authorization
-        if not hasattr(auth, 'username') or not hasattr(auth, 'password'):
-            abort(401, description='Unauthorized: username required')
-        if not self.check_auth(auth.username, auth.password, None,
-                               resource, method):
-            abort(401, description='Unauthorized')
-
-        user = session.query(User).filter_by(name=auth.username).one()
-        roles = [r.name for r in user.roles]
-        if 'admin' in roles:
-            # NOTE(Gonéri): we preserve auth_value undefined for GET,
-            # this way, admin use can read all the field from the database
-            if method != 'GET':
-                self.set_request_auth_value(user.team_id)
-            return True
-        self.set_request_auth_value(user.team_id)
-
-        # NOTE(Gonéri): We may find useful to store this matrice directly in
-        # the role entrt in the DB
-        acl = {
-            'partner': {
-                'remotecis': ['GET'],
-                'jobs': ['GET', 'POST'],
-                'jobstates': ['GET', 'POST']
-            }
-        }
-
-        for role in roles:
-            try:
-                if method in acl[role][resource]:
-                    return True
-            except KeyError:
-                pass
-        abort(403, description='Forbidden')
-
-
-app = Eve(validator=ValidatorSQL, data=SQL, auth=AdminOnlyCrypt)
+app_py_dir = os.path.dirname(os.path.realpath(__file__))
+settings_file = os.path.join(app_py_dir, 'settings.py')
+app = Eve(settings=settings_file, validator=ValidatorSQL,
+          data=SQL, auth=server.auth.DCIBasicAuth)
 db = app.data.driver
 Base.metadata.bind = engine
 db.Model = Base
