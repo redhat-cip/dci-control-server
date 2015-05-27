@@ -26,7 +26,7 @@ version_id=$(curl --user 'admin:admin' -H "Content-Type: application/json" -X PO
 echo $version_id
 
 # create a test
-test_id=$(curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"data": {"ksgen_args": {"provisioner-options": "execute_provision", "product-version-workaround": "centos-7.0", "provisioner": "openstack", "distro": "centos-7.0", "tester": "tempest", "installer-network-variant": "ml2-vxlan", "product-version": "kilo", "tester-setup": "rpm", "installer-network": "neutron", "tester-tests": "all", "product-version-repo": "delorean", "workarounds": "enabled"}}, "name":"centos-7.0"}]' ${DCI_CONTROL_SERVER}/tests |jq '.id'|sed 's,",,g')
+test_id=$(curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"data": {"ksgen_args": {"provisioner-options": "execute_provision", "product-version-workaround": "centos-7.0", "provisioner": "openstack", "distro": "centos-7.0", "tester": "tempest", "installer-network-variant": "ml2-vxlan", "product-version": "kilo", "tester-setup": "rpm", "installer-network": "neutron", "tester-tests": "all", "product-version-repo": "delorean", "workarounds": "enabled"}}, "name":"tempest"}]' ${DCI_CONTROL_SERVER}/tests |jq '.id'|sed 's,",,g')
 
 echo $test_id
 
@@ -38,4 +38,13 @@ testversion_id=$(curl --user 'admin:admin' -H "Content-Type: application/json" -
 job_id=$(curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"remoteci_id": "'${remoteci_id}'", "testversion_id": "'${testversion_id}'"}]' ${DCI_CONTROL_SERVER}/jobs |jq '.id'|sed 's,",,g')
 
 # add a jobstate
-curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"job_id": "'${job_id}'", "status": "ongoing"}]' ${DCI_CONTROL_SERVER}/jobstates
+jobstate_id=$(curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"job_id": "'${job_id}'", "status": "ongoing"}]' ${DCI_CONTROL_SERVER}/jobstates |jq '.id'|sed 's,",,g')
+
+# add job logs
+curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"name": "log_step_1", "content": "the logs for step 1", "mime": "text/plain", "jobstate_id": "'${jobstate_id}'"}]' ${DCI_CONTROL_SERVER}/files
+
+# add a jobstate
+jobstate_id=$(curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"job_id": "'${job_id}'", "status": "ongoing"}]' ${DCI_CONTROL_SERVER}/jobstates |jq '.id'|sed 's,",,g')
+
+# add job logs
+curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"name": "log_step_1", "content": "the logs for step 1", "mime": "text/plain", "jobstate_id": "'${jobstate_id}'"}]' ${DCI_CONTROL_SERVER}/files

@@ -1,20 +1,38 @@
-<p>Remote CI</p>
-<div ng-controller="ListRemotecisController">
-  <table>
-    <thead>
-      <tr>
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='UTF-8'>
+  <title>Distributed CI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+      * {margin: 0;padding: 0;}
+      body {font: 14px/1.4 Georgia, Serif;}
+      #page-wrap {margin: 50px;}
+      p {margin: 20px 0;}
+      table {width: 100%; order-collapse: collapse;}
+      tr:nth-of-type(odd) {background: #eee;}
+      th {background: #333; color: white; font-weight: bold;}
+      td, th {padding: 6px; border: 1px solid #ccc; text-align: left;}
+  </style>
+</head>
+
+<body>
+  <div id="page-wrap" ng-controller="ListRemotecisController">
+	<h1>Remote CIs</h1>
+	<table>
+	  <tr>
         <th>Name</th>
         <th>Creation date</th>
-      </tr>
-    </thead>
-    <tbody>
+	  </tr>
       <tr ng-repeat="remoteci in remotecis">
         <td>{{remoteci.name}}</td>
         <td>{{remoteci.created_at}}</td>
       </tr>
-    </tbody>
-  </table>
-  <td>{{_meta.page }} / {{(_meta.total / _meta.max_results) | number:0}}</td>
-  <td>{{_link}}</td>
+	</table>
+    <td>{{_meta.page }} / {{(_meta.total / _meta.max_results) | number:0}}</td>
+    <td>{{_link}}</td>
+  </div>
+</body>
 
-</div>
+</html>
