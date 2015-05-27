@@ -3,7 +3,7 @@
 set -eux
 
 #DCI_CONTROL_SERVER=http://dci-boboa.rhcloud.com
-DCI_CONTROL_SERVER=http://127.0.0.1:5000/api
+DCI_CONTROL_SERVER=http://dci-lefaiseur.rhcloud.com/api
 
 export DCI_CONTROL_SERVER
 
@@ -38,4 +38,7 @@ testversion_id=$(curl --user 'admin:admin' -H "Content-Type: application/json" -
 job_id=$(curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"remoteci_id": "'${remoteci_id}'", "testversion_id": "'${testversion_id}'"}]' ${DCI_CONTROL_SERVER}/jobs |jq '.id'|sed 's,",,g')
 
 # add a jobstate
-curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"job_id": "'${job_id}'", "status": "ongoing"}]' ${DCI_CONTROL_SERVER}/jobstates
+jobstate_id=$(curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"job_id": "'${job_id}'", "status": "ongoing"}]' ${DCI_CONTROL_SERVER}/jobstates |jq '.id'|sed 's,",,g')
+
+# add job logs
+curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"name": "log_step_1", "content": "the logs", "mime": "text/plain", "jobstate_id": "'${jobstate_id}'", "status": "ongoing"}]' ${DCI_CONTROL_SERVER}/files

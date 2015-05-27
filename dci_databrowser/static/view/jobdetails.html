@@ -18,34 +18,53 @@
 </head>
 
 <body>
-  <div id="page-wrap" ng-controller="ListJobsController">
-	<h1>Jobs</h1>
+  <div id="page-wrap" ng-controller="JobDetailsController">
+	<h1>Job details</h1>
 	<table>
 	  <tr>
         <th>Remote CI name</th>
+        <th>Creation date</th>
         <th>Last update date</th>
         <th>Product</th>
         <th>Test name</th>
         <th>Version</th>
         <th>Status</th>
-        <th>Details</th>
 	  </tr>
-      <tr ng-repeat="job in jobs">
+      <tr>
         <td>{{job.remoteci.name}}</td>
-        <td>{{job.jobstates[job.jobstates.length-1].created_at}}</td>
+        <td>{{job.created_at}}</td>
+        <td>{{job.updated_at}}</td>
         <td>{{job.product.name}}</td>
         <td>{{job.test.name}}</td>
         <td>{{job.version.name}}</td>
         <td>{{job.jobstates[job.jobstates.length-1].status}}</td>
-        <td>
-          <a href="#/jobs/{{job.id}}">Show details</a>
-        </td>
       </tr>
-	</table>
-    <td>{{_meta.page }} / {{(_meta.total / _meta.max_results) | number:0}}</td>
-    <td>{{_link}}</td>
-  </div>
+	</table></br>
 
+    <h2>Job states</h2>
+    <div ng-repeat="jobstate in job.jobstates">
+    <table>
+      <tr>
+        <th>Creation date</th>
+        <th>Last update date</th>
+        <th>Status</th>
+      </tr>
+      <tr>
+        <td>{{jobstate.created_at}}</td>
+        <td>{{jobstate.updated_at}}</td>
+        <td>{{jobstate.status}}</td>
+      </tr>
+    </table>
+    <table>
+      <tr ng-repeat="file in jobstate.files">
+        <td>{{jobstate.content}}</td>
+      </tr>
+      </table>
+      </table>
+    </table>
+    </div>
+{{job}}
+  </div>
 </body>
 
 </html>

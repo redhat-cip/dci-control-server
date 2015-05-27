@@ -35,14 +35,27 @@ app.config(function(RestangularProvider) {
     var encoded = btoa('admin:admin');
     RestangularProvider.setDefaultHeaders({ Authorization: 'Basic ' + encoded });
 });
+
 app.config(function($routeProvider, $locationProvider, $parseProvider) {
     $routeProvider
-    .when('/jobs', {templateUrl: 'view/jobs.html', controller: 'ListJobsController'})
-    .when('/remotecis', {templateUrl: 'view/remotecis.html', controller: 'ListRemotecisController'})
-    .otherwise({redirectTo: '/jobs'});
+    .when('/jobs', {
+        templateUrl: 'view/jobs.html',
+        controller: 'ListJobsController'
+    }).
+    when('/remotecis', {
+        templateUrl: 'view/remotecis.html',
+        controller: 'ListRemotecisController'
+    })
+    .when('/jobs/:jobId', {
+        templateUrl: 'view/jobdetails.html',
+        controller: 'JobDetailsController'
+      })
+      .otherwise({redirectTo: '/jobs'});
 });
 
 app.factory('CommonCode', function($window, Restangular) {
+
+    var version;
     return {
     'aggregate_job_info': function(job) {
         return Restangular.one('testversions', job.testversion_id).get().then(
@@ -52,18 +65,27 @@ app.factory('CommonCode', function($window, Restangular) {
             Restangular.one('tests', test_version.test_id).get().
             then(function(data){job['test'] = data;});
             Restangular.one('versions', test_version.version_id).get().
-            then(function(data) {job['version'] = data;});
-            Restangular.all('jobstates').
-		getList({"where": { "job_id": job.id}
-		// TODO(Gonéri): to uncomment as soon as
-		// https://github.com/RedTurtle/eve-sqlalchemy/pull/41 is accepted
-		//, "sort": "created_at"
-			}).
-            then(function(data){ job['jobstates'] = data._items;});
-        }
-        );
-    }
-    };
+            then(function(data) {
+                     job['version'] = data;
+                     Restangular.one('products', job['version']['product_id']).get().
+                     then(function(data) {job['product'] = data;});
+                });
+            Restangular.all('jobstates').getList({"where": { "job_id": job.id}
+		        // TODO(Gonéri): to uncomment as soon as
+		        // https://github.com/RedTurtle/eve-sqlalchemy/pull/41 is accepted
+		        //, "sort": "created_at"
+			}).then(
+			function(data){
+			  job['jobstates'] = data._items;
+			  for(var i = 0; i < job["jobstates"].length; i++) {
+                Restangular.all('files').getList({"where": {"jobstate_id": job["jobstates"][i]["id"]}
+			    }).then(function(data){
+			            job["jobstates"][i]["files"] = "lol";
+			            });
+              }
+			});
+        });
+    }};
 });
 
 
@@ -97,6 +119,17 @@ app.controller('ListRemotecisController', function($scope, $location, CommonCode
         $scope._link = remotecis._link;
         $scope.remotecis = remotecis._items;
     });
+});
+
+app.controller('JobDetailsController', function($scope, $routeParams, CommonCode, Restangular) {
+    $scope.jobId = $routeParams.jobId
+
+    Restangular.one('jobs', $scope.jobId).get().then(
+        function(job) {
+            $scope.job = job
+            CommonCode.aggregate_job_info(job);
+        }
+    );
 });
 
 app.controller('MainController', function($scope, $route, $routeParams, $location) {
