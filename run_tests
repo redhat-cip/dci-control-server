@@ -1,0 +1,28 @@
+#!/bin/sh
+PGSQL_DATA="$(pwd)/pg_db"
+OPENSHIFT_POSTGRESQL_DB_URL="postgresql:///?host=${PGSQL_DATA}&dbname=template1"
+# NOTE(Gonéri): On Debian, initdb is not in the $PATH
+PATH=$PATH:/usr/lib/postgresql/9.3/bin
+
+clean_exit() {
+    local error_code="$?"
+    kill -9 $(jobs -p) >/dev/null 2>&1 || true
+    rm -rf ${PGSQL_DATA}
+    exit $error_code
+}
+
+
+trap "clean_exit" EXIT
+
+[ -d ${PGSQL_DATA} ] && rm -r ${PGSQL_DATA}
+mkdir ${PGSQL_DATA}
+initdb -N ${PGSQL_DATA} > /dev/null
+# Disable network connection, we only use local socket
+echo "listen_addresses = ''" >> ${PGSQL_DATA}/postgresql.conf
+
+postgres -F -k ${PGSQL_DATA} -D ${PGSQL_DATA} > /dev/null 2>&1&
+sleep 1
+psql --quiet --echo-hidden -h ${PGSQL_DATA} -f db_schema/dci-control-server.sql  template1
+
+export OPENSHIFT_POSTGRESQL_DB_URL
+py.test --cov-report html --cov server --cov client -v server client
