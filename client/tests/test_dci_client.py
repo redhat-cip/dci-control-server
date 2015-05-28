@@ -17,7 +17,7 @@
 import mock
 import testtools
 
-import client.dci_client as client
+import client.dci_client as dciclient
 
 
 class TestClient(testtools.TestCase):
@@ -35,9 +35,10 @@ class TestClient(testtools.TestCase):
              'created_at': 'created_at', 'updated_at': 'updated_at'}]}
         session = mock.Mock()
         session.get.return_value = response
-        client.requests.Session = mock.Mock(return_value=session)
-        setattr(client, 'print', self._catch_print_call)
-        client.main(args=['list', '--remotecis'])
+        dciclient.client.requests.Session = mock.Mock(
+            return_value=session)
+        setattr(dciclient, 'print', self._catch_print_call)
+        dciclient.main(args=['list', '--remotecis'])
         self.assertEqual([
             "args: ['list', '--remotecis']",
             '+------------+------+------------+------------+\n'
@@ -49,14 +50,17 @@ class TestClient(testtools.TestCase):
 
     def test_main_registerci(self):
         response = mock.Mock()
-        response.json.return_value = {'_items': [
-            {'id': 'id', 'name': 'name',
-             'created_at': 'created_at', 'updated_at': 'updated_at'}]}
+        response.json.return_value = {
+            '_items': [{
+                'id': 'id', 'name': 'name',
+                'created_at': 'created_at', 'updated_at': 'updated_at'}],
+            'id': 'a'}
         session = mock.Mock()
         session.get.return_value = response
-        client.requests.Session = mock.Mock(return_value=session)
-        setattr(client, 'print', self._catch_print_call)
-        client.main(args=['register-remoteci', '--name', 'bob'])
+        session.post.return_value = response
+        dciclient.client.requests.Session = mock.Mock(return_value=session)
+        setattr(dciclient, 'print', self._catch_print_call)
+        dciclient.main(args=['register-remoteci', '--name', 'bob'])
         self.assertEqual([
             "args: ['register-remoteci', '--name', 'bob']",
             "RemoteCI 'bob' created successfully."], self.print_call)
@@ -72,10 +76,10 @@ class TestClient(testtools.TestCase):
         session = mock.Mock()
         session.post.return_value = response
         session.get.return_value = response
-        client.requests.Session = mock.Mock(return_value=session)
+        dciclient.client.requests.Session = mock.Mock(return_value=session)
         popenobj = mock.Mock()
         popenobj.returncode = 0
-        client.subprocess = mock.Mock()
-        client.subprocess.Popen.return_value = popenobj
-        client.main(args=['auto', 'some-remoteci-id'])
+        dciclient.subprocess = mock.Mock()
+        dciclient.subprocess.Popen.return_value = popenobj
+        dciclient.main(args=['auto', 'some-remoteci-id'])
         self.assertEqual(self.print_call, [])
