@@ -5,5 +5,6 @@ PrettyTable
 six>=1.9
 SQLAlchemy
 SQLAlchemy-Utils
+psycopg2
 requests
 PyYAML
