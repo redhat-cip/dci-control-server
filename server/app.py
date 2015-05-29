@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import flask
+import json
 from pprint import pprint
 
 import server.auth
@@ -86,6 +88,17 @@ def aggregate_job_data(response):
     response['data'] = data
 
 
+def set_real_owner(resource, items):
+    """Hack to allow the 'admin' user to change the team_id."""
+    if flask.request.authorization.username != 'admin':
+        return
+    # NOTE(Gonéri): the fields returned by flask.request.get_json() are
+    # already mangled by the Role Based Access Control.
+    request_fields = json.loads(flask.request.data.decode('utf-8'))
+    if "team_id" in request_fields:
+        items[0]['team_id'] = request_fields['team_id']
+
+app.on_insert += set_real_owner
 app.on_insert_jobs += pick_jobs
 app.on_fetched_item_jobs += aggregate_job_data
 
