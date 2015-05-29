@@ -14,6 +14,8 @@
 // License for the specific language governing permissions and limitations
 // under the License.
 
+'use strict';
+
 var app = angular.module('app', ['ngRoute', 'restangular']);
 
 // Configure the application
