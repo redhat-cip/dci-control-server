@@ -25,17 +25,17 @@ app.config(function(RestangularProvider) {
     // https://github.com/mgonto/restangular#my-response-is-actually-wrapped-with-some-metadata-how-do-i-get-the-data-in-that-case
     RestangularProvider.addResponseInterceptor(function(
     data, operation, what, url, response, deferred) {
-    var extractedData = [];
-    if (operation === "getList") {
-            extractedData['_items'] = data._items;
-            extractedData['_meta'] = data._meta;
-    } else {
+        var extractedData = [];
+        if (operation === 'getList') {
+            extractedData._items = data._items;
+            extractedData._meta = data._meta;
+        } else {
             extractedData = data;
-    }
-    return extractedData;
+        }
+        return extractedData;
     });
     var encoded = btoa('admin:admin');
-    RestangularProvider.setDefaultHeaders({ Authorization: 'Basic ' + encoded });
+    RestangularProvider.setDefaultHeaders({Authorization: 'Basic ' + encoded});
 });
 
 app.config(function($routeProvider, $locationProvider, $parseProvider) {
@@ -51,56 +51,58 @@ app.config(function($routeProvider, $locationProvider, $parseProvider) {
     .when('/jobs/:jobId', {
         templateUrl: 'view/jobdetails.html',
         controller: 'JobDetailsController'
-      })
-      .otherwise({redirectTo: '/jobs'});
+    })
+    .otherwise({redirectTo: '/jobs'});
 });
 
 app.factory('CommonCode', function($window, Restangular) {
+    // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
     var version;
     return {
-    'aggregate_job_info': function(job) {
+    'aggregateJobInfo': function(job) {
         return Restangular.one('testversions', job.testversion_id).get().then(
-        function(test_version) {
+        function(testVersion) {
             Restangular.one('remotecis', job.remoteci_id).get().
-            then(function(data){job['remoteci'] = data;});
-            Restangular.one('tests', test_version.test_id).get().
-            then(function(data){job['test'] = data;});
-            Restangular.one('versions', test_version.version_id).get().
+            then(function(data) {job['remoteci'] = data;});
+            Restangular.one('tests', testVersion.test_id).get().
+            then(function(data) {job['test'] = data;});
+            Restangular.one('versions', testVersion.version_id).get().
             then(function(data) {
-                     job['version'] = data;
-                     Restangular.one('products', job['version']['product_id']).get().
-                     then(function(data) {job['product'] = data;});
-                });
-            Restangular.all('jobstates').getList({"where": { "job_id": job.id}
-		        // TODO(Gonéri): to uncomment as soon as
-		        // https://github.com/RedTurtle/eve-sqlalchemy/pull/41 is accepted
-		        //, "sort": "created_at"
-			}).then(
-			function(data){
-			  job['jobstates'] = data._items;
-			  for(var i = 0; i < job["jobstates"].length; i++) {
-			     (function(local_i){
-			         Restangular.all('files').getList({"where": {"jobstate_id": job["jobstates"][i]["id"]},
-                                                       "embedded": {"jobstates_collection":1}
-			      }).then(function(data){
-			        job["jobstates"][local_i]["files"] = data._items;});
-			     })(i);
-              }
-			});
+                job['version'] = data;
+                Restangular.one('products', job['version']['product_id']).get().
+                then(function(data) {job['product'] = data;});
+            });
+            Restangular.all('jobstates').getList({'where': {'job_id': job.id}
+                // TODO(Gonéri): to uncomment as soon as
+                // https://github.com/RedTurtle/eve-sqlalchemy/pull/41 is accepted
+                //, "sort": "created_at"
+            }).then(
+            function(data) {
+                job['jobstates'] = data._items;
+                for (var i = 0; i < job.jobstates.length; i++) {
+                    (function(localI) {
+                     Restangular.all('files').getList(
+                         {'where': {'jobstate_id': job.jobstates[i].id},
+                          'embedded': {'jobstates_collection':1}
+                  }).then(function(data) {
+                    job.jobstates[localI].files = data._items;});
+                 })(i);
+                }
+            });
         });
     }};
 });
 
-
-app.controller('ListJobsController', function($scope, $location, CommonCode, Restangular) {
+app.controller('ListJobsController', function(
+    $scope, $location, CommonCode, Restangular) {
     var searchObject = $location.search();
     var base = Restangular.all('jobs');
 
-    base.getList({"page": searchObject.page}).then(
+    base.getList({'page': searchObject.page}).then(
     function(jobs) {
-        for(var i = 0; i < jobs._items.length; i++) {
-        CommonCode.aggregate_job_info(jobs._items[i]);
+        for (var i = 0; i < jobs._items.length; i++) {
+            CommonCode.aggregateJobInfo(jobs._items[i]);
         }
 
         $scope._meta = jobs._meta;
@@ -109,14 +111,15 @@ app.controller('ListJobsController', function($scope, $location, CommonCode, Res
     });
 });
 
-app.controller('ListRemotecisController', function($scope, $location, CommonCode, Restangular) {
+app.controller('ListRemotecisController', function(
+    $scope, $location, CommonCode, Restangular) {
     var searchObject = $location.search();
     var base = Restangular.all('remotecis');
 
-    base.getList({"page": searchObject.page}).then(
+    base.getList({'page': searchObject.page}).then(
     function(remotecis) {
-        for(var i = 0; i < remotecis._items.length; i++) {
-        CommonCode.aggregate_job_info(remotecis._items[i]);
+        for (var i = 0; i < remotecis._items.length; i++) {
+            CommonCode.aggregateJobInfo(remotecis._items[i]);
         }
 
         $scope._meta = remotecis._meta;
@@ -125,19 +128,21 @@ app.controller('ListRemotecisController', function($scope, $location, CommonCode
     });
 });
 
-app.controller('JobDetailsController', function($scope, $routeParams, CommonCode, Restangular) {
-    $scope.jobId = $routeParams.jobId
+app.controller('JobDetailsController', function(
+    $scope, $routeParams, CommonCode, Restangular) {
+    $scope.job_id = $routeParams.job_id;
 
-    Restangular.one('jobs', $scope.jobId).get().then(
+    Restangular.one('jobs', $scope.job_id).get().then(
         function(job) {
-            $scope.job = job
-            CommonCode.aggregate_job_info(job);
+            $scope.job = job;
+            CommonCode.aggregateJobInfo(job);
         }
     );
 });
 
-app.controller('MainController', function($scope, $route, $routeParams, $location) {
-     $scope.$route = $route;
-     $scope.$location = $location;
-     $scope.$routeParams = $routeParams;
+app.controller('MainController', function(
+    $scope, $route, $routeParams, $location) {
+    $scope.$route = $route;
+    $scope.$location = $location;
+    $scope.$routeParams = $routeParams;
 });
