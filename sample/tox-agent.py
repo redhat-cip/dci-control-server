@@ -15,11 +15,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-DCI_CONTROL_SERVER = 'https://stable-dcics.rhcloud.com/api'
-LOGIN = 'partner'
-PASSWORD = 'partner'
-WORKDIR = '/tmp/dci-tox'
 REMOTECI_NAME = 'tox-agent'
+WORKDIR = '/tmp/dci-tox'
 
 import subprocess
 import sys
@@ -63,7 +60,7 @@ def call(arg, cwd=None, ignore_error=False):
         dci_client.post("/jobstates", state)
         sys.exit(0)
 
-dci_client = client.DCIClient(DCI_CONTROL_SERVER, LOGIN, PASSWORD)
+dci_client = client.DCIClient()
 
 remoteci = dci_client.get("/remotecis/%s" % REMOTECI_NAME)
 job_id = dci_client.post("/jobs", {"remoteci_id": remoteci['id']})
