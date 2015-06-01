@@ -32,13 +32,18 @@ app.config(function(RestangularProvider) {
     }
     return extractedData;
     });
-    var encoded = btoa('admin:admin');
-    RestangularProvider.setDefaultHeaders({ Authorization: 'Basic ' + encoded });
 });
 
 app.config(function($routeProvider, $locationProvider, $parseProvider) {
     $routeProvider
-    .when('/jobs', {
+    .when('/login', {
+        templateUrl: 'view/login.html',
+        controller: 'LoginController'
+    }).
+    when('/logout', {
+        controller: 'LogoutController'
+    }).
+    when('/jobs', {
         templateUrl: 'view/jobs.html',
         controller: 'ListJobsController'
     }).
@@ -133,6 +138,22 @@ app.controller('JobDetailsController', function($scope, $routeParams, CommonCode
         }
     );
 });
+
+app.controller('LoginController', ['$scope', '$location', 'Restangular',
+    function($scope, $location, Restangular) {
+        $scope.submit = function() {
+        var loginb64 = btoa($scope.username.concat(":", $scope.password));
+        Restangular.setDefaultHeaders({ Authorization: 'Basic ' + loginb64});
+        $location.path('/jobs')
+    };
+}]);
+
+app.controller('LogoutController', ['$scope', '$templateCache', 'Restangular',
+  function($scope, $templateCache, Restangular) {
+    Restangular.setDefaultHeaders({ Authorization: 'Basic ' + "None"});
+    $templateCache.removeAll();
+  }
+]);
 
 app.controller('MainController', function($scope, $route, $routeParams, $location) {
      $scope.$route = $route;
