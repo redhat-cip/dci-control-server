@@ -41,6 +41,8 @@ class DCIClient(object):
 
     def post(self, path, data):
         r = self.s.post("%s%s" % (self.end_point, path), data=json.dumps(data))
+        if r.status_code != 201:
+            raise DCIInternalFailure(r)
         return r.json()['id']
 
     def get(self, path, params=None):
@@ -58,3 +60,7 @@ class DCIClient(object):
                     "mime": mime,
                     "jobstate_id": jobstate_id}
             self.post("/files", data)
+
+
+class DCIInternalFailure(Exception):
+    pass
