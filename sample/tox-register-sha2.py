@@ -28,16 +28,6 @@ dci_client.delete("/tests")
 dci_client.delete("/products")
 
 team = dci_client.get("/teams/partner")
-remotecis = dci_client.get("/remotecis", params={
-    'where': '{"team_id":"' + team['id'] + '", "name":"tox-agent"}'
-})
-if len(remotecis['_items']) > 0:
-    remoteci_id = remotecis['_items'][0]['id']
-else:
-    remoteci_id = dci_client.post("/remotecis", {
-        'name': 'tox-agent',
-        'team_id': team['id']
-    })
 product_id = dci_client.post("/products", {
     "name": "dci-control-server",
     "data": {
