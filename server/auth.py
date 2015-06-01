@@ -63,7 +63,8 @@ class DCIBasicAuth(eve.auth.BasicAuth):
                 'files': ['GET', 'POST'],
                 'remotecis': ['GET', 'POST'],
                 'jobs': ['GET', 'POST'],
-                'jobstates': ['GET', 'POST']
+                'jobstates': ['GET', 'POST'],
+                'tests': ['GET']
             }
         }
 
