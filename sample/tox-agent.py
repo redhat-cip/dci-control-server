@@ -30,13 +30,22 @@ except IndexError:
 
 dci_client = client.DCIClient()
 
-remoteci = dci_client.get("/remotecis/%s" % remoteci_name)
-if '_error' in remoteci and remoteci['_error']['code'] == 404:
-    remoteci_id = dci_client.post("/remotecis", {'name': remoteci_name})
+test_name = "tox"
+
+r = dci_client.get("/tests/%s" % test_name)
+if r.status_code == 404:
+    print("Test '%s' doesn't exist." % test_name)
+    sys.exit(1)
 else:
-    remoteci_id = remoteci['id']
-job_id = dci_client.post("/jobs", {"remoteci_id": remoteci_id})
-job = dci_client.get("/jobs/%s" % job_id)
+    test_id = r.json()['id']
+r = dci_client.get("/remotecis/%s" % remoteci_name)
+if r.status_code == 404:
+    r = dci_client.post("/remotecis", {
+        'name': remoteci_name,
+        'test_id': test_id})
+remoteci_id = r.json()['id']
+job_id = dci_client.post("/jobs", {"remoteci_id": remoteci_id}).json()['id']
+job = dci_client.get("/jobs/%s" % job_id).json()
 structure_from_server = job['data']
 dci_client.call(job_id, ['git', 'init', WORKDIR])
 dci_client.call(job_id, ['git', 'remote', 'add', 'origin',

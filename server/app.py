@@ -56,13 +56,13 @@ def pick_jobs(documents):
 SELECT
     testversions.id
 FROM
-    testversions
+    testversions, remotecis
 WHERE testversions.id NOT IN (
     SELECT
         jobs.testversion_id
     FROM jobs
     WHERE jobs.remoteci_id=:remoteci_id
-)
+) AND testversions.test_id=remotecis.test_id AND remotecis.id=:remoteci_id
 LIMIT 1""")
 
     for d in documents:

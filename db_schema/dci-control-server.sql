@@ -191,7 +191,8 @@ CREATE TABLE remotecis (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255),
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
-    team_id uuid NOT NULL
+    team_id uuid NOT NULL,
+    test_id uuid NOT NULL
 );
 
 
@@ -582,6 +583,14 @@ ALTER TABLE ONLY notifications
 
 ALTER TABLE ONLY remotecis
     ADD CONSTRAINT remotecis_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
+
+
+--
+-- Name: remotecis_test_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY remotecis
+    ADD CONSTRAINT remotecis_test_id_fkey FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE;
 
 
 --
