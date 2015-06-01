@@ -15,7 +15,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-REMOTECI_NAME = 'tox-agent'
 WORKDIR = '/tmp/dci-tox'
 
 import subprocess
@@ -60,10 +59,22 @@ def call(arg, cwd=None, ignore_error=False):
         dci_client.post("/jobstates", state)
         sys.exit(0)
 
+
+try:
+    remoteci_name = sys.argv[1]
+except IndexError:
+    print("Usage: %s remoteci_name" % sys.argv[0])
+    sys.exit(1)
+
+
 dci_client = client.DCIClient()
 
-remoteci = dci_client.get("/remotecis/%s" % REMOTECI_NAME)
-job_id = dci_client.post("/jobs", {"remoteci_id": remoteci['id']})
+remoteci = dci_client.get("/remotecis/%s" % remoteci_name)
+if '_error' in remoteci and remoteci['_error']['code'] == 404:
+    remoteci_id = dci_client.post("/remotecis", {'name': remoteci_name})
+else:
+    remoteci_id = remoteci['id']
+job_id = dci_client.post("/jobs", {"remoteci_id": remoteci_id})
 job = dci_client.get("/jobs/%s" % job_id)
 structure_from_server = job['data']
 call(['git', 'init', WORKDIR])
