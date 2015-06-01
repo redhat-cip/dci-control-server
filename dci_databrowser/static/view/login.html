@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset='UTF-8'>
+  <title>Distributed CI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+      * {margin: 0;padding: 0;}
+      body {font: 14px/1.4 Georgia, Serif;}
+      #page-wrap {margin: 50px;}
+      p {margin: 20px 0;}
+      table {width: 100%; order-collapse: collapse;}
+      tr:nth-of-type(odd) {background: #eee;}
+      th {background: #333; color: white; font-weight: bold;}
+      td, th {padding: 6px; border: 1px solid #ccc; text-align: left;}
+  </style>
+</head>
+
+<body>
+
+<form ng-submit="submit()" ng-controller="LoginController">
+  <label>
+    User name:
+    <input type="text" name="userName" ng-model="username" required>
+  </label>
+  <div role="alert">
+    <span class="error" ng-show="myForm.userName.$error.required">
+    Required !</span>
+  </div>
+
+  <label>
+    Password:
+    <input type="password" name="password" ng-model="password" required>
+  </label>
+  <div role="alert">
+    <span class="error" ng-show="myForm.password.$error.required">
+    Required !</span>
+  </div>
+  <input type="submit" id="submit()" value="Submit" />
+</form>
+
+</body>
+</html>
