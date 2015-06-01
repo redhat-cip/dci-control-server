@@ -27,10 +27,11 @@
 <body>
 <div ng-controller="MainController">
   Choose
+  <a href="/client/#/login">Login</a> |
   <a href="/client/#/jobs">Job list</a> |
-  <a href="/client/#/remotecis">Remote CI</a><br/>
+  <a href="/client/#/remotecis">Remote CI</a><br/><br/>
 
-  <div ng-view></div>
+  <div ng-view></div><br/>
 
   <pre>$location.path() = {{$location.path()}}</pre>
   <pre>$route.current.templateUrl = {{$route.current.templateUrl}}</pre>
