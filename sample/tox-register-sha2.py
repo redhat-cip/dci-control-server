@@ -42,10 +42,10 @@ product_id = dci_client.post("/products", {
     "name": "dci-control-server",
     "data": {
         "git_url": "https://github.com/enovance/dci-control-server"}}
-)
+).json()['id']
 test_id = dci_client.post("/tests", {
     "name": "tox",
-})
+}).json()['id']
 revisions = subprocess.check_output([
     "git", "log", "--no-merges", "--format=oneline"])
 for revision in revisions.splitlines():
@@ -56,8 +56,8 @@ for revision in revisions.splitlines():
         "data": {
             "sha2": a[0]
         }
-    })
+    }).json()['id']
     testversion_id = dci_client.post("/testversions", {
         "test_id": test_id,
         "version_id": version_id,
-    })
+    }).json()['id']
