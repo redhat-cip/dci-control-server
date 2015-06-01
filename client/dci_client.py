@@ -19,15 +19,12 @@
 from __future__ import print_function
 
 import argparse
-import glob
 import os
-import shutil
 import subprocess
 import tempfile
 import time
 
 import prettytable
-import six
 
 import client
 
@@ -164,69 +161,7 @@ def main(args=None):
         new_remoteci = {"name": conf.name}
         dci_client.post("/remotecis", new_remoteci)
         print("RemoteCI '%s' created successfully." % conf.name)
-    elif conf.command == 'auto':
-        # 1. Get a job
-        job_id = dci_client.post(
-            "/jobs", {"remoteci_id": conf.remoteci}).json()['id']
-        job = dci_client.get("/jobs/%s" % job_id).json()
-        structure_from_server = job['data']
 
-        # TODO(Gonéri): Create a load_config() method or something similar
-        import yaml
-        settings = yaml.load(open('local_settings.yml', 'r'))
-
-        for k, v in six.iteritems(structure_from_server['ksgen_args']):
-            if isinstance(v, dict):
-                settings['ksgen_args'][k] = v
-            else:
-                settings['ksgen_args'][k] = v.replace(
-                    '%%KHALEESI_SETTINGS%%',
-                    settings['location']['khaleesi_settings'])
-        args = [settings['location'].get('python_bin', 'python'),
-                './tools/ksgen/ksgen/core.py',
-                '--config-dir=%s/settings' % (
-                    settings['location']['khaleesi_settings']),
-                'generate']
-        for k, v in six.iteritems(settings['ksgen_args']):
-            if isinstance(v, dict):
-                for sk, sv in six.iteritems(v):
-                    args.append('--%s' % (k))
-                    args.append('%s=%s' % (sk, sv))
-            else:
-                args.append('--%s' % (k))
-                args.append('%s' % (v))
-        ksgen_settings_file = tempfile.NamedTemporaryFile()
-        args.append(ksgen_settings_file.name)
-        environ = os.environ
-        environ['PYTHONPATH'] = './tools/ksgen'
-
-        collected_files_path = ("%s/collected_files" %
-                                settings['location']['khaleesi'])
-        if os.path.exists(collected_files_path):
-            shutil.rmtree(collected_files_path)
-        dci_client.call(job_id,
-                        args,
-                        cwd=settings['location']['khaleesi'],
-                        env=environ)
-
-        args = [
-            './run.sh', '-vvvv', '--use',
-            ksgen_settings_file.name,
-            'playbooks/packstack.yml']
-        jobstate_id = dci_client.call(job_id,
-                                      args,
-                                      cwd=settings['location']['khaleesi'])
-        for log in glob.glob(collected_files_path + '/*'):
-            with open(log) as f:
-                dci_client.upload_file(f, jobstate_id)
-        # NOTE(Gonéri): this call slow down the process (pulling data
-        # that we have sent just before)
-        jobstate = dci_client.get("/jobstates/%s" % jobstate_id).json()
-        final_status = 'success' if jobstate['_status'] == 'OK' else 'failure'
-        state = {"job_id": job["id"],
-                 "status": final_status,
-                 "comment": "Job has been processed"}
-        jobstate = dci_client.post("/jobstates", state).json()
 
 if __name__ == '__main__':
     main()
