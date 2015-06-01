@@ -15,12 +15,17 @@
 # under the License.
 
 import json
+import os
 import requests
 
 
 class DCIClient(object):
 
-    def __init__(self, end_point, login, password):
+    def __init__(self, end_point=None, login=None, password=None):
+        if not end_point and not login and not password:
+            end_point = os.environ['DCI_CONTROL_SERVER']
+            login = os.environ['DCI_LOGIN']
+            password = os.environ['DCI_PASSWORD']
         self.end_point = end_point
         self.s = requests.Session()
         self.s.headers.setdefault('Content-Type', 'application/json')
