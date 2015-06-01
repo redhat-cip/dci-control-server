@@ -204,20 +204,18 @@ def main(args=None):
                                 settings['location']['khaleesi'])
         if os.path.exists(collected_files_path):
             shutil.rmtree(collected_files_path)
-        _call_command(dci_client,
-                      args,
-                      job,
-                      cwd=settings['location']['khaleesi'],
-                      env=environ)
+        dci_client.call(job_id,
+                        args,
+                        cwd=settings['location']['khaleesi'],
+                        env=environ)
 
         args = [
             './run.sh', '-vvvv', '--use',
             ksgen_settings_file.name,
             'playbooks/packstack.yml']
-        jobstate_id = _call_command(dci_client,
-                                    args,
-                                    job,
-                                    cwd=settings['location']['khaleesi'])
+        jobstate_id = dci_client.call(job_id,
+                                      args,
+                                      cwd=settings['location']['khaleesi'])
         for log in glob.glob(collected_files_path + '/*'):
             with open(log) as f:
                 dci_client.upload_file(f, jobstate_id)
