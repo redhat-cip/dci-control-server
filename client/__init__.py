@@ -17,6 +17,9 @@
 import json
 import os
 import requests
+import subprocess
+import tempfile
+import time
 
 
 class DCIClient(object):
@@ -61,6 +64,47 @@ class DCIClient(object):
                     "jobstate_id": jobstate_id}
             self.post("/files", data)
 
+    def call(self, job_id, arg, cwd=None, ignore_error=False):
+        state = {"job_id": job_id,
+                 "status": "ongoing",
+                 "comment": "calling: %s" % " ".join(arg)}
+        jobstate_id = self.post("/jobstates", state)
+        print("Calling: %s" % arg)
+        try:
+            p = subprocess.Popen(arg,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.STDOUT,
+                                 cwd=cwd)
+        except OSError as e:
+            state = {"job_id": job_id,
+                     "status": "failure",
+                     "comment": "internal failure: %s" % e}
+            self.post("/jobstates", state)
+            raise DCIInternalFailure
+
+        f = tempfile.TemporaryFile()
+        f.write("starting: %s" % " ".join(arg))
+        while p.returncode is None and p.stdout:
+            # TODO(Gonéri): print on STDOUT p.stdout
+            time.sleep(1)
+            for c in p.stdout:
+                print(c.decode("UTF-8").rstrip())
+                f.write(c)
+            p.poll()
+        self.upload_file(f, jobstate_id, name='output.log')
+
+        if p.returncode != 0 and not ignore_error:
+            state = {"job_id": job_id,
+                     "status": "failure",
+                     "comment": "call failure w/ code %s" % (p.returncode)}
+            self.post("/jobstates", state)
+            raise DCICommandFailure
+
 
 class DCIInternalFailure(Exception):
+    pass
+
+
+class DCICommandFailure(Exception):
+    """Raised when a user-defined command has failed"""
     pass
