@@ -55,6 +55,7 @@ class TestClient(testtools.TestCase):
                 'id': 'id', 'name': 'name',
                 'created_at': 'created_at', 'updated_at': 'updated_at'}],
             'id': 'a'}
+        response.status_code = 201
         session = mock.Mock()
         session.get.return_value = response
         session.post.return_value = response
@@ -73,6 +74,7 @@ class TestClient(testtools.TestCase):
             'data': {'ksgen_args': {}},
             '_status': 'OK'
         }
+        response.status_code = 201
         session = mock.Mock()
         session.post.return_value = response
         session.get.return_value = response
