@@ -81,7 +81,7 @@ def _call_command(dci_client, args, job, cwd=None, env=None):
     state = {"job_id": job["id"],
              "status": "ongoing",
              "comment": "calling: " + " ".join(args)}
-    jobstate_id = dci_client.post("/jobstates", state)
+    jobstate_id = dci_client.post("/jobstates", state).json()['id']
 
     f = tempfile.TemporaryFile()
     while p.returncode is None:
@@ -117,7 +117,7 @@ def main(args=None):
             table_result = prettytable.PrettyTable([
                 "identifier", "name",
                 "created_at", "updated_at"])
-            remotecis = dci_client.get("/remotecis")
+            remotecis = dci_client.get("/remotecis").json()
 
             for remoteci in remotecis["_items"]:
                 table_result.add_row([remoteci["id"],
@@ -166,8 +166,9 @@ def main(args=None):
         print("RemoteCI '%s' created successfully." % conf.name)
     elif conf.command == 'auto':
         # 1. Get a job
-        job_id = dci_client.post("/jobs", {"remoteci_id": conf.remoteci})
-        job = dci_client.get("/jobs/%s" % job_id)
+        job_id = dci_client.post(
+            "/jobs", {"remoteci_id": conf.remoteci}).json()['id']
+        job = dci_client.get("/jobs/%s" % job_id).json()
         structure_from_server = job['data']
 
         # TODO(Gonéri): Create a load_config() method or something similar
@@ -222,12 +223,12 @@ def main(args=None):
                 dci_client.upload_file(f, jobstate_id)
         # NOTE(Gonéri): this call slow down the process (pulling data
         # that we have sent just before)
-        jobstate = dci_client.get("/jobstates/%s" % jobstate_id)
+        jobstate = dci_client.get("/jobstates/%s" % jobstate_id).json()
         final_status = 'success' if jobstate['_status'] == 'OK' else 'failure'
         state = {"job_id": job["id"],
                  "status": final_status,
                  "comment": "Job has been processed"}
-        jobstate = dci_client.post("/jobstates", state)
+        jobstate = dci_client.post("/jobstates", state).json()
 
 if __name__ == '__main__':
     main()

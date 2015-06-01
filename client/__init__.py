@@ -38,19 +38,15 @@ class DCIClient(object):
         return self.s.delete("%s%s" % (self.end_point, path))
 
     def patch(self, path, data):
-        r = self.s.patch(
+        return self.s.patch(
             "%s%s" % (self.end_point, path), data=json.dumps(data))
-        return r.json()['id']
 
     def post(self, path, data):
-        r = self.s.post("%s%s" % (self.end_point, path), data=json.dumps(data))
-        if r.status_code != 201:
-            raise DCIInternalFailure(r)
-        return r.json()['id']
+        return self.s.post("%s%s" % (
+            self.end_point, path), data=json.dumps(data))
 
     def get(self, path, params=None):
-        r = self.s.get("%s%s" % (self.end_point, path), params=params)
-        return r.json()
+        return self.s.get("%s%s" % (self.end_point, path), params=params)
 
     def upload_file(self, fd, jobstate_id, mime='text/plain', name=None):
         fd.seek(0)
@@ -62,13 +58,13 @@ class DCIClient(object):
                     "content": output,
                     "mime": mime,
                     "jobstate_id": jobstate_id}
-            self.post("/files", data)
+            return self.post("/files", data)
 
     def call(self, job_id, arg, cwd=None, ignore_error=False):
         state = {"job_id": job_id,
                  "status": "ongoing",
                  "comment": "calling: %s" % " ".join(arg)}
-        jobstate_id = self.post("/jobstates", state)
+        jobstate_id = self.post("/jobstates", state).json()["id"]
         print("Calling: %s" % arg)
         try:
             p = subprocess.Popen(arg,
@@ -99,6 +95,7 @@ class DCIClient(object):
                      "comment": "call failure w/ code %s" % (p.returncode)}
             self.post("/jobstates", state)
             raise DCICommandFailure
+        return jobstate_id
 
 
 class DCIInternalFailure(Exception):
