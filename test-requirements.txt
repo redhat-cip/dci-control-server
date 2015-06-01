@@ -1,4 +1,4 @@
-flake8==2.2.4
+flake8==2.4.1
 pep8==1.5.7
 mccabe==0.2.1
 hacking>=0.10.1
