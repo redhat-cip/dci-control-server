@@ -61,7 +61,7 @@ class DCIBasicAuth(eve.auth.BasicAuth):
         acl = {
             'partner': {
                 'files': ['GET', 'POST'],
-                'remotecis': ['GET'],
+                'remotecis': ['GET', 'POST'],
                 'jobs': ['GET', 'POST'],
                 'jobstates': ['GET', 'POST']
             }
