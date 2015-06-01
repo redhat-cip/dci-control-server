@@ -81,7 +81,7 @@ class TestClient(testtools.TestCase):
         dciclient.client.requests.Session = mock.Mock(return_value=session)
         popenobj = mock.Mock()
         popenobj.returncode = 0
-        dciclient.subprocess = mock.Mock()
-        dciclient.subprocess.Popen.return_value = popenobj
+        dciclient.client.subprocess = mock.Mock()
+        dciclient.client.subprocess.Popen.return_value = popenobj
         dciclient.main(args=['auto', 'some-remoteci-id'])
         self.assertEqual(self.print_call, [])

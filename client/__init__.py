@@ -60,7 +60,7 @@ class DCIClient(object):
                     "jobstate_id": jobstate_id}
             return self.post("/files", data)
 
-    def call(self, job_id, arg, cwd=None, ignore_error=False):
+    def call(self, job_id, arg, cwd=None, env=None, ignore_error=False):
         state = {"job_id": job_id,
                  "status": "ongoing",
                  "comment": "calling: %s" % " ".join(arg)}
@@ -70,7 +70,8 @@ class DCIClient(object):
             p = subprocess.Popen(arg,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT,
-                                 cwd=cwd)
+                                 cwd=cwd,
+                                 env=env)
         except OSError as e:
             state = {"job_id": job_id,
                      "status": "failure",
@@ -79,7 +80,7 @@ class DCIClient(object):
             raise DCIInternalFailure
 
         f = tempfile.TemporaryFile()
-        f.write("starting: %s" % " ".join(arg))
+        f.write(("starting: %s" % " ".join(arg)).encode('utf-8'))
         while p.returncode is None and p.stdout:
             # TODO(Gonéri): print on STDOUT p.stdout
             time.sleep(1)
