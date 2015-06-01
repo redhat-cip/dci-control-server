@@ -15,50 +15,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-WORKDIR = '/tmp/dci-tox'
+WORKDIR = 'dci-tox'
 
-import subprocess
 import sys
-import tempfile
-import time
 
 import client
-
-
-def call(arg, cwd=None, ignore_error=False):
-    state = {"job_id": job_id,
-             "status": "ongoing",
-             "comment": "calling: %s" % " ".join(arg)}
-    jobstate_id = dci_client.post("/jobstates", state)
-    try:
-        p = subprocess.Popen(arg,
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.STDOUT,
-                             cwd=cwd)
-    except OSError as e:
-        state = {"job_id": job_id,
-                 "status": "failure",
-                 "comment": "internal failure: %s" % e}
-        dci_client.post("/jobstates", state)
-        sys.exit(1)
-
-    f = tempfile.TemporaryFile()
-    while p.returncode is None:
-        # TODO(Gonéri): print on STDOUT p.stdout
-        time.sleep(1)
-        for c in p.stdout:
-            print(c.decode("UTF-8").rstrip())
-            f.write(c)
-        p.poll()
-    dci_client.upload_file(f, jobstate_id, name='output.log')
-
-    if p.returncode != 0 and not ignore_error:
-        state = {"job_id": job_id,
-                 "status": "failure",
-                 "comment": "call failure w/ code %s" % (p.returncode)}
-        dci_client.post("/jobstates", state)
-        sys.exit(0)
-
 
 try:
     remoteci_name = sys.argv[1]
@@ -77,18 +38,25 @@ else:
 job_id = dci_client.post("/jobs", {"remoteci_id": remoteci_id})
 job = dci_client.get("/jobs/%s" % job_id)
 structure_from_server = job['data']
-call(['git', 'init', WORKDIR])
-call(['git', 'remote', 'add', 'origin',
-      structure_from_server['git_url']], cwd=WORKDIR, ignore_error=True)
-call(['git', 'fetch', '--all'], cwd=WORKDIR)
-call(['git', 'clean', '-ffdx'], cwd=WORKDIR)
-call(['git', 'reset', '--hard'], cwd=WORKDIR)
-call(['git', 'checkout', '-f', structure_from_server['sha2']],
-     cwd=WORKDIR)
-call(['tox'], cwd=WORKDIR)
+dci_client.call(job_id, ['git', 'init', WORKDIR])
+dci_client.call(job_id, ['git', 'remote', 'add', 'origin',
+                         structure_from_server['git_url']],
+                cwd=WORKDIR, ignore_error=True)
+dci_client.call(job_id, ['git', 'fetch', '--all'], cwd=WORKDIR)
+dci_client.call(job_id, ['git', 'clean', '-ffdx'], cwd=WORKDIR)
+dci_client.call(job_id, ['git', 'reset', '--hard'], cwd=WORKDIR)
+dci_client.call(job_id, ['git', 'checkout', '-f',
+                         structure_from_server['sha2']],
+                cwd=WORKDIR)
 
-state = {
-    "job_id": job["id"],
-    "status": "success",
-    "comment": "Process finished successfully"}
-jobstate_id = dci_client.post("/jobstates", state)
+try:
+    dci_client.call(job_id, ['tox'], cwd=WORKDIR)
+except client.DCICommandFailure:
+    print("Test has failed")
+    pass
+else:
+    state = {
+        "job_id": job["id"],
+        "status": "success",
+        "comment": "Process finished successfully"}
+    jobstate_id = dci_client.post("/jobstates", state)
