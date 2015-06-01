@@ -18,6 +18,8 @@
 
 var app = angular.module('app', ['ngRoute', 'restangular']);
 
+app.value('currentAuthBA', {value: 'None'});
+
 // Configure the application
 app.config(function(RestangularProvider) {
     RestangularProvider.setBaseUrl(
@@ -34,13 +36,20 @@ app.config(function(RestangularProvider) {
         }
         return extractedData;
     });
-    var encoded = btoa('admin:admin');
-    RestangularProvider.setDefaultHeaders({Authorization: 'Basic ' + encoded});
 });
 
-app.config(function($routeProvider, $locationProvider, $parseProvider) {
+app.config(function($routeProvider, $locationProvider, $parseProvider,
+$httpProvider) {
     $routeProvider
-    .when('/jobs', {
+    .when('/login', {
+        templateUrl: 'view/login.html',
+        controller: 'LoginController'
+    }).
+    when('/logout', {
+        templateUrl: 'view/logout.html',
+        controller: 'LogoutController'
+    }).
+    when('/jobs', {
         templateUrl: 'view/jobs.html',
         controller: 'ListJobsController'
     }).
@@ -53,6 +62,8 @@ app.config(function($routeProvider, $locationProvider, $parseProvider) {
         controller: 'JobDetailsController'
     })
     .otherwise({redirectTo: '/jobs'});
+
+    $httpProvider.interceptors.push('BasicAuthInjector');
 });
 
 app.factory('CommonCode', function($window, Restangular) {
@@ -94,8 +105,18 @@ app.factory('CommonCode', function($window, Restangular) {
     }};
 });
 
-app.controller('ListJobsController', function(
-    $scope, $location, CommonCode, Restangular) {
+app.factory('BasicAuthInjector', function(currentAuthBA) {
+    var injector = {
+        request: function(config) {
+            config.headers['Authorization'] = 'Basic ' + currentAuthBA.value;
+            return config;
+        }
+    };
+    return injector;
+});
+
+app.controller('ListJobsController', function($scope, $location, CommonCode,
+Restangular) {
     var searchObject = $location.search();
     var base = Restangular.all('jobs');
 
@@ -140,8 +161,27 @@ app.controller('JobDetailsController', function(
     );
 });
 
-app.controller('MainController', function(
-    $scope, $route, $routeParams, $location) {
+app.controller('LoginController', ['$scope', '$location', 'currentAuthBA',
+    function($scope, $location, currentAuthBA) {
+        $scope.submit = function() {
+            var loginb64 = btoa($scope.username.concat(':', $scope.password));
+            currentAuthBA.value = loginb64;
+            $location.path('/jobs')
+        };
+    }
+]);
+
+app.controller('LogoutController', ['$scope', '$location', '$templateCache',
+'currentAuthBA',
+  function($scope, $location, $templateCache, currentAuthBA) {
+      $templateCache.removeAll();
+      currentAuthBA.value = btoa('None');
+      $location.path('/login')
+  }
+]);
+
+app.controller('MainController', function($scope, $route, $routeParams,
+$location) {
     $scope.$route = $route;
     $scope.$location = $location;
     $scope.$routeParams = $routeParams;
