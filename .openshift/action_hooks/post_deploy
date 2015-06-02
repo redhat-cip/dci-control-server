@@ -1,6 +1,3 @@
 #!/bin/sh
 # Ensure the dependencies are really installed
 pip install -r ${OPENSHIFT_REPO_DIR}/requirements.txt
-if [ ! -f $OPENSHIFT_DATA_DIR/id_rsa ]; then
-    ssh-keygen -b 2048 -t rsa -f $OPENSHIFT_DATA_DIR/id_rsa -q -N ""
-fi
