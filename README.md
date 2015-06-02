@@ -59,61 +59,12 @@ Connect with the postgres user:
 
 # REST interface
 
-The REST API is available for any type of objects. You can browse them on http://127.0.0.1:5000
+The REST API is available for any type of objects. You can browse the database on http://127.0.0.1:5000/.
 
-## Create a remotecis
+# The API documentation
 
-POST http://127.0.0.1:5000/remotecis
-Content-Type: application/json
+By installing these extra requirements, you can enable the /docs API documentation
+end-point:
 
-[{"name": "barack"}, {"name": "mitt"}]
-
-## List the existing remotecis with a limit
-
-GET http://127.0.0.1:5000/remotecis?max_results=1
-
-## Search a given remoteci
-
-GET http://127.0.0.1:5000/remotecis?where={"id":"9f97593b-d263-c1e4-f2de-b1b4e36ba87c"}
-
-## Retrieve a remoteci using its UUID
-
-GET http://127.0.0.1:5000/remotecis/9f97593b-d263-c1e4-f2de-b1b4e36ba87c
-
-## Update a remoteci
-
-Here we reuse the ETAG from the command bellow in the
-`If-Match` line.
-
-PATCH http://127.0.0.1:5000/remotecis/9f97593b-d263-c1e4-f2de-b1b4e36ba87c
-If-Match: 7fd095f13e88793f985f760269cc608960228779
-Content-Type: application/json
-
-{"name": "Jim", "etag": "bibi"}
-
-## Get the updated remoteci
-
-GET http://127.0.0.1:5000/remotecis/Jim
-
-# DCI - CLI
-
-First you can specify the DCI control-server url by using an environment
-variable:
-
-    $ export DCI_CONTROL_SERVER=http://zorglub.com
-
-By default it is http://127.0.0.1:5000
-
-## List the remotecis
-
-    $ dci --list-remotecis
-
-## Get a job
-
-    $ dci --get-job <remoteci-uuid>
-
-## Get a job and execute it
-
-    $ dci --auto <remoteci-uuid>
-
-The parameter remoteci-uuid should be the id of the remoteci which will run the job.
+    # pip install git+https://github.com/hermannsblum/eve-docs
+    # pip install Flask-Bootstrap

@@ -122,6 +122,13 @@ CREATE TABLE files (
 
 
 --
+-- Name: TABLE files; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE files IS 'The output of a command execution. The file is associated to a jobstate of a given job.';
+
+
+--
 -- Name: jobs; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
@@ -134,6 +141,20 @@ CREATE TABLE jobs (
     testversion_id uuid NOT NULL,
     team_id uuid NOT NULL
 );
+
+
+--
+-- Name: TABLE jobs; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE jobs IS 'An association between a testversion and a remoteci.';
+
+
+--
+-- Name: COLUMN jobs.testversion_id; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN jobs.testversion_id IS 'If the parameter is empty, the REST API will automatically pick an available testversions.';
 
 
 --
@@ -153,6 +174,20 @@ CREATE TABLE jobstates (
 
 
 --
+-- Name: TABLE jobstates; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE jobstates IS 'One of the status during the execution of a job. The last one is the last know status.';
+
+
+--
+-- Name: COLUMN jobstates.status; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON COLUMN jobstates.status IS 'ongoing: the job is still running, failure: the job has failed and this is the last status, success: the job has been run successfully.';
+
+
+--
 -- Name: notifications; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
@@ -168,6 +203,13 @@ CREATE TABLE notifications (
 
 
 --
+-- Name: TABLE notifications; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE notifications IS 'experimental: notifications associated to a version.';
+
+
+--
 -- Name: products; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
@@ -179,6 +221,13 @@ CREATE TABLE products (
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
     data json
 );
+
+
+--
+-- Name: TABLE products; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE products IS 'A product';
 
 
 --
@@ -197,6 +246,13 @@ CREATE TABLE remotecis (
 
 
 --
+-- Name: TABLE remotecis; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE remotecis IS 'The remote CI agent that process the test.';
+
+
+--
 -- Name: roles; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
@@ -207,6 +263,13 @@ CREATE TABLE roles (
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
     name character varying(100)
 );
+
+
+--
+-- Name: TABLE roles; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE roles IS 'The user roles.';
 
 
 --
@@ -223,6 +286,13 @@ CREATE TABLE teams (
 
 
 --
+-- Name: TABLE teams; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE teams IS 'The user team. An user can only be in one team. All the resource created by an user are shared with his/her team members.';
+
+
+--
 -- Name: tests; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
@@ -234,6 +304,13 @@ CREATE TABLE tests (
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
     data json
 );
+
+
+--
+-- Name: TABLE tests; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE tests IS 'A QA test.';
 
 
 SET default_with_oids = true;
@@ -250,6 +327,13 @@ CREATE TABLE testversions (
     test_id uuid NOT NULL,
     version_id uuid NOT NULL
 );
+
+
+--
+-- Name: TABLE testversions; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE testversions IS 'The association between a QA test and a given product version.';
 
 
 SET default_with_oids = false;
@@ -269,6 +353,13 @@ CREATE TABLE user_remotecis (
 
 
 --
+-- Name: TABLE user_remotecis; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE user_remotecis IS 'experimental';
+
+
+--
 -- Name: user_roles; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
@@ -280,6 +371,13 @@ CREATE TABLE user_roles (
     user_id uuid NOT NULL,
     role_id uuid NOT NULL
 );
+
+
+--
+-- Name: TABLE user_roles; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE user_roles IS 'Relation table between the users and the roles.';
 
 
 --
@@ -298,6 +396,13 @@ CREATE TABLE users (
 
 
 --
+-- Name: TABLE users; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE users IS 'The user list.';
+
+
+--
 -- Name: versions; Type: TABLE; Schema: public; Owner: -; Tablespace:
 --
 
@@ -310,6 +415,13 @@ CREATE TABLE versions (
     product_id uuid NOT NULL,
     data json
 );
+
+
+--
+-- Name: TABLE versions; Type: COMMENT; Schema: public; Owner: -
+--
+
+COMMENT ON TABLE versions IS 'A given product versions. For example, a release tag or a git revision.';
 
 
 --
