@@ -4,3 +4,6 @@ pip install -r ${OPENSHIFT_REPO_DIR}/requirements.txt
 if [ ! -f $OPENSHIFT_DATA_DIR/id_rsa ]; then
     ssh-keygen -b 2048 -t rsa -f $OPENSHIFT_DATA_DIR/id_rsa -q -N ""
 fi
+# NOTE(Gonéri): Extra optional deps to get the /docs working
+pip install git+https://github.com/hermannsblum/eve-docs
+pip install Flask-Bootstrap
