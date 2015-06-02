@@ -50,6 +50,16 @@ def site_map():
         pprint(rule)
 
 
+def load_docs(app):
+    try:
+        from flask.ext.bootstrap import Bootstrap
+        from eve_docs import eve_docs
+        Bootstrap(app)
+        app.register_blueprint(eve_docs, url_prefix='/docs')
+    except ImportError:
+        print("Failed to load eve_docs.")
+
+
 def pick_jobs(documents):
     query = text(
         """
@@ -103,6 +113,7 @@ app.on_insert_jobs += pick_jobs
 app.on_fetched_item_jobs += aggregate_job_data
 
 app.register_blueprint(dci_databrowser, url_prefix='/client')
+load_docs(app)
 
 if __name__ == "__main__":
     site_map()

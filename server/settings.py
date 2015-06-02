@@ -25,9 +25,11 @@
 import os
 
 from server.db.models import Base
+from server.db.models import engine
 from server.db.models import metadata
 
 from eve_sqlalchemy.decorators import registerSchema
+from sqlalchemy.sql import text
 
 
 ID_FIELD = 'id'
@@ -42,6 +44,35 @@ SQLALCHEMY_DATABASE_URI = os.environ.get(
 
 
 DOMAIN = {}
+
+
+def get_table_description(table):
+    """Prepare a table description for Eve-Docs
+    See: https://github.com/hermannsblum/eve-docs
+    """
+    cur_db = getattr(Base.classes, table)
+    fields = []
+    for column in cur_db.__table__.columns:
+        fields.append(str(column).split('.')[1])
+
+    table_description_query = text("""
+SELECT
+    objsubid, description
+FROM
+    pg_description WHERE objoid = :table ::regclass;
+""")
+    result = {
+        'general': '',
+        'fields': {}
+    }
+    for row in engine.execute(table_description_query, table=table):
+        print(row[0])
+        if row[0] == 0:
+            result['general'] = row[1]
+        else:
+            result['fields'][fields[row[0]]] = row[1]
+    return result
+
 for table in metadata.tables:
     DB = getattr(Base.classes, table)
     registerSchema(table)(DB)
@@ -67,6 +98,7 @@ for table in metadata.tables:
                 'url': 'regex("[\S]+")',
                 'field': 'name'
             }})
+    DOMAIN[table]['description'] = get_table_description(table)
 # The following two lines will output the SQL statements
 # executed by SQLAlchemy. Useful while debugging and in
 # development. Turned off by default
