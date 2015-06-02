@@ -1,4 +1,6 @@
 #!/bin/sh
+# Ensure the dependencies are really installed
+pip install -r ${OPENSHIFT_REPO_DIR}/requirements.txt
 # Reinitialize the database with random data
 echo "
     DROP SCHEMA public CASCADE;
