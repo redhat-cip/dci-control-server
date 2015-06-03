@@ -14,13 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-DCI_CONTROL_SERVER = 'https://stable-dcics.rhcloud.com/api'
-
 import subprocess
 
 import client
 
-dci_client = client.DCIClient(DCI_CONTROL_SERVER, 'admin', 'admin')
+dci_client = client.DCIClient()
 
 dci_client.delete("/testversions")
 dci_client.delete("/versions")
