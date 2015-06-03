@@ -57,6 +57,17 @@ Connect with the postgres user:
     $ psql -U boa -W -h 127.0.0.1 dci_control_server < db_schema/dci-control-server.sql
 
 
+# Development
+
+## dependencies to run tox
+
+### Fedora 22
+
+    # dnf install nodejs npm python-tox postgresql-server postgresql-devel postgresql-contrib
+    # dnf install python-devel python3-devel libffi-devel git
+    # npm install jscs -g
+
+
 # REST interface
 
 The REST API is available for any type of objects. You can browse the database on http://127.0.0.1:5000/.
