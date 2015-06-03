@@ -57,7 +57,7 @@ $httpProvider) {
         templateUrl: 'view/remotecis.html',
         controller: 'ListRemotecisController'
     })
-    .when('/jobs/:jobId', {
+    .when('/jobs/:job_id', {
         templateUrl: 'view/jobdetails.html',
         controller: 'JobDetailsController'
     })
