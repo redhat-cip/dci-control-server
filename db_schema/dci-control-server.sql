@@ -241,7 +241,8 @@ CREATE TABLE remotecis (
     name character varying(255),
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
     team_id uuid NOT NULL,
-    test_id uuid NOT NULL
+    test_id uuid NOT NULL,
+    data json
 );
 
 
