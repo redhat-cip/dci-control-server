@@ -16,9 +16,7 @@
 
 'use strict';
 
-var app = angular.module('app', ['ngRoute', 'restangular']);
-
-app.value('currentAuthBA', {value: 'None'});
+var app = angular.module('app', ['ngRoute', 'restangular', 'ngCookies']);
 
 // Configure the application
 app.config(function(RestangularProvider) {
@@ -105,10 +103,10 @@ app.factory('CommonCode', function($window, Restangular) {
     }};
 });
 
-app.factory('BasicAuthInjector', function(currentAuthBA) {
+app.factory('BasicAuthInjector', function($cookies) {
     var injector = {
         request: function(config) {
-            config.headers['Authorization'] = 'Basic ' + currentAuthBA.value;
+            config.headers['Authorization'] = 'Basic ' + $cookies.auth;
             return config;
         }
     };
@@ -161,21 +159,21 @@ app.controller('JobDetailsController', function(
     );
 });
 
-app.controller('LoginController', ['$scope', '$location', 'currentAuthBA',
-    function($scope, $location, currentAuthBA) {
+app.controller('LoginController', ['$scope', '$location', '$cookies',
+    function($scope, $location, $cookies) {
         $scope.submit = function() {
             var loginb64 = btoa($scope.username.concat(':', $scope.password));
-            currentAuthBA.value = loginb64;
+            $cookies.auth = loginb64;
             $location.path('/jobs')
         };
     }
 ]);
 
 app.controller('LogoutController', ['$scope', '$location', '$templateCache',
-'currentAuthBA',
-  function($scope, $location, $templateCache, currentAuthBA) {
+'$cookies',
+  function($scope, $location, $templateCache, $cookies) {
       $templateCache.removeAll();
-      currentAuthBA.value = btoa('None');
+      $cookies.auth = btoa('None');
       $location.path('/login')
   }
 ]);
