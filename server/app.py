@@ -91,7 +91,8 @@ def aggregate_job_data(response):
     my_datas = (
         job.testversion.version.product.data,
         job.testversion.version.data,
-        job.testversion.test.data)
+        job.testversion.test.data,
+        job.remoteci.data)
     for my_data in my_datas:
         if my_data:
             data = api.dict_merge(data, my_data)

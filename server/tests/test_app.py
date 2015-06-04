@@ -66,8 +66,10 @@ class TestApp(server.tests.DCITestCase):
         self.assertTrue(response['id'])
         return response
 
-    def test_post_testversion_item(self):
-        test = self.test_post_test_item()
+    def test_post_testversion_item(self, test_id=None):
+        if not test_id:
+            test = self.test_post_test_item()
+            test_id = test
         version = self.test_post_version_item()
         rv = self.admin_client(
             'post',
@@ -79,3 +81,52 @@ class TestApp(server.tests.DCITestCase):
         response = self._extract_response(rv)
         self.assertTrue(response['id'])
         return response
+
+    def test_post_remoteci_item(self, test_id=None):
+        if not test_id:
+            test = self.test_post_test_item()
+            print("test: %s" % test)
+            test_id = test['id']
+        rv = self.admin_client(
+            'post',
+            '/api/remotecis',
+            data={
+                'name': 'a_remoteci',
+                'test_id': test_id,
+                'data': {
+                    'remoteci_keys': {
+                        'foo': ['bar1', 'bar2']}}})
+        self.assertEqual(rv.status_code, 201)
+        response = self._extract_response(rv)
+        self.assertTrue(response['id'])
+        return response
+
+    def test_post_job_item_with_no_testversion_id(self):
+        """testversion_id is missing, the server should pick a
+        testversion that match the test_id of the remoteci.
+        """
+        test = self.test_post_test_item()
+        remoteci = self.test_post_remoteci_item(test['id'])
+        self.test_post_testversion_item(test['id'])
+        rv = self.partner_client(
+            'post',
+            '/api/jobs',
+            data={'remoteci_id': remoteci['id']})
+        print(rv.get_data())
+        self.assertEqual(rv.status_code, 201)
+        return self._extract_response(rv)
+
+    def test_get_job_item(self):
+        """GET /jobs should retrieve the item and feed the
+        data key with the data section from the product, remoteci,
+        test and version.
+        """
+        job = self.test_post_job_item_with_no_testversion_id()
+        rv = self.partner_client('get', '/api/jobs/%s' % job['id'])
+        self.assertEqual(rv.status_code, 200)
+        response = self._extract_response(rv)
+        self.assertEqual({'product_keys': {'foo': ['bar1', 'bar2']},
+                          'remoteci_keys': {'foo': ['bar1', 'bar2']},
+                          'test_keys': {'foo': ['bar1', 'bar2']},
+                          'version_keys': {'foo': ['bar1', 'bar2']}},
+                         response['data'])
