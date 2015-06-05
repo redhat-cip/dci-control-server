@@ -60,25 +60,28 @@ class DCITestCase(testtools.TestCase):
         time.sleep(2)
         shutil.rmtree(self._db_dir)
 
-    def client_call(self, method, username, password, *argv):
+    def client_call(self, method, username, password, path, **argv):
         encoded_basic_auth = base64.b64encode(
             ("%s:%s" % (
                 username, password)).encode('ascii')).decode('utf-8')
 
         headers = {
-            'Authorization': 'Basic ' + encoded_basic_auth
+            'Authorization': 'Basic ' + encoded_basic_auth,
+            'Content-Type': 'application/json'
         }
         method_func = getattr(self.test_client, method)
-        return method_func(*argv, headers=headers)
+        if 'data' in argv:
+            argv['data'] = json.dumps(argv['data'])
+        return method_func(path, headers=headers, **argv)
 
-    def admin_client(self, method, *argv):
-        return self.client_call(method, 'admin', 'admin', *argv)
+    def admin_client(self, method, path, **argv):
+        return self.client_call(method, 'admin', 'admin', path, **argv)
 
-    def partner_client(self, method, *argv):
-        return self.client_call(method, 'partner', 'partner', *argv)
+    def partner_client(self, method, path, **argv):
+        return self.client_call(method, 'partner', 'partner', path, **argv)
 
-    def unauthorized_client(self, method, *argv):
-        return self.client_call(method, 'admin', 'bob', *argv)
+    def unauthorized_client(self, method, path, **argv):
+        return self.client_call(method, 'admin', 'bob', path, **argv)
 
     def assertHTTPCode(self, result, code):
         return self.assertEqual(result.status_code, code)
