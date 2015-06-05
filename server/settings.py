@@ -38,6 +38,7 @@ ITEM_URL = 'regex("[-a-z0-9]{36,64}")'
 LAST_UPDATED = "updated_at"
 DATE_CREATED = "created_at"
 ETAG = "etag"
+# TODO(Gonéri): duplicated settings with models.py
 SQLALCHEMY_DATABASE_URI = os.environ.get(
     'OPENSHIFT_POSTGRESQL_DB_URL',
     'postgresql://boa:boa@127.0.0.1:5432/dci_control_server')
