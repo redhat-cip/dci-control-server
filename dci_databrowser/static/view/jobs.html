@@ -18,7 +18,7 @@
 </head>
 
 <body>
-  <div id="page-wrap" ng-controller="ListJobsController">
+  <div id="page-wrap">
 	<h1>Jobs</h1>
 	<table>
 	  <tr>
@@ -43,8 +43,11 @@
       </tr>
 	</table>
     <td>{{_meta.page }} / {{(_meta.total / _meta.max_results) | number:0}}</td>
-    <td>{{_link}}</td>
+  <button ng-click='previousPage()'>Previous</button>
+  <button ng-click='nextPage()'>Next</button>
   </div>
+
+
 
 </body>
 
