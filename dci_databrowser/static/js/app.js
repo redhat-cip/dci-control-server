@@ -58,8 +58,7 @@ $httpProvider) {
     .when('/jobs/:job_id', {
         templateUrl: 'view/jobdetails.html',
         controller: 'JobDetailsController'
-    })
-    .otherwise({redirectTo: '/jobs'});
+    });
 
     $httpProvider.interceptors.push('BasicAuthInjector');
 });
@@ -113,21 +112,50 @@ app.factory('BasicAuthInjector', function($cookies) {
     return injector;
 });
 
-app.controller('ListJobsController', function($scope, $location, CommonCode,
-Restangular) {
-    var searchObject = $location.search();
-    var base = Restangular.all('jobs');
+app.controller('ListJobsController', function($scope, $location, $cookies,
+CommonCode, Restangular) {
 
-    base.getList({'page': searchObject.page}).then(
-    function(jobs) {
-        for (var i = 0; i < jobs._items.length; i++) {
-            CommonCode.aggregateJobInfo(jobs._items[i]);
+    $scope.loadPage = function() {
+        var targetPage = $scope.currentPage;
+        var searchObject = $location.search();
+        if (searchObject.page != undefined) {
+            var totalPages = $cookies.totalPages;
+
+            if ((searchObject.page < ((parseInt(totalPages) + 1) | 0)) ||
+                ($cookies.currentPage > 1)) {
+                targetPage = parseInt(searchObject.page);
+            }
         }
 
-        $scope._meta = jobs._meta;
-        $scope._link = jobs._link;
-        $scope.jobs = jobs._items;
-    });
+
+        Restangular.all('jobs').getList({'page': targetPage}).then(
+        function(jobs) {
+            for (var i = 0; i < jobs._items.length; i++) {
+                CommonCode.aggregateJobInfo(jobs._items[i]);
+            }
+            $scope._meta = jobs._meta;
+            $scope._link = jobs._link;
+            $scope.jobs = jobs._items;
+            $cookies.totalPages = $scope._meta.total / $scope._meta.max_results;
+        });
+    };
+
+    $scope.nextPage = function() {
+        if ($scope.currentPage <
+            ($scope._meta.total / $scope._meta.max_results)) {
+            $scope.currentPage++;
+            $location.path('/jobs').search({page:$scope.currentPage});
+        }
+    }
+
+    $scope.previousPage = function() {
+        if ($scope.currentPage > 1) {
+            $scope.currentPage--;
+            $location.path('/jobs').search({page:$scope.currentPage});
+        }
+    }
+
+    $scope.loadPage();
 });
 
 app.controller('ListRemotecisController', function(
@@ -180,6 +208,7 @@ app.controller('LogoutController', ['$scope', '$location', '$templateCache',
 
 app.controller('MainController', function($scope, $route, $routeParams,
 $location) {
+    $scope.currentPage = 1;
     $scope.$route = $route;
     $scope.$location = $location;
     $scope.$routeParams = $routeParams;
