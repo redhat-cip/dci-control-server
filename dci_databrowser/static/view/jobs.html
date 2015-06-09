@@ -31,12 +31,12 @@
         <th>Details</th>
 	  </tr>
       <tr ng-repeat="job in jobs">
-        <td>{{job.remoteci.name}}</td>
-        <td>{{job.jobstates[job.jobstates.length-1].created_at}}</td>
-        <td>{{job.product.name}}</td>
-        <td>{{job.test.name}}</td>
-        <td>{{job.version.name}}</td>
-        <td>{{job.jobstates[job.jobstates.length-1].status}}</td>
+        <td>{{job.remoteci.id.name}}</td>
+        <td>{{job.updated_at}}</td>
+        <td>{{job.product}}</td>
+        <td>{{job.test}}</td>
+        <td>{{job.version}}</td>
+        <td>{{job.status}}</td>
         <td>
           <a href="#/jobs/{{job.id}}">Show details</a>
         </td>
