@@ -16,15 +16,12 @@
 
 import flask
 import json
+import os
 from pprint import pprint
 
 import server.auth
 import server.db.api as api
-from server.db.models import Base
-from server.db.models import engine
-from server.db.models import Job
-from server.db.models import session
-from server.db.models import TestVersion
+import server.db.models
 
 from eve import Eve
 from eve_sqlalchemy import SQL
@@ -33,16 +30,6 @@ from flask import abort
 from sqlalchemy.sql import text
 
 from dci_databrowser import dci_databrowser
-
-import os
-
-app_py_dir = os.path.dirname(os.path.realpath(__file__))
-settings_file = os.path.join(app_py_dir, 'settings.py')
-app = Eve(settings=settings_file, validator=ValidatorSQL,
-          data=SQL, auth=server.auth.DCIBasicAuth)
-db = app.data.driver
-Base.metadata.bind = engine
-db.Model = Base
 
 
 def site_map():
@@ -60,44 +47,6 @@ def load_docs(app):
         print("Failed to load eve_docs.")
 
 
-def pick_jobs(documents):
-    query = text(
-        """
-SELECT
-    testversions.id
-FROM
-    testversions, remotecis
-WHERE testversions.id NOT IN (
-    SELECT
-        jobs.testversion_id
-    FROM jobs
-    WHERE jobs.remoteci_id=:remoteci_id
-) AND testversions.test_id=remotecis.test_id AND remotecis.id=:remoteci_id
-LIMIT 1""")
-
-    for d in documents:
-        if 'testversion_id' in d:
-            continue
-        r = engine.execute(query, remoteci_id=d['remoteci_id']).fetchone()
-        if r is None:
-            abort(412, "No test to run left.")
-        testversion = session.query(TestVersion).get(str(r[0]))
-        d['testversion_id'] = testversion.id
-
-
-def aggregate_job_data(response):
-    data = {}
-    job = session.query(Job).get(response['id'])
-    my_datas = (
-        job.testversion.version.product.data,
-        job.testversion.version.data,
-        job.testversion.test.data)
-    for my_data in my_datas:
-        if my_data:
-            data = api.dict_merge(data, my_data)
-    response['data'] = data
-
-
 def set_real_owner(resource, items):
     """Hack to allow the 'admin' user to change the team_id."""
     if flask.request.authorization.username != 'admin':
@@ -108,13 +57,90 @@ def set_real_owner(resource, items):
     if "team_id" in request_fields:
         items[0]['team_id'] = request_fields['team_id']
 
-app.on_insert += set_real_owner
-app.on_insert_jobs += pick_jobs
-app.on_fetched_item_jobs += aggregate_job_data
 
-app.register_blueprint(dci_databrowser, url_prefix='/client')
-load_docs(app)
+def init_app(db_uri=None):
+
+    if not db_uri:
+        db_uri = os.environ.get(
+            'OPENSHIFT_POSTGRESQL_DB_URL',
+            'postgresql://boa:boa@127.0.0.1:5432/dci_control_server')
+    the_models = server.db.models.TheModel(db_uri)
+    my_settings = {
+        'SQLALCHEMY_DATABASE_URI': db_uri,
+        'LAST_UPDATED': 'updated_at',
+        'DATE_CREATED': 'created_at',
+        'ID_FIELD': 'id',
+        'ITEM_URL': 'regex("[-a-z0-9]{36,64}")',
+        'ITEM_LOOKUP_FIELD': 'id',
+        'ETAG': 'etag',
+        'DEBUG': True,
+        'URL_PREFIX': 'api',
+        'X_DOMAINS': '*',
+        'X_HEADERS': 'Authorization',
+        'DOMAIN': the_models.generate_eve_domain_configuration(),
+        # The following two lines will output the SQL statements
+        # executed by SQLAlchemy. Useful while debugging and in
+        # development. Turned off by default
+        # --------
+        'SQLALCHEMY_ECHO': True,
+        'SQLALCHEMY_RECORD_QUERIES': True,
+    }
+    my_basicauth = server.auth.DCIBasicAuth(the_models)
+    app = Eve(settings=my_settings, validator=ValidatorSQL,
+              data=SQL, auth=my_basicauth)
+    db = app.data.driver
+    the_models.metadata.bind = the_models.engine
+    db.Model = the_models.base
+
+    def pick_jobs(documents):
+        session = the_models.get_session()
+        query = text(
+            """
+    SELECT
+        testversions.id
+    FROM
+        testversions, remotecis
+    WHERE testversions.id NOT IN (
+        SELECT
+            jobs.testversion_id
+        FROM jobs
+        WHERE jobs.remoteci_id=:remoteci_id
+    ) AND testversions.test_id=remotecis.test_id AND remotecis.id=:remoteci_id
+    LIMIT 1""")
+
+        for d in documents:
+            if 'testversion_id' in d:
+                continue
+            r = the_models.engine.execute(
+                query, remoteci_id=d['remoteci_id']).fetchone()
+            if r is None:
+                abort(412, "No test to run left.")
+            testversion = session.query(
+                the_models.base.classes.testversions).get(str(r[0]))
+            d['testversion_id'] = testversion.id
+
+    def aggregate_job_data(response):
+        session = the_models.get_session()
+        data = {}
+        job = session.query(the_models.base.classes.jobs).get(response['id'])
+        my_datas = (
+            job.testversion.version.product.data,
+            job.testversion.version.data,
+            job.testversion.test.data,
+            job.remoteci.data)
+        for my_data in my_datas:
+            if my_data:
+                data = api.dict_merge(data, my_data)
+        response['data'] = data
+
+    app.on_insert += set_real_owner
+    app.on_insert_jobs += pick_jobs
+    app.on_fetched_item_jobs += aggregate_job_data
+    app.register_blueprint(dci_databrowser, url_prefix='/client')
+    load_docs(app)
+    return app
 
 if __name__ == "__main__":
+    app = init_app()
     site_map()
     app.run(debug=True)
