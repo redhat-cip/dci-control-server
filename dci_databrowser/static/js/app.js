@@ -63,44 +63,79 @@ $httpProvider) {
     $httpProvider.interceptors.push('BasicAuthInjector');
 });
 
-app.factory('CommonCode', function($window, Restangular) {
+app.factory('CommonCode', function($window, Restangular, $cookies) {
     // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
-    var version;
-    return {
-    'aggregateJobInfo': function(job) {
-        return Restangular.one('testversions', job.testversion_id).get().then(
-        function(testVersion) {
-            Restangular.one('remotecis', job.remoteci_id).get().
-            then(function(data) {job['remoteci'] = data;});
-            Restangular.one('tests', testVersion.test_id).get().
-            then(function(data) {job['test'] = data;});
-            Restangular.one('versions', testVersion.version_id).get().
-            then(function(data) {
-                job['version'] = data;
-                Restangular.one('products', job['version']['product_id']).get().
-                then(function(data) {job['product'] = data;});
-            });
-            Restangular.all('jobstates').getList({'where': {'job_id': job.id}
-                // TODO(Gonéri): to uncomment as soon as
-                // https://github.com/RedTurtle/eve-sqlalchemy/pull/41 is accepted
-                //, "sort": "created_at"
-            }).then(
-            function(data) {
-                job['jobstates'] = data._items;
-                for (var i = 0; i < job.jobstates.length; i++) {
-                    (function(localI) {
-                     Restangular.all('files').getList(
-                         {'where': {'jobstate_id': job.jobstates[i].id},
-                          'embedded': {'jobstates_collection':1}
-                  }).then(function(data) {
-                    job.jobstates[localI].files = data._items;});
-                 })(i);
-                }
-            });
+    var getJobInfo = function($scope, job_id){
+        Restangular.one('jobs', job_id).get({'embedded': {'remoteci':1, 'testversion':1}}).then(
+        function(job){
+            $scope.job = job;
+            Restangular.one('jobstates').get(
+                {'where': {'job_id': job_id},
+                 'embedded': {'files_collection':1}}).then(
+                 function(jobstates){
+                     $scope.job['jobstates'] = jobstates._items;
+                 });
+
+            Restangular.one('testversions', job.testversion.id.id).get(
+                {'embedded': {'version':1, 'test':1}}).then(
+                function(testversion){
+                    $scope.job['version'] = testversion.version.id.name;
+                    $scope.job['test'] = testversion.test.id.name;
+                    Restangular.one('products', testversion.version.id.product_id).get().then(
+                        function(product){
+                            $scope.job['product'] = product.name;
+                        }
+                    )});
         });
-    }};
+    };
+
+    var aggregateJobInfo = function($scope, targetPage){
+
+        Restangular.one('jobs').get({'page': targetPage, 'embedded': {'remoteci':1, 'testversion':1}}).then(
+        function(jobs){
+            for (var i = 0; i < jobs._items.length; i++) {
+                // Get the last status and the last update date
+                (function(localI) {
+                    Restangular.one('jobstates').get(
+                    {'where': {'job_id': jobs._items[localI].id}}).then(
+                      function(jobstates){
+                          length = jobstates._items.length;
+                          jobs._items[localI]['updated_at'] = jobstates._items[length-1].updated_at;
+                          jobs._items[localI]['status'] = jobstates._items[length-1].status;
+                          jobs._items[localI]['jobstates'] = jobstates
+                      });
+                 })(i);
+
+                // Get the product name, the version and the test name
+                (function(localI) {
+                    Restangular.one('testversions', jobs._items[localI].testversion.id.id).get(
+                    {'embedded': {'version':1, 'test':1}}).then(
+                        function(testversion){
+                            jobs._items[localI]['version'] = testversion.version.id.name;
+                            jobs._items[localI]['test'] = testversion.test.id.name;
+
+                            Restangular.one('products', testversion.version.id.product_id).get().then(
+                            function(product){
+                                jobs._items[localI]['product'] = product.name;
+                            }
+                            )
+                        }
+                    );
+                })(i);
+            }
+
+            $scope._meta = jobs._meta;
+            $scope._link = jobs._link;
+            $scope.jobs = jobs._items;
+            $cookies.totalPages = $scope._meta.total / $scope._meta.max_results;
+        });
+    };
+
+    return {'aggregateJobInfo': aggregateJobInfo,
+            'getJobInfo': getJobInfo};
 });
+
 
 app.factory('BasicAuthInjector', function($cookies) {
     var injector = {
@@ -127,16 +162,7 @@ CommonCode, Restangular) {
             }
         }
 
-        Restangular.all('jobs').getList({'page': targetPage}).then(
-        function(jobs) {
-            for (var i = 0; i < jobs._items.length; i++) {
-                CommonCode.aggregateJobInfo(jobs._items[i]);
-            }
-            $scope._meta = jobs._meta;
-            $scope._link = jobs._link;
-            $scope.jobs = jobs._items;
-            $cookies.totalPages = $scope._meta.total / $scope._meta.max_results;
-        });
+        CommonCode.aggregateJobInfo($scope, targetPage);
     };
 
     $scope.nextPage = function() {
@@ -178,12 +204,7 @@ app.controller('JobDetailsController', function(
     $scope, $routeParams, CommonCode, Restangular) {
     $scope.job_id = $routeParams.job_id;
 
-    Restangular.one('jobs', $scope.job_id).get().then(
-        function(job) {
-            $scope.job = job;
-            CommonCode.aggregateJobInfo(job);
-        }
-    );
+    CommonCode.getJobInfo($scope, $scope.job_id);
 });
 
 app.controller('LoginController', ['$scope', '$location', '$cookies',
