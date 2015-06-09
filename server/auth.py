@@ -18,16 +18,18 @@
 import bcrypt
 import eve.auth
 import flask
-
-from server.db.models import session
-from server.db.models import User
 import sqlalchemy.orm.exc
 
 
 class DCIBasicAuth(eve.auth.BasicAuth):
+    def __init__(self, dci_model):
+        self.dci_model = dci_model
+
     def check_auth(self, name, password, allowed_roles, resource, method):
+        session = self.dci_model.get_session()
         try:
-            self.user = session.query(User).filter_by(name=name).one()
+            self.user = session.query(
+                self.dci_model.base.classes.users).filter_by(name=name).one()
         except sqlalchemy.orm.exc.NoResultFound:
             return False
         if bcrypt.hashpw(

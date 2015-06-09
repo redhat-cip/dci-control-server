@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
 import re
 
 from sqlalchemy import create_engine
@@ -23,57 +22,111 @@ from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import Session
+from sqlalchemy.sql import text
 
-# TODO(Gonéri): Load the value for a configuration file
-engine = create_engine(os.environ.get(
-    'OPENSHIFT_POSTGRESQL_DB_URL',
-    'postgresql://boa:boa@127.0.0.1:5432/dci_control_server'))
+from eve_sqlalchemy.decorators import registerSchema
 
-metadata = MetaData()
 
-metadata.reflect(engine)
+class DCIModel(object):
 
-for table in metadata.tables:
-    print(table)
+    def __init__(self, db_uri):
+        # TODO(Gonéri): Load the value for a configuration file
+        self.engine = create_engine(db_uri)
 
-Base = automap_base(metadata=metadata)
-Base.prepare()
-Job = Base.classes.jobs
-File = Base.classes.files
-Notification = Base.classes.notifications
-Product = Base.classes.products
-Remoteci = Base.classes.remotecis
-Test = Base.classes.tests
-Jobstate = Base.classes.jobstates
-Role = Base.classes.roles
-TestVersion = Base.classes.testversions
-User = Base.classes.users
-UserRoles = Base.classes.user_roles
-Version = Base.classes.versions
-session = Session(engine)
+        self.metadata = MetaData()
+        self.metadata.reflect(self.engine)
 
-# engine.echo = True
+        for table in self.metadata.tables:
+            print(table)
 
-# NOTE(Gonéri): Create the foreign table attribue to be able to
-# do job.remoteci.name
-for table in metadata.tables:
-    cur_db = getattr(Base.classes, table)
-    for column in cur_db.__table__.columns:
-        m = re.search(r"\.(\w+)_id$", str(column))
-        if not m:
-            continue
-        foreign_table_name = m.group(1)
-        foreign_table_object = getattr(Base.classes, foreign_table_name + 's')
-        remote_side = None
-        remote_side = [foreign_table_object.id]
-        setattr(cur_db, foreign_table_name, relationship(
-            foreign_table_object, uselist=False,
-            remote_side=remote_side))
+        self.base = automap_base(metadata=self.metadata)
+        self.base.prepare()
 
-setattr(Product, 'versions', relationship(
-    Version, uselist=True, lazy='dynamic'))
-setattr(Version, 'notifications', relationship(
-    Notification, uselist=True, lazy='dynamic'))
+        # engine.echo = True
 
-setattr(User, 'roles', association_proxy(
-        'user_roles_collection', 'role'))
+        # NOTE(Gonéri): Create the foreign table attribue to be able to
+        # do job.remoteci.name
+        for table in self.metadata.tables:
+            cur_db = getattr(self.base.classes, table)
+            for column in cur_db.__table__.columns:
+                m = re.search(r"\.(\w+)_id$", str(column))
+                if not m:
+                    continue
+                foreign_table_name = m.group(1)
+                foreign_table_object = getattr(
+                    self.base.classes, foreign_table_name + 's')
+                remote_side = None
+                remote_side = [foreign_table_object.id]
+                setattr(cur_db, foreign_table_name, relationship(
+                    foreign_table_object, uselist=False,
+                    remote_side=remote_side))
+
+        setattr(self.base.classes.products, 'versions', relationship(
+            self.base.classes.versions, uselist=True, lazy='dynamic'))
+        setattr(self.base.classes.versions, 'notifications', relationship(
+            self.base.classes.notifications, uselist=True, lazy='dynamic'))
+
+        setattr(self.base.classes.users, 'roles', association_proxy(
+                'user_roles_collection', 'role'))
+
+    def get_session(self):
+        return Session(self.engine)
+
+    def get_table_description(self, table):
+        """Prepare a table description for Eve-Docs
+        See: https://github.com/hermannsblum/eve-docs
+        """
+        cur_db = getattr(self.base.classes, table)
+        fields = []
+        for column in cur_db.__table__.columns:
+            fields.append(str(column).split('.')[1])
+
+        table_description_query = text("""
+    SELECT
+        objsubid, description
+    FROM
+        pg_description WHERE objoid = :table ::regclass;
+    """)
+        result = {
+            'general': '',
+            'fields': {}
+        }
+        for row in self.engine.execute(table_description_query, table=table):
+            if row[0] == 0:
+                result['general'] = row[1]
+            else:
+                result['fields'][fields[row[0]]] = row[1]
+        return result
+
+    def generate_eve_domain_configuration(self):
+        domain = {}
+        for table in self.metadata.tables:
+            DB = getattr(self.base.classes, table)
+            registerSchema(table)(DB)
+            domain[table] = DB._eve_schema[table]
+            domain[table].update({
+                'id_field': 'id',
+                'item_url': 'regex("[-a-z0-9]{36,64}")',
+                'item_lookup_field': 'id',
+                'resource_methods': ['GET', 'POST', 'DELETE'],
+                'item_methods': ['PATCH', 'DELETE', 'PUT', 'GET'],
+                'public_methods': [],
+                'public_item_methods': [],
+            })
+            domain[table]['schema']['created_at']['required'] = False
+            domain[table]['schema']['updated_at']['required'] = False
+            domain[table]['schema']['etag']['required'] = False
+            if 'team_id' in domain[table]['schema']:
+                domain[table]['schema']['team_id']['required'] = False
+                domain[table]['auth_field'] = 'team_id'
+            if hasattr(DB, 'name'):
+                domain[table].update({
+                    'additional_lookup': {
+                        'url': 'regex("[\S]+")',
+                        'field': 'name'
+                    }})
+            domain[table]['description'] = self.get_table_description(table)
+        # NOTE(Goneri): optional, if the key is missing, we dynamically pick
+        # a testversion that fit.
+        domain['jobs']['schema']['testversion_id']['required'] = False
+        return domain
