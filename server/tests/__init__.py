@@ -16,13 +16,11 @@
 
 import base64
 import json
-import os
 import shutil
 import subprocess
 import tempfile
 import time
 
-import server
 import testtools
 
 
@@ -46,13 +44,10 @@ class DCITestCase(testtools.TestCase):
         time.sleep(1)
         db_uri = (
             "postgresql:///?host=%s&dbname=template1" % self._db_dir)
-        # TODO(Gonéri): We should set the DB only at one place
-        os.environ['OPENSHIFT_POSTGRESQL_DB_URL'] = db_uri
-        import server.app as app
-        self.app = app
-        server.app.app.config['TESTING'] = True
-        server.app.app.config['SQLALCHEMY_DATABASE_URI'] = db_uri
-        self.test_client = self.app.app.test_client()
+        import server.app
+        self.app = server.app.init_app(db_uri)
+        self.app.config['TESTING'] = True
+        self.test_client = self.app.test_client()
 
     def tearDown(self):
         super(DCITestCase, self).tearDown()
