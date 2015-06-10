@@ -17,4 +17,6 @@
 
 # This file is OpenShift entry point
 
-from server.app import app as application  # NOQA
+import server.app
+
+application = server.app.init_app()
