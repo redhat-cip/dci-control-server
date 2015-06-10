@@ -16,7 +16,8 @@
 
 'use strict';
 
-var app = angular.module('app', ['ngRoute', 'restangular', 'ngCookies']);
+var app = angular.module('app', ['ngRoute', 'restangular', 'ngCookies',
+'angular-loading-bar']);
 
 // Configure the application
 app.config(function(RestangularProvider) {
