@@ -165,10 +165,12 @@ CommonCode, Restangular) {
         var searchObject = $location.search();
         if (searchObject.page != undefined) {
             var totalPages = $cookies.totalPages;
+            var pageNumber = parseInt(searchObject.page);
 
-            if ((searchObject.page < ((parseInt(totalPages) + 1) | 0)) ||
-                ($cookies.currentPage > 1)) {
+            if ((pageNumber < ((parseInt(totalPages) + 1) | 0)) &&
+                (pageNumber > 1)) {
                 targetPage = parseInt(searchObject.page);
+                $scope.currentPage = targetPage;
             }
         }
 
