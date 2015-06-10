@@ -17,6 +17,7 @@
 import json
 import os
 import requests
+import simplejson.scanner
 import subprocess
 import tempfile
 import time
@@ -47,6 +48,37 @@ class DCIClient(object):
 
     def get(self, path, params=None):
         return self.s.get("%s%s" % (self.end_point, path), params=params)
+
+    def list_items(self, item_type, where={}, embedded={},
+                   projection={}, page=1, max_results=10):
+        """List the items for a given products.
+
+        Return an iterator.
+        """
+        while True:
+            r = self.s.get(
+                '%s/%s?where=%s&embedded=%s'
+                '&projection=%s&page=%d&max_results=%d' % (
+                    self.end_point,
+                    item_type,
+                    json.dumps(where),
+                    json.dumps(embedded),
+                    json.dumps(projection),
+                    page,
+                    max_results))
+            try:
+                rd = r.json()
+            except simplejson.scanner.JSONDecodeError as e:
+                print(r.text)
+                raise e
+            if '_items' in rd:
+                for item in rd['_items']:
+                    yield item
+            if '_links' not in rd:
+                raise Exception
+            if 'next' not in rd['_links']:
+                break
+            page += 1
 
     def upload_file(self, fd, jobstate_id, mime='text/plain', name=None):
         fd.seek(0)
