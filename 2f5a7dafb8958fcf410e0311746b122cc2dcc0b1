@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a93c517_3c20e89a",
+        "filename": "server/db/models.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-06-10T10:34:22Z",
+      "side": 1,
+      "message": "s/TheModel/DciModel",
+      "revId": "2f5a7dafb8958fcf410e0311746b122cc2dcc0b1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
