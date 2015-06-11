@@ -17,12 +17,11 @@
 'use strict';
 
 var app = angular.module('app', ['ngRoute', 'restangular', 'ngCookies',
-'angular-loading-bar']);
+'angular-loading-bar', 'ui.router']);
 
 // Configure the application
 app.config(function(RestangularProvider) {
-    RestangularProvider.setBaseUrl(
-        '/api');
+    RestangularProvider.setBaseUrl('/api');
     // https://github.com/mgonto/restangular#my-response-is-actually-wrapped-with-some-metadata-how-do-i-get-the-data-in-that-case
     RestangularProvider.addResponseInterceptor(function(
     data, operation, what, url, response, deferred) {
@@ -37,28 +36,29 @@ app.config(function(RestangularProvider) {
     });
 });
 
-app.config(function($routeProvider, $locationProvider, $parseProvider,
-$httpProvider) {
-    $routeProvider
-    .when('/login', {
-        templateUrl: 'view/login.html',
-        controller: 'LoginController'
-    }).
-    when('/logout', {
-        templateUrl: 'view/logout.html',
-        controller: 'LogoutController'
-    }).
-    when('/jobs', {
-        templateUrl: 'view/jobs.html',
+app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
+    $stateProvider
+    .state('jobs', {
+        url: '/jobs?page',
+        //params: { page: "1" },
+        templateUrl: 'partials/jobs.html',
         controller: 'ListJobsController'
-    }).
-    when('/remotecis', {
-        templateUrl: 'view/remotecis.html',
-        controller: 'ListRemotecisController'
-    })
-    .when('/jobs/:job_id', {
-        templateUrl: 'view/jobdetails.html',
+    }).state('jobdetails', {
+        url:'jobdetails/:jobId',
+        templateUrl: 'partials/jobdetails.html',
         controller: 'JobDetailsController'
+    }).state('remotecis', {
+        url:'/remotecis',
+        templateUrl: 'partials/remotecis.html',
+        controller: 'ListRemotecisController'
+    }).state('signin', {
+        url: '/signin',
+        templateUrl: 'partials/signin.html',
+        controller: 'LoginController'
+    }).state('signout', {
+        url: '/signout',
+        templateUrl: 'partials/signout.html',
+        controller: 'LogoutController'
     });
 
     $httpProvider.interceptors.push('BasicAuthInjector');
@@ -66,6 +66,17 @@ $httpProvider) {
 
 app.factory('CommonCode', function($window, Restangular, $cookies) {
     // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
+
+    var getRemoteCis = function($scope) {
+        Restangular.one('remotecis').get().then(
+            function(remotecis) {
+                $scope.remotecis = remotecis._items;
+                $cookies.remotecisTotalPages = parseInt((
+                remotecis._meta.total / remotecis._meta.max_results + 1));
+                $scope.remotecisTotalPages = $cookies.remotecisTotalPages;
+            }
+        );
+    };
 
     var getJobInfo = function($scope, job_id) {
         Restangular.one('jobs', job_id).get(
@@ -76,6 +87,7 @@ app.factory('CommonCode', function($window, Restangular, $cookies) {
                 {'where': {'job_id': job_id},
                  'embedded': {'files_collection':1}}).then(
                  function(jobstates) {
+                     console.log(jobstates);
                      $scope.job['jobstates'] = jobstates._items;
                  });
 
@@ -135,16 +147,16 @@ app.factory('CommonCode', function($window, Restangular, $cookies) {
                 })(i);
             }
 
-            $scope._meta = jobs._meta;
-            $scope._link = jobs._link;
             $scope.jobs = jobs._items;
-            $cookies.totalPages = ($scope._meta.total /
-                $scope._meta.max_results);
+            $cookies.jobsTotalPages = parseInt((jobs._meta.total /
+                jobs._meta.max_results + 1));
+            $scope.jobsTotalPages = $cookies.jobsTotalPages;
         });
     };
 
     return {'aggregateJobInfo': aggregateJobInfo,
-            'getJobInfo': getJobInfo};
+            'getJobInfo': getJobInfo,
+            'getRemoteCis': getRemoteCis};
 });
 
 app.factory('BasicAuthInjector', function($cookies) {
@@ -158,90 +170,89 @@ app.factory('BasicAuthInjector', function($cookies) {
 });
 
 app.controller('ListJobsController', function($scope, $location, $cookies,
-CommonCode, Restangular) {
+CommonCode, Restangular, $state, $stateParams) {
 
-    $scope.loadPage = function() {
-        var targetPage = $scope.currentPage;
+    var loadPage = function() {
+        var targetPage = $scope.jobCurrentPage;
         var searchObject = $location.search();
         if (searchObject.page != undefined) {
-            var totalPages = $cookies.totalPages;
+            var totalPages = $cookies.jobsTotalPages;
             var pageNumber = parseInt(searchObject.page);
 
             if ((pageNumber < ((parseInt(totalPages) + 1) | 0)) &&
                 (pageNumber > 1)) {
                 targetPage = parseInt(searchObject.page);
-                $scope.currentPage = targetPage;
+                $scope.jobCurrentPage = targetPage;
             }
         }
 
         CommonCode.aggregateJobInfo($scope, targetPage);
     };
 
-    $scope.nextPage = function() {
-        if ($scope.currentPage <
-            ($scope._meta.total / $scope._meta.max_results)) {
-            $scope.currentPage++;
-            $location.path('/jobs').search({page:$scope.currentPage});
+    $scope.jobsNextPage = function() {
+        if ($scope.jobCurrentPage < $cookies.jobsTotalPages) {
+            $scope.jobCurrentPage++;
+            $state.go('jobs', {page:$scope.jobCurrentPage});
         }
     }
 
-    $scope.previousPage = function() {
-        if ($scope.currentPage > 1) {
-            $scope.currentPage--;
-            $location.path('/jobs').search({page:$scope.currentPage});
+    $scope.jobsPreviousPage = function() {
+        if ($scope.jobCurrentPage > 1) {
+            $scope.jobCurrentPage--;
+            $state.go('jobs', {page:$scope.jobCurrentPage});
         }
     }
 
-    $scope.loadPage();
+    if ($scope.jobCurrentPage == undefined) {
+        $scope.jobCurrentPage = 1;
+    }
+
+    loadPage();
 });
 
-app.controller('ListRemotecisController', function(
-    $scope, $location, CommonCode, Restangular) {
-    var searchObject = $location.search();
-    var base = Restangular.all('remotecis');
+app.controller('ListRemotecisController', function($scope, $location,
+CommonCode, Restangular) {
 
-    base.getList({'page': searchObject.page}).then(
-    function(remotecis) {
-        for (var i = 0; i < remotecis._items.length; i++) {
-            CommonCode.aggregateJobInfo(remotecis._items[i]);
+    $scope.remotecisNextPage = function() {
+        if ($scope.remoteciCurrentPage < $cookies.remotecisTotalPages) {
+            $scope.remoteciCurrentPage++;
+            $state.go('jobs', {page:$scope.jobCurrentPage});
         }
+    }
 
-        $scope._meta = remotecis._meta;
-        $scope._link = remotecis._link;
-        $scope.remotecis = remotecis._items;
-    });
+    $scope.remotecisPreviousPage = function() {
+        if ($scope.remoteciCurrentPage > 1) {
+            $scope.remoteciCurrentPage--;
+            $state.go('jobs', {page:$scope.remoteciCurrentPage});
+        }
+    }
+
+    if ($scope.remoteciCurrentPage == undefined) {
+        $scope.remoteciCurrentPage = 1;
+    }
+    CommonCode.getRemoteCis($scope);
 });
 
 app.controller('JobDetailsController', function(
-    $scope, $routeParams, CommonCode, Restangular) {
-    $scope.job_id = $routeParams.job_id;
-
-    CommonCode.getJobInfo($scope, $scope.job_id);
+    $scope, CommonCode, Restangular, $stateParams) {
+    CommonCode.getJobInfo($scope, $stateParams.jobId);
 });
 
-app.controller('LoginController', ['$scope', '$location', '$cookies',
-    function($scope, $location, $cookies) {
+app.controller('LoginController', ['$scope', '$cookies', '$state',
+    function($scope, $cookies, $state) {
         $scope.submit = function() {
             var loginb64 = btoa($scope.username.concat(':', $scope.password));
             $cookies.auth = loginb64;
-            $location.path('/jobs')
+            $state.go('jobs');
         };
     }
 ]);
 
-app.controller('LogoutController', ['$scope', '$location', '$templateCache',
-'$cookies',
-  function($scope, $location, $templateCache, $cookies) {
+app.controller('LogoutController', ['$scope', '$templateCache',
+'$cookies', '$state',
+  function($scope, $templateCache, $cookies, $state) {
       $templateCache.removeAll();
       $cookies.auth = btoa('None');
-      $location.path('/login')
+      $state.go('jobs');
   }
 ]);
-
-app.controller('MainController', function($scope, $route, $routeParams,
-$location) {
-    $scope.currentPage = 1;
-    $scope.$route = $route;
-    $scope.$location = $location;
-    $scope.$routeParams = $routeParams;
-});
