@@ -1,0 +1,26 @@
+<h1 class="page-header">Jobs</h1>
+<table class="table table-striped">
+  <tr>
+    <th>Remote CI name</th>
+    <th>Last update date</th>
+    <th>Product</th>
+    <th>Test name</th>
+    <th>Version</th>
+    <th>Status</th>
+    <th>Details</th>
+  </tr>
+  <tr ng-repeat="job in jobs">
+    <td>{{job.remoteci.id.name}}</td>
+    <td>{{job.updated_at}}</td>
+    <td>{{job.product}}</td>
+    <td>{{job.test}}</td>
+    <td>{{job.version}}</td>
+    <td>{{job.status}}</td>
+    <td>
+      <a ui-sref="jobdetails({ jobId: job.id })">Show details</a>
+    </td>
+  </tr>
+</table>
+<td>{{jobCurrentPage}} / {{jobsTotalPages}}</td>
+<button ng-click='jobsPreviousPage()'>Previous</button>
+<button ng-click='jobsNextPage()'>Next</button>

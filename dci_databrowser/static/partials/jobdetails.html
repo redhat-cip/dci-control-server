@@ -1,0 +1,45 @@
+<h1 class="page-header">Job details</h1>
+<table class="table table-striped">
+  <tr>
+    <th>Remote CI name</th>
+    <th>Creation date</th>
+    <th>Last update date</th>
+    <th>Product</th>
+    <th>Test name</th>
+    <th>Version</th>
+    <th>Status</th>
+  </tr>
+  <tr>
+    <td>{{job.remoteci.id.name}}</td>
+    <td>{{job.created_at}}</td>
+    <td>{{job.updated_at}}</td>
+    <td>{{job.product}}</td>
+    <td>{{job.test}}</td>
+    <td>{{job.version}}</td>
+    <td>{{job.jobstates[job.jobstates.length-1].status}}</td>
+  </tr>
+</table><br/>
+
+<h2>Job states</h2>
+<div ng-repeat="jobstate in job.jobstates">
+  <table class="table table-striped">
+    <tr>
+      <th>Creation date</th>
+      <th>Last update date</th>
+      <th>Status</th>
+    </tr>
+    <tr>
+      <td>{{jobstate.created_at}}</td>
+      <td>{{jobstate.updated_at}}</td>
+      <td>{{jobstate.status}}</td>
+    </tr>
+  </table><br/>
+  <div ng-repeat="file in jobstate.files_collection">
+    <h3>{{file.id.name}}</h3>
+      <table>
+        <tr>
+          <td>{{file.id.content}}</td>
+        </tr>
+      </table><br/>
+  </div>
+</div>
