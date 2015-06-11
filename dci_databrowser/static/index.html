@@ -1,50 +1,57 @@
-<!doctype html >
-<html ng-app="app">
-<head>
+<!DOCTYPE html>
+<html lang="en" ng-app="app">
+  <head>
+    <meta charset="utf-8">
     <title>Distributed CI</title>
 
-    <!-- Angular, restangular and Underscore -->
-    <script
-       src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.js">
-    </script>
+    <link rel='stylesheet' href='css/dependencies/loading-bar.min.0.7.1.css' type='text/css' media='all' />
+    <link href="css/dependencies/bootstrap.min.3.3.1.css" rel="stylesheet">
+    <link href="css/dashboard.css" rel="stylesheet">
+  </head>
 
-    <script
-       src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-route.js">
-    </script>
+  <body>
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container-fluid">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+          </button>
+          <img class= "logo" src="images/redhat.png">
+          <a class="navbar-brand" href=".">Distributed CI</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav navbar-right">
+            <li><a href=".">Home</a></li>
+            <li><a ui-sref="signin">Sign in</a></li>
+            <li><a ui-sref="signout">Sign out</a></li>
+          </ul>
+        </div>
+      </div>
+    </nav>
 
-    <script
-       src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-cookies.js">
-    </script>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-sm-3 col-md-2 sidebar">
+          <ul class="nav nav-sidebar">
+              <li><a ui-sref="jobs">Jobs</a></li>
+              <li><a ui-sref="remotecis">Remote CIs</a></li>
+          </ul>
+        </div>
+        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+          <div ui-view></div>
+        </div>
+      </div>
+    </div>
 
-    <script
-       src="https://cdn.jsdelivr.net/restangular/1.5.1/restangular.js">
-    </script>
-
-    <script
-       src="https://cdn.jsdelivr.net/underscorejs/1.8.3/underscore-min.js">
-    </script>
-
-    <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.7.1/loading-bar.min.css' type='text/css' media='all' />
-    <script type='text/javascript'
-       src='//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.7.1/loading-bar.min.js'>
-    </script>
-
+    <script src="js/dependencies/jquery-1.11.2.min.js"></script>
+    <script src="js/dependencies/bootstrap.3.3.1.min.js"></script>
+    <script src="js/dependencies/angular.1.3.14.min.js"></script>
+    <script src="js/dependencies/angular-route.1.3.14.min.js"></script>
+    <script src="js/dependencies/angular-cookies.1.3.14.min.js"></script>
+    <script src="js/dependencies/restangular.min.1.5.1.js"></script>
+    <script src="js/dependencies/underscore-min.1.8.3.js"></script>
+    <script src="js/dependencies/angular-ui-router.min.0.2.15.js"></script>
+    <script src='js/dependencies/loading-bar.min.0.7.1.js'></script>
     <script src="js/app.js"></script>
-</head>
-
-<body>
-<div ng-controller="MainController">
-  Choose
-  <a href="/client/#/login">Login</a> |
-  <a href="/client/#/jobs">Job list</a> |
-  <a href="/client/#/remotecis">Remote CI</a> |
-  <a href="/client/#/logout">Logout</a><br/><br/>
-
-  <div ng-view></div><br/>
-
-  <pre>$location.path() = {{$location.path()}}</pre>
-  <pre>$route.current.templateUrl = {{$route.current.templateUrl}}</pre>
-</div>
-
-</body>
+  </body>
 </html>

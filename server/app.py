@@ -82,8 +82,8 @@ def init_app(db_uri=None):
         # executed by SQLAlchemy. Useful while debugging and in
         # development. Turned off by default
         # --------
-        'SQLALCHEMY_ECHO': True,
-        'SQLALCHEMY_RECORD_QUERIES': True,
+        'SQLALCHEMY_ECHO': False,
+        'SQLALCHEMY_RECORD_QUERIES': False,
     }
     my_basicauth = server.auth.DCIBasicAuth(dci_model)
     app = Eve(settings=my_settings, validator=ValidatorSQL,
@@ -126,8 +126,7 @@ def init_app(db_uri=None):
         my_datas = (
             job.testversion.version.product.data,
             job.testversion.version.data,
-            job.testversion.test.data,
-            job.remoteci.data)
+            job.testversion.test.data)
         for my_data in my_datas:
             if my_data:
                 data = api.dict_merge(data, my_data)
