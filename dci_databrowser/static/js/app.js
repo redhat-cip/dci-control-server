@@ -17,12 +17,11 @@
 'use strict';
 
 var app = angular.module('app', ['ngRoute', 'restangular', 'ngCookies',
-'angular-loading-bar']);
+'angular-loading-bar', 'ui.router']);
 
 // Configure the application
 app.config(function(RestangularProvider) {
-    RestangularProvider.setBaseUrl(
-        '/api');
+    RestangularProvider.setBaseUrl('/api');
     // https://github.com/mgonto/restangular#my-response-is-actually-wrapped-with-some-metadata-how-do-i-get-the-data-in-that-case
     RestangularProvider.addResponseInterceptor(function(
     data, operation, what, url, response, deferred) {
@@ -37,28 +36,24 @@ app.config(function(RestangularProvider) {
     });
 });
 
-app.config(function($routeProvider, $locationProvider, $parseProvider,
-$httpProvider) {
-    $routeProvider
-    .when('/login', {
-        templateUrl: 'view/login.html',
-        controller: 'LoginController'
-    }).
-    when('/logout', {
-        templateUrl: 'view/logout.html',
-        controller: 'LogoutController'
-    }).
-    when('/jobs', {
-        templateUrl: 'view/jobs.html',
-        controller: 'ListJobsController'
-    }).
-    when('/remotecis', {
-        templateUrl: 'view/remotecis.html',
-        controller: 'ListRemotecisController'
-    })
-    .when('/jobs/:job_id', {
-        templateUrl: 'view/jobdetails.html',
+app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
+  $stateProvider
+    .state('jobs', {
+      url: '/jobs',
+      templateUrl: 'partials/jobs.html',
+      controller: 'ListJobsController'
+    }).state('jobdetails', {
+        url:'jobdetails/:jobId',
+        templateUrl: 'partials/jobdetails.html',
         controller: 'JobDetailsController'
+    }).state('remotecis', {
+        url:'/remotecis',
+        templateUrl: 'partials/remotecis.html',
+        controller: 'ListRemotecisController'
+    }).state('signin', {
+        url: '/signin',
+        templateUrl: 'partials/signin.html',
+        controller: 'LoginController'
     });
 
     $httpProvider.interceptors.push('BasicAuthInjector');
@@ -76,6 +71,7 @@ app.factory('CommonCode', function($window, Restangular, $cookies) {
                 {'where': {'job_id': job_id},
                  'embedded': {'files_collection':1}}).then(
                  function(jobstates) {
+                     console.log(jobstates);
                      $scope.job['jobstates'] = jobstates._items;
                  });
 
@@ -158,7 +154,7 @@ app.factory('BasicAuthInjector', function($cookies) {
 });
 
 app.controller('ListJobsController', function($scope, $location, $cookies,
-CommonCode, Restangular) {
+CommonCode, Restangular, $state, $stateParams) {
 
     $scope.loadPage = function() {
         var targetPage = $scope.currentPage;
@@ -182,6 +178,7 @@ CommonCode, Restangular) {
             ($scope._meta.total / $scope._meta.max_results)) {
             $scope.currentPage++;
             $location.path('/jobs').search({page:$scope.currentPage});
+            $scope.loadPage();
         }
     }
 
@@ -192,6 +189,8 @@ CommonCode, Restangular) {
         }
     }
 
+    $scope.$state = $state;
+    $scope.$stateParams = $stateParams;
     $scope.loadPage();
 });
 
@@ -213,10 +212,10 @@ app.controller('ListRemotecisController', function(
 });
 
 app.controller('JobDetailsController', function(
-    $scope, $routeParams, CommonCode, Restangular) {
-    $scope.job_id = $routeParams.job_id;
+    $scope, CommonCode, Restangular, $stateParams) {
 
-    CommonCode.getJobInfo($scope, $scope.job_id);
+    console.log("kikoolol");
+    CommonCode.getJobInfo($scope, $stateParams.jobId);
 });
 
 app.controller('LoginController', ['$scope', '$location', '$cookies',

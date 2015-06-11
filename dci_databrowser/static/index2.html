@@ -1,0 +1,50 @@
+<!doctype html >
+<html ng-app="app">
+<head>
+    <title>Distributed CI</title>
+
+    <!-- Angular, restangular and Underscore -->
+    <script
+       src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular.js">
+    </script>
+
+    <script
+       src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-route.js">
+    </script>
+
+    <script
+       src="https://ajax.googleapis.com/ajax/libs/angularjs/1.3.15/angular-cookies.js">
+    </script>
+
+    <script
+       src="https://cdn.jsdelivr.net/restangular/1.5.1/restangular.js">
+    </script>
+
+    <script
+       src="https://cdn.jsdelivr.net/underscorejs/1.8.3/underscore-min.js">
+    </script>
+
+    <link rel='stylesheet' href='//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.7.1/loading-bar.min.css' type='text/css' media='all' />
+    <script type='text/javascript'
+       src='//cdnjs.cloudflare.com/ajax/libs/angular-loading-bar/0.7.1/loading-bar.min.js'>
+    </script>
+
+    <script src="js/app.js"></script>
+</head>
+
+<body>
+<div ng-controller="MainController">
+  Choose
+  <a href="/client/#/login">Login</a> |
+  <a href="/client/#/jobs">Job list</a> |
+  <a href="/client/#/remotecis">Remote CI</a> |
+  <a href="/client/#/logout">Logout</a><br/><br/>
+
+  <div ng-view></div><br/>
+
+  <pre>$location.path() = {{$location.path()}}</pre>
+  <pre>$route.current.templateUrl = {{$route.current.templateUrl}}</pre>
+</div>
+
+</body>
+</html>
