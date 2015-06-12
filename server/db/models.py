@@ -128,5 +128,12 @@ class DCIModel(object):
             domain[table]['description'] = self.get_table_description(table)
         # NOTE(Goneri): optional, if the key is missing, we dynamically pick
         # a testversion that fit.
+        # NOTE(Gonéri): This is an example of configuratin to be able to embed
+        # versions_collection.product with products item
         domain['jobs']['schema']['testversion_id']['required'] = False
+        domain['products']['schema']['versions_collection']['schema'] = {
+            'product': {'data_relation': {'embeddable': True,
+                                          'resource': 'products'},
+                        'type': 'objectid'}}
+        domain['versions']['datasource']['projection']['product'] = 1
         return domain
