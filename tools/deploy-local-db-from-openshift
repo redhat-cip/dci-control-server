@@ -1,0 +1,7 @@
+#!/bin/bash
+
+set -eux
+
+rhc snapshot save --app staging --filepath /tmp/staging.tar.gz
+sudo su - postgres -c "dropdb staging"
+tar -xf /tmp/staging.tar.gz --to-stdout --wildcards --no-anchored '*/app-root/data/postgresql_dump_snapshot.gz'|gunzip|sudo su - postgres -c psql
