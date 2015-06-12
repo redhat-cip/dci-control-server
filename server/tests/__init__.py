@@ -41,7 +41,7 @@ class DCITestCase(testtools.TestCase):
                          '--echo-hidden', '-h', self._db_dir,
                          '-f', 'db_schema/dci-control-server.sql',
                          'template1'])
-        time.sleep(1)
+        time.sleep(2)
         db_uri = (
             "postgresql:///?host=%s&dbname=template1" % self._db_dir)
         import server.app
