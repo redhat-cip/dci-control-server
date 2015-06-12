@@ -4,3 +4,5 @@ pip install -r ${OPENSHIFT_REPO_DIR}/requirements.txt
 # NOTE(Gonéri): Extra optional deps to get the /docs working
 pip install git+https://github.com/hermannsblum/eve-docs
 pip install Flask-Bootstrap
+
+find $OPENSHIFT_REPO_DIR/db_schema/dci-control-server.sql -mmin -5 -exec "$OPENSHIFT_REPO_DIR/.openshift/deploy_db" \;

@@ -1,0 +1,7 @@
+#!/bin/bash
+
+echo "
+    DROP SCHEMA public CASCADE;
+    CREATE SCHEMA public;
+    \\i ${OPENSHIFT_REPO_DIR}/db_schema/dci-control-server.sql
+" | psql
