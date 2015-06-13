@@ -414,7 +414,10 @@ CREATE TABLE versions (
     name character varying(255) NOT NULL,
     etag character varying(40) NOT NULL,
     product_id uuid NOT NULL,
-    data json
+    data json,
+    sha text,
+    title text,
+    message text
 );
 
 
@@ -447,6 +450,22 @@ ALTER TABLE ONLY jobs
 
 ALTER TABLE ONLY notifications
     ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: product_sha_unicity; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY versions
+    ADD CONSTRAINT product_sha_unicity UNIQUE (product_id, sha);
+
+
+--
+-- Name: product_unicity; Type: CONSTRAINT; Schema: public; Owner: -; Tablespace:
+--
+
+ALTER TABLE ONLY products
+    ADD CONSTRAINT product_unicity UNIQUE (name);
 
 
 --
