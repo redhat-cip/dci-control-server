@@ -45,8 +45,9 @@ class DCIClient(object):
         return self.s.post("%s%s" % (
             self.end_point, path), data=json.dumps(data))
 
-    def get(self, path, params=None):
-        return self.s.get("%s%s" % (self.end_point, path), params=params)
+    def get(self, path, where={}, params=None):
+        return self.s.get("%s%s?where=%s" % (
+            self.end_point, path, json.dumps(where)), params=params)
 
     def upload_file(self, fd, jobstate_id, mime='text/plain', name=None):
         fd.seek(0)

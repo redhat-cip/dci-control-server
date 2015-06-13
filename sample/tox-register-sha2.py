@@ -14,38 +14,66 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import subprocess
-
+import requests
 import client
 
-dci_client = client.DCIClient()
 
-dci_client.delete("/testversions")
-dci_client.delete("/versions")
-dci_client.delete("/tests")
-dci_client.delete("/products")
+def sha_walker(dci_client, sha, product_id, test_id):
+    # NOTE(Gonéri): Is the commit already here?
+    r = dci_client.get("/versions", where={
+        'sha': sha,
+        'product_id': product_id
+    })
+    if r.status_code == 200:
+        return
 
-team = dci_client.get("/teams/partner")
-product_id = dci_client.post("/products", {
-    "name": "dci-control-server",
-    "data": {
-        "git_url": "https://github.com/enovance/dci-control-server"}}
-).json()['id']
-test_id = dci_client.post("/tests", {
-    "name": "tox",
-}).json()['id']
-revisions = subprocess.check_output([
-    "git", "log", "--no-merges", "--format=oneline"])
-for revision in revisions.splitlines():
-    a = revision.decode('utf-8').split(" ")
+    commit = gh_s.get(
+        'https://api.github.com/'
+        'repos/enovance/dci-control-server/git/commits/%s' % sha).json()
+    message = commit['message']
+    title = message.split('\n')[0]
+    print(title)
     version_id = dci_client.post("/versions", {
         "product_id": product_id,
-        "name": " ".join(a[1:]),
+        "name": sha,
+        "title": title,
+        "message": message,
+        "sha": sha,
         "data": {
-            "sha2": a[0]
+            "sha2": sha
         }
     }).json()['id']
-    testversion_id = dci_client.post("/testversions", {
+    dci_client.post("/testversions", {
         "test_id": test_id,
         "version_id": version_id,
     }).json()['id']
+
+    for parent in commit['parents']:
+        sha_walker(dci_client, parent['sha'], product_id, test_id)
+
+
+dci_client = client.DCIClient()
+
+product_name = "dci-control-server"
+
+r = dci_client.get("/products/%s" % product_name)
+if r.status_code == 404:
+    r = dci_client.post("/products", {
+        "name": "dci-control-server",
+        "data": {
+            "git_url": "https://github.com/enovance/dci-control-server"}}
+    )
+product_id = r.json()['id']
+test_id = dci_client.post("/tests", {
+    "name": "tox",
+}).json()['id']
+
+gh_s = requests.Session()
+# gh_s.auth = ('goneri', 'xxxxx')
+r = gh_s.get(
+    'https://api.github.com/repos/'
+    'enovance/dci-control-server'
+    '/branches')
+branches = {a['name']: a['commit'] for a in r.json()}
+sha = branches['master']['sha']
+sha_walker(dci_client, sha, product_id, test_id)
