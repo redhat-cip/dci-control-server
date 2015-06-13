@@ -46,8 +46,9 @@ class DCIClient(object):
         return self.s.post("%s%s" % (
             self.end_point, path), data=json.dumps(data))
 
-    def get(self, path, params=None):
-        return self.s.get("%s%s" % (self.end_point, path), params=params)
+    def get(self, path, where={}, params=None):
+        return self.s.get("%s%s?where=%s" % (
+            self.end_point, path, json.dumps(where)), params=params)
 
     def list_items(self, item_type, where={}, embedded={},
                    projection={}, page=1, max_results=10):
