@@ -70,7 +70,9 @@ def init_app(db_uri=None):
         'LAST_UPDATED': 'updated_at',
         'DATE_CREATED': 'created_at',
         'ID_FIELD': 'id',
-        'ITEM_URL': 'regex("[-a-z0-9]{36,64}")',
+        # 94ecbcfe-a9a6-7913-13a8-1ef1d50d9817
+        'ITEM_URL': 'regex("[-a-z0-9]{8}-[-a-z0-9]{4}-'
+                    '[-a-z0-9]{4}-[-a-z0-9]{4}-[-a-z0-9]{12}")',
         'ITEM_LOOKUP_FIELD': 'id',
         'ETAG': 'etag',
         'DEBUG': True,
