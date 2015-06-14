@@ -106,7 +106,8 @@ class DCIModel(object):
             domain[table] = DB._eve_schema[table]
             domain[table].update({
                 'id_field': 'id',
-                'item_url': 'regex("[-a-z0-9]{36,64}")',
+                'item_url': 'regex("[-a-z0-9]{8}-[-a-z0-9]{4}-'
+                            '[-a-z0-9]{4}-[-a-z0-9]{4}-[-a-z0-9]{12}")',
                 'item_lookup_field': 'id',
                 'resource_methods': ['GET', 'POST', 'DELETE'],
                 'item_methods': ['PATCH', 'DELETE', 'PUT', 'GET'],
@@ -122,7 +123,7 @@ class DCIModel(object):
             if hasattr(DB, 'name'):
                 domain[table].update({
                     'additional_lookup': {
-                        'url': 'regex("[\S]+")',
+                        'url': 'regex("[-_\w\d]+")',
                         'field': 'name'
                     }})
             domain[table]['description'] = self.get_table_description(table)
