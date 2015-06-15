@@ -5,4 +5,23 @@ pip install -r ${OPENSHIFT_REPO_DIR}/requirements.txt
 pip install git+https://github.com/hermannsblum/eve-docs
 pip install Flask-Bootstrap
 
-find $OPENSHIFT_REPO_DIR/db_schema/dci-control-server.sql -mmin -5 -exec "$OPENSHIFT_REPO_DIR/.openshift/deploy_db" \;
+new_schema_checksum=$(sha256sum $OPENSHIFT_REPO_DIR/db_schema/dci-control-server.sql|awk '{print $1}')
+current_schema_checksum=$(psql -t -A -q -c 'SELECT dci_cs_version();')
+
+if [ "${new_schema_checksum}" != "${current_schema_checksum}" ]; then
+    $OPENSHIFT_REPO_DIR/.openshift/deploy_db
+    psql -c "
+        SELECT pg_terminate_backend(pg_stat_activity.pid)
+        FROM pg_stat_activity
+        WHERE datname = current_database()
+        AND pid <> pg_backend_pid(); DROP SCHEMA public CASCADE;
+        CREATE SCHEMA public;"
+    echo "
+        DROP SCHEMA public CASCADE;
+        CREATE SCHEMA public;
+        \\i ${OPENSHIFT_REPO_DIR}/db_schema/dci-control-server.sql
+    " | psql
+    psql -c "
+        CREATE OR REPLACE FUNCTION dci_cs_version() RETURNS text AS '
+        SELECT \$\$${new_schema_checksum}\$\$::text ' LANGUAGE SQL IMMUTABLE;"
+fi
