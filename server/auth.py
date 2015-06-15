@@ -30,6 +30,7 @@ class DCIBasicAuth(eve.auth.BasicAuth):
         try:
             self.user = session.query(
                 self.dci_model.base.classes.users).filter_by(name=name).one()
+            self.roles = [r.name for r in self.user.roles]
         except sqlalchemy.orm.exc.NoResultFound:
             return False
         if bcrypt.hashpw(
@@ -49,8 +50,7 @@ class DCIBasicAuth(eve.auth.BasicAuth):
             flask.abort(401, description='Unauthorized')
             return False
 
-        roles = [r.name for r in self.user.roles]
-        if 'admin' in roles:
+        if 'admin' in self.roles:
             # NOTE(Gonéri): we preserve auth_value undefined for GET,
             # this way, admin use can read all the field from the database
             if method != 'GET':
@@ -70,7 +70,7 @@ class DCIBasicAuth(eve.auth.BasicAuth):
             }
         }
 
-        for role in roles:
+        for role in self.roles:
             try:
                 if method in acl[role][resource]:
                     return True
