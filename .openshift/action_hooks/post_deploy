@@ -14,8 +14,7 @@ if [ "${new_schema_checksum}" != "${current_schema_checksum}" ]; then
         SELECT pg_terminate_backend(pg_stat_activity.pid)
         FROM pg_stat_activity
         WHERE datname = current_database()
-        AND pid <> pg_backend_pid(); DROP SCHEMA public CASCADE;
-        CREATE SCHEMA public;"
+        AND pid <> pg_backend_pid(); DROP SCHEMA public CASCADE;"
     echo "
         DROP SCHEMA public CASCADE;
         CREATE SCHEMA public;
