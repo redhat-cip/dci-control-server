@@ -17,7 +17,6 @@
 import re
 
 from sqlalchemy import create_engine
-from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
 from sqlalchemy.orm import relationship
@@ -65,9 +64,6 @@ class DCIModel(object):
             self.base.classes.versions, uselist=True, lazy='dynamic'))
         setattr(self.base.classes.versions, 'notifications', relationship(
             self.base.classes.notifications, uselist=True, lazy='dynamic'))
-
-        setattr(self.base.classes.users, 'roles', association_proxy(
-                'user_roles_collection', 'role'))
 
     def get_session(self):
         return Session(self.engine)
