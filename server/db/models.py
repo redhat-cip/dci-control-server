@@ -66,9 +66,6 @@ class DCIModel(object):
         setattr(self.base.classes.versions, 'notifications', relationship(
             self.base.classes.notifications, uselist=True, lazy='dynamic'))
 
-        setattr(self.base.classes.users, 'roles', association_proxy(
-                'user_roles_collection', 'role'))
-
     def get_session(self):
         return Session(self.engine)
 
