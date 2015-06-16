@@ -27,10 +27,17 @@ class DCIBasicAuth(eve.auth.BasicAuth):
 
     def check_auth(self, name, password, allowed_roles, resource, method):
         session = self.dci_model.get_session()
+        users_c = self.dci_model.base.classes.users_c
+        user_roles_c = self.dci_model.base.classes.user_roles
+        roles_c = self.dci_model.base.classes.roles
         try:
             self.user = session.query(
-                self.dci_model.base.classes.users).filter_by(name=name).one()
-            self.roles = [r.name for r in self.user.roles]
+                users_c).filter_by(name=name).one()
+            self.user_roles = session.query(
+                user_roles_c).filter_by(user_id=self.user.id).all()
+            roles_id = [ur.role_id for ur in self.user_roles]
+            self.roles = [r.name for r in session.query(
+                roles_c).filter(roles_c.id.in_(roles_id)).all()]
         except sqlalchemy.orm.exc.NoResultFound:
             return False
         if bcrypt.hashpw(
