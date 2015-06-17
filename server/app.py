@@ -120,6 +120,7 @@ def init_app(db_uri=None):
             testversion = session.query(
                 dci_model.base.classes.testversions).get(str(r[0]))
             d['testversion_id'] = testversion.id
+        session.close()
 
     def aggregate_job_data(response):
         session = dci_model.get_session()
@@ -133,6 +134,7 @@ def init_app(db_uri=None):
         for my_data in my_datas:
             if my_data:
                 data = api.dict_merge(data, my_data)
+        session.close()
         response['data'] = data
 
     app.on_insert += set_real_owner

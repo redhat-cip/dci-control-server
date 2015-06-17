@@ -40,6 +40,8 @@ class DCIBasicAuth(eve.auth.BasicAuth):
                 roles_c).filter(roles_c.id.in_(roles_id)).all()]
         except sqlalchemy.orm.exc.NoResultFound:
             return False
+        finally:
+            session.close()
         if bcrypt.hashpw(
                 password.encode('utf-8'),
                 self.user.password.encode('utf-8')

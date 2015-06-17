@@ -20,7 +20,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy import MetaData
 from sqlalchemy.orm import relationship
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
 
 from eve_sqlalchemy.decorators import registerSchema
@@ -64,9 +64,11 @@ class DCIModel(object):
             self.base.classes.versions, uselist=True, lazy='dynamic'))
         setattr(self.base.classes.versions, 'notifications', relationship(
             self.base.classes.notifications, uselist=True, lazy='dynamic'))
+        self._Session = sessionmaker(bind=self.engine)
 
     def get_session(self):
-        return Session(self.engine)
+        # NOTE(Gonéri): We should reuse the Flask-SQLAlchemy session here
+        return self._Session()
 
     def get_table_description(self, table):
         """Prepare a table description for Eve-Docs
