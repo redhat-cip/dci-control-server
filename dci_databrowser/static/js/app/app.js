@@ -186,7 +186,14 @@ CommonCode, Restangular, $state, $stateParams) {
             }
         }
 
-        CommonCode.aggregateJobInfo($scope, targetPage);
+        Restangular.one('jobs').get({'page': targetPage}).then(
+        function(jobs) {
+            $scope.jobs = jobs._items
+            $cookies.jobsTotalPages = parseInt((jobs._meta.total /
+                jobs._meta.max_results + 1));
+            $scope.jobsTotalPages = $cookies.jobsTotalPages;
+        });
+
     };
 
     $scope.jobsNextPage = function() {
