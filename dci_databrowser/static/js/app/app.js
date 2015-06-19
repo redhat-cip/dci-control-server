@@ -105,57 +105,7 @@ app.factory('CommonCode', function($window, Restangular, $cookies) {
         });
     };
 
-    var aggregateJobInfo = function($scope, targetPage) {
-
-        Restangular.one('jobs').get({'page': targetPage,
-        'embedded': {'remoteci':1, 'testversion':1}}).then(
-        function(jobs) {
-            for (var i = 0; i < jobs._items.length; i++) {
-                // Get the last status and the last update date
-                (function(localI) {
-                    Restangular.one('jobstates').get(
-                    {'where': {'job_id': jobs._items[localI].id}}).then(
-                      function(jobstates) {
-                          length = jobstates._items.length;
-                          jobs._items[localI]['updated_at'] =
-                              jobstates._items[length - 1].updated_at;
-                          jobs._items[localI]['status'] =
-                              jobstates._items[length - 1].status;
-                          jobs._items[localI]['jobstates'] = jobstates
-                      });
-                })(i);
-
-                // Get the product name, the version and the test name
-                (function(localI) {
-                    Restangular.one('testversions',
-                    jobs._items[localI].testversion_id).get(
-                    {'embedded': {'version':1, 'test':1}}).then(
-                        function(testversion) {
-                            jobs._items[localI]['version'] =
-                                testversion.version.id.name;
-                            jobs._items[localI]['test'] =
-                                testversion.test.id.name;
-
-                            Restangular.one('products',
-                            testversion.version.id.product_id).get().then(
-                            function(product) {
-                                jobs._items[localI]['product'] = product.name;
-                            }
-                            )
-                        }
-                    );
-                })(i);
-            }
-
-            $scope.jobs = jobs._items;
-            $cookies.jobsTotalPages = parseInt((jobs._meta.total /
-                jobs._meta.max_results + 1));
-            $scope.jobsTotalPages = $cookies.jobsTotalPages;
-        });
-    };
-
-    return {'aggregateJobInfo': aggregateJobInfo,
-            'getJobInfo': getJobInfo,
+    return {'getJobInfo': getJobInfo,
             'getRemoteCis': getRemoteCis};
 });
 
@@ -186,7 +136,14 @@ CommonCode, Restangular, $state, $stateParams) {
             }
         }
 
-        CommonCode.aggregateJobInfo($scope, targetPage);
+        Restangular.one('jobs').get({'page': targetPage, 'extra_data': 1}).
+        then(function(jobs) {
+            $scope.jobs = jobs._items
+            $cookies.jobsTotalPages = parseInt((jobs._meta.total /
+                jobs._meta.max_results + 1));
+            $scope.jobsTotalPages = $cookies.jobsTotalPages;
+        });
+
     };
 
     $scope.jobsNextPage = function() {

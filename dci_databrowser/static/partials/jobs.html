@@ -10,12 +10,12 @@
     <th>Details</th>
   </tr>
   <tr ng-repeat="job in jobs">
-    <td>{{job.remoteci.id.name}}</td>
-    <td>{{job.updated_at}}</td>
-    <td>{{job.product}}</td>
-    <td>{{job.test}}</td>
-    <td>{{job.version}}</td>
-    <td>{{job.status}}</td>
+    <td>{{job.extra_data.remoteci}}</td>
+    <td>{{job.extra_data.last_update}}</td>
+    <td>{{job.extra_data.product}}</td>
+    <td>{{job.extra_data.test}}</td>
+    <td>{{job.extra_data.version}}</td>
+    <td>{{job.extra_data.last_status}}</td>
     <td>
       <a ui-sref="jobdetails({ jobId: job.id })">Show details</a>
     </td>

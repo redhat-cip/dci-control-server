@@ -27,6 +27,7 @@ from eve import Eve
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 from flask import abort
+from flask import request
 from sqlalchemy.sql import text
 
 from dci_databrowser import dci_databrowser
@@ -137,9 +138,57 @@ def init_app(db_uri=None):
         session.close()
         response['data'] = data
 
+    def get_job(response):
+        if not flask.request.args.get('extra_data'):
+            return
+
+        session = dci_model.get_session()
+        for job in response["_items"]:
+            job["extra_data"] = {}
+            # Get the jobstate
+            Jobstates = dci_model.base.classes.jobstates
+            jobstate = session.query(Jobstates).\
+                order_by(Jobstates.created_at.desc()).\
+                filter(Jobstates.job_id == job["id"]).first()
+            if not jobstate:
+                print(job["id"])
+                continue
+            job["extra_data"]["last_status"] = jobstate.status
+            job["extra_data"]["last_update"] = jobstate.created_at
+
+            # Get the remote ci name
+            Remotecis = dci_model.base.classes.remotecis
+            remoteci = session.query(Remotecis).\
+                filter(Remotecis.id == job["remoteci_id"]).one()
+            job["extra_data"]["remoteci"] = remoteci.name
+
+            # Get the testversion
+            Testversions = dci_model.base.classes.testversions
+            testversion = session.query(Testversions).get(
+                job["testversion_id"])
+
+            # Get the version
+            Versions = dci_model.base.classes.versions
+            version = session.query(Versions).get(testversion.version_id)
+            job["extra_data"]["version"] = version.name
+
+            # Get the product
+            Products = dci_model.base.classes.products
+            product = session.query(Products).get(version.product_id)
+            job["extra_data"]["product"] = product.name
+
+            # Get the test
+            Tests = dci_model.base.classes.tests
+            test = session.query(Tests).get(testversion.test_id)
+            job["extra_data"]["test"] = test.name
+
+        session.close()
+
     app.on_insert += set_real_owner
     app.on_insert_jobs += pick_jobs
     app.on_fetched_item_jobs += aggregate_job_data
+    app.on_fetched_resource_jobs += get_job
+
     app.register_blueprint(dci_databrowser, url_prefix='/client')
     load_docs(app)
     return app
