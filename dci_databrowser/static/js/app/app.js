@@ -40,17 +40,20 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
     $stateProvider
     .state('jobs', {
         url: '/jobs?page',
-        //params: { page: "1" },
         templateUrl: 'partials/jobs.html',
         controller: 'ListJobsController'
     }).state('jobdetails', {
-        url:'jobdetails/:jobId',
+        url:'/jobdetails/:jobId',
         templateUrl: 'partials/jobdetails.html',
         controller: 'JobDetailsController'
     }).state('remotecis', {
         url:'/remotecis',
         templateUrl: 'partials/remotecis.html',
         controller: 'ListRemotecisController'
+    }).state('products', {
+        url:'/products',
+        templateUrl: 'partials/products.html',
+        controller: 'ProductsController'
     }).state('signin', {
         url: '/signin',
         templateUrl: 'partials/signin.html',
@@ -61,6 +64,7 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
         controller: 'LogoutController'
     });
 
+    $urlRouterProvider.otherwise('/jobs');
     $httpProvider.interceptors.push('BasicAuthInjector');
 });
 
@@ -87,7 +91,6 @@ app.factory('CommonCode', function($window, Restangular, $cookies) {
                 {'where': {'job_id': job_id},
                  'embedded': {'files_collection':1}}).then(
                  function(jobstates) {
-                     console.log(jobstates);
                      $scope.job['jobstates'] = jobstates._items;
                  });
 
@@ -193,6 +196,27 @@ CommonCode, Restangular) {
 app.controller('JobDetailsController', function(
     $scope, CommonCode, Restangular, $stateParams) {
     CommonCode.getJobInfo($scope, $stateParams.jobId);
+});
+
+app.controller('ProductsController', function(
+    $scope, CommonCode, Restangular, $stateParams) {
+
+    Restangular.one('products').get().
+        then(function(products) {
+            $scope.products = products._items;
+            $scope.myProduct = products._items[0];
+        });
+
+    $scope.$watch('myProduct', function(currentProduct, previousProduct) {
+        if (currentProduct != undefined) {
+            console.log(currentProduct.id);
+            Restangular.one('versions').
+            get({'where': {'product_id': currentProduct.id}, 'extra_data': 1}).
+            then(function(versions) {
+                $scope.versions_status = versions._items;
+            });
+        }
+    });
 });
 
 app.controller('LoginController', ['$scope', '$cookies', '$state',

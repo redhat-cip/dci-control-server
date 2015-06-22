@@ -150,7 +150,6 @@ def init_app(db_uri=None):
                 order_by(Jobstates.created_at.desc()).\
                 filter(Jobstates.job_id == job["id"]).first()
             if not jobstate:
-                print(job["id"])
                 continue
             job["extra_data"]["last_status"] = jobstate.status
             job["extra_data"]["last_update"] = jobstate.created_at
@@ -180,13 +179,50 @@ def init_app(db_uri=None):
             Tests = dci_model.base.classes.tests
             test = session.query(Tests).get(testversion.test_id)
             job["extra_data"]["test"] = test.name
+        session.close()
 
+    def get_versions_extra(response):
+        if not flask.request.args.get('extra_data'):
+            return
+
+        session = dci_model.get_session()
+        for version in response["_items"]:
+            version["extra_data"] = []
+
+            Testversions = dci_model.base.classes.testversions
+            testversions = session.query(Testversions).\
+                filter(Testversions.version_id == version["id"]).all()
+
+            for testversion in testversions:
+                extra_data = {}
+                Tests = dci_model.base.classes.tests
+                test = session.query(Tests).get(testversion.test_id)
+                extra_data["test"] = test.name
+
+                Jobs = dci_model.base.classes.jobs
+                job = session.query(Jobs).\
+                    filter(Jobs.testversion_id == testversion.id).first()
+                extra_data["job_id"] = job.id
+
+                Remotecis = dci_model.base.classes.remotecis
+                remoteci = session.query(Remotecis).get(job.remoteci_id)
+                extra_data["remoteci"] = remoteci.name
+
+                Jobstates = dci_model.base.classes.jobstates
+                jobstate = session.query(Jobstates).\
+                    order_by(Jobstates.created_at.desc()).\
+                    filter(Jobstates.job_id == job.id).first()
+                if jobstate:
+                    extra_data["status"] = jobstate.status
+
+                version["extra_data"].append(extra_data)
         session.close()
 
     app.on_insert += set_real_owner
     app.on_insert_jobs += pick_jobs
     app.on_fetched_item_jobs += aggregate_job_data
     app.on_fetched_resource_jobs += get_job
+    app.on_fetched_resource_versions += get_versions_extra
 
     app.register_blueprint(dci_databrowser, url_prefix='/client')
     load_docs(app)
