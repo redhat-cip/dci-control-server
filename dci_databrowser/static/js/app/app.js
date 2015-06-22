@@ -91,13 +91,13 @@ app.factory('CommonCode', function($window, Restangular, $cookies) {
                      $scope.job['jobstates'] = jobstates._items;
                  });
 
-            Restangular.one('testversions', job.testversion.id.id).get(
+            Restangular.one('testversions', job.testversion.id).get(
                 {'embedded': {'version':1, 'test':1}}).then(
                 function(testversion) {
-                    $scope.job['version'] = testversion.version.id.name;
-                    $scope.job['test'] = testversion.test.id.name;
+                    $scope.job['version'] = testversion.version.name;
+                    $scope.job['test'] = testversion.test.name;
                     Restangular.one('products',
-                    testversion.version.id.product_id).get().then(
+                    testversion.version.product_id).get().then(
                         function(product) {
                             $scope.job['product'] = product.name;
                         }

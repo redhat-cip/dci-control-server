@@ -1,5 +1,5 @@
 bcrypt
--e git://github.com/goneri/eve-sqlalchemy.git@embedded_with_DOMAIN#egg=eve-sqlalchemy
+Eve-SQLAlchemy>=0.4.0a1
 pbr
 PrettyTable
 six>=1.9

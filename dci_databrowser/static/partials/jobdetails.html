@@ -10,7 +10,7 @@
     <th>Status</th>
   </tr>
   <tr>
-    <td>{{job.remoteci.id.name}}</td>
+    <td>{{job.remoteci.name}}</td>
     <td>{{job.created_at}}</td>
     <td>{{job.updated_at}}</td>
     <td>{{job.product}}</td>
@@ -35,10 +35,10 @@
     </tr>
   </table><br/>
   <div ng-repeat="file in jobstate.files_collection">
-    <h3>{{file.id.name}}</h3>
+    <h3>{{file.name}}</h3>
       <table>
         <tr>
-          <td>{{file.id.content}}</td>
+          <td>{{file.content}}</td>
         </tr>
       </table><br/>
   </div>
