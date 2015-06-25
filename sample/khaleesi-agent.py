@@ -19,8 +19,10 @@ import glob
 import os
 import shutil
 import six
+import string
 import sys
 import tempfile
+import yaml
 
 import client
 
@@ -34,7 +36,7 @@ except IndexError:
 
 dci_client = client.DCIClient()
 
-test_name = "khaleesi"
+test_name = "khaleesi-tempest"
 
 r = dci_client.get("/tests/%s" % test_name)
 if r.status_code == 404:
@@ -55,57 +57,81 @@ job = dci_client.get("/jobs/%s" % job_id).json()
 structure_from_server = job['data']
 
 # TODO(Gonéri): Create a load_config() method or something similar
-import yaml
 settings = yaml.load(open('local_settings.yml', 'r'))
+kh_dir = settings['location']['khaleesi']
 
-for k, v in six.iteritems(structure_from_server['ksgen_args']):
-    if isinstance(v, dict):
-        settings['ksgen_args'][k] = v
-    else:
-        settings['ksgen_args'][k] = v.replace(
-            '%%KHALEESI_SETTINGS%%',
-            settings['location']['khaleesi_settings'])
 args = [settings['location'].get('python_bin', 'python'),
         './tools/ksgen/ksgen/core.py',
         '--config-dir=%s/settings' % (
             settings['location']['khaleesi_settings']),
         'generate']
-for k, v in six.iteritems(settings['ksgen_args']):
-    if isinstance(v, dict):
-        for sk, sv in six.iteritems(v):
+for ksgen_args in (structure_from_server.get('ksgen_args', {}),
+                   settings.get('ksgen_args', {})):
+    for k, v in six.iteritems(ksgen_args):
+        if isinstance(v, list):
+            for sv in v:
+                args.append('--%s' % (k))
+                args.append(sv)
+        else:
             args.append('--%s' % (k))
-            args.append('%s=%s' % (sk, sv))
-    else:
-        args.append('--%s' % (k))
-        args.append('%s' % (v))
+            args.append('%s' % (v))
 ksgen_settings_file = tempfile.NamedTemporaryFile()
+with open(kh_dir + '/ssh.config.ansible', "w") as fd:
+    fd.write('')
+
 args.append(ksgen_settings_file.name)
 environ = os.environ
-environ['PYTHONPATH'] = './tools/ksgen'
+environ.update({
+    'PYTHONPATH': './tools/ksgen',
+    'JOB_NAME': '',
+    'ANSIBLE_HOST_KEY_CHECKING': 'False',
+    'ANSIBLE_ROLES_PATH': kh_dir + '/roles',
+    'ANSIBLE_LIBRARY': kh_dir + '/library',
+    'ANSIBLE_DISPLAY_SKIPPED_HOSTS': 'False',
+    'ANSIBLE_FORCE_COLOR': 'yes',
+    'ANSIBLE_CALLBACK_PLUGINS': kh_dir + '/khaleesi/plugins/callbacks/',
+    'ANSIBLE_FILTER_PLUGINS': kh_dir + '/khaleesi/plugins/filters/',
+    'ANSIBLE_SSH_ARGS': ' -F ssh.config.ansible',
+    'ANSIBLE_TIMEOUT': '60',
+    'PWD': kh_dir})
 
 collected_files_path = ("%s/collected_files" %
-                        settings['location']['khaleesi'])
+                        kh_dir)
 if os.path.exists(collected_files_path):
     shutil.rmtree(collected_files_path)
 dci_client.call(job_id,
                 args,
-                cwd=settings['location']['khaleesi'],
+                cwd=kh_dir,
                 env=environ)
 
+local_hosts_template = string.Template(
+    "[local]\n"
+    "localhost ansible_connection=local\n\n"
+    "[virthost]\n"
+    "$hypervisor groups=virthost ansible_ssh_host=$hypervisor"
+    " ansible_ssh_user=stack ansible_ssh_private_key_file=~/.ssh/id_rsa\n"
+)
+
+with open(kh_dir + '/local_hosts', "w") as fd:
+    fd.write(
+        local_hosts_template.substitute(hypervisor=settings['hypervisor']))
 args = [
-    './run.sh', '-vvvv', '--use',
-    ksgen_settings_file.name,
-    'playbooks/packstack.yml']
+    settings['location'].get('ansible_playbook_bin', 'ansible-playbook'),
+    '-vvvv', '--extra-vars',
+    '@' + ksgen_settings_file.name,
+    '-i', kh_dir + '/local_hosts',
+    kh_dir + '/playbooks/full-job-no-test.yml']
 jobstate_id = dci_client.call(job_id,
                               args,
-                              cwd=settings['location']['khaleesi'])
+                              cwd=kh_dir,
+                              env=environ)
 for log in glob.glob(collected_files_path + '/*'):
     with open(log) as f:
         dci_client.upload_file(f, jobstate_id)
 # NOTE(Gonéri): this call slow down the process (pulling data
 # that we have sent just before)
 jobstate = dci_client.get("/jobstates/%s" % jobstate_id).json()
-final_status = 'success' if jobstate['_status'] == 'OK' else 'failure'
+final_status = 'success' if jobstate['status'] == 'OK' else 'failure'
 state = {"job_id": job["id"],
          "status": final_status,
          "comment": "Job has been processed"}
