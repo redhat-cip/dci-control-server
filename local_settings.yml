@@ -1,9 +1,11 @@
 ---
-ksgen_args:
-  provisioner-site: openstack
-  provisioner-site-user: user
-  extra-vars: provisioner.key_file=/home/user/.ssh/id_rsa
+# ksgen_args:
+#   tester: tempest
+#   tester-setup: rpm
+#   tester-tests: all
 location:
   khaleesi: /opt/khaleesi
   khaleesi_settings: /opt/khaleesi-settings
   python_bin: /opt/venv/py27/bin/python
+  ansible_playbook_bin: /opt/venv/py27/bin/ansible-playbook
+hypervisor: boa-3
