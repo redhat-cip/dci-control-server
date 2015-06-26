@@ -143,42 +143,48 @@ def init_app(db_uri=None):
 
         session = dci_model.get_session()
         for job in response["_items"]:
-            job["extra_data"] = {}
+            extra_data = {}
+
             # Get the jobstate
             Jobstates = dci_model.base.classes.jobstates
             jobstate = session.query(Jobstates).\
                 order_by(Jobstates.created_at.desc()).\
                 filter(Jobstates.job_id == job["id"]).first()
-            if not jobstate:
-                continue
-            job["extra_data"]["last_status"] = jobstate.status
-            job["extra_data"]["last_update"] = jobstate.created_at
+            if jobstate:
+                extra_data["last_status"] = jobstate.status
+                extra_data["last_update"] = jobstate.created_at
 
             # Get the remote ci name
             Remotecis = dci_model.base.classes.remotecis
             remoteci = session.query(Remotecis).\
                 filter(Remotecis.id == job["remoteci_id"]).one()
-            job["extra_data"]["remoteci"] = remoteci.name
+            if remoteci:
+                extra_data["remoteci"] = remoteci.name
 
             # Get the testversion
             Testversions = dci_model.base.classes.testversions
             testversion = session.query(Testversions).get(
                 job["testversion_id"])
+            if testversion:
+                # Get the version
+                Versions = dci_model.base.classes.versions
+                version = session.query(Versions).get(testversion.version_id)
+                if version:
+                    extra_data["version"] = version.name
 
-            # Get the version
-            Versions = dci_model.base.classes.versions
-            version = session.query(Versions).get(testversion.version_id)
-            job["extra_data"]["version"] = version.name
+                    # Get the product
+                    Products = dci_model.base.classes.products
+                    product = session.query(Products).get(version.product_id)
+                    if product:
+                        extra_data["product"] = product.name
 
-            # Get the product
-            Products = dci_model.base.classes.products
-            product = session.query(Products).get(version.product_id)
-            job["extra_data"]["product"] = product.name
+                # Get the test
+                Tests = dci_model.base.classes.tests
+                test = session.query(Tests).get(testversion.test_id)
+                if test:
+                    extra_data["test"] = test.name
 
-            # Get the test
-            Tests = dci_model.base.classes.tests
-            test = session.query(Tests).get(testversion.test_id)
-            job["extra_data"]["test"] = test.name
+            job["extra_data"] = extra_data
         session.close()
 
     def get_versions_extra(response):
@@ -195,25 +201,28 @@ def init_app(db_uri=None):
 
             for testversion in testversions:
                 extra_data = {}
+
                 Tests = dci_model.base.classes.tests
                 test = session.query(Tests).get(testversion.test_id)
-                extra_data["test"] = test.name
+                if test:
+                    extra_data["test"] = test.name
 
                 Jobs = dci_model.base.classes.jobs
                 job = session.query(Jobs).\
                     filter(Jobs.testversion_id == testversion.id).first()
-                extra_data["job_id"] = job.id
+                if job:
+                    extra_data["job_id"] = job.id
+                    Remotecis = dci_model.base.classes.remotecis
+                    remoteci = session.query(Remotecis).get(job.remoteci_id)
+                    if remoteci:
+                        extra_data["remoteci"] = remoteci.name
 
-                Remotecis = dci_model.base.classes.remotecis
-                remoteci = session.query(Remotecis).get(job.remoteci_id)
-                extra_data["remoteci"] = remoteci.name
-
-                Jobstates = dci_model.base.classes.jobstates
-                jobstate = session.query(Jobstates).\
-                    order_by(Jobstates.created_at.desc()).\
-                    filter(Jobstates.job_id == job.id).first()
-                if jobstate:
-                    extra_data["status"] = jobstate.status
+                    Jobstates = dci_model.base.classes.jobstates
+                    jobstate = session.query(Jobstates).\
+                        order_by(Jobstates.created_at.desc()).\
+                        filter(Jobstates.job_id == job.id).first()
+                    if jobstate:
+                        extra_data["status"] = jobstate.status
 
                 version["extra_data"].append(extra_data)
         session.close()
