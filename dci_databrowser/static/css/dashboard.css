@@ -116,3 +116,11 @@ img.logo {
 .main .page-header {
   margin-top: 0;
 }
+
+# TODO(Gonéri): I think we can replace that with something like
+# https://github.com/drudru/ansi_up
+.code {
+  overflow: auto;
+  word-wrap: normal;
+  white-space: pre;
+}
