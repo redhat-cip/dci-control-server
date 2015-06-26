@@ -139,7 +139,9 @@ CommonCode, Restangular, $state, $stateParams) {
             }
         }
 
-        Restangular.one('jobs').get({'page': targetPage, 'extra_data': 1}).
+        Restangular.one('jobs').get({'page': targetPage,
+                                     'extra_data': 1,
+                                     'sort': '-created_at'}).
         then(function(jobs) {
             $scope.jobs = jobs._items
             $cookies.jobsTotalPages = parseInt((jobs._meta.total /
