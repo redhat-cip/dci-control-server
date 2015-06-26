@@ -211,7 +211,6 @@ app.controller('ProductsController', function(
 
     $scope.$watch('myProduct', function(currentProduct, previousProduct) {
         if (currentProduct != undefined) {
-            console.log(currentProduct.id);
             Restangular.one('versions').
             get({'where': {'product_id': currentProduct.id}, 'extra_data': 1}).
             then(function(versions) {
