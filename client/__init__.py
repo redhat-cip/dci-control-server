@@ -116,9 +116,9 @@ class DCIClient(object):
         f.write(("starting: %s" % " ".join(arg)).encode('utf-8'))
         while p.returncode is None and p.stdout:
             # TODO(Gonéri): print on STDOUT p.stdout
-            time.sleep(1)
+            time.sleep(0.1)
             for c in p.stdout:
-                print(c.decode("UTF-8").rstrip())
+                print(c.decode('utf-8'))
                 f.write(c)
             p.poll()
         self.upload_file(f, jobstate_id, name='output.log')

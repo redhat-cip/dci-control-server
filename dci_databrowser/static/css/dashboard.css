@@ -116,3 +116,9 @@ img.logo {
 .main .page-header {
   margin-top: 0;
 }
+
+code {
+  overflow: auto;
+  word-wrap: normal;
+  white-space: pre;
+}
