@@ -197,7 +197,10 @@ CommonCode, Restangular) {
 
 app.controller('JobDetailsController', function(
     $scope, CommonCode, Restangular, $stateParams) {
-    CommonCode.getJobInfo($scope, $stateParams.jobId);
+
+    if ($stateParams.jobId) {
+        CommonCode.getJobInfo($scope, $stateParams.jobId);
+    }
 });
 
 app.controller('ProductsController', function(
