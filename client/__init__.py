@@ -19,6 +19,7 @@ import os
 import requests
 import simplejson.scanner
 import subprocess
+import sys
 import tempfile
 import time
 
@@ -84,8 +85,11 @@ class DCIClient(object):
     def upload_file(self, fd, jobstate_id, mime='text/plain', name=None):
         fd.seek(0)
         output = ""
-        for l in fd:
-            output += l.decode("UTF-8")
+        while True:
+            s = fd.read(1024).decode("UTF-8")
+            output += s
+            if s == '':
+                break
         if output:
             data = {"name": name,
                     "content": output,
@@ -113,13 +117,14 @@ class DCIClient(object):
             raise DCIInternalFailure
 
         f = tempfile.TemporaryFile()
-        f.write(("starting: %s" % " ".join(arg)).encode('utf-8'))
-        while p.returncode is None and p.stdout:
-            # TODO(Gonéri): print on STDOUT p.stdout
-            time.sleep(1)
-            for c in p.stdout:
-                print(c.decode("UTF-8").rstrip())
-                f.write(c)
+        f.write(("starting: %s\n" % " ".join(arg)).encode('utf-8'))
+        s = True
+        while p.returncode is None and s:
+            time.sleep(0.01)
+            s = os.read(p.stdout.fileno(), 10)
+            sys.stdout.write(s)
+            f.write(s)
+            f.flush()
             p.poll()
         self.upload_file(f, jobstate_id, name='output.log')
 
