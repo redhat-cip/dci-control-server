@@ -179,6 +179,7 @@ class DciControlServer(Eve):
             return
 
         session = DciControlServer._DCI_MODEL.get_session()
+        versions_to_remove = []
         for version in response["_items"]:
             version["extra_data"] = []
 
@@ -213,6 +214,10 @@ class DciControlServer(Eve):
                         filter(Jobstates.job_id == job.id).first()
                     if jobstate:
                         extra_data["status"] = jobstate.status
+                else:
+                    versions_to_remove.append(version)
+                    continue
+                version["extra_data"].append(extra_data)
 
                 version["extra_data"].append(extra_data)
         session.close()

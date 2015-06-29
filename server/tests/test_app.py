@@ -14,9 +14,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import flask
 import json
+import mock
 
+import server.app
 import server.tests
+import server.db.models
 
 
 class TestApp(server.tests.DCITestCase):
@@ -128,3 +132,10 @@ class TestApp(server.tests.DCITestCase):
                           'test_keys': {'foo': ['bar1', 'bar2']},
                           'version_keys': {'foo': ['bar1', 'bar2']}},
                          response['data'])
+
+
+@mock.patch("server.db.models.DCIModel", spec=server.db.models.DCIModel)
+@mock.patch.object(server.app.flask, 'request')
+def test_get_versions_extra(m_flask_request, m_dcimodel):
+    m_flask_request.get.return_value = True
+    server.app.init_app
