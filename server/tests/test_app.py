@@ -16,6 +16,8 @@
 
 import json
 
+import server.app
+import server.db.models
 import server.tests
 
 
@@ -128,3 +130,48 @@ class TestApp(server.tests.DCITestCase):
                           'test_keys': {'foo': ['bar1', 'bar2']},
                           'version_keys': {'foo': ['bar1', 'bar2']}},
                          response['data'])
+
+    def test_get_versions_extra(self):
+        # Create a test
+        rv = self.admin_client(
+            'post',
+            '/api/tests',
+            data={
+                'name': 'bob',
+                'data': {
+                    'test_keys': {
+                        'foo': ['bar1', 'bar2']}}})
+        test_id = self._extract_response(rv)['id']
+
+        # Create a product
+        rv = self.admin_client(
+            'post',
+            '/api/products',
+            data={'name': 'bob',
+                  'data': {
+                      'product_keys': {
+                          'foo': ['bar1', 'bar2']}}})
+        product_id = self._extract_response(rv)['id']
+
+        # Create a version
+        rv = self.admin_client(
+            'post',
+            '/api/versions',
+            data={'name': 'bob',
+                  'product_id': product_id,
+                  'data': {
+                      'version_keys': {
+                          'foo': ['bar1', 'bar2']}}})
+        version_id = self._extract_response(rv)['id']
+
+        # Create a testversion
+        self.admin_client(
+            'post',
+            '/api/testversions',
+            data={
+                'test_id': test_id,
+                'version_id': version_id})
+
+        # Get versions, should be empty
+        rv = self.admin_client('get', '/api/versions?extra_data=1')
+        self.assertEqual([], self._extract_response(rv)["_items"])
