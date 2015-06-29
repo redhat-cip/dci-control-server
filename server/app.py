@@ -192,6 +192,7 @@ def init_app(db_uri=None):
             return
 
         session = dci_model.get_session()
+        versions_to_remove = []
         for version in response["_items"]:
             version["extra_data"] = []
 
@@ -223,8 +224,13 @@ def init_app(db_uri=None):
                         filter(Jobstates.job_id == job.id).first()
                     if jobstate:
                         extra_data["status"] = jobstate.status
-
+                else:
+                    versions_to_remove.append(version)
+                    continue
                 version["extra_data"].append(extra_data)
+
+        for version in versions_to_remove:
+            response["_items"].remove(version)
         session.close()
 
     app.on_insert += set_real_owner
