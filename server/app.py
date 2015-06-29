@@ -174,6 +174,7 @@ class DciApp(Eve):
             return
 
         session = DciApp._DCI_MODEL.get_session()
+        versions_to_remove = []
         for version in response["_items"]:
             version["extra_data"] = []
 
@@ -205,8 +206,13 @@ class DciApp(Eve):
                         filter(Jobstates.job_id == job.id).first()
                     if jobstate:
                         extra_data["status"] = jobstate.status
-
+                else:
+                    versions_to_remove.append(version)
+                    continue
                 version["extra_data"].append(extra_data)
+
+        for version in versions_to_remove:
+            response["_items"].remove(version)
         session.close()
 
     def init_hooks(self):
