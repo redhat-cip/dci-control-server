@@ -29,7 +29,7 @@ class DCITestCase(testtools.TestCase):
     def setUp(self):
         super(DCITestCase, self).setUp()
         self._db_dir = tempfile.mkdtemp()
-        subprocess.call(['initdb', '--no-locale', '--nosync', self._db_dir])
+        subprocess.call(['initdb', '--no-locale', self._db_dir])
         subprocess.call(['sed', '-i',
                          "s,#listen_addresses.*,listen_addresses = '',",
                          '%s/postgresql.conf' % self._db_dir])
@@ -42,10 +42,9 @@ class DCITestCase(testtools.TestCase):
                          '-f', 'db_schema/dci-control-server.sql',
                          'template1'])
         time.sleep(2)
-        db_uri = (
-            "postgresql:///?host=%s&dbname=template1" % self._db_dir)
+        db_uri = "postgresql:///?host=%s&dbname=template1" % self._db_dir
         import server.app
-        self.app = server.app.init_app(db_uri)
+        self.app = server.app.create_app(db_uri)
         self.app.config['TESTING'] = True
         self.test_client = self.app.test_client()
 
