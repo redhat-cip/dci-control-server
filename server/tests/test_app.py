@@ -111,7 +111,6 @@ class TestApp(server.tests.DCITestCase):
             'post',
             '/api/jobs',
             data={'remoteci_id': remoteci['id']})
-        print(rv.get_data())
         self.assertEqual(rv.status_code, 201)
         return self._extract_response(rv)
 
