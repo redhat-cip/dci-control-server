@@ -58,19 +58,179 @@ def set_real_owner(resource, items):
         items[0]['team_id'] = request_fields['team_id']
 
 
-def init_app(db_uri=None):
+class DciControlServer(Eve):
 
-    if not db_uri:
-        db_uri = os.environ.get(
-            'OPENSHIFT_POSTGRESQL_DB_URL',
-            'postgresql://boa:boa@127.0.0.1:5432/dci_control_server')
+    _DCI_MODEL = None
+
+    def __init__(self, dci_model, **kwargs):
+        super(DciControlServer, self).__init__(**kwargs)
+
+        DciControlServer._DCI_MODEL = dci_model
+        DciControlServer._DCI_MODEL.metadata.bind = DciControlServer._DCI_MODEL.engine
+        self._db = self.data.driver
+        self._db.Model = DciControlServer._DCI_MODEL.base
+        self._init_hooks()
+
+    @staticmethod
+    def pick_jobs(documents):
+        session = DciControlServer._DCI_MODEL.get_session()
+        query = text("""
+        SELECT
+            testversions.id
+        FROM
+            testversions, remotecis
+        WHERE testversions.id NOT IN (
+            SELECT
+                jobs.testversion_id
+            FROM jobs
+            WHERE jobs.remoteci_id=:remoteci_id
+        ) AND testversions.test_id=remotecis.test_id AND
+        remotecis.id=:remoteci_id
+        LIMIT 1
+        """)
+
+        for d in documents:
+            if 'testversion_id' in d:
+                continue
+            r = DciControlServer._DCI_MODEL.engine.execute(
+                query, remoteci_id=d['remoteci_id']).fetchone()
+            if r is None:
+                abort(412, "No test to run left.")
+            testversion = session.query(
+                DciControlServer._DCI_MODEL.base.classes.testversions).get(str(r[0]))
+            d['testversion_id'] = testversion.id
+        session.close()
+
+    @staticmethod
+    def aggregate_job_data(response):
+        session = DciControlServer._DCI_MODEL.get_session()
+        data = {}
+        job = session.query(DciControlServer._DCI_MODEL.base.classes.jobs).\
+            get(response['id'])
+        my_datas = (
+            job.testversion.version.product.data,
+            job.testversion.version.data,
+            job.testversion.test.data,
+            job.remoteci.data)
+        for my_data in my_datas:
+            if my_data:
+                data = api.dict_merge(data, my_data)
+        session.close()
+        response['data'] = data
+
+    @staticmethod
+    def get_jobs_extra(response):
+        if not flask.request.args.get('extra_data'):
+            return
+
+        session = DciControlServer._DCI_MODEL.get_session()
+        for job in response["_items"]:
+            extra_data = {}
+
+            # Get the jobstate
+            Jobstates = DciControlServer._DCI_MODEL.base.classes.jobstates
+            jobstate = session.query(Jobstates).\
+                order_by(Jobstates.created_at.desc()).\
+                filter(Jobstates.job_id == job["id"]).first()
+            if jobstate:
+                extra_data["last_status"] = jobstate.status
+                extra_data["last_update"] = jobstate.created_at
+
+            # Get the remote ci name
+            Remotecis = DciControlServer._DCI_MODEL.base.classes.remotecis
+            remoteci = session.query(Remotecis).\
+                filter(Remotecis.id == job["remoteci_id"]).one()
+            if remoteci:
+                extra_data["remoteci"] = remoteci.name
+
+            # Get the testversion
+            Testversions = DciControlServer._DCI_MODEL.base.classes.testversions
+            testversion = session.query(Testversions).get(
+                job["testversion_id"])
+            if testversion:
+                # Get the version
+                Versions = DciControlServer._DCI_MODEL.base.classes.versions
+                version = session.query(Versions).get(testversion.version_id)
+                if version:
+                    extra_data["version"] = version.name
+
+                    # Get the product
+                    Products = DciControlServer._DCI_MODEL.base.classes.products
+                    product = session.query(Products).get(version.product_id)
+                    if product:
+                        extra_data["product"] = product.name
+
+                # Get the test
+                Tests = DciControlServer._DCI_MODEL.base.classes.tests
+                test = session.query(Tests).get(testversion.test_id)
+                if test:
+                    extra_data["test"] = test.name
+
+            job["extra_data"] = extra_data
+        session.close()
+
+    @staticmethod
+    def get_versions_extra(response):
+        if not flask.request.args.get('extra_data'):
+            return
+
+        session = DciControlServer._DCI_MODEL.get_session()
+        for version in response["_items"]:
+            version["extra_data"] = []
+
+            Testversions = DciControlServer._DCI_MODEL.base.classes.testversions
+            testversions = session.query(Testversions).\
+                filter(Testversions.version_id == version["id"]).all()
+
+            for testversion in testversions:
+                extra_data = {}
+
+                Tests = DciControlServer._DCI_MODEL.base.classes.tests
+                test = session.query(Tests).get(testversion.test_id)
+                if test:
+                    extra_data["test"] = test.name
+
+                Jobs = DciControlServer._DCI_MODEL.base.classes.jobs
+                job = session.query(Jobs).\
+                    filter(Jobs.testversion_id == testversion.id).first()
+                if job:
+                    extra_data["job_id"] = job.id
+                    Remotecis = DciControlServer._DCI_MODEL.base.classes.remotecis
+                    remoteci = session.query(Remotecis).get(job.remoteci_id)
+                    if remoteci:
+                        extra_data["remoteci"] = remoteci.name
+
+                    Jobstates = DciControlServer._DCI_MODEL.base.classes.jobstates
+                    jobstate = session.query(Jobstates).\
+                        order_by(Jobstates.created_at.desc()).\
+                        filter(Jobstates.job_id == job.id).first()
+                    if jobstate:
+                        extra_data["status"] = jobstate.status
+
+                version["extra_data"].append(extra_data)
+        session.close()
+
+    def _init_hooks(self):
+        self.on_insert += set_real_owner
+        self.on_insert_jobs += DciControlServer.pick_jobs
+        self.on_fetched_item_jobs += DciControlServer.aggregate_job_data
+        self.on_fetched_resource_jobs += DciControlServer.get_jobs_extra
+        self.on_fetched_resource_versions += DciControlServer.get_versions_extra
+
+        self.register_blueprint(dci_databrowser)
+        load_docs(self)
+
+if __name__ == "__main__":
+
+    db_uri = os.environ.get(
+        'OPENSHIFT_POSTGRESQL_DB_URL',
+        'postgresql://boa:boa@127.0.0.1:5432/dci_control_server')
     dci_model = server.db.models.DCIModel(db_uri)
-    my_settings = {
+    settings = {
         'SQLALCHEMY_DATABASE_URI': db_uri,
         'LAST_UPDATED': 'updated_at',
         'DATE_CREATED': 'created_at',
         'ID_FIELD': 'id',
-        # 94ecbcfe-a9a6-7913-13a8-1ef1d50d9817
         'ITEM_URL': 'regex("[\.-a-z0-9]{8}-[-a-z0-9]{4}-'
                     '[-a-z0-9]{4}-[-a-z0-9]{4}-[-a-z0-9]{12}")',
         'ITEM_LOOKUP_FIELD': 'id',
@@ -87,157 +247,8 @@ def init_app(db_uri=None):
         'SQLALCHEMY_ECHO': False,
         'SQLALCHEMY_RECORD_QUERIES': False,
     }
-    my_basicauth = server.auth.DCIBasicAuth(dci_model)
-    app = Eve(settings=my_settings, validator=ValidatorSQL,
-              data=SQL, auth=my_basicauth)
-    db = app.data.driver
-    dci_model.metadata.bind = dci_model.engine
-    db.Model = dci_model.base
-
-    def pick_jobs(documents):
-        session = dci_model.get_session()
-        query = text(
-            """
-    SELECT
-        testversions.id
-    FROM
-        testversions, remotecis
-    WHERE testversions.id NOT IN (
-        SELECT
-            jobs.testversion_id
-        FROM jobs
-        WHERE jobs.remoteci_id=:remoteci_id
-    ) AND testversions.test_id=remotecis.test_id AND remotecis.id=:remoteci_id
-    LIMIT 1""")
-
-        for d in documents:
-            if 'testversion_id' in d:
-                continue
-            r = dci_model.engine.execute(
-                query, remoteci_id=d['remoteci_id']).fetchone()
-            if r is None:
-                abort(412, "No test to run left.")
-            testversion = session.query(
-                dci_model.base.classes.testversions).get(str(r[0]))
-            d['testversion_id'] = testversion.id
-        session.close()
-
-    def aggregate_job_data(response):
-        session = dci_model.get_session()
-        data = {}
-        job = session.query(dci_model.base.classes.jobs).get(response['id'])
-        my_datas = (
-            job.testversion.version.product.data,
-            job.testversion.version.data,
-            job.testversion.test.data,
-            job.remoteci.data)
-        for my_data in my_datas:
-            if my_data:
-                data = api.dict_merge(data, my_data)
-        session.close()
-        response['data'] = data
-
-    def get_job(response):
-        if not flask.request.args.get('extra_data'):
-            return
-
-        session = dci_model.get_session()
-        for job in response["_items"]:
-            extra_data = {}
-
-            # Get the jobstate
-            Jobstates = dci_model.base.classes.jobstates
-            jobstate = session.query(Jobstates).\
-                order_by(Jobstates.created_at.desc()).\
-                filter(Jobstates.job_id == job["id"]).first()
-            if jobstate:
-                extra_data["last_status"] = jobstate.status
-                extra_data["last_update"] = jobstate.created_at
-
-            # Get the remote ci name
-            Remotecis = dci_model.base.classes.remotecis
-            remoteci = session.query(Remotecis).\
-                filter(Remotecis.id == job["remoteci_id"]).one()
-            if remoteci:
-                extra_data["remoteci"] = remoteci.name
-
-            # Get the testversion
-            Testversions = dci_model.base.classes.testversions
-            testversion = session.query(Testversions).get(
-                job["testversion_id"])
-            if testversion:
-                # Get the version
-                Versions = dci_model.base.classes.versions
-                version = session.query(Versions).get(testversion.version_id)
-                if version:
-                    extra_data["version"] = version.name
-
-                    # Get the product
-                    Products = dci_model.base.classes.products
-                    product = session.query(Products).get(version.product_id)
-                    if product:
-                        extra_data["product"] = product.name
-
-                # Get the test
-                Tests = dci_model.base.classes.tests
-                test = session.query(Tests).get(testversion.test_id)
-                if test:
-                    extra_data["test"] = test.name
-
-            job["extra_data"] = extra_data
-        session.close()
-
-    def get_versions_extra(response):
-        if not flask.request.args.get('extra_data'):
-            return
-
-        session = dci_model.get_session()
-        for version in response["_items"]:
-            version["extra_data"] = []
-
-            Testversions = dci_model.base.classes.testversions
-            testversions = session.query(Testversions).\
-                filter(Testversions.version_id == version["id"]).all()
-
-            for testversion in testversions:
-                extra_data = {}
-
-                Tests = dci_model.base.classes.tests
-                test = session.query(Tests).get(testversion.test_id)
-                if test:
-                    extra_data["test"] = test.name
-
-                Jobs = dci_model.base.classes.jobs
-                job = session.query(Jobs).\
-                    filter(Jobs.testversion_id == testversion.id).first()
-                if job:
-                    extra_data["job_id"] = job.id
-                    Remotecis = dci_model.base.classes.remotecis
-                    remoteci = session.query(Remotecis).get(job.remoteci_id)
-                    if remoteci:
-                        extra_data["remoteci"] = remoteci.name
-
-                    Jobstates = dci_model.base.classes.jobstates
-                    jobstate = session.query(Jobstates).\
-                        order_by(Jobstates.created_at.desc()).\
-                        filter(Jobstates.job_id == job.id).first()
-                    if jobstate:
-                        extra_data["status"] = jobstate.status
-
-                version["extra_data"].append(extra_data)
-        session.close()
-
-    app.on_insert += set_real_owner
-    app.on_insert_jobs += pick_jobs
-    app.on_fetched_item_jobs += aggregate_job_data
-    app.on_fetched_resource_jobs += get_job
-    app.on_fetched_resource_versions += get_versions_extra
-
-    app.register_blueprint(dci_databrowser, url_prefix='/client')
-    load_docs(app)
-    return app
-
-if __name__ == "__main__":
-    app = init_app()
+    basic_auth = server.auth.DCIBasicAuth(dci_model)
+    app = DciControlServer(dci_model, settings=settings,
+                           validator=ValidatorSQL, data=SQL, auth=basic_auth)
     site_map()
     app.run(debug=True)
