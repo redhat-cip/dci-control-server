@@ -42,10 +42,9 @@ class DCITestCase(testtools.TestCase):
                          '-f', 'db_schema/dci-control-server.sql',
                          'template1'])
         time.sleep(2)
-        db_uri = (
-            "postgresql:///?host=%s&dbname=template1" % self._db_dir)
+        db_uri = 'postgresql://boa:boa@127.0.0.1:5432/dci_control_server'
         import server.app
-        self.app = server.app.init_app(db_uri)
+        self.app = server.app.create_app(db_uri)
         self.app.config['TESTING'] = True
         self.test_client = self.app.test_client()
 
