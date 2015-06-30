@@ -19,4 +19,4 @@
 
 import server.app
 
-application = server.app.init_app()
+application = server.app.create_app()
