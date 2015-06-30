@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3aa0d159_7f174ba4",
+        "filename": "server/app.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-06-30T10:29:22Z",
+      "side": 1,
+      "message": "DCI is somewhat generic, I would prefer something more meaningful like DciControlServer.",
+      "revId": "7bd07b64370c93d6ea7c5feeb388dd6ccc6f2e55",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3aa0d159_5f128fb5",
+        "filename": "server/app.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 212,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-06-30T10:29:22Z",
+      "side": 1,
+      "message": "I think we can call that directly from the constructor.",
+      "revId": "7bd07b64370c93d6ea7c5feeb388dd6ccc6f2e55",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3aa0d159_1f0c0794",
+        "filename": "server/app.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 251,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-06-30T10:29:22Z",
+      "side": 1,
+      "message": "I believe you need to patch wsgi.py too.",
+      "revId": "7bd07b64370c93d6ea7c5feeb388dd6ccc6f2e55",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
