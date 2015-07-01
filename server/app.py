@@ -20,7 +20,7 @@ import os
 from pprint import pprint
 
 import server.auth
-import server.db.api as api
+from server.common import utils
 import server.db.models
 
 from eve import Eve
@@ -116,7 +116,7 @@ class DciControlServer(Eve):
             job.remoteci.data)
         for my_data in my_datas:
             if my_data:
-                data = api.dict_merge(data, my_data)
+                data = utils.dict_merge(data, my_data)
         session.close()
         response['data'] = data
 
