@@ -22,99 +22,61 @@ import server.tests
 
 
 class TestApp(server.tests.DCITestCase):
-    @staticmethod
-    def _extract_response(rv):
-        return json.loads(rv.get_data().decode())
 
     def test_post_product_item(self):
-        rv = self.admin_client(
-            'post',
-            '/api/products',
-            data={'name': 'bob',
-                  'data': {
-                      'product_keys': {
-                          'foo': ['bar1', 'bar2']}}})
-        self.assertEqual(rv.status_code, 201)
-        response = self._extract_response(rv)
-        self.assertTrue(response['id'])
-        return response
+        product = self._create_product()
+        self.assertEqual(product.status_code, 201)
+        response = self._extract_response(product)
+        self.assertIsNotNone(response)
 
     def test_post_version_item(self):
-        product = self.test_post_product_item()
-        rv = self.admin_client(
-            'post',
-            '/api/versions',
-            data={'name': 'bob',
-                  'product_id': product['id'],
-                  'data': {
-                      'version_keys': {
-                          'foo': ['bar1', 'bar2']}}})
-        self.assertEqual(rv.status_code, 201)
-        response = self._extract_response(rv)
-        self.assertTrue(response['id'])
-        return response
+        product = self._extract_response(self._create_product())
+        version = self._create_version(product['id'])
+        self.assertEqual(version.status_code, 201)
+        response = self._extract_response(version)
+        self.assertIsNotNone(response)
 
     def test_post_test_item(self):
-        rv = self.admin_client(
-            'post',
-            '/api/tests',
-            data={
-                'name': 'bob',
-                'data': {
-                    'test_keys': {
-                        'foo': ['bar1', 'bar2']}}})
+        rv = self._create_test()
         self.assertEqual(rv.status_code, 201)
         response = self._extract_response(rv)
-        self.assertTrue(response['id'])
-        return response
+        self.assertIsNotNone(response)
 
-    def test_post_testversion_item(self, test_id=None):
-        if not test_id:
-            test = self.test_post_test_item()
-            test_id = test['id']
-        version = self.test_post_version_item()
-        rv = self.admin_client(
-            'post',
-            '/api/testversions',
-            data={
-                'test_id': test_id,
-                'version_id': version['id']})
-        self.assertEqual(rv.status_code, 201)
-        response = self._extract_response(rv)
-        self.assertTrue(response['id'])
-        return response
+    def test_post_testversion_item(self):
+        test = self._create_test()
+        test_id = self._extract_response(test)['id']
+        product = self._create_product()
+        product_id = self._extract_response(product)['id']
+        version = self._create_version(product_id)
+        version_id = self._extract_response(version)['id']
 
-    def test_post_remoteci_item(self, test_id=None):
-        if not test_id:
-            test = self.test_post_test_item()
-            test_id = test['id']
-        rv = self.admin_client(
-            'post',
-            '/api/remotecis',
-            data={
-                'name': 'a_remoteci',
-                'test_id': test_id,
-                'data': {
-                    'remoteci_keys': {
-                        'foo': ['bar1', 'bar2']}}})
-        self.assertEqual(rv.status_code, 201)
-        response = self._extract_response(rv)
-        self.assertTrue(response['id'])
-        return response
+        testversion = self._create_testversion(test_id, version_id)
+        self.assertEqual(testversion.status_code, 201)
+        self.assertIsNotNone(self._extract_response(testversion))
+
+    def test_post_remoteci_item(self):
+        test = self._create_test()
+        test_id = self._extract_response(test)['id']
+
+        remoteci = self._create_remoteci(self, test_id)
+        self.assertEqual(remoteci.status_code, 201)
+        response = self._extract_response(remoteci)
+        self.assertIsNotNone(response)
 
     def test_post_job_item_with_no_testversion_id(self):
         """testversion_id is missing, the server should pick a
         testversion that match the test_id of the remoteci.
         """
-        test = self.test_post_test_item()
-        remoteci = self.test_post_remoteci_item(test['id'])
-        self.test_post_testversion_item(test['id'])
-        rv = self.partner_client(
-            'post',
-            '/api/jobs',
-            data={'remoteci_id': remoteci['id']})
-        self.assertEqual(rv.status_code, 201)
-        return self._extract_response(rv)
+        test = self._create_test()
+        test_id = self._extract_response(test)['id']
+        remoteci = self._create_remoteci(test_id)
+        remoteci_id = self._extract_response(remoteci)['id']
+
+        self.test_post_testversion_item(test_id)
+        job = self._create_job(remoteci_id)
+        self.assertEqual(job.status_code, 201)
+        response = self._extract_response(job)
+        self.assertIsNotNone(response)
 
     def test_get_job_item(self):
         """GET /jobs should retrieve the item and feed the
@@ -175,3 +137,61 @@ class TestApp(server.tests.DCITestCase):
         # Get versions, should be empty
         rv = self.admin_client('get', '/api/versions?extra_data=1')
         self.assertEqual([], self._extract_response(rv)["_items"])
+
+    @staticmethod
+    def _extract_response(rv):
+        return json.loads(rv.get_data().decode())
+
+    def _create_product(self):
+        return self.admin_client(
+            'post',
+            '/api/products',
+            data={'name': 'bob',
+                  'data': {
+                      'product_keys': {
+                          'foo': ['bar1', 'bar2']}}})
+
+    def _create_version(self, product_id):
+        return self.admin_client(
+            'post',
+            '/api/versions',
+            data={'name': 'bob',
+                  'product_id': product_id,
+                  'data': {
+                      'version_keys': {
+                          'foo': ['bar1', 'bar2']}}})
+
+    def _create_test(self):
+        return self.admin_client(
+            'post',
+            '/api/tests',
+            data={
+                'name': 'bob',
+                'data': {
+                    'test_keys': {
+                        'foo': ['bar1', 'bar2']}}})
+
+    def _create_testversion(self, test_id, version_id):
+        return self.admin_client(
+            'post',
+            '/api/testversions',
+            data={
+                'test_id': test_id,
+                'version_id': version_id})
+
+    def _create_remoteci(self, test_id):
+        return self.admin_client(
+            'post',
+            '/api/remotecis',
+            data={
+                'name': 'a_remoteci',
+                'test_id': test_id,
+                'data': {
+                    'remoteci_keys': {
+                        'foo': ['bar1', 'bar2']}}})
+
+    def _create_job(self, remoteci_id):
+        return self.partner_client(
+            'post',
+            '/api/jobs',
+            data={'remoteci_id': remoteci_id})
