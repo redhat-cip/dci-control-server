@@ -79,3 +79,61 @@ class DCITestCase(testtools.TestCase):
 
     def assertHTTPCode(self, result, code):
         return self.assertEqual(result.status_code, code)
+
+    @staticmethod
+    def _extract_response(rv):
+        return json.loads(rv.get_data().decode())
+
+    def _create_product(self):
+        return self.admin_client(
+            'post',
+            '/api/products',
+            data={'name': 'bob',
+                  'data': {
+                      'product_keys': {
+                          'foo': ['bar1', 'bar2']}}})
+
+    def _create_version(self, product_id):
+        return self.admin_client(
+            'post',
+            '/api/versions',
+            data={'name': 'bob',
+                  'product_id': product_id,
+                  'data': {
+                      'version_keys': {
+                          'foo': ['bar1', 'bar2']}}})
+
+    def _create_test(self):
+        return self.admin_client(
+            'post',
+            '/api/tests',
+            data={
+                'name': 'bob',
+                'data': {
+                    'test_keys': {
+                        'foo': ['bar1', 'bar2']}}})
+
+    def _create_testversion(self, test_id, version_id):
+        return self.admin_client(
+            'post',
+            '/api/testversions',
+            data={
+                'test_id': test_id,
+                'version_id': version_id})
+
+    def _create_remoteci(self, test_id):
+        return self.admin_client(
+            'post',
+            '/api/remotecis',
+            data={
+                'name': 'a_remoteci',
+                'test_id': test_id,
+                'data': {
+                    'remoteci_keys': {
+                        'foo': ['bar1', 'bar2']}}})
+
+    def _create_job(self, remoteci_id):
+        return self.partner_client(
+            'post',
+            '/api/jobs',
+            data={'remoteci_id': remoteci_id})
