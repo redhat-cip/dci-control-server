@@ -223,6 +223,36 @@ class DciControlServer(Eve):
             response["_items"].remove(version)
         session.close()
 
+    @staticmethod
+    def get_remotecis_extra(response):
+        if not (flask.request.args.get('extra_data') and
+                flask.request.args.get('version_id')):
+            return
+
+        version_id = flask.request.args.get('version_id')
+        session = DciControlServer._DCI_MODEL.get_session()
+        rate = {"success": 0, "failure": 0, "ongoing": 0}
+        for remoteci in response["_items"]:
+            Testversions = DciControlServer._DCI_MODEL.base.classes.\
+                testversions
+            testversions = session.query(Testversions).\
+                filter(Testversions.version_id == version_id).all()
+
+            for testversion in testversions:
+                Jobs = DciControlServer._DCI_MODEL.base.classes.jobs
+                job = session.query(Jobs).\
+                    filter((Jobs.testversion_id == testversion.id) and
+                           (Jobs.remoteci_id == remoteci["id"])).first()
+                if job:
+                    Jobstates = DciControlServer._DCI_MODEL.base.classes.\
+                        jobstates
+                    jobstate = session.query(Jobstates).\
+                        order_by(Jobstates.created_at.desc()).\
+                        filter(Jobstates.job_id == job.id).first()
+                    if jobstate:
+                        rate[jobstate.status] += 1
+        response["extra_data"] = rate
+
     def _init_hooks(self):
         self.on_insert += set_real_owner
         self.on_insert_jobs += DciControlServer.pick_jobs
@@ -230,6 +260,8 @@ class DciControlServer(Eve):
         self.on_fetched_resource_jobs += DciControlServer.get_jobs_extra
         self.on_fetched_resource_versions += DciControlServer.\
             get_versions_extra
+        self.on_fetched_resource_remotecis += DciControlServer.\
+            get_remotecis_extra
 
         self.register_blueprint(dci_databrowser)
         load_docs(self)
