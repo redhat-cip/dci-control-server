@@ -19,7 +19,7 @@ WORKDIR = 'dci-tox'
 
 import sys
 
-import client
+import dci_client
 
 try:
     remoteci_name = sys.argv[1]
@@ -28,7 +28,7 @@ except IndexError:
     sys.exit(1)
 
 
-dci_client = client.DCIClient()
+dci_client = dci_client.DCIClient()
 
 test_name = "tox"
 
@@ -60,7 +60,7 @@ dci_client.call(job_id, ['git', 'checkout', '-f',
 
 try:
     dci_client.call(job_id, ['tox'], cwd=WORKDIR)
-except client.DCICommandFailure:
+except dci_client.DCICommandFailure:
     print("Test has failed")
     pass
 else:

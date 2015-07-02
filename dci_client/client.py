@@ -26,7 +26,7 @@ import time
 
 import prettytable
 
-import client
+import dci_client
 
 DCI_CONTROL_SERVER = os.environ.get("DCI_CONTROL_SERVER",
                                     "http://127.0.0.1:5000/api")
@@ -68,7 +68,7 @@ def _init_conf(args=None):
     return parser.parse_args(args)
 
 
-def _call_command(dci_client, args, job, cwd=None, env=None):
+def _call_command(client, args, job, cwd=None, env=None):
     # TODO(Gonéri): Catch exception in subprocess.Popen
     p = subprocess.Popen(args,
                          stdout=subprocess.PIPE,
@@ -78,7 +78,7 @@ def _call_command(dci_client, args, job, cwd=None, env=None):
     state = {"job_id": job["id"],
              "status": "ongoing",
              "comment": "calling: " + " ".join(args)}
-    jobstate_id = dci_client.post("/jobstates", state).json()['id']
+    jobstate_id = client.post("/jobstates", state).json()['id']
 
     f = tempfile.TemporaryFile()
     while p.returncode is None:
@@ -89,7 +89,7 @@ def _call_command(dci_client, args, job, cwd=None, env=None):
             f.write(c)
         p.poll()
 
-    dci_client.upload_file(f, jobstate_id, name='ksgen_log')
+    client.upload_file(f, jobstate_id, name='ksgen_log')
 
     if p.returncode != 0:
         state = {
@@ -101,20 +101,20 @@ def _call_command(dci_client, args, job, cwd=None, env=None):
             "job_id": job["id"],
             "status": "ongoing",
             "comment": "call successed w/ code %s" % p.returncode}
-    jobstate_id = dci_client.post("/jobstates", state)
+    jobstate_id = client.post("/jobstates", state)
     return jobstate_id
 
 
 def main(args=None):
     conf = _init_conf(args)
-    dci_client = client.DCIClient(DCI_CONTROL_SERVER, "partner", "partner")
+    client = dci_client.DCIClient(DCI_CONTROL_SERVER, "partner", "partner")
 
     if conf.command == 'list':
         if conf.remotecis:
             table_result = prettytable.PrettyTable([
                 "identifier", "name",
                 "created_at", "updated_at"])
-            remotecis = dci_client.get("/remotecis").json()
+            remotecis = client.get("/remotecis").json()
 
             for remoteci in remotecis["_items"]:
                 table_result.add_row([remoteci["id"],
@@ -126,7 +126,7 @@ def main(args=None):
             table_result = prettytable.PrettyTable(["identifier",
                                                     "remoteci", "scenario",
                                                     "updated_at"])
-            jobs = dci_client.get("/jobs")
+            jobs = client.get("/jobs")
 
             for job in jobs["_items"]:
                 table_result.add_row([job["id"],
@@ -138,7 +138,7 @@ def main(args=None):
             table_result = prettytable.PrettyTable(["identifier", "status",
                                                     "comment", "job",
                                                     "updated_at"])
-            jobstates = dci_client("/jobstates")
+            jobstates = client("/jobstates")
 
             for jobstate in jobstates["_items"]:
                 table_result.add_row([jobstate["id"],
@@ -150,7 +150,7 @@ def main(args=None):
         elif conf.scenarios:
             table_result = prettytable.PrettyTable(["identifier", "name",
                                                     "updated_at"])
-            scenarios = dci_client.get("/scenarios")
+            scenarios = client.get("/scenarios")
 
             for scenario in scenarios["_items"]:
                 table_result.add_row([scenario["id"],
@@ -159,7 +159,7 @@ def main(args=None):
             print(table_result)
     elif conf.command == 'register-remoteci':
         new_remoteci = {"name": conf.name}
-        dci_client.post("/remotecis", new_remoteci)
+        client.post("/remotecis", new_remoteci)
         print("RemoteCI '%s' created successfully." % conf.name)
 
 
