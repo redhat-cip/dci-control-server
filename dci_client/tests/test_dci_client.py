@@ -17,7 +17,7 @@
 import mock
 import testtools
 
-import client.dci_client as dciclient
+import dci_client.client as dciclient
 
 
 class TestClient(testtools.TestCase):

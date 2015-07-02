@@ -24,7 +24,7 @@ import sys
 import tempfile
 import yaml
 
-import client
+import dci_client
 
 
 try:
@@ -34,7 +34,7 @@ except IndexError:
     sys.exit(1)
 
 
-dci_client = client.DCIClient()
+dci_client = dci_client.DCIClient()
 
 test_name = "khaleesi-tempest"
 
