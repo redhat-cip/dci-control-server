@@ -107,7 +107,7 @@ def _call_command(dci_client, args, job, cwd=None, env=None):
 
 def main(args=None):
     conf = _init_conf(args)
-    dci_client = client.DCIClient(DCI_CONTROL_SERVER, "partner", "partner")
+    dci_client = dci_client.DCIClient(DCI_CONTROL_SERVER, "partner", "partner")
 
     if conf.command == 'list':
         if conf.remotecis:
