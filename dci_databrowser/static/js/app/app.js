@@ -2,14 +2,14 @@
 //
 // Copyright 2015 Red Hat, Inc.
 //
-// Licensed under the Apache License, Version 2.0 (the "License"); you may
+// Licensed under the Apache License, Version 2.0 (the 'License'); you may
 // not use this file except in compliance with the License. You may obtain
 // a copy of the License at
 //
 // http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+// distributed under the License is distributed on an 'AS IS' BASIS, WITHOUT
 // WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 // License for the specific language governing permissions and limitations
 // under the License.
@@ -17,7 +17,7 @@
 'use strict';
 
 var app = angular.module('app', ['ngRoute', 'restangular', 'ngCookies',
-'angular-loading-bar', 'ui.router']);
+'angular-loading-bar', 'ui.router', 'googlechart']);
 
 // Configure the application
 app.config(function(RestangularProvider) {
@@ -54,6 +54,10 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
         url:'/products',
         templateUrl: 'partials/products.html',
         controller: 'ProductsController'
+    }).state('stats', {
+        url:'/stats',
+        templateUrl: 'partials/stats.html',
+        controller: 'StatsController'
     }).state('signin', {
         url: '/signin',
         templateUrl: 'partials/signin.html',
@@ -209,16 +213,95 @@ app.controller('ProductsController', function(
     Restangular.one('products').get().
         then(function(products) {
             $scope.products = products._items;
-            $scope.myProduct = products._items[0];
+            $scope.currentProduct = products._items[0];
         });
 
-    $scope.$watch('myProduct', function(currentProduct, previousProduct) {
+    $scope.$watch('currentProduct', function(currentProduct, previousProduct) {
         if (currentProduct != undefined) {
             Restangular.one('versions').
             get({'where': {'product_id': currentProduct.id}, 'extra_data': 1}).
             then(function(versions) {
                 $scope.versions_status = versions._items;
             });
+        }
+    });
+});
+
+app.controller('StatsController', function(
+    $scope, CommonCode, Restangular, $stateParams) {
+
+    Restangular.one('products').get().
+        then(function(products) {
+            $scope.products = products._items;
+            $scope.currentProduct = products._items[0];
+
+            Restangular.one('versions').get({'where': {'product_id':
+            $scope.currentProduct.id}}).
+            then(function(versions) {
+                $scope.versions = versions._items;
+                $scope.currentVersion = versions._items[0];
+            });
+        });
+
+    var getRate = function(product_id, version_id) {
+        Restangular.one('remotecis').
+        get({'extra_data': 1, 'version_id': version_id}).
+        then(function(remotecis) {
+        $scope.chart = {
+            'type': 'PieChart',
+            'data': [],
+            'options': {
+            'displayExactValues': true,
+            'width': 600,
+            'height': 400,
+            'is3D': true,
+            'chartArea': {
+                'left': 10,
+                'top': 10,
+                'bottom': 0,
+                'height': '100%'
+            }
+        },
+            'formatters': {},
+            'displayed': true
+        };
+
+        $scope.chart.data = [
+        [
+          'Status',
+          'rate'
+        ],
+        [
+          'Success',
+          remotecis.extra_data.success
+        ],
+        [
+          'Failure',
+          remotecis.extra_data.failure
+        ],
+        [
+          'Ongoing',
+          remotecis.extra_data.ongoing
+        ]]
+    })};
+
+    $scope.$watch('currentProduct', function(currentProduct, previousProduct) {
+        if ((currentProduct != undefined) &&
+            ($scope.currentVersion != undefined)) {
+            Restangular.one('versions').get({'where': {'product_id':
+            currentProduct.id}}).
+            then(function(versions) {
+                $scope.versions = versions._items;
+                $scope.currentVersion = versions._items[0];
+            });
+            getRate(currentProduct.id, $scope.currentVersion.id);
+        }
+    });
+
+    $scope.$watch('currentVersion', function(currentVersion, previousVersion) {
+        if ((currentVersion != undefined) &&
+            ($scope.currentProduct != undefined)) {
+            getRate($scope.currentProduct.id, currentVersion.id);
         }
     });
 });
