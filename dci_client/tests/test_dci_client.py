@@ -17,7 +17,7 @@
 import mock
 import testtools
 
-import client.dci_client as dciclient
+import dci_client as dciclient
 
 
 class TestClient(testtools.TestCase):
@@ -35,7 +35,7 @@ class TestClient(testtools.TestCase):
              'created_at': 'created_at', 'updated_at': 'updated_at'}]}
         session = mock.Mock()
         session.get.return_value = response
-        dciclient.client.requests.Session = mock.Mock(
+        dciclient.requests.Session = mock.Mock(
             return_value=session)
         setattr(dciclient, 'print', self._catch_print_call)
         dciclient.main(args=['list', '--remotecis'])
@@ -59,7 +59,7 @@ class TestClient(testtools.TestCase):
         session = mock.Mock()
         session.get.return_value = response
         session.post.return_value = response
-        dciclient.client.requests.Session = mock.Mock(return_value=session)
+        dciclient.requests.Session = mock.Mock(return_value=session)
         setattr(dciclient, 'print', self._catch_print_call)
         dciclient.main(args=['register-remoteci', '--name', 'bob'])
         self.assertEqual([
@@ -78,10 +78,10 @@ class TestClient(testtools.TestCase):
         session = mock.Mock()
         session.post.return_value = response
         session.get.return_value = response
-        dciclient.client.requests.Session = mock.Mock(return_value=session)
+        dciclient.requests.Session = mock.Mock(return_value=session)
         popenobj = mock.Mock()
         popenobj.returncode = 0
-        dciclient.client.subprocess = mock.Mock()
-        dciclient.client.subprocess.Popen.return_value = popenobj
+        dciclient.subprocess = mock.Mock()
+        dciclient.subprocess.Popen.return_value = popenobj
         dciclient.main(args=['auto', 'some-remoteci-id'])
         self.assertEqual(self.print_call, [])
