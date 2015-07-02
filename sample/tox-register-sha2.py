@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import client
+import dci_client
 import requests
 import six
 
@@ -92,7 +92,7 @@ products = {
         'enovance/dci-control-server', 'goneri/dci-control-server']}
 gh_s = requests.Session()
 # gh_s.auth = ('user', 'xxx')
-dci_client = client.DCIClient()
+dci_client = dci_client.DCIClient()
 
 
 for product, repositories in six.iteritems(products):
