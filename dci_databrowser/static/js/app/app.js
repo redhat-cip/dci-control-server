@@ -17,7 +17,7 @@
 'use strict';
 
 var app = angular.module('app', ['ngRoute', 'restangular', 'ngCookies',
-'angular-loading-bar', 'ui.router']);
+'angular-loading-bar', 'ui.router', 'googlechart']);
 
 // Configure the application
 app.config(function(RestangularProvider) {
@@ -54,6 +54,10 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
         url:'/products',
         templateUrl: 'partials/products.html',
         controller: 'ProductsController'
+    }).state('stats', {
+        url:'/stats',
+        templateUrl: 'partials/stats.html',
+        controller: 'StatsController'
     }).state('signin', {
         url: '/signin',
         templateUrl: 'partials/signin.html',
@@ -221,6 +225,70 @@ app.controller('ProductsController', function(
             });
         }
     });
+});
+
+app.controller('StatsController', function(
+    $scope, CommonCode, Restangular, $stateParams) {
+
+    Restangular.one('products').get().
+        then(function(products) {
+            $scope.products = products._items;
+            $scope.myProduct = products._items[0];
+        });
+
+    $scope.$watch('myProduct', function(currentProduct, previousProduct) {
+        if (currentProduct != undefined) {
+            Restangular.one('versions').
+            get({'where': {'product_id': currentProduct.id}, 'extra_data': 1}).
+            then(function(versions) {
+                $scope.versions_status = versions._items;
+            });
+        }
+    });
+
+    $scope.chart = {
+  "type": "PieChart",
+  "data": [
+    [
+      "Status",
+      "rate"
+    ],
+    [
+      "Success",
+      64724
+    ],
+    [
+      "Failure",
+      80000
+    ],
+    [
+      "Ongoing",
+      20000
+    ]
+  ],
+  "title": "lol",
+  "options": {
+    "displayExactValues": true,
+    "width": 600,
+    "height": 400,
+    "is3D": true,
+    "chartArea": {
+      "left": 10,
+      "top": 10,
+      "bottom": 0,
+      "height": "100%"
+    }
+  },
+  "formatters": {
+    "number": [
+      {
+        "columnNum": 1,
+        "pattern": "#"
+      }
+    ]
+  },
+  "displayed": true
+};
 });
 
 app.controller('LoginController', ['$scope', '$cookies', '$state',
