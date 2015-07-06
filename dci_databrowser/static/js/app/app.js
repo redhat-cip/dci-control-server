@@ -36,6 +36,20 @@ app.config(function(RestangularProvider) {
     });
 });
 
+app.factory('MyInjector', function($cookies, $q, $window) {
+    var injector = {
+        request: function(config) {
+            config.headers['Authorization'] = 'Basic ' + $cookies.auth;
+            return config;
+        },
+        responseError: function(errorResponse) {
+            $window.location = './#/signin';
+            return $q.reject(errorResponse);
+        }
+    };
+    return injector;
+});
+
 app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
     $stateProvider
     .state('jobs', {
@@ -69,7 +83,7 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
     });
 
     $urlRouterProvider.otherwise('/jobs');
-    $httpProvider.interceptors.push('BasicAuthInjector');
+    $httpProvider.interceptors.push('MyInjector');
 });
 
 app.factory('CommonCode', function($window, Restangular, $cookies) {
@@ -116,16 +130,6 @@ app.factory('CommonCode', function($window, Restangular, $cookies) {
             'getRemoteCis': getRemoteCis};
 });
 
-app.factory('BasicAuthInjector', function($cookies) {
-    var injector = {
-        request: function(config) {
-            config.headers['Authorization'] = 'Basic ' + $cookies.auth;
-            return config;
-        }
-    };
-    return injector;
-});
-
 app.controller('ListJobsController', function($scope, $location, $cookies,
 CommonCode, Restangular, $state, $stateParams) {
 
@@ -142,7 +146,6 @@ CommonCode, Restangular, $state, $stateParams) {
                 $scope.jobCurrentPage = targetPage;
             }
         }
-
         Restangular.one('jobs').get({'page': targetPage,
                                      'extra_data': 1,
                                      'sort': '-created_at'}).
@@ -152,7 +155,6 @@ CommonCode, Restangular, $state, $stateParams) {
                 jobs._meta.max_results + 1));
             $scope.jobsTotalPages = $cookies.jobsTotalPages;
         });
-
     };
 
     $scope.jobsNextPage = function() {
@@ -177,7 +179,7 @@ CommonCode, Restangular, $state, $stateParams) {
 });
 
 app.controller('ListRemotecisController', function($scope, $location,
-CommonCode, Restangular) {
+$cookies, $state, CommonCode, Restangular) {
 
     $scope.remotecisNextPage = function() {
         if ($scope.remoteciCurrentPage < $cookies.remotecisTotalPages) {
@@ -196,6 +198,7 @@ CommonCode, Restangular) {
     if ($scope.remoteciCurrentPage == undefined) {
         $scope.remoteciCurrentPage = 1;
     }
+
     CommonCode.getRemoteCis($scope);
 });
 
@@ -321,6 +324,6 @@ app.controller('LogoutController', ['$scope', '$templateCache',
   function($scope, $templateCache, $cookies, $state) {
       $templateCache.removeAll();
       $cookies.auth = btoa('None');
-      $state.go('jobs');
+      $state.go('signin');
   }
 ]);
