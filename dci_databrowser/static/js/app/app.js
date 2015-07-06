@@ -130,29 +130,30 @@ app.controller('ListJobsController', function($scope, $location, $cookies,
 CommonCode, Restangular, $state, $stateParams) {
 
     var loadPage = function() {
-        var targetPage = $scope.jobCurrentPage;
-        var searchObject = $location.search();
-        if (searchObject.page != undefined) {
-            var totalPages = $cookies.jobsTotalPages;
-            var pageNumber = parseInt(searchObject.page);
+        //FIX: On safari the page is loaded despite the user signed out.
+        if ($cookies.auth != btoa('None')) {
+            var targetPage = $scope.jobCurrentPage;
+            var searchObject = $location.search();
+            if (searchObject.page != undefined) {
+                var totalPages = $cookies.jobsTotalPages;
+                var pageNumber = parseInt(searchObject.page);
 
-            if ((pageNumber < ((parseInt(totalPages) + 1) | 0)) &&
-                (pageNumber > 1)) {
-                targetPage = parseInt(searchObject.page);
-                $scope.jobCurrentPage = targetPage;
+                if ((pageNumber < ((parseInt(totalPages) + 1) | 0)) &&
+                    (pageNumber > 1)) {
+                    targetPage = parseInt(searchObject.page);
+                    $scope.jobCurrentPage = targetPage;
+                }
             }
+            Restangular.one('jobs').get({'page': targetPage,
+                                         'extra_data': 1,
+                                         'sort': '-created_at'}).
+            then(function(jobs) {
+                $scope.jobs = jobs._items
+                $cookies.jobsTotalPages = parseInt((jobs._meta.total /
+                    jobs._meta.max_results + 1));
+                $scope.jobsTotalPages = $cookies.jobsTotalPages;
+            });
         }
-
-        Restangular.one('jobs').get({'page': targetPage,
-                                     'extra_data': 1,
-                                     'sort': '-created_at'}).
-        then(function(jobs) {
-            $scope.jobs = jobs._items
-            $cookies.jobsTotalPages = parseInt((jobs._meta.total /
-                jobs._meta.max_results + 1));
-            $scope.jobsTotalPages = $cookies.jobsTotalPages;
-        });
-
     };
 
     $scope.jobsNextPage = function() {
