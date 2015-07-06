@@ -130,29 +130,30 @@ app.controller('ListJobsController', function($scope, $location, $cookies,
 CommonCode, Restangular, $state, $stateParams) {
 
     var loadPage = function() {
-        var targetPage = $scope.jobCurrentPage;
-        var searchObject = $location.search();
-        if (searchObject.page != undefined) {
-            var totalPages = $cookies.jobsTotalPages;
-            var pageNumber = parseInt(searchObject.page);
+        //FIX: On safari the page is loaded despite the user signed out.
+        if ($cookies.auth != btoa('None')) {
+            var targetPage = $scope.jobCurrentPage;
+            var searchObject = $location.search();
+            if (searchObject.page != undefined) {
+                var totalPages = $cookies.jobsTotalPages;
+                var pageNumber = parseInt(searchObject.page);
 
-            if ((pageNumber < ((parseInt(totalPages) + 1) | 0)) &&
-                (pageNumber > 1)) {
-                targetPage = parseInt(searchObject.page);
-                $scope.jobCurrentPage = targetPage;
+                if ((pageNumber < ((parseInt(totalPages) + 1) | 0)) &&
+                    (pageNumber > 1)) {
+                    targetPage = parseInt(searchObject.page);
+                    $scope.jobCurrentPage = targetPage;
+                }
             }
+            Restangular.one('jobs').get({'page': targetPage,
+                                         'extra_data': 1,
+                                         'sort': '-created_at'}).
+            then(function(jobs) {
+                $scope.jobs = jobs._items
+                $cookies.jobsTotalPages = parseInt((jobs._meta.total /
+                    jobs._meta.max_results + 1));
+                $scope.jobsTotalPages = $cookies.jobsTotalPages;
+            });
         }
-
-        Restangular.one('jobs').get({'page': targetPage,
-                                     'extra_data': 1,
-                                     'sort': '-created_at'}).
-        then(function(jobs) {
-            $scope.jobs = jobs._items
-            $cookies.jobsTotalPages = parseInt((jobs._meta.total /
-                jobs._meta.max_results + 1));
-            $scope.jobsTotalPages = $cookies.jobsTotalPages;
-        });
-
     };
 
     $scope.jobsNextPage = function() {
@@ -196,13 +197,17 @@ CommonCode, Restangular) {
     if ($scope.remoteciCurrentPage == undefined) {
         $scope.remoteciCurrentPage = 1;
     }
-    CommonCode.getRemoteCis($scope);
+
+    //FIX: On safari the page is loaded despite the user signed out.
+    if ($cookies.auth != btoa('None')) {
+        CommonCode.getRemoteCis($scope);
+    }
 });
 
 app.controller('JobDetailsController', function(
     $scope, CommonCode, Restangular, $stateParams) {
 
-    if ($stateParams.jobId) {
+    if ($stateParams.jobId && ($cookies.auth != btoa('None'))) {
         CommonCode.getJobInfo($scope, $stateParams.jobId);
     }
 });
@@ -210,14 +215,17 @@ app.controller('JobDetailsController', function(
 app.controller('ProductsController', function(
     $scope, CommonCode, Restangular, $stateParams) {
 
-    Restangular.one('products').get().
-        then(function(products) {
-            $scope.products = products._items;
-            $scope.currentProduct = products._items[0];
-        });
+    //FIX: On safari the page is loaded despite the user signed out.
+    if ($cookies.auth != btoa('None')) {
+        Restangular.one('products').get().
+            then(function(products) {
+                $scope.products = products._items;
+                $scope.currentProduct = products._items[0];
+            });
+    }
 
     $scope.$watch('currentProduct', function(currentProduct, previousProduct) {
-        if (currentProduct != undefined) {
+        if ((currentProduct != undefined) && ($cookies.auth != btoa('None'))) {
             Restangular.one('versions').
             get({'where': {'product_id': currentProduct.id}, 'extra_data': 1}).
             then(function(versions) {
@@ -230,18 +238,21 @@ app.controller('ProductsController', function(
 app.controller('StatsController', function(
     $scope, CommonCode, Restangular, $stateParams) {
 
-    Restangular.one('products').get().
-        then(function(products) {
-            $scope.products = products._items;
-            $scope.currentProduct = products._items[0];
+    //FIX: On safari the page is loaded despite the user signed out.
+    if ($cookies.auth != btoa('None')) {
+        Restangular.one('products').get().
+            then(function(products) {
+                $scope.products = products._items;
+                $scope.currentProduct = products._items[0];
 
-            Restangular.one('versions').get({'where': {'product_id':
-            $scope.currentProduct.id}}).
-            then(function(versions) {
-                $scope.versions = versions._items;
-                $scope.currentVersion = versions._items[0];
+                Restangular.one('versions').get({'where': {'product_id':
+                $scope.currentProduct.id}}).
+                then(function(versions) {
+                    $scope.versions = versions._items;
+                    $scope.currentVersion = versions._items[0];
+                });
             });
-        });
+    }
 
     var getRate = function(product_id, version_id) {
         Restangular.one('remotecis').
@@ -287,7 +298,8 @@ app.controller('StatsController', function(
 
     $scope.$watch('currentProduct', function(currentProduct, previousProduct) {
         if ((currentProduct != undefined) &&
-            ($scope.currentVersion != undefined)) {
+            ($scope.currentVersion != undefined) &&
+            $cookies.auth != btoa('None')) {
             Restangular.one('versions').get({'where': {'product_id':
             currentProduct.id}}).
             then(function(versions) {
@@ -300,7 +312,8 @@ app.controller('StatsController', function(
 
     $scope.$watch('currentVersion', function(currentVersion, previousVersion) {
         if ((currentVersion != undefined) &&
-            ($scope.currentProduct != undefined)) {
+            ($scope.currentProduct != undefined) &&
+            $cookies.auth != btoa('None')) {
             getRate($scope.currentProduct.id, currentVersion.id);
         }
     });
