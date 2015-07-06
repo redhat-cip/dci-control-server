@@ -21,7 +21,7 @@ import random
 import uuid
 
 
-client = client.DCIClient(end_point="http://127.0.0.1:5000",
+client = client.DCIClient(end_point="http://staging-dcics.rhcloud.com",
                           login="admin", password="admin")
 
 for _ in range(10):
