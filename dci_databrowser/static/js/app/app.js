@@ -130,16 +130,18 @@ app.controller('ListJobsController', function($scope, $location, $cookies,
 CommonCode, Restangular, $state, $stateParams) {
 
     var loadPage = function() {
-        var targetPage = $scope.jobCurrentPage;
-        var searchObject = $location.search();
-        if (searchObject.page != undefined) {
-            var totalPages = $cookies.jobsTotalPages;
-            var pageNumber = parseInt(searchObject.page);
+        if ($cookies.auth != btoa('None')){
+            var targetPage = $scope.jobCurrentPage;
+            var searchObject = $location.search();
+            if (searchObject.page != undefined) {
+                var totalPages = $cookies.jobsTotalPages;
+                var pageNumber = parseInt(searchObject.page);
 
-            if ((pageNumber < ((parseInt(totalPages) + 1) | 0)) &&
-                (pageNumber > 1)) {
-                targetPage = parseInt(searchObject.page);
-                $scope.jobCurrentPage = targetPage;
+                if ((pageNumber < ((parseInt(totalPages) + 1) | 0)) &&
+                    (pageNumber > 1)) {
+                    targetPage = parseInt(searchObject.page);
+                    $scope.jobCurrentPage = targetPage;
+                }
             }
         }
 
