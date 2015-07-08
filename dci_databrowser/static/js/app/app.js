@@ -16,35 +16,14 @@
 
 'use strict';
 
-var app = angular.module('app', ['ngRoute', 'restangular', 'ngCookies',
-'angular-loading-bar', 'ui.router', 'googlechart']);
-
-// Configure the application
-app.config(function(RestangularProvider) {
-    RestangularProvider.setBaseUrl('/api');
-    // https://github.com/mgonto/restangular#my-response-is-actually-wrapped-with-some-metadata-how-do-i-get-the-data-in-that-case
-    RestangularProvider.addResponseInterceptor(function(
-    data, operation, what, url, response, deferred) {
-        var extractedData = [];
-        if (operation === 'getList') {
-            extractedData._items = data._items;
-            extractedData._meta = data._meta;
-        } else {
-            extractedData = data;
-        }
-        return extractedData;
-    });
-});
+var app = angular.module('app', ['ngRoute', 'ngCookies',
+'angular-loading-bar', 'ui.router', 'googlechart', 'ngResource']);
 
 app.factory('MyInjector', function($cookies, $q, $window) {
     var injector = {
         request: function(config) {
             config.headers['Authorization'] = 'Basic ' + $cookies.auth;
             return config;
-        },
-        responseError: function(errorResponse) {
-            $window.location = './#/signin';
-            return $q.reject(errorResponse);
         }
     };
     return injector;
@@ -86,43 +65,44 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
     $httpProvider.interceptors.push('MyInjector');
 });
 
-app.factory('CommonCode', function($window, Restangular, $cookies) {
+app.factory('CommonCode', function($resource, $cookies) {
     // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
     var getRemoteCis = function($scope) {
-        Restangular.one('remotecis').get().then(
-            function(remotecis) {
-                $scope.remotecis = remotecis._items;
-                $cookies.remotecisTotalPages = parseInt((
-                remotecis._meta.total / remotecis._meta.max_results + 1));
-                $scope.remotecisTotalPages = $cookies.remotecisTotalPages;
-            }
-        );
+        var Remotecis = $resource('/api/remotecis').get();
+        Remotecis.$promise.then(function(remotecis) {
+            $scope.remotecis = remotecis._items;
+            $cookies.remotecisTotalPages = parseInt((
+            remotecis._meta.total / remotecis._meta.max_results + 1));
+            $scope.remotecisTotalPages = $cookies.remotecisTotalPages;
+        });
     };
 
     var getJobInfo = function($scope, job_id) {
-        Restangular.one('jobs', job_id).get(
-        {'embedded': {'remoteci':1, 'testversion':1}}).then(
-        function(job) {
+        var Job = $resource('/api/jobs/' + job_id).get(
+        {'embedded': {'remoteci':1, 'testversion':1}});
+        Job.$promise.then(function(job) {
             $scope.job = job;
-            Restangular.one('jobstates').get(
+            var Jobstates = $resource('/api/jobstates').get(
                 {'where': {'job_id': job_id},
-                 'embedded': {'files_collection':1}}).then(
-                 function(jobstates) {
-                     $scope.job['jobstates'] = jobstates._items;
-                 });
+                 'embedded': {'files_collection':1}});
+            Jobstates.$promise.then(function(jobstates) {
+                $scope.job['jobstates'] = jobstates._items;
+            });
 
-            Restangular.one('testversions', job.testversion.id).get(
-                {'embedded': {'version':1, 'test':1}}).then(
-                function(testversion) {
-                    $scope.job['version'] = testversion.version.name;
-                    $scope.job['test'] = testversion.test.name;
-                    Restangular.one('products',
-                    testversion.version.product_id).get().then(
-                        function(product) {
-                            $scope.job['product'] = product.name;
-                        }
-                )});
+            var Testversions = $resource(
+                '/api/testversions/' + job.testversion.id).get(
+                    {'embedded': {'version':1, 'test':1}});
+            Testversions.$promise.then(function(testversion) {
+                $scope.job['version'] = testversion.version.name;
+                $scope.job['test'] = testversion.test.name;
+                var Products = $resource('/api/products/' +
+                    testversion.version.product_id).get();
+                Products.$promise.then(
+                    function(product) {
+                        $scope.job['product'] = product.name;
+                    })
+            });
         });
     };
 
@@ -130,8 +110,12 @@ app.factory('CommonCode', function($window, Restangular, $cookies) {
             'getRemoteCis': getRemoteCis};
 });
 
-app.controller('ListJobsController', function($scope, $location, $cookies,
-CommonCode, Restangular, $state, $stateParams) {
+app.controller('ListJobsController', function($scope, $cookies, $resource,
+$location, $state, CommonCode) {
+
+    if ($cookies.auth == btoa('None')) {
+        $state.go('signin');
+    }
 
     var loadPage = function() {
         var targetPage = $scope.jobCurrentPage;
@@ -146,14 +130,15 @@ CommonCode, Restangular, $state, $stateParams) {
                 $scope.jobCurrentPage = targetPage;
             }
         }
-        Restangular.one('jobs').get({'page': targetPage,
-                                     'extra_data': 1,
-                                     'sort': '-created_at'}).
-        then(function(jobs) {
+        var Jobs = $resource('/api/jobs').get({'page': targetPage,
+                                               'extra_data': 1,
+                                               'sort': '-created_at'});
+        Jobs.$promise.then(function(jobs) {
             $scope.jobs = jobs._items
             $cookies.jobsTotalPages = parseInt((jobs._meta.total /
                 jobs._meta.max_results + 1));
             $scope.jobsTotalPages = $cookies.jobsTotalPages;
+
         });
     };
 
@@ -179,7 +164,10 @@ CommonCode, Restangular, $state, $stateParams) {
 });
 
 app.controller('ListRemotecisController', function($scope, $location,
-$cookies, $state, CommonCode, Restangular) {
+$cookies, $state, CommonCode) {
+    if ($cookies.auth == btoa('None')) {
+        $state.go('signin');
+    }
 
     $scope.remotecisNextPage = function() {
         if ($scope.remoteciCurrentPage < $cookies.remotecisTotalPages) {
@@ -203,53 +191,64 @@ $cookies, $state, CommonCode, Restangular) {
 });
 
 app.controller('JobDetailsController', function(
-    $scope, CommonCode, Restangular, $stateParams) {
+    $scope, CommonCode, $stateParams) {
+    if ($cookies.auth == btoa('None')) {
+        $state.go('signin');
+    }
 
     if ($stateParams.jobId) {
         CommonCode.getJobInfo($scope, $stateParams.jobId);
     }
 });
 
-app.controller('ProductsController', function(
-    $scope, CommonCode, Restangular, $stateParams) {
+app.controller('ProductsController', function($scope, $resource, $cookies,
+$state, CommonCode) {
 
-    Restangular.one('products').get().
-        then(function(products) {
-            $scope.products = products._items;
-            $scope.currentProduct = products._items[0];
-        });
+    if ($cookies.auth == btoa('None')) {
+        $state.go('signin');
+    }
+
+    var Products = $resource('/api/products').get();
+    Products.$promise.then(function(products) {
+        $scope.products = products._items;
+        $scope.currentProduct = products._items[0];
+    });
 
     $scope.$watch('currentProduct', function(currentProduct, previousProduct) {
         if (currentProduct != undefined) {
-            Restangular.one('versions').
-            get({'where': {'product_id': currentProduct.id}, 'extra_data': 1}).
-            then(function(versions) {
+            var Version = $resource('/api/versions').get(
+            {'where': {'product_id': currentProduct.id}, 'extra_data': 1});
+            Version.$promise.then(function(versions) {
                 $scope.versions_status = versions._items;
             });
         }
     });
 });
 
-app.controller('StatsController', function(
-    $scope, CommonCode, Restangular, $stateParams) {
+app.controller('StatsController', function($scope, $stateParams, $resource,
+$cookies, $state, CommonCode) {
 
-    Restangular.one('products').get().
-        then(function(products) {
-            $scope.products = products._items;
-            $scope.currentProduct = products._items[0];
+    if ($cookies.auth == btoa('None')) {
+        $state.go('signin');
+    }
 
-            Restangular.one('versions').get({'where': {'product_id':
-            $scope.currentProduct.id}}).
-            then(function(versions) {
-                $scope.versions = versions._items;
-                $scope.currentVersion = versions._items[0];
-            });
+    var Products = $resource('/api/products').get();
+    Products.$promise.then(function(products) {
+        $scope.products = products._items;
+        $scope.currentProduct = products._items[0];
+
+        var Versions = $resource('/api/versions').get(
+            {'where': {'product_id': $scope.currentProduct.id}});
+        Versions.$promise.then(function(versions) {
+            $scope.versions = versions._items;
+            $scope.currentVersion = versions._items[0];
         });
+    });
 
     var getRate = function(product_id, version_id) {
-        Restangular.one('remotecis').
-        get({'extra_data': 1, 'version_id': version_id}).
-        then(function(remotecis) {
+        var Remotecis = $resource('/api/remotecis').
+        get({'extra_data': 1, 'version_id': version_id});
+        Remotecis.$promise.then(function(remotecis) {
         $scope.chart = {
             'type': 'PieChart',
             'data': [],
@@ -291,9 +290,9 @@ app.controller('StatsController', function(
     $scope.$watch('currentProduct', function(currentProduct, previousProduct) {
         if ((currentProduct != undefined) &&
             ($scope.currentVersion != undefined)) {
-            Restangular.one('versions').get({'where': {'product_id':
-            currentProduct.id}}).
-            then(function(versions) {
+            var Versions = $resource('/api/versions').get(
+                {'where': {'product_id': currentProduct.id}});
+            Versions.$promise.then(function(versions) {
                 $scope.versions = versions._items;
                 $scope.currentVersion = versions._items[0];
             });
