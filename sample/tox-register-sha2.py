@@ -61,7 +61,11 @@ def fetch(gh_s, dci_client, product, repositories):
         r = dci_client.post("/tests", {
             "name": "tox",
         })
-    test_id = r.json()['id']
+    try:
+        test_id = r.json()['id']
+    except KeyError as e:
+        print(r.text)
+        raise e
 
     for repository in repositories:
         r = dci_client.get("/products", where={
