@@ -30,25 +30,47 @@ app.factory('MyInjector', function($cookies, $q, $window) {
 });
 
 app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
+    function isAuthenticated ($q, $cookies) {
+        var d = $q.defer();
+        if (($cookies.auth == btoa('None')) ||
+             angular.isUndefined($cookies.auth)) {
+            d.reject('notAuthenticated');
+        } else {
+            d.resolve();
+        }
+        return d.promise;
+    }
+
     $stateProvider
-    .state('jobs', {
+    .state('auth', {
+        abstract: true,
+        resolve: {
+            'auth': ['$q', '$cookies', isAuthenticated]
+        },
+        template: '<ui-view/>'
+    }).state('jobs', {
         url: '/jobs?page',
+        parent: 'auth',
         templateUrl: 'partials/jobs.html',
         controller: 'ListJobsController'
     }).state('jobdetails', {
         url:'/jobdetails/:jobId',
+        parent: 'auth',
         templateUrl: 'partials/jobdetails.html',
         controller: 'JobDetailsController'
     }).state('remotecis', {
         url:'/remotecis',
+        parent: 'auth',
         templateUrl: 'partials/remotecis.html',
         controller: 'ListRemotecisController'
     }).state('products', {
         url:'/products',
+        parent: 'auth',
         templateUrl: 'partials/products.html',
         controller: 'ProductsController'
     }).state('stats', {
         url:'/stats',
+        parent: 'auth',
         templateUrl: 'partials/stats.html',
         controller: 'StatsController'
     }).state('signin', {
@@ -61,8 +83,16 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
         controller: 'LogoutController'
     });
 
-    $urlRouterProvider.otherwise('/jobs');
+    $urlRouterProvider.otherwise('signin');
     $httpProvider.interceptors.push('MyInjector');
+});
+
+app.controller('AppCtrl', function($rootScope, $state) {
+    $rootScope.$on('$routeChangeError', function(value) {
+        if (value === 'notAuthenticated') {
+            $state.go('signin');
+        }
+    });
 });
 
 app.factory('CommonCode', function($resource, $cookies) {
@@ -113,10 +143,6 @@ app.factory('CommonCode', function($resource, $cookies) {
 app.controller('ListJobsController', function($scope, $cookies, $resource,
 $location, $state, CommonCode) {
 
-    if ($cookies.auth == btoa('None')) {
-        $state.go('signin');
-    }
-
     var loadPage = function() {
         var targetPage = $scope.jobCurrentPage;
         var searchObject = $location.search();
@@ -165,9 +191,6 @@ $location, $state, CommonCode) {
 
 app.controller('ListRemotecisController', function($scope, $location,
 $cookies, $state, CommonCode) {
-    if ($cookies.auth == btoa('None')) {
-        $state.go('signin');
-    }
 
     $scope.remotecisNextPage = function() {
         if ($scope.remoteciCurrentPage < $cookies.remotecisTotalPages) {
@@ -192,10 +215,6 @@ $cookies, $state, CommonCode) {
 
 app.controller('JobDetailsController', function($scope, $stateParams,
 $cookies, $state, CommonCode) {
-    if ($cookies.auth == btoa('None')) {
-        $state.go('signin');
-    }
-
     if ($stateParams.jobId) {
         CommonCode.getJobInfo($scope, $stateParams.jobId);
     }
@@ -203,11 +222,6 @@ $cookies, $state, CommonCode) {
 
 app.controller('ProductsController', function($scope, $resource, $cookies,
 $state, CommonCode) {
-
-    if ($cookies.auth == btoa('None')) {
-        $state.go('signin');
-    }
-
     var Products = $resource('/api/products').get();
     Products.$promise.then(function(products) {
         $scope.products = products._items;
@@ -227,11 +241,6 @@ $state, CommonCode) {
 
 app.controller('StatsController', function($scope, $stateParams, $resource,
 $cookies, $state, CommonCode) {
-
-    if ($cookies.auth == btoa('None')) {
-        $state.go('signin');
-    }
-
     var Products = $resource('/api/products').get();
     Products.$promise.then(function(products) {
         $scope.products = products._items;
