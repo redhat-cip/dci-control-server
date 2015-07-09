@@ -82,7 +82,7 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
         controller: 'LogoutController'
     });
 
-    $urlRouterProvider.otherwise('/jobs');
+    $urlRouterProvider.otherwise('signin');
     $httpProvider.interceptors.push('MyInjector');
 });
 
