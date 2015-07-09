@@ -40,7 +40,7 @@ def sha_walker(sha_to_walks, dci_client, repository, product_id, test_id):
         print('%s - %s' % (sha, title))
         r = dci_client.post("/versions", {
             "product_id": product_id,
-            "name": sha,
+            "name": title,
             "title": title,
             "message": message,
             "sha": sha,
