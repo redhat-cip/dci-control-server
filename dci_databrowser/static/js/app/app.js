@@ -30,25 +30,50 @@ app.factory('MyInjector', function($cookies, $q, $window) {
 });
 
 app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
+    function is_authenticated ($q, $cookies) {
+        var d = $q.defer();
+        if ($cookies.auth == btoa('None')) {
+            d.reject('not_authenticated');
+        } else {
+            d.resolve();
+        }
+        return d.promise;
+    }
+
     $stateProvider
     .state('jobs', {
         url: '/jobs?page',
+        resolve: {
+            'auth': ['$q', '$cookies', is_authenticated]
+        },
         templateUrl: 'partials/jobs.html',
         controller: 'ListJobsController'
     }).state('jobdetails', {
         url:'/jobdetails/:jobId',
+        resolve: {
+            'auth': ['$q', '$cookies', is_authenticated]
+        },
         templateUrl: 'partials/jobdetails.html',
         controller: 'JobDetailsController'
     }).state('remotecis', {
         url:'/remotecis',
+        resolve: {
+            'auth': ['$q', '$cookies', is_authenticated],
+        },
         templateUrl: 'partials/remotecis.html',
         controller: 'ListRemotecisController'
     }).state('products', {
         url:'/products',
+        resolve: {
+            'auth': ['$q', '$cookies', is_authenticated]
+        },
         templateUrl: 'partials/products.html',
         controller: 'ProductsController'
     }).state('stats', {
         url:'/stats',
+        resolve: {
+            'auth': ['$q', '$cookies', is_authenticated]
+        },
         templateUrl: 'partials/stats.html',
         controller: 'StatsController'
     }).state('signin', {
@@ -63,6 +88,14 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
 
     $urlRouterProvider.otherwise('/jobs');
     $httpProvider.interceptors.push('MyInjector');
+});
+
+app.controller('AppCtrl', function ($rootScope, $state) {
+    $rootScope.$on('$routeChangeError', function (value) {
+        if (value === 'not_authenticated') {
+            $state.go('signin');
+        }
+    });
 });
 
 app.factory('CommonCode', function($resource, $cookies) {
@@ -113,9 +146,7 @@ app.factory('CommonCode', function($resource, $cookies) {
 app.controller('ListJobsController', function($scope, $cookies, $resource,
 $location, $state, CommonCode) {
 
-    if ($cookies.auth == btoa('None')) {
-        $state.go('signin');
-    }
+
 
     var loadPage = function() {
         var targetPage = $scope.jobCurrentPage;
