@@ -32,14 +32,15 @@ for _ in range(10):
                                     'foo': ['bar1', 'bar2']}}})
     product_id = product.json()["id"]
 
+    version = client.post('/api/versions',
+                          data={'name': str(uuid.uuid4())[:18],
+                                'product_id': product_id,
+                                'data': {
+                                'version_keys': {
+                                    'foo': ['bar1', 'bar2']}}})
+    version_id = version.json()["id"]
+
     for _ in range(5):
-        version = client.post('/api/versions',
-                              data={'name': str(uuid.uuid4())[:18],
-                                    'product_id': product_id,
-                                    'data': {
-                                    'version_keys': {
-                                        'foo': ['bar1', 'bar2']}}})
-        version_id = version.json()["id"]
 
         test = client.post('/api/tests',
                            data={'name': 'bob',
@@ -64,22 +65,22 @@ for _ in range(10):
         remoteci_id = remoteci.json()["id"]
 
         job = client.post('/api/jobs',
-                          data={'remoteci_id': remoteci_id})
+                          data={'remoteci_id': remoteci_id,
+                                'testversion_id': testversion_id})
         job_id = job.json()["id"]
 
-        for _ in range(2):
-            alea = random.randint(0, 2)
-            status = ["ongoing", "failure", "success"][alea]
-            jobstate = client.post('/api/jobstates',
-                                   data={'job_id': job_id,
-                                         'status': status})
-            jobstate_id = jobstate.json()["id"]
+        alea = random.randint(0, 2)
+        status = ["ongoing", "failure", "success"][alea]
+        jobstate = client.post('/api/jobstates',
+                               data={'job_id': job_id,
+                                     'status': status})
+        jobstate_id = jobstate.json()["id"]
 
-            for _ in range(2):
-                client.post('/api/files',
-                            data={'jobstate_id': jobstate_id,
-                                  'content': 'kikoolol! mdr! lol!' * 100,
-                                  'name': str(uuid.uuid4())[:18],
-                                  'mime': 'text'})
+        for _ in range(2):
+            client.post('/api/files',
+                        data={'jobstate_id': jobstate_id,
+                              'content': 'kikoolol! mdr! lol!' * 100,
+                              'name': str(uuid.uuid4())[:18],
+                              'mime': 'text'})
 
 print("Database populated successfully :)\n")
