@@ -297,23 +297,28 @@ $cookies, $state, CommonCode) {
     })};
 
     $scope.$watch('currentProduct', function(currentProduct, previousProduct) {
-        if ((currentProduct != undefined) &&
-            ($scope.currentVersion != undefined)) {
-            var Versions = $resource('/api/versions').get(
-                {'where': {'product_id': currentProduct.id}});
-            Versions.$promise.then(function(versions) {
-                $scope.versions = versions._items;
-                $scope.currentVersion = versions._items[0];
-            });
-            getRate(currentProduct.id, $scope.currentVersion.id);
+        if (angular.isUndefined(currentProduct)) {
+            return;
         }
+
+        var Versions = $resource('/api/versions').get(
+            {'where': {'product_id': currentProduct.id}});
+        Versions.$promise.then(function(versions) {
+            console.log(versions._items[0]);
+            $scope.versions = versions._items;
+            $scope.currentVersion = versions._items[0];
+            if (!angular.isUndefined($scope.currentVersion)) {
+                getRate(currentProduct.id, $scope.currentVersion.id);
+            }
+        });
     });
 
     $scope.$watch('currentVersion', function(currentVersion, previousVersion) {
-        if ((currentVersion != undefined) &&
-            ($scope.currentProduct != undefined)) {
-            getRate($scope.currentProduct.id, currentVersion.id);
+        if (angular.isUndefined(currentVersion) ||
+            angular.isUndefined($scope.currentProduct)) {
+            return;
         }
+        getRate($scope.currentProduct.id, currentVersion.id);
     });
 });
 
