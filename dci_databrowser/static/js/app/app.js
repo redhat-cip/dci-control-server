@@ -195,14 +195,14 @@ $cookies, $state, CommonCode) {
     $scope.remotecisNextPage = function() {
         if ($scope.remoteciCurrentPage < $cookies.remotecisTotalPages) {
             $scope.remoteciCurrentPage++;
-            $state.go('jobs', {page:$scope.jobCurrentPage});
+            $state.go('remotecis', {page:$scope.jobCurrentPage});
         }
     }
 
     $scope.remotecisPreviousPage = function() {
         if ($scope.remoteciCurrentPage > 1) {
             $scope.remoteciCurrentPage--;
-            $state.go('jobs', {page:$scope.remoteciCurrentPage});
+            $state.go('remotecis', {page:$scope.remoteciCurrentPage});
         }
     }
 
