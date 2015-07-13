@@ -265,7 +265,6 @@ $cookies, $state, CommonCode) {
             'displayExactValues': true,
             'width': 600,
             'height': 400,
-            'is3D': true,
             'chartArea': {
                 'left': 10,
                 'top': 10,
@@ -306,9 +305,6 @@ $cookies, $state, CommonCode) {
         Versions.$promise.then(function(versions) {
             $scope.versions = versions._items;
             $scope.currentVersion = versions._items[0];
-            if (!angular.isUndefined($scope.currentVersion)) {
-                getRate(currentProduct.id, $scope.currentVersion.id);
-            }
         });
     });
 
