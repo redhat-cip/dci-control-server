@@ -231,7 +231,12 @@ class DciControlServer(Eve):
 
         version_id = flask.request.args.get('version_id')
         session = DciControlServer._DCI_MODEL.get_session()
-        rate = {"success": 0, "failure": 0, "ongoing": 0}
+        Remotecis = DciControlServer._DCI_MODEL.base.classes.remotecis
+        remotecisTotal = session.query(Remotecis).count()
+        print remotecisTotal
+
+        rate = {"success": 0, "failure": 0, "ongoing": 0,
+                "not_started": remotecisTotal}
         for remoteci in response["_items"]:
             Testversions = DciControlServer._DCI_MODEL.base.classes.\
                 testversions
@@ -251,6 +256,9 @@ class DciControlServer(Eve):
                         filter(Jobstates.job_id == job.id).first()
                     if jobstate:
                         rate[jobstate.status] += 1
+                        rate["not_started"] -= 1
+        if rate["not_started"] < 0:
+            rate["not_started"] = 0
         response["extra_data"] = rate
 
     def _init_hooks(self):
