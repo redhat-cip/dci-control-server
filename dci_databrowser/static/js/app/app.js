@@ -305,6 +305,10 @@ $cookies, $state, CommonCode) {
         [
           'Ongoing',
           remotecis.extra_data.ongoing
+        ],
+        [
+          'Not started',
+          remotecis.extra_data.not_started
         ]]
     })};
 
