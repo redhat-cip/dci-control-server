@@ -59,7 +59,7 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
         templateUrl: 'partials/jobdetails.html',
         controller: 'JobDetailsController'
     }).state('remotecis', {
-        url:'/remotecis',
+        url:'/remotecis?page',
         parent: 'auth',
         templateUrl: 'partials/remotecis.html',
         controller: 'ListRemotecisController'
@@ -95,11 +95,24 @@ app.controller('AppCtrl', function($rootScope, $state) {
     });
 });
 
-app.factory('CommonCode', function($resource, $cookies) {
+app.factory('CommonCode', function($resource, $cookies, $location) {
     // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
     var getRemoteCis = function($scope) {
-        var Remotecis = $resource('/api/remotecis').get();
+        var targetPage = $scope.remoteciCurrentPage;
+        var searchObject = $location.search();
+        if (searchObject.page != undefined) {
+            var totalPages = $cookies.remotecisTotalPages;
+            var pageNumber = parseInt(searchObject.page);
+
+            if ((pageNumber < ((parseInt(totalPages) + 1) | 0)) &&
+                (pageNumber > 1)) {
+                targetPage = parseInt(searchObject.page);
+                $scope.remoteciCurrentPage = targetPage;
+            }
+        }
+        var Remotecis = $resource('/api/remotecis').get(
+            {'page': targetPage, 'sort': '-created_at'});
         Remotecis.$promise.then(function(remotecis) {
             $scope.remotecis = remotecis._items;
             $cookies.remotecisTotalPages = parseInt((
@@ -195,7 +208,7 @@ $cookies, $state, CommonCode) {
     $scope.remotecisNextPage = function() {
         if ($scope.remoteciCurrentPage < $cookies.remotecisTotalPages) {
             $scope.remoteciCurrentPage++;
-            $state.go('remotecis', {page:$scope.jobCurrentPage});
+            $state.go('remotecis', {page:$scope.remoteciCurrentPage});
         }
     }
 
