@@ -23,19 +23,147 @@ import requests
 
 
 def upload(es_s, item_type, items):
+
+#    print(es_url + 'dci/_mapping/' + item_type)
+    es_r = es_s.put(es_url + 'dci')
+    es_r = es_s.put(es_url + 'dci/jobs')
+    es_r = es_s.put(es_url + 'dci/products')
+    es_r = es_s.put(es_url + 'dci/files')
+    es_r = es_s.put(es_url + 'dci/_mapping/jobs', data=json.dumps({
+        "_timestamp": {
+            "enabled": True,
+            "path": "created_at",
+            "format": "E, d MMM y HH:mm:ss ZZZ"
+        },
+        "properties": {
+            "created_at": {"type": "date", "format":"E, d MMM y HH:mm:ss ZZZ"},
+            "updated_at": {"type": "date", "format":"E, d MMM y HH:mm:ss ZZZ"},
+            "name": {"type": "string", "index": "not_analyzed"},
+            "etag": {"type": "string", "index": "not_analyzed"},
+            "id": {"type": "string", "index": "not_analyzed"}
+        }
+    }))
+    es_r = es_s.put(es_url + 'dci/_mapping/products', data=json.dumps({
+        "_timestamp": {
+            "enabled": True,
+            "path": "created_at",
+            "format": "E, d MMM y HH:mm:ss ZZZ"
+        },
+        "properties": {
+            "created_at": {"type": "date", "format":"E, d MMM y HH:mm:ss ZZZ"},
+            "updated_at": {"type": "date", "format":"E, d MMM y HH:mm:ss ZZZ"},
+            "name": {"type": "string", "index": "not_analyzed"},
+            "etag": {"type": "string", "index": "not_analyzed"},
+            "id": {"type": "string", "index": "not_analyzed"},
+            "versions_collection": {"type": "string", "index": "not_analyzed"}
+        }
+    }))
+    es_r = es_s.put(es_url + 'dci/_mapping/files', data=json.dumps({
+        "_timestamp": {
+            "enabled": True,
+            "path": "created_at",
+            "format": "E, d MMM y HH:mm:ss ZZZ"
+        },
+        "properties": {
+            "created_at": {"type": "date", "format":"E, d MMM y HH:mm:ss ZZZ"},
+            "updated_at": {"type": "date", "format":"E, d MMM y HH:mm:ss ZZZ"},
+            "name": {"type": "string", "index": "not_analyzed"},
+            "etag": {"type": "string", "index": "not_analyzed"},
+            "id": {"type": "string", "index": "not_analyzed"},
+          "versions_collection" : {
+#            "index_name": "version",
+            "properties" : {
+              "created_at" : {
+                "type" : "string"
+              },
+              "data" : {
+                "properties" : {
+                  "ksgen_args" : {
+                    "properties" : {
+                      "extra-vars" : {
+                        "type" : "string"
+                      }
+                    }
+                  },
+                  "sha2" : {
+                    "type" : "string"
+                  }
+                }
+              },
+              "etag" : {
+                "type" : "string"
+              },
+              "id" : {
+                "type" : "string"
+              },
+              "message" : {
+                "type" : "string"
+              },
+              "name" : {
+                "type" : "string"
+              },
+              "product_id" : {
+                "type" : "string"
+              },
+              "sha" : {
+                "type" : "string"
+              },
+              "title" : {
+                "type" : "string"
+              },
+              "updated_at" : {
+                "type" : "string"
+              }
+            }
+          }
+#            "versions_collection" : {
+#                "properties" : {
+#                    "data" : {
+#                        "properties" : {
+#                            "ksgen_args" : {
+#                                "properties" : {
+#                                    "extra-vars" : {
+#                                        "type" : "string", "index": "not_analyzed"
+#                                    }
+#                                }
+#                            },
+#                            "sha" : {
+#                                "type" : "string", "index": "not_analyzed"
+#                            }
+#                        }
+#                    },
+#                    "name": {"type": "string", "index": "not_analyzed"},
+#                    "message": {"type": "string", "index": "not_analyzed"},
+#                    "created_at": {"type": "date", "format":"E, d MMM y HH:mm:ss ZZZ"},
+#                    "updated_at": {"type": "date", "format":"E, d MMM y HH:mm:ss ZZZ"},
+#                    "name": {"type": "string", "index": "analyzed"},
+#                    "etag": {"type": "string", "index": "not_analyzed"},
+#                    "product_id": {"type": "string", "index": "not_analyzed"},
+#                    "id": {"type": "string", "index": "not_analyzed"},
+#                    "sha": {"type": "string", "index": "not_analyzed"},
+#                    "title" : {"type" : "string", "index": "analyzed"},
+#/!                }
+#            }
+        }
+        }
+    ))
+
+    print(es_r.text)
+
     for item in items:
-        pprint(item)
         item_es_url = es_url + 'dci/' + item_type + '/' + item['id']
-        print(item_es_url)
         es_r = es_s.head(item_es_url)
-        print(es_r.status_code)
+#        print(es_r.status_code)
         if es_r.status_code == 404:
+            pprint(item)
             es_r = es_s.put(item_es_url, data=json.dumps(item))
-            print(es_r.status_code)
             print(es_r.text)
+            print(es_r.status_code)
+        import sys
+        sys.exit(0)
 
 
-es_url = "http://elasticsearch-dcics.rhcloud.com/"
+es_url = "http://localhost:9200/"
 dci_client = client.DCIClient()
 
 
@@ -58,10 +186,12 @@ jobs = dci_client.list_items(
 
 files = dci_client.list_items(
     'files',
-    where={'created_at': '>= "yesterday"'},
+    where={'created_at': '< "now"'},
     embedded={
         'remoteci': 1,
         'jobstates_collection': 1})
-upload(es_s, 'jobs', jobs)
+es_s.delete(es_url + 'dci')
+es_s.delete(es_url + 'dci/products')
+#upload(es_s, 'jobs', jobs)
 upload(es_s, 'products', products)
-upload(es_s, 'files', files)
+#upload(es_s, 'files', files)
