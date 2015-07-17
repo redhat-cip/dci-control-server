@@ -128,6 +128,7 @@ app.factory('CommonCode', function($resource, $cookies, $location) {
             $scope.job = job;
             var Jobstates = $resource('/api/jobstates').get(
                 {'where': {'job_id': job_id},
+                 'sort': 'created_at',
                  'embedded': {'files_collection':1}});
             Jobstates.$promise.then(function(jobstates) {
                 $scope.job['jobstates'] = jobstates._items;
