@@ -121,18 +121,21 @@ args = [
     '@' + ksgen_settings_file.name,
     '-i', kh_dir + '/local_hosts',
     kh_dir + '/playbooks/full-job-no-test.yml']
-jobstate_id = dci_client.call(job_id,
-                              args,
-                              cwd=kh_dir,
-                              env=environ)
+
+status = 'success'
+try:
+    jobstate_id = dci_client.call(job_id,
+                                  args,
+                                  cwd=kh_dir,
+                                  env=environ)
+except client.DCICommandFailure:
+    print("Test has failed")
+    status = 'failure'
+    pass
 for log in glob.glob(collected_files_path + '/*'):
     with open(log) as f:
         dci_client.upload_file(f, jobstate_id)
-# NOTE(Gonéri): this call slow down the process (pulling data
-# that we have sent just before)
-jobstate = dci_client.get("/jobstates/%s" % jobstate_id).json()
-final_status = 'success' if jobstate['status'] == 'OK' else 'failure'
 state = {"job_id": job["id"],
-         "status": final_status,
+         "status": status,
          "comment": "Job has been processed"}
 jobstate = dci_client.post("/jobstates", state).json()
