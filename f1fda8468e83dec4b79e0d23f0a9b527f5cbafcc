@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a9dcd25_1b0f3be3",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-07-23T21:23:23Z",
+      "side": 1,
+      "message": "We should not put software factory related url in our commit message",
+      "revId": "f1fda8468e83dec4b79e0d23f0a9b527f5cbafcc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
