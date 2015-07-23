@@ -417,7 +417,9 @@ CREATE TABLE versions (
     data json,
     sha text,
     title text,
-    message text
+    message text,
+    url text,
+    ref text
 );
 
 
