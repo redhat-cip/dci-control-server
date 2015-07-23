@@ -124,7 +124,7 @@ class DCIClient(object):
         while p.returncode is None and s:
             time.sleep(0.01)
             s = os.read(p.stdout.fileno(), 10)
-            sys.stdout.write(s)
+            sys.stdout.write(s.decode('utf-8'))
             f.write(s)
             f.flush()
             p.poll()
