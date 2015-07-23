@@ -128,4 +128,5 @@ class DCIModel(object):
         # NOTE(Goneri): optional, if the key is missing, we dynamically pick
         # a testversion that fit.
         domain['jobs']['schema']['testversion_id']['required'] = False
+        domain['jobs']['datasource']['projection']['jobstates_collection'] = 1
         return domain
