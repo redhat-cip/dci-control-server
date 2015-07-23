@@ -94,7 +94,7 @@ def fetch(gh_s, dci_client, product, repositories):
 
 products = {
     'dci-control-server': [
-        'enovance/dci-control-server', 'goneri/dci-control-server']}
+        'redhat-cip/dci-control-server']}
 gh_s = requests.Session()
 # gh_s.auth = ('user', 'xxx')
 dci_client = client.DCIClient()
