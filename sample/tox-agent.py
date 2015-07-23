@@ -56,7 +56,7 @@ dci_client.call(job_id, ['git', 'fetch', '--all'], cwd=WORKDIR)
 dci_client.call(job_id, ['git', 'clean', '-ffdx'], cwd=WORKDIR)
 dci_client.call(job_id, ['git', 'reset', '--hard'], cwd=WORKDIR)
 dci_client.call(job_id, ['git', 'checkout', '-f',
-                         structure_from_server['sha2']],
+                         structure_from_server['sha']],
                 cwd=WORKDIR)
 
 try:
