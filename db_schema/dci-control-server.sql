@@ -815,8 +815,8 @@ GRANT ALL ON SCHEMA public TO PUBLIC;
 
 INSERT INTO teams (name) VALUES ('admin');
 INSERT INTO teams (name) VALUES ('partner');
-INSERT INTO users (name, password, team_id) VALUES ('admin', '$2a$08$gWmO7OcwTdR1WJHskMDMEOURPV6kokfTVGqYME8O8gEz85Npjtike', (SELECT id FROM teams WHERE name='partner'));
-INSERT INTO users (name, password, team_id) values ('partner', '$2a$08$7aJARRtmKO1lxByj1OwD9OVVHOx0HEOU1El5GH63XClFlceQbiRbu', (SELECT id FROM teams WHERE name='partner'));
+INSERT INTO users (name, password, team_id) VALUES ('admin', crypt('admin', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='partner'));
+INSERT INTO users (name, password, team_id) values ('partner', crypt('partner', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='partner'));
 INSERT INTO roles (name) VALUES ('admin');
 INSERT INTO roles (name) VALUES ('partner');
 INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='admin'));
