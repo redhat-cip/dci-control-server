@@ -69,12 +69,12 @@ def fetch(gh_s, dci_client, product, repositories):
 
     for repository in repositories:
         r = dci_client.get("/products", where={
-            'name': "%s-%s" % (product, repository)})
+            'name': "%s" % (product)})
         if r.status_code == 200 and r.json()['_meta']['total'] == 1:
             product_id = r.json()['_items'][0]['id']
         else:
             r = dci_client.post("/products", {
-                "name": "%s-%s" % (product, repository),
+                "name": "%s" % (product),
                 "data": {
                     "git_url": "https://github.com/%s" % repository}}
             )
