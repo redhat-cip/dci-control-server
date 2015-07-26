@@ -18,6 +18,8 @@ import re
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.automap import automap_base
+from sqlalchemy.ext.automap import generate_relationship
+from sqlalchemy.orm.interfaces import ONETOMANY
 from sqlalchemy import MetaData
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
@@ -38,8 +40,17 @@ class DCIModel(object):
         for table in self.metadata.tables:
             print(table)
 
+        # NOTE(Gonéri): ensure the associated resources list get sorted using
+        # the created_at key.
+        def _gen_relationship(base, direction, return_fn,
+                              attrname, local_cls, referred_cls, **kw):
+            if direction is ONETOMANY:
+                kw['order_by'] = referred_cls.__table__.columns.created_at
+            return generate_relationship(
+                base, direction, return_fn,
+                attrname, local_cls, referred_cls, **kw)
         self.base = automap_base(metadata=self.metadata)
-        self.base.prepare()
+        self.base.prepare(generate_relationship=_gen_relationship)
 
         # engine.echo = True
 
@@ -115,6 +126,7 @@ class DCIModel(object):
             domain[table]['schema']['created_at']['required'] = False
             domain[table]['schema']['updated_at']['required'] = False
             domain[table]['schema']['etag']['required'] = False
+            domain[table]['datasource']['default_sort'] = [('created_at', 1)]
             if 'team_id' in domain[table]['schema']:
                 domain[table]['schema']['team_id']['required'] = False
                 domain[table]['auth_field'] = 'team_id'
