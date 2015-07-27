@@ -15,9 +15,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-WORKDIR = 'dci-tox'
-
+import shutil
 import sys
+import tempfile
 
 import client
 
@@ -27,6 +27,8 @@ except IndexError:
     print("Usage: %s remoteci_name" % sys.argv[0])
     sys.exit(1)
 
+
+workdir = tempfile.mkdtemp(suffix='dci_tox_agent')
 
 dci_client = client.DCIClient()
 
@@ -47,20 +49,20 @@ remoteci_id = r.json()['id']
 job_id = dci_client.post("/jobs", {"remoteci_id": remoteci_id}).json()['id']
 job = dci_client.get("/jobs/%s" % job_id).json()
 structure_from_server = job['data']
-dci_client.call(job_id, ['git', 'init', WORKDIR])
+dci_client.call(job_id, ['git', 'init', workdir])
 dci_client.call(job_id, ['git', 'pull',
                          structure_from_server['git_url'],
                          structure_from_server.get('ref', '')],
-                cwd=WORKDIR, ignore_error=True)
-dci_client.call(job_id, ['git', 'fetch', '--all'], cwd=WORKDIR)
-dci_client.call(job_id, ['git', 'clean', '-ffdx'], cwd=WORKDIR)
-dci_client.call(job_id, ['git', 'reset', '--hard'], cwd=WORKDIR)
+                cwd=workdir, ignore_error=True)
+dci_client.call(job_id, ['git', 'fetch', '--all'], cwd=workdir)
+dci_client.call(job_id, ['git', 'clean', '-ffdx'], cwd=workdir)
+dci_client.call(job_id, ['git', 'reset', '--hard'], cwd=workdir)
 dci_client.call(job_id, ['git', 'checkout', '-f',
                          structure_from_server['sha']],
-                cwd=WORKDIR)
+                cwd=workdir)
 
 try:
-    dci_client.call(job_id, ['tox'], cwd=WORKDIR)
+    dci_client.call(job_id, ['tox'], cwd=workdir)
 except client.DCICommandFailure:
     print("Test has failed")
     pass
@@ -70,3 +72,5 @@ else:
         "status": "success",
         "comment": "Process finished successfully"}
     jobstate_id = dci_client.post("/jobstates", state)
+
+shutil.rmtree(workdir)
