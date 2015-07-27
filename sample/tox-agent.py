@@ -48,10 +48,10 @@ if r.status_code == 404:
 remoteci_id = r.json()['id']
 job_id = dci_client.post("/jobs", {"remoteci_id": remoteci_id}).json()['id']
 job = dci_client.get("/jobs/%s" % job_id).json()
-structure_from_server = job['data']
 dci_client.call(job_id, ['git', 'init', workdir])
+structure_from_server = job['data']['dci-control-server']
 dci_client.call(job_id, ['git', 'pull',
-                         structure_from_server['git_url'],
+                         structure_from_server['git'],
                          structure_from_server.get('ref', '')],
                 cwd=workdir, ignore_error=True)
 dci_client.call(job_id, ['git', 'fetch', '--all'], cwd=workdir)
