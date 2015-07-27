@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import codecs
 import json
 import os
 import requests
@@ -46,6 +47,12 @@ class DCIClient(object):
     def post(self, path, data):
         return self.s.post("%s%s" % (
             self.end_point, path), data=json.dumps(data))
+
+    def put(self, path, etag, data):
+        return self.s.put(
+            "%s%s" % (self.end_point, path),
+            data=json.dumps(data),
+            headers={'If-Match': etag})
 
     def get(self, path, where={}, embedded={}, params=None):
         return self.s.get("%s%s?where=%s&embedded=%s" % (
@@ -124,7 +131,7 @@ class DCIClient(object):
         while p.returncode is None or s:
             time.sleep(0.01)
             s = os.read(p.stdout.fileno(), 10)
-            sys.stdout.write(s.decode('utf-8'))
+            sys.stdout.write(codecs.decode(s, 'utf-8', 'ignore'))
             f.write(s)
             f.flush()
             p.poll()
@@ -137,6 +144,21 @@ class DCIClient(object):
             self.post("/jobstates", state)
             raise DCICommandFailure
         return jobstate_id
+
+    def find_or_create_or_refresh(self, path, data):
+        items = self.get(path,
+                         where={'name': data['name']}).json()
+        try:
+            item = items['_items'][0]
+            # NOTE(Gonéri): Product has been changed
+            print(set(item) - set(data))
+            if len(set(item) - set(data)) != 0:
+                self.put(path + item['id'],
+                         item['etag'],
+                         data)
+        except IndexError:
+            item = self.post(path, data).json()
+        return item
 
 
 class DCIInternalFailure(Exception):
