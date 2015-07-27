@@ -6,7 +6,7 @@ report_url="http://trunk.rdoproject.org/kilo/centos7/report.html"
 #report_regex='s,.*\(.\{46\}_.\{8\}\)_\(.\{10\}\).*,http://trunk.rdoproject.org/kilo/centos7/\1/delorean-kilo.repo,'
 
 # create a product
-product_id=$(curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"name": "rdo-manager", "data": {"ksgen_args": {"provisioner":"manual", "product":"rdo", "product-version":"kilo", "product-version-repo":"delorean", "product-version-workaround": "rhel-7.0", "workarounds": "enabled", "distro": "centos-7.0", "installer": "rdo_manager", "installer-env": "virthost", "installer-topology": "minimal", "extra-vars": ["product.repo_type_override=none"]}}}]' ${DCI_CONTROL_SERVER}/products |jq '.id'|sed 's,",,g')
+product_id=$(curl --user 'admin:admin' -H "Content-Type: application/json" -X POST -d '[{"name": "rdo-manager", "data": {"khaleesi": {"git": "https://github.com/redhat-openstack/khaleesi"}, "khaleesi-settings": {"git": "https://github.com/redhat-openstack/khaleesi"}, "ksgen_args": {"provisioner":"manual", "product":"rdo", "product-version":"kilo", "product-version-repo":"delorean", "product-version-workaround": "rhel-7.0", "workarounds": "enabled", "distro": "centos-7.0", "installer": "rdo_manager", "installer-env": "virthost", "installer-topology": "minimal", "extra-vars": ["product.repo_type_override=none"]}}}]' ${DCI_CONTROL_SERVER}/products |jq '.id'|sed 's,",,g')
 echo $product_id
 
 # create a test
