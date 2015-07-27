@@ -56,14 +56,49 @@ job_id = dci_client.post(
 job = dci_client.get("/jobs/%s" % job_id).json()
 structure_from_server = job['data']
 
+repos = {}
+for project in ('khaleesi', 'khaleesi_settings'):
+    repos[project] = structure_from_server.get(project, {})
+    repos[project]['git'] = (
+        'https://github.com', '/redhat-openstack/khaleesi-settings')
+    repos[project]['workdir'] = tempfile.mkdtemp()
+    # TODO(Gonéri)
+
+
 # TODO(Gonéri): Create a load_config() method or something similar
 settings = yaml.load(open('local_settings.yml', 'r'))
-kh_dir = settings['location']['khaleesi']
+kh_dir = repos['khaleesi']['workdir']
+python_bin = 'python'
+ansible_playbook_bin = 'ansible-playbook'
+try:
+    python_bin = settings['location']['python_bin']
+except KeyError:
+    pass
+try:
+    ansible_playbook_bin = settings['location']['ansible_playbook_bin']
+except KeyError:
+    pass
 
-args = [settings['location'].get('python_bin', 'python'),
+
+for repo in repos.values():
+    dci_client.call(job_id, ['git', 'init', repo['workdir']])
+    dci_client.call(job_id, ['git', 'pull',
+                             repo['git'],
+                             repo.get('ref', '')],
+                    cwd=repo['workdir'], ignore_error=True)
+    dci_client.call(job_id, ['git', 'fetch', '--all'], cwd=repo['workdir'])
+    dci_client.call(job_id, ['git', 'clean', '-ffdx'], cwd=repo['workdir'])
+    dci_client.call(job_id, ['git', 'reset', '--hard'], cwd=repo['workdir'])
+    if 'sha' in repo:
+        dci_client.call(job_id, ['git', 'checkout', '-f',
+                                 repo['sha']],
+                        cwd=repo['workdir'])
+
+
+args = [python_bin,
         './tools/ksgen/ksgen/core.py',
         '--config-dir=%s/settings' % (
-            settings['location']['khaleesi_settings']),
+            repos['khaleesi_settings']['workdir']),
         'generate']
 for ksgen_args in (structure_from_server.get('ksgen_args', {}),
                    settings.get('ksgen_args', {})):
@@ -97,6 +132,7 @@ environ.update({
 
 collected_files_path = ("%s/collected_files" %
                         kh_dir)
+print(collected_files_path)
 if os.path.exists(collected_files_path):
     shutil.rmtree(collected_files_path)
 dci_client.call(job_id,
@@ -116,7 +152,7 @@ with open(kh_dir + '/local_hosts', "w") as fd:
     fd.write(
         local_hosts_template.substitute(hypervisor=settings['hypervisor']))
 args = [
-    settings['location'].get('ansible_playbook_bin', 'ansible-playbook'),
+    ansible_playbook_bin,
     '-vvvv', '--extra-vars',
     '@' + ksgen_settings_file.name,
     '-i', kh_dir + '/local_hosts',
