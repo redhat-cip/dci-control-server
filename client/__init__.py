@@ -14,10 +14,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import codecs
+import copy
 import json
 import os
 import requests
 import simplejson.scanner
+import six
 import subprocess
 import sys
 import tempfile
@@ -39,13 +42,21 @@ class DCIClient(object):
     def delete(self, path):
         return self.s.delete("%s%s" % (self.end_point, path))
 
-    def patch(self, path, data):
+    def patch(self, path, etag, data):
         return self.s.patch(
-            "%s%s" % (self.end_point, path), data=json.dumps(data))
+            "%s%s" % (self.end_point, path),
+            data=json.dumps(data),
+            headers={'If-Match': etag})
 
     def post(self, path, data):
         return self.s.post("%s%s" % (
             self.end_point, path), data=json.dumps(data))
+
+    def put(self, path, etag, data):
+        return self.s.put(
+            "%s%s" % (self.end_point, path),
+            data=json.dumps(data),
+            headers={'If-Match': etag})
 
     def get(self, path, where={}, embedded={}, params=None):
         return self.s.get("%s%s?where=%s&embedded=%s" % (
@@ -124,7 +135,7 @@ class DCIClient(object):
         while p.returncode is None or s:
             time.sleep(0.01)
             s = os.read(p.stdout.fileno(), 10)
-            sys.stdout.write(s.decode('utf-8'))
+            sys.stdout.write(codecs.decode(s, 'utf-8', 'ignore'))
             f.write(s)
             f.flush()
             p.poll()
@@ -137,6 +148,25 @@ class DCIClient(object):
             self.post("/jobstates", state)
             raise DCICommandFailure
         return jobstate_id
+
+    def find_or_create_or_refresh(self, path, data, unicity_key='name'):
+    # TODO(Gonéri): need a test coverage
+        items = self.get(path,
+                         where={unicity_key: data[unicity_key]}).json()
+        try:
+            item = items['_items'][0]
+            data_to_patch = copy.copy(data)
+            for k, v in six.iteritems(data):
+                if json.dumps(item[k], sort_keys=True) \
+                   == json.dumps(data_to_patch[k], sort_keys=True):
+                    del(data_to_patch[k])
+            if len(data_to_patch) > 0:
+                self.patch(path + '/' + item['id'],
+                           item['etag'],
+                           data)
+        except IndexError:
+            item = self.post(path, data).json()
+        return item
 
 
 class DCIInternalFailure(Exception):

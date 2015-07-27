@@ -85,6 +85,10 @@ class DciControlServer(Eve):
                 jobs.testversion_id
             FROM jobs
             WHERE jobs.remoteci_id=:remoteci_id
+              AND
+           jobs.created_at > now() - interval '1 day'
+              AND
+           jobs.is_ignored IS FALSE
         ) AND testversions.test_id=remotecis.test_id AND
         remotecis.id=:remoteci_id
         LIMIT 1
