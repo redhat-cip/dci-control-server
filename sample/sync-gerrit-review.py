@@ -27,10 +27,12 @@ import yaml
 
 import client
 
-dci_project = "dci-control-server"
+gerrit_server = 'gerrithub.io'
+dci_project = 'redhat-openstack/khaleesi'
+test_name = 'khaleesi-tempest'
 
 reviews = subprocess.check_output(['ssh', '-xp29418',
-                                   'softwarefactory.enovance.com',
+                                   gerrit_server,
                                    'gerrit', 'query', '--format=json',
                                    'project:%s' % dci_project, 'status:open'])
 
@@ -43,14 +45,14 @@ except KeyError:
     print("Cannot find the product")
     sys.exit(1)
 
-test = dci_client.get('/tests/tox').json()
+test = dci_client.get('/tests/' + test_name).json()
 
 for line in reviews.decode('utf-8').rstrip().split('\n'):
     review = yaml.load(line)
     if 'id' not in review:
         continue
     patchset_query_res = subprocess.check_output([
-        'ssh', '-xp29418', 'softwarefactory.enovance.com',
+        'ssh', '-xp29418', gerrit_server,
         'gerrit', 'query', '--format=JSON',
         '--current-patch-set change:%d' % int(review['number'])])
     patchset = yaml.load(patchset_query_res.decode('utf-8').split('\n')[0])
@@ -71,11 +73,13 @@ for line in reviews.decode('utf-8').rstrip().split('\n'):
             "sha": sha,
             "url": url,
             "data": {
-                "git_url": (
-                    "http://softwarefactory.enovance.com/r/%s" % dci_project),
-                "ref": ref,
-                "sha": sha,
-                "gerrit_id": gerrit_id
+                dci_project: {
+                    "git": (
+                        "http://%s/r/%s" % (gerrit_server, dci_project)),
+                    "ref": ref,
+                    "sha": sha,
+                    "gerrit_id": gerrit_id
+                }
             }
         })
         version = r.json()
@@ -101,7 +105,7 @@ for line in reviews.decode('utf-8').rstrip().split('\n'):
                 elif build['jobstates_collection'][-1]['status'] == 'success':
                     status = '1'
         subprocess.check_output([
-            'ssh', '-xp29418', 'softwarefactory.enovance.com',
+            'echo', 'ssh', '-xp29418', gerrit_server,
             'gerrit', 'review', '--verified', status,
-            version['data']['sha']])
+            version['data'][dci_project]['sha']])
         print("%s: %s" % (subject, status))

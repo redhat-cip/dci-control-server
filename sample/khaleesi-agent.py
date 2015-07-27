@@ -56,14 +56,48 @@ job_id = dci_client.post(
 job = dci_client.get("/jobs/%s" % job_id).json()
 structure_from_server = job['data']
 
+from pprint import pprint
+pprint(structure_from_server)
+repos = {
+    'khaleesi': {
+        'workdir': tempfile.mkdtemp(),
+        'git_repo': structure_from_server['git_repos'].get(
+            'khaleesi',
+            'https://github.com/redhat-openstack/khaleesi')},
+    'khaleesi_settings': {
+        'workdir': tempfile.mkdtemp(),
+        'git_repo': structure_from_server['git_repos'].get(
+            'khaleesi_settings',
+            'https://github.com/redhat-openstack/khaleesi-settings')}}
+
+from pprint import pprint
+
+pprint(repos)
+for repo in repos.values():
+    pprint(repo)
+    dci_client.call(job_id, ['git', 'init', repo['workdir']])
+    dci_client.call(job_id, ['git', 'pull',
+                             repo['git_repo'],
+                             repo.get('ref', '')],
+                    cwd=repo['workdir'], ignore_error=True)
+    dci_client.call(job_id, ['git', 'fetch', '--all'], cwd=repo['workdir'])
+    dci_client.call(job_id, ['git', 'clean', '-ffdx'], cwd=repo['workdir'])
+    dci_client.call(job_id, ['git', 'reset', '--hard'], cwd=repo['workdir'])
+    if 'sha' in repo: # TODO(Gonéri)
+        dci_client.call(job_id, ['git', 'checkout', '-f',
+                                 repo['sha']],
+                        cwd=repo['workdir'])
+
+print(structure_from_server)
+
 # TODO(Gonéri): Create a load_config() method or something similar
 settings = yaml.load(open('local_settings.yml', 'r'))
-kh_dir = settings['location']['khaleesi']
+kh_dir = repos['khaleesi']['workdir']
 
 args = [settings['location'].get('python_bin', 'python'),
         './tools/ksgen/ksgen/core.py',
         '--config-dir=%s/settings' % (
-            settings['location']['khaleesi_settings']),
+            repos['khaleesi_settings']['workdir']),
         'generate']
 for ksgen_args in (structure_from_server.get('ksgen_args', {}),
                    settings.get('ksgen_args', {})):
@@ -97,6 +131,7 @@ environ.update({
 
 collected_files_path = ("%s/collected_files" %
                         kh_dir)
+print(collected_files_path)
 if os.path.exists(collected_files_path):
     shutil.rmtree(collected_files_path)
 dci_client.call(job_id,
