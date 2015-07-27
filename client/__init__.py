@@ -121,7 +121,7 @@ class DCIClient(object):
         f = tempfile.TemporaryFile()
         f.write(("starting: %s\n" % " ".join(arg)).encode('utf-8'))
         s = True
-        while p.returncode is None and s:
+        while p.returncode is None or s:
             time.sleep(0.01)
             s = os.read(p.stdout.fileno(), 10)
             sys.stdout.write(s.decode('utf-8'))
