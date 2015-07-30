@@ -14,10 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import copy
 import json
 import os
 import requests
 import simplejson.scanner
+import six
 import subprocess
 import sys
 import tempfile
@@ -137,6 +139,26 @@ class DCIClient(object):
             self.post("/jobstates", state)
             raise DCICommandFailure
         return jobstate_id
+
+    def find_or_create_or_refresh(self, path, data, unicity_key=['name']):
+        # TODO(Gonéri): need a test coverage
+        where = {k: data[k] for k in unicity_key}
+        items = self.get(path,
+                         where=where).json()
+        try:
+            item = items['_items'][0]
+            data_to_patch = copy.copy(data)
+            for k, v in six.iteritems(data):
+                if json.dumps(item[k], sort_keys=True) \
+                   == json.dumps(data_to_patch[k], sort_keys=True):
+                    del(data_to_patch[k])
+            if len(data_to_patch) > 0:
+                self.patch(path + '/' + item['id'],
+                           item['etag'],
+                           data)
+        except IndexError:
+            item = self.post(path, data).json()
+        return item
 
 
 class DCIInternalFailure(Exception):
