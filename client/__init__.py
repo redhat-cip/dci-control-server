@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import codecs
 import copy
 import json
 import os
@@ -126,7 +127,7 @@ class DCIClient(object):
         while p.returncode is None or s:
             time.sleep(0.01)
             s = os.read(p.stdout.fileno(), 10)
-            sys.stdout.write(s.decode('utf-8'))
+            sys.stdout.write(codecs.decode(s, 'utf-8', 'ignore'))
             f.write(s)
             f.flush()
             p.poll()
