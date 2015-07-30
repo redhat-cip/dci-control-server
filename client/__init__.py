@@ -42,13 +42,21 @@ class DCIClient(object):
     def delete(self, path):
         return self.s.delete("%s%s" % (self.end_point, path))
 
-    def patch(self, path, data):
+    def patch(self, path, etag, data):
         return self.s.patch(
-            "%s%s" % (self.end_point, path), data=json.dumps(data))
+            "%s%s" % (self.end_point, path),
+            data=json.dumps(data),
+            headers={'If-Match': etag})
 
     def post(self, path, data):
         return self.s.post("%s%s" % (
             self.end_point, path), data=json.dumps(data))
+
+    def put(self, path, etag, data):
+        return self.s.put(
+            "%s%s" % (self.end_point, path),
+            data=json.dumps(data),
+            headers={'If-Match': etag})
 
     def get(self, path, where={}, embedded={}, params=None):
         return self.s.get("%s%s?where=%s&embedded=%s" % (
