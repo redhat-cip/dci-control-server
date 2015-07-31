@@ -57,10 +57,8 @@ job = dci_client.get("/jobs/%s" % job_id).json()
 structure_from_server = job['data']
 
 repos = {}
-for project in ('khaleesi', 'khaleesi_settings'):
+for project in ('khaleesi', 'khaleesi-settings'):
     repos[project] = structure_from_server.get(project, {})
-    repos[project]['git'] = (
-        'https://github.com', '/redhat-openstack/khaleesi-settings')
     repos[project]['workdir'] = tempfile.mkdtemp()
     # TODO(Gonéri)
 
@@ -98,7 +96,7 @@ for repo in repos.values():
 args = [python_bin,
         './tools/ksgen/ksgen/core.py',
         '--config-dir=%s/settings' % (
-            repos['khaleesi_settings']['workdir']),
+            repos['khaleesi-settings']['workdir']),
         'generate']
 for ksgen_args in (structure_from_server.get('ksgen_args', {}),
                    settings.get('ksgen_args', {})):
