@@ -152,9 +152,11 @@ class DCIClient(object):
     def find_or_create_or_refresh(self, path, data, unicity_key=['name']):
         # TODO(Gonéri): need a test coverage
         where = {k: data[k] for k in unicity_key}
-        items = self.get(path,
-                         where=where).json()
-        try:
+        items = self.get(path, where=where).json()
+        if '_items' not in items:
+            print(items)
+            raise RuntimeError()
+        elif len(items['_items']) == 1:
             item = items['_items'][0]
             data_to_patch = copy.copy(data)
             for k, v in six.iteritems(data):
@@ -165,7 +167,10 @@ class DCIClient(object):
                 self.patch(path + '/' + item['id'],
                            item['etag'],
                            data)
-        except IndexError:
+        elif len(items['_items']) > 1:
+            print("Duplicated element for %s, %s" % (path, unicity_key))
+            raise RuntimeWarning()
+        else:
             item = self.post(path, data).json()
         return item
 
