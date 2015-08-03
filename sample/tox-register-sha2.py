@@ -68,7 +68,8 @@ def fetch(gh_s, dci_client, product_name, repositories):
             "/products", {
                 "name": "%s" % (product_name),
                 "data": {
-                    "git_url": "https://github.com/%s" % repository}})
+                    "components": {
+                        "git_url": "https://github.com/%s" % repository}}})
         r = gh_s.get(
             'https://api.github.com/repos/' +
             repository +
