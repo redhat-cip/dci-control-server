@@ -49,7 +49,7 @@ remoteci_id = r.json()['id']
 job_id = dci_client.post("/jobs", {"remoteci_id": remoteci_id}).json()['id']
 job = dci_client.get("/jobs/%s" % job_id).json()
 dci_client.call(job_id, ['git', 'init', workdir])
-structure_from_server = job['data']['dci-control-server']
+structure_from_server = job['data']['components']['dci-control-server']
 dci_client.call(job_id, ['git', 'pull',
                          structure_from_server['git'],
                          structure_from_server.get('ref', '')],
