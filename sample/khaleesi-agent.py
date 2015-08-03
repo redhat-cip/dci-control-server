@@ -56,16 +56,15 @@ job_id = dci_client.post(
 job = dci_client.get("/jobs/%s" % job_id).json()
 structure_from_server = job['data']
 
-repos = {}
-for project in ('khaleesi', 'khaleesi-settings'):
-    repos[project] = structure_from_server.get(project, {})
-    repos[project]['workdir'] = tempfile.mkdtemp()
+components = structure_from_server['components']
+for component in components.values():
+    component['workdir'] = tempfile.mkdtemp()
     # TODO(Gonéri)
 
 
 # TODO(Gonéri): Create a load_config() method or something similar
 settings = yaml.load(open('local_settings.yml', 'r'))
-kh_dir = repos['khaleesi']['workdir']
+kh_dir = components['khaleesi']['workdir']
 python_bin = 'python'
 ansible_playbook_bin = 'ansible-playbook'
 try:
@@ -77,26 +76,28 @@ try:
 except KeyError:
     pass
 
-
-for repo in repos.values():
-    dci_client.call(job_id, ['git', 'init', repo['workdir']])
+for component in components.values():
+    dci_client.call(job_id, ['git', 'init', component['workdir']])
     dci_client.call(job_id, ['git', 'pull',
-                             repo['git'],
-                             repo.get('ref', '')],
-                    cwd=repo['workdir'], ignore_error=True)
-    dci_client.call(job_id, ['git', 'fetch', '--all'], cwd=repo['workdir'])
-    dci_client.call(job_id, ['git', 'clean', '-ffdx'], cwd=repo['workdir'])
-    dci_client.call(job_id, ['git', 'reset', '--hard'], cwd=repo['workdir'])
-    if 'sha' in repo:
+                             component['git'],
+                             component.get('ref', '')],
+                    cwd=component['workdir'], ignore_error=True)
+    dci_client.call(job_id, ['git', 'fetch', '--all'],
+                    cwd=component['workdir'])
+    dci_client.call(job_id, ['git', 'clean', '-ffdx'],
+                    cwd=component['workdir'])
+    dci_client.call(job_id, ['git', 'reset', '--hard'],
+                    cwd=component['workdir'])
+    if 'sha' in component:
         dci_client.call(job_id, ['git', 'checkout', '-f',
-                                 repo['sha']],
-                        cwd=repo['workdir'])
+                                 component['sha']],
+                        cwd=component['workdir'])
 
 
 args = [python_bin,
         './tools/ksgen/ksgen/core.py',
         '--config-dir=%s/settings' % (
-            repos['khaleesi-settings']['workdir']),
+            components['khaleesi-settings']['workdir']),
         'generate']
 for ksgen_args in (structure_from_server.get('ksgen_args', {}),
                    settings.get('ksgen_args', {})):

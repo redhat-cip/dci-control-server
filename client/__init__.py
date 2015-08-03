@@ -20,7 +20,6 @@ import json
 import os
 import requests
 import simplejson.scanner
-import six
 import subprocess
 import sys
 import tempfile
