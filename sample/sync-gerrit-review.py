@@ -24,19 +24,20 @@
 import subprocess
 import yaml
 
-
 import client
 
 
+# TODO(Gonéri): use a more meaningful name to make clear this is
+# gerrit specific function.
 def list_open_patchset(dci_client, project):
     """Generator that return a patchset for a given project."""
     gerrit_server = project['gerrit_server']
-    product_project = project['product_project']
+    gerrit_project = project['gerrit_project']
 
     reviews = subprocess.check_output(['ssh', '-xp29418',
                                        gerrit_server,
                                        'gerrit', 'query', '--format=json',
-                                       'project:%s' % product_project,
+                                       'project:%s' % gerrit_project,
                                        'status:open'])
     for line in reviews.decode('utf-8').rstrip().split('\n'):
         review = yaml.load(line)
@@ -50,7 +51,8 @@ def list_open_patchset(dci_client, project):
         yield patchset
 
 
-def push_patchset_in_dci(dci_client, product, test, patchset, git_url):
+def push_patchset_in_dci(dci_client, product, component_name,
+                         test, patchset, git_url):
     """Create a version in DCI-CS from a gerrit patchset."""
     subject = patchset['commitMessage'].split('\n')[0]
     message = patchset['commitMessage']
@@ -66,12 +68,16 @@ def push_patchset_in_dci(dci_client, product, test, patchset, git_url):
         "message": message,
         "sha": sha,
         "url": url,
+        # TODO(Gonéri): We use components/$name/ref now
+        "ref": "",
         "data": {
-            product_name: {
-                "git": git_url,
-                "ref": ref,
-                "sha": sha,
-                "gerrit_id": gerrit_id
+            'components': {
+                component_name: {
+                    "git": git_url,
+                    "ref": ref,
+                    "sha": sha,
+                    "gerrit_id": gerrit_id
+                }
             }
         }
     }
@@ -84,7 +90,7 @@ def push_patchset_in_dci(dci_client, product, test, patchset, git_url):
     return version
 
 
-def review_patchset(dci_client, version):
+def review_patchset(dci_client, product, version):
     """Update the review in Gerrit from the status of a version in DCI-CS."""
     testversions = dci_client.get(
         "/testversions",
@@ -103,7 +109,7 @@ def review_patchset(dci_client, version):
             elif last_job_status == 'success':
                 status = '1'
     try:
-        sha = version['data'][product_name]['sha']
+        sha = version['data'][product['name']]['sha']
     except KeyError:
         print("Cannot find product name for version "
               "%s" % version['id'])
@@ -116,35 +122,57 @@ def review_patchset(dci_client, version):
 
 # NOTE(Gonéri): this configuration structure should probably be exported in
 # some flat configuration files.
+# ksgen --config-dir=../khaleesi-settings/settings generate \
+#       --provisioner=manual \
+#       --product=rhos \
+#       --product-version=7_director \
+#       --product-version-build=latest \
+#       --product-repo=puddle \
+#       --distro=rhel-7.1 \
+#       --installer=rdo_manager \
+#       --installer-env=virthost \
+#       --installer-images=build \
+#       --installer-network=neutron \
+#       --installer-network-variant=ml2-vxlan \
+#       --installer-topology=minimal \
+#       --extra-vars product.repo_type_override=none \
+#       ksgen_settings.yml
 projects = [
     {
         'gerrit_server': 'review.gerrithub.io',
-        'product_name': 'khaleesi',
-        'product_project': 'redhat-openstack/khaleesi',
+        'product_name': 'rhos',
+        'gerrit_project': 'redhat-openstack/khaleesi',
+        'gerrit_local_component_name': 'khaleesi',
         'test_name': 'khaleesi-tempest',
         'git_url_format': 'http://{server}/{project}',
         'product_data': {
             "ksgen_args": {
                 "provisioner": "manual",
-                "product": "rdo",
-                "product-version": "kilo",
-                "product-version-repo": "delorean",
-                "product-version-workaround": "rhel-7.0",
-                "workarounds": "enabled",
-                "distro": "centos-7.0",
+                "product": "rhos",
+                "product-version": "7_director",
+                "product-version-build": "latest",
+                "product-repo": "puddle",
+                "distro": "rhel-7.1",
                 "installer": "rdo_manager",
                 "installer-env": "virthost",
+                "installer-images": "build",
+                "installer-network": "neutron",
+                "installer-network-variant": "ml2-vxlan",
                 "installer-topology": "minimal",
                 "extra-vars": ["product.repo_type_override=none"]},
-            'khaleesi': {
-                'git': 'http://github.com/redhat-openstack/khaleesi'},
-            'khaleesi-settings': {
-                'git': 'http://github.com/redhat-openstack/khalees-settings'}
+            # TODO(Gonéri): add a key to specify the rhos repo snapshot
+            'components': {
+                'khaleesi': {
+                    'git': 'http://github.com/redhat-openstack/khaleesi'},
+                'khaleesi-settings': {
+                    'git': '/home/goneri/khaleesi-settings-mirror'}
+            }
         }},
     {
         'gerrit_server': 'softwarefactory.enovance.com',
+        'gerrit_project': 'dci-control-server',
         'product_name': 'dci-control-server',
-        'product_project': 'dci-control-server',
+        'local_gerrit_component_name': 'dci-control-server',
         'test_name': 'tox',
         'publish_review': True
     }
@@ -154,22 +182,29 @@ dci_client = client.DCIClient()
 for project in projects:
     product_name = project['product_name']
     product_data = project.get('product_data', {})
+
     test_name = project['test_name']
+
+    gerrit_project = project['gerrit_project']
     git_url_format = project.get('git_url_format',
                                  'http://{server}/r/{project}')
     gerrit_server = project['gerrit_server']
-    product_project = project['product_project']
+    gerrit_local_component_name = project['gerrit_local_component_name']
 
+    print("---------------BEGIN")
     product = dci_client.find_or_create_or_refresh('/products', {
         'name': product_name, 'data': product_data})
+    print("---------------END")
+    from pprint import pprint
     test = dci_client.find_or_create_or_refresh('/tests', {
         'name': test_name, 'data': {}})
 
     git_url = git_url_format.format(server=gerrit_server,
-                                    project=product_project)
+                                    project=gerrit_project)
     for patchset in list_open_patchset(dci_client, project):
         version = push_patchset_in_dci(
             dci_client, product,
+            gerrit_local_component_name,
             test, patchset, git_url)
         if project.get('publish_review', False):
-            review_patchset(dci_client, version)
+            review_patchset(dci_client, product, version)
