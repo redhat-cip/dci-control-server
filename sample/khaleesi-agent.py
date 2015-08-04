@@ -127,6 +127,7 @@ environ.update({
     'ANSIBLE_FILTER_PLUGINS': kh_dir + '/khaleesi/plugins/filters/',
     'ANSIBLE_SSH_ARGS': ' -F ssh.config.ansible',
     'ANSIBLE_TIMEOUT': '60',
+    'BEAKER_MACHINE': settings['hypervisor'],
     'PWD': kh_dir})
 
 collected_files_path = ("%s/collected_files" %
@@ -140,11 +141,17 @@ dci_client.call(job_id,
                 env=environ)
 
 local_hosts_template = string.Template(
-    "[local]\n"
-    "localhost ansible_connection=local\n\n"
+    "localhost ansible_connection=local\n"
+    "host0 ansible_ssh_host=$hypervisor ansible_ssh_user=root "
+    "ansible_ssh_private_key_file=~/.ssh/id_rsa\n"
+    "undercloud ansible_ssh_host=undercloud ansible_ssh_user=stack"
+    "ansible_ssh_private_key_file=~/.ssh/id_rsa\n"
+    "\n"
     "[virthost]\n"
-    "$hypervisor groups=virthost ansible_ssh_host=$hypervisor"
-    " ansible_ssh_user=stack ansible_ssh_private_key_file=~/.ssh/id_rsa\n"
+    "host0\n"
+    "\n"
+    "[local]\n"
+    "localhost\n"
 )
 
 with open(kh_dir + '/local_hosts', "w") as fd:
