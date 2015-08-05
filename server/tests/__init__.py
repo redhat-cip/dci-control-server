@@ -20,39 +20,48 @@ import shutil
 import subprocess
 import tempfile
 import time
+import uuid
 
 import testtools
 
 
 class DCITestCase(testtools.TestCase):
+    @classmethod
+    def setUpClass(cls):
+        super(DCITestCase, cls).setUpClass()
+        cls._db_dir = tempfile.mkdtemp()
+        subprocess.call(['initdb', '--no-locale', cls._db_dir])
+        subprocess.call(['sed', '-i',
+                         "s,#listen_addresses.*,listen_addresses = '',",
+                         '%s/postgresql.conf' % cls._db_dir])
+        cls._pg = subprocess.Popen(['postgres', '-F',
+                                    '-k', cls._db_dir,
+                                    '-D', cls._db_dir])
+        time.sleep(0.5)
+        subprocess.call(['psql', '--quiet',
+                         '--echo-hidden', '-h', cls._db_dir,
+                         '-f', 'db_schema/dci-control-server.sql',
+                         'template1'])
+        time.sleep(0.3)
+
+    @classmethod
+    def tearDownClass(cls):
+        super(DCITestCase, cls).tearDownClass()
+        cls._pg.kill()
+        time.sleep(2)
+        shutil.rmtree(cls._db_dir)
 
     def setUp(self):
         super(DCITestCase, self).setUp()
-        self._db_dir = tempfile.mkdtemp()
-        subprocess.call(['initdb', '--no-locale', self._db_dir])
-        subprocess.call(['sed', '-i',
-                         "s,#listen_addresses.*,listen_addresses = '',",
-                         '%s/postgresql.conf' % self._db_dir])
-        self._pg = subprocess.Popen(['postgres', '-F',
-                                     '-k', self._db_dir,
-                                     '-D', self._db_dir])
-        time.sleep(1)
-        subprocess.call(['psql', '--quiet',
-                         '--echo-hidden', '-h', self._db_dir,
-                         '-f', 'db_schema/dci-control-server.sql',
-                         'template1'])
-        time.sleep(2)
-        db_uri = "postgresql:///?host=%s&dbname=template1" % self._db_dir
         import server.app
+        random_string = str(uuid.uuid1().hex)
+        subprocess.call(['createdb', '-h', self._db_dir,
+                         '-T', 'template1', random_string])
+        db_uri = "postgresql:///?host=%s&dbname=%s" % (
+            self._db_dir, random_string)
         self.app = server.app.create_app(db_uri)
         self.app.config['TESTING'] = True
         self.test_client = self.app.test_client()
-
-    def tearDown(self):
-        super(DCITestCase, self).tearDown()
-        self._pg.kill()
-        time.sleep(2)
-        shutil.rmtree(self._db_dir)
 
     def client_call(self, method, username, password, path, **argv):
         encoded_basic_auth = base64.b64encode(
