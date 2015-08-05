@@ -22,7 +22,7 @@ var app = angular.module('app', ['ngRoute', 'ngCookies',
 app.factory('MyInjector', function($cookies, $q, $window) {
     var injector = {
         request: function(config) {
-            config.headers['Authorization'] = 'Basic ' + $cookies.auth;
+            config.headers.Authorization = 'Basic ' + $cookies.auth;
             return config;
         }
     };
@@ -30,7 +30,7 @@ app.factory('MyInjector', function($cookies, $q, $window) {
 });
 
 app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
-    function isAuthenticated ($q, $cookies) {
+    function isAuthenticated($q, $cookies) {
         var d = $q.defer();
         if (($cookies.auth == btoa('None')) ||
              angular.isUndefined($cookies.auth)) {
@@ -54,22 +54,22 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
         templateUrl: 'partials/jobs.html',
         controller: 'ListJobsController'
     }).state('jobdetails', {
-        url:'/jobdetails/:jobId',
+        url: '/jobdetails/:jobId',
         parent: 'auth',
         templateUrl: 'partials/jobdetails.html',
         controller: 'JobDetailsController'
     }).state('remotecis', {
-        url:'/remotecis?page',
+        url: '/remotecis?page',
         parent: 'auth',
         templateUrl: 'partials/remotecis.html',
         controller: 'ListRemotecisController'
     }).state('products', {
-        url:'/products',
+        url: '/products',
         parent: 'auth',
         templateUrl: 'partials/products.html',
         controller: 'ProductsController'
     }).state('stats', {
-        url:'/stats',
+        url: '/stats',
         parent: 'auth',
         templateUrl: 'partials/stats.html',
         controller: 'StatsController'
@@ -123,29 +123,29 @@ app.factory('CommonCode', function($resource, $cookies, $location) {
 
     var getJobInfo = function($scope, job_id) {
         var Job = $resource('/api/jobs/' + job_id).get(
-        {'embedded': {'remoteci':1, 'testversion':1}});
+        {'embedded': {'remoteci': 1, 'testversion': 1}});
         Job.$promise.then(function(job) {
             $scope.job = job;
             var Jobstates = $resource('/api/jobstates').get(
                 {'where': {'job_id': job_id},
                  'sort': 'created_at',
-                 'embedded': {'files_collection':1}});
+                 'embedded': {'files_collection': 1}});
             Jobstates.$promise.then(function(jobstates) {
-                $scope.job['jobstates'] = jobstates._items;
+                $scope.job.jobstates = jobstates._items;
             });
 
             var Testversions = $resource(
                 '/api/testversions/' + job.testversion.id).get(
-                    {'embedded': {'version':1, 'test':1}});
+                    {'embedded': {'version': 1, 'test': 1}});
             Testversions.$promise.then(function(testversion) {
-                $scope.job['version'] = testversion.version.name;
-                $scope.job['test'] = testversion.test.name;
+                $scope.job.version = testversion.version.name;
+                $scope.job.test = testversion.test.name;
                 var Products = $resource('/api/products/' +
                     testversion.version.product_id).get();
                 Products.$promise.then(
                     function(product) {
-                        $scope.job['product'] = product.name;
-                    })
+                        $scope.job.product = product.name;
+                    });
             });
         });
     };
@@ -174,7 +174,7 @@ $location, $state, CommonCode) {
                                                'extra_data': 1,
                                                'sort': '-created_at'});
         Jobs.$promise.then(function(jobs) {
-            $scope.jobs = jobs._items
+            $scope.jobs = jobs._items;
             $cookies.jobsTotalPages = parseInt((jobs._meta.total /
                 jobs._meta.max_results + 1));
             $scope.jobsTotalPages = $cookies.jobsTotalPages;
@@ -185,16 +185,16 @@ $location, $state, CommonCode) {
     $scope.jobsNextPage = function() {
         if ($scope.jobCurrentPage < $cookies.jobsTotalPages) {
             $scope.jobCurrentPage++;
-            $state.go('jobs', {page:$scope.jobCurrentPage});
+            $state.go('jobs', {page: $scope.jobCurrentPage});
         }
-    }
+    };
 
     $scope.jobsPreviousPage = function() {
         if ($scope.jobCurrentPage > 1) {
             $scope.jobCurrentPage--;
-            $state.go('jobs', {page:$scope.jobCurrentPage});
+            $state.go('jobs', {page: $scope.jobCurrentPage});
         }
-    }
+    };
 
     if ($scope.jobCurrentPage == undefined) {
         $scope.jobCurrentPage = 1;
@@ -209,16 +209,16 @@ $cookies, $state, CommonCode) {
     $scope.remotecisNextPage = function() {
         if ($scope.remoteciCurrentPage < $cookies.remotecisTotalPages) {
             $scope.remoteciCurrentPage++;
-            $state.go('remotecis', {page:$scope.remoteciCurrentPage});
+            $state.go('remotecis', {page: $scope.remoteciCurrentPage});
         }
-    }
+    };
 
     $scope.remotecisPreviousPage = function() {
         if ($scope.remoteciCurrentPage > 1) {
             $scope.remoteciCurrentPage--;
-            $state.go('remotecis', {page:$scope.remoteciCurrentPage});
+            $state.go('remotecis', {page: $scope.remoteciCurrentPage});
         }
-    }
+    };
 
     if ($scope.remoteciCurrentPage == undefined) {
         $scope.remoteciCurrentPage = 1;
@@ -310,8 +310,8 @@ $cookies, $state, CommonCode) {
         [
           'Not started',
           remotecis.extra_data.not_started
-        ]]
-    })};
+        ]];
+    });};
 
     $scope.$watch('currentProduct', function(currentProduct, previousProduct) {
         if (angular.isUndefined(currentProduct)) {
