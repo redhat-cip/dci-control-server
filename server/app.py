@@ -18,6 +18,7 @@ import flask
 import json
 import os
 from pprint import pprint
+import sys
 
 import server.auth
 from server.common import utils
@@ -309,6 +310,9 @@ def create_app(db_uri=None):
 
 
 if __name__ == "__main__":
+    port = 5000
+    if len(sys.argv) > 1:
+        port = int(sys.argv[1])
     app = create_app()
     site_map()
-    app.run(debug=True)
+    app.run(debug=True, port=port)

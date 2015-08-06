@@ -34,18 +34,27 @@ class DCIClient(object):
             login = os.environ['DCI_LOGIN']
             password = os.environ['DCI_PASSWORD']
         self.end_point = end_point
-        self.s = requests.Session()
-        self.s.headers.setdefault('Content-Type', 'application/json')
-        self.s.auth = (login, password)
+        self.s = self._connect(login, password)
 
-    def delete(self, path):
-        return self.s.delete("%s%s" % (self.end_point, path))
+    def _connect(self, login, password):
+        s = requests.Session()
+        s.headers.setdefault('Content-Type', 'application/json')
+        s.auth = (login, password)
+        return s
 
-    def patch(self, path, etag, data):
-        return self.s.patch(
-            "%s%s" % (self.end_point, path),
-            data=json.dumps(data),
+    def delete(self, path, etag=None):
+        r = self.s.delete("%s%s" % (
+            self.end_point,
+            path),
             headers={'If-Match': etag})
+        return r
+
+    # TODO(Gonéri): Broken on Py27. To investigate.
+    #    def patch(self, path, etag, data):
+    #        return self.s.patch(
+    #            "%s%s" % (self.end_point, path),
+    #            data=json.dumps(data),
+    #            headers={'If-Match': etag})
 
     def post(self, path, data):
         return self.s.post("%s%s" % (
@@ -149,6 +158,17 @@ class DCIClient(object):
         return jobstate_id
 
     def find_or_create_or_refresh(self, path, data, unicity_key=['name']):
+        """Find, create or update an existing item
+
+        The function doesn't return the full item, just the following keys:
+
+        * id
+        * etag
+        * _status
+        * created_at
+        * updated_at
+
+        """
         # TODO(Gonéri): need a test coverage
         where = {k: data[k] for k in unicity_key}
         items = self.get(path, where=where).json()
