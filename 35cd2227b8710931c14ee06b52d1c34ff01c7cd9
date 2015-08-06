@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a9dcd25_a454e8ca",
+        "filename": "client/__init__.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-08-06T08:54:18Z",
+      "side": 1,
+      "message": "it\u0027s more safe to use copy.deepcopy(item)",
+      "revId": "35cd2227b8710931c14ee06b52d1c34ff01c7cd9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
