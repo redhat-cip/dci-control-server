@@ -57,9 +57,9 @@ class DCITestCase(testtools.TestCase):
         random_string = str(uuid.uuid1().hex)
         subprocess.call(['createdb', '-h', self._db_dir,
                          '-T', 'template1', random_string])
-        db_uri = "postgresql:///?host=%s&dbname=%s" % (
+        self.db_uri = "postgresql:///?host=%s&dbname=%s" % (
             self._db_dir, random_string)
-        self.app = server.app.create_app(db_uri)
+        self.app = server.app.create_app(self.db_uri)
         self.app.config['TESTING'] = True
         self.test_client = self.app.test_client()
 

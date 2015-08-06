@@ -34,18 +34,27 @@ class DCIClient(object):
             login = os.environ['DCI_LOGIN']
             password = os.environ['DCI_PASSWORD']
         self.end_point = end_point
-        self.s = requests.Session()
-        self.s.headers.setdefault('Content-Type', 'application/json')
-        self.s.auth = (login, password)
+        self.s = self._connect(login, password)
 
-    def delete(self, path):
-        return self.s.delete("%s%s" % (self.end_point, path))
+    def _connect(self, login, password):
+        s = requests.Session()
+        s.headers.setdefault('Content-Type', 'application/json')
+        s.auth = (login, password)
+        return s
 
-    def patch(self, path, etag, data):
-        return self.s.patch(
-            "%s%s" % (self.end_point, path),
-            data=json.dumps(data),
+    def delete(self, path, etag=None):
+        r = self.s.delete("%s%s" % (
+            self.end_point,
+            path),
             headers={'If-Match': etag})
+        return r
+
+    # TODO(Gonéri): Broken on Py27. To investigate.
+    #    def patch(self, path, etag, data):
+    #        return self.s.patch(
+    #            "%s%s" % (self.end_point, path),
+    #            data=json.dumps(data),
+    #            headers={'If-Match': etag})
 
     def post(self, path, data):
         return self.s.post("%s%s" % (
