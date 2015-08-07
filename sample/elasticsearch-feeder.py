@@ -44,12 +44,12 @@ es_s.headers.setdefault('Content-Type', 'application/json')
 
 
 products = dci_client.list_items(
-    'products',
+    '/products',
     embedded={
         'versions_collection': 1})
 
 jobs = dci_client.list_items(
-    'jobs',
+    '/jobs',
     where={'created_at': '>= "yesterday"'},
     embedded={
         'remoteci': 1,
@@ -57,7 +57,7 @@ jobs = dci_client.list_items(
         'jobstates_collection': 1})
 
 files = dci_client.list_items(
-    'files',
+    '/files',
     where={'created_at': '>= "yesterday"'},
     embedded={
         'remoteci': 1,

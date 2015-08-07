@@ -80,7 +80,7 @@ class DCIClient(object):
         """
         while True:
             r = self.s.get(
-                '%s/%s?where=%s&embedded=%s'
+                '%s%s?where=%s&embedded=%s'
                 '&projection=%s&page=%d&max_results=%d' % (
                     self.end_point,
                     item_type,

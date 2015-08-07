@@ -137,3 +137,18 @@ class TestClientLib(server.tests.DCITestCase):
             '/products',
             {'name': 'one product', 'data': {'foo': [1, 2, 3]}})
         self.assertTrue(product['id'] == old_id)
+
+    def test_list_items(self):
+        c = self.client
+
+        c.post('/tests', [
+            {'name': 'aikido'},
+            {'name': 'judo'},
+            {'name': 'karate'},
+            {'name': 'taekwondobobby'}])
+
+        cpt = 0
+        for item in c.list_items('/tests'):
+            self.assertTrue(item['name'])
+            cpt += 1
+        self.assertEqual(cpt, 4)
