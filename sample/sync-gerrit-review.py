@@ -21,6 +21,7 @@
 # If the version already exist, it will sync back the status of the version
 # in Gerrit (-1/0/+1)
 
+import os
 import subprocess
 import yaml
 
@@ -218,6 +219,12 @@ for project in gerrit_projects:
     git_url_format = project.get('git_url_format',
                                  'http://{server}/r/{project}')
     gerrit_server = project['gerrit_server']
+    try:
+        gerrit_server = "%s@%s" % (os.environ["GERRIT_USER"], gerrit_server)
+        print("Using user %s" % os.environ["GERRIT_USER"])
+    except KeyError:
+        print("Using default user.")
+
     component_name = project['component_name']
 
     test = dci_client.find_or_create_or_refresh('/tests', {
