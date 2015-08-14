@@ -22,34 +22,47 @@
 # in Gerrit (-1/0/+1)
 
 import os
+
+import json
 import subprocess
-import yaml
 
 import client
 
 
-# TODO(Gonéri): use a more meaningful name to make clear this is
-# gerrit specific function.
-def list_open_patchset(dci_client, project):
-    """Generator that return a patchset for a given project."""
-    gerrit_server = project['gerrit_server']
-    gerrit_project = project['gerrit_project']
-
-    reviews = subprocess.check_output(['ssh', '-xp29418',
-                                       gerrit_server,
+def _get_open_reviews(gerrit_server, gerrit_project):
+    """Get open reviews from Gerrit."""
+    reviews = subprocess.check_output(['ssh', '-xp29418', gerrit_server,
                                        'gerrit', 'query', '--format=json',
                                        'project:%s' % gerrit_project,
                                        'status:open'])
-    for line in reviews.decode('utf-8').rstrip().split('\n'):
-        review = yaml.load(line)
-        if 'id' not in review:
-            continue
-        patchset_query_res = subprocess.check_output([
-            'ssh', '-xp29418', gerrit_server,
-            'gerrit', 'query', '--format=JSON',
-            '--current-patch-set change:%d' % int(review['number'])])
-        patchset = yaml.load(patchset_query_res.decode('utf-8').split('\n')[0])
-        yield patchset
+    reviews = reviews.decode('utf-8').rstrip().split('\n')[:-1]
+    return [json.loads(review) for review in reviews]
+
+
+def _get_last_patchset(gerrit_server, review_number):
+    """Get the last patchset of a review."""
+    lpatchset = subprocess.check_output(['ssh', '-xp29418', gerrit_server,
+                                        'gerrit', 'query', '--format=JSON',
+                                        '--current-patch-set change:%d' %
+                                        review_number])
+    lpatchset = lpatchset.decode('utf-8').rstrip().split('\n')[0]
+    return json.loads(lpatchset)
+
+
+def _gerrit_review(gerrit_server, patch_sha, status):
+    subprocess.check_output(['ssh', '-xp29418', gerrit_server, 'gerrit',
+                             'review', '--verified', status, patch_sha])
+
+
+def list_open_patchsets(project):
+    """Generator that returns the last patchsets of all the reviews of
+    a given project."""
+
+    reviews = _get_open_reviews(project['gerrit_server'],
+                                project['gerrit_project'])
+    for review in reviews:
+        yield _get_last_patchset(project['gerrit_server'],
+                                 int(review['number']))
 
 
 def push_patchset_in_dci(dci_client, product, component_name,
@@ -61,7 +74,7 @@ def push_patchset_in_dci(dci_client, product, component_name,
     url = patchset['url']
     ref = patchset['currentPatchSet']['ref']
     sha = patchset['currentPatchSet']['revision']
-    print("Gerrit → DCI-CS: %s" % subject)
+    print("Gerrit to DCI-CS: %s" % subject)
     version_data = {
         "product_id": product['id'],
         "name": subject,
@@ -122,10 +135,7 @@ def review_patchset(dci_client, project, version):
         return
     # TODO(Gonéri): also push a message and the URL to see the job.
     print("DCI-CS → Gerrit: %s" % status)
-    subprocess.check_output([
-        'ssh', '-xp29418', gerrit_server,
-        'gerrit', 'review', '--verified', status,
-        sha])
+    _gerrit_review(gerrit_server, sha, status)
 
 # NOTE(Gonéri): This structure should be in a configuration files instead.
 products = {
@@ -199,15 +209,6 @@ gerrit_projects = [
         'test_name': 'tox',
         'component_name': 'dci-control-server',
         'publish_review': True
-    },
-    {
-
-        'gerrit_server': 'review.gerrithub.io',
-        'gerrit_project': 'redhat-openstack/khaleesi',
-        'component_name': 'khaleesi',
-        'git_url_format': 'http://{server}/{project}',
-        'test_name': 'khaleesi-tempest',
-        'products_name': ['rhos', 'rdo'],
     }
 ]
 
@@ -218,9 +219,9 @@ for project in gerrit_projects:
     gerrit_project = project['gerrit_project']
     git_url_format = project.get('git_url_format',
                                  'http://{server}/r/{project}')
-    gerrit_server = project['gerrit_server']
     try:
-        gerrit_server = "%s@%s" % (os.environ["GERRIT_USER"], gerrit_server)
+        project['gerrit_server'] = "%s@%s" % (os.environ["GERRIT_USER"],
+                                              project['gerrit_server'])
         print("Using user %s" % os.environ["GERRIT_USER"])
     except KeyError:
         print("Using default user.")
@@ -230,9 +231,9 @@ for project in gerrit_projects:
     test = dci_client.find_or_create_or_refresh('/tests', {
         'name': test_name, 'data': {}})
 
-    git_url = git_url_format.format(server=gerrit_server,
+    git_url = git_url_format.format(server=project['gerrit_server'],
                                     project=gerrit_project)
-    for patchset in list_open_patchset(dci_client, project):
+    for patchset in list_open_patchsets(project):
         for product_name in project['products_name']:
             product = dci_client.find_or_create_or_refresh(
                 '/products',
