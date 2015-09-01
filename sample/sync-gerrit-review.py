@@ -181,8 +181,11 @@ def main():
             '/tests',
             {'name': test_name, 'data': {}})
 
-        git_url = "http://%s/%s" % (project["gerrit"]["server"],
-                                    project["gerrit"]["project"])
+        if 'git_url' in project['gerrit']:
+            git_url = project['gerrit']['git']
+        else:
+            git_url = "http://%s/%s" % (project["gerrit"]["server"],
+                                        project["gerrit"]["project"])
 
         for patchset in list_open_patchsets(project["gerrit"]):
             product = dci_client.find_or_create_or_refresh(
