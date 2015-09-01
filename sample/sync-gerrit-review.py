@@ -185,8 +185,11 @@ def main():
         product = dci_client.find_or_create_or_refresh(
             '/products', {'name': project["name"], 'data': project_data})
 
-        git_url = "http://%s/%s" % (project["gerrit"]["server"],
-                                    project["gerrit"]["project"])
+        if 'git_url' in project['gerrit']:
+            git_url = project['gerrit']['git']
+        else:
+            git_url = "http://%s/%s" % (project["gerrit"]["server"],
+                                        project["gerrit"]["project"])
 
         # NOTE(Gonéri): For every review of a component, we
         # - create a version that overwrite the component default origin
