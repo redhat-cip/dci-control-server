@@ -131,7 +131,9 @@ environ.update({
     'ANSIBLE_FILTER_PLUGINS': kh_dir + '/khaleesi/plugins/filters/',
     'ANSIBLE_SSH_ARGS': ' -F ssh.config.ansible',
     'ANSIBLE_TIMEOUT': '60',
+    # TODO(Gonéri): BEAKER_MACHINE is probably deprecated
     'BEAKER_MACHINE': settings['hypervisor'],
+    'TEST_MACHINE': settings['hypervisor'],
     'HOST': settings['hypervisor'],
     'PWD': kh_dir,
     'WORKSPACE': kh_dir})
