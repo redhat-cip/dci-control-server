@@ -106,6 +106,10 @@ for ksgen_args in (structure_from_server.get('ksgen_args', {}),
             for sv in v:
                 args.append('--%s' % (k))
                 args.append(sv)
+        elif isinstance(v, dict):
+            for sk, sv in six.iteritems(v):
+                args.append('--%s' % (k))
+                args.append('%s=%s' % (sk, sv))
         else:
             args.append('--%s' % (k))
             args.append('%s' % (v))
