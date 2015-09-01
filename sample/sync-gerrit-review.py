@@ -21,10 +21,13 @@
 # If the version already exist, it will sync back the status of the version
 # in Gerrit (-1/0/+1)
 
+import argparse
 import os
+import sys
 
 import json
 import subprocess
+import yaml
 
 import client
 
@@ -59,14 +62,14 @@ def list_open_patchsets(project):
     a given project.
     """
 
-    reviews = _get_open_reviews(project['gerrit_server'],
-                                project['gerrit_project'])
+    reviews = _get_open_reviews(project['server'],
+                                project['project'])
     for review in reviews:
-        yield _get_last_patchset(project['gerrit_server'],
+        yield _get_last_patchset(project['server'],
                                  int(review['number']))
 
 
-def push_patchset_in_dci(dci_client, product, component_name,
+def push_patchset_as_version_in_dci(dci_client, product, component_name,
                          test, patchset, git_url):
     """Create a version in DCI-CS from a gerrit patchset."""
     subject = patchset['commitMessage'].split('\n')[0]
@@ -138,118 +141,60 @@ def review_patchset(dci_client, project, version):
     print("DCI-CS → Gerrit: %s" % status)
     _gerrit_review(gerrit_server, sha, status)
 
-# NOTE(Gonéri): This structure should be in a configuration files instead.
-products = {
-    'rdo': {
-        'name': 'rdo',
-        'data': {
-            "ksgen_args": {
-                "provisioner": "manual",
-                "product": "rdo",
-                "product-version": "kilo",
-                "product-version-repo": "delorean",
-                "product-version-workaround": "centos-7.0",
-                "workarounds": "enabled",
-                "distro": "centos-7.0",
-                "installer": "rdo_manager",
-                "installer-env": "virthost",
-                "installer-images": "build",
-                "installer-network": "neutron",
-                "installer-network-variant": "ml2-vxlan",
-                "installer-topology": "minimal",
-                "extra-vars": ["product.repo_type_override=none"]},
-            'components': {
-                'khaleesi': {
-                    'git': 'http://github.com/redhat-openstack/khaleesi'},
-                'khaleesi-settings': {
-                    'git': '/home/goneri/khaleesi-settings-mirror'}
-            }
-        }},
-    'rhos': {
-        'name': 'rhos',
-        'data': {
-            "ksgen_args": {
-                "provisioner": "manual",
-                "product": "rhos",
-                "product-version": "7_director",
-                "product-version-build": "latest",
-                "product-repo": "puddle",
-                "distro": "rhel-7.1",
-                "installer": "rdo_manager",
-                "installer-env": "virthost",
-                "installer-images": "build",
-                "installer-network": "neutron",
-                "installer-network-variant": "ml2-vxlan",
-                "installer-topology": "minimal",
-                "extra-vars": ["product.repo_type_override=none"]},
-            'components': {
-                'khaleesi': {
-                    'git': 'http://github.com/redhat-openstack/khaleesi'},
-                'khaleesi-settings': {
-                    'git': '/home/goneri/khaleesi-settings-mirror'}
-            }
-        }},
-    'dci-control-server': {
-        'name': 'dci-control-server',
-        'data': {
-            'components': {
-                'dci-control-server': {
-                    'git': 'https://github.com/redhat-cip/dci-control-server'
-                }
-            }
-        }
-    }
-}
 
-# NOTE(Gonéri): This structure should also be in a configuration file
-gerrit_projects = [
-    {
-        'gerrit_server': 'softwarefactory.enovance.com',
-        'gerrit_project': 'dci-control-server',
-        'products_name': ['dci-control-server'],
-        'test_name': 'tox',
-        'component_name': 'dci-control-server',
-        'publish_review': True
-    },
-    {
-        'gerrit_server': 'review.gerrithub.io',
-        'gerrit_project': 'redhat-openstack/khaleesi',
-        'component_name': 'khaleesi',
-        'git_url_format': 'http://{server}/{project}',
-        'test_name': 'khaleesi-tempest',
-        'products_name': ['rhos', 'rdo'],
-    }
-]
+def _init_conf():
+    parser = argparse.ArgumentParser(description='Gerrit agent.')
+    parser.add_argument("--config-file", action="store",
+                        help="the configuration file path")
+    return parser.parse_args()
 
-dci_client = client.DCIClient()
-for project in gerrit_projects:
-    test_name = project['test_name']
 
-    gerrit_project = project['gerrit_project']
-    git_url_format = project.get('git_url_format',
-                                 'http://{server}/r/{project}')
-    try:
-        project['gerrit_server'] = "%s@%s" % (os.environ["GERRIT_USER"],
-                                              project['gerrit_server'])
-        print("Using user %s" % os.environ["GERRIT_USER"])
-    except KeyError:
-        print("Using default user.")
+def _get_config_file(config_file_path):
+    if not os.path.exists(config_file_path):
+        print("cannot open configuration file '%s'" % config_file_path)
+        sys.exit(1)
+    else:
+        return yaml.load(open(config_file_path).read())
 
-    component_name = project['component_name']
 
-    test = dci_client.find_or_create_or_refresh('/tests', {
-        'name': test_name, 'data': {}})
+def main():
+    conf = _init_conf()
+    if conf.config_file:
+        config_file = _get_config_file(conf.config_file)
+        import pprint
+        pprint.pprint(config_file)
+    else:
+        print("config file missing")
+        sys.exit(1)
 
-    git_url = git_url_format.format(server=project['gerrit_server'],
-                                    project=gerrit_project)
-    for patchset in list_open_patchsets(project):
-        for product_name in project['products_name']:
+    projects = [project for project in config_file["projects"]
+                if project["enabled"]]
+
+    dci_client = client.DCIClient()
+    for project in projects:
+        test_name = project['test']
+        try:
+            project['gerrit_server'] = "%s@%s" % (os.environ["GERRIT_USER"],
+                                                  project['gerrit_server'])
+            print("Using user %s" % os.environ["GERRIT_USER"])
+        except KeyError:
+            print("Using default user.")
+
+        test = dci_client.find_or_create_or_refresh('/tests', {
+            'name': test_name, 'data': {}})
+
+        git_url = "http://%s/%s" % (project["gerrit"]["server"],
+                                    project["gerrit"]["project"])
+
+        for patchset in list_open_patchsets(project["gerrit"]):
             product = dci_client.find_or_create_or_refresh(
                 '/products',
-                products[product_name])
-            version = push_patchset_in_dci(
+                project["name"])
+            version = push_patchset_as_version_in_dci(
                 dci_client, product,
-                component_name,
+                project["gerrit"]["project"],
                 test, patchset, git_url)
-            if project.get('publish_review', False):
-                review_patchset(dci_client, project, version)
+            review_patchset(dci_client, project, version)
+
+if __name__ == '__main__':
+    main()
