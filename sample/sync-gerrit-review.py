@@ -187,10 +187,10 @@ def main():
         for patchset in list_open_patchsets(project["gerrit"]):
             product = dci_client.find_or_create_or_refresh(
                 '/products',
-                {'name': project["name"], 'data': {}})
+                {'name': project["name"], 'data': project['data']})
             version = push_patchset_as_version_in_dci(
                 dci_client, product,
-                project["gerrit"]["project"],
+                project["gerrit"]["name"],
                 test, patchset, git_url)
             review_patchset(dci_client, project, version)
 
