@@ -180,8 +180,9 @@ def main():
         test = dci_client.find_or_create_or_refresh(
             '/tests',
             {'name': project['gerrit']['test'], 'data': {}})
+        project_data = project['data'] if 'data' in project else {}
         product = dci_client.find_or_create_or_refresh(
-            '/products', {'name': project["name"], 'data': project['data']})
+            '/products', {'name': project["name"], 'data': project_data})
 
         git_url = "http://%s/%s" % (project["gerrit"]["server"],
                                     project["gerrit"]["project"])
@@ -194,7 +195,7 @@ def main():
         for patchset in list_open_patchsets(project["gerrit"]):
             version = push_patchset_as_version_in_dci(
                 dci_client, product,
-                project["gerrit"]["project"],
+                project["gerrit"]["name"],
                 test, patchset, git_url)
             review_patchset(dci_client, project, version)
 
