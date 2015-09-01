@@ -133,7 +133,8 @@ environ.update({
     'ANSIBLE_TIMEOUT': '60',
     'BEAKER_MACHINE': settings['hypervisor'],
     'HOST': settings['hypervisor'],
-    'PWD': kh_dir})
+    'PWD': kh_dir,
+    'WORKSPACE': kh_dir})
 
 collected_files_path = ("%s/collected_files" %
                         kh_dir)
