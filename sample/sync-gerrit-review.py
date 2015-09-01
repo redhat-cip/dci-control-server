@@ -166,21 +166,20 @@ def main():
     conf = _init_conf()
     if conf.config_file:
         config_file = _get_config_file(conf.config_file)
-        import pprint
-        pprint.pprint(config_file)
     else:
         print("config file missing")
         sys.exit(1)
 
-    projects = [project for project in config_file["projects"]
-                if project["enabled"]]
+    projects = [project for project in config_file["products"]
+                if project["enable"]]
 
     dci_client = client.DCIClient()
     for project in projects:
-        test_name = project['test']
+        test_name = project['gerrit']['test']
 
-        test = dci_client.find_or_create_or_refresh('/tests', {
-            'name': test_name, 'data': {}})
+        test = dci_client.find_or_create_or_refresh(
+            '/tests',
+            {'name': test_name, 'data': {}})
 
         git_url = "http://%s/%s" % (project["gerrit"]["server"],
                                     project["gerrit"]["project"])
@@ -188,7 +187,9 @@ def main():
         for patchset in list_open_patchsets(project["gerrit"]):
             product = dci_client.find_or_create_or_refresh(
                 '/products',
-                project["name"])
+                {'name': project["name"], 'data': {}})
+            import pprint
+            pprint.pprint(product)
             version = push_patchset_as_version_in_dci(
                 dci_client, product,
                 project["gerrit"]["project"],
