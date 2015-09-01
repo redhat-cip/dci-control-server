@@ -143,8 +143,9 @@ def review_patchset(dci_client, project, version):
               "%s" % version['id'])
         return
     # TODO(Gonéri): also push a message and the URL to see the job.
-    print("DCI-CS → Gerrit: %s" % status)
-    _gerrit_review(project["gerrit"]["server"], sha, status)
+    if status != '0':
+        print("DCI-CS → Gerrit: %s" % status)
+        _gerrit_review(project["gerrit"]["server"], sha, status)
 
 
 def _init_conf():
@@ -161,6 +162,7 @@ def _get_config_file(config_file_path):
     else:
         return yaml.load(open(config_file_path).read())
 
+    component_name = project['component_name']
 
 def main():
     conf = _init_conf()
