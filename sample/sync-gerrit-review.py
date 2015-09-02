@@ -175,11 +175,13 @@ def main():
 
     dci_client = client.DCIClient()
     for project in projects:
-        test_name = project['gerrit']['test']
-
+        # NOTE(Gonéri): ensure the associated test and product exist and are
+        # up to date
         test = dci_client.find_or_create_or_refresh(
             '/tests',
-            {'name': test_name, 'data': {}})
+            {'name': project['gerrit']['test'], 'data': {}})
+        product = dci_client.find_or_create_or_refresh(
+            '/products', {'name': project["name"], 'data': project['data']})
 
         if 'git_url' in project['gerrit']:
             git_url = project['gerrit']['git']
@@ -187,10 +189,12 @@ def main():
             git_url = "http://%s/%s" % (project["gerrit"]["server"],
                                         project["gerrit"]["project"])
 
+        # NOTE(Gonéri): For every review of a component, we
+        # - create a version that overwrite the component default origin
+        # with a one that is sticked to the review
+        # - check if there is some result for the Git review, and if so,
+        # push vote
         for patchset in list_open_patchsets(project["gerrit"]):
-            product = dci_client.find_or_create_or_refresh(
-                '/products',
-                {'name': project["name"], 'data': project['data']})
             version = push_patchset_as_version_in_dci(
                 dci_client, product,
                 project["gerrit"]["name"],
