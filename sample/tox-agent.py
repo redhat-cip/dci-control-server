@@ -46,7 +46,11 @@ if r.status_code == 404:
         'name': remoteci_name,
         'test_id': test_id})
 remoteci_id = r.json()['id']
-job_id = dci_client.post("/jobs", {"remoteci_id": remoteci_id}).json()['id']
+job = dci_client.post("/jobs", {"remoteci_id": remoteci_id})
+if job.status_code == 412:
+    print("No jobs to proces.")
+    sys.exit(0)
+job_id = job.json()['id']
 job = dci_client.get("/jobs/%s" % job_id).json()
 dci_client.call(job_id, ['git', 'init', workdir])
 structure_from_server = job['data']['components']['dci-control-server']
