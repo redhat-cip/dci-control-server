@@ -32,47 +32,47 @@ import yaml
 import client
 
 
-def _get_open_reviews(gerrit_server, gerrit_project):
-    """Get open reviews from Gerrit."""
-    user = os.environ.get("GERRIT_USER") or os.getlogin()
-    reviews = subprocess.check_output(['ssh', '-xp29418', gerrit_server,
-                                       '-l', user, 'gerrit', 'query',
-                                       '--format=json',
-                                       'project:%s' % gerrit_project,
-                                       'status:open'])
-    reviews = reviews.decode('utf-8').rstrip().split('\n')[:-1]
-    return [json.loads(review) for review in reviews]
+class Gerrit(object):
+    def __init__(self, gerrit_server):
+        self.user = os.environ.get("GERRIT_USER") or os.getlogin()
+        self.server = gerrit_server
 
+    def get_open_reviews(self, gerrit_project):
+        """Get open reviews from Gerrit."""
+        reviews = subprocess.check_output(['ssh', '-xp29418', self.server,
+                                           '-l', self.user, 'gerrit', 'query',
+                                           '--format=json',
+                                           'project:%s' % gerrit_project,
+                                           'status:open'])
+        reviews = reviews.decode('utf-8').rstrip().split('\n')[:-1]
+        return [json.loads(review) for review in reviews]
 
-def _get_last_patchset(gerrit_server, review_number):
-    """Get the last patchset of a review."""
-    user = os.environ.get("GERRIT_USER") or os.getlogin()
-    lpatchset = subprocess.check_output(['ssh', '-xp29418', '-l', user,
-                                         gerrit_server, 'gerrit', 'query',
-                                         '--format=JSON',
-                                         '--current-patch-set change:%d' %
-                                         review_number])
-    lpatchset = lpatchset.decode('utf-8').rstrip().split('\n')[0]
-    return json.loads(lpatchset)
+    def get_last_patchset(self, review_number):
+        """Get the last patchset of a review."""
+        lpatchset = subprocess.check_output([
+            'ssh', '-xp29418', '-l', self.user,
+            self.server, 'gerrit', 'query',
+            '--format=JSON',
+            '--current-patch-set change:%d' %
+            review_number])
+        lpatchset = lpatchset.decode('utf-8').rstrip().split('\n')[0]
+        return json.loads(lpatchset)
 
+    def review(self, patch_sha, status):
+        """Push a score (e.g: -1) on a review."""
+        subprocess.check_output(['ssh', '-xp29418', '-l',
+                                 self.user, self.server,
+                                 'gerrit', 'review', '--verified', status,
+                                 patch_sha])
 
-def _gerrit_review(gerrit_server, patch_sha, status):
-    user = os.environ.get("GERRIT_USER") or os.getlogin()
-    subprocess.check_output(['ssh', '-xp29418', '-l', user, gerrit_server,
-                             'gerrit', 'review', '--verified', status,
-                             patch_sha])
+    def list_open_patchsets(self, project):
+        """Generator that returns the last patchsets of all the reviews of
+        a given project.
+        """
 
-
-def list_open_patchsets(gerrit):
-    """Generator that returns the last patchsets of all the reviews of
-    a given project.
-    """
-
-    reviews = _get_open_reviews(gerrit['server'],
-                                gerrit['project'])
-    for review in reviews:
-        yield _get_last_patchset(gerrit['server'],
-                                 int(review['number']))
+        reviews = self.get_open_reviews(project)
+        for review in reviews:
+            yield self.get_last_patchset(int(review['number']))
 
 
 def push_patchset_as_version_in_dci(dci_client, product, component_name,
@@ -115,10 +115,8 @@ def push_patchset_as_version_in_dci(dci_client, product, component_name,
     return version
 
 
-def review_patchset(dci_client, project, version):
+def get_patchset_score(dci_client, component_name, version):
     """Update the review in Gerrit from the status of a version in DCI-CS."""
-
-    component_name = project["gerrit"]["project"]
 
     testversions = dci_client.get(
         "/testversions",
@@ -142,10 +140,7 @@ def review_patchset(dci_client, project, version):
         print("Cannot find product name for version "
               "%s" % version['id'])
         return
-    # TODO(Gonéri): also push a message and the URL to see the job.
-    if status != '0':
-        print("DCI-CS → Gerrit: %s" % status)
-        _gerrit_review(project["gerrit"]["server"], sha, status)
+    return {'sha': sha, 'status': status}
 
 
 def _init_conf():
@@ -178,6 +173,7 @@ def main():
     for project in projects:
         # NOTE(Gonéri): ensure the associated test and product exist and are
         # up to date
+        g = Gerrit(project['gerrit']['server'])
         test = dci_client.find_or_create_or_refresh(
             '/tests',
             {'name': project['gerrit']['test'], 'data': {}})
@@ -196,12 +192,18 @@ def main():
         # with a one that is sticked to the review
         # - check if there is some result for the Git review, and if so,
         # push vote
-        for patchset in list_open_patchsets(project["gerrit"]):
+        for patchset in g.list_open_patchsets(project['gerrit']['project']):
             version = push_patchset_as_version_in_dci(
                 dci_client, product,
                 project["gerrit"]["name"],
                 test, patchset, git_url)
-            review_patchset(dci_client, project, version)
+            score = get_patchset_score(dci_client,
+                                       project["gerrit"]["project"],
+                                       version)
+            # TODO(Gonéri): also push a message and the URL to see the job.
+            if score and score['status'] != 0:
+                print("DCI-CS → Gerrit: %s" % score['status'])
+                g.review(score['sha'], score['status'])
 
 if __name__ == '__main__':
     main()
