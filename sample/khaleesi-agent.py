@@ -19,7 +19,6 @@ import glob
 import os
 import shutil
 import six
-import string
 import sys
 import tempfile
 import yaml
@@ -56,48 +55,49 @@ job_id = dci_client.post(
 job = dci_client.get("/jobs/%s" % job_id).json()
 structure_from_server = job['data']
 
-components = structure_from_server['components']
-for component in components.values():
-    component['workdir'] = tempfile.mkdtemp()
-    # TODO(Gonéri)
+venv_dir = tempfile.mkdtemp()
+dci_client.call(job_id,
+                ['virtualenv', venv_dir])
 
+components = structure_from_server['components']
 
 # TODO(Gonéri): Create a load_config() method or something similar
 settings = yaml.load(open('local_settings.yml', 'r'))
-kh_dir = components['khaleesi']['workdir']
-python_bin = 'python'
-ansible_playbook_bin = 'ansible-playbook'
-try:
-    python_bin = settings['location']['python_bin']
-except KeyError:
-    pass
-try:
-    ansible_playbook_bin = settings['location']['ansible_playbook_bin']
-except KeyError:
-    pass
+python_bin = venv_dir + '/bin/python'
+pip_bin = venv_dir + '/bin/pip'
+ansible_playbook_bin = venv_dir + '/bin/ansible-playbook'
+ksgen_bin = venv_dir + '/bin/ksgen'
+workspace_dir = tempfile.mkdtemp()
 
-for component in components.values():
-    dci_client.call(job_id, ['git', 'init', component['workdir']])
+dci_client.call(job_id, [pip_bin, 'install', '-U', 'ansible==1.9.2'])
+dci_client.call(job_id, [ansible_playbook_bin, '--version'])
+for component_name, component in six.iteritems(components):
+    component_dir = workspace_dir + '/' + component_name
+    dci_client.call(job_id, ['git', 'init', component_dir])
     dci_client.call(job_id, ['git', 'pull',
                              component['git'],
                              component.get('ref', '')],
-                    cwd=component['workdir'], ignore_error=True)
+                    cwd=component_dir, ignore_error=True)
     dci_client.call(job_id, ['git', 'fetch', '--all'],
-                    cwd=component['workdir'])
+                    cwd=component_dir)
     dci_client.call(job_id, ['git', 'clean', '-ffdx'],
-                    cwd=component['workdir'])
+                    cwd=component_dir)
     dci_client.call(job_id, ['git', 'reset', '--hard'],
-                    cwd=component['workdir'])
+                    cwd=component_dir)
     if 'sha' in component:
         dci_client.call(job_id, ['git', 'checkout', '-f',
                                  component['sha']],
-                        cwd=component['workdir'])
+                        cwd=component_dir)
+
+kh_dir = workspace_dir + '/khaleesi'
+
+dci_client.call(job_id, [python_bin, 'setup.py', 'develop'],
+                cwd='%s/tools/ksgen' % kh_dir)
 
 
-args = [python_bin,
-        './tools/ksgen/ksgen/core.py',
-        '--config-dir=%s/settings' % (
-            components['khaleesi-settings']['workdir']),
+args = [ksgen_bin,
+        '--config-dir=%s/khaleesi-settings/settings' % (
+            workspace_dir),
         'generate']
 for ksgen_args in (structure_from_server.get('ksgen_args', {}),
                    settings.get('ksgen_args', {})):
@@ -113,11 +113,14 @@ for ksgen_args in (structure_from_server.get('ksgen_args', {}),
         else:
             args.append('--%s' % (k))
             args.append('%s' % (v))
-ksgen_settings_file = tempfile.NamedTemporaryFile()
 with open(kh_dir + '/ssh.config.ansible', "w") as fd:
     fd.write('')
 
-args.append(ksgen_settings_file.name)
+args.append(workspace_dir +
+            '/khaleesi-settings/hardware_environments' +
+            '/virt/network_configs/none/hw_settings.yml')
+args.append(workspace_dir + '/ksgen_settings.yml')
+
 environ = os.environ
 environ.update({
     'PYTHONPATH': './tools/ksgen',
@@ -132,11 +135,13 @@ environ.update({
     'ANSIBLE_SSH_ARGS': ' -F ssh.config.ansible',
     'ANSIBLE_TIMEOUT': '60',
     # TODO(Gonéri): BEAKER_MACHINE is probably deprecated
-    'BEAKER_MACHINE': settings['hypervisor'],
+    # 'BEAKER_MACHINE': settings['hypervisor'],
     'TEST_MACHINE': settings['hypervisor'],
-    'HOST': settings['hypervisor'],
     'PWD': kh_dir,
-    'WORKSPACE': kh_dir})
+    'CONFIG_BASE': workspace_dir + '/khaleesi-settings/settings',
+    'WORKSPACE': workspace_dir})
+
+print("test machine is: %s" % environ['TEST_MACHINE'])
 
 collected_files_path = ("%s/collected_files" %
                         kh_dir)
@@ -148,27 +153,10 @@ dci_client.call(job_id,
                 cwd=kh_dir,
                 env=environ)
 
-local_hosts_template = string.Template(
-    "localhost ansible_connection=local\n"
-    "host0 ansible_ssh_host=$hypervisor ansible_ssh_user=root "
-    "ansible_ssh_private_key_file=~/.ssh/id_rsa\n"
-    "undercloud ansible_ssh_host=undercloud ansible_ssh_user=stack "
-    "ansible_ssh_private_key_file=~/.ssh/id_rsa\n"
-    "\n"
-    "[virthost]\n"
-    "host0\n"
-    "\n"
-    "[local]\n"
-    "localhost\n"
-)
-
-with open(kh_dir + '/local_hosts', "w") as fd:
-    fd.write(
-        local_hosts_template.substitute(hypervisor=settings['hypervisor']))
 args = [
     ansible_playbook_bin,
     '-vvvv', '--extra-vars',
-    '@' + ksgen_settings_file.name,
+    '@' + workspace_dir + '/ksgen_settings.yml',
     '-i', kh_dir + '/local_hosts',
     kh_dir + '/playbooks/full-job-no-test.yml']
 

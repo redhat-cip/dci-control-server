@@ -3,7 +3,4 @@
 #   tester: tempest
 #   tester-setup: rpm
 #   tester-tests: all
-#location:
-#  python_bin: /opt/venv/py27/bin/python
-#  ansible_playbook_bin: /opt/venv/py27/bin/ansible-playbook
 hypervisor: boa-3
