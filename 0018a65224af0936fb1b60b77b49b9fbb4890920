@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a9dcd25_5acff4b0",
+        "filename": "sample/sync-gerrit-review.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-09-04T10:45:30Z",
+      "side": 1,
+      "message": "Make a private attribute",
+      "revId": "0018a65224af0936fb1b60b77b49b9fbb4890920",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a9dcd25_1ac16c80",
+        "filename": "sample/sync-gerrit-review.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-09-04T10:45:30Z",
+      "side": 1,
+      "message": "s/g/gerrit",
+      "revId": "0018a65224af0936fb1b60b77b49b9fbb4890920",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a9dcd25_fac36088",
+        "filename": "sample/sync-gerrit-review.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 204,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-09-04T10:45:30Z",
+      "side": 1,
+      "message": "s/0/\u00270\u0027",
+      "revId": "0018a65224af0936fb1b60b77b49b9fbb4890920",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
