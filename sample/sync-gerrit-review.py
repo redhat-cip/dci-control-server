@@ -39,11 +39,13 @@ class Gerrit(object):
 
     def get_open_reviews(self, gerrit_project):
         """Get open reviews from Gerrit."""
+        gerrit_filter = (
+            'project:%s status:open is:open '
+            'is:mergeable NOT label:Verified<=-1') % gerrit_project
         reviews = subprocess.check_output(['ssh', '-xp29418', self.server,
                                            '-l', self.user, 'gerrit', 'query',
                                            '--format=json',
-                                           'project:%s' % gerrit_project,
-                                           'status:open'])
+                                           gerrit_filter])
         reviews = reviews.decode('utf-8').rstrip().split('\n')[:-1]
         return [json.loads(review) for review in reviews]
 
