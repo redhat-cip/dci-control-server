@@ -65,7 +65,7 @@ CREATE FUNCTION jobstate_status_in_list() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
 BEGIN
-IF new.status IN ('new', 'ongoing', 'success', 'failure') THEN
+IF new.status IN ('new', 'ongoing', 'success', 'failure', 'killed') THEN
     RETURN NEW;
 ELSE
     RAISE EXCEPTION 'Bad status. valid are: new, ongoing, success, failure';
