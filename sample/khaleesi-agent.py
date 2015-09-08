@@ -18,6 +18,7 @@
 import glob
 import os
 import shutil
+import signal
 import six
 import sys
 import tempfile
@@ -52,6 +53,18 @@ remoteci_id = r.json()['id']
 
 job_id = dci_client.post(
     "/jobs", {"remoteci_id": remoteci_id}).json()['id']
+
+
+def kill_handler(signum, frame):
+    state = {"job_id": job_id,
+             "status": 'killed',
+             "comment": "Job killed on the remote CI (sig: %s)." % signum}
+    dci_client.post("/jobstates", state)
+    print("Job killed by the user.")
+    sys.exit(0)
+signal.signal(signal.SIGINT, kill_handler)
+
+
 job = dci_client.get("/jobs/%s" % job_id).json()
 structure_from_server = job['data']
 
