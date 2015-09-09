@@ -34,6 +34,9 @@ class DCITestCase(testtools.TestCase):
         subprocess.call(['sed', '-i',
                          "s,#listen_addresses.*,listen_addresses = '',",
                          '%s/postgresql.conf' % cls._db_dir])
+        subprocess.call(['sed', '-i',
+                         "s,#client_encoding.*,client_encoding = utf8,",
+                         '%s/postgresql.conf' % cls._db_dir])
         cls._pg = subprocess.Popen(['postgres', '-F',
                                     '-k', cls._db_dir,
                                     '-D', cls._db_dir])
