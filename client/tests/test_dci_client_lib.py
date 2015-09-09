@@ -152,3 +152,69 @@ class TestClientLib(server.tests.DCITestCase):
             self.assertTrue(item['name'])
             cpt += 1
         self.assertEqual(cpt, 4)
+
+    def _init_test_call(self):
+        c = self.client
+
+        test = c.post('/tests', {'name': 'my_test'}).json()
+        product = c.post('/products', {'name': 'my_product'}).json()
+        version = c.post('/versions', {
+            'name': 'my_version', 'product_id': product['id']}).json()
+        testversion = c.post('/testversions', {
+            'test_id': test['id'], 'version_id': version['id']}).json()
+        team = c.post('/teams', {
+            'name': 'my_team'}).json()
+        remoteci = c.post('/remotecis', {
+            'team_id': team['id'],
+            'test_id': test['id']
+        }).json()
+        job = c.post('/jobs', {
+            'team_id': team['id'],
+            'testversion_id': testversion['id'],
+            'remoteci_id': remoteci['id']}).json()
+        self._job_id = job['id']
+
+    def test_call(self):
+        self._init_test_call()
+        c = self.client
+
+        r = c.call(self._job_id, ['/bin/echo', 'Speedy'])
+        logfile = c.get(
+            '/files',
+            where={'jobstate_id': r['jobstate_id']}).json()
+        self.assertEqual(
+            logfile['_items'][0]['content'],
+            'starting: /bin/echo Speedy\nSpeedy\n')
+
+    def test_call_timeout(self):
+        self._init_test_call()
+        c = self.client
+
+        r = c.call(self._job_id, ['/bin/sleep', '600'], timeout=1)
+        logfile = c.get(
+            '/files',
+            where={'jobstate_id': r['jobstate_id']}).json()
+        self.assertEqual(
+            logfile['_items'][0]['content'],
+            'starting: /bin/sleep 600\n' +
+            'Timeout! command has been Killed!\n')
+
+    def test_call_cwd(self):
+        self._init_test_call()
+        c = self.client
+
+        r = c.call(self._job_id, ['/bin/pwd'], cwd='/tmp')
+        logfile = c.get(
+            '/files',
+            where={'jobstate_id': r['jobstate_id']}).json()
+        self.assertEqual(
+            logfile['_items'][0]['content'],
+            'starting: /bin/pwd\n' +
+            '/tmp\n')
+
+    def test_call_failure(self):
+        self._init_test_call()
+        c = self.client
+
+        r = c.call(self._job_id, ['/bin/ls', '/tmp/no-where-'])
+        self.assertTrue(r['returncode'] != 0)

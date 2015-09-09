@@ -118,7 +118,8 @@ class DCIClient(object):
                     "jobstate_id": jobstate_id}
             return self.post("/files", data)
 
-    def call(self, job_id, arg, cwd=None, env=None, ignore_error=False):
+    def call(self, job_id, arg, cwd=None, env=None,
+             ignore_error=False, timeout=600):
         state = {"job_id": job_id,
                  "status": "ongoing",
                  "comment": "calling: %s" % " ".join(arg)}
@@ -139,21 +140,28 @@ class DCIClient(object):
 
         f = tempfile.TemporaryFile()
         f.write(("starting: %s\n" % " ".join(arg)).encode('utf-8'))
-        s = True
-        while p.returncode is None or s:
-            time.sleep(0.01)
-            f.write(os.read(p.stdout.fileno(), 10))
-            f.flush()
+        begin_at = int(time.time())
+        while p.returncode is None:
+            if time.time() - begin_at > timeout:
+                print('timeout')
+                p.kill()
+                f.write(b"Timeout! command has been Killed!\n")
+                break
             p.poll()
+            time.sleep(0.1)
+        s = os.read(p.stdout.fileno(), 10)
+        f.write(s)
+        f.flush()
+
         self.upload_file(f, jobstate_id, name='output.log')
+        f.close()
 
         if p.returncode != 0 and not ignore_error:
             state = {"job_id": job_id,
                      "status": "failure",
                      "comment": "call failure w/ code %s" % (p.returncode)}
             self.post("/jobstates", state)
-            raise DCICommandFailure
-        return jobstate_id
+        return {'jobstate_id': jobstate_id, 'returncode': p.returncode}
 
     def find_or_create_or_refresh(self, path, data, unicity_key=['name']):
         """Find, create or update an existing item

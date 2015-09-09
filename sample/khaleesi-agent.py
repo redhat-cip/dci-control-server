@@ -84,9 +84,6 @@ job = dci_client.get("/jobs/%s" % job_id).json()
 structure_from_server = job['data']
 
 venv_dir = tempfile.mkdtemp()
-dci_client.call(job_id,
-                ['virtualenv', venv_dir])
-
 components = structure_from_server['components']
 
 python_bin = venv_dir + '/bin/python'
@@ -94,31 +91,37 @@ pip_bin = venv_dir + '/bin/pip'
 ansible_playbook_bin = venv_dir + '/bin/ansible-playbook'
 ksgen_bin = venv_dir + '/bin/ksgen'
 workspace_dir = tempfile.mkdtemp()
-
-dci_client.call(job_id, [pip_bin, 'install', '-U', 'ansible==1.9.2'])
-dci_client.call(job_id, [ansible_playbook_bin, '--version'])
-for component_name, component in six.iteritems(components):
-    component_dir = workspace_dir + '/' + component_name
-    dci_client.call(job_id, ['git', 'init', component_dir])
-    dci_client.call(job_id, ['git', 'pull',
-                             component['git'],
-                             component.get('ref', '')],
-                    cwd=component_dir)
-    dci_client.call(job_id, ['git', 'fetch', '--all'],
-                    cwd=component_dir)
-    dci_client.call(job_id, ['git', 'clean', '-ffdx'],
-                    cwd=component_dir)
-    dci_client.call(job_id, ['git', 'reset', '--hard'],
-                    cwd=component_dir)
-    if 'sha' in component:
-        dci_client.call(job_id, ['git', 'checkout', '-f',
-                                 component['sha']],
-                        cwd=component_dir)
-
 kh_dir = workspace_dir + '/khaleesi'
 
-dci_client.call(job_id, [python_bin, 'setup.py', 'develop'],
-                cwd='%s/tools/ksgen' % kh_dir)
+for component_name, component in six.iteritems(components):
+    component_dir = workspace_dir + '/' + component_name
+    cmds = [
+        {'args': ['virtualenv', venv_dir]},
+        {'args': [pip_bin, 'install', '-U', 'ansible==1.9.2']},
+        {'args': [ansible_playbook_bin, '--version']},
+        {'args': ['git', 'init', component_dir]},
+        {'args': ['git', 'pull',
+                  component['git'],
+                  component.get('ref', '')]},
+        {'args': ['git', 'fetch', '--all']},
+        {'args': ['git', 'clean', '-ffdx']},
+        {'args': ['git', 'reset', '--hard']}]
+
+    if 'sha' in component:
+        cmds.append(['git', 'checkout', '-f',
+                     component['sha']])
+
+cmds.append(
+    {'cmd': [python_bin, 'setup.py', 'develop'],
+     'cwd': '%s/tools/ksgen' % kh_dir})
+
+for cmd in cmds:
+    r = dci_client.call(job_id, cmd['args'],
+                        cwd=cmd.get('cwd', component_dir))
+    if r != 0:
+        print("Test has failed")
+        shutil.rmtree(workspace_dir)
+        sys.exit(1)
 
 
 args = [ksgen_bin,
@@ -175,10 +178,16 @@ collected_files_path = ("%s/collected_files" %
 print(collected_files_path)
 if os.path.exists(collected_files_path):
     shutil.rmtree(collected_files_path)
-dci_client.call(job_id,
-                args,
-                cwd=kh_dir,
-                env=environ)
+r = dci_client.call(job_id,
+                    args,
+                    cwd=kh_dir,
+                    env=environ)
+
+if r != 0:
+    print("ksgen has failed")
+    shutil.rmtree(workspace_dir)
+    sys.exit(1)
+
 
 args = [
     ansible_playbook_bin,
@@ -188,19 +197,20 @@ args = [
     kh_dir + '/playbooks/full-job-no-test.yml']
 
 status = 'success'
-try:
-    jobstate_id = dci_client.call(job_id,
-                                  args,
-                                  cwd=kh_dir,
-                                  env=environ)
-except client.DCICommandFailure:
+r = dci_client.call(job_id,
+                    args,
+                    cwd=kh_dir,
+                    env=environ,
+                    timeout=7200)
+if r['returncode'] != 0:
     print("Test has failed")
     status = 'failure'
-    pass
+
 for log in glob.glob(collected_files_path + '/*'):
     with open(log) as f:
-        dci_client.upload_file(f, jobstate_id)
+        dci_client.upload_file(f, r['jobstate_id'])
 state = {"job_id": job["id"],
          "status": status,
          "comment": "Job has been processed"}
 jobstate = dci_client.post("/jobstates", state).json()
+shutil.rmtree(workspace_dir)
