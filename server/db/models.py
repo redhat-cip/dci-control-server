@@ -32,7 +32,7 @@ class DCIModel(object):
 
     def __init__(self, db_uri):
         # TODO(Gonéri): Load the value for a configuration file
-        self.engine = create_engine(db_uri, pool_size=20, max_overflow=0)
+        self.engine = create_engine(db_uri, pool_size=20, max_overflow=0, encoding='utf8', convert_unicode=True)
 
         self.metadata = MetaData()
         self.metadata.reflect(self.engine)
