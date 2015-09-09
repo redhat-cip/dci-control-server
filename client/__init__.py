@@ -21,6 +21,7 @@ import json
 import os
 import requests
 import simplejson.scanner
+import six
 import subprocess
 import tempfile
 import time
@@ -118,14 +119,21 @@ class DCIClient(object):
                     "jobstate_id": jobstate_id}
             return self.post("/files", data)
 
-    def call(self, job_id, arg, cwd=None, env=None, ignore_error=False):
+    def call(self, job_id, args, cwd=None, env=None,
+             ignore_error=False, timeout=600):
+
+        for idx, arg in enumerate(args):
+            if six.PY2 and isinstance(arg, str):
+                args[idx] = arg.decode('UTF-8')
+
+        flatten_args = " ".join(args)
         state = {"job_id": job_id,
                  "status": "ongoing",
-                 "comment": "calling: %s" % " ".join(arg)}
+                 "comment": "calling: %s" % flatten_args}
         jobstate_id = self.post("/jobstates", state).json()["id"]
-        print("Calling: %s" % arg)
+        print("Calling: %s" % flatten_args)
         try:
-            p = subprocess.Popen(arg,
+            p = subprocess.Popen(args,
                                  stdout=subprocess.PIPE,
                                  stderr=subprocess.STDOUT,
                                  cwd=cwd,
@@ -138,22 +146,32 @@ class DCIClient(object):
             raise DCIInternalFailure
 
         f = tempfile.TemporaryFile()
-        f.write(("starting: %s\n" % " ".join(arg)).encode('utf-8'))
-        s = True
-        while p.returncode is None or s:
-            time.sleep(0.01)
-            f.write(os.read(p.stdout.fileno(), 10))
-            f.flush()
+        f.write(("starting: %s\n" % flatten_args).encode('UTF-8'))
+        begin_at = int(time.time())
+        timeout_reached = False
+        while p.returncode is None:
+            if time.time() - begin_at > timeout:
+                print('timeout')
+                p.kill()
+                timeout_reached = True
+                break
             p.poll()
+            time.sleep(0.1)
+        for l in p.stdout.readlines():
+            f.write(l)
+        if timeout_reached:
+            f.write("Timeout! command has been Killed!\n".encode())
+        f.flush()
+
         self.upload_file(f, jobstate_id, name='output.log')
+        f.close()
 
         if p.returncode != 0 and not ignore_error:
             state = {"job_id": job_id,
                      "status": "failure",
                      "comment": "call failure w/ code %s" % (p.returncode)}
             self.post("/jobstates", state)
-            raise DCICommandFailure
-        return jobstate_id
+        return {'jobstate_id': jobstate_id, 'returncode': p.returncode}
 
     def find_or_create_or_refresh(self, path, data, unicity_key=['name']):
         """Find, create or update an existing item
