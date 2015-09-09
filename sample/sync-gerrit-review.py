@@ -41,7 +41,7 @@ class Gerrit(object):
     def get_open_reviews(self, gerrit_project):
         """Get open reviews from Gerrit."""
         gerrit_filter = (
-            'project:%s status:open is:open ') % gerrit_project
+            'project:%s status:open') % gerrit_project
         reviews = subprocess.check_output(['ssh', '-xp29418', self.server,
                                            '-l', self.user, 'gerrit', 'query',
                                            '--format=json',
