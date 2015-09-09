@@ -120,7 +120,8 @@ class DCIClient(object):
                     "jobstate_id": jobstate_id}
             return self.post("/files", data)
 
-    def call(self, job_id, arg, cwd=None, env=None, ignore_error=False):
+    def call(self, job_id, arg, cwd=None, env=None,
+             ignore_error=False, timeout=600):
         state = {"job_id": job_id,
                  "status": "ongoing",
                  "comment": "calling: %s" % " ".join(arg)}
@@ -141,6 +142,7 @@ class DCIClient(object):
 
         f = tempfile.TemporaryFile()
         f.write(("starting: %s\n" % " ".join(arg)).encode('utf-8'))
+        begin_at = int(time.time())
         s = True
         while p.returncode is None or s:
             time.sleep(0.01)
@@ -149,6 +151,9 @@ class DCIClient(object):
             f.write(s)
             f.flush()
             p.poll()
+            if time.time() - begin_at > timeout:
+                p.kill()
+                f.write("Timeout! command has been Killed!")
         self.upload_file(f, jobstate_id, name='output.log')
 
         if p.returncode != 0 and not ignore_error:
