@@ -52,29 +52,29 @@ if job.status_code == 412:
     sys.exit(0)
 job_id = job.json()['id']
 job = dci_client.get("/jobs/%s" % job_id).json()
-dci_client.call(job_id, ['git', 'init', workdir])
 structure_from_server = job['data']['components']['dci-control-server']
-dci_client.call(job_id, ['git', 'pull',
-                         structure_from_server['git'],
-                         structure_from_server.get('ref', '')],
-                cwd=workdir, ignore_error=True)
-dci_client.call(job_id, ['git', 'fetch', '--all'], cwd=workdir)
-dci_client.call(job_id, ['git', 'clean', '-ffdx'], cwd=workdir)
-dci_client.call(job_id, ['git', 'reset', '--hard'], cwd=workdir)
-dci_client.call(job_id, ['git', 'checkout', '-f',
-                         structure_from_server['sha']],
-                cwd=workdir)
 
-try:
-    dci_client.call(job_id, ['tox'], cwd=workdir)
-except client.DCICommandFailure:
-    print("Test has failed")
-    pass
-else:
-    state = {
-        "job_id": job["id"],
-        "status": "success",
-        "comment": "Process finished successfully"}
-    jobstate_id = dci_client.post("/jobstates", state)
+cmds = [
+    ['git', 'init', workdir],
+    ['git', 'pull', structure_from_server['git'],
+     structure_from_server.get('ref', '')],
+    ['git', 'fetch', '--all'],
+    ['git', 'clean', '-ffdx'],
+    ['git', 'reset', '--hard'],
+    ['git', 'checkout', '-f', structure_from_server['sha']],
+    ['tox']]
 
+for cmd in cmds:
+    r = dci_client.call(job_id, cmd, cwd=workdir)
+    if r != 0:
+        print("Test has failed")
+        shutil.rmtree(workdir)
+        sys.exit(1)
+
+state = {
+    "job_id": job["id"],
+    "status": "success",
+    "comment": "Process finished successfully"}
+jobstate_id = dci_client.post("/jobstates", state)
+sys.exit(0)
 shutil.rmtree(workdir)
