@@ -33,9 +33,10 @@ import client
 
 
 class Gerrit(object):
-    def __init__(self, gerrit_server):
+    def __init__(self, gerrit_server, vote=False):
         self.user = os.environ.get("GERRIT_USER") or os.getlogin()
         self.server = gerrit_server
+        self.vote = vote
 
     def get_open_reviews(self, gerrit_project):
         """Get open reviews from Gerrit."""
@@ -62,10 +63,14 @@ class Gerrit(object):
 
     def review(self, patch_sha, status):
         """Push a score (e.g: -1) on a review."""
-        subprocess.check_output(['ssh', '-xp29418', '-l',
-                                 self.user, self.server,
-                                 'gerrit', 'review', '--verified', status,
-                                 patch_sha])
+        if self.vote:
+            subprocess.check_output(['ssh', '-xp29418', '-l',
+                                     self.user, self.server,
+                                     'gerrit', 'review', '--verified', status,
+                                     patch_sha])
+        else:
+            print("[Voting disabled] should put %s to review %s" % (
+                status, patch_sha))
 
     def list_open_patchsets(self, project):
         """Generator that returns the last patchsets of all the reviews of
@@ -139,8 +144,7 @@ def get_patchset_score(dci_client, component_name, version):
     try:
         sha = version['data']['components'][component_name]['sha']
     except KeyError:
-        print("Cannot find product name for version "
-              "%s" % version['id'])
+        # NOTE(Gonéri): no job result yet
         return
     return {'sha': sha, 'status': status}
 
