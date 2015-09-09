@@ -192,7 +192,8 @@ try:
     jobstate_id = dci_client.call(job_id,
                                   args,
                                   cwd=kh_dir,
-                                  env=environ)
+                                  env=environ,
+                                  timeout=7200)
 except client.DCICommandFailure:
     print("Test has failed")
     status = 'failure'
