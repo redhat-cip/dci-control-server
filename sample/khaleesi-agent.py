@@ -20,6 +20,7 @@ import os
 import shutil
 import signal
 import six
+import subprocess
 import sys
 import tempfile
 import yaml
@@ -39,6 +40,16 @@ config_file = sys.argv[1]
 settings = yaml.load(open(config_file, 'r'))
 
 dci_client = client.DCIClient()
+
+if subprocess.call([
+        'ssh', '-o', 'StrictHostKeyChecking=no',
+        '-o', 'KbdInteractiveAuthentication=no',
+        '-o', 'PreferredAuthentications=publickey',
+        '-o', 'PasswordAuthentication=no',
+        '-o', 'User=root', '-o', 'ConnectTimeout=60',
+        'root@%s' % settings['hypervisor'], 'date']) != 0:
+    print('Cannot connect to hypervisor %s as root' % settings['hypervisor'])
+    sys.exit(1)
 
 test_name = "khaleesi-tempest"
 
