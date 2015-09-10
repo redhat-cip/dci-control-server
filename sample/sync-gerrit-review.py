@@ -186,7 +186,7 @@ def main():
         product = dci_client.find_or_create_or_refresh(
             '/products', {'name': project["name"], 'data': project_data})
 
-        if 'git_url' in project['gerrit']:
+        if 'git' in project['gerrit']:
             git_url = project['gerrit']['git']
         else:
             git_url = "http://%s/%s" % (project["gerrit"]["server"],
