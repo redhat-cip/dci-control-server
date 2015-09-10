@@ -178,7 +178,7 @@ def main():
     for project in projects:
         # NOTE(Gonéri): ensure the associated test and product exist and are
         # up to date
-        gerrit = Gerrit(project['gerrit']['server'])
+        gerrit = Gerrit(project['gerrit']['server'], project['gerrit']['vote'])
         test = dci_client.find_or_create_or_refresh(
             '/tests',
             {'name': project['gerrit']['test'], 'data': {}})
