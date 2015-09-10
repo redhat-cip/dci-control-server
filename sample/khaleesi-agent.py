@@ -90,7 +90,7 @@ for component_name, component in six.iteritems(components):
     dci_client.call(job_id, ['git', 'pull',
                              component['git'],
                              component.get('ref', '')],
-                    cwd=component_dir, ignore_error=True)
+                    cwd=component_dir)
     dci_client.call(job_id, ['git', 'fetch', '--all'],
                     cwd=component_dir)
     dci_client.call(job_id, ['git', 'clean', '-ffdx'],
