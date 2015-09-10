@@ -28,11 +28,15 @@ import client
 
 
 try:
-    remoteci_name = sys.argv[1]
+    config_file = sys.argv[1]
 except IndexError:
-    print("Usage: %s remoteci_name" % sys.argv[0])
+    print("Usage: %s config_file" % sys.argv[0])
     sys.exit(1)
 
+config_file = sys.argv[1]
+
+# TODO(Gonéri): Create a load_config() method or something similar
+settings = yaml.load(open(config_file, 'r'))
 
 dci_client = client.DCIClient()
 
@@ -44,10 +48,10 @@ if r.status_code == 404:
     sys.exit(1)
 else:
     test_id = r.json()['id']
-r = dci_client.get("/remotecis/%s" % remoteci_name)
+r = dci_client.get("/remotecis/%s" % settings['name'])
 if r.status_code == 404:
     r = dci_client.post("/remotecis", {
-        'name': remoteci_name,
+        'name': settings['name'],
         'test_id': test_id})
 remoteci_id = r.json()['id']
 
@@ -74,8 +78,6 @@ dci_client.call(job_id,
 
 components = structure_from_server['components']
 
-# TODO(Gonéri): Create a load_config() method or something similar
-settings = yaml.load(open('local_settings.yml', 'r'))
 python_bin = venv_dir + '/bin/python'
 pip_bin = venv_dir + '/bin/pip'
 ansible_playbook_bin = venv_dir + '/bin/ansible-playbook'
