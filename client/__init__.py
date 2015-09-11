@@ -16,14 +16,12 @@
 
 from __future__ import unicode_literals
 
-import codecs
 import copy
 import json
 import os
 import requests
 import simplejson.scanner
 import subprocess
-import sys
 import tempfile
 import time
 
@@ -144,9 +142,7 @@ class DCIClient(object):
         s = True
         while p.returncode is None or s:
             time.sleep(0.01)
-            s = os.read(p.stdout.fileno(), 10)
-            sys.stdout.write(codecs.decode(s, 'utf-8', 'ignore'))
-            f.write(s)
+            f.write(os.read(p.stdout.fileno(), 10))
             f.flush()
             p.poll()
         self.upload_file(f, jobstate_id, name='output.log')
