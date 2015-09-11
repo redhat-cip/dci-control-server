@@ -83,7 +83,9 @@ class TestClient(testtools.TestCase):
                                return_value=session):
             popenobj = mock.Mock()
             popenobj.returncode = 0
+            real_subprocess = dciclient.client.subprocess
             dciclient.client.subprocess = mock.Mock()
             dciclient.client.subprocess.Popen.return_value = popenobj
             dciclient.main(args=['auto', 'some-remoteci-id'])
             self.assertEqual(self.print_call, [])
+            dciclient.client.subprocess = real_subprocess
