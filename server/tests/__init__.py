@@ -43,6 +43,15 @@ class DCITestCase(testtools.TestCase):
                          '-f', 'db_schema/dci-control-server.sql',
                          'template1'])
         time.sleep(0.3)
+        subprocess.call(['psql', '-c',
+                         '"INSERT INTO teams (name) VALUES (\'admin\');"'])
+        subprocess.call(['psql', '-c',
+                         '"INSERT INTO roles (name) VALUES (\'admin\');"'])
+        subprocess.call(['psql', '-c',
+                         '"INSERT INTO users (name, password, team_id) "\
+                         "VALUES (\'admin\', crypt(\'admin\', "\
+                         "gen_salt(\'bf\', 8)), (SELECT id FROM teams "\
+                         "WHERE name=\'admin\'));"'])
 
     @classmethod
     def tearDownClass(cls):
