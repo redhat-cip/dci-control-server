@@ -804,21 +804,4 @@ ALTER TABLE ONLY versions
 --
 
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
-REVOKE ALL ON SCHEMA public FROM postgres;
-GRANT ALL ON SCHEMA public TO postgres;
 GRANT ALL ON SCHEMA public TO PUBLIC;
-
-
---
--- PostgreSQL database dump complete
---
-
-INSERT INTO teams (name) VALUES ('admin');
-INSERT INTO teams (name) VALUES ('partner');
-INSERT INTO users (name, password, team_id) VALUES ('admin', crypt('admin', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='partner'));
-INSERT INTO users (name, password, team_id) values ('partner', crypt('partner', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='partner'));
-INSERT INTO roles (name) VALUES ('admin');
-INSERT INTO roles (name) VALUES ('partner');
-INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='admin'));
-INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='partner'));
-INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='partner'), (SELECT id from roles WHERE name='partner'));
