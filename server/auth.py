@@ -42,6 +42,7 @@ class DCIBasicAuth(eve.auth.BasicAuth):
             return False
         finally:
             session.close()
+        print(self.user.password.encode('utf-8'))
         if bcrypt.hashpw(
                 password.encode('utf-8'),
                 self.user.password.encode('utf-8')
