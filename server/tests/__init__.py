@@ -18,6 +18,7 @@ import base64
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import uuid
@@ -43,13 +44,18 @@ class DCITestCase(testtools.TestCase):
                          '-f', 'db_schema/dci-control-server.sql',
                          'template1'])
         time.sleep(0.3)
+        subprocess.check_output(['psql', '-h', cls._db_dir, '-c', "INSERT INTO teams (name) VALUES ('admin');", 'template1'], stderr=subprocess.STDOUT)
+        subprocess.check_output(['psql', '-h', cls._db_dir, '-c', "INSERT INTO roles (name) VALUES ('admin');", 'template1'], stderr=subprocess.STDOUT)
+        subprocess.check_output(['psql', '-h', cls._db_dir, '-c', "INSERT INTO users (name, password, team_id) VALUES ('admin', crypt('admin', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='admin'));", 'template1'], stderr=subprocess.STDOUT)
+        subprocess.check_output(['psql', '-h', cls._db_dir, '-c', "INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='admin'));", 'template1'], stderr=subprocess.STDOUT)
+        time.sleep(0.3)
 
     @classmethod
     def tearDownClass(cls):
         super(DCITestCase, cls).tearDownClass()
-        cls._pg.kill()
+        #cls._pg.kill()
         time.sleep(2)
-        shutil.rmtree(cls._db_dir)
+        #shutil.rmtree(cls._db_dir)
 
     def setUp(self):
         super(DCITestCase, self).setUp()
@@ -60,7 +66,7 @@ class DCITestCase(testtools.TestCase):
         self.db_uri = "postgresql:///?host=%s&dbname=%s" % (
             self._db_dir, random_string)
         self.app = server.app.create_app(self.db_uri)
-        self.app.config['TESTING'] = True
+        self.app.testing = True
         self.test_client = self.app.test_client()
 
     def client_call(self, method, username, password, path, **argv):
