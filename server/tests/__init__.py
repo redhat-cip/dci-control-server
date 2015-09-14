@@ -18,6 +18,7 @@ import base64
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import uuid
@@ -43,13 +44,27 @@ class DCITestCase(testtools.TestCase):
                          '-f', 'db_schema/dci-control-server.sql',
                          'template1'])
         time.sleep(0.3)
+        res = subprocess.call(['psql', '-h', cls._db_dir, '-c', "\"INSERT INTO teams (name) VALUES ('admin');\""])
+        if res:
+            print("error1")
+            sys.exit(1)
+        res = subprocess.call(['psql', '-h', cls._db_dir, '-c', "\"INSERT INTO roles (name) VALUES ('admin');\""])
+        if res:
+            print("error2")
+            sys.exit(1)
+
+        res = subprocess.call(['psql', '-h', cls._db_dir, '-c', "\"INSERT INTO users (name, password, team_id) VALUES ('admin', crypt('admin', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='admin'));\""])
+        if res:
+            print("error3")
+            sys.exit(1)
+        time.sleep(0.3)
 
     @classmethod
     def tearDownClass(cls):
         super(DCITestCase, cls).tearDownClass()
-        cls._pg.kill()
+        #cls._pg.kill()
         time.sleep(2)
-        shutil.rmtree(cls._db_dir)
+        #shutil.rmtree(cls._db_dir)
 
     def setUp(self):
         super(DCITestCase, self).setUp()
