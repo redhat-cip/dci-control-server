@@ -18,6 +18,7 @@ import base64
 import json
 import shutil
 import subprocess
+import sys
 import tempfile
 import time
 import uuid
@@ -42,6 +43,10 @@ class DCITestCase(testtools.TestCase):
                          '--echo-hidden', '-h', cls._db_dir,
                          '-f', 'db_schema/dci-control-server.sql',
                          'template1'])
+        time.sleep(0.3)
+        subprocess.check_output(['psql', '-h', cls._db_dir, '-c', "\"INSERT INTO teams (name) VALUES ('admin');\"", 'template1'], stderr=subprocess.STDOUT)
+        subprocess.check_output(['psql', '-h', cls._db_dir, '-c', "\"INSERT INTO roles (name) VALUES ('admin');\"", 'template1'])
+        subprocess.check_output(['psql', '-h', cls._db_dir, '-c', "\"INSERT INTO users (name, password, team_id) VALUES ('admin', crypt('admin', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='admin'));\"", 'template1'])
         time.sleep(0.3)
 
     @classmethod
