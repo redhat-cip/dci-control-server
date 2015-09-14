@@ -17,6 +17,7 @@
 from __future__ import unicode_literals
 
 import copy
+import fcntl
 import json
 import os
 import requests
@@ -148,21 +149,24 @@ class DCIClient(object):
         f = tempfile.TemporaryFile()
         f.write(("starting: %s\n" % flatten_args).encode('UTF-8'))
         begin_at = int(time.time())
-        timeout_reached = False
+        fcntl.fcntl(p.stdout.fileno(), fcntl.F_SETFL, os.O_NONBLOCK)
         while p.returncode is None:
+            try:
+                s = p.stdout.read()
+                if s:
+                    print(s)
+                    f.write(s)
+            except (OSError, IOError, TypeError):
+                # ignore exceptions if there is no more data
+                break
             if time.time() - begin_at > timeout:
                 print('timeout')
+                f.write("Timeout! command has been Killed!\n".encode())
                 p.kill()
-                timeout_reached = True
                 break
             p.poll()
             time.sleep(0.1)
-        for l in p.stdout.readlines():
-            f.write(l)
-        if timeout_reached:
-            f.write("Timeout! command has been Killed!\n".encode())
         f.flush()
-
         self.upload_file(f, jobstate_id, name='output.log')
         f.close()
 

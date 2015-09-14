@@ -209,7 +209,7 @@ class TestClientLib(server.tests.DCITestCase):
             where={'jobstate_id': r['jobstate_id']}).json()
         self.assertEqual(
             logfile['_items'][0]['content'],
-            'starting: /bin/pwd\n' +
+            u'starting: /bin/pwd\n' +
             '/tmp\n')
 
     def test_call_failure(self):
