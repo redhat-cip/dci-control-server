@@ -107,6 +107,28 @@ class DciControlServer(Eve):
         session.close()
 
     @staticmethod
+    def stop_running_jobs(documents):
+        session = DciControlServer._DCI_MODEL.get_session()
+        Jobs = DciControlServer._DCI_MODEL.base.classes.jobs
+        Jobstates = DciControlServer._DCI_MODEL.base.classes.jobstates
+        for d in documents:
+            jobs = session.query(Jobs).filter(
+                Jobs.remoteci_id == d['remoteci_id']).all()
+            for job in jobs:
+                jobstate = job.jobstates.filter(
+                    Jobstates.job_id == job.id).first()
+                if jobstate.status == 'ongoing':
+                    print("add")
+                    session.add(
+                        Jobstates(
+                            job_id=job.id,
+                            status='unfinished',
+                            comment='The remoteci has started a new job.',
+                            team_id=d['team_id']))
+        session.commit()
+        session.close()
+
+    @staticmethod
     def aggregate_job_data(response):
         session = DciControlServer._DCI_MODEL.get_session()
         data = {}
@@ -266,6 +288,7 @@ class DciControlServer(Eve):
     def _init_hooks(self):
         self.on_insert += set_real_owner
         self.on_insert_jobs += DciControlServer.pick_jobs
+        self.on_insert_jobs += DciControlServer.stop_running_jobs
         self.on_fetched_item_jobs += DciControlServer.aggregate_job_data
         self.on_fetched_resource_jobs += DciControlServer.get_jobs_extra
         self.on_fetched_resource_versions += DciControlServer.\
