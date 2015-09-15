@@ -161,7 +161,8 @@ class DCIClient(object):
                 pass
             if time.time() - begin_at > timeout:
                 print('timeout')
-                f.write("Timeout! command has been Killed!\n".encode())
+                f.write(("%d seconds Timeout! command has been Killed!\n" %
+                         timeout).encode())
                 p.kill()
                 break
             p.poll()

@@ -197,7 +197,7 @@ class TestClientLib(server.tests.DCITestCase):
         self.assertEqual(
             logfile['_items'][0]['content'],
             'starting: /bin/sleep 600\n' +
-            'Timeout! command has been Killed!\n')
+            '1 seconds Timeout! command has been Killed!\n')
 
     def test_call_cwd(self):
         self._init_test_call()
