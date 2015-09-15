@@ -38,10 +38,10 @@ class Gerrit(object):
         self.server = gerrit_server
         self.vote = vote
 
-    def get_open_reviews(self, gerrit_project):
+    def get_open_reviews(self, gerrit_project, gerrit_filter):
         """Get open reviews from Gerrit."""
         gerrit_filter = (
-            'project:%s status:open') % gerrit_project
+            'project:%s status:open %s' % (gerrit_project, gerrit_filter))
         reviews = subprocess.check_output(['ssh', '-xp29418', self.server,
                                            '-l', self.user, 'gerrit', 'query',
                                            '--format=json',
@@ -71,12 +71,12 @@ class Gerrit(object):
             print("[Voting disabled] should put %s to review %s" % (
                 status, patch_sha))
 
-    def list_open_patchsets(self, project):
+    def list_open_patchsets(self, project, gerrit_filter=''):
         """Generator that returns the last patchsets of all the reviews of
         a given project.
         """
 
-        reviews = self.get_open_reviews(project)
+        reviews = self.get_open_reviews(project, gerrit_filter)
         for review in reviews:
             yield self.get_last_patchset(int(review['number']))
 
@@ -200,7 +200,8 @@ def main():
         # - check if there is some result for the Git review, and if so,
         # push vote
         for patchset in gerrit.list_open_patchsets(
-                project['gerrit']['project']):
+                project['gerrit']['project'],
+                project['gerrit'].get('filter', '')):
             version = push_patchset_as_version_in_dci(
                 dci_client, product,
                 project["gerrit"]["name"],
