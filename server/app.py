@@ -233,9 +233,8 @@ class DciControlServer(Eve):
 
                     Jobstates = DciControlServer._DCI_MODEL.base.classes.\
                         jobstates
-                    jobstate = session.query(Jobstates).\
-                        order_by(Jobstates.created_at.desc()).\
-                        filter(Jobstates.job_id == job.id).first()
+                    jobstate = job.jobstates.filter(
+                        Jobstates.job_id == job.id).first()
                     if jobstate:
                         extra_data["status"] = jobstate.status
                 else:
@@ -274,9 +273,8 @@ class DciControlServer(Eve):
                 if job:
                     Jobstates = DciControlServer._DCI_MODEL.base.classes.\
                         jobstates
-                    jobstate = session.query(Jobstates).\
-                        order_by(Jobstates.created_at.desc()).\
-                        filter(Jobstates.job_id == job.id).first()
+                    jobstate = job.jobstates.filter(
+                        Jobstates.job_id == job.id).first()
                     if jobstate:
                         rate[jobstate.status] += 1
                         rate["not_started"] -= 1
