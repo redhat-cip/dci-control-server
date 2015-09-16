@@ -15,9 +15,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import client.utils
 import glob
 import os
-import server.common.utils
 import shutil
 import signal
 import six
@@ -142,7 +142,7 @@ for ksgen_args in (structure_from_server.get('ksgen_args', {}),
                 args.append('--%s' % (k))
                 args.append(sv)
         elif isinstance(v, dict):
-            for sv in server.common.utils.flatten(v):
+            for sv in client.utils.flatten(v):
                 args.append('--%s' % (k))
                 args.append(sv)
         else:
