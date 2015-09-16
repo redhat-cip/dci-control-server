@@ -18,8 +18,9 @@ import copy
 
 import six
 
+# TODO(Gonéri): to move outside of the server namespace
 
-# TODO(Gonéri): move this method in a server.utils file
+
 def dict_merge(a, b):
     '''recursively merges dict's. not just simple a['key'] = b['key'], if
     both a and bhave a key who's value is a dict then dict_merge is called
@@ -34,3 +35,14 @@ def dict_merge(a, b):
         else:
             result[k] = copy.deepcopy(v)
     return result
+
+
+def flatten(d, prefix=''):
+    ret = []
+    for k, v in d.items():
+        p = k if not prefix else prefix + '.' + k
+        if isinstance(v, dict):
+            ret += flatten(v, prefix=p)
+        else:
+            ret.append("%s=%s" % (p, v))
+    return ret
