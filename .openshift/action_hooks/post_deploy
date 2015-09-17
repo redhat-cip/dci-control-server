@@ -24,17 +24,21 @@ if [ "${new_schema_checksum}" != "${current_schema_checksum}" ]; then
         CREATE OR REPLACE FUNCTION dci_cs_version() RETURNS text AS '
         SELECT \$\$${new_schema_checksum}\$\$::text ' LANGUAGE SQL IMMUTABLE;"
 
+    if [ -z ${DCI_LOGIN} || -z ${DCI_PASSWORD} ]; then
+        echo "DCI credentials error: 'DCI_LOGIN' or 'DCI_PASSWORD' environment variables not set";
+        exit 1
+    fi
+
     DCI_PASSWORD_HASH=$(python -c "import bcrypt; print(bcrypt.hashpw('${DCI_PASSWORD}'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))")
-    echo "dci_password_hash"
-    echo ${DCI_PASSWORD_HASH}
 
     psql -c "INSERT INTO teams (name) VALUES ('admin');"
     psql -c "INSERT INTO teams (name) VALUES ('partner');"
     psql -c "INSERT INTO roles (name) VALUES ('admin');"
     psql -c "INSERT INTO roles (name) VALUES ('partner');"
 
+    psql -c "INSERT INTO users (name, password, team_id) VALUES ('${DCI_LOGIN}', '${DCI_PASSWORD_HASH}', (SELECT id FROM teams WHERE name='admin'));"
     psql -c "INSERT INTO users (name, password, team_id) VALUES ('${DCI_LOGIN}', '${DCI_PASSWORD_HASH}', (SELECT id FROM teams WHERE name='partner'));"
 
-    psql -c "INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='admin'));"
-    psql -c "INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='partner'));"
+    psql -c "INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='${DCI_LOGIN}'), (SELECT id from roles WHERE name='admin'));"
+    psql -c "INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='${DCI_LOGIN}'), (SELECT id from roles WHERE name='partner'));"
 fi
