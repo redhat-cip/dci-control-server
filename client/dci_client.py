@@ -21,28 +21,22 @@ from __future__ import print_function
 import argparse
 import os
 import subprocess
+import sys
 import tempfile
 import time
 
+import bcrypt
 import prettytable
 
 import client
-
-DCI_CONTROL_SERVER = os.environ.get("DCI_CONTROL_SERVER",
-                                    "http://127.0.0.1:5000/api")
 
 
 def _init_conf(args=None):
     parser = argparse.ArgumentParser(description='DCI client.')
     command_subparser = parser.add_subparsers(help='commands',
                                               dest='command')
-    # register remoteci command
-    register_remoteci_parser = command_subparser.add_parser(
-        'register-remoteci', help='Register a remoteci.')
-    register_remoteci_parser.add_argument('--name', action='store',
-                                          help='Name of the remoteci.')
 
-    # list command
+    # list resources command
     list_parser = command_subparser.add_parser('list', help='List resources.')
     list_parser.add_argument('--remotecis', action='store_true',
                              default=False,
@@ -53,18 +47,25 @@ def _init_conf(args=None):
     list_parser.add_argument('--jobstates', action="store_true",
                              default=False,
                              help='List existing jobstates.')
-    list_parser.add_argument('--scenarios', action="store_true",
+    list_parser.add_argument('--users', action="store_true",
                              default=False,
-                             help='List existing scenarios.')
-    list_parser.add_argument('--job', type=str,
-                             help='Get a job.')
+                             help='List existing users.')
 
-    # auto command
-    auto_parser = command_subparser.add_parser('auto', help='Automated mode.')
-    auto_parser.add_argument('remoteci', action='store',
-                             help='Id of the remoteci')
+    # TODO(yassine): add the team and role options
+    # create a user
+    create_node_parser = command_subparser.add_parser(
+        'create_user', help='create a user')
+    create_node_parser.add_argument('username', action='store',
+                                    help='the user name')
+    create_node_parser.add_argument('password', action='store',
+                                    help='the user password')
 
-    print("args: %s" % args)
+    # delete user
+    create_node_parser = command_subparser.add_parser(
+        'delete_user', help='delete a user')
+    create_node_parser.add_argument('username', action='store',
+                                    help='the user name to delete')
+
     return parser.parse_args(args)
 
 
@@ -107,7 +108,17 @@ def _call_command(dci_client, args, job, cwd=None, env=None):
 
 def main(args=None):
     conf = _init_conf(args)
-    dci_client = client.DCIClient(DCI_CONTROL_SERVER, "partner", "partner")
+    dci_login = os.environ.get("DCI_LOGIN")
+    dci_password = os.environ.get("DCI_PASSWORD")
+    dci_cs_url = os.environ.get('DCI_CS_URL', "http://127.0.0.1:5000/api")
+
+    if not dci_login or not dci_password:
+        print("DCI credentials missing: 'DCI_LOGIN': %s, 'DCI_PASSWORD: %s" %
+              dci_login, dci_password)
+        sys.exit(1)
+
+    dci_client = client.DCIClient("%s/api" % dci_cs_url, dci_login,
+                                  dci_password)
 
     if conf.command == 'list':
         if conf.remotecis:
@@ -123,22 +134,22 @@ def main(args=None):
                                      remoteci["updated_at"]])
             print(table_result)
         elif conf.jobs:
-            table_result = prettytable.PrettyTable(["identifier",
-                                                    "remoteci", "scenario",
+            table_result = prettytable.PrettyTable(["identifier", "remoteci",
+                                                    "testversion",
                                                     "updated_at"])
-            jobs = dci_client.get("/jobs")
+            jobs = dci_client.get("/jobs").json()
 
             for job in jobs["_items"]:
                 table_result.add_row([job["id"],
                                       job["remoteci_id"],
-                                      job["scenario_id"],
+                                      job["testversion_id"],
                                       job["updated_at"]])
             print(table_result)
         elif conf.jobstates:
             table_result = prettytable.PrettyTable(["identifier", "status",
                                                     "comment", "job",
                                                     "updated_at"])
-            jobstates = dci_client("/jobstates")
+            jobstates = dci_client.get("/jobstates").json()
 
             for jobstate in jobstates["_items"]:
                 table_result.add_row([jobstate["id"],
@@ -147,21 +158,27 @@ def main(args=None):
                                       jobstate["job_id"],
                                       jobstate["updated_at"]])
             print(table_result)
-        elif conf.scenarios:
-            table_result = prettytable.PrettyTable(["identifier", "name",
-                                                    "updated_at"])
-            scenarios = dci_client.get("/scenarios")
+        elif conf.users:
+            table_result = prettytable.PrettyTable(["identifier", "name"])
+            users = dci_client.get("/users").json()
 
-            for scenario in scenarios["_items"]:
-                table_result.add_row([scenario["id"],
-                                      scenario["name"],
-                                      scenario["updated_at"]])
+            for user in users["_items"]:
+                table_result.add_row([user["id"], user["name"]])
             print(table_result)
-    elif conf.command == 'register-remoteci':
-        new_remoteci = {"name": conf.name}
-        dci_client.post("/remotecis", new_remoteci)
-        print("RemoteCI '%s' created successfully." % conf.name)
+        elif args.command == 'create_user':
+            password_hash = bcrypt.hashpw(args.password, bcrypt.gensalt())
 
+            dci_client.post("/api/users", {"name": args.username,
+                                           "password": password_hash})
+            print("User '%s' created." % args.username)
+        elif args.command == 'delete_user':
+            dci_user = dci_client.get("/api/users/%s" % args.username)
+            if dci_user.status_code != 200:
+                print("User '%s' does not exist." % args.username)
+                sys.exit(1)
+            dci_user = dci_user.json()
+            print(dci_client.delete("/api/users/%s" % args.username,
+                                    etag=dci_user["etag"]).json())
 
 if __name__ == '__main__':
-    main()
+    main(sys.argv[1:])
