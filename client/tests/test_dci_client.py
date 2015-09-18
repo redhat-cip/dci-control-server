@@ -17,6 +17,8 @@
 import mock
 import testtools
 
+import os
+
 import client.dci_client as dciclient
 
 
@@ -24,6 +26,8 @@ class TestClient(testtools.TestCase):
     def setUp(self):
         super(TestClient, self).setUp()
         self.print_call = []
+        os.environ["DCI_LOGIN"] = 'test_login'
+        os.environ["DCI_PASSWORD"] = 'test_password'
 
     def _catch_print_call(self, a):
         self.print_call.append(str(a))
@@ -47,45 +51,3 @@ class TestClient(testtools.TestCase):
                 '|     id     | name | created_at | updated_at |\n'
                 '+------------+------+------------+------------+'],
                 self.print_call)
-
-    def test_main_registerci(self):
-        response = mock.Mock()
-        response.json.return_value = {
-            '_items': [{
-                'id': 'id', 'name': 'name',
-                'created_at': 'created_at', 'updated_at': 'updated_at'}],
-            'id': 'a'}
-        response.status_code = 201
-        session = mock.Mock()
-        session.get.return_value = response
-        session.post.return_value = response
-        with mock.patch.object(dciclient.client.requests, 'Session',
-                               return_value=session):
-            setattr(dciclient, 'print', self._catch_print_call)
-            dciclient.main(args=['register-remoteci', '--name', 'bob'])
-            self.assertEqual([
-                "args: ['register-remoteci', '--name', 'bob']",
-                "RemoteCI 'bob' created successfully."], self.print_call)
-
-    def test_main_auto(self):
-        response = mock.Mock()
-        response.json.return_value = {
-            'id': 'bob',
-            'job_id': 'bobo',
-            'data': {'ksgen_args': {}},
-            '_status': 'OK'
-        }
-        response.status_code = 201
-        session = mock.Mock()
-        session.post.return_value = response
-        session.get.return_value = response
-        with mock.patch.object(dciclient.client.requests, 'Session',
-                               return_value=session):
-            popenobj = mock.Mock()
-            popenobj.returncode = 0
-            real_subprocess = dciclient.client.subprocess
-            dciclient.client.subprocess = mock.Mock()
-            dciclient.client.subprocess.Popen.return_value = popenobj
-            dciclient.main(args=['auto', 'some-remoteci-id'])
-            self.assertEqual(self.print_call, [])
-            dciclient.client.subprocess = real_subprocess
