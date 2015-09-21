@@ -73,6 +73,16 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
         parent: 'auth',
         templateUrl: 'partials/stats.html',
         controller: 'StatsController'
+    }).state('versions', {
+        url: '/versions?page',
+        parent: 'auth',
+        templateUrl: 'partials/versions.html',
+        controller: 'VersionsController'
+    }).state('versiondetails', {
+        url: '/versiondetails/:versionId',
+        parent: 'auth',
+        templateUrl: 'partials/versiondetails.html',
+        controller: 'VersionDetailsController'
     }).state('signin', {
         url: '/signin',
         templateUrl: 'partials/signin.html',
@@ -326,12 +336,31 @@ $cookies, $state, CommonCode) {
         });
     });
 
-    $scope.$watch('currentVersion', function(currentVersion, previousVersion) {
-        if (angular.isUndefined(currentVersion) ||
-            angular.isUndefined($scope.currentProduct)) {
+    $scope.$watch('currentversion', function(currentversion, previousversion) {
+        if (angular.isundefined(currentversion) ||
+            angular.isundefined($scope.currentproduct)) {
             return;
         }
-        getRate($scope.currentProduct.id, currentVersion.id);
+        getrate($scope.currentproduct.id, currentversion.id);
+    });
+});
+
+app.controller('VersionsController', function($scope, $resource, $cookies,
+$state, CommonCode) {
+    var Versions = $resource('/api/versions').get();
+    Versions.$promise.then(function(versions) {
+        $scope.versions = versions._items;
+        $scope.versions = versions._items;
+    });
+});
+
+app.controller('VersionDetailsController', function($scope, $resource,
+$stateParams, $cookies, $state, CommonCode) {
+    var Version = $resource('/api/versions/' + $stateParams.versionId).get(
+        {'embedded':
+         {'testversions_collection': 1}});
+    Version.$promise.then(function(version) {
+        $scope.version = version;
     });
 });
 
