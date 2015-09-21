@@ -68,11 +68,13 @@ class DCIClient(object):
             data=json.dumps(data),
             headers={'If-Match': etag})
 
-    def get(self, path, where={}, embedded={}, params=None):
-        return self.s.get("%s%s?where=%s&embedded=%s" % (
+    def get(self, path, where={}, embedded={}, _in=None, params=None):
+        return self.s.get("%s%s?where=%s&embedded=%s&in=%s" % (
             self.end_point, path,
             json.dumps(where),
-            json.dumps(embedded)), params=params)
+            json.dumps(embedded),
+            json.dumps(_in)),
+            params=params)
 
     def list_items(self, item_type, where={}, embedded={},
                    projection={}, page=1, max_results=10):
