@@ -1,0 +1,12 @@
+<h1 class="page-header">Job details</h1>
+
+<ul>
+  <li>topic: {{version.name}}</li>
+  <li>message: {{version.message}}</li>
+  <li>url: <a href="{{version.url}}">{{version.url}}</a></li>
+  <li>product_id: { version.product_id }</li>
+  <ul ng-repeat="testversion in version.testversions_collection">
+    <li>test_id: {{testversion.test_id}}</li>
+    <li>version_id: {{testversion.version_id}}</li>
+  </ul>
+</ul>
