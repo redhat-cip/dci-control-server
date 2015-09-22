@@ -21,9 +21,9 @@
 </table><br/>
 
 <h2>Test details</h2>
-<ul ng-repeat="component in job.data.components">
-    <li ng-repeat="(key, value) in component">{{key}}: {{value}}</li>
-</ul>
+<pre>
+  {{job.data | json}}
+</pre>
 
 <h2>Job states</h2>
 <div ng-repeat="jobstate in job.jobstates">
