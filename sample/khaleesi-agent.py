@@ -104,7 +104,6 @@ for component_name, component in six.iteritems(components):
     cmds += [
         {'args': ['virtualenv', venv_dir]},
         {'args': [pip_bin, 'install', '-U', 'ansible==1.9.2']},
-        {'args': [ansible_playbook_bin, '--version']},
         {'args': ['git', 'init', component_dir]},
         {'args': ['git', 'pull',
                   component['git'],
