@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da7095c5_7c099594",
+        "filename": "dci_databrowser/static/js/app/app.js",
+        "patchSetId": 3
+      },
+      "lineNbr": 339,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-09-22T14:14:58Z",
+      "side": 1,
+      "message": "Javascript is CamelCase, and I don\u0027t think that angular.undefined exists. Maybe something bad happened",
+      "revId": "99e1ba8eba34ac1c7d7ce7e5a15d9d18d2d96367",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_5c2b71eb",
+        "filename": "dci_databrowser/static/js/app/app.js",
+        "patchSetId": 3
+      },
+      "lineNbr": 350,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-09-22T14:14:58Z",
+      "side": 1,
+      "message": "why the Uppercase on versions ? It doesn\u0027t seems to be a class.",
+      "revId": "99e1ba8eba34ac1c7d7ce7e5a15d9d18d2d96367",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_7c30b556",
+        "filename": "dci_databrowser/static/js/app/app.js",
+        "patchSetId": 3
+      },
+      "lineNbr": 353,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-09-22T14:14:58Z",
+      "side": 1,
+      "message": "repetition ?",
+      "revId": "99e1ba8eba34ac1c7d7ce7e5a15d9d18d2d96367",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_1c35f945",
+        "filename": "dci_databrowser/static/js/app/app.js",
+        "patchSetId": 3
+      },
+      "lineNbr": 359,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-09-22T14:14:58Z",
+      "side": 1,
+      "message": "same as above for the uppercase",
+      "revId": "99e1ba8eba34ac1c7d7ce7e5a15d9d18d2d96367",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_3c3a3d37",
+        "filename": "dci_databrowser/static/js/app/app.js",
+        "patchSetId": 3
+      },
+      "lineNbr": 361,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-09-22T14:14:58Z",
+      "side": 1,
+      "message": "bad indent, maybe use a var for a more readable code",
+      "revId": "99e1ba8eba34ac1c7d7ce7e5a15d9d18d2d96367",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da7095c5_7c1755a4",
+        "filename": "dci_databrowser/static/partials/versiondetails.html",
+        "patchSetId": 3
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-09-22T14:14:58Z",
+      "side": 1,
+      "message": "for all this page use a one time binding\n\nhttps://code.angularjs.org/1.3.19/docs/guide/expression#one-time-binding",
+      "revId": "99e1ba8eba34ac1c7d7ce7e5a15d9d18d2d96367",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
