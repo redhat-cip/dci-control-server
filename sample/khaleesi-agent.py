@@ -194,6 +194,14 @@ if r['returncode'] != 0:
     sys.exit(1)
 
 
+shutil.copyfile(workspace_dir + '/khaleesi/ansible.cfg.example', workspace_dir + '/khaleesi/ansible.cfg')
+with open(workspace_dir + '/khaleesi/ansible.cfg', 'a+') as f:
+    f.write('ssh_args = -F ssh.config.ansible\n')
+
+with open(workspace_dir + '/khaleesi/ssh.config.ansible', 'w') as f:
+    f.write('#nothing\n')
+    pass
+
 args = [
     ansible_playbook_bin,
     '-vvvv', '--extra-vars',
