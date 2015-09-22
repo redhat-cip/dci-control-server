@@ -151,7 +151,7 @@ class DciControlServer(Eve):
 
         session = DciControlServer._DCI_MODEL.get_session()
         for job in response["_items"]:
-            extra_data = {}
+            extra_data = {"job_data": {}}
 
             # Get the jobstate
             Jobstates = DciControlServer._DCI_MODEL.base.classes.jobstates
@@ -168,6 +168,9 @@ class DciControlServer(Eve):
                 filter(Remotecis.id == job["remoteci_id"]).one()
             if remoteci:
                 extra_data["remoteci"] = remoteci.name
+                extra_data["job_data"] = server.utils.dict_merge(
+                    extra_data["job_data"], remoteci.data)
+
 
             # Get the testversion
             Testversions = DciControlServer._DCI_MODEL.base.classes.\
@@ -180,6 +183,8 @@ class DciControlServer(Eve):
                 version = session.query(Versions).get(testversion.version_id)
                 if version:
                     extra_data["version"] = version.name
+                    extra_data["job_data"] = server.utils.dict_merge(
+                        extra_data["job_data"], version.data)
 
                     # Get the product
                     Products = DciControlServer._DCI_MODEL.base.classes.\
@@ -187,12 +192,16 @@ class DciControlServer(Eve):
                     product = session.query(Products).get(version.product_id)
                     if product:
                         extra_data["product"] = product.name
+                        extra_data["job_data"] = server.utils.dict_merge(
+                            extra_data["job_data"], product.data)
 
                 # Get the test
                 Tests = DciControlServer._DCI_MODEL.base.classes.tests
                 test = session.query(Tests).get(testversion.test_id)
                 if test:
                     extra_data["test"] = test.name
+                    extra_data["job_data"] = server.utils.dict_merge(
+                        extra_data["job_data"], test.data)
 
             job["extra_data"] = extra_data
         session.close()

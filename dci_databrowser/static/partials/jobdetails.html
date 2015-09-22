@@ -24,6 +24,9 @@
 <ul ng-repeat="component in job.data.components">
     <li ng-repeat="(key, value) in component">{{key}}: {{value}}</li>
 </ul>
+<ul ng-repeat="job_data in job.job_data">
+    <li ng-repeat="(key, value) in job_data">{{key}}: {{value}}</li>
+</ul>
 
 <h2>Job states</h2>
 <div ng-repeat="jobstate in job.jobstates">
