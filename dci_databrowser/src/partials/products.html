@@ -1,0 +1,24 @@
+<h1 class="page-header">Products</h1>
+<label>Product
+  <select ng-model="currentProduct" ng-options="product.name for product in products"></select>
+</label>
+
+<div ng-repeat="version in versions_status">
+  <h3>Version - {{version.name}}</h3>
+  <table class="table table-striped">
+  <tr>
+    <th>Test</th>
+    <th>Remote CI</th>
+    <th>Status</th>
+    <th>Details</th>
+  </tr>
+  <tr ng-repeat="data in version.extra_data">
+    <td>{{data.test}}</td>
+    <td>{{data.remoteci}}</td>
+    <td>{{data.status}}</td>
+    <td>
+      <a ui-sref="jobdetails({ jobId: data.job_id })">Show details</a>
+    </td>
+  </tr>
+  </table>
+</div>

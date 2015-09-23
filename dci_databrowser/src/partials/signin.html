@@ -1,0 +1,10 @@
+<div class="container">
+  <form class="form-signin" ng-submit="submit()" ng-controller="LoginController">
+    <h2 class="form-signin-heading">Please sign in</h2>
+    <label for="inputLogin" class="sr-only">Login</label>
+    <input type="login" ng-model="username" name="userName" id="inputLogin" class="form-control" placeholder="Login" required autofocus>
+    <label for="inputPassword" class="sr-only">Password</label>
+    <input type="password" ng-model="password" id="inputPassword" class="form-control" placeholder="Password" required>
+    <button class="btn btn-lg btn-primary btn-block" type="submit" id="submit()">Sign in</button>
+  </form>
+</div>

@@ -1,0 +1,38 @@
+<h1 class="page-header">Job details</h1>
+<table class="table table-striped">
+  <tr>
+    <th>Remote CI name</th>
+    <th>Creation date</th>
+    <th>Last update date</th>
+    <th>Product</th>
+    <th>Test name</th>
+    <th>Version</th>
+    <th>Status</th>
+  </tr>
+  <tr>
+    <td>{{job.remoteci.name}}</td>
+    <td>{{job.created_at}}</td>
+    <td>{{job.updated_at}}</td>
+    <td>{{job.product}}</td>
+    <td>{{job.test}}</td>
+    <td>{{job.version}}</td>
+    <td>{{job.jobstates[job.jobstates.length-1].status}}</td>
+  </tr>
+</table><br/>
+
+<h2>Test details</h2>
+<ul ng-repeat="component in job.data.components">
+    <li ng-repeat="(key, value) in component">{{key}}: {{value}}</li>
+</ul>
+
+<h2>Job states</h2>
+<div ng-repeat="jobstate in job.jobstates">
+    <!-- id: {{jobstate.id}} -->
+    <small>{{jobstate.created_at}} → {{jobstate.updated_at}} ({{jobstate.status}})</small>
+    <div ng-repeat="file in jobstate.files_collection">
+        {{file.name}}
+        <!-- TODO(Gonéri): I think we can replace that with something
+        like https://github.com/drudru/ansi_up -->
+        <div style="overflow: auto;word-wrap: normal;white-space: pre; background: #cccccc;">{{file.content}}</div>
+    </div>
+</div>

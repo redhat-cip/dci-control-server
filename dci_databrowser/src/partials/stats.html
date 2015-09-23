@@ -1,0 +1,13 @@
+<h1 class="page-header">Stats</h1>
+
+<label>Product
+  <select ng-model="currentProduct" ng-options="product.name for product in products"></select>
+</label>
+
+<label>Version
+  <select ng-model="currentVersion" ng-options="version.name for version in versions"></select>
+</label><br/>
+
+<div>
+<div google-chart chart="chart" style="{{chart.cssStyle}}"/>
+</div>
