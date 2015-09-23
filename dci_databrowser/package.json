@@ -2,8 +2,10 @@
   "name": "dci-app",
   "version": "0.0.0",
   "devDependencies": {
-    "gulp": ">=3.9.0",
-    "gulp-jscs": ">=2.0.0"
+    "gulp": "~3.9.0",
+    "gulp-jscs": "~2.0.0",
+    "gulp-connect": "~2.2.0",
+    "proxy-middleware": "~0.14.0"
   },
   "engines": {
     "node": ">=0.8.0"
