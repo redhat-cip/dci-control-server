@@ -16,6 +16,8 @@
 
 'use strict';
 
+var angular = require('angular');
+
 var app = angular.module('app', ['ngRoute', 'ngCookies',
 'angular-loading-bar', 'ui.router', 'googlechart', 'ngResource']);
 
