@@ -145,4 +145,9 @@ class DCIModel(object):
         # a testversion that fit.
         domain['jobs']['schema']['testversion_id']['required'] = False
         domain['jobs']['datasource']['projection']['jobstates_collection'] = 1
+        domain['versions']['datasource']['projection']['testversions_collection'] = 1
+        domain['versions']['schema']['testversions_collection']['schema'] = {'version': {'data_relation': {'embeddable': True, 'resource': 'versions'}}}
+        domain['testversions']['datasource']['projection']['version'] = 1
+        from pprint import pprint
+        pprint(domain)
         return domain
