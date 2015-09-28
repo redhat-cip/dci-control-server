@@ -74,8 +74,6 @@ class DCIModel(object):
 
         setattr(self.base.classes.products, 'versions', relationship(
             self.base.classes.versions, uselist=True, lazy='dynamic'))
-        setattr(self.base.classes.versions, 'notifications', relationship(
-            self.base.classes.notifications, uselist=True, lazy='dynamic'))
         setattr(self.base.classes.jobs, 'jobstates', relationship(
             self.base.classes.jobstates, uselist=True, lazy='dynamic',
             order_by=self.base.classes.jobstates.created_at.desc()))
