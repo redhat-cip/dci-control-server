@@ -21,18 +21,11 @@ import server.tests
 
 class TestApp(server.tests.DCITestCase):
 
-    def test_post_product_item(self):
-        product = self._create_product("admin")
-        self.assertEqual(product.status_code, 201)
-        response = self._extract_response(product)
-        self.assertIsNotNone(response)
-
-    def test_post_version_item(self):
-        product = self._extract_response(self._create_product("admin"))
-        version = self._create_version("admin", product['id'])
-        self.assertEqual(version.status_code, 201)
-        response = self._extract_response(version)
-        self.assertIsNotNone(response)
+    def test_post_component_item(self):
+        component = self._create_component("admin")
+        self.assertEqual(component.status_code, 201)
+        component = self._extract_response(component)
+        self.component_id = component['id']
 
     def test_post_test_item(self):
         rv = self._create_test("admin")
@@ -40,17 +33,16 @@ class TestApp(server.tests.DCITestCase):
         response = self._extract_response(rv)
         self.assertIsNotNone(response)
 
-    def test_post_testversion_item(self):
+    def test_post_jobdefinition_item(self):
         test = self._create_test("admin")
-        test_id = self._extract_response(test)['id']
-        product = self._create_product("admin")
-        product_id = self._extract_response(product)['id']
-        version = self._create_version("admin", product_id)
-        version_id = self._extract_response(version)['id']
-
-        testversion = self._create_testversion("admin", test_id, version_id)
-        self.assertEqual(testversion.status_code, 201)
-        self.assertIsNotNone(self._extract_response(testversion))
+        self.test_id = self._extract_response(test)['id']
+        self.test_post_component_item()
+        jobdefinition = self._create_jobdefinition("admin", self.test_id)
+        self.jobdefinition_id = self._extract_response(jobdefinition)['id']
+        jobdefinition_component = self._create_jobdefinition_component(
+            "admin", self.jobdefinition_id, self.component_id)
+        self.assertEqual(jobdefinition_component.status_code, 201)
+        self.assertIsNotNone(self._extract_response(jobdefinition_component))
 
     def test_post_remoteci_item(self):
         test = self._create_test("admin")
@@ -65,16 +57,10 @@ class TestApp(server.tests.DCITestCase):
         """testversion_id is missing, the server should pick a
         testversion that match the test_id of the remoteci.
         """
-        test = self._create_test("admin")
-        test_id = self._extract_response(test)['id']
-        remoteci = self._create_remoteci("admin", test_id)
+        self.test_post_jobdefinition_item()
+        remoteci = self._create_remoteci("admin", self.test_id)
         remoteci_id = self._extract_response(remoteci)['id']
-        product = self._create_product("admin")
-        product_id = self._extract_response(product)['id']
-        version = self._create_version("admin", product_id)
-        version_id = self._extract_response(version)['id']
 
-        self._create_testversion("admin", test_id, version_id)
         job = self._create_job("admin", remoteci_id)
         self.assertEqual(job.status_code, 201)
         response = self._extract_response(job)
@@ -82,46 +68,20 @@ class TestApp(server.tests.DCITestCase):
 
     def test_get_job_item(self):
         """GET /jobs should retrieve the item and feed the
-        data key with the data section from the product, remoteci,
+        data key with the data section from the component, remoteci,
         test and version.
         """
-        test = self._create_test("admin")
-        test_id = self._extract_response(test)['id']
-        remoteci = self._create_remoteci("admin", test_id)
+        self.test_post_jobdefinition_item()
+        remoteci = self._create_remoteci("admin", self.test_id)
         remoteci_id = self._extract_response(remoteci)['id']
-        product = self._create_product("admin")
-        product_id = self._extract_response(product)['id']
-        version = self._create_version("admin", product_id)
-        version_id = self._extract_response(version)['id']
-        self._create_testversion("admin", test_id, version_id)
+
         job = self._create_job("admin", remoteci_id)
         job_id = self._extract_response(job)['id']
 
         rv = self.partner_client('get', '/api/jobs/%s' % job_id)
         self.assertEqual(rv.status_code, 200)
         response = self._extract_response(rv)
-        self.assertEqual({'product_keys': {'foo': ['bar1', 'bar2']},
+        self.assertEqual({'component_keys': {'foo': ['bar1', 'bar2']},
                           'remoteci_keys': {'foo': ['bar1', 'bar2']},
-                          'test_keys': {'foo': ['bar1', 'bar2']},
-                          'version_keys': {'foo': ['bar1', 'bar2']}},
+                          'test_keys': {'foo': ['bar1', 'bar2']}},
                          response['data'])
-
-    def test_get_versions_extra(self):
-        # Create a test
-        rv = self._create_test("admin")
-        test_id = self._extract_response(rv)['id']
-
-        # Create a product
-        rv = self._create_product("admin")
-        product_id = self._extract_response(rv)['id']
-
-        # Create a version
-        rv = self._create_version("admin", product_id)
-        version_id = self._extract_response(rv)['id']
-
-        # Create a testversion
-        self._create_testversion("admin", test_id, version_id)
-
-        # Get versions, should be empty
-        rv = self.admin_client('get', '/api/versions?extra_data=1')
-        self.assertEqual([], self._extract_response(rv)["_items"])

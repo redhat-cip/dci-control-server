@@ -66,13 +66,12 @@ if r.status_code == 404:
         'name': settings['name'],
         'test_id': test_id})
 remoteci_id = r.json()['id']
-
-job_id = dci_client.post(
-    "/jobs", {"remoteci_id": remoteci_id}).json()['id']
+r = dci_client.post("/jobs", {"remoteci_id": remoteci_id})
+job = r.json()
 
 
 def kill_handler(signum, frame):
-    state = {"job_id": job_id,
+    state = {"job_id": job['id'],
              "status": 'killed',
              "comment": "Job killed on the remote CI (sig: %s)." % signum}
     dci_client.post("/jobstates", state)
@@ -80,12 +79,16 @@ def kill_handler(signum, frame):
     sys.exit(0)
 signal.signal(signal.SIGINT, kill_handler)
 
-
-job = dci_client.get("/jobs/%s" % job_id).json()
+# Get full job
+r = dci_client.get("/jobs/%s" % job['id'],
+                   embedded={'jobdefinition': 1,
+                             'jobdefinition.components': 1,
+                             'jobdefinition.components.componenttype': 1})
+job = r.json()
 structure_from_server = job['data']
 
 venv_dir = tempfile.mkdtemp()
-components = structure_from_server['components']
+components = job['jobdefinition']['components']
 
 python_bin = venv_dir + '/bin/python'
 pip_bin = venv_dir + '/bin/pip'
@@ -99,15 +102,20 @@ cmds = [
     {'args': [pip_bin, 'install', '-U', 'ansible==1.9.2']},
     {'args': [ansible_playbook_bin, '--version']}]
 
-for component_name, component in six.iteritems(components):
-    component_dir = workspace_dir + '/' + component_name
+for component in components:
+    project_canonical_name = component['canonical_project_name']
+    component_dir = workspace_dir + '/' + project_canonical_name
+    if component.get('ref'):
+        ref = component['ref']
+    else:
+        ref = ''
     cmds += [
         {'args': ['virtualenv', venv_dir]},
         {'args': [pip_bin, 'install', '-U', 'ansible==1.9.2']},
         {'args': ['git', 'init', component_dir]},
         {'args': ['git', 'pull',
                   component['git'],
-                  component.get('ref', '')], 'cwd': component_dir},
+                  ref], 'cwd': component_dir},
         {'args': ['git', 'fetch', '--all'], 'cwd': component_dir},
         {'args': ['git', 'clean', '-ffdx'], 'cwd': component_dir},
         {'args': ['git', 'reset', '--hard'], 'cwd': component_dir}]
@@ -121,8 +129,8 @@ cmds.append(
      'cwd': '%s/tools/ksgen' % kh_dir})
 
 for cmd in cmds:
-    r = dci_client.call(job_id, cmd['args'],
-                        cwd=cmd.get('cwd', None))
+    r = dci_client.call(job['id'], cmd['args'],
+                        cwd=cmd.get('cwd'))
     if r['returncode'] != 0:
         print("Test has failed")
         shutil.rmtree(workspace_dir)
@@ -183,7 +191,7 @@ collected_files_path = ("%s/collected_files" %
 print(collected_files_path)
 if os.path.exists(collected_files_path):
     shutil.rmtree(collected_files_path)
-r = dci_client.call(job_id,
+r = dci_client.call(job['id'],
                     args,
                     cwd=kh_dir,
                     env=environ)
@@ -211,7 +219,7 @@ args = [
     kh_dir + '/playbooks/full-job-no-test.yml']
 
 status = 'success'
-r = dci_client.call(job_id,
+r = dci_client.call(job['id'],
                     args,
                     cwd=kh_dir,
                     env=environ,
