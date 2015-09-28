@@ -57,6 +57,8 @@ Connect with the postgres user:
     $ psql -U boa -W -h 127.0.0.1 dci_control_server < db_schema/dci-control-server.sql
 
 
+echo 'DROP DATABASE dci_control_server; CREATE DATABASE dci_control_server OWNER boa;' | psql ; echo 'CREATE EXTENSION pgcrypto;'|psql dci_control_server;  psql -U boa -W -h 127.0.0.1 dci_control_server -f /tmp/dci-control-server.sql
+
 # Development
 
 ## dependencies to run tox

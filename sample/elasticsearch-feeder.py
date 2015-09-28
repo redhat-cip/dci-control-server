@@ -42,19 +42,13 @@ dci_client = client.DCIClient()
 es_s = requests.Session()
 es_s.headers.setdefault('Content-Type', 'application/json')
 
-
-products = dci_client.list_items(
-    '/products',
-    embedded={
-        'versions_collection': 1})
-
 jobs = dci_client.list_items(
     '/jobs',
     where={'created_at': '>= "yesterday"'},
     embedded={
-        'remoteci': 1,
-        'team': 1,
-        'jobstates_collection': 1})
+        'jobstates_collection': 1,
+        'jobdefinition': 1,
+        'jobdefinition.text': 1})
 
 files = dci_client.list_items(
     '/files',
@@ -63,5 +57,4 @@ files = dci_client.list_items(
         'remoteci': 1,
         'jobstates_collection': 1})
 upload(es_s, 'jobs', jobs)
-upload(es_s, 'products', products)
 upload(es_s, 'files', files)

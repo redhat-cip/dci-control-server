@@ -48,6 +48,37 @@ END; $$;
 
 COMMENT ON FUNCTION refresh_update_at_column() IS 'Refresh the etag and the updated_at on UPDATE.';
 
+CREATE TABLE components (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    componenttype_id uuid NOT NULL,
+    name character varying(255) NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    data json,
+    sha text,
+    title text,
+    message text,
+    url text,
+    git text,
+    ref text,
+-- NOTE(Gonéri): a string to identifiate the component, like
+-- “rdo” or “khaleesi”.
+-- NOTE(Gonéri): We may want to use a projects table to federate the
+-- different components around the products.
+    canonical_project_name text NOT NULL
+);
+COMMENT ON TABLE components IS 'The components.';
+
+CREATE TABLE componenttypes (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    name character varying(255) NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL
+);
+COMMENT ON TABLE componenttypes IS 'The different type of components.';
+
 CREATE TABLE files (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -66,13 +97,31 @@ CREATE TABLE jobs (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    jobdefinition_id uuid NOT NULL,
     remoteci_id uuid NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
-    testversion_id uuid NOT NULL,
     team_id uuid NOT NULL
 );
-COMMENT ON TABLE jobs IS 'An association between a testversion and a remoteci.';
-COMMENT ON COLUMN jobs.testversion_id IS 'If the parameter is empty, the REST API will automatically pick an available testversions.';
+COMMENT ON TABLE jobs IS 'An association between a jobdefinition and a remoteci.';
+
+CREATE TABLE jobdefinitions (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    name character varying(200),
+    test_id uuid NOT NULL
+);
+COMMENT ON TABLE jobs IS 'A collection of components and a test ready to associated to a remoteci to create a new job.';
+
+CREATE TABLE jobdefinition_components (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    component_id uuid NOT NULL,
+    jobdefinition_id uuid NOT NULL
+);
 
 CREATE TABLE jobstates (
     id uuid DEFAULT gen_uuid() NOT NULL,
@@ -86,16 +135,6 @@ CREATE TABLE jobstates (
 );
 COMMENT ON TABLE jobstates IS 'One of the status during the execution of a job. The last one is the last know status.';
 COMMENT ON COLUMN jobstates.status IS 'ongoing: the job is still running, failure: the job has failed and this is the last status, success: the job has been run successfully.';
-
-CREATE TABLE products (
-    id uuid DEFAULT gen_uuid() NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    name character varying(255) NOT NULL,
-    etag character varying(40) DEFAULT gen_etag() NOT NULL,
-    data json
-);
-COMMENT ON TABLE products IS 'A product';
 
 CREATE TABLE remotecis (
     id uuid DEFAULT gen_uuid() NOT NULL,
@@ -131,21 +170,11 @@ CREATE TABLE tests (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    name character varying(255) NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    name character varying(255) NOT NULL,
     data json
 );
 COMMENT ON TABLE tests IS 'A QA test.';
-
-CREATE TABLE testversions (
-    id uuid DEFAULT gen_uuid() NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    etag character varying(40) DEFAULT gen_etag() NOT NULL,
-    test_id uuid NOT NULL,
-    version_id uuid NOT NULL
-);
-COMMENT ON TABLE testversions IS 'The association between a QA test and a given product version.';
 
 CREATE TABLE user_remotecis (
     id uuid DEFAULT gen_uuid() NOT NULL,
@@ -178,32 +207,18 @@ CREATE TABLE users (
 );
 COMMENT ON TABLE users IS 'The user list.';
 
-CREATE TABLE versions (
-    id uuid DEFAULT gen_uuid() NOT NULL,
-    created_at timestamp with time zone NOT NULL,
-    updated_at timestamp with time zone NOT NULL,
-    name character varying(255) NOT NULL,
-    etag character varying(40) NOT NULL,
-    product_id uuid NOT NULL,
-    data json,
-    sha text,
-    title text,
-    message text,
-    url text,
-    ref text
-);
-COMMENT ON TABLE versions IS 'A given product versions. For example, a release tag or a git revision.';
-
+ALTER TABLE ONLY components
+    ADD CONSTRAINT components_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY componenttypes
+    ADD CONSTRAINT componenttypes_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY files
     ADD CONSTRAINT files_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY versions
-    ADD CONSTRAINT product_sha_unicity UNIQUE (product_id, sha);
-ALTER TABLE ONLY products
-    ADD CONSTRAINT product_unicity UNIQUE (name);
-ALTER TABLE ONLY products
-    ADD CONSTRAINT products_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY jobdefinitions
+    ADD CONSTRAINT jobdefinitions_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY jobdefinition_components
+    ADD CONSTRAINT jobdefinition_components_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY remotecis
     ADD CONSTRAINT remotecis_name_key UNIQUE (name);
 ALTER TABLE ONLY remotecis
@@ -220,8 +235,6 @@ ALTER TABLE ONLY teams
     ADD CONSTRAINT teams_name_key UNIQUE (name);
 ALTER TABLE ONLY tests
     ADD CONSTRAINT tests_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY testversions
-    ADD CONSTRAINT testsversions_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY user_remotecis
     ADD CONSTRAINT user_remotecis_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY user_remotecis
@@ -234,18 +247,21 @@ ALTER TABLE ONLY users
     ADD CONSTRAINT users_name_key UNIQUE (name);
 ALTER TABLE ONLY users
     ADD CONSTRAINT users_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY versions
-    ADD CONSTRAINT versions_pkey PRIMARY KEY (id);
 
 -- Triggers
+CREATE TRIGGER refresh_components_update_at_column BEFORE UPDATE ON components FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
+CREATE TRIGGER refresh_componenttypes_update_at_column BEFORE UPDATE ON componenttypes FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER refresh_files_update_at_column BEFORE UPDATE ON files FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER refresh_jobs_update_at_column BEFORE UPDATE ON jobs FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
+CREATE TRIGGER refresh_jobdefinitions_update_at_column BEFORE UPDATE ON jobdefinitions FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
+CREATE TRIGGER refresh_jobdefinition_components_update_at_column BEFORE UPDATE ON jobdefinition_components FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER refresh_jobstates_update_at_column BEFORE UPDATE ON jobstates FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER refresh_remotecis_update_at_column BEFORE UPDATE ON remotecis FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER refresh_scenarios_update_at_column BEFORE UPDATE ON jobs FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
-CREATE TRIGGER refresh_testsversions_update_at_column BEFORE UPDATE ON testversions FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER verify_jobstates_status BEFORE INSERT OR UPDATE ON jobstates FOR EACH ROW EXECUTE PROCEDURE jobstate_status_in_list();
 
+ALTER TABLE ONLY components
+    ADD CONSTRAINT components_componenttype_id_fkey FOREIGN KEY (componenttype_id) REFERENCES componenttypes(id) ON DELETE CASCADE;
 ALTER TABLE ONLY files
     ADD CONSTRAINT files_status_fkey FOREIGN KEY (jobstate_id) REFERENCES jobstates(id) ON DELETE CASCADE;
 ALTER TABLE ONLY files
@@ -255,7 +271,13 @@ ALTER TABLE ONLY jobs
 ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
 ALTER TABLE ONLY jobs
-    ADD CONSTRAINT jobs_testversion_id_fkey FOREIGN KEY (testversion_id) REFERENCES testversions(id) ON DELETE CASCADE;
+    ADD CONSTRAINT jobs_jobdefinition_id_fkey FOREIGN KEY (jobdefinition_id) REFERENCES jobdefinitions(id) ON DELETE CASCADE;
+ALTER TABLE ONLY jobdefinitions
+    ADD CONSTRAINT jobdefinitions_test_id_fkey FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE;
+ALTER TABLE ONLY jobdefinition_components
+    ADD CONSTRAINT jobdefinition_components_jobdefinition_id_fkey FOREIGN KEY (jobdefinition_id) REFERENCES jobdefinitions(id) ON DELETE CASCADE;
+ALTER TABLE ONLY jobdefinition_components
+    ADD CONSTRAINT jobdefinition_components_component_id_fkey FOREIGN KEY (component_id) REFERENCES components(id) ON DELETE CASCADE;
 ALTER TABLE ONLY jobstates
     ADD CONSTRAINT jobstates_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
 ALTER TABLE ONLY remotecis
@@ -264,10 +286,6 @@ ALTER TABLE ONLY remotecis
     ADD CONSTRAINT remotecis_test_id_fkey FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE;
 ALTER TABLE ONLY jobstates
     ADD CONSTRAINT status_job_fkey FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE;
-ALTER TABLE ONLY testversions
-    ADD CONSTRAINT testsversions_test_id_fkey FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE;
-ALTER TABLE ONLY testversions
-    ADD CONSTRAINT testsversions_version_id_fkey FOREIGN KEY (version_id) REFERENCES versions(id) ON DELETE CASCADE;
 ALTER TABLE ONLY user_remotecis
     ADD CONSTRAINT user_remotecis_remoteci_id_fkey FOREIGN KEY (remoteci_id) REFERENCES remotecis(id) ON DELETE CASCADE;
 ALTER TABLE ONLY user_remotecis
@@ -278,7 +296,12 @@ ALTER TABLE ONLY user_roles
     ADD CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE ONLY users
     ADD CONSTRAINT users_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
-ALTER TABLE ONLY versions
-    ADD CONSTRAINT versions_product_id_fkey FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE;
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-GRANT ALL ON SCHEMA public TO PUBLIC;
+INSERT INTO teams (name) VALUES ('admin');
+INSERT INTO teams (name) VALUES ('partner');
+INSERT INTO users (name, password, team_id) VALUES ('admin', crypt('admin', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='partner'));
+INSERT INTO users (name, password, team_id) values ('partner', crypt('partner', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='partner'));
+INSERT INTO roles (name) VALUES ('admin');
+INSERT INTO roles (name) VALUES ('partner');
+INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='admin'));
+INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='partner'));
+INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='partner'), (SELECT id from roles WHERE name='partner'));

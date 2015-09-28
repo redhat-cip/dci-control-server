@@ -142,7 +142,11 @@ class DCIClient(object):
             if six.PY2 and isinstance(arg, str):
                 args[idx] = arg.decode('UTF-8')
 
-        flatten_args = " ".join(args)
+        try:
+            flatten_args = " ".join(args)
+        except TypeError as e:
+            print("Invalid string list: %s" % args)
+            raise e
         state = {"job_id": job_id,
                  "status": "ongoing",
                  "comment": "calling: %s" % flatten_args}
