@@ -51,22 +51,32 @@ if job.status_code == 412:
     print("No jobs to process.")
     sys.exit(0)
 job_id = job.json()['id']
-job = dci_client.get("/jobs/%s" % job_id).json()
-structure_from_server = job['data']['components']['dci-control-server']
+r = dci_client.get("/jobs/%s" % job_id,
+                   embedded={'jobdefinition': 1,
+                             'jobdefinition.components': 1,
+                             'jobdefinition.components.componenttype': 1})
+job = r.json()
+component = job['jobdefinition']['components'][0]
+if component['componenttype']['name'] != 'git_repository':
+    print('Invalid component type!')
+    sys.exit(1)
 
+if component['ref']:
+    ref = component['ref']
+else:
+    ref = ''
 cmds = [
     ['git', 'init', workdir],
-    ['git', 'pull', structure_from_server['git'],
-     structure_from_server.get('ref', '')],
+    ['git', 'pull', component['git'], ref],
     ['git', 'fetch', '--all'],
     ['git', 'clean', '-ffdx'],
     ['git', 'reset', '--hard'],
-    ['git', 'checkout', '-f', structure_from_server['sha']],
+    ['git', 'checkout', '-f', component['sha']],
     ['tox']]
 
 for cmd in cmds:
     r = dci_client.call(job_id, cmd, cwd=workdir)
-    if r != 0:
+    if r['returncode'] != 0:
         print("Test has failed")
         shutil.rmtree(workdir)
         sys.exit(1)
