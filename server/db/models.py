@@ -17,6 +17,7 @@
 import re
 
 from sqlalchemy import create_engine
+from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.ext.automap import generate_relationship
 from sqlalchemy import MetaData
@@ -68,12 +69,14 @@ class DCIModel(object):
                     self.base.classes, foreign_table_name + 's')
                 remote_side = None
                 remote_side = [foreign_table_object.id]
+                print('%s.%s' % (cur_db, foreign_table_name))
                 setattr(cur_db, foreign_table_name, relationship(
                     foreign_table_object, uselist=False,
                     remote_side=remote_side))
 
-        setattr(self.base.classes.products, 'versions', relationship(
-            self.base.classes.versions, uselist=True, lazy='dynamic'))
+        setattr(self.base.classes.jobdefinitions, 'components',
+                association_proxy(
+                    'jobdefinition_components_collection', 'component'))
         setattr(self.base.classes.jobs, 'jobstates', relationship(
             self.base.classes.jobstates, uselist=True, lazy='dynamic',
             order_by=self.base.classes.jobstates.created_at.desc()))
@@ -141,6 +144,14 @@ class DCIModel(object):
             domain[table]['description'] = self.get_table_description(table)
         # NOTE(Goneri): optional, if the key is missing, we dynamically pick
         # a testversion that fit.
-        domain['jobs']['schema']['testversion_id']['required'] = False
+        domain['jobs']['schema']['jobdefinition_id']['required'] = False
+        domain['components']['datasource']['projection']['componenttype'] = 1
+
+        # TODO(Gonéri): The following resource projection are enabled just to
+        # be sure the resources will be embeddable. Instead we should make a
+        # patch on Eve to dynamically turn on projection on embedded resources.
         domain['jobs']['datasource']['projection']['jobstates_collection'] = 1
+        domain['jobs']['datasource']['projection']['jobdefinition'] = 1
+        domain['jobdefinitions']['datasource']['projection']['components'] = 1
+        domain['jobdefinitions']['datasource']['projection']['test'] = 1
         return domain

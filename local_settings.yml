@@ -3,4 +3,5 @@
 #   tester: tempest
 #   tester-setup: rpm
 #   tester-tests: all
+name: my-remoteci
 hypervisor: boa-3

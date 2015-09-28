@@ -129,24 +129,27 @@ class DCITestCase(testtools.TestCase):
     def _extract_response(rv):
         return json.loads(rv.get_data().decode())
 
-    def _create_product(self, client):
-        return getattr(self, "%s_client" % client)(
+    def _create_component(self, client):
+        client = getattr(self, "%s_client" % client)
+        componenttype = self._extract_response(
+            client('post', '/api/componenttypes',
+                   data={'name': 'a_component_type'}))
+        return client(
             'post',
-            '/api/products',
+            '/api/components',
             data={'name': 'bob',
+                  'canonical_project_name': 'this_is_something',
+                  'componenttype_id': componenttype['id'],
                   'data': {
-                      'product_keys': {
+                      'component_keys': {
                           'foo': ['bar1', 'bar2']}}})
 
-    def _create_version(self, client, product_id):
+    def _create_jobdefinition(self, client, test_id):
         return getattr(self, "%s_client" % client)(
             'post',
-            '/api/versions',
+            '/api/jobdefinitions',
             data={'name': 'bob',
-                  'product_id': product_id,
-                  'data': {
-                      'version_keys': {
-                          'foo': ['bar1', 'bar2']}}})
+                  'test_id': test_id})
 
     def _create_test(self, client):
         return getattr(self, "%s_client" % client)(
@@ -158,13 +161,14 @@ class DCITestCase(testtools.TestCase):
                     'test_keys': {
                         'foo': ['bar1', 'bar2']}}})
 
-    def _create_testversion(self, client, test_id, version_id):
+    def _create_jobdefinition_component(
+            self, client, jobdefinition_id, component_id):
         return getattr(self, "%s_client" % client)(
             'post',
-            '/api/testversions',
+            '/api/jobdefinition_components',
             data={
-                'test_id': test_id,
-                'version_id': version_id})
+                'jobdefinition_id': jobdefinition_id,
+                'component_id': component_id})
 
     def _create_remoteci(self, client, test_id):
         return getattr(self, "%s_client" % client)(
