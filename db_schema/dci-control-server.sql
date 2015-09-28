@@ -48,6 +48,27 @@ END; $$;
 
 COMMENT ON FUNCTION refresh_update_at_column() IS 'Refresh the etag and the updated_at on UPDATE.';
 
+CREATE TABLE components (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    componenttype_id uuid NOT NULL,
+    version_id uuid,
+    name character varying(255) NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    data json
+);
+COMMENT ON TABLE components IS 'The components.';
+
+CREATE TABLE componenttypes (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    name character varying(255) NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL
+);
+COMMENT ON TABLE componenttypes IS 'The different type of components.';
+
 CREATE TABLE files (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -73,6 +94,25 @@ CREATE TABLE jobs (
 );
 COMMENT ON TABLE jobs IS 'An association between a testversion and a remoteci.';
 COMMENT ON COLUMN jobs.testversion_id IS 'If the parameter is empty, the REST API will automatically pick an available testversions.';
+
+CREATE TABLE jobdefinitions (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    name character varying(100),
+    test_id uuid NOT NULL
+);
+COMMENT ON TABLE jobs IS 'A collection of components and a test ready to associated to a remoteci to create a new job.';
+
+CREATE TABLE jobdefinition_components (
+    id uuid DEFAULT gen_uuid() NOT NULL,
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    jobdefinition_id uuid NOT NULL,
+    component_id uuid NOT NULL
+);
 
 CREATE TABLE jobstates (
     id uuid DEFAULT gen_uuid() NOT NULL,
@@ -195,7 +235,11 @@ CREATE TABLE versions (
     updated_at timestamp with time zone NOT NULL,
     name character varying(255) NOT NULL,
     etag character varying(40) NOT NULL,
-    product_id uuid NOT NULL,
+-- TODO(Gonéri): after the transition, we will haeve to:
+--  1) drop the product_id line
+--  2) ensure the component_id is NOT NULL
+    product_id uuid,
+    component_id uuid,
     data json,
     sha text,
     title text,
@@ -205,10 +249,18 @@ CREATE TABLE versions (
 );
 COMMENT ON TABLE versions IS 'A given product versions. For example, a release tag or a git revision.';
 
+ALTER TABLE ONLY components
+    ADD CONSTRAINT components_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY componenttypes
+    ADD CONSTRAINT componenttypes_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY files
     ADD CONSTRAINT files_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY jobdefinitions
+    ADD CONSTRAINT jobdefinitions_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY jobdefinition_components
+    ADD CONSTRAINT jobdefinition_components_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY notifications
     ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY versions
@@ -251,14 +303,22 @@ ALTER TABLE ONLY versions
     ADD CONSTRAINT versions_pkey PRIMARY KEY (id);
 
 -- Triggers
+CREATE TRIGGER refresh_components_update_at_column BEFORE UPDATE ON components FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
+CREATE TRIGGER refresh_componenttypes_update_at_column BEFORE UPDATE ON componenttypes FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER refresh_files_update_at_column BEFORE UPDATE ON files FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER refresh_jobs_update_at_column BEFORE UPDATE ON jobs FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
+CREATE TRIGGER refresh_jobdefinitions_update_at_column BEFORE UPDATE ON jobdefinitions FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
+CREATE TRIGGER refresh_jobdefinition_components_update_at_column BEFORE UPDATE ON jobdefinition_components FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER refresh_jobstates_update_at_column BEFORE UPDATE ON jobstates FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER refresh_remotecis_update_at_column BEFORE UPDATE ON remotecis FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER refresh_scenarios_update_at_column BEFORE UPDATE ON jobs FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER refresh_testsversions_update_at_column BEFORE UPDATE ON testversions FOR EACH ROW EXECUTE PROCEDURE refresh_update_at_column();
 CREATE TRIGGER verify_jobstates_status BEFORE INSERT OR UPDATE ON jobstates FOR EACH ROW EXECUTE PROCEDURE jobstate_status_in_list();
 
+ALTER TABLE ONLY components
+    ADD CONSTRAINT components_version_id_fkey FOREIGN KEY (version_id) REFERENCES versions(id) ON DELETE CASCADE;
+ALTER TABLE ONLY components
+    ADD CONSTRAINT components_componenttype_id_fkey FOREIGN KEY (componenttype_id) REFERENCES componenttypes(id) ON DELETE CASCADE;
 ALTER TABLE ONLY files
     ADD CONSTRAINT files_status_fkey FOREIGN KEY (jobstate_id) REFERENCES jobstates(id) ON DELETE CASCADE;
 ALTER TABLE ONLY files
@@ -269,6 +329,12 @@ ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
 ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_testversion_id_fkey FOREIGN KEY (testversion_id) REFERENCES testversions(id) ON DELETE CASCADE;
+ALTER TABLE ONLY jobdefinitions
+    ADD CONSTRAINT jobdefinitions_test_id_fkey FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE;
+ALTER TABLE ONLY jobdefinition_components
+    ADD CONSTRAINT jobdefinition_components_jobdefinition_id_fkey FOREIGN KEY (jobdefinition_id) REFERENCES jobdefinitions(id) ON DELETE CASCADE;
+ALTER TABLE ONLY jobdefinition_components
+    ADD CONSTRAINT jobdefinition_components_component_id_fkey FOREIGN KEY (component_id) REFERENCES components(id) ON DELETE CASCADE;
 ALTER TABLE ONLY jobstates
     ADD CONSTRAINT jobstates_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
 ALTER TABLE ONLY notifications
@@ -295,5 +361,7 @@ ALTER TABLE ONLY users
     ADD CONSTRAINT users_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
 ALTER TABLE ONLY versions
     ADD CONSTRAINT versions_product_id_fkey FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE;
+ALTER TABLE ONLY versions
+    ADD CONSTRAINT versions_component_id_fkey FOREIGN KEY (component_id) REFERENCES components(id) ON DELETE CASCADE;
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 GRANT ALL ON SCHEMA public TO PUBLIC;
