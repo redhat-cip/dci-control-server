@@ -20,9 +20,10 @@ and inject them as new build in a Jenkins job.
 
 This example depends on python-jenkins module.
 
-Usage: dci-jenkins-import $version_id
+Usage: dci-jenkins-import $jobdefinition_id
 
-$version_id is the ID of the DCI version from which you want to collect jobs.
+$jobdefinition_id is the ID of the DCI version from which you want to
+collect jobs.
 """
 from __future__ import print_function
 
@@ -46,7 +47,6 @@ config_xml = """
   <properties/>
 </hudson.model.ExternalJob>
 """
-product_by_id = {}
 
 
 def exit_error(msg):
@@ -93,17 +93,6 @@ def upload_job(job_name, jobstates_collection):
         print("Build created in '%s'" % job_name)
 
 
-def get_product(product_id):
-    """return the product associated to $product_id."""
-    try:
-        product = product_by_id[testversion['version']['product_id']]
-    except KeyError:
-        product = dci_srv.get(
-            '/products/%s' % testversion['version']['product_id']).json()
-        product_by_id[testversion['version']['product_id']] = product
-    return product
-
-
 def get_testversions(version_id):
     r = dci_srv.get(
         '/testversions', where={'version_id': version_id},
@@ -117,30 +106,41 @@ def get_testversions(version_id):
     return r.json()['_items']
 
 try:
-    version_id = sys.argv[1]
+    jobdefinition_id = sys.argv[1]
 except IndexError:
-    exit_error('Usage: %s $version_id' % sys.argv[0])
+    exit_error('Usage: %s $jobdefinition_id' % sys.argv[0])
 
 dci_srv = client.DCIClient()
 jenkins_srv = jenkins.Jenkins('http://localhost:8080')
 print("Connected to Jenkins version %s" % jenkins_srv.get_version())
 
-for testversion in get_testversions(version_id):
-    product = get_product(testversion['version']['product_id'])
-    job_name = "DCI-%s-%s-%s" % (
-        product['name'],
-        testversion['version']['name'],
-        testversion['test']['name'])
-    try:
-        jenkins_srv.get_job_config(job_name)
-    except jenkins.NotFoundException:
-        jenkins_srv.create_job(job_name, config_xml)
+jobdefinition = dci_srv.get(
+    '/jobdefinitions/%s' % jobdefinition_id,
+    embedded={'test': 1}, projection={'jobs_collection': 1}).json()
 
+if len(jobdefinition['jobs_collection']) < 1:
+    print("No job associated to this jobdefinition.")
+    sys.exit(0)
+
+job_name = "DCI-%s" % (
+    jobdefinition['test']['name'])
+
+try:
+    jenkins_srv.get_job_config(job_name)
+except jenkins.NotFoundException:
+    jenkins_srv.create_job(job_name, config_xml)
+
+current_build_number = len(jenkins_srv.get_job_info(job_name)['builds'])
+
+for job in dci_srv.list_items(
+        '/jobs', where={'jobdefinition_id': jobdefinition_id},
+        page=(current_build_number + 1),
+        max_results=1,
+        embedded={'jobstates_collection': 1}):
     # NOTE(Gonéri): use the Jenkins build number to know the cur ID
-    current_build_number = len(jenkins_srv.get_job_info(job_name)['builds'])
-    for job in testversion['jobs_collection']:
-        jobstates_collection = dci_srv.get(
-            '/jobstates',
-            _in=job['jobstates_collection'],
-            embedded={'files_collection': 1}).json()
-        upload_job(job_name, jobstates_collection['_items'])
+    jobstates_collection = job['jobstates_collection']
+    for jobstate in jobstates_collection:
+        jobstate['files_collection'] = dci_srv.get(
+            '/files',
+            where={'jobstate_id': jobstate['id']}).json()['_items']
+    upload_job(job_name, jobstates_collection)

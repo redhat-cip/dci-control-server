@@ -39,13 +39,14 @@ class TestClientLib(server.tests.DCITestCase):
         self.client = client.DCIClient(
             end_point='http://127.0.0.1:%s/api' % port,
             login='admin', password='admin')
+        self._componenttype = self.client.post('/componenttypes', {
+            'name': 'my_component_type'}).json()
 
     def tearDown(self):
         super(TestClientLib, self).tearDown()
         self.server_process.kill()
 
     def assertStatusCodeEqual(self, status_code, r):
-        print(r.text)
         self.assertEqual(status_code, r.status_code)
 
     def test_create_delete(self):
@@ -82,15 +83,17 @@ class TestClientLib(server.tests.DCITestCase):
         #     200,
         #     c.patch('/tests/' + update_item['id'],
         #             update_item['etag'], {'name': 'Ron'}))
+
         self.assertStatusCodeEqual(
             200,
             c.put('/tests/' + update_item['id'],
                   update_item['etag'], {'name': 'Ron'}))
 
         # try to delete the entry with the outdate etag
-        self.assertStatusCodeEqual(
-            412,
-            c.delete('/tests/' + update_item['id'], update_item['etag']))
+        self.assertRaises(
+            client.DCIServerError,
+            c.delete, '/tests/' + update_item['id'],
+            update_item['etag'])
 
         # read the new etag
         new_etag = c.get(
@@ -112,31 +115,37 @@ class TestClientLib(server.tests.DCITestCase):
     def test_find_or_create_or_refresh(self):
         c = self.client
 
+        component_details = {
+            'name': 'one component',
+            'componenttype_id': self._componenttype['id'],
+            'canonical_project_name': 'this_is_something',
+            'data': {'foo': [1, 2]}}
+
         # First, get the item created
-        product = c.find_or_create_or_refresh(
-            '/products',
-            {'name': 'one product', 'data': {'foo': [1, 2]}})
-        self.assertTrue(product['id'])
-        old_id = product['id']
+        component = c.find_or_create_or_refresh(
+            '/components', component_details)
+        self.assertTrue(component['id'])
+        old_id = component['id']
 
         # Then update it
-        product = c.find_or_create_or_refresh(
-            '/products',
-            {'name': 'one product', 'data': {'foo': [1, 2, 3]}})
+        component_details['data'] = {'foo': [1, 2, 3]}
+        component = c.find_or_create_or_refresh(
+            '/components',
+            component_details)
 
         # Ensure we preserve the initial item id
-        self.assertTrue(product['id'] == old_id)
+        self.assertTrue(component['id'] == old_id)
 
-        # Get the updated product
-        product = c.get('/products/' + old_id).json()
+        # Get the updated component
+        component = c.get('/components/' + old_id).json()
 
-        self.assertEqual(product['data']['foo'][2], 3)
+        self.assertEqual(component['data']['foo'][2], 3)
 
-        # Finally, try to just find the product
-        product = c.find_or_create_or_refresh(
-            '/products',
-            {'name': 'one product', 'data': {'foo': [1, 2, 3]}})
-        self.assertTrue(product['id'] == old_id)
+        # Finally, try to just find the component
+        component = c.find_or_create_or_refresh(
+            '/components',
+            component_details)
+        self.assertTrue(component['id'] == old_id)
 
     def test_list_items(self):
         c = self.client
@@ -156,12 +165,17 @@ class TestClientLib(server.tests.DCITestCase):
     def _init_test_call(self):
         c = self.client
 
-        test = c.post('/tests', {'name': 'my_test'}).json()
-        product = c.post('/products', {'name': 'my_product'}).json()
-        version = c.post('/versions', {
-            'name': 'my_version', 'product_id': product['id']}).json()
-        testversion = c.post('/testversions', {
-            'test_id': test['id'], 'version_id': version['id']}).json()
+        test = self.client.post('/tests', {'name': 'my_test'}).json()
+        component = c.post('/components', {
+            'name': 'my_component',
+            'componenttype_id': self._componenttype['id'],
+            'sha': 'some_sha',
+            'canonical_project_name': 'my_project'}).json()
+        jobdefinition = c.post('/jobdefinitions', {
+            'test_id': test['id']}).json()
+        c.post('/jobdefinition_components', {
+            'jobdefinition_id': jobdefinition['id'],
+            'component_id': component['id']}).json()
         team = c.post('/teams', {
             'name': 'my_team'}).json()
         remoteci = c.post('/remotecis', {
@@ -170,7 +184,7 @@ class TestClientLib(server.tests.DCITestCase):
         }).json()
         job = c.post('/jobs', {
             'team_id': team['id'],
-            'testversion_id': testversion['id'],
+            'jobdefinition_id': jobdefinition['id'],
             'remoteci_id': remoteci['id']}).json()
         self._job_id = job['id']
 
