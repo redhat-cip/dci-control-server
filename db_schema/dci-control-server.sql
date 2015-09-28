@@ -87,17 +87,6 @@ CREATE TABLE jobstates (
 COMMENT ON TABLE jobstates IS 'One of the status during the execution of a job. The last one is the last know status.';
 COMMENT ON COLUMN jobstates.status IS 'ongoing: the job is still running, failure: the job has failed and this is the last status, success: the job has been run successfully.';
 
-CREATE TABLE notifications (
-    id uuid DEFAULT gen_uuid() NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL,
-    updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    etag character varying(40) DEFAULT gen_etag() NOT NULL,
-    struct json,
-    sent boolean DEFAULT false,
-    version_id uuid NOT NULL
-);
-COMMENT ON TABLE notifications IS 'experimental: notifications associated to a version.';
-
 CREATE TABLE products (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
@@ -209,8 +198,10 @@ ALTER TABLE ONLY files
     ADD CONSTRAINT files_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_pkey PRIMARY KEY (id);
-ALTER TABLE ONLY notifications
-    ADD CONSTRAINT notifications_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY jobdefinitions
+    ADD CONSTRAINT jobdefinitions_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY jobdefinition_components
+    ADD CONSTRAINT jobdefinition_components_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY versions
     ADD CONSTRAINT product_sha_unicity UNIQUE (product_id, sha);
 ALTER TABLE ONLY products
@@ -271,8 +262,6 @@ ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_testversion_id_fkey FOREIGN KEY (testversion_id) REFERENCES testversions(id) ON DELETE CASCADE;
 ALTER TABLE ONLY jobstates
     ADD CONSTRAINT jobstates_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
-ALTER TABLE ONLY notifications
-    ADD CONSTRAINT notifications_version_id_fkey FOREIGN KEY (version_id) REFERENCES versions(id) ON DELETE CASCADE;
 ALTER TABLE ONLY remotecis
     ADD CONSTRAINT remotecis_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
 ALTER TABLE ONLY remotecis
