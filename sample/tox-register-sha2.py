@@ -20,7 +20,11 @@ import requests
 import six
 
 
-def sha_walker(sha_to_walks, dci_client, repository, product_id, test_id):
+def sha_walker(sha_to_walks, dci_client, repository, test):
+    componenttype = dci_client.find_or_create_or_refresh(
+        '/componenttypes',
+        {"name": "git_repository"})
+
     sha = sha_to_walks.pop()
     if not sha:
         return
@@ -35,41 +39,46 @@ def sha_walker(sha_to_walks, dci_client, repository, product_id, test_id):
 
     # NOTE(Gonéri): Is the commit already here?
     print(title)
-    version = dci_client.find_or_create_or_refresh(
-        '/versions',
+    component = dci_client.find_or_create_or_refresh(
+        '/components',
         {
-            "product_id": product_id,
+            "componenttype_id": componenttype['id'],
             "name": title,
             "title": title,
             "message": message,
             "sha": sha,
+            "git": 'https://github.com/%s' % repository,
+            "url": 'https://github.com/%s/commit/%s' % (repository, sha),
             "data": {
                 "sha": sha,
             }
         },
         unicity_key=['sha']
     )
-    dci_client.find_or_create_or_refresh(
-        '/testversions',
+    jobdefinition = dci_client.find_or_create_or_refresh(
+        '/jobdefinitions',
         {
-            "test_id": test_id,
-            "version_id": version['id'],
+            "name": "tox: %s (%s)" % (title, sha),
+            "test_id": test['id']
         },
-        unicity_key=['test_id', 'version_id'])
+        unicity_key=['test_id', 'name']
+    )
+    jobdefinition_component = dci_client.find_or_create_or_refresh(
+        '/jobdefinition_components',
+        {
+            "component_id": component['id'],
+            "jobdefinition_id": jobdefinition['id']
+        },
+        unicity_key=['component_id', 'jobdefinition_id']
+    )
 
 
-def fetch(gh_s, dci_client, product_name, repositories):
+def fetch(gh_s, dci_client, name, repositories):
     test = dci_client.find_or_create_or_refresh(
         '/tests',
         {"name": "tox"})
 
     for repository in repositories:
-        product = dci_client.find_or_create_or_refresh(
-            "/products", {
-                "name": "%s" % (product_name),
-                "data": {
-                    "components": {
-                        "git_url": "https://github.com/%s" % repository}}})
         r = gh_s.get(
             'https://api.github.com/repos/' +
             repository +
@@ -81,7 +90,7 @@ def fetch(gh_s, dci_client, product_name, repositories):
         sha_to_walks = [branches['master']['sha']]
         while sha_to_walks:
             sha_walker(sha_to_walks, dci_client,
-                       repository, product['id'], test['id'])
+                       repository, test)
 
 products = {
     'dci-control-server': [
@@ -90,5 +99,5 @@ gh_s = requests.Session()
 # gh_s.auth = ('user', 'xxx')
 dci_client = client.DCIClient()
 
-for product_name, repositories in six.iteritems(products):
-    fetch(gh_s, dci_client, product_name, repositories)
+for name, repositories in six.iteritems(products):
+    fetch(gh_s, dci_client, name, repositories)
