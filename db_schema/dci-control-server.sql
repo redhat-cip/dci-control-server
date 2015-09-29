@@ -53,7 +53,6 @@ CREATE TABLE components (
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     componenttype_id uuid NOT NULL,
-    version_id uuid,
     name character varying(255) NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
     data json,
@@ -62,7 +61,12 @@ CREATE TABLE components (
     message text,
     url text,
     git text,
-    ref text
+    ref text,
+-- NOTE(Gonéri): a string to identifiate the component, like
+-- “rdo” or “khaleesi”.
+-- NOTE(Gonéri): We may want to use a projects table to federate the
+-- different components around the products.
+    canonical_project_name text NOT NULL
 );
 COMMENT ON TABLE components IS 'The components.';
 
@@ -93,20 +97,19 @@ CREATE TABLE jobs (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
+    jobdefinition_id uuid NOT NULL,
     remoteci_id uuid NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
-    testversion_id uuid NOT NULL,
     team_id uuid NOT NULL
 );
-COMMENT ON TABLE jobs IS 'An association between a testversion and a remoteci.';
-COMMENT ON COLUMN jobs.testversion_id IS 'If the parameter is empty, the REST API will automatically pick an available jobdefinitions.';
+COMMENT ON TABLE jobs IS 'An association between a jobdefinition and a remoteci.';
 
 CREATE TABLE jobdefinitions (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
-    name character varying(100),
+    name character varying(200),
     test_id uuid NOT NULL
 );
 COMMENT ON TABLE jobs IS 'A collection of components and a test ready to associated to a remoteci to create a new job.';
@@ -167,8 +170,8 @@ CREATE TABLE tests (
     id uuid DEFAULT gen_uuid() NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
-    name character varying(255) NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
+    name character varying(255) NOT NULL,
     data json
 );
 COMMENT ON TABLE tests IS 'A QA test.';
@@ -267,6 +270,8 @@ ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_remoteci_id_fkey FOREIGN KEY (remoteci_id) REFERENCES remotecis(id) ON DELETE CASCADE;
 ALTER TABLE ONLY jobs
     ADD CONSTRAINT jobs_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
+ALTER TABLE ONLY jobs
+    ADD CONSTRAINT jobs_jobdefinition_id_fkey FOREIGN KEY (jobdefinition_id) REFERENCES jobdefinitions(id) ON DELETE CASCADE;
 ALTER TABLE ONLY jobdefinitions
     ADD CONSTRAINT jobdefinitions_test_id_fkey FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE;
 ALTER TABLE ONLY jobdefinition_components
@@ -291,5 +296,12 @@ ALTER TABLE ONLY user_roles
     ADD CONSTRAINT user_roles_user_id_fkey FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE ONLY users
     ADD CONSTRAINT users_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
-REVOKE ALL ON SCHEMA public FROM PUBLIC;
-GRANT ALL ON SCHEMA public TO PUBLIC;
+INSERT INTO teams (name) VALUES ('admin');
+INSERT INTO teams (name) VALUES ('partner');
+INSERT INTO users (name, password, team_id) VALUES ('admin', crypt('admin', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='partner'));
+INSERT INTO users (name, password, team_id) values ('partner', crypt('partner', gen_salt('bf', 8)), (SELECT id FROM teams WHERE name='partner'));
+INSERT INTO roles (name) VALUES ('admin');
+INSERT INTO roles (name) VALUES ('partner');
+INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='admin'));
+INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='admin'), (SELECT id from roles WHERE name='partner'));
+INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='partner'), (SELECT id from roles WHERE name='partner'));

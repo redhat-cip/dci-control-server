@@ -45,9 +45,9 @@ Add a jobdefinitions table. The anchor for the different components.
         id uuid DEFAULT gen_uuid() NOT NULL,
         created_at timestamp with time zone DEFAULT now() NOT NULL,
         updated_at timestamp with time zone DEFAULT now() NOT NULL,
-        etag character varying(40) DEFAULT gen_etag() NOT NULL,
+        etag character varying(40) DEFAULT gen*etag() NOT NULL,
         name character varying(100),
-        test_id uuid NOT NULL
+        test*id uuid NOT NULL
     );
 
 Finally a jobdefinition_components table (1 to n). This table replace
