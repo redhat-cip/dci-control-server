@@ -78,32 +78,32 @@ class DciControlServer(Eve):
         session = DciControlServer._DCI_MODEL.get_session()
         query = text("""
         SELECT
-            testversions.id
+            jobdefinitions.id
         FROM
-            testversions, remotecis
-        WHERE testversions.id NOT IN (
+            jobdefinitions, remotecis
+        WHERE jobdefinitions.id NOT IN (
             SELECT
-                jobs.testversion_id
+                jobs.jobdefinition_id
             FROM jobs
             WHERE jobs.remoteci_id=:remoteci_id
               AND
            jobs.created_at > now() - interval '1 day'
-        ) AND testversions.test_id=remotecis.test_id AND
+        ) AND jobdefinitions.test_id=remotecis.test_id AND
         remotecis.id=:remoteci_id
         LIMIT 1
         """)
 
         for d in documents:
-            if 'testversion_id' in d:
+            if 'jobdefinition_id' in d:
                 continue
             r = DciControlServer._DCI_MODEL.engine.execute(
                 query, remoteci_id=d['remoteci_id']).fetchone()
             if r is None:
                 abort(412, "No test to run left.")
-            testversion = session.query(
-                DciControlServer._DCI_MODEL.base.classes.testversions).\
+            jobdefinition = session.query(
+                DciControlServer._DCI_MODEL.base.classes.jobdefinitions).\
                 get(str(r[0]))
-            d['testversion_id'] = testversion.id
+            d['jobdefinition_id'] = jobdefinition.id
         session.close()
 
     @staticmethod
@@ -117,6 +117,8 @@ class DciControlServer(Eve):
             for job in jobs:
                 jobstate = job.jobstates.filter(
                     Jobstates.job_id == job.id).first()
+                if jobstate is None:
+                    continue
                 if jobstate.status == 'ongoing':
                     session.add(
                         Jobstates(
@@ -133,11 +135,11 @@ class DciControlServer(Eve):
         data = {}
         job = session.query(DciControlServer._DCI_MODEL.base.classes.jobs).\
             get(response['id'])
-        my_datas = (
-            job.testversion.version.product.data,
-            job.testversion.version.data,
-            job.testversion.test.data,
-            job.remoteci.data)
+        # TODO(Gonéri): do we still need that?
+        my_datas = [job.jobdefinition.test.data,
+                    job.remoteci.data]
+        for component in job.jobdefinition.components:
+            my_datas.append(component.data)
         for my_data in my_datas:
             if my_data:
                 data = server.utils.dict_merge(data, my_data)
@@ -198,55 +200,6 @@ class DciControlServer(Eve):
         session.close()
 
     @staticmethod
-    def get_versions_extra(response):
-        if not flask.request.args.get('extra_data'):
-            return
-
-        session = DciControlServer._DCI_MODEL.get_session()
-        versions_to_remove = []
-        for version in response["_items"]:
-            version["extra_data"] = []
-
-            Testversions = DciControlServer._DCI_MODEL.base.classes.\
-                testversions
-            testversions = session.query(Testversions).\
-                filter(Testversions.version_id == version["id"]).all()
-
-            for testversion in testversions:
-                extra_data = {}
-
-                Tests = DciControlServer._DCI_MODEL.base.classes.tests
-                test = session.query(Tests).get(testversion.test_id)
-                if test:
-                    extra_data["test"] = test.name
-
-                Jobs = DciControlServer._DCI_MODEL.base.classes.jobs
-                job = session.query(Jobs).\
-                    filter(Jobs.testversion_id == testversion.id).first()
-                if job:
-                    extra_data["job_id"] = job.id
-                    Remotecis = DciControlServer._DCI_MODEL.base.classes.\
-                        remotecis
-                    remoteci = session.query(Remotecis).get(job.remoteci_id)
-                    if remoteci:
-                        extra_data["remoteci"] = remoteci.name
-
-                    Jobstates = DciControlServer._DCI_MODEL.base.classes.\
-                        jobstates
-                    jobstate = job.jobstates.filter(
-                        Jobstates.job_id == job.id).first()
-                    if jobstate:
-                        extra_data["status"] = jobstate.status
-                else:
-                    versions_to_remove.append(version)
-                    continue
-                version["extra_data"].append(extra_data)
-
-        for version in versions_to_remove:
-            response["_items"].remove(version)
-        session.close()
-
-    @staticmethod
     def get_remotecis_extra(response):
         if not (flask.request.args.get('extra_data') and
                 flask.request.args.get('version_id')):
@@ -288,8 +241,6 @@ class DciControlServer(Eve):
         self.on_insert_jobs += DciControlServer.stop_running_jobs
         self.on_fetched_item_jobs += DciControlServer.aggregate_job_data
         self.on_fetched_resource_jobs += DciControlServer.get_jobs_extra
-        self.on_fetched_resource_versions += DciControlServer.\
-            get_versions_extra
         self.on_fetched_resource_remotecis += DciControlServer.\
             get_remotecis_extra
 
@@ -321,8 +272,8 @@ def create_app(db_uri=None):
         # executed by SQLAlchemy. Useful while debugging and in
         # development. Turned off by default
         # --------
-        'SQLALCHEMY_ECHO': False,
-        'SQLALCHEMY_RECORD_QUERIES': False,
+        # 'SQLALCHEMY_ECHO': True,
+        # 'SQLALCHEMY_RECORD_QUERIES': True,
     }
     basic_auth = server.auth.DCIBasicAuth(dci_model)
     return DciControlServer(dci_model, settings=settings,
@@ -334,5 +285,5 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         port = int(sys.argv[1])
     app = create_app()
-    site_map()
+#    site_map()
     app.run(debug=True, port=port)
