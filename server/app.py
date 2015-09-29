@@ -78,32 +78,39 @@ class DciControlServer(Eve):
         session = DciControlServer._DCI_MODEL.get_session()
         query = text("""
         SELECT
-            testversions.id
+            jobdefinitions.id
         FROM
-            testversions, remotecis
-        WHERE testversions.id NOT IN (
+            jobdefinitions, remotecis
+        WHERE jobdefinitions.id NOT IN (
             SELECT
-                jobs.testversion_id
+                jobs.jobdefinition_id
             FROM jobs
             WHERE jobs.remoteci_id=:remoteci_id
               AND
            jobs.created_at > now() - interval '1 day'
-        ) AND testversions.test_id=remotecis.test_id AND
+        ) AND jobdefinitions.test_id=remotecis.test_id AND
         remotecis.id=:remoteci_id
         LIMIT 1
         """)
 
         for d in documents:
-            if 'testversion_id' in d:
+            if 'jobdefinition_id' in d:
                 continue
             r = DciControlServer._DCI_MODEL.engine.execute(
                 query, remoteci_id=d['remoteci_id']).fetchone()
+            print("bob %s" % r)
+            print(r)
             if r is None:
                 abort(412, "No test to run left.")
-            testversion = session.query(
-                DciControlServer._DCI_MODEL.base.classes.testversions).\
+            print("Success %s" % r)
+            jobdefinition = session.query(
+                DciControlServer._DCI_MODEL.base.classes.jobdefinitions).\
                 get(str(r[0]))
-            d['testversion_id'] = testversion.id
+            print("Success %s" % jobdefinition)
+            d['jobdefinition_id'] = jobdefinition.id
+        from pprint import pprint
+        print('bob l"eponge')
+        pprint(d)
         session.close()
 
     @staticmethod
@@ -117,6 +124,8 @@ class DciControlServer(Eve):
             for job in jobs:
                 jobstate = job.jobstates.filter(
                     Jobstates.job_id == job.id).first()
+                if jobstate is None:
+                    continue
                 if jobstate.status == 'ongoing':
                     session.add(
                         Jobstates(
@@ -133,10 +142,9 @@ class DciControlServer(Eve):
         data = {}
         job = session.query(DciControlServer._DCI_MODEL.base.classes.jobs).\
             get(response['id'])
+        # TODO(Gonéri): do we still need that?
         my_datas = (
-            job.testversion.version.product.data,
-            job.testversion.version.data,
-            job.testversion.test.data,
+            job.jobdefinition.test.data,
             job.remoteci.data)
         for my_data in my_datas:
             if my_data:
@@ -321,8 +329,8 @@ def create_app(db_uri=None):
         # executed by SQLAlchemy. Useful while debugging and in
         # development. Turned off by default
         # --------
-        'SQLALCHEMY_ECHO': False,
-        'SQLALCHEMY_RECORD_QUERIES': False,
+        # 'SQLALCHEMY_ECHO': True,
+        # 'SQLALCHEMY_RECORD_QUERIES': True,
     }
     basic_auth = server.auth.DCIBasicAuth(dci_model)
     return DciControlServer(dci_model, settings=settings,
@@ -334,5 +342,5 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         port = int(sys.argv[1])
     app = create_app()
-    site_map()
+#    site_map()
     app.run(debug=True, port=port)

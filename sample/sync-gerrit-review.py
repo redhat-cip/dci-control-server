@@ -22,6 +22,7 @@
 # in Gerrit (-1/0/+1)
 
 import argparse
+import copy
 import os
 import sys
 
@@ -63,10 +64,11 @@ class Gerrit(object):
     def review(self, patch_sha, status):
         """Push a score (e.g: -1) on a review."""
         if self.vote:
-            subprocess.check_output(['ssh', '-xp29418', '-l',
-                                     self.user, self.server,
-                                     'gerrit', 'review', '--verified', status,
-                                     patch_sha])
+            subprocess.check_output([
+                'ssh', '-xp29418', '-l',
+                self.user, self.server,
+                'gerrit', 'review', '--verified', status,
+                patch_sha])
         else:
             print("[Voting disabled] should put %s to review %s" % (
                 status, patch_sha))
@@ -81,57 +83,72 @@ class Gerrit(object):
             yield self.get_last_patchset(int(review['number']))
 
 
-def push_patchset_as_version_in_dci(dci_client, product, component_name,
-                                    test, patchset, git_url):
+def create_jobdefinition(dci_client, test, name, components):
+    jobdefinition = dci_client.find_or_create_or_refresh(
+        '/jobdefinitions',
+        {
+            "name": name,
+            "test_id": test['id']
+        },
+        unicity_key=['test_id', 'name']
+    )
+    # NOTE(Gonéri): associate the jobdefinition with its components
+    for component in components:
+        dci_client.find_or_create_or_refresh(
+            '/jobdefinition_components',
+            {
+                "component_id": component['id'],
+                "jobdefinition_id": jobdefinition['id']
+            },
+            unicity_key=['component_id', 'jobdefinition_id']
+        )
+    # TODO(Gonéri): our jobdefinition is ready, we should turn it on.
+    return jobdefinition
+
+
+def push_patchset_as_component_in_dci(dci_client, component_name,
+                                      test, patchset, git_url, componenttype):
     """Create a version in DCI-CS from a gerrit patchset."""
-    subject = patchset['commitMessage'].split('\n')[0]
+    title = patchset['commitMessage'].split('\n')[0]
     message = patchset['commitMessage']
     gerrit_id = patchset['id']
     url = patchset['url']
     ref = patchset['currentPatchSet']['ref']
     sha = patchset['currentPatchSet']['revision']
-    print("Gerrit to DCI-CS: %s" % subject)
+    print("Gerrit to DCI-CS: %s" % title)
     version_data = {
-        "product_id": product['id'],
-        "name": subject,
-        "title": subject,
+        "componenttype_id": componenttype['id'],
+        "name": "[gerrit] %s - %s" % (component_name, title),
+        "title": title,
         "message": message,
         "sha": sha,
         "url": url,
         # TODO(Gonéri): We use components/$name/ref now
-        "ref": "",
+        "git": git_url,
+        "ref": ref,
         "data": {
-            'components': {
-                component_name: {
-                    "git": git_url,
-                    "ref": ref,
-                    "sha": sha,
-                    "gerrit_id": gerrit_id,
-                    "url": url,
-                }
-            }
-        }
+            "gerrit_id": gerrit_id,
+        },
+        "canonical_project_name": component_name
     }
-    version = dci_client.find_or_create_or_refresh(
-        '/versions', version_data, unicity_key=['sha'])
-    dci_client.find_or_create_or_refresh(
-        '/testversions',
-        {'test_id': test['id'], 'version_id': version['id']},
-        unicity_key=['test_id', 'version_id'])
-    return version
+    component = dci_client.find_or_create_or_refresh(
+        '/components', version_data, unicity_key=['sha'])
+    return component
 
 
-def get_patchset_score(dci_client, component_name, version):
+def get_patchset_score(dci_client, jobdefinition):
     """Update the review in Gerrit from the status of a version in DCI-CS."""
 
-    testversions = dci_client.get(
-        "/testversions",
-        where={'version_id': version['id']}).json()
+    jobdefinition = dci_client.get(
+        '/jobdefinitions',
+        projection={'jobs_collection': 1},
+        where={'id': jobdefinition['id']}).json()
+
     status = '0'
-    for testversion in testversions['_items']:
+    for job_id in jobdefinition['_items'][0]['jobs_collection']:
         jobs = dci_client.get(
             "/jobs",
-            where={'testversion_id': testversion['id']},
+            where={'id': job_id},
             embedded={'jobstates_collection': 1}).json()
         for job in jobs['_items']:
             last_job_status = job['jobstates_collection'][-1]['status']
@@ -140,12 +157,7 @@ def get_patchset_score(dci_client, component_name, version):
                 break
             elif last_job_status == 'success':
                 status = '1'
-    try:
-        sha = version['data']['components'][component_name]['sha']
-    except KeyError:
-        # NOTE(Gonéri): no job result yet
-        return
-    return {'sha': sha, 'status': status}
+    return status
 
 
 def _init_conf():
@@ -184,15 +196,26 @@ def main():
         test = dci_client.find_or_create_or_refresh(
             '/tests',
             {'name': project['gerrit']['test'], 'data': {}})
-        project_data = project['data'] if 'data' in project else {}
-        product = dci_client.find_or_create_or_refresh(
-            '/products', {'name': project["name"], 'data': project_data})
+        componenttype = dci_client.find_or_create_or_refresh(
+            '/componenttypes',
+            {"name": "gerrit_review"})
 
         if 'git' in project['gerrit']:
             git_url = project['gerrit']['git']
         else:
             git_url = "http://%s/%s" % (project["gerrit"]["server"],
                                         project["gerrit"]["project"])
+
+        base_components = []
+        for component in project['jobdefinition']['components']:
+            componenttype = dci_client.find_or_create_or_refresh(
+                '/componenttypes',
+                {"name": component['componenttype']})
+            del component['componenttype']
+            component['componenttype_id'] = componenttype['id']
+            base_components += [
+                dci_client.find_or_create_or_refresh(
+                    '/components', component, unicity_key=['sha'])]
 
         # NOTE(Gonéri): For every review of a component, we
         # - create a version that overwrite the component default origin
@@ -202,17 +225,23 @@ def main():
         for patchset in gerrit.list_open_patchsets(
                 project['gerrit']['project'],
                 project['gerrit'].get('filter', '')):
-            version = push_patchset_as_version_in_dci(
-                dci_client, product,
-                project["gerrit"]["name"],
-                test, patchset, git_url)
-            score = get_patchset_score(dci_client,
-                                       project["gerrit"]["project"],
-                                       version)
+            components = copy.deepcopy(base_components)
+            components += [
+                push_patchset_as_component_in_dci(
+                    dci_client,
+                    project["gerrit"]["name"],
+                    test, patchset, git_url, componenttype)]
+
+            name = "Khalessi gerrit review: %s" % (patchset['id'])
+            jobdefinition = create_jobdefinition(
+                dci_client, test, name, components)
+            print(jobdefinition)
+            score = get_patchset_score(dci_client, jobdefinition)
             # TODO(Gonéri): also push a message and the URL to see the job.
-            if score and score['status'] != '0':
-                print("DCI-CS → Gerrit: %s" % score['status'])
-                gerrit.review(score['sha'], score['status'])
+            if score != '0':
+                print("DCI-CS → Gerrit: %s" % score)
+                gerrit.review(
+                    patchset['currentPatchSet']['revision'], score)
 
 if __name__ == '__main__':
     main()
