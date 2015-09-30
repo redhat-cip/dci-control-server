@@ -68,11 +68,13 @@ class DCIClient(object):
             data=json.dumps(data),
             headers={'If-Match': etag})
 
-    def get(self, path, where={}, embedded={}, _in=None, params=None):
-        return self.s.get("%s%s?where=%s&embedded=%s&in=%s" % (
+    def get(self, path, where={}, embedded={}, projection={},
+            _in=None, params=None):
+        return self.s.get("%s%s?where=%s&embedded=%s&projection=%s&in=%s" % (
             self.end_point, path,
             json.dumps(where),
             json.dumps(embedded),
+            json.dumps(projection),
             json.dumps(_in)),
             params=params)
 
