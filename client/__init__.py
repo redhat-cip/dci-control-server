@@ -215,6 +215,9 @@ class DCIClient(object):
             raise RuntimeWarning()
         else:
             item = self.post(path, data).json()
+        if '_error' in item:
+            print("Request has failed: %s" % (item))
+            raise RuntimeError()
         return item
 
 
