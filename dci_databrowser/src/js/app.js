@@ -18,10 +18,11 @@
 
 var angular = require('angular');
 
-var app = angular.module('app', ['ngCookies',
-'angular-loading-bar', 'ui.router', 'googlechart', 'ngResource']);
+angular.module('app',
+    ['ngCookies', 'angular-loading-bar', 'ui.router', 'googlechart',
+     'ngResource'])
 
-app.factory('MyInjector', function($cookies, $q, $window) {
+.factory('MyInjector', function($cookies, $q, $window) {
     var injector = {
         request: function(config) {
             config.headers.Authorization = 'Basic ' + $cookies.auth;
@@ -29,9 +30,9 @@ app.factory('MyInjector', function($cookies, $q, $window) {
         }
     };
     return injector;
-});
+})
 
-app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
+.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
     function isAuthenticated($q, $cookies) {
         var d = $q.defer();
         if (($cookies.auth == btoa('None')) ||
@@ -87,17 +88,17 @@ app.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
 
     $urlRouterProvider.otherwise('signin');
     $httpProvider.interceptors.push('MyInjector');
-});
+})
 
-app.controller('AppCtrl', function($rootScope, $state) {
+.controller('AppCtrl', function($rootScope, $state) {
     $rootScope.$on('$routeChangeError', function(value) {
         if (value === 'notAuthenticated') {
             $state.go('signin');
         }
     });
-});
+})
 
-app.factory('CommonCode', function($resource, $cookies, $location) {
+.factory('CommonCode', function($resource, $cookies, $location) {
     // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
     var getRemoteCis = function($scope) {
@@ -154,9 +155,9 @@ app.factory('CommonCode', function($resource, $cookies, $location) {
 
     return {'getJobInfo': getJobInfo,
             'getRemoteCis': getRemoteCis};
-});
+})
 
-app.controller('ListJobsController', function($scope, $cookies, $resource,
+.controller('ListJobsController', function($scope, $cookies, $resource,
 $location, $state, CommonCode) {
 
     var loadPage = function() {
@@ -203,9 +204,9 @@ $location, $state, CommonCode) {
     }
 
     loadPage();
-});
+})
 
-app.controller('ListRemotecisController', function($scope, $location,
+.controller('ListRemotecisController', function($scope, $location,
 $cookies, $state, CommonCode) {
 
     $scope.remotecisNextPage = function() {
@@ -227,16 +228,16 @@ $cookies, $state, CommonCode) {
     }
 
     CommonCode.getRemoteCis($scope);
-});
+})
 
-app.controller('JobDetailsController', function($scope, $stateParams,
+.controller('JobDetailsController', function($scope, $stateParams,
 $cookies, $state, CommonCode) {
     if ($stateParams.jobId) {
         CommonCode.getJobInfo($scope, $stateParams.jobId);
     }
-});
+})
 
-app.controller('ProductsController', function($scope, $resource, $cookies,
+.controller('ProductsController', function($scope, $resource, $cookies,
 $state, CommonCode) {
     var Products = $resource('/api/products').get();
     Products.$promise.then(function(products) {
@@ -253,9 +254,9 @@ $state, CommonCode) {
             });
         }
     });
-});
+})
 
-app.controller('StatsController', function($scope, $stateParams, $resource,
+.controller('StatsController', function($scope, $stateParams, $resource,
 $cookies, $state, CommonCode) {
     var Products = $resource('/api/products').get();
     Products.$promise.then(function(products) {
@@ -335,9 +336,9 @@ $cookies, $state, CommonCode) {
         }
         getRate($scope.currentProduct.id, currentVersion.id);
     });
-});
+})
 
-app.controller('LoginController', ['$scope', '$cookies', '$state',
+.controller('LoginController', ['$scope', '$cookies', '$state',
     function($scope, $cookies, $state) {
         $scope.submit = function() {
             var loginb64 = btoa($scope.username.concat(':', $scope.password));
@@ -345,9 +346,9 @@ app.controller('LoginController', ['$scope', '$cookies', '$state',
             $state.go('jobs');
         };
     }
-]);
+])
 
-app.controller('LogoutController', ['$scope', '$templateCache',
+.controller('LogoutController', ['$scope', '$templateCache',
 '$cookies', '$state',
   function($scope, $templateCache, $cookies, $state) {
       $templateCache.removeAll();
