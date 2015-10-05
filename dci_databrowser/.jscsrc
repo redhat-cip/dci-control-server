@@ -1,4 +1,3 @@
 {
-    "preset": "google",
-    "validateIndentation": 4
+    "preset": "google"
 }
