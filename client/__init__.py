@@ -49,6 +49,8 @@ class DCIClient(object):
             self.end_point,
             path),
             headers={'If-Match': etag})
+        if r.status_code != 204:
+            raise DCIServerError(r)
         return r
 
     # TODO(Gonéri): Broken on Py27. To investigate.
@@ -59,24 +61,33 @@ class DCIClient(object):
     #            headers={'If-Match': etag})
 
     def post(self, path, data):
-        return self.s.post("%s%s" % (
+        r = self.s.post("%s%s" % (
             self.end_point, path), data=json.dumps(data))
+        if r.status_code != 201:
+            raise DCIServerError(r)
+        return r
 
     def put(self, path, etag, data):
-        return self.s.put(
+        r = self.s.put(
             "%s%s" % (self.end_point, path),
             data=json.dumps(data),
             headers={'If-Match': etag})
+        if r.status_code not in [200, 201]:
+            raise DCIServerError(r)
+        return r
 
     def get(self, path, where={}, embedded={}, projection={},
             _in=None, params=None):
-        return self.s.get("%s%s?where=%s&embedded=%s&projection=%s&in=%s" % (
+        r = self.s.get("%s%s?where=%s&embedded=%s&projection=%s&in=%s" % (
             self.end_point, path,
             json.dumps(where),
             json.dumps(embedded),
             json.dumps(projection),
             json.dumps(_in)),
             params=params)
+        if r.status_code != 200:
+            raise DCIServerError(r)
+        return r
 
     def list_items(self, item_type, where={}, embedded={},
                    projection={}, page=1, max_results=10):
@@ -216,6 +227,13 @@ class DCIClient(object):
         else:
             item = self.post(path, data).json()
         return item
+
+
+class DCIServerError(Exception):
+    def __init__(self, r):
+        self.r = r
+        self.message = "Request has failed(%s): %s" % (
+            self.r.status_code, self.r.text)
 
 
 class DCIInternalFailure(Exception):
