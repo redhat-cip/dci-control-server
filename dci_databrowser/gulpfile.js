@@ -1,6 +1,7 @@
 'use strict';
 
 var gulp = require('gulp');
+var del = require('del');
 var connect = require('gulp-connect');
 var jscs = require('gulp-jscs');
 var config = require('./config');
@@ -23,6 +24,11 @@ gulp.task('build', ['js', 'css'], function() {
     ]).pipe(gulp.dest('static'));
 });
 
+gulp.task('clean', function() {
+    var entries = ['static/**/*', '!static/.gitkeep'];
+    return del(entries);
+});
+
 gulp.task('reload', ['build'], function() {
     return gulp.src('static/**').pipe(connect.reload());
 });
@@ -31,7 +37,7 @@ gulp.task('watch', function() {
     gulp.watch('src/**', ['reload']);
 });
 
-gulp.task('js', function() {
+gulp.task('js', ['clean'], function() {
     var b = browserify({
         entries: [
             'src/js/app.js',
@@ -55,7 +61,7 @@ gulp.task('js', function() {
       .pipe(gulp.dest('./static/js/'));
 });
 
-gulp.task('css', function() {
+gulp.task('css', ['clean'], function() {
     var entries = [
         'node_modules/bootstrap/dist/css/bootstrap.css',
         'node_modules/angular-loading-bar/build/loading-bar.css',
