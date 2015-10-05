@@ -89,7 +89,7 @@ class DCIClient(object):
             raise DCIServerError(r)
         return r
 
-    def list_items(self, item_type, where={}, embedded={},
+    def list_items(self, path, where={}, embedded={},
                    projection={}, page=1, max_results=10):
         """List the items for a given products.
 
@@ -100,7 +100,7 @@ class DCIClient(object):
                 '%s%s?where=%s&embedded=%s'
                 '&projection=%s&page=%d&max_results=%d' % (
                     self.end_point,
-                    item_type,
+                    path,
                     json.dumps(where),
                     json.dumps(embedded),
                     json.dumps(projection),
