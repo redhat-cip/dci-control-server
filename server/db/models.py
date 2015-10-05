@@ -38,9 +38,6 @@ class DCIModel(object):
         self.metadata = MetaData()
         self.metadata.reflect(self.engine)
 
-        for table in self.metadata.tables:
-            print(table)
-
         # NOTE(Gonéri): ensure the associated resources list get sorted using
         # the created_at key.
         def _gen_relationship(base, direction, return_fn,
@@ -68,7 +65,6 @@ class DCIModel(object):
                     self.base.classes, foreign_table_name + 's')
                 remote_side = None
                 remote_side = [foreign_table_object.id]
-                print('%s.%s' % (cur_db, foreign_table_name))
                 setattr(cur_db, foreign_table_name, relationship(
                     foreign_table_object, uselist=False,
                     remote_side=remote_side))
