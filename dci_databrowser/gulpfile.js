@@ -8,16 +8,18 @@ var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
 var sourcemaps = require('gulp-sourcemaps');
+var concat = require('gulp-concat');
 
 gulp.task('jscs', function() {
     return gulp.src(['src/**.js', 'gulpfile.js'])
            .pipe(jscs());
 });
 
-gulp.task('build', ['js'], function() {
+gulp.task('build', ['js', 'css'], function() {
     return gulp.src([
         'src/**/*',
-        '!src/**/*.js'
+        '!src/**/*.js',
+        '!src/**/*.css'
     ]).pipe(gulp.dest('static'));
 });
 
@@ -51,6 +53,20 @@ gulp.task('js', function() {
       .pipe(sourcemaps.init({loadMaps: true}))
       .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest('./static/js/'));
+});
+
+gulp.task('css', function() {
+    var entries = [
+        'node_modules/bootstrap/dist/css/bootstrap.css',
+        'node_modules/angular-loading-bar/build/loading-bar.css',
+        'src/css/**/*.css'
+    ];
+
+    return gulp.src(entries)
+        .pipe(sourcemaps.init({loadMaps:true}))
+        .pipe(concat('dashboard.css'))
+        .pipe(sourcemaps.write('./'))
+        .pipe(gulp.dest('static/css/'));
 });
 
 gulp.task('connect', function() {
