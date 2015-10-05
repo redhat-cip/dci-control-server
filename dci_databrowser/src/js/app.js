@@ -18,7 +18,7 @@
 
 var angular = require('angular');
 
-var app = angular.module('app', ['ngRoute', 'ngCookies',
+var app = angular.module('app', ['ngCookies',
 'angular-loading-bar', 'ui.router', 'googlechart', 'ngResource']);
 
 app.factory('MyInjector', function($cookies, $q, $window) {
