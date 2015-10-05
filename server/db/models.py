@@ -38,9 +38,6 @@ class DCIModel(object):
         self.metadata = MetaData()
         self.metadata.reflect(self.engine)
 
-        for table in self.metadata.tables:
-            print(table)
-
         # NOTE(Gonéri): ensure the associated resources list get sorted using
         # the created_at key.
         def _gen_relationship(base, direction, return_fn,
