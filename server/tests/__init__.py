@@ -31,12 +31,11 @@ class DCITestCase(testtools.TestCase):
         super(DCITestCase, cls).setUpClass()
         cls._db_dir = tempfile.mkdtemp()
         subprocess.call(['initdb', '--no-locale', cls._db_dir])
-        subprocess.call(['sed', '-i',
-                         "s,#listen_addresses.*,listen_addresses = '',",
-                         '%s/postgresql.conf' % cls._db_dir])
-        subprocess.call(['sed', '-i',
-                         "s,#client_encoding.*,client_encoding = utf8,",
-                         '%s/postgresql.conf' % cls._db_dir])
+        with open(cls._db_dir + '/postgresql.conf', 'a+') as pg_cfg_f:
+            pg_cfg_f.write("client_encoding = utf8\n")
+            pg_cfg_f.write("listen_addresses = ''\n")
+            pg_cfg_f.write("fsync = off\n")
+            pg_cfg_f.write("full_page_writes = off\n")
         cls._pg = subprocess.Popen(['postgres', '-F',
                                     '-k', cls._db_dir,
                                     '-D', cls._db_dir])
