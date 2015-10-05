@@ -268,6 +268,7 @@ def create_app(db_uri=None):
         'X_DOMAINS': '*',
         'X_HEADERS': 'Authorization',
         'DOMAIN': dci_model.generate_eve_domain_configuration(),
+        'SQLALCHEMY_TRACK_MODIFICATIONS': False,
         # The following two lines will output the SQL statements
         # executed by SQLAlchemy. Useful while debugging and in
         # development. Turned off by default
