@@ -33,11 +33,6 @@ from sqlalchemy.sql import text
 from dci_databrowser import dci_databrowser
 
 
-def site_map():
-    for rule in app.url_map.iter_rules():
-        pprint(rule)
-
-
 def load_docs(app):
     try:
         from eve_docs import eve_docs
@@ -286,5 +281,4 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         port = int(sys.argv[1])
     app = create_app()
-#    site_map()
     app.run(debug=True, port=port)
