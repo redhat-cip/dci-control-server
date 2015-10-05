@@ -16,6 +16,7 @@
 
 import base64
 import json
+import os
 import shutil
 import subprocess
 import tempfile
@@ -29,8 +30,15 @@ class DCITestCase(testtools.TestCase):
     @classmethod
     def setUpClass(cls):
         super(DCITestCase, cls).setUpClass()
+
+        if hasattr(subprocess, 'DEVNULL'):
+            DEVNULL = subprocess.DEVNULL
+        else:
+            DEVNULL = open(os.devnull, 'wb')
+
         cls._db_dir = tempfile.mkdtemp()
-        subprocess.call(['initdb', '--no-locale', cls._db_dir])
+        subprocess.call(['initdb', '--no-locale', cls._db_dir],
+                        stdout=DEVNULL)
         with open(cls._db_dir + '/postgresql.conf', 'a+') as pg_cfg_f:
             pg_cfg_f.write("client_encoding = utf8\n")
             pg_cfg_f.write("listen_addresses = ''\n")
@@ -38,12 +46,14 @@ class DCITestCase(testtools.TestCase):
             pg_cfg_f.write("full_page_writes = off\n")
         cls._pg = subprocess.Popen(['postgres', '-F',
                                     '-k', cls._db_dir,
-                                    '-D', cls._db_dir])
+                                    '-D', cls._db_dir],
+                                   stdout=DEVNULL)
         time.sleep(0.5)
         subprocess.call(['psql', '--quiet',
                          '--echo-hidden', '-h', cls._db_dir,
                          '-f', 'db_schema/dci-control-server.sql',
-                         'template1'])
+                         'template1'],
+                        stdout=DEVNULL)
         time.sleep(0.3)
 
         # create roles, teams and users for testing
