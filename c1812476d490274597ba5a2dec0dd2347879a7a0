@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da7095c5_1b10964d",
+        "filename": "db_schema/dci-control-server.sql",
+        "patchSetId": 4
+      },
+      "lineNbr": 302,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-05T12:50:22Z",
+      "side": 1,
+      "message": "This is not needed, we use openshift environment variable for setting the password to the admin user.",
+      "revId": "c1812476d490274597ba5a2dec0dd2347879a7a0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
