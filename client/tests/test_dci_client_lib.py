@@ -88,9 +88,8 @@ class TestClientLib(server.tests.DCITestCase):
                   update_item['etag'], {'name': 'Ron'}))
 
         # try to delete the entry with the outdate etag
-        self.assertStatusCodeEqual(
-            412,
-            c.delete('/tests/' + update_item['id'], update_item['etag']))
+        self.assertRaises(client.DCIServerError, c.delete,
+                          '/tests/' + update_item['id'], update_item['etag'])
 
         # read the new etag
         new_etag = c.get(
