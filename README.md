@@ -19,7 +19,7 @@ In this example `mydomain` is your domain as returned by the `rhc domain list` c
       SSH to:     552643edfcf933d464000135@dcistable-mydomain.rhcloud.com
       Git remote: ssh://blablabla@dcistable-mydomain.rhcloud.com/~/git/dcistable.git/
       Cloned to:  /home/goneri/dcistable
-	$ rhc env set --app stable ADMIN_PASSWORD=admin
+    $ rhc env set --app stable DCI_LOGIN=admin DCI_PASSWORD=admin
     $ git push ssh://blablabla@dcistable-mydomain.rhcloud.com/~/git/dcistable.git/ master:master -f
 
 Your website should be able on the http://dcistable-mydomain.rhcloud.com/ URL. If it's not the
@@ -33,6 +33,7 @@ case, you can call `rhc tail dcistable` to watch the application logs.
 install and configure PostgreSQL:
 
     # yum install postgresql-server postgresql-contrib
+    # postgresql-setup initdb
 
 Allow local account with password:
 
@@ -53,7 +54,7 @@ Connect with the postgres user:
     Enter password for new role:
     Enter it again:
 
-    $ createdb boa -O boa
+    $ createdb dci_control_server -O boa
     $ psql -U boa -W -h 127.0.0.1 dci_control_server < db_schema/dci-control-server.sql
 
 
