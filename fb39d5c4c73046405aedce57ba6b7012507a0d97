@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da7095c5_761449f5",
+        "filename": "specs/scheduling.md",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-06T14:35:38Z",
+      "side": 1,
+      "message": "This prevent us from associating a priority to an association remoteci/jobdefinition.\n\nSomething I was imaging, is to create a jobs record with a “pending” status. And then to adjust the priority of the different jobs. This way we can have a view of the coming build. On the other side, as soon as the number of remoteci will grow up, we may have a lot of jobs:\n\nnbr of jobs \u003d nbr of jobdefinitions * nbr of remoteci",
+      "revId": "fb39d5c4c73046405aedce57ba6b7012507a0d97",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
