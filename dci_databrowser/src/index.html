@@ -1,48 +1,13 @@
 <!DOCTYPE html>
-<html lang="en" ng-app="app" ng-controller="AppCtrl">
-  <head>
-    <meta charset="utf-8">
-    <title>Distributed CI</title>
+<html lang="en" ng-app="app">
+<head>
+  <meta charset="utf-8">
+  <title>Distributed CI</title>
+  <link href="/css/dashboard.css" rel="stylesheet" type="text/css" media="all">
+</head>
 
-    <link href="/css/dashboard.css" rel="stylesheet" type="text/css" media="all">
-  </head>
-
-  <body>
-    <nav class="navbar navbar-inverse navbar-fixed-top">
-      <div class="container-fluid">
-        <div class="navbar-header">
-          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-            <span class="sr-only">Toggle navigation</span>
-          </button>
-          <img class= "logo" src="images/redhat.png">
-          <a class="navbar-brand" href=".">Distributed CI</a>
-        </div>
-        <div id="navbar" class="navbar-collapse collapse">
-          <ul class="nav navbar-nav navbar-right">
-            <li><a href=".">Home</a></li>
-            <li><a ui-sref="signin">Sign in</a></li>
-            <li><a ui-sref="signout">Sign out</a></li>
-          </ul>
-        </div>
-      </div>
-    </nav>
-
-    <div class="container-fluid">
-      <div class="row">
-        <div class="col-sm-3 col-md-2 sidebar">
-          <ul class="nav nav-sidebar">
-              <li><a ui-sref="jobs">Jobs</a></li>
-              <li><a ui-sref="products">Products</a></li>
-              <li><a ui-sref="remotecis">Remote CIs</a></li>
-              <li><a ui-sref="stats">Stats</a></li>
-          </ul>
-        </div>
-        <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-          <div ui-view></div>
-        </div>
-      </div>
-    </div>
-
-    <script src="js/app.js"></script>
-  </body>
+<body>
+  <div ui-view></div>
+  <script src="js/app.js"></script>
+</body>
 </html>
