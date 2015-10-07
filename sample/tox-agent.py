@@ -57,8 +57,9 @@ r = dci_client.get("/jobs/%s" % job_id,
                              'jobdefinition.components.componenttype': 1})
 job = r.json()
 component = job['jobdefinition']['components'][0]
-if component['componenttype']['name'] != 'git_repository':
-    print('Invalid component type!')
+if component['componenttype']['name'] not in (
+        'git_repository', 'gerrit_review'):
+    print('Invalid component type!: %s' % component['componenttype']['name'])
     sys.exit(1)
 
 if component['ref']:
