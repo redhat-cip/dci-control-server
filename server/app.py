@@ -68,36 +68,53 @@ class DciControlServer(Eve):
 
     @staticmethod
     def pick_jobs(documents):
+        picked_job = documents[0]
         session = DciControlServer._DCI_MODEL.get_session()
-        query = text("""
-        SELECT
-            jobdefinitions.id
-        FROM
-            jobdefinitions, remotecis
-        WHERE jobdefinitions.id NOT IN (
-            SELECT
-                jobs.jobdefinition_id
-            FROM jobs
-            WHERE jobs.remoteci_id=:remoteci_id
-              AND
-           jobs.created_at > now() - interval '1 day'
-        ) AND jobdefinitions.test_id=remotecis.test_id AND
-        remotecis.id=:remoteci_id
-        LIMIT 1
-        """)
 
-        for d in documents:
-            if 'jobdefinition_id' in d:
-                continue
+        # First, test if its a recheck request
+        if flask.request.args.get('recheck'):
+            job_id_to_recheck = str(flask.request.args.get('job_id'))
+            if not job_id_to_recheck:
+                abort(400, "job_id missing.")
+            job_to_recheck = session.query(
+                DciControlServer._DCI_MODEL.base.classes.jobs).\
+                get(job_id_to_recheck)
+            if not job_to_recheck:
+                abort(400, "job '%s' does not exist." % job_id_to_recheck)
+            # Replicate the recheck job
+            picked_job['jobdefinition_id'] = job_to_recheck.jobdefinition_id
+            picked_job['remoteci_id'] = job_to_recheck.remoteci_id
+            picked_job['team_id'] = job_to_recheck.team_id
+            picked_job['recheck'] = True
+        else:
+            query = text("""
+            SELECT
+                jobdefinitions.id
+            FROM
+                jobdefinitions, remotecis
+            WHERE jobdefinitions.id NOT IN (
+                SELECT
+                    jobs.jobdefinition_id
+                FROM jobs
+                WHERE jobs.remoteci_id=:remoteci_id
+                  AND
+               jobs.created_at > now() - interval '1 day'
+            ) AND jobdefinitions.test_id=remotecis.test_id AND
+            remotecis.id=:remoteci_id
+            ORDER BY
+                priority ASC
+            LIMIT 1
+            """)
+
             r = DciControlServer._DCI_MODEL.engine.execute(
-                query, remoteci_id=d['remoteci_id']).fetchone()
+                query, remoteci_id=picked_job['remoteci_id']).fetchone()
             if r is None:
                 abort(412, "No test to run left.")
             jobdefinition = session.query(
                 DciControlServer._DCI_MODEL.base.classes.jobdefinitions).\
                 get(str(r[0]))
-            d['jobdefinition_id'] = jobdefinition.id
-        session.close()
+            picked_job['jobdefinition_id'] = jobdefinition.id
+            session.close()
 
     @staticmethod
     def stop_running_jobs(documents):

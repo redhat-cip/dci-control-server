@@ -74,8 +74,11 @@ def create_remoteci(client, test_id):
     )
 
 
-def create_job(client, remoteci_id):
-    return client.post('/api/jobs', data={'remoteci_id': remoteci_id})
+def create_job(client, remoteci_id, recheck=False, job_id=None):
+    path = '/api/jobs'
+    if recheck:
+        path = '/api/jobs?recheck=1&job_id=%s' % job_id
+    return client.post(path, data={'remoteci_id': remoteci_id})
 
 
 def generate_client(app, credentials):
