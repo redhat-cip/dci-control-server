@@ -38,6 +38,7 @@ class TestApp(server.tests.DCITestCase):
         self.test_id = self._extract_response(test)['id']
         self.test_post_component_item()
         jobdefinition = self._create_jobdefinition("admin", self.test_id)
+        assert jobdefinition == 'lol'
         self.jobdefinition_id = self._extract_response(jobdefinition)['id']
         jobdefinition_component = self._create_jobdefinition_component(
             "admin", self.jobdefinition_id, self.component_id)
