@@ -46,10 +46,12 @@ def create_test(client):
         })
 
 
-def create_jobdefinition(client, test_id):
+def create_jobdefinition(client, test_id, priority=0):
     return client.post(
         '/api/jobdefinitions',
-        data={'name': 'bob', 'test_id': test_id}
+        data={'name': 'bob',
+              'test_id': test_id,
+              'priority': priority}
     )
 
 
@@ -88,8 +90,10 @@ def create_remoteci(client, test_id):
     )
 
 
-def create_job(client, remoteci_id):
-    return client.post('/api/jobs', data={'remoteci_id': remoteci_id})
+def create_job(client, remoteci_id, recheck=False, job_id=None):
+    return client.post('/api/jobs', data={'remoteci_id': remoteci_id,
+                                          'recheck': recheck,
+                                          'job_id': job_id})
 
 
 def generate_client(app, credentials):
