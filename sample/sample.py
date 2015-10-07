@@ -48,7 +48,8 @@ for _ in range(10):
 
         jobdefinition = client.post('/api/jobdefinitions',
                                     data={'name': str(uuid.uuid4())[:18],
-                                          'test_id': test_id})
+                                          'test_id': test_id,
+                                          'priority': 0})
         jobdefinition_id = jobdefinition.json()["id"]
 
         remoteci = client.post('/api/remotecis',
@@ -64,7 +65,8 @@ for _ in range(10):
         job = client.post('/api/jobs',
                           data={'remoteci_id': remoteci_id,
                                 'team_id': team_id,
-                                'jobdefinition_id': jobdefinition_id})
+                                'jobdefinition_id': jobdefinition_id,
+                                'recheck': False})
         job_id = job.json()["id"]
 
         alea = random.randint(0, 2)

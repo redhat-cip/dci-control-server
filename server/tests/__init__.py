@@ -171,6 +171,7 @@ class DCITestCase(testtools.TestCase):
             'post',
             '/api/jobdefinitions',
             data={'name': 'bob',
+                  'priority': 0,
                   'test_id': test_id})
 
     def _create_test(self, client):
@@ -207,4 +208,5 @@ class DCITestCase(testtools.TestCase):
         return getattr(self, "%s_client" % client)(
             'post',
             '/api/jobs',
-            data={'remoteci_id': remoteci_id})
+            data={'remoteci_id': remoteci_id,
+                  'recheck': False})
