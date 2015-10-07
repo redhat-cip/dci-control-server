@@ -100,7 +100,8 @@ CREATE TABLE jobs (
     jobdefinition_id uuid NOT NULL,
     remoteci_id uuid NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
-    team_id uuid NOT NULL
+    team_id uuid NOT NULL,
+    recheck boolean NOT NULL DEFAULT FALSE
 );
 COMMENT ON TABLE jobs IS 'An association between a jobdefinition and a remoteci.';
 
@@ -110,6 +111,7 @@ CREATE TABLE jobdefinitions (
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
     name character varying(200),
+    priority integer NOT NULL DEFAULT 0,
     test_id uuid NOT NULL
 );
 COMMENT ON TABLE jobs IS 'A collection of components and a test ready to associated to a remoteci to create a new job.';
