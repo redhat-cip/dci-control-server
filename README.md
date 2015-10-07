@@ -82,3 +82,16 @@ end-point:
 
     # pip install git+https://github.com/hermannsblum/eve-docs
     # pip install Flask-Bootstrap
+
+## Recheck a job
+
+    $ http --form POST http://127.0.0.1:5000/api/jobs?recheck=1&job_id=job_id_to_recheck
+
+This will create a new job with the flag 'recheck' set to True and with the same
+datas as in the job to recheck.
+
+The agent could check if there is some jobs to recheck with:
+
+    $ http GET http://127.0.0.1:5000/api/jobs?where={'remoteci_id': 'myremoteci_id', 'recheck': 'True'}
+
+After it finish, it set the recheck flag to False.
