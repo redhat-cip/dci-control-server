@@ -1,4 +1,5 @@
 bcrypt
+Eve>=0.6
 Eve-SQLAlchemy>=0.4.0a1
 pbr
 PrettyTable
