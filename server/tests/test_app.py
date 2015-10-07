@@ -84,3 +84,31 @@ class TestAdmin(object):
             'remoteci_keys': {'foo': ['bar1', 'bar2']},
             'test_keys': {'foo': ['bar1', 'bar2']}
         }
+
+    def test_job_recheck(self, admin):
+        test = utils.create_test(admin)
+        component = utils.create_component(admin)
+        jobdefinition = utils.create_jobdefinition(admin, test.data['id'])
+
+        utils.create_jobdefinition_component(
+            admin, jobdefinition.data['id'], component.data['id']
+        )
+        remoteci = utils.create_remoteci(admin, test.data['id'])
+        remoteci_id = remoteci.data['id']
+
+        job = utils.create_job(admin, remoteci_id)
+        job_id = job.data['id']
+
+        assert job.data == 'lol'
+
+        recheck_job = utils.create_job(admin, remoteci_id, True, job_id)
+        recheck_job_id = recheck_job.data['id']
+
+        recheck_job = admin.get('/api/jobs/%s' % recheck_job_id)
+
+        assert recheck_job.status_code == 200
+        assert recheck_job.data['remoteci_id'] == job.data['remoteci_id']
+        assert (recheck_job.data['jobdefinition_id'] ==
+                job.data['jobdefinition_id'])
+        assert recheck_job.data['team_id'] == job.data['team_id']
+        assert recheck_job.data['recheck'] is True
