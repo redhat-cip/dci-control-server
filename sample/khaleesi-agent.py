@@ -130,7 +130,7 @@ cmds.append(
 
 for cmd in cmds:
     r = dci_client.call(job['id'], cmd['args'],
-                        cwd=cmd.get('cwd'))
+                        cwd=cmd.get('cwd'), status="initializing")
     if r['returncode'] != 0:
         print("Test has failed")
         shutil.rmtree(workspace_dir)
