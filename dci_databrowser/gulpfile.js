@@ -10,13 +10,15 @@ var source     = require('vinyl-source-stream');
 var buffer     = require('vinyl-buffer');
 var sourcemaps = require('gulp-sourcemaps');
 var concat     = require('gulp-concat');
+var globby     = require('globby');
+var through    = require('through2');
 
 gulp.task('jscs', function() {
   return gulp.src(['src/**.js', 'gulpfile.js'])
   .pipe(jscs());
 });
 
-gulp.task('build', ['js', 'css'], function() {
+gulp.task('build', ['js', 'css', 'fonts'], function() {
   return gulp.src([
     'src/**/*',
     '!src/**/*.js',
@@ -38,21 +40,29 @@ gulp.task('watch', function() {
 });
 
 gulp.task('js', ['clean'], function() {
-  var b = browserify({
-    entries: [
-      'src/js/app.js',
-      'node_modules/angular/angular.js',
-      'node_modules/angular-cookies/angular-cookies.js',
-      'node_modules/angular-resource/angular-resource.js',
-      'node_modules/angular-google-chart/ng-google-chart.js',
-      'node_modules/angular-bootstrap/ui-bootstrap-tpls.js',
-      'node_modules/angular-ui-router/release/angular-ui-router.js',
-      'node_modules/angular-loading-bar/build/loading-bar.js',
-    ],
-    debug: true
+  var bundledStream = through();
+  var entries = [
+    'node_modules/angular/angular.js',
+    'node_modules/angular-cookies/angular-cookies.js',
+    'node_modules/angular-resource/angular-resource.js',
+    'node_modules/angular-google-chart/ng-google-chart.js',
+    'node_modules/angular-bootstrap/ui-bootstrap-tpls.js',
+    'node_modules/angular-ui-router/release/angular-ui-router.js',
+    'node_modules/angular-loading-bar/build/loading-bar.js',
+    'src/js/**/*.js',
+  ];
+
+  globby(entries).then(function(entries) {
+    browserify({
+      entries: entries,
+      debug: true
+    }).bundle().pipe(bundledStream);
+  }).catch(function(err) {
+    // ensure any errors from globby are handled
+    bundledStream.emit('error', err);
   });
 
-  return b.bundle()
+  return bundledStream
   .pipe(source('app.js'))
   .pipe(buffer())
   .pipe(sourcemaps.init({loadMaps: true}))
@@ -72,6 +82,15 @@ gulp.task('css', ['clean'], function() {
   .pipe(concat('dashboard.css'))
   .pipe(sourcemaps.write('./'))
   .pipe(gulp.dest('static/css/'));
+});
+
+gulp.task('fonts', ['clean'], function() {
+  var entries = [
+    'node_modules/bootstrap/dist/fonts/**'
+  ];
+
+  return gulp.src(entries)
+  .pipe(gulp.dest('static/fonts/'));
 });
 
 gulp.task('connect', function() {
