@@ -1,10 +1,11 @@
 require('./app.js')
 
 .controller('LoginCtrl', [
-  '$scope', '$state', 'auth', function($scope, $state, auth) {
+  '$scope', '$state', 'next', 'auth',
+  function($scope, $state, next, auth) {
     $scope.authenticate = function(credentials) {
       auth.login(credentials.username, credentials.password);
-      $state.go('index');
+      $state.go(next.state, next.args);
     }
   }
 ])

@@ -78,7 +78,17 @@ require('./app.js')
       controller: 'StatsController'
     })
     .state('login', {
-      url: '/login?next',
+      url: '/login?next&args',
+      controller: 'LoginCtrl',
+      resolve: {
+        next: ['$stateParams', function($stateParams) {
+          return {
+            state: $stateParams.next || 'index',
+            args: $stateParams.args &&
+              angular.fromJson(atob($stateParams.args)) || {}
+          };
+        }]
+      },
       templateUrl: 'partials/login.html',
     });
 
@@ -99,11 +109,16 @@ require('./app.js')
 .run([
   '$rootScope', '$state', 'authStates',
   function($rootScope, $state, authStates) {
-    $rootScope.$on('$stateChangeError', function(_, toState, _, _, _, error) {
-      if (error === authStates.DISCONNECTED) {
-        $state.go('login', {next: toState.name});
+    $rootScope.$on(
+      '$stateChangeError', function(_, toState, toParams, _, _, error) {
+        if (error === authStates.DISCONNECTED) {
+          $state.go('login', {
+            next: toState.name,
+            args: btoa(angular.toJson(toParams))
+          });
+        }
       }
-    });
+    );
   }
 ]);
 
