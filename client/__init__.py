@@ -136,7 +136,7 @@ class DCIClient(object):
             return self.post("/files", data)
 
     def call(self, job_id, args, cwd=None, env=None,
-             ignore_error=False, timeout=600):
+             ignore_error=False, timeout=600, status="ongoing"):
 
         for idx, arg in enumerate(args):
             if six.PY2 and isinstance(arg, str):
@@ -148,7 +148,7 @@ class DCIClient(object):
             print("Invalid string list: %s" % args)
             raise e
         state = {"job_id": job_id,
-                 "status": "ongoing",
+                 "status": status,
                  "comment": "calling: %s" % flatten_args}
         jobstate_id = self.post("/jobstates", state).json()["id"]
         print("Calling: %s" % flatten_args)
