@@ -189,6 +189,8 @@ class TestClientLib(server.tests.DCITestCase):
             'sha': 'some_sha',
             'canonical_project_name': 'my_project'}).json()
         jobdefinition = c.post('/jobdefinitions', {
+            'name': 'myjobdefinition',
+            'priority': 0,
             'test_id': test['id']}).json()
         c.post('/jobdefinition_components', {
             'jobdefinition_id': jobdefinition['id'],
@@ -201,6 +203,7 @@ class TestClientLib(server.tests.DCITestCase):
         }).json()
         job = c.post('/jobs', {
             'team_id': team['id'],
+            'recheck': False,
             'jobdefinition_id': jobdefinition['id'],
             'remoteci_id': remoteci['id']}).json()
         self._job_id = job['id']
