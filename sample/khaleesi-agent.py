@@ -60,11 +60,13 @@ if r.status_code == 404:
     sys.exit(1)
 else:
     test_id = r.json()['id']
-r = dci_client.get("/remotecis/%s" % settings['name'])
-if r.status_code == 404:
-    r = dci_client.post("/remotecis", {
-        'name': settings['name'],
-        'test_id': test_id})
+try:
+    r = dci_client.get("/remotecis/%s" % settings['name'])
+except client.DCIServerError as e:
+    if e.status_code == 404:
+        r = dci_client.post("/remotecis", {
+            'name': settings['name'],
+            'test_id': test_id})
 remoteci_id = r.json()['id']
 r = dci_client.post("/jobs", {"remoteci_id": remoteci_id})
 job = r.json()
