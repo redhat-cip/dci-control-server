@@ -236,6 +236,7 @@ class DCIClient(object):
 class DCIServerError(Exception):
     def __init__(self, r):
         self.r = r
+        self.status_code = r.status_code
         self.message = "Request has failed(%s): %s" % (
             self.r.status_code, self.r.text)
 
