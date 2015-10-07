@@ -76,6 +76,7 @@ class TestApp(server.tests.DCITestCase):
         remoteci_id = self._extract_response(remoteci)['id']
 
         job = self._create_job("admin", remoteci_id)
+        assert self._extract_response(job) == 'lol'
         job_id = self._extract_response(job)['id']
 
         rv = self.partner_client('get', '/api/jobs/%s' % job_id)
