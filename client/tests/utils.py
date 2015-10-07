@@ -76,7 +76,7 @@ def generate_job(client):
     ).json()
 
     jobdefinition = client.post('/jobdefinitions', {
-        'test_id': test['id']
+        'test_id': test['id'], 'priority': 0
     }).json()
 
     client.post('/jobdefinition_components', {
@@ -96,7 +96,8 @@ def generate_job(client):
     job = client.post('/jobs', {
         'team_id': team['id'],
         'jobdefinition_id': jobdefinition['id'],
-        'remoteci_id': remoteci['id']
+        'remoteci_id': remoteci['id'],
+        'recheck': False
     }).json()
 
     return job
