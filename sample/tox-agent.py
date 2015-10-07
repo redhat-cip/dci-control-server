@@ -71,20 +71,28 @@ cmds = [
     ['git', 'fetch', '--all'],
     ['git', 'clean', '-ffdx'],
     ['git', 'reset', '--hard'],
-    ['git', 'checkout', '-f', component['sha']],
-    ['tox']]
+    ['git', 'checkout', '-f', component['sha']]]
 
+failure = 0
 for cmd in cmds:
-    r = dci_client.call(job_id, cmd, cwd=workdir)
+    r = dci_client.call(job_id, cmd, cwd=workdir, status="initializing")
     if r['returncode'] != 0:
-        print("Test has failed")
-        shutil.rmtree(workdir)
-        sys.exit(1)
+        print("Failed to initialize the test.")
+        failure = 1
+        break
 
-state = {
-    "job_id": job["id"],
-    "status": "success",
-    "comment": "Process finished successfully"}
-jobstate_id = dci_client.post("/jobstates", state)
-sys.exit(0)
+if not failure:
+    r = dci_client.call(job_id, ['tox'], cwd=workdir)
+    if r['returncode'] != 0:
+        print("Test has failed.")
+        failure = 2
+
+if not failure:
+    state = {
+        "job_id": job["id"],
+        "status": "success",
+        "comment": "Process finished successfully"}
+    jobstate_id = dci_client.post("/jobstates", state)
+
+sys.exit(failure)
 shutil.rmtree(workdir)
