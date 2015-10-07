@@ -189,6 +189,8 @@ class TestClientLib(server.tests.DCITestCase):
             'sha': 'some_sha',
             'canonical_project_name': 'my_project'}).json()
         jobdefinition = c.post('/jobdefinitions', {
+            'name': 'myjobdefinition',
+            'priority': 0,
             'test_id': test['id']}).json()
         c.post('/jobdefinition_components', {
             'jobdefinition_id': jobdefinition['id'],
