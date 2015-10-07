@@ -25,29 +25,6 @@ module.exports = angular.module('app', [
   function($resource, $cookies, $location) {
     // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
 
-    var getRemoteCis = function($scope) {
-      var targetPage = $scope.remoteciCurrentPage;
-      var searchObject = $location.search();
-      if (searchObject.page != undefined) {
-        var totalPages = $cookies.remotecisTotalPages;
-        var pageNumber = parseInt(searchObject.page);
-
-        if ((pageNumber < ((parseInt(totalPages) + 1) | 0)) &&
-            (pageNumber > 1)) {
-              targetPage = parseInt(searchObject.page);
-              $scope.remoteciCurrentPage = targetPage;
-            }
-      }
-      var Remotecis = $resource('/api/remotecis').get(
-        {'page': targetPage, 'sort': '-created_at'});
-        Remotecis.$promise.then(function(remotecis) {
-          $scope.remotecis = remotecis._items;
-          $cookies.remotecisTotalPages = parseInt((
-            remotecis._meta.total / remotecis._meta.max_results + 1));
-            $scope.remotecisTotalPages = $cookies.remotecisTotalPages;
-        });
-    };
-
     var getJobInfo = function($scope, job_id) {
       var Job = $resource('/api/jobs/' + job_id).get({
         'embedded': {'remoteci': 1, 'testversion': 1}
@@ -89,35 +66,8 @@ module.exports = angular.module('app', [
     }
 
     return {
-      'getJobInfo': getJobInfo,
-      'getRemoteCis': getRemoteCis
+      'getJobInfo': getJobInfo
     };
-  }
-])
-
-.controller('ListRemotecisController', [
-  '$scope', '$location', '$cookies', '$state', 'CommonCode',
-  function($scope, $location, $cookies, $state, CommonCode) {
-
-    $scope.remotecisNextPage = function() {
-      if ($scope.remoteciCurrentPage < $cookies.remotecisTotalPages) {
-        $scope.remoteciCurrentPage++;
-        $state.go('remotecis', {page: $scope.remoteciCurrentPage});
-      }
-    };
-
-    $scope.remotecisPreviousPage = function() {
-      if ($scope.remoteciCurrentPage > 1) {
-        $scope.remoteciCurrentPage--;
-        $state.go('remotecis', {page: $scope.remoteciCurrentPage});
-      }
-    };
-
-    if ($scope.remoteciCurrentPage == undefined) {
-      $scope.remoteciCurrentPage = 1;
-    }
-
-    CommonCode.getRemoteCis($scope);
   }
 ])
 
