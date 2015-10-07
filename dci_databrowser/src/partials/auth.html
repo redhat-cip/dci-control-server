@@ -1,14 +1,17 @@
 <nav class="navbar navbar-inverse navbar-fixed-top">
   <div class="container-fluid">
     <div class="navbar-header">
-      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
-        <span class="sr-only">Toggle navigation</span>
-      </button>
-      <a ui-sref="index">
+      <a class="navbar-brand" ui-sref="index">
         <img class= "logo" src="images/redhat.png">
       </a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li ui-sref-active="active"><a ui-sref="jobs">Jobs</a></li>
+        <li ui-sref-active="active"><a ui-sref="products">Products</a></li>
+        <li ui-sref-active="active"><a ui-sref="remotecis">Remote CIs</a></li>
+        <li ui-sref-active="active"><a ui-sref="stats">Stats</a></li>
+      </ul>
       <ul class="nav navbar-nav navbar-right">
         <li><a ng-click="logout()" class="glyphicon glyphicon-log-out"></a></li>
       </ul>
