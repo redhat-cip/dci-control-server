@@ -85,3 +85,20 @@ class TestApp(server.tests.DCITestCase):
                           'remoteci_keys': {'foo': ['bar1', 'bar2']},
                           'test_keys': {'foo': ['bar1', 'bar2']}},
                          response['data'])
+
+    def test_job_recheck(self):
+        self.test_post_jobdefinition_item()
+        remoteci = self._create_remoteci("admin", self.test_id)
+        remoteci_id = self._extract_response(remoteci)['id']
+
+        job = self._create_job("admin", remoteci_id)
+        job_id = self._extract_response(job)['id']
+
+        recheck_job = self._create_job("admin", remoteci_id, True, job_id)
+        recheck_job_id = self._extract_response(recheck_job)['id']
+
+        rv = self.partner_client('get', '/api/jobs/%s' % recheck_job_id)
+        self.assertEqual(rv.status_code, 200)
+        response = self._extract_response(rv)
+
+        assert response.keys() == 'lol'
