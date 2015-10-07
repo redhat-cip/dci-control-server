@@ -40,16 +40,20 @@ if r.status_code == 404:
     sys.exit(1)
 else:
     test_id = r.json()['id']
-r = dci_client.get("/remotecis/%s" % remoteci_name)
-if r.status_code == 404:
-    r = dci_client.post("/remotecis", {
-        'name': remoteci_name,
-        'test_id': test_id})
+try:
+    r = dci_client.get("/remotecis/%s" % remoteci_name)
+except client.DCIServerError as e:
+    if e.status_code == 404:
+        r = dci_client.post("/remotecis", {
+            'name': remoteci_name,
+            'test_id': test_id})
 remoteci_id = r.json()['id']
-job = dci_client.post("/jobs", {"remoteci_id": remoteci_id})
-if job.status_code == 412:
-    print("No jobs to process.")
-    sys.exit(0)
+try:
+    job = dci_client.post("/jobs", {"remoteci_id": remoteci_id})
+except client.DCIServerError as e:
+    if e.status_code == 412:
+        print("No jobs to process.")
+        sys.exit(0)
 job_id = job.json()['id']
 r = dci_client.get("/jobs/%s" % job_id,
                    embedded={'jobdefinition': 1,
