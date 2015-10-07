@@ -124,7 +124,7 @@ class DCIClient(object):
         fd.seek(0)
         output = ""
         while True:
-            s = fd.read(1024).decode("UTF-8")
+            s = fd.read(1024).decode('UTF-8', 'ignore')
             output += s
             if s == '':
                 break
