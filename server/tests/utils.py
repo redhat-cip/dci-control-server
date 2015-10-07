@@ -53,12 +53,14 @@ def create_jobdefinition(client, test_id):
     )
 
 
-def create_jobdefinition_component(client, jobdefinition_id, component_id):
+def create_jobdefinition_component(client, jobdefinition_id, component_id,
+                                   priority=0):
     return client.post(
         '/api/jobdefinition_components',
         data={
             'jobdefinition_id': jobdefinition_id,
-            'component_id': component_id
+            'component_id': component_id,
+            'priority': priority
         }
     )
 
@@ -74,8 +76,12 @@ def create_remoteci(client, test_id):
     )
 
 
-def create_job(client, remoteci_id):
-    return client.post('/api/jobs', data={'remoteci_id': remoteci_id})
+def create_job(client, remoteci_id, recheck=False, job_id=None):
+    path = '/api/jobs'
+    if recheck:
+        path = '/api/jobs?recheck=1&job_id=%s' % job_id
+    return client.post(path, data={'remoteci_id': remoteci_id,
+                                   'recheck': recheck})
 
 
 def generate_client(app, credentials):
