@@ -142,6 +142,8 @@ class DCIModel(object):
         # a testversion that fit.
         domain['jobs']['schema']['jobdefinition_id']['required'] = False
         domain['files']['schema']['mime']['required'] = False
+        domain['jobdefinitions']['schema']['priority']['required'] = False
+        domain['jobs']['schema']['recheck']['required'] = False
         domain['components']['datasource']['projection']['componenttype'] = 1
 
         # TODO(Gonéri): The following resource projection are enabled just to
