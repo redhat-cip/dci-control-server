@@ -34,7 +34,7 @@ require('./app.js')
       parent: 'auth',
       resolve: {
         page: ['$stateParams', function ($stateParams) {
-          return parseInt($stateParams.page);
+          return parseInt($stateParams.page) || 1;
         }],
         jobs: ['api', 'page', function(api, page) {
           return api.getJobs(page);
@@ -54,7 +54,16 @@ require('./app.js')
       url: '/remotecis?page',
       parent: 'auth',
       templateUrl: 'partials/remotecis.html',
-      controller: 'ListRemotecisController'
+      resolve: {
+        page: ['$stateParams', function ($stateParams) {
+          return parseInt($stateParams.page) || 1;
+        }],
+        cis: ['api', 'page', function(api, page) {
+          return api.getCIs(page);
+        }]
+      },
+      onEnter: scrollTop,
+      controller: 'ListCIsCtrl'
     })
     .state('products', {
       url: '/products',
