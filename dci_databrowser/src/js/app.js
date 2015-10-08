@@ -20,28 +20,6 @@ module.exports = angular.module('app', [
   'ngCookies', 'angular-loading-bar', 'ui.router', 'googlechart', 'ngResource'
 ])
 
-.controller('ProductsController', [
-  '$scope', '$resource', '$cookies', '$state', 'CommonCode',
-  function($scope, $resource, $cookies, $state, CommonCode) {
-    var Products = $resource('/api/products').get();
-    Products.$promise.then(function(products) {
-      $scope.products = products._items;
-      $scope.currentProduct = products._items[0];
-    });
-
-    $scope.$watch('currentProduct', function(currentProduct, previousProduct) {
-      if (currentProduct != undefined) {
-        var Version = $resource('/api/versions').get({
-          'where': {'product_id': currentProduct.id}, 'extra_data': 1
-        });
-        Version.$promise.then(function(versions) {
-          $scope.versions_status = versions._items;
-        });
-      }
-    });
-  }
-])
-
 .controller('StatsController', [
   '$scope', '$stateParams', '$resource', '$cookies', '$state', 'CommonCode',
   function($scope, $stateParams, $resource, $cookies, $state, CommonCode) {
