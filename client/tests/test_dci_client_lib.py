@@ -16,6 +16,7 @@
 
 import os
 import random
+import requests
 import subprocess
 import sys
 import time
@@ -33,9 +34,19 @@ class TestClientLib(server.tests.DCITestCase):
         environ['PYTHONPATH'] = '.'
         # NOTE(Gonéri): we should check if the port is available
         port = 5000 + int(random.random() * 1000 % 1000)
-        self.server_process = subprocess.Popen([
-            sys.executable, './server/app.py', str(port)], env=environ)
-        time.sleep(5)
+        self.server_process = subprocess.Popen(
+            [sys.executable, './server/app.py', str(port)],
+            env=environ)
+        for i in range(1, 100):
+            time.sleep(0.1)
+            try:
+                requests.head('http://127.0.0.1:%d/api/componenttypes' % port)
+            except Exception:
+                continue
+            break
+        else:
+            print("Failed to start the server in time.")
+            sys.exit(1)
         self.client = client.DCIClient(
             end_point='http://127.0.0.1:%s/api' % port,
             login='admin', password='admin')
