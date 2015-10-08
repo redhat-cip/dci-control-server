@@ -16,6 +16,7 @@
 
 import os
 import random
+import requests
 import subprocess
 import sys
 import time
@@ -24,8 +25,25 @@ import client
 import server.tests
 
 
-class TestClientLib(server.tests.DCITestCase):
+def wait_for_http_server(port):
+    max_duration = 10
+    for i in range(1, max_duration * 10):
+        time.sleep(0.1)
+        try:
+            r = requests.head(
+                'http://127.0.0.1:%d/api/jobs' % port)
+            if r.status_code != 401:
+                continue
+        except Exception:
+            continue
+        break
+    else:
+        print(
+            "Failed to start the server in time (%d seconds)." % max_duration)
+        sys.exit(1)
 
+
+class TestClientLib(server.tests.DCITestCase):
     def setUp(self):
         super(TestClientLib, self).setUp()
         environ = os.environ
@@ -33,9 +51,10 @@ class TestClientLib(server.tests.DCITestCase):
         environ['PYTHONPATH'] = '.'
         # NOTE(Gonéri): we should check if the port is available
         port = 5000 + int(random.random() * 1000 % 1000)
-        self.server_process = subprocess.Popen([
-            sys.executable, './server/app.py', str(port)], env=environ)
-        time.sleep(5)
+        self.server_process = subprocess.Popen(
+            [sys.executable, './server/app.py', str(port)],
+            env=environ)
+        wait_for_http_server(port)
         self.client = client.DCIClient(
             end_point='http://127.0.0.1:%s/api' % port,
             login='admin', password='admin')
