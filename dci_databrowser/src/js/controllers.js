@@ -49,4 +49,8 @@ require('./app.js')
     $scope.previous = go(page - 1);
     $scope.next = go(page + 1);
   }
-]);
+])
+
+.controller('JobCtrl', ['$scope', 'job', function($scope, job) {
+  $scope.job = job;
+}])
