@@ -26,6 +26,20 @@ import uuid
 import testtools
 
 
+def wait_for_process(buff, expected_pattern):
+    while True:
+        line = buff.readline().decode()
+        if line != "":
+            print(line)
+        if 'FATAL' in line:
+            print(line)
+            break
+        if expected_pattern in line:
+            print("*** process is ready ***")
+            break
+        time.sleep(0.01)
+
+
 class DCITestCase(testtools.TestCase):
     @classmethod
     def setUpClass(cls):
@@ -37,24 +51,27 @@ class DCITestCase(testtools.TestCase):
             DEVNULL = open(os.devnull, 'wb')
 
         cls._db_dir = tempfile.mkdtemp()
-        subprocess.call(['initdb', '--no-locale', cls._db_dir],
-                        stdout=DEVNULL)
+        subprocess.Popen(['initdb', '--no-locale', cls._db_dir],
+                         stdout=DEVNULL).wait()
+
         with open(cls._db_dir + '/postgresql.conf', 'a+') as pg_cfg_f:
             pg_cfg_f.write("client_encoding = utf8\n")
             pg_cfg_f.write("listen_addresses = ''\n")
             pg_cfg_f.write("fsync = off\n")
             pg_cfg_f.write("full_page_writes = off\n")
+            pg_cfg_f.write("log_destination = 'stderr'\n")
+            pg_cfg_f.write("logging_collector = off\n")
         cls._pg = subprocess.Popen(['postgres', '-F',
                                     '-k', cls._db_dir,
                                     '-D', cls._db_dir],
-                                   stdout=DEVNULL)
-        time.sleep(0.5)
-        subprocess.call(['psql', '--quiet',
-                         '--echo-hidden', '-h', cls._db_dir,
-                         '-f', 'db_schema/dci-control-server.sql',
-                         'template1'],
-                        stdout=DEVNULL)
-        time.sleep(0.3)
+                                   stderr=subprocess.PIPE)
+        wait_for_process(
+            cls._pg.stderr, 'database system is ready')
+        subprocess.Popen(['psql', '--quiet',
+                          '--echo-hidden', '-h', cls._db_dir,
+                          '-f', 'db_schema/dci-control-server.sql',
+                          'template1'],
+                         stdout=subprocess.PIPE).wait()
 
         # create roles, teams and users for testing
         with open("%s/%s" % (cls._db_dir, "test_setup.sql"), "w") as f:
@@ -87,7 +104,6 @@ class DCITestCase(testtools.TestCase):
                                  "%s/%s" % (cls._db_dir, "test_setup.sql"),
                                  "template1"],
                                 stderr=subprocess.STDOUT)
-        time.sleep(0.3)
 
     @classmethod
     def tearDownClass(cls):
