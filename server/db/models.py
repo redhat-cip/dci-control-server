@@ -148,6 +148,7 @@ class DCIModel(object):
         # patch on Eve to dynamically turn on projection on embedded resources.
         domain['jobs']['datasource']['projection']['jobstates_collection'] = 1
         domain['jobs']['datasource']['projection']['jobdefinition'] = 1
+        domain['jobs']['datasource']['projection']['remoteci'] = 1
         domain['jobdefinitions']['datasource']['projection']['components'] = 1
         domain['jobdefinitions']['datasource']['projection']['test'] = 1
         return domain
