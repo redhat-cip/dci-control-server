@@ -54,3 +54,17 @@ require('./app.js')
 .controller('JobCtrl', ['$scope', 'job', function($scope, job) {
   $scope.job = job;
 }])
+
+.controller('ProductsCtrl', [
+  '$scope', 'products', 'api', function($scope, products, api) {
+  var products = $scope.products = products._items;
+  var product  = $scope.product  = products[0] || 'No product available';
+
+  $scope.retrieveVersions = function (product) {
+    api.getVersions(product.id).then(function (versions) {
+      $scope.versions_status = versions;
+    });
+  }
+
+  $scope.retrieveVersions(product);
+}]);

@@ -6,6 +6,7 @@ require('./app.js')
   var CIs = $resource('/api/remotecis');
   var TestVersions = $resource('/api/testversions/:id');
   var Products = $resource('/api/products/:id');
+  var Versions = $resource('/api/versions');
 
   function getCIs(page) {
     return CIs.get({
@@ -53,10 +54,19 @@ require('./app.js')
     });
   }
 
+  function getVersions(product_id) {
+    return Versions.get({
+      'where': {'product_id': product_id}, 'extra_data': 1
+    }).$promise.then(function (versions) {
+      return versions._items;
+    })
+  }
   return {
     getJobs: getJobs,
     getJob: getJob,
-    getCIs: getCIs
+    getCIs: getCIs,
+    getProducts: Products.get().$promise,
+    getVersions: getVersions
   }
 }]);
 

@@ -73,8 +73,13 @@ require('./app.js')
     .state('products', {
       url: '/products',
       parent: 'auth',
+      resolve: {
+        products: ['api', function(api) {
+          return api.getProducts
+        }]
+      },
       templateUrl: 'partials/products.html',
-      controller: 'ProductsController'
+      controller: 'ProductsCtrl'
     })
     .state('stats', {
       url: '/stats',
