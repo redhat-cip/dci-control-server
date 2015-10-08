@@ -44,11 +44,16 @@ require('./app.js')
       templateUrl: 'partials/jobs.html',
       controller: 'ListJobsCtrl'
     })
-    .state('jobdetails', {
-      url: '/jobdetails/:jobId',
+    .state('job', {
+      url: '/jobs/:id',
       parent: 'auth',
-      templateUrl: 'partials/jobdetails.html',
-      controller: 'JobDetailsController'
+      templateUrl: 'partials/job.html',
+      resolve: {
+        job: ['$stateParams', 'api', function($stateParams, api) {
+          return api.getJob($stateParams.id);
+        }]
+      },
+      controller: 'JobCtrl'
     })
     .state('remotecis', {
       url: '/remotecis?page',

@@ -20,66 +20,6 @@ module.exports = angular.module('app', [
   'ngCookies', 'angular-loading-bar', 'ui.router', 'googlechart', 'ngResource'
 ])
 
-.factory('CommonCode', [
-  '$resource', '$cookies', '$location',
-  function($resource, $cookies, $location) {
-    // jscs:disable requireCamelCaseOrUpperCaseIdentifiers
-
-    var getJobInfo = function($scope, job_id) {
-      var Job = $resource('/api/jobs/' + job_id).get({
-        'embedded': {'remoteci': 1, 'testversion': 1}
-      });
-
-
-      Job.$promise.then(function(job) {
-        $scope.job = job;
-
-        var Jobstates = $resource('/api/jobstates').get({
-          'where': {'job_id': job_id},
-          'sort': 'created_at',
-          'embedded': {'files_collection': 1}
-        });
-
-        Jobstates.$promise.then(function(jobstates) {
-          $scope.job.jobstates = jobstates._items;
-        });
-
-        var Testversions = $resource(
-          '/api/testversions/' + job.testversion.id
-        ).get({'embedded': {'version': 1, 'test': 1}});
-
-
-        Testversions.$promise.then(function(testversion) {
-
-          $scope.job.version = testversion.version.name;
-          $scope.job.test = testversion.test.name;
-
-          var Products = $resource(
-            '/api/products/' + testversion.version.product_id
-          ).get();
-
-          Products.$promise.then(function(product) {
-            $scope.job.product = product.name;
-          });
-        });
-      });
-    }
-
-    return {
-      'getJobInfo': getJobInfo
-    };
-  }
-])
-
-.controller('JobDetailsController', [
-  '$scope', '$stateParams', '$cookies', '$state', 'CommonCode',
-  function($scope, $stateParams, $cookies, $state, CommonCode) {
-    if ($stateParams.jobId) {
-      CommonCode.getJobInfo($scope, $stateParams.jobId);
-    }
-  }
-])
-
 .controller('ProductsController', [
   '$scope', '$resource', '$cookies', '$state', 'CommonCode',
   function($scope, $resource, $cookies, $state, CommonCode) {
