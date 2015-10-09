@@ -46,10 +46,10 @@ def create_test(client):
         })
 
 
-def create_jobdefinition(client, test_id):
+def create_jobdefinition(client, test_id, name='bob'):
     return client.post(
         '/api/jobdefinitions',
-        data={'name': 'bob', 'test_id': test_id}
+        data={'name': name, 'test_id': test_id}
     )
 
 
