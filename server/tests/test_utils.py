@@ -15,15 +15,15 @@
 # under the License.
 
 import server.utils
-import testtools
 
 
-class TestUtils(testtools.TestCase):
-    def test_dict_merge(self):
-        a = {'jim': 123, 'a': {'b': {'c': {'d': 'bob'}}}, 'rob': 34}
-        b = {'tot': {'a': {'b': 'string'}}}
-        self.assertEqual({'a': {'b': {'c': {'d': 'bob'}}},
-                          'jim': 123,
-                          'rob': 34,
-                          'tot': {'a': {'b': 'string'}}},
-                         server.utils.dict_merge(a, b))
+def test_dict_merge():
+    a = {'jim': 123, 'a': {'b': {'c': {'d': 'bob'}}}, 'rob': 34}
+    b = {'tot': {'a': {'b': 'string'}}}
+
+    assert server.utils.dict_merge(a, b) == {
+        'a': {'b': {'c': {'d': 'bob'}}},
+        'jim': 123,
+        'rob': 34,
+        'tot': {'a': {'b': 'string'}}
+    }
