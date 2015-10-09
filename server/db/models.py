@@ -21,7 +21,6 @@ from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.automap import automap_base
 from sqlalchemy.ext.automap import generate_relationship
 from sqlalchemy import MetaData
-from sqlalchemy.orm.interfaces import ONETOMANY
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
@@ -43,8 +42,7 @@ class DCIModel(object):
         # the created_at key.
         def _gen_relationship(base, direction, return_fn,
                               attrname, local_cls, referred_cls, **kw):
-            if direction is ONETOMANY:
-                kw['order_by'] = referred_cls.__table__.columns.created_at
+            kw['order_by'] = referred_cls.__table__.columns.created_at
             return generate_relationship(
                 base, direction, return_fn,
                 attrname, local_cls, referred_cls, **kw)

@@ -112,7 +112,7 @@ class DciControlServer(Eve):
                     Jobstates.job_id == job.id).first()
                 if jobstate is None:
                     continue
-                if jobstate.status == 'ongoing':
+                if jobstate.status in ('new', 'ongoing', 'initializing'):
                     session.add(
                         Jobstates(
                             job_id=job.id,
