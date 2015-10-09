@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import pytest
+
 import server.tests.utils as utils
 
 
@@ -84,3 +86,31 @@ class TestAdmin(object):
             'remoteci_keys': {'foo': ['bar1', 'bar2']},
             'test_keys': {'foo': ['bar1', 'bar2']}
         }
+
+    @pytest.mark.parametrize(('status'), ['new', 'initializing', 'ongoing'])
+    def test_get_job_should_kill_existing_jobs(
+            self, admin, company_a_user, status):
+        """GET /jobs should retrieve a new job and kill the existing ones.
+        """
+        test = utils.create_test(admin)
+        remoteci = utils.create_remoteci(admin, test.data['id'])
+
+        def get_job_status(job_id):
+            r = company_a_user.get(
+                '/api/jobs/%s?embedded={"jobstates": 1}' % job_id)
+            return r.data['jobstates'][0]['status']
+
+        for i in range(0, 2):
+            utils.create_jobdefinition(
+                admin, test.data['id'], name=('test_%d' % i))
+
+        first_job = utils.create_job(company_a_user, remoteci.data['id'])
+        r = utils.create_jobstate(
+            company_a_user, first_job.data['id'], status=status)
+        assert get_job_status(first_job.data['id']) == status
+
+        # NOTE(Gonéri): create another job for the remoteci, the previous job
+        # won't finish and so, should get the 'unfinished' status.
+        r = utils.create_job(company_a_user, remoteci.data['id'])
+        print(r)
+        assert get_job_status(first_job.data['id']) == 'unfinished'
