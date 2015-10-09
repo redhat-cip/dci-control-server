@@ -17,7 +17,6 @@
 import flask
 import json
 import os
-import sys
 
 import server.auth
 import server.db.models
@@ -242,42 +241,26 @@ class DciControlServer(Eve):
         load_docs(self)
 
 
-def create_app(db_uri=None):
-    if not db_uri:
-        db_uri = os.environ.get(
-            'OPENSHIFT_POSTGRESQL_DB_URL',
-            'postgresql://boa:boa@127.0.0.1:5432/dci_control_server')
-    dci_model = server.db.models.DCIModel(db_uri)
-    settings = {
-        'SQLALCHEMY_DATABASE_URI': db_uri,
-        'LAST_UPDATED': 'updated_at',
-        'DATE_CREATED': 'created_at',
-        'ID_FIELD': 'id',
-        'ITEM_URL': 'regex("[\.-a-z0-9]{8}-[-a-z0-9]{4}-'
-                    '[-a-z0-9]{4}-[-a-z0-9]{4}-[-a-z0-9]{12}")',
-        'ITEM_LOOKUP_FIELD': 'id',
-        'ETAG': 'etag',
-        'DEBUG': True,
-        'URL_PREFIX': 'api',
-        'X_DOMAINS': '*',
-        'X_HEADERS': 'Authorization',
-        'DOMAIN': dci_model.generate_eve_domain_configuration(),
-        'SQLALCHEMY_TRACK_MODIFICATIONS': False,
-        # The following two lines will output the SQL statements
-        # executed by SQLAlchemy. Useful while debugging and in
-        # development. Turned off by default
-        # --------
-        'SQLALCHEMY_ECHO': False,
-        'SQLALCHEMY_RECORD_QUERIES': False,
-    }
+def generate_conf():
+    conf = flask.Config('')
+    conf.from_object(os.environ.get('DCI_SETTINGS_MODULE') or 'settings')
+    return conf
+
+
+def create_app(conf):
+    conf = generate_conf()
+    dci_model = server.db.models.DCIModel(conf['SQLALCHEMY_DATABASE_URI'])
+    conf['DOMAIN'] = dci_model.generate_eve_domain_configuration()
     basic_auth = server.auth.DCIBasicAuth(dci_model)
-    return DciControlServer(dci_model, settings=settings,
-                            validator=ValidatorSQL, data=SQL, auth=basic_auth)
+
+    app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
+                           auth=basic_auth, settings=conf)
+
+    return app
 
 
 if __name__ == "__main__":
-    port = 5000
-    if len(sys.argv) > 1:
-        port = int(sys.argv[1])
-    app = create_app()
-    app.run(debug=True, port=port)
+    conf = generate_conf()
+    app = create_app(conf)
+    app.run(conf.get('HOST', 'localhost'),
+            conf.get('PORT', 5000))
