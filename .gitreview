@@ -2,4 +2,4 @@
 host=softwarefactory.enovance.com
 port=29418
 project=dci-control-server
-defaultbranch=master
+defaultbranch=dci_1
