@@ -21,13 +21,20 @@ class TestAuth(server.tests.DCITestCase):
 
     def test_authorized_as_partner(self):
         # partner can read files
-        self.assertHTTPCode(self.partner_client('get', '/api/files'), 200)
+        self.assertHTTPCode(
+            self.client_call(
+                'get', 'partner', 'partner', '/api/files'), 200)
         # partner can create job (400 because of the missing parameters)
-        self.assertHTTPCode(self.partner_client('post', '/api/jobs'), 400)
+        self.assertHTTPCode(
+            self.client_call(
+                'post', 'partner', 'partner', '/api/jobs'), 400)
 
     def test_wrong_pw_as_unauthorized(self):
-        self.assertHTTPCode(self.unauthorized_client('get', '/api/files'), 401)
-        self.assertHTTPCode(self.unauthorized_client('get', '/api/jobs'), 401)
+        self.assertHTTPCode(
+            self.client_call('get', 'bob', 'bob', '/api/files'), 401)
+        self.assertHTTPCode(
+            self.client_call('get', 'bob', 'bob', '/api/jobs'), 401)
 
     def test_authorized_as_admin(self):
-        self.assertHTTPCode(self.admin_client('get', '/api/jobs'), 200)
+        self.assertHTTPCode(self.client_call(
+            'get', 'admin', 'admin', '/api/jobs'), 200)

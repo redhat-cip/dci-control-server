@@ -124,7 +124,7 @@ class DCITestCase(testtools.TestCase):
     def client_call(self, method, username, password, path, **argv):
         encoded_basic_auth = base64.b64encode(
             ("%s:%s" % (
-                username, password)).encode('ascii')).decode('utf-8')
+                username, username)).encode('ascii')).decode('utf-8')
 
         headers = {
             'Authorization': 'Basic ' + encoded_basic_auth,
@@ -133,68 +133,73 @@ class DCITestCase(testtools.TestCase):
         method_func = getattr(self.test_client, method)
         if 'data' in argv:
             argv['data'] = json.dumps(argv['data'])
-        return method_func(path, headers=headers, **argv)
-
-    def admin_client(self, method, path, **argv):
-        return self.client_call(method, 'admin', 'admin', path, **argv)
-
-    def partner_client(self, method, path, **argv):
-        return self.client_call(method, 'partner', 'partner', path, **argv)
-
-    def unauthorized_client(self, method, path, **argv):
-        return self.client_call(method, 'admin', 'bob', path, **argv)
+        rv = method_func(path, headers=headers, **argv)
+        return DCIRequestResult(rv)
 
     def assertHTTPCode(self, result, code):
         return self.assertEqual(result.status_code, code)
 
-    @staticmethod
-    def _extract_response(rv):
-        return json.loads(rv.get_data().decode())
-
     def _create_component(self, client):
-        client = getattr(self, "%s_client" % client)
-        componenttype = self._extract_response(
-            client('post', '/api/componenttypes',
-                   data={'name': 'a_component_type'}))
-        return client(
+        r = self.client_call(
             'post',
+            client,
+            client,
+            '/api/componenttypes',
+            data={'name': 'a_component_type'})
+        componenttype_id = r.json()['id']
+        r = self.client_call(
+            'post',
+            client,
+            client,
             '/api/components',
             data={'name': 'bob',
                   'canonical_project_name': 'this_is_something',
-                  'componenttype_id': componenttype['id'],
+                  'componenttype_id': componenttype_id,
                   'data': {
                       'component_keys': {
                           'foo': ['bar1', 'bar2']}}})
+        return r
 
     def _create_jobdefinition(self, client, test_id):
-        return getattr(self, "%s_client" % client)(
+        r = self.client_call(
             'post',
+            client,
+            client,
             '/api/jobdefinitions',
             data={'name': 'bob',
                   'test_id': test_id})
+        return r
 
     def _create_test(self, client):
-        return getattr(self, "%s_client" % client)(
+        r = self.client_call(
             'post',
+            client,
+            client,
             '/api/tests',
             data={
                 'name': 'bob',
                 'data': {
                     'test_keys': {
                         'foo': ['bar1', 'bar2']}}})
+        return r
 
     def _create_jobdefinition_component(
             self, client, jobdefinition_id, component_id):
-        return getattr(self, "%s_client" % client)(
+        r = self.client_call(
             'post',
+            client,
+            client,
             '/api/jobdefinition_components',
             data={
                 'jobdefinition_id': jobdefinition_id,
                 'component_id': component_id})
+        return r
 
     def _create_remoteci(self, client, test_id):
-        return getattr(self, "%s_client" % client)(
+        r = self.client_call(
             'post',
+            client,
+            client,
             '/api/remotecis',
             data={
                 'name': 'a_remoteci',
@@ -202,9 +207,22 @@ class DCITestCase(testtools.TestCase):
                 'data': {
                     'remoteci_keys': {
                         'foo': ['bar1', 'bar2']}}})
+        return r
 
     def _create_job(self, client, remoteci_id):
-        return getattr(self, "%s_client" % client)(
+        r = self.client_call(
             'post',
+            client,
+            client,
             '/api/jobs',
             data={'remoteci_id': remoteci_id})
+        return r
+
+
+class DCIRequestResult(object):
+    def __init__(self, rv):
+        self._rv = rv
+        self.status_code = rv.status_code
+
+    def json(self):
+        return json.loads(self._rv.get_data().decode())

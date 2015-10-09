@@ -22,49 +22,45 @@ import server.tests
 class TestApp(server.tests.DCITestCase):
 
     def test_post_component_item(self):
-        component = self._create_component("admin")
-        self.assertEqual(component.status_code, 201)
-        component = self._extract_response(component)
-        self.component_id = component['id']
+        r = self._create_component("admin")
+        self.assertHTTPCode(r, 201)
+        self.component_id = r.json()['id']
 
     def test_post_test_item(self):
-        rv = self._create_test("admin")
-        self.assertEqual(rv.status_code, 201)
-        response = self._extract_response(rv)
-        self.assertIsNotNone(response)
+        r = self._create_test("admin")
+        self.assertHTTPCode(r, 201)
+        self.assertIsNotNone(r.json())
 
     def test_post_jobdefinition_item(self):
-        test = self._create_test("admin")
-        self.test_id = self._extract_response(test)['id']
+        r = self._create_test("admin")
+        self.test_id = r.json()['id']
         self.test_post_component_item()
-        jobdefinition = self._create_jobdefinition("admin", self.test_id)
-        self.jobdefinition_id = self._extract_response(jobdefinition)['id']
-        jobdefinition_component = self._create_jobdefinition_component(
+        r = self._create_jobdefinition("admin", self.test_id)
+        self.jobdefinition_id = r.json()['id']
+        r = self._create_jobdefinition_component(
             "admin", self.jobdefinition_id, self.component_id)
-        self.assertEqual(jobdefinition_component.status_code, 201)
-        self.assertIsNotNone(self._extract_response(jobdefinition_component))
+        self.assertHTTPCode(r, 201)
+        self.assertIsNotNone(r.json())
 
     def test_post_remoteci_item(self):
-        test = self._create_test("admin")
-        test_id = self._extract_response(test)['id']
+        r = self._create_test("admin")
+        test_id = r.json()['id']
 
-        remoteci = self._create_remoteci("admin", test_id)
-        self.assertEqual(remoteci.status_code, 201)
-        response = self._extract_response(remoteci)
-        self.assertIsNotNone(response)
+        r = self._create_remoteci("admin", test_id)
+        self.assertHTTPCode(r, 201)
+        self.assertIsNotNone(r.json())
 
     def test_post_job_item_with_no_testversion_id(self):
         """testversion_id is missing, the server should pick a
         testversion that match the test_id of the remoteci.
         """
         self.test_post_jobdefinition_item()
-        remoteci = self._create_remoteci("admin", self.test_id)
-        remoteci_id = self._extract_response(remoteci)['id']
+        r = self._create_remoteci("admin", self.test_id)
+        remoteci_id = r.json()['id']
 
-        job = self._create_job("admin", remoteci_id)
-        self.assertEqual(job.status_code, 201)
-        response = self._extract_response(job)
-        self.assertIsNotNone(response)
+        r = self._create_job("admin", remoteci_id)
+        self.assertHTTPCode(r, 201)
+        self.assertIsNotNone(r.json())
 
     def test_get_job_item(self):
         """GET /jobs should retrieve the item and feed the
@@ -72,16 +68,19 @@ class TestApp(server.tests.DCITestCase):
         test and version.
         """
         self.test_post_jobdefinition_item()
-        remoteci = self._create_remoteci("admin", self.test_id)
-        remoteci_id = self._extract_response(remoteci)['id']
+        r = self._create_remoteci("admin", self.test_id)
+        remoteci_id = r.json()['id']
 
-        job = self._create_job("admin", remoteci_id)
-        job_id = self._extract_response(job)['id']
+        r = self._create_job("admin", remoteci_id)
+        job_id = r.json()['id']
 
-        rv = self.partner_client('get', '/api/jobs/%s' % job_id)
-        self.assertEqual(rv.status_code, 200)
-        response = self._extract_response(rv)
+        r = self.client_call(
+            'get',
+            'partner',
+            'partner',
+            '/api/jobs/%s' % job_id)
+        self.assertHTTPCode(r, 200)
         self.assertEqual({'component_keys': {'foo': ['bar1', 'bar2']},
                           'remoteci_keys': {'foo': ['bar1', 'bar2']},
                           'test_keys': {'foo': ['bar1', 'bar2']}},
-                         response['data'])
+                         r.json()['data'])
