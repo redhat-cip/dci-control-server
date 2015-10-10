@@ -19,7 +19,7 @@ import server.db.models
 import server.tests
 
 
-class TestApp(server.tests.DCITestCase):
+class TestApp_resource_creation(server.tests.DCITestCase):
 
     def test_post_component_item(self):
         r = self._create_component("admin")
@@ -31,30 +31,31 @@ class TestApp(server.tests.DCITestCase):
         self.assertHTTPCode(r, 201)
         self.assertIsNotNone(r.json())
 
-    def test_post_jobdefinition_item(self):
+    def test_post_remoteci_item(self):
+        r = self._create_test("admin")
+        test_id = r.json()['id']
+        r = self._create_remoteci("admin", test_id)
+        self.assertHTTPCode(r, 201)
+        self.assertIsNotNone(r.json())
+
+
+class TestApp_handle_job(server.tests.DCITestCase):
+
+    def setUp(self):
+        super(TestApp_handle_job, self).setUp()
         r = self._create_test("admin")
         self.test_id = r.json()['id']
-        self.test_post_component_item()
+        r = self._create_component("admin")
+        self.component_id = r.json()['id']
         r = self._create_jobdefinition("admin", self.test_id)
         self.jobdefinition_id = r.json()['id']
         r = self._create_jobdefinition_component(
             "admin", self.jobdefinition_id, self.component_id)
-        self.assertHTTPCode(r, 201)
-        self.assertIsNotNone(r.json())
-
-    def test_post_remoteci_item(self):
-        r = self._create_test("admin")
-        test_id = r.json()['id']
-
-        r = self._create_remoteci("admin", test_id)
-        self.assertHTTPCode(r, 201)
-        self.assertIsNotNone(r.json())
 
     def test_post_job_item_with_no_testversion_id(self):
         """testversion_id is missing, the server should pick a
         testversion that match the test_id of the remoteci.
         """
-        self.test_post_jobdefinition_item()
         r = self._create_remoteci("admin", self.test_id)
         remoteci_id = r.json()['id']
 
@@ -67,7 +68,6 @@ class TestApp(server.tests.DCITestCase):
         data key with the data section from the component, remoteci,
         test and version.
         """
-        self.test_post_jobdefinition_item()
         r = self._create_remoteci("admin", self.test_id)
         remoteci_id = r.json()['id']
 
