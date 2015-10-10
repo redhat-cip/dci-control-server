@@ -74,15 +74,20 @@ class DCITestCase(testtools.TestCase):
         with open("%s/%s" % (cls._db_dir, "test_setup.sql"), "w") as f:
             f.write("""
 INSERT INTO teams (name) VALUES ('admin');
-INSERT INTO teams (name) VALUES ('partner');
+INSERT INTO teams (name) VALUES ('boa_team');
+INSERT INTO teams (name) VALUES ('cobra_team');
 INSERT INTO users (name, password, team_id) VALUES (
     'admin',
     crypt('admin', gen_salt('bf', 8)),
-    (SELECT id FROM teams WHERE name='partner'));
+    (SELECT id FROM teams WHERE name='admin'));
 INSERT INTO users (name, password, team_id) values (
-    'partner',
-    crypt('partner', gen_salt('bf', 8)),
-    (SELECT id FROM teams WHERE name='partner'));
+    'boa_user',
+    crypt('boa_user', gen_salt('bf', 8)),
+    (SELECT id FROM teams WHERE name='boa_team'));
+INSERT INTO users (name, password, team_id) values (
+    'cobra_user',
+    crypt('cobra_user', gen_salt('bf', 8)),
+    (SELECT id FROM teams WHERE name='cobra_team'));
 INSERT INTO roles (name) VALUES ('admin');
 INSERT INTO roles (name) VALUES ('partner');
 INSERT INTO user_roles (user_id, role_id) VALUES (
@@ -92,8 +97,12 @@ INSERT INTO user_roles (user_id, role_id) VALUES (
     (SELECT id from users WHERE name='admin'),
     (SELECT id from roles WHERE name='partner'));
 INSERT INTO user_roles (user_id, role_id) VALUES (
-    (SELECT id from users WHERE name='partner'),
+    (SELECT id from users WHERE name='boa_user'),
     (SELECT id from roles WHERE name='partner'));
+INSERT INTO user_roles (user_id, role_id) VALUES (
+    (SELECT id from users WHERE name='cobra_user'),
+    (SELECT id from roles WHERE name='partner'));
+
 """)
 
         subprocess.check_output(['psql', '-h', cls._db_dir, '-f',

@@ -71,13 +71,13 @@ class TestApp_handle_job(server.tests.DCITestCase):
         r = self._create_remoteci("admin", self.test_id)
         remoteci_id = r.json()['id']
 
-        r = self._create_job("admin", remoteci_id)
+        r = self._create_job("boa_user", remoteci_id)
         job_id = r.json()['id']
 
         r = self.client_call(
             'get',
-            'partner',
-            'partner',
+            'boa_user',
+            'boa_user',
             '/api/jobs/%s' % job_id)
         self.assertHTTPCode(r, 200)
         self.assertEqual({'component_keys': {'foo': ['bar1', 'bar2']},

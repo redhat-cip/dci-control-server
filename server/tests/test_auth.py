@@ -17,17 +17,17 @@
 import server.tests
 
 
-class TestAuth(server.tests.DCITestCase):
+class TestAuth_user_auth(server.tests.DCITestCase):
 
     def test_authorized_as_partner(self):
         # partner can read files
         self.assertHTTPCode(
             self.client_call(
-                'get', 'partner', 'partner', '/api/files'), 200)
+                'get', 'boa_user', 'boa_user', '/api/files'), 200)
         # partner can create job (400 because of the missing parameters)
         self.assertHTTPCode(
             self.client_call(
-                'post', 'partner', 'partner', '/api/jobs'), 400)
+                'post', 'boa_user', 'boa_user', '/api/jobs'), 400)
 
     def test_wrong_pw_as_unauthorized(self):
         self.assertHTTPCode(
@@ -38,3 +38,40 @@ class TestAuth(server.tests.DCITestCase):
     def test_authorized_as_admin(self):
         self.assertHTTPCode(self.client_call(
             'get', 'admin', 'admin', '/api/jobs'), 200)
+
+
+class TestAuth_resource_isolation(server.tests.DCITestCase):
+
+    def setUp(self):
+        super(TestAuth_resource_isolation, self).setUp()
+        r = self.client_call(
+            'post', 'admin', 'admin', 'api/tests',
+            data={'name': 'a_test', 'data': {}})
+        test_id = r.json()['id']
+        r = self.client_call(
+            'post', 'boa_user', 'boa_user', 'api/remotecis',
+            data={'name': 'boa_remoteci', 'test_id': test_id, 'data': {}})
+        self._boa_remoteci_id = r.json()['id']
+
+    def test_owner_can_access_the_resource(self):
+        r = self.client_call(
+            'get', 'boa_user', 'boa_user',
+            'api/remotecis/' + self._boa_remoteci_id)
+        self.assertHTTPCode(r, 200)
+
+    def test_owner_can_list_the_resource(self):
+        r = self.client_call(
+            'get', 'boa_user', 'boa_user', 'api/remotecis')
+        self.assertEqual(len(r.json()['_items']), 1)
+
+
+    def test_other_users_cannot_see_the_resource(self):
+        r = self.client_call(
+            'get', 'cobra_user', 'cobra_user',
+            'api/remotecis/' + self._boa_remoteci_id)
+        self.assertHTTPCode(r, 404)
+
+    def test_other_users_cannot_list_the_resource(self):
+        r = self.client_call(
+            'get', 'cobra_user', 'cobra_user', 'api/remotecis')
+        self.assertEqual(len(r.json()['_items']), 0)
