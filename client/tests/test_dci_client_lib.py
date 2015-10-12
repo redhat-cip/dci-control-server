@@ -179,6 +179,7 @@ class TestClientLib(server.tests.DCITestCase):
             cpt += 1
         self.assertEqual(cpt, 4)
 
+
     def _init_test_call(self):
         c = self.client
 
