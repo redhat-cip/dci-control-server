@@ -141,6 +141,7 @@ class DCIModel(object):
         # NOTE(Goneri): optional, if the key is missing, we dynamically pick
         # a testversion that fit.
         domain['jobs']['schema']['jobdefinition_id']['required'] = False
+        domain['files']['schema']['mime']['required'] = False
         domain['components']['datasource']['projection']['componenttype'] = 1
 
         # TODO(Gonéri): The following resource projection are enabled just to

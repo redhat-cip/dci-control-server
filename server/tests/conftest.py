@@ -63,8 +63,13 @@ def admin(app):
 
 
 @pytest.fixture
-def partner(app):
-    return utils.generate_client(app, ('partner', 'partner'))
+def company_a_user(app):
+    return utils.generate_client(app, ('company_a_user', 'company_a_user'))
+
+
+@pytest.fixture
+def company_b_user(app):
+    return utils.generate_client(app, ('company_b_user', 'company_b_user'))
 
 
 @pytest.fixture
