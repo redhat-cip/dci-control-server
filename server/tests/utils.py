@@ -62,6 +62,17 @@ def create_jobdefinition_component(client, jobdefinition_id, component_id):
         }
     )
 
+def create_jobstates(client, job_id):
+    return client.post(
+        '/api/jobstates',
+        data={'job_id': job_id, 'status': 'ongoing'}
+    )
+
+def create_file(client, jobstate_id):
+    return client.post(
+        '/api/files',
+        data={'content': 'bob', 'name': 'bob', 'jobstate_id': jobstate_id}
+    )
 
 def create_remoteci(client, test_id):
     return client.post(
