@@ -51,23 +51,8 @@ def db_provisioning(request, app):
     session.commit()
 
     def fin():
-        session.execute("DELETE FROM users")
-        session.execute("DELETE FROM user_roles")
-        session.execute("DELETE FROM user_remotecis")
-
-        session.execute("DELETE FROM tests")
-        session.execute("DELETE FROM teams")
-        session.execute("DELETE FROM roles")
-        session.execute("DELETE FROM remotecis")
-        session.execute("DELETE FROM jobstates")
-        session.execute("DELETE FROM jobdefinition_components")
-        session.execute("DELETE FROM jobdefinitions")
-
-        session.execute("DELETE FROM jobs")
-        session.execute("DELETE FROM files")
-        session.execute("DELETE FROM componenttypes")
-        session.execute("DELETE FROM components")
-        session.commit()
+        for tbl in reversed(app._DCI_MODEL.metadata.sorted_tables):
+            app._DCI_MODEL.engine.execute(tbl.delete())
 
     request.addfinalizer(fin)
 
