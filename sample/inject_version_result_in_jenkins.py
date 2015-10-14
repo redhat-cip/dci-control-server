@@ -55,18 +55,18 @@ def exit_error(msg):
     sys.exit(1)
 
 
-def get_job_duration(jobstates_collection):
+def get_job_duration(jobstates):
     begin_date = email.utils.parsedate(
-        jobstates_collection[0]['created_at'])
+        jobstates[0]['created_at'])
     end_date = email.utils.parsedate(
-        jobstates_collection[-1]['created_at'])
+        jobstates[-1]['created_at'])
 
     return int(time.mktime(end_date) - time.mktime(begin_date))
 
 
-def get_last_code(jobstates_collection):
+def get_last_code(jobstates):
     code = '-1'
-    for jobstate in jobstates_collection:
+    for jobstate in jobstates:
         if jobstate['status'] == 'success':
             code = 0
         elif jobstate['status'] == 'failure':
@@ -74,18 +74,18 @@ def get_last_code(jobstates_collection):
     return code
 
 
-def upload_job(job_name, jobstates_collection):
+def upload_job(job_name, jobstates):
     log = ''
-    for jobstate in jobstates_collection:
+    for jobstate in jobstates:
         log += jobstate['comment']
-        for _file in jobstate['files_collection']:
+        for _file in jobstate['files']:
             log += _file['content']
 
     payload = ("<run><log encoding=\"hexBinary\">" +
                "%s" % (hexlify(log.encode())[0]) +
-               "</log><result>%s" % (get_last_code(jobstates_collection)) +
+               "</log><result>%s" % (get_last_code(jobstates)) +
                "</result>" +
-               "<duration>%s" % (get_job_duration(jobstates_collection)) +
+               "<duration>%s" % (get_job_duration(jobstates)) +
                "</duration></run>")
     r = requests.post(
         "http://localhost:8080/job/%s/postBuildResult" % job_name,
@@ -97,7 +97,7 @@ def upload_job(job_name, jobstates_collection):
 def get_testversions(version_id):
     r = dci_srv.get(
         '/testversions', where={'version_id': version_id},
-        embedded={'jobs_collection': 1, 'test': 1, 'version': 1}
+        embedded={'jobs': 1, 'test': 1, 'version': 1}
     )
     if r.status_code == 404:
         return []
@@ -117,9 +117,9 @@ print("Connected to Jenkins version %s" % jenkins_srv.get_version())
 
 jobdefinition = dci_srv.get(
     '/jobdefinitions/%s' % jobdefinition_id,
-    embedded={'test': 1}, projection={'jobs_collection': 1}).json()
+    embedded={'test': 1}, projection={'jobs': 1}).json()
 
-if len(jobdefinition['jobs_collection']) < 1:
+if len(jobdefinition['jobs']) < 1:
     print("No job associated to this jobdefinition.")
     sys.exit(0)
 
@@ -137,11 +137,11 @@ for job in dci_srv.list_items(
         '/jobs', where={'jobdefinition_id': jobdefinition_id},
         page=(current_build_number + 1),
         max_results=1,
-        embedded={'jobstates_collection': 1}):
+        embedded={'jobstates': 1}):
     # NOTE(Gonéri): use the Jenkins build number to know the cur ID
-    jobstates_collection = job['jobstates_collection']
-    for jobstate in jobstates_collection:
-        jobstate['files_collection'] = dci_srv.get(
+    jobstates = job['jobstates']
+    for jobstate in jobstates:
+        jobstate['files'] = dci_srv.get(
             '/files',
             where={'jobstate_id': jobstate['id']}).json()['_items']
-    upload_job(job_name, jobstates_collection)
+    upload_job(job_name, jobstates)

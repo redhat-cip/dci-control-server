@@ -107,9 +107,9 @@ class TestAdmin(object):
         recheck_job = admin.get('/api/jobs/%s' % recheck_job_id)
 
         assert recheck_job.status_code == 200
-        assert (recheck_job.data['remoteci_id'] ==
-                job_to_recheck.data['remoteci_id'])
-        assert (recheck_job.data['jobdefinition_id'] ==
-                job_to_recheck.data['jobdefinition_id'])
+        assert (recheck_job.data['remoteci'] ==
+                job_to_recheck.data['remoteci'])
+        assert (recheck_job.data['jobdefinition'] ==
+                job_to_recheck.data['jobdefinition'])
         assert recheck_job.data['team_id'] == job_to_recheck.data['team_id']
         assert recheck_job.data['recheck'] is True
