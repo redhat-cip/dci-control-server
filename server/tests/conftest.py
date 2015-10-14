@@ -51,7 +51,7 @@ def db_provisioning(request, app):
     session.commit()
 
     def fin():
-        for tbl in reversed(app._DCI_MODEL.metadata.sorted_tables):
+        for tbl in reversed(app._DCI_MODEL.Base.metadata.sorted_tables):
             app._DCI_MODEL.engine.execute(tbl.delete())
 
     request.addfinalizer(fin)

@@ -9,9 +9,9 @@
   </tr>
   <tr ng-repeat="job in jobs">
     <td>{{job.remoteci.name}}</td>
-    <td>{{job.jobstates_collection[0].updated_at}}</td>
+    <td>{{job.jobstates[0].updated_at}}</td>
     <td>{{job.jobdefinition.test}}</td>
-    <td>{{job.jobstates_collection[0].status}}</td>
+    <td>{{job.jobstates[0].status}}</td>
     <td>
       <a ui-sref="job({id: job.id})">Show details</a>
     </td>
