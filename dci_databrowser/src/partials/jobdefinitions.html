@@ -1,0 +1,22 @@
+<h1 class="page-header">Job definitions</h1>
+<table class="table table-striped">
+  <tr>
+    <th>Name</th>
+    <th>Component Count</th>
+    <th>Creation date</th>
+    <th>Last update date</th>
+    <th>Details</th>
+  </tr>
+  <tr ng-repeat="jobdefinition in jobdefinitions">
+    <td>{{jobdefinition.name}}</td>
+    <td>{{jobdefinition.components.length}}</td>
+    <td>{{jobdefinition.created_at}}</td>
+    <td>{{jobdefinition.updated_at}}</td>
+    <td>
+      <a ui-sref="jobdefinition({id: jobdefinition.id})">Show details</a>
+    </td>
+  </tr>
+</table>
+<td>{{page}} / {{total}}</td>
+<button ng-click='previous()'>Previous</button>
+<button ng-click='next()'>Next</button>
