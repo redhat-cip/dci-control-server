@@ -141,17 +141,17 @@ def get_patchset_score(dci_client, jobdefinition):
 
     jobdefinition = dci_client.get(
         '/jobdefinitions',
-        projection={'jobs_collection': 1},
+        projection={'jobs': 1},
         where={'id': jobdefinition['id']}).json()
 
     status = '0'
-    for job_id in jobdefinition['_items'][0]['jobs_collection']:
+    for job_id in jobdefinition['_items'][0]['jobs']:
         jobs = dci_client.get(
             "/jobs",
             where={'id': job_id},
             embedded={'jobstates_collection': 1}).json()
         for job in jobs['_items']:
-            last_job_status = job['jobstates_collection'][-1]['status']
+            last_job_status = job['jobstates'][-1]['status']
             if last_job_status == 'failure':
                 status = '-1'
                 break
