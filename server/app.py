@@ -60,10 +60,10 @@ class DciControlServer(Eve):
         super(DciControlServer, self).__init__(**kwargs)
 
         DciControlServer._DCI_MODEL = dci_model
-        DciControlServer._DCI_MODEL.metadata.bind = DciControlServer.\
+        DciControlServer._DCI_MODEL.Base.metadata.bind = DciControlServer.\
             _DCI_MODEL.engine
         self._db = self.data.driver
-        self._db.Model = DciControlServer._DCI_MODEL.base
+        self._db.Model = DciControlServer._DCI_MODEL.Base
         self._init_hooks()
 
     @staticmethod
