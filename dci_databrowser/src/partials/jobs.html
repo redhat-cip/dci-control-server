@@ -3,19 +3,15 @@
   <tr>
     <th>Remote CI</th>
     <th>Last update date</th>
-    <th>Product</th>
     <th>Test name</th>
-    <th>Version</th>
     <th>Status</th>
     <th>Details</th>
   </tr>
   <tr ng-repeat="job in jobs">
-    <td>{{job.extra_data.remoteci}}</td>
-    <td>{{job.extra_data.last_update}}</td>
-    <td>{{job.extra_data.product}}</td>
-    <td>{{job.extra_data.test}}</td>
-    <td>{{job.extra_data.version}}</td>
-    <td>{{job.extra_data.last_status}}</td>
+    <td>{{job.remoteci.name}}</td>
+    <td>{{job.jobstates_collection[0].updated_at}}</td>
+    <td>{{job.jobdefinition.test}}</td>
+    <td>{{job.jobstates_collection[0].status}}</td>
     <td>
       <a ui-sref="job({id: job.id})">Show details</a>
     </td>

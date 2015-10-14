@@ -4,9 +4,6 @@ require('./app.js')
   var Jobs = $resource('/api/jobs/:id');
   var JobStates = $resource('/api/jobstates');
   var CIs = $resource('/api/remotecis');
-  var TestVersions = $resource('/api/testversions/:id');
-  var Products = $resource('/api/products/:id');
-  var Versions = $resource('/api/versions');
 
   function getCIs(page) {
     return CIs.get({
@@ -18,8 +15,13 @@ require('./app.js')
   function getJobs(page) {
     return Jobs.get({
       page: page,
-      extra_data: 1,
-      sort: '-created_at'
+      sort: '-created_at',
+      embedded: {
+        'jobstates_collection': 1,
+        'jobdefinition': 1,
+        'remoteci': 1
+      },
+      projection: {remoteci: 1}
     }).$promise;
   }
 
@@ -28,7 +30,7 @@ require('./app.js')
 
     return $q.all([
       Jobs.get({
-        'id': id, 'embedded': {'remoteci': 1, 'testversion': 1}
+        'id': id, 'embedded': {'remoteci': 1, 'jobdefinition': 1}
       }).$promise,
       JobStates.get({
         'where': {'job_id': id},
@@ -38,35 +40,15 @@ require('./app.js')
     ]).then(function(data) {
       job = data.shift();
       job.jobstate = data.shift()._items.pop();
-      return TestVersions.get({
-        id: job.testversion.id,
-        'embedded': {'version': 1, 'test': 1}
-      }).$promise;
-    }).then(function(testversion) {
-      job.version = testversion.version.name;
-      job.test = testversion.test.name;
-      return Products.get({
-        id: testversion.version.product_id
-      });
-    }).then(function(product) {
-      job.product = product.name;
-      return job
+      return job;
     });
   }
 
-  function getVersions(product_id) {
-    return Versions.get({
-      'where': {'product_id': product_id}, 'extra_data': 1
-    }).$promise.then(function (versions) {
-      return versions._items;
-    })
-  }
+
   return {
     getJobs: getJobs,
     getJob: getJob,
-    getCIs: getCIs,
-    getProducts: Products.get().$promise,
-    getVersions: getVersions
+    getCIs: getCIs
   }
 }]);
 

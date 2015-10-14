@@ -70,17 +70,6 @@ require('./app.js')
       onEnter: scrollTop,
       controller: 'ListCIsCtrl'
     })
-    .state('products', {
-      url: '/products',
-      parent: 'auth',
-      resolve: {
-        products: ['api', function(api) {
-          return api.getProducts
-        }]
-      },
-      templateUrl: 'partials/products.html',
-      controller: 'ProductsCtrl'
-    })
     .state('stats', {
       url: '/stats',
       parent: 'auth',
