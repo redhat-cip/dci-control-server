@@ -46,7 +46,7 @@ jobs = dci_client.list_items(
     '/jobs',
     where={'created_at': '>= "yesterday"'},
     embedded={
-        'jobstates_collection': 1,
+        'jobstates': 1,
         'jobdefinition': 1,
         'jobdefinition.text': 1})
 
@@ -55,6 +55,6 @@ files = dci_client.list_items(
     where={'created_at': '>= "yesterday"'},
     embedded={
         'remoteci': 1,
-        'jobstates_collection': 1})
+        'jobstates': 1})
 upload(es_s, 'jobs', jobs)
 upload(es_s, 'files', files)
