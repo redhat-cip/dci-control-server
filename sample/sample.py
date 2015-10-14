@@ -51,6 +51,11 @@ for _ in range(10):
                                           'test_id': test_id})
         jobdefinition_id = jobdefinition.json()["id"]
 
+        client.post('/api/jobdefinition_components', data={
+            'component_id': component_id,
+            'jobdefinition_id': jobdefinition_id
+        })
+
         remoteci = client.post('/api/remotecis',
                                data={
                                    'name': str(uuid.uuid4())[:18],
