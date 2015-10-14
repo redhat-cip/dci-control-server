@@ -14,68 +14,148 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import re
-
+import datetime
+from sqlalchemy import Column
 from sqlalchemy import create_engine
+from sqlalchemy.dialects.postgresql import JSON
+from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.automap import automap_base
-from sqlalchemy.ext.automap import generate_relationship
-from sqlalchemy import MetaData
-from sqlalchemy.orm.interfaces import ONETOMANY
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import ForeignKey
+from sqlalchemy import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
-
-from eve_sqlalchemy.decorators import registerSchema
+from sqlalchemy.types import Boolean
+from sqlalchemy.types import DateTime
+from sqlalchemy.types import Integer
+from sqlalchemy.types import String
 
 
 class DCIModel(object):
+    Base = declarative_base()
+
+    class DCIBase(Base):
+        __abstract__ = True
+        id = Column(UUID, primary_key=True)
+        created_at = Column(DateTime(timezone=True),
+                            default=datetime.datetime.utcnow, nullable=False)
+        updated_at = Column(DateTime(timezone=True),
+                            onupdate=datetime.datetime.utcnow,
+                            default=datetime.datetime.utcnow, nullable=False)
+        etag = Column(String(40), default=func.gen_etag(), nullable=False)
+
+    class Team(DCIBase):
+        __tablename__ = 'teams'
+        name = Column(String(100))
+
+    class Componenttype(DCIBase):
+        __tablename__ = 'componenttypes'
+        name = Column(String(100))
+
+    class User(DCIBase):
+        __tablename__ = 'users'
+        name = Column(String(100))
+        password = Column(String())
+        team_id = Column(UUID(), ForeignKey('teams.id'))
+
+    class Test(DCIBase):
+        __tablename__ = 'tests'
+        data = Column(JSON())
+        name = Column(String(255))
+
+    class Role(DCIBase):
+        __tablename__ = 'roles'
+        name = Column(String(100))
+
+    class UserRole(DCIBase):
+        __tablename__ = 'user_roles'
+        user_id = Column(UUID(), ForeignKey('users.id'))
+        role_id = Column(UUID(), ForeignKey('roles.id'))
+
+    class Remoteci(DCIBase):
+        __tablename__ = 'remotecis'
+        name = Column(String(100))
+        data = Column(JSON())
+        team_id = Column(UUID(), ForeignKey('teams.id'))
+        test_id = Column(UUID(), ForeignKey('tests.id'))
+        team = relationship('Team', uselist=False)
+        test = relationship('Test', uselist=False)
+
+    class Jobdefinition(DCIBase):
+        __tablename__ = 'jobdefinitions'
+        name = Column(String(100))
+        priority = Column(Integer(), default=0)
+        test_id = Column(UUID(), ForeignKey('tests.id'))
+        test = relationship('Test', uselist=False)
+
+    class Job(DCIBase):
+        __tablename__ = 'jobs'
+        recheck = Column(Boolean(), default=False)
+        remoteci_id = Column(UUID(), ForeignKey('remotecis.id'))
+        team_id = Column(UUID(), ForeignKey('teams.id'))
+        remoteci = relationship('Remoteci', uselist=False)
+        jobdefinition_id = Column(UUID(), ForeignKey('jobdefinitions.id'))
+        jobdefinition = relationship('Jobdefinition', uselist=False)
+
+    class Jobstate(DCIBase):
+        __tablename__ = 'jobstates'
+        comment = Column(String())
+        job_id = Column(UUID(), ForeignKey('jobs.id'))
+        team_id = Column(UUID(), ForeignKey('teams.id'))
+        status = Column(String(), default='ongoing')
+
+    class File(DCIBase):
+        __tablename__ = 'files'
+        name = Column(String(100))
+        content = Column(String())
+        mime = Column(String(100), default='text/plain')
+        md5 = Column(String(32))
+        jobstate_id = Column(UUID(), ForeignKey('jobstates.id'))
+        team_id = Column(UUID(), ForeignKey('teams.id'))
+
+    class Component(DCIBase):
+        __tablename__ = 'components'
+        name = Column(String(100))
+        componenttype_id = Column(UUID(), ForeignKey('componenttypes.id'))
+        data = Column(JSON())
+        sha = Column(String())
+        title = Column(String())
+        message = Column(String())
+        url = Column(String())
+        git = Column(String())
+        ref = Column(String())
+        canonical_project_name = Column(String())
+        componenttype = relationship('Componenttype', uselist=False)
+
+    class JobdefinitionComponent(DCIBase):
+        __tablename__ = 'jobdefinition_components'
+        component_id = Column(UUID(), ForeignKey('components.id'))
+        jobdefinition_id = Column(UUID(), ForeignKey('jobdefinitions.id'))
+        component = relationship('Component', uselist=False)
+        jobdefinition = relationship('Jobdefinition', uselist=False)
+
+    setattr(Jobdefinition, 'jobs', relationship(
+        Job, uselist=True))
+    setattr(Jobdefinition, 'jobdefinition_components', relationship(
+        JobdefinitionComponent))
+    setattr(Jobdefinition, 'components',
+            association_proxy(
+                'jobdefinition_components', 'component'))
+    setattr(Job, 'jobstates', relationship(
+        Jobstate,
+        order_by=Jobstate.created_at.desc()))
+    setattr(User, 'user_roles', relationship(
+        UserRole))
+    setattr(User, 'roles',
+            association_proxy(
+                'user_roles', 'role'))
 
     def __init__(self, db_uri):
+
         # TODO(Gonéri): Load the value for a configuration file
         self.engine = create_engine(db_uri, pool_size=20, max_overflow=0,
                                     encoding='utf8', convert_unicode=True)
-
-        self.metadata = MetaData()
-        self.metadata.reflect(self.engine)
-
-        # NOTE(Gonéri): ensure the associated resources list get sorted using
-        # the created_at key.
-        def _gen_relationship(base, direction, return_fn,
-                              attrname, local_cls, referred_cls, **kw):
-            if direction is ONETOMANY:
-                kw['order_by'] = referred_cls.__table__.columns.created_at
-            return generate_relationship(
-                base, direction, return_fn,
-                attrname, local_cls, referred_cls, **kw)
-        self.base = automap_base(metadata=self.metadata)
-        self.base.prepare(generate_relationship=_gen_relationship)
-
-        # engine.echo = True
-
-        # NOTE(Gonéri): Create the foreign table attribue to be able to
-        # do job.remoteci.name
-        for table in self.metadata.tables:
-            cur_db = getattr(self.base.classes, table)
-            for column in cur_db.__table__.columns:
-                m = re.search(r"\.(\w+)_id$", str(column))
-                if not m:
-                    continue
-                foreign_table_name = m.group(1)
-                foreign_table_object = getattr(
-                    self.base.classes, foreign_table_name + 's')
-                remote_side = None
-                remote_side = [foreign_table_object.id]
-                setattr(cur_db, foreign_table_name, relationship(
-                    foreign_table_object, uselist=False,
-                    remote_side=remote_side))
-
-        setattr(self.base.classes.jobdefinitions, 'components',
-                association_proxy(
-                    'jobdefinition_components_collection', 'component'))
-        setattr(self.base.classes.jobs, 'jobstates', relationship(
-            self.base.classes.jobstates, uselist=True, lazy='dynamic',
-            order_by=self.base.classes.jobstates.created_at.desc()))
         self._Session = sessionmaker(bind=self.engine)
 
     def get_session(self):
@@ -107,50 +187,3 @@ class DCIModel(object):
             else:
                 result['fields'][fields[row[0]]] = row[1]
         return result
-
-    def generate_eve_domain_configuration(self):
-        domain = {}
-        for table in self.metadata.tables:
-            DB = getattr(self.base.classes, table)
-            registerSchema(table)(DB)
-            domain[table] = DB._eve_schema[table]
-            domain[table].update({
-                'id_field': 'id',
-                'item_url': 'regex("[-a-z0-9]{8}-[-a-z0-9]{4}-'
-                            '[-a-z0-9]{4}-[-a-z0-9]{4}-[-a-z0-9]{12}")',
-                'item_lookup_field': 'id',
-                'resource_methods': ['GET', 'POST', 'DELETE'],
-                'item_methods': ['PATCH', 'DELETE', 'PUT', 'GET'],
-                'public_methods': [],
-                'public_item_methods': [],
-            })
-            domain[table]['schema']['created_at']['required'] = False
-            domain[table]['schema']['updated_at']['required'] = False
-            domain[table]['schema']['etag']['required'] = False
-            domain[table]['datasource']['default_sort'] = [('created_at', 1)]
-            if 'team_id' in domain[table]['schema']:
-                domain[table]['schema']['team_id']['required'] = False
-                domain[table]['auth_field'] = 'team_id'
-            if hasattr(DB, 'name'):
-                domain[table].update({
-                    'additional_lookup': {
-                        'url': 'regex("[-_\w\d]+")',
-                        'field': 'name'
-                    }})
-            domain[table]['description'] = self.get_table_description(table)
-        # NOTE(Goneri): optional, if the key is missing, we dynamically pick
-        # a testversion that fit.
-        domain['jobs']['schema']['jobdefinition_id']['required'] = False
-        domain['files']['schema']['mime']['required'] = False
-        domain['jobdefinitions']['schema']['priority']['required'] = False
-        domain['jobs']['schema']['recheck']['required'] = False
-        domain['components']['datasource']['projection']['componenttype'] = 1
-
-        # TODO(Gonéri): The following resource projection are enabled just to
-        # be sure the resources will be embeddable. Instead we should make a
-        # patch on Eve to dynamically turn on projection on embedded resources.
-        domain['jobs']['datasource']['projection']['jobstates_collection'] = 1
-        domain['jobs']['datasource']['projection']['jobdefinition'] = 1
-        domain['jobdefinitions']['datasource']['projection']['components'] = 1
-        domain['jobdefinitions']['datasource']['projection']['test'] = 1
-        return domain

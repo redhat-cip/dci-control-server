@@ -18,7 +18,7 @@ require('./app.js')
       page: page,
       sort: '-created_at',
       embedded: {
-        'jobstates_collection': 1,
+        'jobstates': 1,
         'jobdefinition': 1,
         'remoteci': 1
       },
@@ -52,7 +52,7 @@ require('./app.js')
       JobStates.get({
         'where': {'job_id': id},
         'sort': 'created_at',
-        'embedded': {'files_collection': 1}
+        'embedded': {'files': 1}
       }).$promise
     ]).then(function(data) {
       job = data.shift();
