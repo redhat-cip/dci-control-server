@@ -60,10 +60,10 @@ class DciControlServer(Eve):
         super(DciControlServer, self).__init__(**kwargs)
 
         DciControlServer._DCI_MODEL = dci_model
-        DciControlServer._DCI_MODEL.metadata.bind = DciControlServer.\
+        DciControlServer._DCI_MODEL.Base.metadata.bind = DciControlServer.\
             _DCI_MODEL.engine
         self._db = self.data.driver
-        self._db.Model = DciControlServer._DCI_MODEL.base
+        self._db.Model = DciControlServer._DCI_MODEL.Base
         self._init_hooks()
 
     @staticmethod
@@ -94,7 +94,7 @@ class DciControlServer(Eve):
             if r is None:
                 abort(412, "No test to run left.")
             jobdefinition = session.query(
-                DciControlServer._DCI_MODEL.base.classes.jobdefinitions).\
+                DciControlServer._DCI_MODEL.Jobdefinition).\
                 get(str(r[0]))
             d['jobdefinition_id'] = jobdefinition.id
         session.close()
@@ -102,8 +102,8 @@ class DciControlServer(Eve):
     @staticmethod
     def stop_running_jobs(documents):
         session = DciControlServer._DCI_MODEL.get_session()
-        Jobs = DciControlServer._DCI_MODEL.base.classes.jobs
-        Jobstates = DciControlServer._DCI_MODEL.base.classes.jobstates
+        Jobs = DciControlServer._DCI_MODEL.Job
+        Jobstates = DciControlServer._DCI_MODEL.Jobstate
         for d in documents:
             jobs = session.query(Jobs).filter(
                 Jobs.remoteci_id == d['remoteci_id']).all()
@@ -126,7 +126,7 @@ class DciControlServer(Eve):
     def aggregate_job_data(response):
         session = DciControlServer._DCI_MODEL.get_session()
         data = {}
-        job = session.query(DciControlServer._DCI_MODEL.base.classes.jobs).\
+        job = session.query(DciControlServer._DCI_MODEL.Job).\
             get(response['id'])
         # TODO(Gonéri): do we still need that?
         my_datas = [job.jobdefinition.test.data,
@@ -147,27 +147,25 @@ class DciControlServer(Eve):
 
         version_id = flask.request.args.get('version_id')
         session = DciControlServer._DCI_MODEL.get_session()
-        Remotecis = DciControlServer._DCI_MODEL.base.classes.remotecis
+        Remotecis = DciControlServer._DCI_MODEL.Remoteci
         remotecisTotal = session.query(Remotecis).count()
 
         rate = {"success": 0, "failure": 0, "ongoing": 0,
                 "not_started": remotecisTotal}
         for remoteci in response["_items"]:
-            Testversions = DciControlServer._DCI_MODEL.base.classes.\
-                testversions
+            Testversions = DciControlServer._DCI_MODEL.Testversions
             testversions = session.query(Testversions).\
                 filter(Testversions.version_id == version_id).all()
 
             for testversion in testversions:
-                Jobs = DciControlServer._DCI_MODEL.base.classes.jobs
+                Jobs = DciControlServer._DCI_MODEL.Job
                 job = session.query(Jobs).\
                     filter((Jobs.testversion_id == testversion.id) and
                            (Jobs.remoteci_id == remoteci["id"])).first()
                 if job:
-                    Jobstates = DciControlServer._DCI_MODEL.base.classes.\
-                        jobstates
+                    Jobstate = DciControlServer._DCI_MODEL.Jobstate
                     jobstate = job.jobstates.filter(
-                        Jobstates.job_id == job.id).first()
+                        Jobstate.job_id == job.id).first()
                     if jobstate:
                         rate[jobstate.status] += 1
                         rate["not_started"] -= 1
