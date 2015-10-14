@@ -31,6 +31,32 @@ require('./app.js')
   }
 ])
 
+.controller('ListJobDefinitionsCtrl', [
+  '$state', '$scope', 'jobdefinitions', 'page',
+  function($state, $scope, jobdefinitions, page) {
+    $scope.jobdefinitions = jobdefinitions._items;
+    $scope.page = page;
+
+    var total = $scope.total =
+      Math.ceil(jobdefinitions._meta.total / jobdefinitions._meta.max_results);
+
+    var go = function(page) {
+      return function () {
+        $state.go('jobdefinitions', {
+          'page': page > total && total || page > 0 && page || 1
+        });
+      }
+    }
+
+    $scope.previous = go(page - 1);
+    $scope.next = go(page + 1);
+  }
+])
+.controller('JobDefinitionCtrl', [
+  '$scope', 'jobdefinition', function($scope, jobdefinition) {
+    $scope.jobdefinition = jobdefinition;
+  }
+])
 .controller('ListCIsCtrl', [
   '$state', '$scope', 'cis', 'page', function($state, $scope, cis, page) {
     $scope.cis = cis._items;

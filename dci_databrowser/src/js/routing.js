@@ -55,6 +55,32 @@ require('./app.js')
       },
       controller: 'JobCtrl'
     })
+    .state('jobdefinitions', {
+      url: '/jobdefinitions?page',
+      parent: 'auth',
+      resolve: {
+        page: ['$stateParams', function ($stateParams) {
+          return parseInt($stateParams.page) || 1;
+        }],
+        jobdefinitions: ['api', 'page', function(api, page) {
+          return api.getJobDefinitions(page);
+        }]
+      },
+      templateUrl: 'partials/jobdefinitions.html',
+      controller: 'ListJobDefinitionsCtrl'
+    })
+    .state('jobdefinition', {
+      url: '/jobdefinitions/:id',
+      parent: 'auth',
+      resolve: {
+        jobdefinition: ['$stateParams', 'api', function($stateParams, api) {
+          return api.getJobDefinition($stateParams.id);
+        }]
+      },
+      templateUrl: 'partials/jobdefinition.html',
+      controller: 'JobDefinitionCtrl'
+    })
+
     .state('remotecis', {
       url: '/remotecis?page',
       parent: 'auth',

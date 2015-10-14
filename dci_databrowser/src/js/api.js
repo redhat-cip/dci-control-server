@@ -3,6 +3,7 @@ require('./app.js')
 .factory('api', ['$resource', '$q', function($resource, $q) {
   var Jobs = $resource('/api/jobs/:id');
   var JobStates = $resource('/api/jobstates');
+  var JobDefinitions = $resource('/api/jobdefinitions/:id');
   var CIs = $resource('/api/remotecis');
 
   function getCIs(page) {
@@ -24,6 +25,21 @@ require('./app.js')
       projection: {remoteci: 1}
     }).$promise;
   }
+
+  function getJobDefinitions(page) {
+    return JobDefinitions.get({
+      page: page,
+      sort: '-created_at'
+    }).$promise;
+
+  }
+
+  function getJobDefinition(id) {
+    return JobDefinitions.get({
+      'id': id
+    }).$promise;
+  }
+
 
   function getJob(id) {
     var job;
@@ -48,6 +64,8 @@ require('./app.js')
   return {
     getJobs: getJobs,
     getJob: getJob,
+    getJobDefinitions: getJobDefinitions,
+    getJobDefinition: getJobDefinition,
     getCIs: getCIs
   }
 }]);
