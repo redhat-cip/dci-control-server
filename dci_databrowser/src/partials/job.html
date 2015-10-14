@@ -4,19 +4,15 @@
     <th>Remote CI name</th>
     <th>Creation date</th>
     <th>Last update date</th>
-    <th>Product</th>
     <th>Test name</th>
-    <th>Version</th>
     <th>Status</th>
   </tr>
   <tr>
     <td>{{job.remoteci.name}}</td>
     <td>{{job.created_at}}</td>
     <td>{{job.updated_at}}</td>
-    <td>{{job.product}}</td>
-    <td>{{job.test}}</td>
-    <td>{{job.version}}</td>
-    <td>{{job.jobstates[job.jobstates.length-1].status}}</td>
+    <td>{{job.jobdefinition.test}}</td>
+    <td>{{job.jobstate.status}}</td>
   </tr>
 </table><br/>
 

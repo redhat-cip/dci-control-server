@@ -1,5 +1,5 @@
 {
     "host": "localhost",
     "port": 8000,
-    "api": "http://localhost:5000/api"
+    "api": "http://172.17.0.26:5000/api"
 }
