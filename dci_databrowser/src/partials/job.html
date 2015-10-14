@@ -24,7 +24,7 @@
 <h2>Job states</h2>
 <!-- id: {{jobstate.id}} -->
 <small>{{job.jobstate.created_at}} → {{job.jobstate.updated_at}} ({{job.jobstate.status}})</small>
-<div ng-repeat="file in job.jobstate.files_collection">
+<div ng-repeat="file in job.jobstate.files">
   {{file.name}}
   <!-- TODO(Gonéri): I think we can replace that with something
         like https://github.com/drudru/ansi_up -->

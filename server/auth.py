@@ -27,9 +27,9 @@ class DCIBasicAuth(eve.auth.BasicAuth):
 
     def check_auth(self, name, password, allowed_roles, resource, method):
         session = self.dci_model.get_session()
-        users_c = self.dci_model.base.classes.users
-        user_roles_c = self.dci_model.base.classes.user_roles
-        roles_c = self.dci_model.base.classes.roles
+        users_c = self.dci_model.User
+        user_roles_c = self.dci_model.UserRole
+        roles_c = self.dci_model.Role
         try:
             self.user = session.query(
                 users_c).filter_by(name=name).one()
