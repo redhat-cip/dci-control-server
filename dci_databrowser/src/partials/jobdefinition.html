@@ -2,3 +2,19 @@
 
 Name: {{jobdefinition.name}}
 
+<br/>
+<h2>Components</h2>
+<table class="table table-striped">
+  <tr>
+    <th>Component Name</th>
+    <th>Component Type</th>
+    <th>Created At</th>
+  </tr>
+  <tr ng-repeat="component in jobdefinition.components">
+    <td>{{component.name}}</td>
+    <td>{{component.componenttype}}</td>
+    <td>{{component.created_at}}</td>
+  </tr>
+</table><br/>
+
+

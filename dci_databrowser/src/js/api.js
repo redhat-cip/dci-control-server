@@ -36,7 +36,8 @@ require('./app.js')
 
   function getJobDefinition(id) {
     return JobDefinitions.get({
-      'id': id
+      'id': id,
+      embedded: {'components': 1}
     }).$promise;
   }
 
