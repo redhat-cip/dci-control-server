@@ -1,21 +1,18 @@
 'use strict';
 
 var gulp       = require('gulp');
+var $          = require('gulp-load-plugins')();
 var del        = require('del');
-var connect    = require('gulp-connect');
-var jscs       = require('gulp-jscs');
 var config     = require('./config');
 var browserify = require('browserify');
 var source     = require('vinyl-source-stream');
 var buffer     = require('vinyl-buffer');
-var sourcemaps = require('gulp-sourcemaps');
-var concat     = require('gulp-concat');
 var globby     = require('globby');
 var through    = require('through2');
 
 gulp.task('jscs', function() {
   return gulp.src(['src/**.js', 'gulpfile.js'])
-  .pipe(jscs());
+  .pipe($.jscs());
 });
 
 gulp.task('build', ['js', 'css', 'fonts'], function() {
@@ -32,7 +29,7 @@ gulp.task('clean', function() {
 });
 
 gulp.task('reload', ['build'], function() {
-  return gulp.src('static/**').pipe(connect.reload());
+  return gulp.src('static/**').pipe($.connect.reload());
 });
 
 gulp.task('watch', function() {
@@ -65,8 +62,8 @@ gulp.task('js', ['clean'], function() {
   return bundledStream
   .pipe(source('app.js'))
   .pipe(buffer())
-  .pipe(sourcemaps.init({loadMaps: true}))
-  .pipe(sourcemaps.write('./'))
+  .pipe($.sourcemaps.init({loadMaps: true}))
+  .pipe($.sourcemaps.write('./'))
   .pipe(gulp.dest('./static/js/'));
 });
 
@@ -78,9 +75,9 @@ gulp.task('css', ['clean'], function() {
   ];
 
   return gulp.src(entries)
-  .pipe(sourcemaps.init({loadMaps: true}))
-  .pipe(concat('dashboard.css'))
-  .pipe(sourcemaps.write('./'))
+  .pipe($.sourcemaps.init({loadMaps: true}))
+  .pipe($.concat('dashboard.css'))
+  .pipe($.sourcemaps.write('./'))
   .pipe(gulp.dest('static/css/'));
 });
 
@@ -97,7 +94,7 @@ gulp.task('connect', function() {
   var url = require('url');
   var proxy = require('proxy-middleware');
 
-  return connect.server({
+  return $.connect.server({
     host: config.host,
     port: config.port,
     livereload: true,
