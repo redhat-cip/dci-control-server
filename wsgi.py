@@ -19,4 +19,5 @@
 
 import server.app
 
-application = server.app.create_app()
+conf = server.app.generate_conf()
+application = server.app.create_app(conf)
