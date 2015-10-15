@@ -96,12 +96,6 @@ require('./app.js')
       onEnter: scrollTop,
       controller: 'ListCIsCtrl'
     })
-    .state('stats', {
-      url: '/stats',
-      parent: 'auth',
-      templateUrl: 'partials/stats.html',
-      controller: 'StatsController'
-    })
     .state('login', {
       url: '/login?next&args',
       controller: 'LoginCtrl',
