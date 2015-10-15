@@ -1,0 +1,61 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a7fa997_9c9eed62",
+        "filename": "dci_databrowser/src/js/api.js",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-15T21:16:40Z",
+      "side": 1,
+      "message": "To avoid conflicts with I2a99b2ce5b462e940392fb4a87b920961571f42d can you just rename it to jobstates.",
+      "revId": "75b9b0ef9bfc5dc7c13ffc98a6e75a95c4cda8d8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a7fa997_bc9ba971",
+        "filename": "dci_databrowser/src/partials/jobs.html",
+        "patchSetId": 1
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-15T21:16:40Z",
+      "side": 1,
+      "message": "here again jobstates instead of jobstates_collection",
+      "range": {
+        "startLine": 12,
+        "startChar": 6,
+        "endLine": 12,
+        "endChar": 7
+      },
+      "revId": "75b9b0ef9bfc5dc7c13ffc98a6e75a95c4cda8d8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a7fa997_5c885522",
+        "filename": "dci_databrowser/src/partials/jobs.html",
+        "patchSetId": 1
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-15T21:16:40Z",
+      "side": 1,
+      "message": "the same",
+      "revId": "75b9b0ef9bfc5dc7c13ffc98a6e75a95c4cda8d8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
