@@ -9,6 +9,7 @@ var source     = require('vinyl-source-stream');
 var buffer     = require('vinyl-buffer');
 var globby     = require('globby');
 var through    = require('through2');
+var merge      = require('merge2');
 
 gulp.task('jscs', function() {
   return gulp.src(['src/**.js', 'gulpfile.js'])
@@ -68,13 +69,21 @@ gulp.task('js', ['clean'], function() {
 });
 
 gulp.task('css', ['clean'], function() {
-  var entries = [
+  var cssEntries = [
     'node_modules/bootstrap/dist/css/bootstrap.css',
     'node_modules/angular-loading-bar/build/loading-bar.css',
     'src/css/**/*.css'
   ];
 
-  return gulp.src(entries)
+  var scssEntries = [
+    'src/css/**/*.scss'
+  ];
+
+  var cssStream = gulp.src(cssEntries);
+  var scssStream = gulp.src(scssEntries)
+  .pipe($.sass().on('error', $.sass.logError));
+
+  return merge(cssStream, scssStream)
   .pipe($.sourcemaps.init({loadMaps: true}))
   .pipe($.concat('dashboard.css'))
   .pipe($.sourcemaps.write('./'))
