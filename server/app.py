@@ -189,7 +189,7 @@ class DciControlServer(Eve):
 
 def generate_conf():
     conf = flask.Config('')
-    conf.from_object(os.environ.get('DCI_SETTINGS_MODULE') or 'settings')
+    conf.from_object(os.environ.get('DCI_SETTINGS_MODULE') or 'server.settings')
     return conf
 
 
