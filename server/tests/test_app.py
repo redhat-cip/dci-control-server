@@ -41,6 +41,7 @@ class TestAdmin(object):
         assert jobdefinition_component.data is not None
 
     def test_post_remoteci_item(self, admin):
+        team = utils.create_team(admin)
         test = utils.create_test(admin)
         remoteci = utils.create_remoteci(admin, test.data['id'])
 
