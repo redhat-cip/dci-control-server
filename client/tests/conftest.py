@@ -20,12 +20,17 @@ import pytest
 import server.tests.conftest as server_conftest
 
 
-@pytest.fixture(scope="session")
-def server(request):
-    return server_conftest.app(request)
+@pytest.fixture(scope='session')
+def init_db(request):
+    server_conftest.init_db(request)
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture
+def server(init_db):
+    return server_conftest.app(init_db)
+
+
+@pytest.fixture
 def client(server):
     client = dci_client.DCIClient(
         end_point='http://dci_server.com/api',

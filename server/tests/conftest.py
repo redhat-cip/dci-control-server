@@ -21,24 +21,29 @@ import sqlalchemy
 import sqlalchemy_utils.functions
 
 
-@pytest.fixture(scope="session")
-def app(request):
+@pytest.fixture(scope='session')
+def init_db(request):
     conf = server.app.generate_conf()
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
 
-    if not sqlalchemy_utils.functions.database_exists(db_uri):
-        sqlalchemy_utils.functions.create_database(db_uri)
+    def del_db():
+        if sqlalchemy_utils.functions.database_exists(db_uri):
+            sqlalchemy_utils.functions.drop_database(db_uri)
 
-        request.addfinalizer(
-            lambda: sqlalchemy_utils.functions.drop_database(db_uri)
-        )
+    del_db()
+    sqlalchemy_utils.functions.create_database(db_uri)
 
-        engine = sqlalchemy.create_engine(db_uri)
-        sql_file_path = "db_schema/dci-control-server.sql"
-        with engine.begin() as conn, open(sql_file_path) as f:
-            conn.execute(f.read())
+    engine = sqlalchemy.create_engine(db_uri)
+    sql_file_path = 'db_schema/dci-control-server.sql'
+    with engine.begin() as conn, open(sql_file_path) as f:
+        conn.execute(f.read())
 
-    app = server.app.create_app(conf)
+    request.addfinalizer(del_db)
+
+
+@pytest.fixture
+def app(init_db):
+    app = server.app.create_app(server.app.generate_conf())
     app.testing = True
     return app
 
@@ -46,7 +51,7 @@ def app(request):
 @pytest.fixture(autouse=True)
 def db_provisioning(request, app):
     session = app._DCI_MODEL.get_session()
-    with open("db_schema/dci-control-server-test.sql") as f:
+    with open('db_schema/dci-control-server-test.sql') as f:
         session.execute(f.read())
     session.commit()
 
