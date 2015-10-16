@@ -24,7 +24,7 @@ if [ "${new_schema_checksum}" != "${current_schema_checksum}" ]; then
         CREATE OR REPLACE FUNCTION dci_cs_version() RETURNS text AS '
         SELECT \$\$${new_schema_checksum}\$\$::text ' LANGUAGE SQL IMMUTABLE;"
 
-    if [ -z ${DCI_LOGIN} || -z ${DCI_PASSWORD} ]; then
+    if [ -z "${DCI_LOGIN}" ] || [ -z "${DCI_PASSWORD}" ]; then
         echo "DCI credentials error: 'DCI_LOGIN' or 'DCI_PASSWORD' environment variables not set";
         exit 1
     fi
