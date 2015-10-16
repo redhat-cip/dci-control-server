@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a7fa997_1c3bbdec",
+        "filename": "server/tests/test_app.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-10-16T07:04:49Z",
+      "side": 1,
+      "message": "Not convinced by this indentation, can we use visual ones ? \nlike:\n \nif (\n    test1\n    test2\n)\n\nor if (test1\n        test2\n        test3)\n\nwhat do you think ?",
+      "revId": "2f902384bc77294c22b354992f5c7d2f97e7df49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a7fa997_3c40f955",
+        "filename": "server/tests/test_app.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-10-16T07:04:49Z",
+      "side": 1,
+      "message": "indentation here too",
+      "revId": "2f902384bc77294c22b354992f5c7d2f97e7df49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a7fa997_7c367105",
+        "filename": "server/tests/test_app.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-10-16T07:04:49Z",
+      "side": 1,
+      "message": "Do we really need a loop for 2 elements ? I think a simple flat definition will be ok",
+      "revId": "2f902384bc77294c22b354992f5c7d2f97e7df49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a7fa997_dc2465c8",
+        "filename": "server/tests/test_app.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-10-16T07:04:49Z",
+      "side": 1,
+      "message": "indentation",
+      "revId": "2f902384bc77294c22b354992f5c7d2f97e7df49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a7fa997_5c31350a",
+        "filename": "server/tests/test_app.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-10-16T07:04:49Z",
+      "side": 1,
+      "message": "Does it require a NOTE tag ? This looks like a normal comment explaining the code",
+      "revId": "2f902384bc77294c22b354992f5c7d2f97e7df49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a7fa997_bc540922",
+        "filename": "server/tests/test_app.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-10-16T07:04:49Z",
+      "side": 1,
+      "message": "forgetting",
+      "revId": "2f902384bc77294c22b354992f5c7d2f97e7df49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
