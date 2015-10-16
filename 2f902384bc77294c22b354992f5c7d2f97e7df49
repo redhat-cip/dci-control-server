@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "7a7fa997_ff92739e",
+        "filename": "server/tests/test_app.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-16T13:26:43Z",
+      "side": 1,
+      "message": "Well, both are standard pep8 indentation. There is a lot of indentation like that in the code and I would prefer we speak about that on the ML first.",
+      "parentUuid": "7a7fa997_1c3bbdec",
+      "revId": "2f902384bc77294c22b354992f5c7d2f97e7df49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a7fa997_3c40f955",
         "filename": "server/tests/test_app.py",
         "patchSetId": 8
@@ -47,6 +65,24 @@
       "writtenOn": "2015-10-16T07:04:49Z",
       "side": 1,
       "message": "Do we really need a loop for 2 elements ? I think a simple flat definition will be ok",
+      "revId": "2f902384bc77294c22b354992f5c7d2f97e7df49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a7fa997_9f8fbf75",
+        "filename": "server/tests/test_app.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-16T13:26:43Z",
+      "side": 1,
+      "message": "ok, I can flatten that.",
+      "parentUuid": "7a7fa997_7c367105",
       "revId": "2f902384bc77294c22b354992f5c7d2f97e7df49",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -98,6 +134,24 @@
       "writtenOn": "2015-10-16T07:04:49Z",
       "side": 1,
       "message": "forgetting",
+      "revId": "2f902384bc77294c22b354992f5c7d2f97e7df49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a7fa997_bf8cfb80",
+        "filename": "server/tests/test_app.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-16T13:26:43Z",
+      "side": 1,
+      "message": "yup.",
+      "parentUuid": "7a7fa997_bc540922",
       "revId": "2f902384bc77294c22b354992f5c7d2f97e7df49",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
