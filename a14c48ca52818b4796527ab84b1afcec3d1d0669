@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a7fa997_dc5d454a",
+        "filename": "server/db/models.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-10-16T06:54:26Z",
+      "side": 1,
+      "message": "Is there a solution for avoiding having this in just one file ? (Is this possible to split this ?)",
+      "revId": "a14c48ca52818b4796527ab84b1afcec3d1d0669",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
