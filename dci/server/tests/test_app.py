@@ -16,7 +16,7 @@
 
 import pytest
 
-import server.tests.utils as utils
+from dci.server.tests import utils
 
 
 class TestAdmin(object):
@@ -115,29 +115,3 @@ class TestAdmin(object):
                 job_to_recheck.data['jobdefinition'])
         assert recheck_job.data['team_id'] == job_to_recheck.data['team_id']
         assert recheck_job.data['recheck'] is True
-
-    @pytest.mark.parametrize(('status'), ['new', 'initializing', 'ongoing'])
-    def test_get_job_should_kill_existing_jobs(
-            self, admin, company_a_user, status):
-        """GET /jobs should retrieve a new job and kill the existing ones.
-        """
-        test = utils.create_test(admin)
-        remoteci = utils.create_remoteci(admin, test.data['id'])
-
-        def get_job_status(job_id):
-            r = company_a_user.get(
-                '/api/jobs/%s?embedded={"jobstates": 1}' % job_id)
-            return r.data['jobstates'][0]['status']
-
-        utils.create_jobdefinition(admin, test.data['id'], name=('test_1'))
-        utils.create_jobdefinition(admin, test.data['id'], name=('test_2'))
-
-        first_job = utils.create_job(company_a_user, remoteci.data['id'])
-        utils.create_jobstate(
-            company_a_user, first_job.data['id'], status=status)
-        assert get_job_status(first_job.data['id']) == status
-
-        # create another job for the remoteci, the previous job won't finish
-        # and so, should get the 'unfinished' status.
-        utils.create_job(company_a_user, remoteci.data['id'])
-        assert get_job_status(first_job.data['id']) == 'unfinished'

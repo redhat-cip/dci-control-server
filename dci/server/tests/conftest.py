@@ -13,10 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import pytest
-import server.app
-import server.tests.utils as utils
 
+import dci.server.app
+from dci.server.tests import utils
+
+import pytest
 import sqlalchemy
 import sqlalchemy_utils.functions
 
@@ -33,17 +34,17 @@ def init_db(request):
     del_db()
     sqlalchemy_utils.functions.create_database(db_uri)
 
-    engine = sqlalchemy.create_engine(db_uri)
-    sql_file_path = 'db_schema/dci-control-server.sql'
-    with engine.begin() as conn, open(sql_file_path) as f:
-        conn.execute(f.read())
+        engine = sqlalchemy.create_engine(db_uri)
+        sql_file_path = "dci/db_schema/dci-control-server.sql"
+        with engine.begin() as conn, open(sql_file_path) as f:
+            conn.execute(f.read())
 
     request.addfinalizer(del_db)
 
 
 @pytest.fixture
 def app(init_db):
-    app = server.app.create_app(server.app.generate_conf())
+    app = server.app.create_app(dci.server.app.generate_conf())
     app.testing = True
     return app
 
@@ -51,7 +52,7 @@ def app(init_db):
 @pytest.fixture(autouse=True)
 def db_provisioning(request, app):
     session = app._DCI_MODEL.get_session()
-    with open('db_schema/dci-control-server-test.sql') as f:
+    with open("dci/db_schema/dci-control-server-test.sql") as f:
         session.execute(f.read())
     session.commit()
 
