@@ -5,7 +5,7 @@ pip install -r ${OPENSHIFT_REPO_DIR}/requirements.txt
 pip install git+https://github.com/hermannsblum/eve-docs
 pip install Flask-Bootstrap
 
-new_schema_checksum=$(sha256sum $OPENSHIFT_REPO_DIR/db_schema/dci-control-server.sql|awk '{print $1}')
+new_schema_checksum=$(sha256sum $OPENSHIFT_REPO_DIR/dci/db_schema/dci-control-server.sql|awk '{print $1}')
 current_schema_checksum=$(psql -t -A -q -c 'SELECT dci_cs_version();')
 
 if [ "${new_schema_checksum}" != "${current_schema_checksum}" ]; then
@@ -18,7 +18,7 @@ if [ "${new_schema_checksum}" != "${current_schema_checksum}" ]; then
     echo "
         DROP SCHEMA public CASCADE;
         CREATE SCHEMA public;
-        \\i ${OPENSHIFT_REPO_DIR}/db_schema/dci-control-server.sql
+        \\i ${OPENSHIFT_REPO_DIR}/dci/db_schema/dci-control-server.sql
     " | psql
     psql -c "
         CREATE OR REPLACE FUNCTION dci_cs_version() RETURNS text AS '
@@ -42,5 +42,5 @@ if [ "${new_schema_checksum}" != "${current_schema_checksum}" ]; then
     psql -c "INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='${DCI_LOGIN}'), (SELECT id from roles WHERE name='admin'));"
     psql -c "INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='${DCI_LOGIN}'), (SELECT id from roles WHERE name='partner'));"
 fi
-cd $OPENSHIFT_REPO_DIR/dci_databrowser
+cd $OPENSHIFT_REPO_DIR/dci/dci_databrowser
 HOME=$OPENSHIFT_TMP_DIR scl enable nodejs010 "npm install && node_modules/.bin/gulp build"
