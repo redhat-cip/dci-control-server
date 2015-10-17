@@ -14,8 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import client as dci_client
-import client.tests.utils as utils
+import dci.client as dci_client
+import dci.client.tests.utils as utils
+
 import pytest
 
 

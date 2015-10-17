@@ -14,14 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import server.utils
+import dci.server.utils
 
 
 def test_dict_merge():
     a = {'jim': 123, 'a': {'b': {'c': {'d': 'bob'}}}, 'rob': 34}
     b = {'tot': {'a': {'b': 'string'}}}
 
-    assert server.utils.dict_merge(a, b) == {
+    assert dci.server.utils.dict_merge(a, b) == {
         'a': {'b': {'c': {'d': 'bob'}}},
         'jim': 123,
         'rob': 34,
