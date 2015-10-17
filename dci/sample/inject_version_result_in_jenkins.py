@@ -36,7 +36,7 @@ import time
 
 import jenkins
 
-import client
+import dci.client
 
 hexlify = codecs.getencoder('hex')
 config_xml = """
@@ -111,7 +111,7 @@ try:
 except IndexError:
     exit_error('Usage: %s $jobdefinition_id' % sys.argv[0])
 
-dci_srv = client.DCIClient()
+dci_srv = dci.client.DCIClient()
 jenkins_srv = jenkins.Jenkins('http://localhost:8080')
 print("Connected to Jenkins version %s" % jenkins_srv.get_version())
 

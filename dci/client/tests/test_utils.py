@@ -14,12 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import client.utils
+import dci.client.utils
 
 
 class TestUtils(object):
     def test_flatten(self):
         s = {'jim': 123, 'a': {'b': {'c': {'d': 'bob'}}}, 'rob': 34}
-        r = client.utils.flatten(s)
+        r = dci.client.utils.flatten(s)
         r.sort()
         assert r == ['a.b.c.d=bob', 'jim=123', 'rob=34']
