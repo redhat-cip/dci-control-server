@@ -1,5 +1,0 @@
-{
-    "host": "localhost",
-    "port": 8000,
-    "api": "http://172.17.0.26:5000/api"
-}
