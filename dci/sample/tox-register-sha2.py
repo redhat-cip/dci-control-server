@@ -15,9 +15,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import client
 import requests
 import six
+
+from dci import client
 
 
 def sha_walker(sha_to_walks, dci_client, repository, test):

@@ -1,4 +1,4 @@
-from server.settings import *  # noqa
+from dci.server.settings import *  # noqa
 import os
 import uuid
 

@@ -15,7 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import client
+import dci.client
 import json
 from pprint import pprint
 
@@ -36,7 +36,7 @@ def upload(es_s, item_type, items):
 
 
 es_url = "http://elasticsearch-dcics.rhcloud.com/"
-dci_client = client.DCIClient()
+dci_client = dci.client.DCIClient()
 
 
 es_s = requests.Session()
