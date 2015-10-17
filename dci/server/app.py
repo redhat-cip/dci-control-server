@@ -14,19 +14,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import flask
+
 import json
 import os
 
-import server.auth
-import server.db.models
-import server.eve_model
-import server.utils
+from dci.server import auth
+from dci.server.db import models
+from dci.server import eve_model
+from dci.server import utils
 
 from eve import Eve
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
-from flask import abort
+import flask
 from sqlalchemy.sql import text
 
 from dci_databrowser import dci_databrowser
@@ -76,12 +76,13 @@ class DciControlServer(Eve):
         if flask.request.args.get('recheck'):
             job_id_to_recheck = str(flask.request.args.get('job_id'))
             if not job_id_to_recheck:
-                abort(400, "job_id missing.")
+                flask.abort(400, "job_id missing.")
             job_to_recheck = session.query(
                 DciControlServer._DCI_MODEL.Job).\
                 get(job_id_to_recheck)
             if not job_to_recheck:
-                abort(400, "job '%s' does not exist." % job_id_to_recheck)
+                flask.abort(400, "job '%s' does not exist." %
+                            job_id_to_recheck)
             # Replicate the recheck job
             picked_job['jobdefinition_id'] = job_to_recheck.jobdefinition_id
             picked_job['remoteci_id'] = job_to_recheck.remoteci_id
@@ -110,7 +111,7 @@ class DciControlServer(Eve):
             r = DciControlServer._DCI_MODEL.engine.execute(
                 query, remoteci_id=picked_job['remoteci_id']).fetchone()
             if r is None:
-                abort(412, "No test to run left.")
+                flask.abort(412, "No test to run left.")
             jobdefinition = session.query(
                 DciControlServer._DCI_MODEL.Jobdefinition).\
                 get(str(r[0]))
@@ -153,7 +154,7 @@ class DciControlServer(Eve):
             my_datas.append(component.data)
         for my_data in my_datas:
             if my_data:
-                data = server.utils.dict_merge(data, my_data)
+                data = utils.dict_merge(data, my_data)
         session.close()
         response['data'] = data
 
@@ -211,9 +212,9 @@ def generate_conf():
 
 
 def create_app(conf):
-    dci_model = server.db.models.DCIModel(conf['SQLALCHEMY_DATABASE_URI'])
-    conf['DOMAIN'] = server.eve_model.domain_configuration()
-    basic_auth = server.auth.DCIBasicAuth(dci_model)
+    dci_model = models.DCIModel(conf['SQLALCHEMY_DATABASE_URI'])
+    conf['DOMAIN'] = eve_model.domain_configuration()
+    basic_auth = auth.DCIBasicAuth(dci_model)
 
     app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
                            auth=basic_auth, settings=conf)
