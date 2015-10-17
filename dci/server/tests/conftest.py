@@ -13,17 +13,18 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import pytest
-import server.app
-import server.tests.utils as utils
 
+import dci.server.app
+from dci.server.tests import utils
+
+import pytest
 import sqlalchemy
 import sqlalchemy_utils.functions
 
 
 @pytest.fixture(scope="session")
 def app(request):
-    conf = server.app.generate_conf()
+    conf = dci.server.app.generate_conf()
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
 
     if not sqlalchemy_utils.functions.database_exists(db_uri):
@@ -38,7 +39,7 @@ def app(request):
         with engine.begin() as conn, open(sql_file_path) as f:
             conn.execute(f.read())
 
-    app = server.app.create_app(conf)
+    app = dci.server.app.create_app(conf)
     app.testing = True
     return app
 
