@@ -30,7 +30,7 @@ import json
 import subprocess
 import yaml
 
-import client
+from dci import client
 
 
 class Gerrit(object):

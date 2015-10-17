@@ -28,7 +28,7 @@ import time
 import bcrypt
 import prettytable
 
-import client
+import dci.client
 
 
 def _init_conf(args=None):
@@ -117,8 +117,8 @@ def main(args=None):
               dci_login, dci_password)
         sys.exit(1)
 
-    dci_client = client.DCIClient("%s/api" % dci_cs_url, dci_login,
-                                  dci_password)
+    dci_client = dci.client.DCIClient("%s/api" % dci_cs_url, dci_login,
+                                      dci_password)
 
     if conf.command == 'list':
         if conf.remotecis:

@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import server.tests.utils as utils
+from dci.server.tests import utils
 
 
 class TestAdmin(object):

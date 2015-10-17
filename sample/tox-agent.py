@@ -19,7 +19,7 @@ import shutil
 import sys
 import tempfile
 
-import client
+from dci import client
 
 try:
     remoteci_name = sys.argv[1]
