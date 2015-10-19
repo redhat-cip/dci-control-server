@@ -53,12 +53,11 @@ class DCIClient(object):
             raise DCIServerError(r)
         return r
 
-    # TODO(Gonéri): Broken on Py27. To investigate.
-    #    def patch(self, path, etag, data):
-    #        return self.s.patch(
-    #            "%s%s" % (self.end_point, path),
-    #            data=json.dumps(data),
-    #            headers={'If-Match': etag})
+    def patch(self, path, etag, data):
+        return self.s.patch(
+            "%s%s" % (self.end_point, path),
+            data=json.dumps(data),
+            headers={'If-Match': etag})
 
     def post(self, path, data):
         r = self.s.post("%s%s" % (
@@ -223,8 +222,8 @@ class DCIClient(object):
                 del(current[c])
             if json.dumps(current, sort_keys=True) != \
                json.dumps(data, sort_keys=True):
-                item = self.put(path + '/' + item['id'],
-                                item['etag'], data).json()
+                item = self.patch(path + '/' + item['id'],
+                                  item['etag'], data).json()
         elif len(items['_items']) > 1:
             print("Duplicated element for %s, %s" % (path, unicity_key))
             raise RuntimeWarning()

@@ -38,9 +38,9 @@ class DCIModel(object):
     class DCIBase(Base):
         __abstract__ = True
         id = Column(UUID, primary_key=True)
-        created_at = Column(DateTime(timezone=True),
+        created_at = Column(DateTime(),
                             default=datetime.datetime.utcnow, nullable=False)
-        updated_at = Column(DateTime(timezone=True),
+        updated_at = Column(DateTime(),
                             onupdate=datetime.datetime.utcnow,
                             default=datetime.datetime.utcnow, nullable=False)
         etag = Column(String(40), default=func.gen_etag(), nullable=False)
