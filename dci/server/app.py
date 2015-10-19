@@ -157,8 +157,10 @@ class DciControlServer(Eve):
             job.remoteci.data)
         for component in job.jobdefinition.components:
             data = utils.dict_merge(data, component.data)
-        session.close()
         response['data'] = data
+        job.data_sent = data
+        session.commit()
+        session.close()
 
     @staticmethod
     def get_remotecis_extra(response):

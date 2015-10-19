@@ -97,6 +97,7 @@ class DCIModel(object):
         remoteci = relationship('Remoteci', uselist=False)
         jobdefinition_id = Column(UUID(), ForeignKey('jobdefinitions.id'))
         jobdefinition = relationship('Jobdefinition', uselist=False)
+        data_sent = Column(JSON())
 
     class Jobstate(DCIBase):
         __tablename__ = 'jobstates'

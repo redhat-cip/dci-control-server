@@ -101,7 +101,8 @@ CREATE TABLE jobs (
     remoteci_id uuid NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
     team_id uuid NOT NULL,
-    recheck boolean NOT NULL DEFAULT FALSE
+    recheck boolean NOT NULL DEFAULT FALSE,
+    data_sent json
 );
 COMMENT ON TABLE jobs IS 'An association between a jobdefinition and a remoteci.';
 
