@@ -17,10 +17,6 @@ CREATE FUNCTION gen_etag() RETURNS text
     LANGUAGE sql IMMUTABLE
     AS $$select substring(encode(md5(random()::text)::bytea, 'hex') from 0 for 37)$$;
 
-CREATE FUNCTION gen_uuid() RETURNS uuid
-    LANGUAGE sql IMMUTABLE
-    AS $$SELECT uuid_in(md5(random()::text)::cstring)$$;
-
 CREATE FUNCTION jobstate_status_in_list() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
