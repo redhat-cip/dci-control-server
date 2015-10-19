@@ -15,7 +15,9 @@
 # under the License.
 
 import dci.server.app
-from dci.server.tests import utils
+from dci.server.db import models_core
+from dci.server.tests import db_provision_test
+import dci.server.tests.utils as utils
 
 import pytest
 import sqlalchemy
@@ -23,43 +25,42 @@ import sqlalchemy_utils.functions
 
 
 @pytest.fixture(scope='session')
-def init_db(request):
+def init_db_and_return_engine(request):
     conf = dci.server.app.generate_conf()
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
+
+    engine = sqlalchemy.create_engine(db_uri)
 
     def del_db():
         if sqlalchemy_utils.functions.database_exists(db_uri):
             sqlalchemy_utils.functions.drop_database(db_uri)
 
     del_db()
+    request.addfinalizer(del_db)
     sqlalchemy_utils.functions.create_database(db_uri)
 
-    engine = sqlalchemy.create_engine(db_uri)
-    sql_file_path = "dci/db_schema/dci-control-server.sql"
-    with engine.begin() as conn, open(sql_file_path) as f:
-        conn.execute(f.read())
-
-    request.addfinalizer(del_db)
+    with engine.begin() as conn:
+        conn.execute(models_core.pg_gen_uuid)
+    models_core.metadata.create_all(engine)
+    return engine
 
 
 @pytest.fixture
-def app(init_db):
+def app(init_db_and_return_engine):
     app = dci.server.app.create_app(dci.server.app.generate_conf())
     app.testing = True
+    app.engine = init_db_and_return_engine
     return app
 
 
 @pytest.fixture(autouse=True)
 def db_provisioning(request, app):
-    session = app._DCI_MODEL.get_session()
-    with open("dci/db_schema/dci-control-server-test.sql") as f:
-        session.execute(f.read())
-    session.commit()
+    with app.engine.begin() as conn:
+        db_provision_test.provision(conn)
 
     def fin():
-        for tbl in reversed(app._DCI_MODEL.Base.metadata.sorted_tables):
-            app._DCI_MODEL.engine.execute(tbl.delete())
-
+        for table in reversed(models_core.metadata.sorted_tables):
+            app.engine.execute(table.delete())
     request.addfinalizer(fin)
 
 
