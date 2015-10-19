@@ -17,10 +17,6 @@ CREATE FUNCTION gen_etag() RETURNS text
     LANGUAGE sql IMMUTABLE
     AS $$select substring(encode(md5(random()::text)::bytea, 'hex') from 0 for 37)$$;
 
-CREATE FUNCTION gen_uuid() RETURNS uuid
-    LANGUAGE sql IMMUTABLE
-    AS $$SELECT uuid_in(md5(random()::text)::cstring)$$;
-
 CREATE FUNCTION jobstate_status_in_list() RETURNS trigger
     LANGUAGE plpgsql
     AS $$
@@ -49,7 +45,7 @@ END; $$;
 COMMENT ON FUNCTION refresh_update_at_column() IS 'Refresh the etag and the updated_at on UPDATE.';
 
 CREATE TABLE components (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     componenttype_id uuid NOT NULL,
@@ -71,7 +67,7 @@ CREATE TABLE components (
 COMMENT ON TABLE components IS 'The components.';
 
 CREATE TABLE componenttypes (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255) NOT NULL,
@@ -80,7 +76,7 @@ CREATE TABLE componenttypes (
 COMMENT ON TABLE componenttypes IS 'The different type of components.';
 
 CREATE TABLE files (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(512) NOT NULL,
@@ -94,7 +90,7 @@ CREATE TABLE files (
 COMMENT ON TABLE files IS 'The output of a command execution. The file is associated to a jobstate of a given job.';
 
 CREATE TABLE jobs (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     jobdefinition_id uuid NOT NULL,
@@ -106,7 +102,7 @@ CREATE TABLE jobs (
 COMMENT ON TABLE jobs IS 'An association between a jobdefinition and a remoteci.';
 
 CREATE TABLE jobdefinitions (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
@@ -117,7 +113,7 @@ CREATE TABLE jobdefinitions (
 COMMENT ON TABLE jobs IS 'A collection of components and a test ready to associated to a remoteci to create a new job.';
 
 CREATE TABLE jobdefinition_components (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
@@ -126,7 +122,7 @@ CREATE TABLE jobdefinition_components (
 );
 
 CREATE TABLE jobstates (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     status character varying,
@@ -139,7 +135,7 @@ COMMENT ON TABLE jobstates IS 'One of the status during the execution of a job. 
 COMMENT ON COLUMN jobstates.status IS 'ongoing: the job is still running, failure: the job has failed and this is the last status, success: the job has been run successfully.';
 
 CREATE TABLE remotecis (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     name character varying(255),
@@ -151,7 +147,7 @@ CREATE TABLE remotecis (
 COMMENT ON TABLE remotecis IS 'The remote CI agent that process the test.';
 
 CREATE TABLE roles (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
@@ -160,7 +156,7 @@ CREATE TABLE roles (
 COMMENT ON TABLE roles IS 'The user roles.';
 
 CREATE TABLE teams (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
@@ -169,7 +165,7 @@ CREATE TABLE teams (
 COMMENT ON TABLE teams IS 'The user team. An user can only be in one team. All the resource created by an user are shared with his/her team members.';
 
 CREATE TABLE tests (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
@@ -179,7 +175,7 @@ CREATE TABLE tests (
 COMMENT ON TABLE tests IS 'A QA test.';
 
 CREATE TABLE user_remotecis (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
@@ -189,7 +185,7 @@ CREATE TABLE user_remotecis (
 COMMENT ON TABLE user_remotecis IS 'experimental';
 
 CREATE TABLE user_roles (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
@@ -199,7 +195,7 @@ CREATE TABLE user_roles (
 COMMENT ON TABLE user_roles IS 'Relation table between the users and the roles.';
 
 CREATE TABLE users (
-    id uuid DEFAULT gen_uuid() NOT NULL,
+    id uuid   NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL,
     updated_at timestamp with time zone DEFAULT now() NOT NULL,
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
