@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "5a7ca5a3_18fe696c",
+        "filename": "server/db/models_core.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-19T19:02:01Z",
+      "side": 1,
+      "message": "Then i don\u0027t understand this issue, could you see the errors of this commit http://softwarefactory-project.io/r/#/c/1747",
+      "parentUuid": "5a7ca5a3_98f039cb",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a7ca5a3_b8edf5f1",
         "filename": "server/db/models_core.py",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2015-10-19T17:06:50Z",
       "side": 1,
       "message": "here again, I don\u0027t think these gen_uuid() call are a requirement at all.\n\nhttps://github.com/redhat-cip/dci-control-server/blob/master/dci/server/db/models.py",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a7ca5a3_38032575",
+        "filename": "server/db/models_core.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-19T19:02:01Z",
+      "side": 1,
+      "message": "Then i don\u0027t understand this issue, could you see the errors of this commit http://softwarefactory-project.io/r/#/c/1747",
+      "parentUuid": "5a7ca5a3_b8edf5f1",
       "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "5a7ca5a3_5804e17d",
+        "filename": "server/db/models_core.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-19T19:02:01Z",
+      "side": 1,
+      "message": "will do",
+      "parentUuid": "5a7ca5a3_18b429f1",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a7ca5a3_b8c41560",
         "filename": "server/db/models_core.py",
         "patchSetId": 1
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "5a7ca5a3_78099d94",
+        "filename": "server/db/models_core.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-19T19:02:01Z",
+      "side": 1,
+      "message": "We will keep this kind of constraint at the app level with Voluptuous and at the DB level with sqlalchemy enum type.",
+      "parentUuid": "5a7ca5a3_b8c41560",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a7ca5a3_d8cd5188",
         "filename": "server/tests/test_app.py",
         "patchSetId": 1
@@ -81,6 +153,24 @@
       "writtenOn": "2015-10-19T17:06:50Z",
       "side": 1,
       "message": "I think this should be fixed in master, not here.",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a7ca5a3_d8f7918b",
+        "filename": "server/tests/test_app.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-19T19:02:01Z",
+      "side": 1,
+      "message": "indeed",
+      "parentUuid": "5a7ca5a3_d8cd5188",
       "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
