@@ -76,7 +76,7 @@ class TestAdmin(object):
         remoteci = utils.create_remoteci(admin, test.data['id'])
 
         job = utils.create_job(admin, remoteci.data['id'])
-        job = company_a_user.get('/api/jobs/%s' % job.data['id'])
+        job = admin.get('/api/jobs/%s' % job.data['id'])
 
         assert job.status_code == 200
         assert job.data['data'] == {

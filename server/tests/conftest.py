@@ -13,10 +13,14 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import pytest
+
+
 import server.app
+from server.db import models_core
+from server.tests import db_provision_test
 import server.tests.utils as utils
 
+import pytest
 import sqlalchemy
 import sqlalchemy_utils.functions
 
@@ -26,6 +30,7 @@ def app(request):
     conf = server.app.generate_conf()
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
 
+    engine = sqlalchemy.create_engine(db_uri)
     if not sqlalchemy_utils.functions.database_exists(db_uri):
         sqlalchemy_utils.functions.create_database(db_uri)
 
@@ -33,22 +38,21 @@ def app(request):
             lambda: sqlalchemy_utils.functions.drop_database(db_uri)
         )
 
-        engine = sqlalchemy.create_engine(db_uri)
-        sql_file_path = "db_schema/dci-control-server.sql"
-        with engine.begin() as conn, open(sql_file_path) as f:
-            conn.execute(f.read())
+        with engine.begin() as conn:
+            conn.execute(models_core.pg_gen_uuid)
+
+        models_core.metadata.create_all(engine)
 
     app = server.app.create_app(conf)
     app.testing = True
+    app.engine = engine
     return app
 
 
 @pytest.fixture(autouse=True)
 def db_provisioning(request, app):
-    session = app._DCI_MODEL.get_session()
-    with open("db_schema/dci-control-server-test.sql") as f:
-        session.execute(f.read())
-    session.commit()
+    with app.engine.begin() as conn:
+        db_provision_test.provision(conn)
 
     def fin():
         for tbl in reversed(app._DCI_MODEL.Base.metadata.sorted_tables):
