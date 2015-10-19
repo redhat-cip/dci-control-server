@@ -24,8 +24,10 @@ def dict_merge(a, b):
     both a and bhave a key who's value is a dict then dict_merge is called
     on both values and the result stored in the returned dictionary.
     '''
+    if not isinstance(a, dict):
+        raise TypeError()
     if not isinstance(b, dict):
-        return b
+        return a
     result = copy.deepcopy(a)
     for k, v in six.iteritems(b):
         if k in result and isinstance(result[k], dict):
