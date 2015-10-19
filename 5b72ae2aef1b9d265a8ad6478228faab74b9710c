@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "5a7ca5a3_1883c9cd",
+        "filename": "server/db/models_core.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-19T19:55:07Z",
+      "side": 1,
+      "message": "Yes, you are right. We need that, but the comment is wrong, that not because of Eve, it\u0027s just the way PostgreSQL works. With a MySQL and a Inter primary key, we would not have that can of mechanism.",
+      "parentUuid": "5a7ca5a3_18fe696c",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a7ca5a3_b8edf5f1",
         "filename": "server/db/models_core.py",
         "patchSetId": 1
@@ -66,6 +84,24 @@
       "side": 1,
       "message": "Then i don\u0027t understand this issue, could you see the errors of this commit http://softwarefactory-project.io/r/#/c/1747",
       "parentUuid": "5a7ca5a3_b8edf5f1",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a7ca5a3_388805e7",
+        "filename": "server/db/models_core.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-19T19:55:07Z",
+      "side": 1,
+      "message": "Yep, my bad dude :)",
+      "parentUuid": "5a7ca5a3_38032575",
       "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -107,6 +143,24 @@
     },
     {
       "key": {
+        "uuid": "5a7ca5a3_d86c7139",
+        "filename": "server/db/models_core.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-19T19:55:07Z",
+      "side": 1,
+      "message": "thanks :)",
+      "parentUuid": "5a7ca5a3_5804e17d",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a7ca5a3_b8c41560",
         "filename": "server/db/models_core.py",
         "patchSetId": 1
@@ -136,6 +190,24 @@
       "side": 1,
       "message": "We will keep this kind of constraint at the app level with Voluptuous and at the DB level with sqlalchemy enum type.",
       "parentUuid": "5a7ca5a3_b8c41560",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a7ca5a3_f8692d26",
+        "filename": "server/db/models_core.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-19T19:55:07Z",
+      "side": 1,
+      "message": "Yep, enum is a good solution.",
+      "parentUuid": "5a7ca5a3_78099d94",
       "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
