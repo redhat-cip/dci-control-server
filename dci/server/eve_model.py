@@ -439,6 +439,7 @@ def domain_configuration():
                     'created_at': 1,
                     'etag': 1,
                     'id': 1,
+                    'data_sent': 1,
                     'jobdefinition': 1,
                     'jobdefinition_id': 0,
                     'jobstates': 1,
@@ -476,6 +477,11 @@ def domain_configuration():
                     'required': False,
                     'type': 'string',
                     'unique': True},
+                'data': {
+                    'nullable': True,
+                    'required': False,
+                    'type': 'json',
+                    'unique': False},
                 'jobdefinition': {
                     'data_relation': {
                         'embeddable': True,
