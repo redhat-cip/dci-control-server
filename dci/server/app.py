@@ -158,47 +158,11 @@ class DciControlServer(Eve):
         session.close()
         response['data'] = data
 
-    @staticmethod
-    def get_remotecis_extra(response):
-        if not (flask.request.args.get('extra_data') and
-                flask.request.args.get('version_id')):
-            return
-
-        version_id = flask.request.args.get('version_id')
-        session = DciControlServer._DCI_MODEL.get_session()
-        Remotecis = DciControlServer._DCI_MODEL.Remoteci
-        remotecisTotal = session.query(Remotecis).count()
-
-        rate = {"success": 0, "failure": 0, "ongoing": 0,
-                "not_started": remotecisTotal}
-        for remoteci in response["_items"]:
-            Testversions = DciControlServer._DCI_MODEL.Testversions
-            testversions = session.query(Testversions).\
-                filter(Testversions.version_id == version_id).all()
-
-            for testversion in testversions:
-                Jobs = DciControlServer._DCI_MODEL.Job
-                job = session.query(Jobs).\
-                    filter((Jobs.testversion_id == testversion.id) and
-                           (Jobs.remoteci_id == remoteci["id"])).first()
-                if job:
-                    Jobstate = DciControlServer._DCI_MODEL.Jobstate
-                    jobstate = job.jobstates.filter(
-                        Jobstate.job_id == job.id).first()
-                    if jobstate:
-                        rate[jobstate.status] += 1
-                        rate["not_started"] -= 1
-        if rate["not_started"] < 0:
-            rate["not_started"] = 0
-        response["extra_data"] = rate
-
     def _init_hooks(self):
         self.on_insert += set_real_owner
         self.on_insert_jobs += DciControlServer.pick_jobs
         self.on_insert_jobs += DciControlServer.stop_running_jobs
         self.on_fetched_item_jobs += DciControlServer.aggregate_job_data
-        self.on_fetched_resource_remotecis += DciControlServer.\
-            get_remotecis_extra
 
         self.register_blueprint(dci_databrowser)
         load_docs(self)
