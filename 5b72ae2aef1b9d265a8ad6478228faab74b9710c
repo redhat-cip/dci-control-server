@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a7ca5a3_98f039cb",
+        "filename": "server/db/models_core.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-19T17:06:50Z",
+      "side": 1,
+      "message": "This is not required by Eve. Eve deals perfectly this standard uuid.uuid() instance.\nIt\u0027s the same for gem_etag(). It\u0027s not a strong dependency and Eve doesn\u0027t use it.\n\nThis way here just to be able to easily INSERT new entry from the psql command line. That\u0027s what we were doing at the beginning of the project.",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a7ca5a3_b8edf5f1",
+        "filename": "server/db/models_core.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-19T17:06:50Z",
+      "side": 1,
+      "message": "here again, I don\u0027t think these gen_uuid() call are a requirement at all.\n\nhttps://github.com/redhat-cip/dci-control-server/blob/master/dci/server/db/models.py",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a7ca5a3_18b429f1",
+        "filename": "server/db/models_core.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-19T17:06:50Z",
+      "side": 1,
+      "message": "Í\u0027m not sure we need the timezone\u003dTrue. datetime from Py27 is not able to compare a datetime with TZ to a normal one. So, we will have to deal with that without real benefit IMO.\n\nSee: I62bc32b18170816ac36cf7c22c62c0f6feb0e365",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a7ca5a3_b8c41560",
+        "filename": "server/db/models_core.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 177,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-19T17:06:50Z",
+      "side": 1,
+      "message": "Do you plan to keep constrain at DB level to valid this kind of field?",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a7ca5a3_d8cd5188",
+        "filename": "server/tests/test_app.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-19T17:06:50Z",
+      "side": 1,
+      "message": "I think this should be fixed in master, not here.",
+      "revId": "5b72ae2aef1b9d265a8ad6478228faab74b9710c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
