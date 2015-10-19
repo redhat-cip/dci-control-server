@@ -148,13 +148,15 @@ class DciControlServer(Eve):
         job = session.query(DciControlServer._DCI_MODEL.Job).\
             get(response['id'])
         # TODO(Gonéri): do we still need that?
-        my_datas = [job.jobdefinition.test.data,
-                    job.remoteci.data]
+        data = {}
+        data = utils.dict_merge(
+            data,
+            job.jobdefinition.test.data)
+        data = utils.dict_merge(
+            data,
+            job.remoteci.data)
         for component in job.jobdefinition.components:
-            my_datas.append(component.data)
-        for my_data in my_datas:
-            if my_data:
-                data = utils.dict_merge(data, my_data)
+            data = utils.dict_merge(data, component.data)
         session.close()
         response['data'] = data
 
