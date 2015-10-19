@@ -195,7 +195,7 @@ def main():
             project['gerrit'].get('vote', False))
         test = dci_client.find_or_create_or_refresh(
             '/tests',
-            {'name': project['gerrit']['test'], 'data': {}})
+            project['test'])
         componenttype = dci_client.find_or_create_or_refresh(
             '/componenttypes',
             {"name": "gerrit_review"})
