@@ -2,6 +2,17 @@
 
 ## installation
 
+### Deploy on local machine for development
+
+By default the database should be accessible at 'postgresql://dci:dci@127.0.0.1:5432/dci'.
+
+Simply run the runtestserver.py script, it will listen by default to '127.0.0.1:5000'.
+
+    $ ./runtestserver.py
+     * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
+     * Restarting with stat
+
+
 ### Using OpenShift
 
 [OpenShift](https://www.openshift.com/) is the simplest and recommanded way to

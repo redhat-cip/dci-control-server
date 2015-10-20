@@ -18,7 +18,7 @@ import os
 
 SQLALCHEMY_DATABASE_URI = os.environ.get(
     'OPENSHIFT_POSTGRESQL_DB_URL',
-    'postgresql://boa:boa@127.0.0.1:5432/dci_control_server'
+    'postgresql://dci:dci@127.0.0.1:5432/dci'
 )
 
 
