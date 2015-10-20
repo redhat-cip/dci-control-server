@@ -213,6 +213,10 @@ def main():
                 {"name": component['componenttype']})
             del component['componenttype']
             component['componenttype_id'] = componenttype['id']
+            # TODO(Gonéri): we need to keep the data key in sync with the rest
+            # of the component keys. This because the agent only see this part
+            # of the configuration. See: aggregate_job_data()
+            component['data'] = component.copy()
             base_components += [
                 dci_client.find_or_create_or_refresh(
                     '/components', component, unicity_key=['sha'])]

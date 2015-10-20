@@ -19,7 +19,10 @@ import collections
 import flask
 
 
-def create_component(client):
+def create_component(
+        client,
+        name='bob',
+        data={'component_keys': {'foo': ['bar1', 'bar2']}}):
     _, component_type, _ = client.post(
         '/api/componenttypes',
         data={'name': 'a_component_type'}
@@ -27,10 +30,10 @@ def create_component(client):
     component = client.post(
         '/api/components',
         data={
-            'name': 'bob',
+            'name': name,
             'canonical_project_name': 'this_is_something',
             'componenttype_id': component_type['id'],
-            'data': {'component_keys': {'foo': ['bar1', 'bar2']}}
+            'data': data
         }
     )
 

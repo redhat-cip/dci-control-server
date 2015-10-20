@@ -67,12 +67,21 @@ class TestAdmin(object):
         test and version.
         """
         test = utils.create_test(admin)
-        component = utils.create_component(admin)
+        component1 = utils.create_component(
+            admin, name='component1', data={'component1': 1})
+        component2 = utils.create_component(
+            admin, name='component1', data={'component2': 2})
+        component3 = utils.create_component(
+            admin, name='component1', data=None)
         jobdefinition = utils.create_jobdefinition(admin, test.data['id'])
+        jobdefinition_id = jobdefinition.data['id']
 
         utils.create_jobdefinition_component(
-            admin, jobdefinition.data['id'], component.data['id']
-        )
+            admin, jobdefinition_id, component1.data['id'])
+        utils.create_jobdefinition_component(
+            admin, jobdefinition_id, component2.data['id'])
+        utils.create_jobdefinition_component(
+            admin, jobdefinition_id, component3.data['id'])
         remoteci = utils.create_remoteci(admin, test.data['id'])
 
         job = utils.create_job(admin, remoteci.data['id'])
@@ -80,7 +89,8 @@ class TestAdmin(object):
 
         assert job.status_code == 200
         assert job.data['data'] == {
-            'component_keys': {'foo': ['bar1', 'bar2']},
+            'component1': 1,
+            'component2': 2,
             'remoteci_keys': {'foo': ['bar1', 'bar2']},
             'test_keys': {'foo': ['bar1', 'bar2']}
         }

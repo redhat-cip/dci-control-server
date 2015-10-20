@@ -14,28 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import copy
-
-import six
-
-# TODO(Gonéri): to move outside of the server namespace
-
-
-def dict_merge(a, b):
-    '''recursively merges dict's. not just simple a['key'] = b['key'], if
-    both a and bhave a key who's value is a dict then dict_merge is called
-    on both values and the result stored in the returned dictionary.
-    '''
-    if not isinstance(b, dict):
-        return b
-    result = copy.deepcopy(a)
-    for k, v in six.iteritems(b):
-        if k in result and isinstance(result[k], dict):
-                result[k] = dict_merge(result[k], v)
-        else:
-            result[k] = copy.deepcopy(v)
-    return result
-
 
 def flatten(d, prefix=''):
     ret = []
