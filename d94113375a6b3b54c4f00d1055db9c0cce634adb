@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a7ca5a3_fb64c7e6",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-20T13:28:47Z",
+      "side": 1,
+      "message": "If you want to make thing as simple as possible, you can also start a user-side Pg instance, like we do for the unit-test.",
+      "revId": "d94113375a6b3b54c4f00d1055db9c0cce634adb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
