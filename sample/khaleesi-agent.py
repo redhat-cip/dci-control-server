@@ -68,7 +68,14 @@ except client.DCIServerError as e:
             'name': settings['name'],
             'test_id': test_id})
 remoteci_id = r.json()['id']
-r = dci_client.post("/jobs", {"remoteci_id": remoteci_id})
+try:
+    r = dci_client.post("/jobs", {"remoteci_id": remoteci_id})
+except client.DCIServerError as e:
+    if e.status_code == 412:
+        print(e.message)
+        sys.exit(0)
+    else:
+        raise e
 job = r.json()
 
 
