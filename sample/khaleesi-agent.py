@@ -112,6 +112,8 @@ cmds = [
     {'args': [ansible_playbook_bin, '--version']}]
 
 for component in components:
+    if component['componenttype']['name'] != 'git_commit':
+       continue
     project_canonical_name = component['canonical_project_name']
     component_dir = workspace_dir + '/' + project_canonical_name
     if component.get('ref'):
