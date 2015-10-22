@@ -189,7 +189,7 @@ def domain_configuration():
             'datasource': {
                 'default_sort': [('created_at', 1)],
                 'projection': {
-                    'content': 1,
+                    'content': 0,
                     'created_at': 1,
                     'etag': 1,
                     'id': 1,
@@ -533,7 +533,7 @@ def domain_configuration():
                     'comment': 1,
                     'created_at': 1,
                     'etag': 1,
-                    'files': 0,
+                    'files': 1,
                     'id': 1,
                     'job': 1,
                     'job_id': 0,
