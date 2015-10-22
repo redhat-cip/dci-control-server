@@ -5,7 +5,7 @@ DCI_DB_DIR="$(cd $(dirname "$0") && pwd)/$DCI_DB_DIR"
 
 
 # checks if pg_ctl command exists
-type "pg_ctl" &> /dev/null || exit 0
+type "pg_ctl" &> /dev/null ||exit 0
 
 # checks if not already running
 pg_ctl -D "$DCI_DB_DIR" status &> /dev/null && pg_ctl -D  "$DCI_DB_DIR" stop

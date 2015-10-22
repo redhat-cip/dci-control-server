@@ -1,0 +1,18 @@
+# DCI DB
+#
+# VERSION               0.0.1
+
+
+FROM fedora
+
+RUN dnf update -y
+RUN dnf install -y gcc libpqxx-devel libffi-devel python-devel
+
+ADD requirements.txt /tmp/
+RUN pip install -r /tmp/requirements.txt
+
+WORKDIR /opt/dci-control-server
+ENV PYTHONPATH /opt/dci-control-server
+EXPOSE 5000
+
+CMD ["python", "dci/server/app.py"]

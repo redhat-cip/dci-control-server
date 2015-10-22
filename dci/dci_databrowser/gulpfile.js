@@ -109,10 +109,13 @@ gulp.task('connect', function() {
     livereload: true,
     root: 'static',
     middleware: function(connect, opt) {
-      var options = url.parse(config.api);
-      options.route = '/api';
+      var url = require('url');
+      var config = url.parse(process.env.API_PORT_5000_TCP);
+      config.protocol = 'http:';
 
-      return [proxy(options)];
+      config = url.parse(url.resolve(url.format(config), 'api'));
+      config.route = '/api';
+      return [proxy(config)];
     }
   });
 });
