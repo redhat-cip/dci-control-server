@@ -12,6 +12,11 @@ Simply run the runtestserver.py script, it will listen by default to '127.0.0.1:
      * Running on http://127.0.0.1:5000/ (Press CTRL+C to quit)
      * Restarting with stat
 
+You can initialize the database with fake entries by launching the following command line:
+
+    $ ./samples/db_provisioning.py
+
+BE CAREFUL: this script will override your database, so use it after saving your datas.
 
 ### Using OpenShift
 
