@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a79b1b5_140cf493",
+        "filename": "sample/db_provisioning.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 287,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-22T12:45:47Z",
+      "side": 1,
+      "message": "print the db_uri in the message",
+      "revId": "b8ab077a870f0959d9710c06d21b521773774946",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
