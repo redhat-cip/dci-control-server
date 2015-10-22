@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import bcrypt
 import dci.server.app as app
 import dci.server.db.models_core as models
 import functools
@@ -145,7 +146,7 @@ def create_files(db_conn, jobstate, company_id):
             words.append(random.choice(NAMES))
         return '_'.join(words)
 
-    for _ in range(0, random.randint(0, 4)):
+    for _ in range(0, random.randint(1, 4)):
 
         name = '%s.txt' % filename_generator()
         args = {
@@ -198,6 +199,10 @@ def lorem():
     nb = random.randint(1, len(LOREM_IPSUM))
     return '\n'.join(LOREM_IPSUM[0:nb])
 
+def passwd(passwd_str):
+    return (bcrypt
+            .hashpw(passwd_str.encode('utf-8'), bcrypt.gensalt())
+            .decode('utf-8'))
 
 def init_db(db_conn):
     db_ins = functools.partial(db_insert, db_conn)
@@ -244,7 +249,7 @@ def init_db(db_conn):
     # Create the super admin user
     admin_team = db_ins(models.TEAMS, name='admin')
 
-    admin = db_ins(models.USERS, name='admin', password='admin',
+    admin = db_ins(models.USERS, name='admin', password=passwd('admin'),
                    team_id=admin_team)
 
     db_ins(models.JOIN_USERS_ROLES, user_id=admin, role_id=admin_role)
@@ -255,9 +260,9 @@ def init_db(db_conn):
         c['name'] = company
         c['id'] = db_ins(models.TEAMS, name=company)
 
-        user = {'name': '%s_user' % (company.lower(),), 'password': company,
+        user = {'name': '%s_user' % (company.lower(),), 'password': passwd(company),
                 'team_id': c['id']}
-        admin = {'name': '%s_admin' % (company.lower(),), 'password': company,
+        admin = {'name': '%s_admin' % (company.lower(),), 'password': passwd(company),
                  'team_id': c['id']}
 
         c['user'] = db_ins(models.USERS, **user)
@@ -285,7 +290,7 @@ if __name__ == '__main__':
         while True:
             print('Be carefull this script will override your database:')
             print(db_uri)
-            print()
+            print('')
             i = raw_input('Continue ? [y/N] ').lower()
             if not i or i == 'n':
                 sys.exit(0)
