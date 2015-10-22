@@ -1,0 +1,19 @@
+# DCI DB
+#
+# VERSION               0.0.1
+
+
+FROM fedora
+
+RUN dnf update -y
+RUN dnf install -y gcc libpqxx-devel libffi-devel python-devel nodejs npm \
+    python-tox git python3-devel
+
+ADD requirements.txt /tmp/
+
+RUN easy_install -U pip
+RUN easy_install-3.4 -U pip
+
+RUN npm install -g gulp
+ENV LANG "en_US.UTF-8"
+WORKDIR /opt/dci

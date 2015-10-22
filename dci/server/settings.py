@@ -40,3 +40,14 @@ X_HEADERS = 'Authorization'
 # --------
 SQLALCHEMY_ECHO = False
 SQLALCHEMY_RECORD_QUERIES = False
+
+try:
+    import urlparse
+except ImportError:
+    import urllib.parse as urlparse
+
+
+SQLALCHEMY_DATABASE_URI = (
+    'postgresql://dci:password@%s/dci_control_server' %
+    urlparse.urlparse(os.environ.get('DB_PORT')).netloc
+)
