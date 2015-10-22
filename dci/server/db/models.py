@@ -98,13 +98,6 @@ class DCIModel(object):
         jobdefinition_id = Column(UUID(), ForeignKey('jobdefinitions.id'))
         jobdefinition = relationship('Jobdefinition', uselist=False)
 
-    class Jobstate(DCIBase):
-        __tablename__ = 'jobstates'
-        comment = Column(String())
-        job_id = Column(UUID(), ForeignKey('jobs.id'))
-        team_id = Column(UUID(), ForeignKey('teams.id'))
-        status = Column(String(), default='ongoing')
-
     class File(DCIBase):
         __tablename__ = 'files'
         name = Column(String(100))
@@ -113,6 +106,14 @@ class DCIModel(object):
         md5 = Column(String(32))
         jobstate_id = Column(UUID(), ForeignKey('jobstates.id'))
         team_id = Column(UUID(), ForeignKey('teams.id'))
+
+    class Jobstate(DCIBase):
+        __tablename__ = 'jobstates'
+        comment = Column(String())
+        job_id = Column(UUID(), ForeignKey('jobs.id'))
+        team_id = Column(UUID(), ForeignKey('teams.id'))
+        status = Column(String(), default='ongoing')
+        files = relationship('File')
 
     class Component(DCIBase):
         __tablename__ = 'components'
