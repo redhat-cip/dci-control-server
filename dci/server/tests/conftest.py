@@ -25,7 +25,7 @@ import sqlalchemy_utils.functions
 
 
 @pytest.fixture(scope='session')
-def init_db_and_return_engine(request):
+def engine(request):
     conf = dci.server.app.generate_conf()
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
 
@@ -46,18 +46,15 @@ def init_db_and_return_engine(request):
 
 
 @pytest.fixture
-def app(init_db_and_return_engine):
+def app(engine):
     app = dci.server.app.create_app(dci.server.app.generate_conf())
     app.testing = True
-    app.engine = init_db_and_return_engine
+    app.engine = engine
     return app
 
 
-@pytest.fixture(autouse=True)
-def db_provisioning(request, app):
-    with app.engine.begin() as conn:
-        db_provision_test.provision(conn)
-
+@pytest.fixture
+def db_clean(request, app):
     def fin():
         for table in reversed(models_core.metadata.sorted_tables):
             app.engine.execute(table.delete())
@@ -65,20 +62,26 @@ def db_provisioning(request, app):
 
 
 @pytest.fixture
-def admin(app):
+def db_provisioning(app, db_clean):
+    with app.engine.begin() as conn:
+        db_provision_test.provision(conn)
+
+
+@pytest.fixture
+def admin(app, db_provisioning):
     return utils.generate_client(app, ('admin', 'admin'))
 
 
 @pytest.fixture
-def company_a_user(app):
+def company_a_user(app, db_provisioning):
     return utils.generate_client(app, ('company_a_user', 'company_a_user'))
 
 
 @pytest.fixture
-def company_b_user(app):
+def company_b_user(app, db_provisioning):
     return utils.generate_client(app, ('company_b_user', 'company_b_user'))
 
 
 @pytest.fixture
-def unauthorized(app):
+def unauthorized(app, db_provisioning):
     return utils.generate_client(app, ('admin', 'bob'))
