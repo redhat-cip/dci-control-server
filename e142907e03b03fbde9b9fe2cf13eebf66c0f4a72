@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a79b1b5_f408582f",
+        "filename": "start_db.sh",
+        "patchSetId": 6
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2015-10-22T19:12:46Z",
+      "side": 1,
+      "message": "You just have to delete the ||exit 1 to grab the right exit code :-)",
+      "revId": "e142907e03b03fbde9b9fe2cf13eebf66c0f4a72",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
