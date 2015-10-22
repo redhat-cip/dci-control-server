@@ -40,3 +40,18 @@ X_HEADERS = 'Authorization'
 # --------
 SQLALCHEMY_ECHO = False
 SQLALCHEMY_RECORD_QUERIES = False
+
+# detect if we are using docker_compose
+db_port = os.environ.get('DB_PORT')
+
+if db_port is not None:
+    try:
+        import urlparse
+    except ImportError:
+        import urllib.parse as urlparse
+
+
+    SQLALCHEMY_DATABASE_URI = (
+        'postgresql://dci:password@%s/dci_control_server' %
+        urlparse.urlparse(db_port).netloc
+    )

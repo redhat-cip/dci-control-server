@@ -1,0 +1,37 @@
+# DCI DB
+#
+# VERSION               0.0.1
+
+
+FROM fedora
+
+RUN dnf update -y
+RUN dnf install -y postgresql-server postgresql-contrib findutils
+
+ENV PGDATA /var/lib/pgsql/data
+ENV PGPASSFILE /tmp/.pgpass
+
+ADD password ${PGPASSFILE}
+ADD dci/db_schema/dci-control-server.sql /tmp/
+
+RUN chown postgres:postgres ${PGPASSFILE}
+RUN chmod 600 ${PGPASSFILE}
+
+USER postgres
+
+RUN initdb
+RUN echo "listen_addresses='*'" >> "$PGDATA/postgresql.conf"
+RUN echo "log_min_messages = info" >> "$PGDATA/postgresql.conf"
+
+RUN echo "host      all     all     0.0.0.0/0      md5" \
+    >> "$PGDATA/pg_hba.conf"
+RUN /usr/bin/pg_ctl -w -t 300 start &&\
+    psql -c "CREATE USER dci WITH SUPERUSER PASSWORD '$(cat ${PGPASSFILE})';" &&\
+    createdb -O dci dci_control_server &&\
+    psql -U dci dci_control_server < /tmp/dci-control-server.sql
+
+
+VOLUME ["$PGDATA"]
+EXPOSE 5432
+CMD ["postgres"]
+
