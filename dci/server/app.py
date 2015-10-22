@@ -222,10 +222,3 @@ def create_app(conf):
                            auth=basic_auth, settings=conf)
 
     return app
-
-
-if __name__ == "__main__":
-    conf = generate_conf()
-    app = create_app(conf)
-    app.run(conf.get('HOST', 'localhost'),
-            conf.get('PORT', 5000))
