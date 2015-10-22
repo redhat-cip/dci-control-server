@@ -16,6 +16,24 @@
       "revId": "e142907e03b03fbde9b9fe2cf13eebf66c0f4a72",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_57ffce01",
+        "filename": "start_db.sh",
+        "patchSetId": 6
+      },
+      "lineNbr": 10,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-22T20:04:24Z",
+      "side": 1,
+      "message": "in this case, you need a \u0027set -e\u0027 at the top of the file.",
+      "parentUuid": "3a79b1b5_f408582f",
+      "revId": "e142907e03b03fbde9b9fe2cf13eebf66c0f4a72",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
