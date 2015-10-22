@@ -22,17 +22,27 @@ import pytest
 
 
 @pytest.fixture(scope='session')
-def init_db_and_return_engine(request):
-    return server_conftest.init_db_and_return_engine(request)
+def engine(request):
+    return server_conftest.engine(request)
 
 
 @pytest.fixture
-def server(init_db_and_return_engine):
-    return server_conftest.app(init_db_and_return_engine)
+def server(engine):
+    return server_conftest.app(engine)
 
 
 @pytest.fixture
-def client(server):
+def db_clean(request, server):
+    return server_conftest.db_clean(request, server)
+
+
+@pytest.fixture
+def db_provisioning(server, db_clean):
+    server_conftest.db_provisioning(server, db_clean)
+
+
+@pytest.fixture
+def client(server, db_provisioning):
     client = dci_client.DCIClient(
         end_point='http://dci_server.com/api',
         login='admin', password='admin'
@@ -40,8 +50,3 @@ def client(server):
     flask_adapter = utils.FlaskHTTPAdapter(server.test_client())
     client.s.mount('http://dci_server.com', flask_adapter)
     return client
-
-
-@pytest.fixture(autouse=True)
-def db_provisioning(request, server):
-    server_conftest.db_provisioning(request, server)
