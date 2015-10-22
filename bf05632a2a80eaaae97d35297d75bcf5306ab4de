@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a79b1b5_54958ce2",
+        "filename": "start_db.sh",
+        "patchSetId": 5
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-22T13:58:46Z",
+      "side": 1,
+      "message": "I think that the kind of case where we should \"exit 1\" here and maybe even print an error message.",
+      "revId": "bf05632a2a80eaaae97d35297d75bcf5306ab4de",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
