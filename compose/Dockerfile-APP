@@ -1,0 +1,12 @@
+FROM fedora
+
+RUN dnf update -y
+RUN dnf install -y nodejs npm
+
+WORKDIR /tmp
+
+RUN npm install -g gulp
+WORKDIR /opt/dci_databrowser
+
+CMD ["gulp", "serve"]
+EXPOSE 8000 35729
