@@ -1,12 +1,12 @@
-# -*- coding: utf-8 -*-
+# -*- encoding: utf-8 -*-
 #
-# Copyright (C) 2015 eNovance SAS <licensing@enovance.com>
+# Copyright 2015 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -40,3 +40,18 @@ X_HEADERS = 'Authorization'
 # --------
 SQLALCHEMY_ECHO = False
 SQLALCHEMY_RECORD_QUERIES = False
+
+# detect if we are using docker_compose
+db_port = os.environ.get('DB_PORT')
+
+if db_port is not None:
+    try:
+        import urlparse
+    except ImportError:
+        import urllib.parse as urlparse
+
+    SQLALCHEMY_DATABASE_URI = (
+        'postgresql://dci:password@%s/dci_control_server' %
+        urlparse.urlparse(db_port).netloc
+    )
+    HOST = '0.0.0.0'

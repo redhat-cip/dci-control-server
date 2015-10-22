@@ -1,0 +1,33 @@
+db:
+    build: ..
+    dockerfile: compose/Dockerfile-DB
+api:
+    build: ..
+    dockerfile: compose/Dockerfile-API
+    volumes:
+        - ..:/opt/dci-control-server
+    links:
+        - db
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+tox:
+    build: ..
+    dockerfile: compose/Dockerfile-TOX
+    volumes:
+        - ..:/opt/dci/
+    links:
+        - db
+    command: /bin/bash
+    stdin_open: true
+    tty: true
+app:
+    build: ..
+    dockerfile: compose/Dockerfile-APP
+    volumes:
+        - ../dci/dci_databrowser:/opt/dci_databrowser
+    links:
+        - api
+    command: /bin/bash
+    stdin_open: true
+    tty: true
