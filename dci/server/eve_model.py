@@ -638,8 +638,6 @@ def domain_configuration():
                     'team': 1,
                     'team_id': 0,
                     'team': 1,
-                    'test': 1,
-                    'test_id': 0,
                     'updated_at': 1,
                     'user_remotecis': 0},
                 'source': 'Remoteci'},
@@ -695,18 +693,6 @@ def domain_configuration():
                         'embeddable': False,
                         'resource': 'teams'},
                     'required': False,
-                    'type': 'objectid',
-                    'unique': False},
-                'test': {
-                    'data_relation': {
-                        'embeddable': True,
-                        'resource': 'tests'},
-                    'type': 'objectid'},
-                'test_id': {
-                    'data_relation': {
-                        'embeddable': False,
-                        'resource': 'tests'},
-                    'required': True,
                     'type': 'objectid',
                     'unique': False},
                 'updated_at': {
@@ -859,7 +845,6 @@ def domain_configuration():
                     'id': 1,
                     'jobdefinitions': 0,
                     'name': 1,
-                    'remotecis': 0,
                     'updated_at': 1},
                 'source': 'Test'},
             'description': {
@@ -901,11 +886,6 @@ def domain_configuration():
                     'required': True,
                     'type': 'string',
                     'unique': False},
-                'remotecis': {
-                    'data_relation': {
-                        'embeddable': True,
-                        'resource': 'remotecis'},
-                    'type': 'objectid'},
                 'updated_at': {
                     'required': False,
                     'type': 'datetime',

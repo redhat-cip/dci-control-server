@@ -136,9 +136,6 @@ REMOTECIS = sa.Table(
     sa.Column('data', sa_utils.JSONType),
     sa.Column('team_id', sa_utils.UUIDType,
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
-              nullable=False),
-    sa.Column('test_id', sa_utils.UUIDType,
-              sa.ForeignKey('tests.id', ondelete="CASCADE"),
               nullable=False))
 
 JOBS = sa.Table(

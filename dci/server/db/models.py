@@ -78,9 +78,7 @@ class DCIModel(object):
         name = Column(String(100))
         data = Column(JSON())
         team_id = Column(UUID(), ForeignKey('teams.id'))
-        test_id = Column(UUID(), ForeignKey('tests.id'))
         team = relationship('Team', uselist=False)
-        test = relationship('Test', uselist=False)
 
     class Jobdefinition(DCIBase):
         __tablename__ = 'jobdefinitions'
