@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a79b1b5_57ba6ee2",
+        "filename": "tox.ini",
+        "patchSetId": 1
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-10-23T12:42:40Z",
+      "side": 1,
+      "message": "you must specify the dci/server directory in addition, otherwise tests will also be ran on dci_databrowser and fail on local repos",
+      "revId": "f4a0a17d8e29792d41c8582af6ba1a62dea8e16f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
