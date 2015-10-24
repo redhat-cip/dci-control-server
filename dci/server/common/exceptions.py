@@ -25,3 +25,20 @@ class NotFound(ServerError):
     """
     def __init__(self, message):
         super(NotFound, self).__init__("'%s' does not exist" % message)
+
+
+class APIException(Exception):
+    """Exception for the API, customize error output"""
+
+    def __init__(self, message, payload=None, status_code=400):
+        super(APIException, self).__init__()
+        self.status_code = status_code
+        self.message = message
+        self.payload = payload
+
+    def to_dict(self):
+        return {
+            'status_code': self.status_code,
+            'message': self.message,
+            'payload': dict(self.payload or ())
+        }
