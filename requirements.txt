@@ -1,9 +1,10 @@
+alembic
 bcrypt
 Eve>=0.6
 Eve-SQLAlchemy>=0.4.0a2
 PrettyTable
 six>=1.9
-SQLAlchemy
+SQLAlchemy>=1.0
 SQLAlchemy-Utils
 psycopg2
 requests
