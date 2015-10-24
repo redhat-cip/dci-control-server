@@ -17,21 +17,26 @@
 import copy
 
 import six
+import itertools
+import collections
 
 
-def dict_merge(a, b):
+def dict_merge(*dict_list):
     '''recursively merges dict's. not just simple a['key'] = b['key'], if
     both a and bhave a key who's value is a dict then dict_merge is called
     on both values and the result stored in the returned dictionary.
     '''
-    if not isinstance(a, dict):
-        raise TypeError()
-    if not isinstance(b, dict):
-        return a
-    result = copy.deepcopy(a)
-    for k, v in six.iteritems(b):
-        if k in result and isinstance(result[k], dict):
-                result[k] = dict_merge(result[k], v)
+    result = collections.defaultdict(dict)
+
+    for key, value in itertools.chain(*[six.iteritems(d) for d in dict_list]):
+        src = result[key]
+        if isinstance(src, dict) and isinstance(value, dict):
+            result[key] = dict_merge(src, value)
+        elif isinstance(src, dict):
+            result[key] = value
+        elif hasattr(src, '__iter__') and hasattr(value, '__iter__'):
+            result[key] += value
         else:
-            result[k] = copy.deepcopy(v)
-    return result
+            result[key] = value
+
+    return dict(result)

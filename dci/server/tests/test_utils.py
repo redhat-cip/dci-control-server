@@ -20,13 +20,14 @@ import sample.db_provisioning
 
 def test_dict_merge():
     a = {'jim': 123, 'a': {'b': {'c': {'d': 'bob'}}}, 'rob': 34}
-    b = {'tot': {'a': {'b': 'string'}}}
+    b = {'tot': {'a': {'b': 'string'}, 'c': [1, 2]}}
+    c = {'tot': {'c': [3, 4]}}
 
-    assert dci.server.utils.dict_merge(a, b) == {
+    assert dci.server.utils.dict_merge(a, b, c) == {
         'a': {'b': {'c': {'d': 'bob'}}},
         'jim': 123,
         'rob': 34,
-        'tot': {'a': {'b': 'string'}}
+        'tot': {'a': {'b': 'string'}, 'c': [1, 2, 3, 4]}
     }
 
 
