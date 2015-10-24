@@ -19,6 +19,7 @@ import json
 import os
 
 from dci.server import auth
+import dci.server.common.exceptions as exceptions
 from dci.server.db import models
 from dci.server import eve_model
 from dci.server import utils
@@ -213,6 +214,12 @@ def generate_conf():
     return conf
 
 
+def handle_api_exception(api_exception):
+    response = flask.jsonify(api_exception.to_dict())
+    response.status_code = api_exception.status_code
+    return response
+
+
 def create_app(conf):
     dci_model = models.DCIModel(conf['SQLALCHEMY_DATABASE_URI'])
     conf['DOMAIN'] = eve_model.domain_configuration()
@@ -221,4 +228,5 @@ def create_app(conf):
     app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
                            auth=basic_auth, settings=conf)
 
+    app.register_error_handler(exceptions.APIException, handle_api_exception)
     return app
