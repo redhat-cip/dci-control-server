@@ -27,6 +27,7 @@ from eve import Eve
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 import flask
+import sqlalchemy
 from sqlalchemy.sql import text
 
 from dci.dci_databrowser import dci_databrowser
@@ -211,6 +212,14 @@ def generate_conf():
     conf.from_object(
         os.environ.get('DCI_SETTINGS_MODULE') or 'dci.server.settings')
     return conf
+
+
+def get_engine(conf, echo=False):
+    sa_engine = sqlalchemy.create_engine(
+        conf['SQLALCHEMY_DATABASE_URI'],
+        pool_size=20, max_overflow=0, encoding='utf8', convert_unicode=True,
+        echo=echo)
+    return sa_engine
 
 
 def create_app(conf):
