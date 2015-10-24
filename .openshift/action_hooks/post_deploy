@@ -5,42 +5,14 @@ pip install -r ${OPENSHIFT_REPO_DIR}/requirements.txt
 pip install git+https://github.com/hermannsblum/eve-docs
 pip install Flask-Bootstrap
 
-new_schema_checksum=$(sha256sum $OPENSHIFT_REPO_DIR/dci/db_schema/dci-control-server.sql|awk '{print $1}')
-current_schema_checksum=$(psql -t -A -q -c 'SELECT dci_cs_version();')
 
-if [ "${new_schema_checksum}" != "${current_schema_checksum}" ]; then
-    $OPENSHIFT_REPO_DIR/.openshift/deploy_db
-    psql -c "
-        SELECT pg_terminate_backend(pg_stat_activity.pid)
-        FROM pg_stat_activity
-        WHERE datname = current_database()
-        AND pid <> pg_backend_pid(); DROP SCHEMA public CASCADE;"
-    echo "
-        DROP SCHEMA public CASCADE;
-        CREATE SCHEMA public;
-        \\i ${OPENSHIFT_REPO_DIR}/dci/db_schema/dci-control-server.sql
-    " | psql
-    psql -c "
-        CREATE OR REPLACE FUNCTION dci_cs_version() RETURNS text AS '
-        SELECT \$\$${new_schema_checksum}\$\$::text ' LANGUAGE SQL IMMUTABLE;"
+./app-root/repo/dci/cmd/dbsync.py
+./app-root/repo/dci/cmd/init_openshift_db.py
 
-    if [ -z "${DCI_LOGIN}" ] || [ -z "${DCI_PASSWORD}" ]; then
-        echo "DCI credentials error: 'DCI_LOGIN' or 'DCI_PASSWORD' environment variables not set";
-        exit 1
-    fi
+#We will use entrypoints when we get rid of Eve, because of version conflict
+#between dci (Eve>=0.6)  and Eve-SQLAlchemy (Eve>=0.5,<0.6)
+#dci-dbsync
+#dci-openshift-dbinit
 
-    DCI_PASSWORD_HASH=$(python -c "import bcrypt; print(bcrypt.hashpw('${DCI_PASSWORD}'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8'))")
-
-    psql -c "INSERT INTO teams (name) VALUES ('admin');"
-    psql -c "INSERT INTO teams (name) VALUES ('partner');"
-    psql -c "INSERT INTO roles (name) VALUES ('admin');"
-    psql -c "INSERT INTO roles (name) VALUES ('partner');"
-
-    psql -c "INSERT INTO users (name, password, team_id) VALUES ('${DCI_LOGIN}', '${DCI_PASSWORD_HASH}', (SELECT id FROM teams WHERE name='admin'));"
-    psql -c "INSERT INTO users (name, password, team_id) VALUES ('${DCI_LOGIN}', '${DCI_PASSWORD_HASH}', (SELECT id FROM teams WHERE name='partner'));"
-
-    psql -c "INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='${DCI_LOGIN}'), (SELECT id from roles WHERE name='admin'));"
-    psql -c "INSERT INTO user_roles (user_id, role_id) VALUES ((SELECT id from users WHERE name='${DCI_LOGIN}'), (SELECT id from roles WHERE name='partner'));"
-fi
 cd $OPENSHIFT_REPO_DIR/dci/dci_databrowser
 HOME=$OPENSHIFT_TMP_DIR scl enable nodejs010 "npm install && node_modules/.bin/gulp build"
