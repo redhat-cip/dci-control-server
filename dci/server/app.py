@@ -29,6 +29,7 @@ from eve import Eve
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 import flask
+import sqlalchemy
 from sqlalchemy.sql import text
 
 from dci.dci_databrowser import dci_databrowser
@@ -221,6 +222,14 @@ def handle_api_exception(api_exception):
     return response
 
 
+def get_engine(conf, echo=False):
+    sa_engine = sqlalchemy.create_engine(
+        conf['SQLALCHEMY_DATABASE_URI'],
+        pool_size=20, max_overflow=0, encoding='utf8', convert_unicode=True,
+        echo=echo)
+    return sa_engine
+
+
 def create_app(conf):
     dci_model = models.DCIModel(conf['SQLALCHEMY_DATABASE_URI'])
     conf['DOMAIN'] = eve_model.domain_configuration()
@@ -229,11 +238,11 @@ def create_app(conf):
     dci_app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
                                auth=basic_auth, settings=conf)
 
-    engine = get_engine(conf)
+    dci_app.engine = get_engine(conf)
 
     @dci_app.before_request
     def before_request():
-        flask.g.db_conn = engine.connect()
+        flask.g.db_conn = dci_app.engine.connect()
 
     @dci_app.teardown_request
     def teardown_request(_):
