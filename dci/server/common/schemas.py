@@ -27,8 +27,17 @@ ETAG = re.compile('^[a-zA-Z0-9]+$')
 class Schema(v.Schema):
     """Override voluptuous schema to return our own error"""
     def __call__(self, data):
+
+        def format_error_message(error):
+            # Replace the error message for dict by json
+            if error.error_message == 'expected dict':
+                error.error_message = 'not a valid json'
+            if error.error_message == 'expected str':
+                error.error_message = 'not a valid string'
+
         def format_error(error):
             path = error.path.pop()
+            format_error_message(error)
             err = format_error(error) if error.path else [error.error_message]
             return {str(path): err}
 
@@ -45,6 +54,7 @@ class Schema(v.Schema):
 def DatetimeFormat(format=None):
     return lambda v: v.strftime(format) if format else v.isoformat()
 
+
 base = {
     'id': v.Coerce(str),
     'etag': str,
@@ -60,6 +70,10 @@ base_load = {
 }
 
 
+test = utils.dict_merge(base, {v.Optional('data', default={}): dict})
+test_load = utils.dict_merge(base_load, {v.Optional('data', default={}): dict})
+
+
 def schema_factory(schema, schema_load):
     schema_post = {}
     schema_put = {}
@@ -67,7 +81,11 @@ def schema_factory(schema, schema_load):
     for key, value in six.iteritems(schema_load):
         if key in ['id', 'etag']:
             continue
-        schema_post[v.Required(key)] = value
+
+        if not isinstance(key, v.Marker):
+            key = v.Required(key)
+
+        schema_post[key] = value
 
     for key, value in six.iteritems(schema_load):
         if key in ['id', 'etag']:
@@ -84,3 +102,4 @@ def schema_factory(schema, schema_load):
 component_type = schema_factory(base, base_load)
 team = schema_factory(base, base_load)
 role = schema_factory(base, base_load)
+test = schema_factory(test, test_load)

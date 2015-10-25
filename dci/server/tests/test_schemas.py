@@ -64,9 +64,13 @@ class SchemaTesting(object):
     schema = None
     post_fields = []
     put_fields = []
+    optional_fields = []
 
-    def test_dump(self):
-        data, data_dump = generate_data({'extra': 'bar'})
+    def test_dump(self, extra=None):
+        extra = dict(extra or ())
+        extra.update({'extra': 'bar'})
+
+        data, data_dump = generate_data(extra)
         data_dump.pop('extra')
         assert self.schema(data) == data_dump
 
@@ -87,9 +91,10 @@ class SchemaTesting(object):
         }
 
     def test_post_missing_data(self):
+        # retrieve all post fields except optional ones
+        fields = set(self.post_fields).difference(set(self.optional_fields))
         errors = {}
-        # retrieve all post fields
-        for field in self.post_fields:
+        for field in fields:
             errors[str(field)] = ['required key not provided']
 
         with pytest.raises(exceptions.APIException) as exc:
@@ -103,9 +108,9 @@ class SchemaTesting(object):
         """
         raise NotImplementedError
 
-    def test_post(self):
+    def test_post(self, extra=None):
         expected_data_post, data_post = {}, {}
-        expected_data, data = generate_data()
+        expected_data, data = generate_data(extra)
 
         for key, value in six.iteritems(data):
             if key in self.post_fields:
@@ -150,14 +155,13 @@ class SchemaTesting(object):
         """
         raise NotImplementedError
 
-    def test_put(self):
+    def test_put(self, extra=None):
         expected_data_put, data_put = {}, {}
-        expected_data, data = generate_data()
+        expected_data, data = generate_data(extra)
 
         for key, value in six.iteritems(data):
             if key in self.put_fields or key in self.post_fields:
                 data_put[key] = value
-
         for key, value in six.iteritems(expected_data):
             if key in self.put_fields or key in self.post_fields:
                 expected_data_put[key] = value
@@ -170,16 +174,24 @@ class BaseSchemaTesting(SchemaTesting):
     put_fields = ['id', 'etag']
 
     def test_post_invalid_data(self):
-        pass
+        with pytest.raises(exceptions.APIException) as exc:
+            self.schema.post({
+                'name': 3
+            })
+        assert exc.value.payload == {'errors': {
+            'name': ['not a valid string']
+        }}
 
     def test_put_invalid_data(self):
         with pytest.raises(exceptions.APIException) as exc:
             self.schema.put({
                 'id': 'invalid_uuid',
+                'name': 3,
                 'etag': 'invalid_etag'
             })
         assert exc.value.payload == {'errors': {
             'id': ['not a valid uuid'],
+            'name': ['not a valid string'],
             'etag': ['not a valid etag']
         }}
 
@@ -194,3 +206,46 @@ class TestTeam(BaseSchemaTesting):
 
 class TestRole(BaseSchemaTesting):
     schema = schemas.role
+
+
+class TestTest(SchemaTesting):
+    schema = schemas.test
+    post_fields = ['name', 'data']
+    put_fields = ['id', 'etag']
+    optional_fields = ['data']
+
+    def test_dump(self, extra=None):
+        super(TestTest, self).test_dump({'data': {'foo': 'bar'}})
+
+    def test_post_invalid_data(self):
+        with pytest.raises(exceptions.APIException) as exc:
+            self.schema.post({
+                'name': 3,
+                'data': []
+            })
+        assert exc.value.payload == {'errors': {
+            'name': ['not a valid string'],
+            'data': ['not a valid json']
+        }}
+
+    def test_post(self, extra=None):
+        super(TestTest, self).test_post({'data': {'foo': 'bar'}})
+
+    def test_put_invalid_data(self):
+        with pytest.raises(exceptions.APIException) as exc:
+            self.schema.put({
+                'id': 'invalid_uuid',
+                'name': 3,
+                'etag': 'invalid_etag',
+                'data': []
+            })
+
+        assert exc.value.payload == {'errors': {
+            'id': ['not a valid uuid'],
+            'name': ['not a valid string'],
+            'etag': ['not a valid etag'],
+            'data': ['not a valid json']
+        }}
+
+    def test_put(self, extra=None):
+        super(TestTest, self).test_put(extra={'data': {'foo': 'bar'}})
