@@ -16,10 +16,15 @@
 
 import dci.server.common.exceptions as exceptions
 import dci.server.utils as utils
-import voluptuous
+import re
+import six
+import uuid
+import voluptuous as v
+
+ETAG = re.compile('^[a-zA-Z0-9]+$')
 
 
-class Schema(voluptuous.Schema):
+class Schema(v.Schema):
     """Override voluptuous schema to return our own error"""
     def __call__(self, data):
         def format_error(error):
@@ -28,10 +33,54 @@ class Schema(voluptuous.Schema):
             return {str(path): err}
 
         try:
-            super(Schema, self).__call__(data)
-        except voluptuous.MultipleInvalid as exc:
+            return super(Schema, self).__call__(data)
+        except v.MultipleInvalid as exc:
             errors = {}
             for error in exc.errors:
                 errors = utils.dict_merge(errors, format_error(error))
             raise exceptions.APIException('Request malformed',
                                           {'errors': errors})
+
+
+def DatetimeFormat(format=None):
+    return lambda v: v.strftime(format) if format else v.isoformat()
+
+base = {
+    'id': v.Coerce(str),
+    'etag': str,
+    'name': str,
+    'created_at': DatetimeFormat(),
+    'updated_at': DatetimeFormat()
+}
+
+base_load = {
+    'id': v.Coerce(uuid.UUID, 'not a valid uuid'),
+    'etag': v.All(str, v.Match(ETAG, 'not a valid etag')),
+    'name': str
+}
+
+
+def schema_factory(schema, schema_load):
+    schema_post = {}
+    schema_put = {}
+
+    for key, value in six.iteritems(schema_load):
+        if key in ['id', 'etag']:
+            continue
+        schema_post[v.Required(key)] = value
+
+    for key, value in six.iteritems(schema_load):
+        if key in ['id', 'etag']:
+            schema_put[v.Required(key)] = value
+        else:
+            schema_put[key] = value
+
+    schema = Schema(schema, extra=v.REMOVE_EXTRA)
+    schema.post = Schema(schema_post)
+    schema.put = Schema(schema_put)
+
+    return schema
+
+component_type = schema_factory(base, base_load)
+team = schema_factory(base, base_load)
+role = schema_factory(base, base_load)
