@@ -18,6 +18,7 @@
 import json
 import os
 
+from dci.server.api import v1 as api_v1
 from dci.server import auth
 from dci.server.db import models
 from dci.server import eve_model
@@ -227,7 +228,20 @@ def create_app(conf):
     conf['DOMAIN'] = eve_model.domain_configuration()
     basic_auth = auth.DCIBasicAuth(dci_model)
 
-    app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
-                           auth=basic_auth, settings=conf)
+    dci_app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
+                               auth=basic_auth, settings=conf)
 
-    return app
+    engine = get_engine(conf)
+
+    @dci_app.before_request
+    def before_request():
+        flask.g.db_conn = engine.connect()
+
+    @dci_app.teardown_request
+    def teardown_request(_):
+        flask.g.db_conn.close()
+
+    # Registering REST API v1
+    dci_app.register_blueprint(api_v1.api, url_prefix='/api/v1')
+
+    return dci_app
