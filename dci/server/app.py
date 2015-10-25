@@ -235,18 +235,18 @@ def create_app(conf):
     dci_app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
                                auth=basic_auth, settings=conf)
 
-    engine = get_engine(conf)
+    dci_app.engine = get_engine(conf)
 
     @dci_app.before_request
     def before_request():
-        flask.g.db_conn = engine.connect()
+        flask.g.db_conn = dci_app.engine.connect()
 
     @dci_app.teardown_request
     def teardown_request(_):
         flask.g.db_conn.close()
 
     # Registering REST error handler
-    dci_app.register_error_handler(exceptions.APIException,
+    dci_app.register_error_handler(exceptions.DCIException,
                                    handle_api_exception)
 
     # Registering REST API v1
