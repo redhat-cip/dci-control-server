@@ -18,6 +18,7 @@
 import json
 import os
 
+from dci.server.api import v1 as api_v1
 from dci.server import auth
 import dci.server.common.exceptions as exceptions
 from dci.server.db import models
@@ -231,8 +232,22 @@ def create_app(conf):
     conf['DOMAIN'] = eve_model.domain_configuration()
     basic_auth = auth.DCIBasicAuth(dci_model)
 
-    app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
-                           auth=basic_auth, settings=conf)
+    dci_app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
+                               auth=basic_auth, settings=conf)
 
-    app.register_error_handler(exceptions.APIException, handle_api_exception)
-    return app
+    engine = get_engine(conf)
+
+    @dci_app.before_request
+    def before_request():
+        flask.g.db_conn = engine.connect()
+
+    @dci_app.teardown_request
+    def teardown_request(_):
+        flask.g.db_conn.close()
+
+    dci_app.register_error_handler(exceptions.APIException, handle_api_exception)
+
+    # Registering REST API v1
+    dci_app.register_blueprint(api_v1.api, url_prefix='/api/v1')
+
+return app
