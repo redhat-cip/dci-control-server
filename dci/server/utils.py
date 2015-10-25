@@ -15,6 +15,7 @@
 # under the License.
 
 import collections
+import hashlib
 import itertools
 import six
 
@@ -55,3 +56,26 @@ def json_encoder(obj):
 
 def gen_uuid():
     return str(uuid.uuid4())
+
+
+def gen_etag(row):
+    """Generate the etag of a row"""
+
+    # First sort he values of the dict
+    all_keys = list(row.keys())
+    all_keys.sort()
+    all_values = []
+
+    # then convert each element to str
+    for key in all_keys:
+        all_values.append(str(row[key]))
+
+    # finally process the md5 with the str result
+    str_values = "".join(all_values)
+    if six.PY2:
+        str_values = str_values.decode('utf-8')
+    elif six.PY3:
+        str_values = str_values.encode('utf-8')
+    md5 = hashlib.md5()
+    md5.update(str_values)
+    return md5.hexdigest()
