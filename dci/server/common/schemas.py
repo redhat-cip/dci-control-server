@@ -46,17 +46,17 @@ def DatetimeFormat(format=None):
     return lambda v: v.strftime(format) if format else v.isoformat()
 
 base = {
-    'id': v.Coerce(str),
-    'etag': str,
-    'name': str,
+    'id': v.Coerce(six.text_type),
+    'etag': six.string_types[0],
+    'name': six.text_type,
     'created_at': DatetimeFormat(),
     'updated_at': DatetimeFormat()
 }
 
 base_load = {
     'id': v.Coerce(uuid.UUID, 'not a valid uuid'),
-    'etag': v.All(str, v.Match(ETAG, 'not a valid etag')),
-    'name': str
+    'etag': v.All(six.string_types[0], v.Match(ETAG, 'not a valid etag')),
+    'name': six.text_type
 }
 
 
