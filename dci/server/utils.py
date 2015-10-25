@@ -15,9 +15,11 @@
 # under the License.
 
 import collections
+import hashlib
 import itertools
 import six
 
+import uuid
 
 def dict_merge(*dict_list):
     '''recursively merges dict's. not just simple a['key'] = b['key'], if
@@ -39,3 +41,26 @@ def dict_merge(*dict_list):
             result[key] = value
 
     return dict(result)
+
+
+def gen_uuid():
+    return str(uuid.uuid4())
+
+
+def gen_etag(row):
+    """Generate the etag of a row"""
+
+    # First sort he values of the dict
+    all_keys = row.keys()
+    all_keys.sort()
+    all_values = []
+
+    # then convert each element to str
+    for key in all_keys:
+        all_values.append(str(row[key]))
+
+    # finally process the md5 with the str result
+    str_values = "".join(all_values)
+    md5 = hashlib.md5()
+    md5.update(str_values)
+    return md5.hexdigest()

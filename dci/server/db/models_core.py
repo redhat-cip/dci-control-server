@@ -39,7 +39,7 @@ COMPONENTYPES = sa.Table(
     sa.Column('updated_at', sa.DateTime(),
               onupdate=datetime.datetime.utcnow,
               default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('name', sa.String(255), nullable=False),
+    sa.Column('name', sa.String(255), unique=True, nullable=False),
     sa.Column('etag', sa.String(40)))
 
 COMPONENTS = sa.Table(
