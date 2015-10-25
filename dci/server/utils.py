@@ -15,15 +15,17 @@
 # under the License.
 
 import copy
+import datetime
+import uuid
 
 import six
 
 
 def dict_merge(a, b):
-    '''recursively merges dict's. not just simple a['key'] = b['key'], if
+    """recursively merges dict's. not just simple a['key'] = b['key'], if
     both a and bhave a key who's value is a dict then dict_merge is called
     on both values and the result stored in the returned dictionary.
-    '''
+    """
     if not isinstance(a, dict):
         raise TypeError()
     if not isinstance(b, dict):
@@ -35,3 +37,12 @@ def dict_merge(a, b):
         else:
             result[k] = copy.deepcopy(v)
     return result
+
+
+def json_encoder(obj):
+    """Default JSON encoder."""
+
+    if isinstance(obj, datetime.datetime):
+        return obj.isoformat()
+    elif isinstance(obj, uuid.UUID):
+        return str(obj)
