@@ -18,6 +18,8 @@ import base64
 import collections
 import flask
 
+import uuid
+
 
 def create_component(
         client,
@@ -25,7 +27,7 @@ def create_component(
         data={'component_keys': {'foo': ['bar1', 'bar2']}}):
     _, component_type, _ = client.post(
         '/api/componenttypes',
-        data={'name': 'a_component_type'}
+        data={'name': str(uuid.uuid4())}
     )
     component = client.post(
         '/api/components',

@@ -33,5 +33,5 @@ class Schema(voluptuous.Schema):
             errors = {}
             for error in exc.errors:
                 errors = utils.dict_merge(errors, format_error(error))
-            raise exceptions.APIException('Request malformed',
+            raise exceptions.DCIException('Request malformed',
                                           {'errors': errors})
