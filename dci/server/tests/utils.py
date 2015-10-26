@@ -82,12 +82,11 @@ def create_file(client, jobstate_id):
     )
 
 
-def create_remoteci(client, test_id):
+def create_remoteci(client):
     return client.post(
         '/api/remotecis',
         data={
             'name': 'a_remoteci',
-            'test_id': test_id,
             'data': {'remoteci_keys': {'foo': ['bar1', 'bar2']}}
         }
     )

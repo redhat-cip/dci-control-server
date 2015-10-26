@@ -145,7 +145,6 @@ CREATE TABLE remotecis (
     name character varying(255),
     etag character varying(40) DEFAULT gen_etag() NOT NULL,
     team_id uuid NOT NULL,
-    test_id uuid NOT NULL,
     data json
 );
 COMMENT ON TABLE remotecis IS 'The remote CI agent that process the test.';
@@ -284,8 +283,6 @@ ALTER TABLE ONLY jobstates
     ADD CONSTRAINT jobstates_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
 ALTER TABLE ONLY remotecis
     ADD CONSTRAINT remotecis_team_id_fkey FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE;
-ALTER TABLE ONLY remotecis
-    ADD CONSTRAINT remotecis_test_id_fkey FOREIGN KEY (test_id) REFERENCES tests(id) ON DELETE CASCADE;
 ALTER TABLE ONLY jobstates
     ADD CONSTRAINT status_job_fkey FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE;
 ALTER TABLE ONLY user_remotecis

@@ -21,6 +21,9 @@ import tempfile
 
 from dci import client
 
+print("Disable in commit I8b5206db644a3700a1462c37048824899448592d")
+exit(1)
+
 try:
     remoteci_name = sys.argv[1]
 except IndexError:

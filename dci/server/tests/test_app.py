@@ -41,8 +41,7 @@ class TestAdmin(object):
         assert jobdefinition_component.data is not None
 
     def test_post_remoteci_item(self, admin):
-        test = utils.create_test(admin)
-        remoteci = utils.create_remoteci(admin, test.data['id'])
+        remoteci = utils.create_remoteci(admin)
 
         assert remoteci.status_code == 201
         assert remoteci.data is not None
@@ -55,7 +54,7 @@ class TestAdmin(object):
         utils.create_component(admin)
         utils.create_jobdefinition(admin, test.data['id'])
 
-        remoteci = utils.create_remoteci(admin, test.data['id'])
+        remoteci = utils.create_remoteci(admin)
         job = utils.create_job(admin, remoteci.data['id'])
 
         assert job.status_code == 201
@@ -82,7 +81,7 @@ class TestAdmin(object):
             admin, jobdefinition_id, component2.data['id'])
         utils.create_jobdefinition_component(
             admin, jobdefinition_id, component3.data['id'])
-        remoteci = utils.create_remoteci(admin, test.data['id'])
+        remoteci = utils.create_remoteci(admin)
 
         job = utils.create_job(admin, remoteci.data['id'])
         job = company_a_user.get('/api/jobs/%s' % job.data['id'])
@@ -103,7 +102,7 @@ class TestAdmin(object):
         utils.create_jobdefinition_component(
             admin, jobdefinition.data['id'], component.data['id']
         )
-        remoteci = utils.create_remoteci(admin, test.data['id'])
+        remoteci = utils.create_remoteci(admin)
         remoteci_id = remoteci.data['id']
 
         job_to_recheck = utils.create_job(admin, remoteci_id)

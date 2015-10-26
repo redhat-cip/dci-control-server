@@ -99,11 +99,8 @@ class DciControlServer(Eve):
                 SELECT
                     jobs.jobdefinition_id
                 FROM jobs
-                WHERE jobs.remoteci_id=:remoteci_id
-                  AND
-               jobs.created_at > now() - interval '1 day'
-            ) AND jobdefinitions.test_id=remotecis.test_id AND
-            remotecis.id=:remoteci_id
+                WHERE jobs.created_at > now() - interval '1 day'
+            ) AND remotecis.id=:remoteci_id
             ORDER BY
                 priority ASC
             LIMIT 1

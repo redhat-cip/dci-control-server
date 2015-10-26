@@ -35,7 +35,7 @@ class TestAuth(object):
     def test_team_isolation(self, admin, company_b_user, company_a_user):
         test = utils.create_test(admin)
         utils.create_jobdefinition(admin, test.data['id'])
-        remoteci = utils.create_remoteci(company_b_user, test.data['id'])
+        remoteci = utils.create_remoteci(company_b_user)
         job = utils.create_job(company_b_user, remoteci.data['id'])
         jobstates = utils.create_jobstate(company_b_user, job.data['id'])
         a_file = utils.create_file(company_b_user, jobstates.data['id'])
