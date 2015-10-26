@@ -16,9 +16,49 @@
 
 # THIS FILE IS MANAGED BY THE GLOBAL REQUIREMENTS REPO - DO NOT EDIT
 
+import os
 import setuptools
+
+from dci import version
+
+
+def _get_requirements():
+    requirements_path = "%s/%s" % (os.path.dirname(os.path.abspath(__file__)),
+                                   "requirements.txt")
+    with open(requirements_path, "r") as f:
+        requirements = f.read()
+        return requirements.split("\n")
+
+_README_CONTENT = open("%s/%s" % (os.path.dirname(os.path.abspath(__file__)),
+                                  "README.md")).read()
 
 
 setuptools.setup(
-    setup_requires=['pbr'],
-    pbr=True)
+    name='control-server',
+    version=version.__version__,
+    packages=setuptools.find_packages(),
+    author="Distributed ci team.",
+    author_email="distributed-ci@redhat.com",
+    description="Server which manage products deployments",
+    long_description=_README_CONTENT,
+    install_requires=_get_requirements(),
+    url="https://github.com/redhat-cip/dci-control-server",
+    license="Apache v2.0",
+    include_package_data=True,
+    classifiers=[
+        "Environment :: Console",
+        "Intended Audience :: Developers",
+        "Intended Audience :: Information Technology",
+        "License :: OSI Approved :: Apache Software License",
+        "Operating System :: POSIX :: Linux",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.4",
+        "Topic :: System :: Distributed Computing"
+    ],
+    entry_points={
+        "console_scripts": [
+            "dci-dbsync = dci.cmd.dbsync:main",
+            "dci-openshift-dbinit = dci.cmd.init_openshift_db:main"
+        ],
+    }
+)
