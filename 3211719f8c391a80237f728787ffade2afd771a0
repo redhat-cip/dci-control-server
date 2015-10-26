@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a79b1b5_f7acda37",
+        "filename": "requirements.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-10-26T13:11:53Z",
+      "side": 1,
+      "message": "Why? Cannot we stay this SQLAlchemy 0.9? That the version available in RHEL. This being said 1.0 is packaged for OSP8, but I\u0027m not sure this will be an option.",
+      "revId": "3211719f8c391a80237f728787ffade2afd771a0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
