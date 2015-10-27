@@ -220,6 +220,8 @@ ALTER TABLE ONLY jobdefinitions
     ADD CONSTRAINT jobdefinitions_pkey PRIMARY KEY (id);
 ALTER TABLE ONLY jobdefinition_components
     ADD CONSTRAINT jobdefinition_components_pkey PRIMARY KEY (id);
+ALTER TABLE ONLY jobdefinition_components
+    ADD CONSTRAINT jobdefinition_components_component_id_jobdefinition_id_key UNIQUE (component_id, jobdefinition_id);
 ALTER TABLE ONLY remotecis
     ADD CONSTRAINT remotecis_name_key UNIQUE (name);
 ALTER TABLE ONLY remotecis

@@ -131,11 +131,11 @@ def create_jobdefinition_components(db_conn, components, job_definitions):
     for job_definition in job_definitions:
 
         # add between 1 and 5 components on the jobdefinition
-        for _ in range(0, random.randint(1, 5)):
-            component = random.choice(components)
+        nb_components = random.randint(1, 5)
+        for i in range(0, nb_components):
             db_insert(db_conn, models.JOIN_JOBDEFINITIONS_COMPONENTS,
                       jobdefinition_id=job_definition['id'],
-                      component_id=component)
+                      component_id=components[i])
 
 
 def create_files(db_conn, jobstate, company_id):
