@@ -108,7 +108,8 @@ JOIN_JOBDEFINITIONS_COMPONENTS = sa.Table(
               nullable=False),
     sa.Column('jobdefinition_id', sa_utils.UUIDType,
               sa.ForeignKey('jobdefinitions.id', ondelete="CASCADE"),
-              nullable=False))
+              nullable=False),
+    sa.UniqueConstraint('component_id', 'jobdefinition_id'))
 
 TEAMS = sa.Table(
     'teams', metadata,
@@ -230,7 +231,8 @@ JOIN_USER_REMOTECIS = sa.Table(
               nullable=False),
     sa.Column('remoteci_id', sa_utils.UUIDType,
               sa.ForeignKey('remotecis.id', ondelete="CASCADE"),
-              nullable=False))
+              nullable=False),
+    sa.UniqueConstraint('user_id', 'remoteci_id'))
 
 ROLES = sa.Table(
     'roles', metadata,
@@ -257,4 +259,5 @@ JOIN_USERS_ROLES = sa.Table(
     sa.Column('user_id', sa_utils.UUIDType,
               sa.ForeignKey('users.id', ondelete="CASCADE"), nullable=False),
     sa.Column('role_id', sa_utils.UUIDType,
-              sa.ForeignKey('roles.id', ondelete="CASCADE"), nullable=False))
+              sa.ForeignKey('roles.id', ondelete="CASCADE"), nullable=False),
+    sa.UniqueConstraint('user_id', 'role_id'))
