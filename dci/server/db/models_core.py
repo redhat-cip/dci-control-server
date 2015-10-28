@@ -23,7 +23,7 @@ metadata = sa.MetaData()
 
 # Use PG uuid internal functions.
 pg_gen_uuid = sa.DDL("""
-CREATE EXTENSION "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 """)
 
 server_uuid_default = sa.text('uuid_generate_v4()')
