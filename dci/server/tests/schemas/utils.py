@@ -23,19 +23,38 @@ import six
 
 # convenient alias
 dict_merge = utils.dict_merge
+text_type = six.text_type()
 
 ID = 'id', six.text_type()
 
-NAME = 'name', 'foo'
+NAME = 'name', six.text_type()
 ETAG = 'etag', six.text_type()
 DATA = 'data', {'foo': 'bar'}
+PASSWORD = 'password', six.text_type()
+URL = 'url', 'http://valid.url'
 
 INVALID_NAME = 'name', None
 INVALID_NAME_ERROR = 'name', [schemas.INVALID_STRING]
 
+INVALID_ID = 'id', None
+INVALID_ID_ERROR = 'id', [schemas.INVALID_UUID]
 
-def generate_error(field):
-    return (field, [schemas.INVALID_REQUIRED])
+INVALID_DATA = 'data', []
+INVALID_DATA_ERROR = 'data', [schemas.INVALID_JSON]
+
+INVALID_PASSWORD = 'password', None
+INVALID_PASSWORD_ERROR = 'password', [schemas.INVALID_STRING]
+
+INVALID_URL = 'url', six.text_type()
+INVALID_URL_ERROR = 'url', [schemas.INVALID_URL]
+
+
+def generate_errors(*fields):
+    return dict([(field, [schemas.INVALID_REQUIRED]) for field in fields])
+
+
+def generate_invalid_string(field):
+    return (field, None), (field, [schemas.INVALID_STRING])
 
 
 class SchemaTesting(object):
