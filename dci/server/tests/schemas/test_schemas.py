@@ -45,7 +45,7 @@ class BaseSchemaTesting(utils.SchemaTesting):
         super(BaseSchemaTesting, self).test_post_extra_data(self.data)
 
     def test_post_missing_data(self):
-        errors = dict([utils.generate_error('name')])
+        errors = utils.generate_errors('name')
         super(BaseSchemaTesting, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
@@ -79,3 +79,163 @@ class TestTeam(BaseSchemaTesting):
 
 class TestRole(BaseSchemaTesting):
     schema = schemas.role
+
+
+class TestTest(utils.SchemaTesting):
+    schema = schemas.test
+    data = dict([utils.NAME])
+
+    def test_post_extra_data(self):
+        data = data_expected = utils.dict_merge(
+            self.data, {'data': {'foo': {'bar': 'baz'}}}
+        )
+        super(TestTest, self).test_post(data, data_expected)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name')
+        super(TestTest, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        data = dict([utils.INVALID_NAME, utils.INVALID_DATA])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_DATA_ERROR])
+
+        super(TestTest, self).test_post_invalid_data(data, errors)
+
+    def test_post(self):
+        super(TestTest, self).test_post(self.data, self.data)
+
+    def test_put_extra_data(self):
+        super(TestTest, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        data = dict([utils.INVALID_NAME, utils.INVALID_DATA])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_DATA_ERROR])
+        super(TestTest, self).test_put_invalid_data(data, errors)
+
+    def test_put(self):
+        super(TestTest, self).test_put(self.data, self.data)
+
+
+class TestUser(utils.SchemaTesting):
+    TEAM = 'team', utils.ID[1]
+    INVALID_TEAM = 'team', {}
+    INVALID_TEAM_ERROR = 'team', [schemas.INVALID_TEAM]
+
+    schema = schemas.user
+    data = dict([utils.NAME, utils.PASSWORD, TEAM])
+
+    def test_post_extra_data(self):
+        super(TestUser, self).test_post_extra_data(self.data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name', 'password', 'team')
+        super(TestUser, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        data = dict([utils.INVALID_NAME, utils.INVALID_PASSWORD,
+                     self.INVALID_TEAM])
+        errors = dict([utils.INVALID_NAME_ERROR, self.INVALID_TEAM_ERROR,
+                       utils.INVALID_PASSWORD_ERROR])
+
+        super(TestUser, self).test_post_invalid_data(data, errors)
+        data['team'] = utils.INVALID_ID
+        super(TestUser, self).test_post_invalid_data(data, errors)
+
+    def test_post(self):
+        super(TestUser, self).test_post(self.data, self.data)
+
+    def test_post_new_team(self):
+        team = {'team': dict([utils.NAME])}
+        data = utils.dict_merge(self.data, team)
+        super(TestUser, self).test_post(data, data)
+
+    def test_put_extra_data(self):
+        super(TestUser, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        data = dict([utils.INVALID_NAME, utils.INVALID_PASSWORD,
+                     self.INVALID_TEAM])
+        errors = dict([utils.INVALID_NAME_ERROR, self.INVALID_TEAM_ERROR,
+                       utils.INVALID_PASSWORD_ERROR])
+
+        super(TestUser, self).test_put_invalid_data(data, errors)
+        data['team'] = utils.INVALID_ID
+        super(TestUser, self).test_put_invalid_data(data, errors)
+
+    def test_put(self):
+        super(TestUser, self).test_put(self.data, self.data)
+
+
+class TestComponent(utils.SchemaTesting):
+    COMPONENTTYPE = 'componenttype', utils.ID[1]
+    INVALID_COMPONENTTYPE = 'componenttype', {}
+    INVALID_COMPONENTTYPE_ERROR = ('componenttype',
+                                   [schemas.INVALID_COMPONENT_TYPE])
+
+    schema = schemas.component
+    data = dict([utils.NAME, COMPONENTTYPE])
+
+    @staticmethod
+    def generate_optionals():
+        return dict([('sha', utils.text_type), ('title', utils.text_type),
+                     ('message', utils.text_type), ('git', utils.text_type),
+                     ('ref', utils.text_type),
+                     ('canonical_project_name', utils.text_type)])
+
+    @staticmethod
+    def generate_optionals_errors():
+        invalids = errors = []
+        for field in ['sha', 'title', 'message', 'git', 'ref',
+                      'canonical_project_name']:
+            invalid, error = utils.generate_invalid_string(field)
+            invalids.append(invalid)
+            errors.append(error)
+        return invalids, errors
+
+    def test_post_extra_data(self):
+        super(TestComponent, self).test_post_extra_data(self.data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name', 'componenttype')
+        super(TestComponent, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids, errors = TestComponent.generate_optionals_errors()
+
+        data = dict([utils.INVALID_NAME, self.INVALID_COMPONENTTYPE,
+                     utils.INVALID_DATA] + invalids)
+        errors = dict([utils.INVALID_NAME_ERROR,
+                       self.INVALID_COMPONENTTYPE_ERROR,
+                       utils.INVALID_DATA_ERROR] + errors)
+
+        super(TestComponent, self).test_post_invalid_data(data, errors)
+        data['componenttype'] = utils.INVALID_ID
+        super(TestComponent, self).test_post_invalid_data(data, errors)
+
+    def test_post(self):
+        data_expected = utils.dict_merge(self.data)
+        super(TestComponent, self).test_post(self.data, data_expected)
+
+    def test_post_new_componenttype(self):
+        component_type = {'componenttype': dict([utils.NAME])}
+        data = utils.dict_merge(self.data, component_type)
+        super(TestComponent, self).test_post(data, data)
+
+    def test_put_extra_data(self):
+        super(TestComponent, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        invalids, errors = TestComponent.generate_optionals_errors()
+        data = dict([utils.INVALID_NAME, self.INVALID_COMPONENTTYPE,
+                     utils.INVALID_DATA, utils.INVALID_URL] + invalids)
+
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_DATA_ERROR,
+                       self.INVALID_COMPONENTTYPE_ERROR,
+                       utils.INVALID_URL_ERROR] + errors)
+
+        super(TestComponent, self).test_put_invalid_data(data, errors)
+        data['componenttype'] = utils.INVALID_ID
+        super(TestComponent, self).test_put_invalid_data(data, errors)
+
+    def test_put(self):
+        super(TestComponent, self).test_put(self.data, self.data)

@@ -31,7 +31,7 @@ def dict_merge(*dict_list):
         src = result[key]
         if isinstance(src, dict) and isinstance(value, dict):
             result[key] = dict_merge(src, value)
-        elif isinstance(src, dict):
+        elif isinstance(src, dict) or isinstance(src, six.text_type):
             result[key] = value
         elif hasattr(src, '__iter__') and hasattr(value, '__iter__'):
             result[key] += value
