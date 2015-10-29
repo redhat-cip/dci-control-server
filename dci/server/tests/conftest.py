@@ -39,8 +39,6 @@ def engine(request):
     request.addfinalizer(del_db)
     sqlalchemy_utils.functions.create_database(db_uri)
 
-    with engine.begin() as conn:
-        conn.execute(models_core.pg_gen_uuid)
     models_core.metadata.create_all(engine)
     return engine
 

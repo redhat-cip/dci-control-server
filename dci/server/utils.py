@@ -18,6 +18,9 @@ import collections
 import itertools
 import six
 
+import datetime
+import uuid
+
 
 def dict_merge(*dict_list):
     '''recursively merges dict's. not just simple a['key'] = b['key'], if
@@ -39,3 +42,16 @@ def dict_merge(*dict_list):
             result[key] = value
 
     return dict(result)
+
+
+def json_encoder(obj):
+    """Default JSON encoder."""
+
+    if isinstance(obj, datetime.datetime):
+        return obj.isoformat()
+    elif isinstance(obj, uuid.UUID):
+        return str(obj)
+
+
+def gen_uuid():
+    return str(uuid.uuid4())

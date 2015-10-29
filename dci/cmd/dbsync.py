@@ -33,8 +33,6 @@ def main():
     app_conf = app.generate_conf()
     sa_engine = app.get_engine(app_conf)
 
-    with sa_engine.begin() as conn:
-            conn.execute(models_core.pg_gen_uuid)
     models_core.metadata.create_all(sa_engine)
 
     # then, load the Alembic configuration and generate the
