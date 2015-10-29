@@ -18,7 +18,6 @@ import datetime
 from sqlalchemy import Column
 from sqlalchemy import create_engine
 from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey
@@ -27,9 +26,12 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
 from sqlalchemy.types import Boolean
+from sqlalchemy.types import CHAR
 from sqlalchemy.types import DateTime
 from sqlalchemy.types import Integer
 from sqlalchemy.types import String
+
+from dci.server import utils
 
 
 class DCIModel(object):
@@ -37,7 +39,7 @@ class DCIModel(object):
 
     class DCIBase(Base):
         __abstract__ = True
-        id = Column(UUID, primary_key=True)
+        id = Column(CHAR(36), primary_key=True, default=utils.gen_uuid)
         created_at = Column(DateTime(),
                             default=datetime.datetime.utcnow, nullable=False)
         updated_at = Column(DateTime(),
@@ -57,7 +59,7 @@ class DCIModel(object):
         __tablename__ = 'users'
         name = Column(String(100))
         password = Column(String())
-        team_id = Column(UUID(), ForeignKey('teams.id'))
+        team_id = Column(CHAR(36), ForeignKey('teams.id'))
 
     class Test(DCIBase):
         __tablename__ = 'tests'
@@ -70,30 +72,30 @@ class DCIModel(object):
 
     class UserRole(DCIBase):
         __tablename__ = 'user_roles'
-        user_id = Column(UUID(), ForeignKey('users.id'))
-        role_id = Column(UUID(), ForeignKey('roles.id'))
+        user_id = Column(CHAR(36), ForeignKey('users.id'))
+        role_id = Column(CHAR(36), ForeignKey('roles.id'))
 
     class Remoteci(DCIBase):
         __tablename__ = 'remotecis'
         name = Column(String(100))
         data = Column(JSON())
-        team_id = Column(UUID(), ForeignKey('teams.id'))
+        team_id = Column(CHAR(36), ForeignKey('teams.id'))
         team = relationship('Team', uselist=False)
 
     class Jobdefinition(DCIBase):
         __tablename__ = 'jobdefinitions'
         name = Column(String(100))
         priority = Column(Integer(), default=0)
-        test_id = Column(UUID(), ForeignKey('tests.id'))
+        test_id = Column(CHAR(36), ForeignKey('tests.id'))
         test = relationship('Test', uselist=False)
 
     class Job(DCIBase):
         __tablename__ = 'jobs'
         recheck = Column(Boolean(), default=False)
-        remoteci_id = Column(UUID(), ForeignKey('remotecis.id'))
-        team_id = Column(UUID(), ForeignKey('teams.id'))
+        remoteci_id = Column(CHAR(36), ForeignKey('remotecis.id'))
+        team_id = Column(CHAR(36), ForeignKey('teams.id'))
         remoteci = relationship('Remoteci', uselist=False)
-        jobdefinition_id = Column(UUID(), ForeignKey('jobdefinitions.id'))
+        jobdefinition_id = Column(CHAR(36), ForeignKey('jobdefinitions.id'))
         jobdefinition = relationship('Jobdefinition', uselist=False)
 
     class File(DCIBase):
@@ -102,21 +104,21 @@ class DCIModel(object):
         content = Column(String())
         mime = Column(String(100), default='text/plain')
         md5 = Column(String(32))
-        jobstate_id = Column(UUID(), ForeignKey('jobstates.id'))
-        team_id = Column(UUID(), ForeignKey('teams.id'))
+        jobstate_id = Column(CHAR(36), ForeignKey('jobstates.id'))
+        team_id = Column(CHAR(36), ForeignKey('teams.id'))
 
     class Jobstate(DCIBase):
         __tablename__ = 'jobstates'
         comment = Column(String())
-        job_id = Column(UUID(), ForeignKey('jobs.id'))
-        team_id = Column(UUID(), ForeignKey('teams.id'))
+        job_id = Column(CHAR(36), ForeignKey('jobs.id'))
+        team_id = Column(CHAR(36), ForeignKey('teams.id'))
         status = Column(String(), default='ongoing')
         files = relationship('File')
 
     class Component(DCIBase):
         __tablename__ = 'components'
         name = Column(String(100))
-        componenttype_id = Column(UUID(), ForeignKey('componenttypes.id'))
+        componenttype_id = Column(CHAR(36), ForeignKey('componenttypes.id'))
         data = Column(JSON())
         sha = Column(String())
         title = Column(String())
@@ -129,8 +131,8 @@ class DCIModel(object):
 
     class JobdefinitionComponent(DCIBase):
         __tablename__ = 'jobdefinition_components'
-        component_id = Column(UUID(), ForeignKey('components.id'))
-        jobdefinition_id = Column(UUID(), ForeignKey('jobdefinitions.id'))
+        component_id = Column(CHAR(36), ForeignKey('components.id'))
+        jobdefinition_id = Column(CHAR(36), ForeignKey('jobdefinitions.id'))
         component = relationship('Component', uselist=False)
         jobdefinition = relationship('Jobdefinition', uselist=False)
 
