@@ -80,16 +80,39 @@ def test_get_componenttype_not_found(test_client):
     assert result.status_code == 404
 
 
+def test_put_componenttypes(test_client):
+    pct = test_client.post('/api/v1/componenttypes', data={'name': 'pname'})
+    assert pct.status_code == 201
+
+    pct_etag = pct.headers.get("ETag")
+
+    gct = test_client.get('/api/v1/componenttypes/pname')
+    assert gct.status_code == 200
+
+    ppct = test_client.put('/api/v1/componenttypes/pname',
+                           data={'name': 'nname'},
+                           headers={'If-match': pct_etag})
+    assert ppct.status_code == 204
+
+    gct = test_client.get('/api/v1/componenttypes/pname')
+    assert gct.status_code == 404
+
+    gct = test_client.get('/api/v1/componenttypes/nname')
+    assert gct.status_code == 200
+
+
 def test_delete_componenttype_by_id(test_client):
     pct = test_client.post('/api/v1/componenttypes',
                            data={'name': 'pname'})
+    pct_etag = pct.headers.get("ETag")
     pct_id = json.loads(pct.data)['componenttype']['id']
     assert pct.status_code == 201
 
     created_ct = test_client.get('/api/v1/componenttypes/%s' % pct_id)
     assert created_ct.status_code == 200
 
-    deleted_ct = test_client.delete('/api/v1/componenttypes/%s' % pct_id)
+    deleted_ct = test_client.delete('/api/v1/componenttypes/%s' % pct_id,
+                                    headers={'If-match': pct_etag})
     assert deleted_ct.status_code == 204
 
     gct = test_client.get('/api/v1/componenttypes/%s' % pct_id)
@@ -97,5 +120,6 @@ def test_delete_componenttype_by_id(test_client):
 
 
 def test_delete_componenttype_not_found(test_client):
-    result = test_client.delete('/api/v1/componenttypes/ptdr')
+    result = test_client.delete('/api/v1/componenttypes/ptdr',
+                                headers={'If-match': 'mdr'})
     assert result.status_code == 404

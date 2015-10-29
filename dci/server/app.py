@@ -235,7 +235,7 @@ def create_app(conf):
     dci_app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
                                auth=basic_auth, settings=conf)
 
-    dci_app.engine = get_engine(conf)
+    dci_app.engine = get_engine(conf, echo=True)
 
     @dci_app.before_request
     def before_request():

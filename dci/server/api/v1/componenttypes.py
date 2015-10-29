@@ -31,12 +31,12 @@ from dci.server import utils
 def create_componenttypes():
     form_dict = flask.request.form.to_dict()
     # verif post
+    etag = utils.gen_etag()
     values = {'id': utils.gen_uuid(),
               'name': form_dict['name'],
               'created_at': datetime.datetime.utcnow(),
-              'updated_at': datetime.datetime.utcnow()}
-    etag = utils.gen_etag(values)
-    values['etag'] = etag
+              'updated_at': datetime.datetime.utcnow(),
+              'etag': etag}
 
     query = models.COMPONENTYPES.insert().values(**values)
     try:
@@ -88,8 +88,58 @@ def get_componenttype_by_id_or_name(ct_id):
                           content_type='application/json')
 
 
+@api.route('/componenttypes/<ct_id>', methods=['PUT'])
+def put_componenttype(ct_id):
+    # get If-Match header
+    if_match_etag = flask.request.headers.get('If-Match')
+    if not if_match_etag:
+        raise exceptions.DCIException("'If-match' header must be provided for "
+                                      "PUT requests", status_code=412)
+
+    form_dict = flask.request.form.to_dict()
+    # verif put
+
+    query = sqlalchemy.sql.select([models.COMPONENTYPES]).where(
+        sqlalchemy.sql.or_(models.COMPONENTYPES.c.id == ct_id,
+                           models.COMPONENTYPES.c.name == ct_id))
+
+    try:
+        result = flask.g.db_conn.execute(query).fetchone()
+    except sa_exc.DBAPIError as e:
+        raise exceptions.DCIException(str(e), status_code=500)
+
+    if result is None:
+        raise exceptions.DCIException("Component type '%s' not found." % ct_id,
+                                      status_code=404)
+
+    form_dict['etag'] = utils.gen_etag()
+    query = models.COMPONENTYPES.update().where(
+        sqlalchemy.sql.and_(
+            sqlalchemy.sql.or_(models.COMPONENTYPES.c.id == ct_id,
+                               models.COMPONENTYPES.c.name == ct_id),
+            models.COMPONENTYPES.c.etag == if_match_etag)).values(**form_dict)
+
+    try:
+        result = flask.g.db_conn.execute(query)
+    except sa_exc.DBAPIError as e:
+        raise exceptions.DCIException(str(e))
+
+    if result.rowcount == 0:
+        raise exceptions.DCIException("Conflict on componenttype '%s' or etag "
+                                      "not matched." % ct_id, status_code=409)
+
+    return flask.Response(None, 204, headers={'ETag': form_dict['etag']},
+                          content_type='application/json')
+
+
 @api.route('/componenttypes/<ct_id>', methods=['DELETE'])
 def delete_componenttype_by_id_or_name(ct_id):
+    # get If-Match header
+    if_match_etag = flask.request.headers.get('If-Match')
+    if not if_match_etag:
+        raise exceptions.DCIException("'If-match' header must be provided for "
+                                      "DELETE requests", status_code=412)
+
     query = sqlalchemy.sql.select([models.COMPONENTYPES]).where(
         sqlalchemy.sql.or_(models.COMPONENTYPES.c.id == ct_id,
                            models.COMPONENTYPES.c.name == ct_id))
@@ -103,8 +153,10 @@ def delete_componenttype_by_id_or_name(ct_id):
                                       status_code=404)
 
     query = models.COMPONENTYPES.delete().where(
-        sqlalchemy.sql.or_(models.COMPONENTYPES.c.id == ct_id,
-                           models.COMPONENTYPES.c.name == ct_id))
+        sqlalchemy.sql.and_(
+            sqlalchemy.sql.or_(models.COMPONENTYPES.c.id == ct_id,
+                               models.COMPONENTYPES.c.name == ct_id),
+            models.COMPONENTYPES.c.etag == if_match_etag))
 
     try:
         result = flask.g.db_conn.execute(query)
@@ -112,7 +164,8 @@ def delete_componenttype_by_id_or_name(ct_id):
         raise exceptions.DCIException(str(e), status_code=500)
 
     if result.rowcount == 0:
-        raise exceptions.DCIException("Conflict on component type '%s'." %
-                                      ct_id, status_code=409)
+        raise exceptions.DCIException("Componenttype '%s' already deleted or "
+                                      "etag not matched." % ct_id,
+                                      status_code=409)
 
     return flask.Response(None, 204, content_type='application/json')
