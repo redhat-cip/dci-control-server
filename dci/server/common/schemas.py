@@ -19,19 +19,43 @@ import collections
 import dci.server.common.exceptions as exceptions
 import dci.server.utils as utils
 import six
+import six.moves.urllib as urllib
 import voluptuous as v
 
 
+# Url validator is not powerfull enough let unleash its power
+@v.message('expected a URL', cls=v.UrlInvalid)
+def Url(value):
+    try:
+        parsed = urllib.urlparse(value)
+        if not parsed.scheme or not parsed.netloc:
+            raise v.UrlInvalid("must have a URL scheme and host")
+        return value
+    except Exception:
+        raise ValueError
+
+INVALID_UUID = 'not a valid uuid'
+INVALID_JSON = 'not a valid json'
 INVALID_STRING = 'not a valid string'
+INVALID_URL = 'not a valid URL'
+
+INVALID_TEAM = 'not a valid team id'
+INVALID_COMPONENT_TYPE = 'not a valid componenttype id'
+
 INVALID_REQUIRED = 'required key not provided'
+
+UUID_FIELD = v.All(six.text_type, msg=INVALID_UUID)
+DATA_FIELD = {v.Optional('data'): dict}
 
 
 class Schema(v.Schema):
     """Override voluptuous schema to return our own error"""
 
     error_messages = {
+        'expected dict': INVALID_JSON,
         'expected unicode': INVALID_STRING,
         'expected str': INVALID_STRING,
+        'expected a URL': INVALID_URL
     }
 
     def __call__(self, data):
@@ -81,3 +105,43 @@ base = {
 component_type = schema_factory(base)
 team = schema_factory(base)
 role = schema_factory(base)
+
+###############################################################################
+#                                                                             #
+#                                 Test schemas                                #
+#                                                                             #
+###############################################################################
+
+test = schema_factory(utils.dict_merge(base, DATA_FIELD))
+
+###############################################################################
+#                                                                             #
+#                                 User schemas                                #
+#                                                                             #
+###############################################################################
+
+user = utils.dict_merge(base, {
+    'password': six.text_type,
+    'team': v.Any(UUID_FIELD, msg=INVALID_TEAM)
+})
+
+user = schema_factory(user)
+
+###############################################################################
+#                                                                             #
+#                              Component schemas                              #
+#                                                                             #
+###############################################################################
+
+component = utils.dict_merge(base, DATA_FIELD, {
+    v.Optional('sha'): six.text_type,
+    v.Optional('title'): six.text_type,
+    v.Optional('message'): six.text_type,
+    v.Optional('git'): six.text_type,
+    v.Optional('ref'): six.text_type,
+    v.Optional('canonical_project_name'): six.text_type,
+    v.Optional('url'): Url(),
+    'componenttype': v.Any(UUID_FIELD, msg=INVALID_COMPONENT_TYPE)
+})
+
+component = schema_factory(component)
