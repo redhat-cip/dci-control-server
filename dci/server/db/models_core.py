@@ -21,13 +21,7 @@ import sqlalchemy_utils as sa_utils
 
 metadata = sa.MetaData()
 
-# Use PG uuid internal functions.
-pg_gen_uuid = sa.DDL("""
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-""")
-
-server_uuid_default = sa.text('uuid_generate_v4()')
-
+server_uuid_default = sa.text('uuid_in(md5(random()::text || now()::text)::cstring)')
 
 COMPONENTYPES = sa.Table(
     'componenttypes', metadata,
