@@ -17,6 +17,7 @@
 import datetime
 
 import sqlalchemy as sa
+from sqlalchemy.dialects.postgresql import UUID
 import sqlalchemy_utils as sa_utils
 
 metadata = sa.MetaData()
@@ -31,7 +32,7 @@ server_uuid_default = sa.text('uuid_generate_v4()')
 
 COMPONENTYPES = sa.Table(
     'componenttypes', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -43,7 +44,7 @@ COMPONENTYPES = sa.Table(
 
 COMPONENTS = sa.Table(
     'components', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -52,7 +53,7 @@ COMPONENTS = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40)),
     sa.Column('name', sa.String(255), nullable=False),
-    sa.Column('componenttype_id', sa_utils.UUIDType,
+    sa.Column('componenttype_id', UUID(as_uuid=True),
               sa.ForeignKey('componenttypes.id', ondelete="CASCADE"),
               nullable=False),
     sa.Column('canonical_project_name', sa.String),
@@ -66,7 +67,7 @@ COMPONENTS = sa.Table(
 
 TESTS = sa.Table(
     'tests', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -79,7 +80,7 @@ TESTS = sa.Table(
 
 JOBDEFINITIONS = sa.Table(
     'jobdefinitions', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -89,13 +90,13 @@ JOBDEFINITIONS = sa.Table(
     sa.Column('etag', sa.String(40)),
     sa.Column('name', sa.String(255)),
     sa.Column('priority', sa.Integer, default=0),
-    sa.Column('test_id', sa_utils.UUIDType,
+    sa.Column('test_id', UUID(as_uuid=True),
               sa.ForeignKey('tests.id', ondelete="CASCADE"),
               nullable=False))
 
 JOIN_JOBDEFINITIONS_COMPONENTS = sa.Table(
     'jobdefinition_components', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -103,17 +104,17 @@ JOIN_JOBDEFINITIONS_COMPONENTS = sa.Table(
               onupdate=datetime.datetime.utcnow,
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40)),
-    sa.Column('component_id', sa_utils.UUIDType,
+    sa.Column('component_id', UUID(as_uuid=True),
               sa.ForeignKey('components.id', ondelete="CASCADE"),
               nullable=False),
-    sa.Column('jobdefinition_id', sa_utils.UUIDType,
+    sa.Column('jobdefinition_id', UUID(as_uuid=True),
               sa.ForeignKey('jobdefinitions.id', ondelete="CASCADE"),
               nullable=False),
     sa.UniqueConstraint('component_id', 'jobdefinition_id'))
 
 TEAMS = sa.Table(
     'teams', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -125,7 +126,7 @@ TEAMS = sa.Table(
 
 REMOTECIS = sa.Table(
     'remotecis', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -135,13 +136,13 @@ REMOTECIS = sa.Table(
     sa.Column('etag', sa.String(40)),
     sa.Column('name', sa.String(255), unique=True),
     sa.Column('data', sa_utils.JSONType),
-    sa.Column('team_id', sa_utils.UUIDType,
+    sa.Column('team_id', UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
               nullable=False))
 
 JOBS = sa.Table(
     'jobs', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -150,19 +151,19 @@ JOBS = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40)),
     sa.Column('recheck', sa.Boolean, default=False),
-    sa.Column('jobdefinition_id', sa_utils.UUIDType,
+    sa.Column('jobdefinition_id', UUID(as_uuid=True),
               sa.ForeignKey('jobdefinitions.id', ondelete="CASCADE"),
               nullable=False),
-    sa.Column('remoteci_id', sa_utils.UUIDType,
+    sa.Column('remoteci_id', UUID(as_uuid=True),
               sa.ForeignKey('remotecis.id', ondelete="CASCADE"),
               nullable=False),
-    sa.Column('team_id', sa_utils.UUIDType,
+    sa.Column('team_id', UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
               nullable=False))
 
 JOBSTATES = sa.Table(
     'jobstates', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -172,16 +173,16 @@ JOBSTATES = sa.Table(
     sa.Column('etag', sa.String(40)),
     sa.Column('status', sa.String(255), nullable=False),
     sa.Column('comment', sa.Text),
-    sa.Column('job_id', sa_utils.UUIDType,
+    sa.Column('job_id', UUID(as_uuid=True),
               sa.ForeignKey('jobs.id', ondelete="CASCADE"),
               nullable=False),
-    sa.Column('team_id', sa_utils.UUIDType,
+    sa.Column('team_id', UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
               nullable=False))
 
 FILES = sa.Table(
     'files', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -193,16 +194,16 @@ FILES = sa.Table(
     sa.Column('content', sa.Text, nullable=False),
     sa.Column('mime', sa.String),
     sa.Column('md5', sa.String(32)),
-    sa.Column('jobstate_id', sa_utils.UUIDType,
+    sa.Column('jobstate_id', UUID(as_uuid=True),
               sa.ForeignKey('jobstates.id', ondelete="CASCADE"),
               nullable=False),
-    sa.Column('team_id', sa_utils.UUIDType,
+    sa.Column('team_id', UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
               nullable=False))
 
 USERS = sa.Table(
     'users', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -212,13 +213,13 @@ USERS = sa.Table(
     sa.Column('etag', sa.String(40)),
     sa.Column('name', sa.String(255), unique=True, nullable=False),
     sa.Column('password', sa.Text, nullable=False),
-    sa.Column('team_id', sa_utils.UUIDType,
+    sa.Column('team_id', UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
               nullable=False))
 
 JOIN_USER_REMOTECIS = sa.Table(
     'user_remotecis', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -226,17 +227,17 @@ JOIN_USER_REMOTECIS = sa.Table(
               onupdate=datetime.datetime.utcnow,
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40)),
-    sa.Column('user_id', sa_utils.UUIDType,
+    sa.Column('user_id', UUID(as_uuid=True),
               sa.ForeignKey('users.id', ondelete="CASCADE"),
               nullable=False),
-    sa.Column('remoteci_id', sa_utils.UUIDType,
+    sa.Column('remoteci_id', UUID(as_uuid=True),
               sa.ForeignKey('remotecis.id', ondelete="CASCADE"),
               nullable=False),
     sa.UniqueConstraint('user_id', 'remoteci_id'))
 
 ROLES = sa.Table(
     'roles', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -248,7 +249,7 @@ ROLES = sa.Table(
 
 JOIN_USERS_ROLES = sa.Table(
     'user_roles', metadata,
-    sa.Column('id', sa_utils.UUIDType, primary_key=True,
+    sa.Column('id', UUID(as_uuid=True), primary_key=True,
               server_default=server_uuid_default),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
@@ -256,8 +257,8 @@ JOIN_USERS_ROLES = sa.Table(
               onupdate=datetime.datetime.utcnow,
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40)),
-    sa.Column('user_id', sa_utils.UUIDType,
+    sa.Column('user_id', UUID(as_uuid=True),
               sa.ForeignKey('users.id', ondelete="CASCADE"), nullable=False),
-    sa.Column('role_id', sa_utils.UUIDType,
+    sa.Column('role_id', UUID(as_uuid=True),
               sa.ForeignKey('roles.id', ondelete="CASCADE"), nullable=False),
     sa.UniqueConstraint('user_id', 'role_id'))
