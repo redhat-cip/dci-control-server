@@ -1,0 +1,208 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a79b1b5_3d5c7325",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-29T12:58:04Z",
+      "side": 1,
+      "message": "remove invalid_etag",
+      "revId": "2d8d6c46a1077ac3d7241c493f61444b451c6bc6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_3d2553ab",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-29T12:58:04Z",
+      "side": 1,
+      "message": "s/six.text_type/six.string_types[0]",
+      "revId": "2d8d6c46a1077ac3d7241c493f61444b451c6bc6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_dd40df37",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-29T12:58:04Z",
+      "side": 1,
+      "message": "remove etag_field",
+      "revId": "2d8d6c46a1077ac3d7241c493f61444b451c6bc6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_7d2bcb82",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-29T12:58:04Z",
+      "side": 1,
+      "message": "etag could be removed",
+      "revId": "2d8d6c46a1077ac3d7241c493f61444b451c6bc6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_dd39bfd9",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-29T12:58:04Z",
+      "side": 1,
+      "message": "s/six.text_type/str",
+      "revId": "2d8d6c46a1077ac3d7241c493f61444b451c6bc6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_1d20979a",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-29T12:58:04Z",
+      "side": 1,
+      "message": "this \u0027if\u0027 can be removed because etag and id will not be part of base_load",
+      "revId": "2d8d6c46a1077ac3d7241c493f61444b451c6bc6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_5d4daf71",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-29T12:58:04Z",
+      "side": 1,
+      "message": "maybe rename base to base_dump",
+      "revId": "2d8d6c46a1077ac3d7241c493f61444b451c6bc6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_fd36fbe6",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 98,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-29T12:58:04Z",
+      "side": 1,
+      "message": "remove etag",
+      "revId": "2d8d6c46a1077ac3d7241c493f61444b451c6bc6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_9d3347f6",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-29T12:58:04Z",
+      "side": 1,
+      "message": "s/six.text_type/six.string_types[0]",
+      "revId": "2d8d6c46a1077ac3d7241c493f61444b451c6bc6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_7d52eb14",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 104,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-29T12:58:04Z",
+      "side": 1,
+      "message": "maybe rename base_load to base_input",
+      "revId": "2d8d6c46a1077ac3d7241c493f61444b451c6bc6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_1d573704",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-29T12:58:04Z",
+      "side": 1,
+      "message": "remove etag",
+      "revId": "2d8d6c46a1077ac3d7241c493f61444b451c6bc6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_bd3083e9",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-10-29T12:58:04Z",
+      "side": 1,
+      "message": "s/six.text_type/six.string_types[0]",
+      "revId": "2d8d6c46a1077ac3d7241c493f61444b451c6bc6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
