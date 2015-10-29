@@ -1,6 +1,8 @@
 #!/bin/sh
 set -x -e
 
+DCI_DB_DIR=${DCI_DB_DIR:-".db_dir"}
+
 # get dci_db_dir absolute path
 DCI_DB_DIR="$(cd $(dirname "$0") && pwd)/$DCI_DB_DIR"
 
