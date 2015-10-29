@@ -27,6 +27,30 @@ from dci.server.db import models_core as models
 from dci.server import utils
 
 
+def _get_ct_verify_existence(ct_id):
+    query = sqlalchemy.sql.select([models.COMPONENTYPES]).where(
+        sqlalchemy.sql.or_(models.COMPONENTYPES.c.id == ct_id,
+                           models.COMPONENTYPES.c.name == ct_id))
+
+    try:
+        result = flask.g.db_conn.execute(query).fetchone()
+    except sa_exc.DBAPIError as e:
+        raise exceptions.DCIException(str(e), status_code=500)
+
+    if result is None:
+        raise exceptions.DCIException("Component type '%s' not found." % ct_id,
+                                      status_code=404)
+    return result
+
+
+def _check_and_get_etag(headers):
+    if_match_etag = headers.get('If-Match')
+    if not if_match_etag:
+        raise exceptions.DCIException("'If-match' header must be provided",
+                                      status_code=412)
+    return if_match_etag
+
+
 @api.route('/componenttypes', methods=['POST'])
 def create_componenttypes():
     form_dict = flask.request.form.to_dict()
@@ -68,49 +92,24 @@ def get_all_componenttypes():
 
 @api.route('/componenttypes/<ct_id>', methods=['GET'])
 def get_componenttype_by_id_or_name(ct_id):
-    query = sqlalchemy.sql.select([models.COMPONENTYPES]).where(
-        sqlalchemy.sql.or_(models.COMPONENTYPES.c.id == ct_id,
-                           models.COMPONENTYPES.c.name == ct_id))
-
-    try:
-        result = flask.g.db_conn.execute(query).fetchone()
-    except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e), status_code=500)
-
-    if result is None:
-        raise exceptions.DCIException("Component type '%s' not found." % ct_id,
-                                      status_code=404)
-    etag = result['etag']
+    componenttype = _get_ct_verify_existence(ct_id)
+    etag = componenttype['etag']
     # verif dump
-    result = {'componenttype': dict(result)}
-    result = json.dumps(result, default=utils.json_encoder)
-    return flask.Response(result, 200, headers={'ETag': etag},
+    componenttype = {'componenttype': dict(componenttype)}
+    componenttype = json.dumps(componenttype, default=utils.json_encoder)
+    return flask.Response(componenttype, 200, headers={'ETag': etag},
                           content_type='application/json')
 
 
 @api.route('/componenttypes/<ct_id>', methods=['PUT'])
 def put_componenttype(ct_id):
     # get If-Match header
-    if_match_etag = flask.request.headers.get('If-Match')
-    if not if_match_etag:
-        raise exceptions.DCIException("'If-match' header must be provided for "
-                                      "PUT requests", status_code=412)
+    if_match_etag = _check_and_get_etag(flask.request.headers)
 
     form_dict = flask.request.form.to_dict()
     # verif put
 
-    query = sqlalchemy.sql.select([models.COMPONENTYPES]).where(
-        sqlalchemy.sql.or_(models.COMPONENTYPES.c.id == ct_id,
-                           models.COMPONENTYPES.c.name == ct_id))
-
-    try:
-        result = flask.g.db_conn.execute(query).fetchone()
-    except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e), status_code=500)
-
-    if result is None:
-        raise exceptions.DCIException("Component type '%s' not found." % ct_id,
-                                      status_code=404)
+    _get_ct_verify_existence(ct_id)
 
     form_dict['etag'] = utils.gen_etag()
     query = models.COMPONENTYPES.update().where(
@@ -135,22 +134,9 @@ def put_componenttype(ct_id):
 @api.route('/componenttypes/<ct_id>', methods=['DELETE'])
 def delete_componenttype_by_id_or_name(ct_id):
     # get If-Match header
-    if_match_etag = flask.request.headers.get('If-Match')
-    if not if_match_etag:
-        raise exceptions.DCIException("'If-match' header must be provided for "
-                                      "DELETE requests", status_code=412)
+    if_match_etag = _check_and_get_etag(flask.request.headers)
 
-    query = sqlalchemy.sql.select([models.COMPONENTYPES]).where(
-        sqlalchemy.sql.or_(models.COMPONENTYPES.c.id == ct_id,
-                           models.COMPONENTYPES.c.name == ct_id))
-    try:
-        result = flask.g.db_conn.execute(query).fetchone()
-    except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e), status_code=500)
-
-    if result is None:
-        raise exceptions.DCIException("Component type '%s' not found." % ct_id,
-                                      status_code=404)
+    _get_ct_verify_existence(ct_id)
 
     query = models.COMPONENTYPES.delete().where(
         sqlalchemy.sql.and_(
