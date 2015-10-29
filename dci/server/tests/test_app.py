@@ -69,9 +69,9 @@ class TestAdmin(object):
         component1 = utils.create_component(
             admin, name='component1', data={'component1': 1})
         component2 = utils.create_component(
-            admin, name='component1', data={'component2': 2})
+            admin, name='component2', data={'component2': 2})
         component3 = utils.create_component(
-            admin, name='component1', data=None)
+            admin, name='component3', data=None)
         jobdefinition = utils.create_jobdefinition(admin, test.data['id'])
         jobdefinition_id = jobdefinition.data['id']
 
