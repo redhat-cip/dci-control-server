@@ -42,7 +42,7 @@ def create_componenttypes():
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e), status_code=500)
+        raise exceptions.DCIException(str(e))
 
     # verif dump
     result = {'componenttype': values}

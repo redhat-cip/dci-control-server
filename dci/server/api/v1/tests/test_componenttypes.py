@@ -28,15 +28,14 @@ def test_create_componenttypes(test_client):
     assert gct['componenttype']['name'] == 'pname'
 
 
-# This test will be activated later
-def loltest_create_componenttypes_already_exist(test_client):
+def test_create_componenttypes_already_exist(test_client):
     pstatus_code = test_client.post('/api/v1/componenttypes',
                                     data={'name': 'pname'}).status_code
     assert pstatus_code == 201
 
     pstatus_code = test_client.post('/api/v1/componenttypes',
                                     data={'name': 'pname'}).status_code
-    assert pstatus_code == 422
+    assert pstatus_code == 400
 
 
 def test_get_all_componenttypes(test_client):
@@ -56,28 +55,29 @@ def test_get_all_componenttypes(test_client):
     assert db_all_cts_ids == created_cts_ids
 
 
-# This test fails because of comparison between string and PG UUID
-def loltest_get_componenttype_by_id_or_name(test_client):
+def test_get_componenttype_by_id_or_name(test_client):
     pct = test_client.post('/api/v1/componenttypes',
                            data={'name': 'pname'}).data
-    pct = json.loads(pct)
+    pct_id = json.loads(pct)['componenttype']['id']
 
-    created_ct = test_client.get('/api/v1/componenttypes/%s' % pct['id'])
+    # get by uuid
+    created_ct = test_client.get('/api/v1/componenttypes/%s' % pct_id)
     assert created_ct.status_code == 200
+
     created_ct = json.loads(created_ct.data)
+    assert created_ct['componenttype']['id'] == pct_id
 
-    assert created_ct['id'] == pct['id']
-
-    # 'pname' could not be compared with PG UUID
+    # get by name
     created_ct = test_client.get('/api/v1/componenttypes/pname')
     assert created_ct.status_code == 200
+
     created_ct = json.loads(created_ct.data)
+    assert created_ct['componenttype']['id'] == pct_id
 
-    assert created_ct['id'] == pct['id']
 
-
-def loltest_get_componenttype_by_id_or_name_not_found(test_client):
-    pass
+def test_get_componenttype_not_found(test_client):
+    result = test_client.get('/api/v1/componenttypes/ptdr')
+    assert result.status_code == 404
 
 
 def test_delete_componenttype_by_id(test_client):
@@ -94,3 +94,8 @@ def test_delete_componenttype_by_id(test_client):
 
     gct = test_client.get('/api/v1/componenttypes/%s' % pct_id)
     assert gct.status_code == 404
+
+
+def test_delete_componenttype_not_found(test_client):
+    result = test_client.delete('/api/v1/componenttypes/ptdr')
+    assert result.status_code == 404
