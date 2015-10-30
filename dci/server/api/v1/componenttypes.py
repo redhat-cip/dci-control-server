@@ -53,11 +53,11 @@ def _check_and_get_etag(headers):
 
 @api.route('/componenttypes', methods=['POST'])
 def create_componenttypes():
-    form_dict = flask.request.form.to_dict()
+    data_json = flask.request.json
     # verif post
     etag = utils.gen_etag()
     values = {'id': utils.gen_uuid(),
-              'name': form_dict['name'],
+              'name': data_json['name'],
               'created_at': datetime.datetime.utcnow(),
               'updated_at': datetime.datetime.utcnow(),
               'etag': etag}
@@ -106,17 +106,17 @@ def put_componenttype(ct_id):
     # get If-Match header
     if_match_etag = _check_and_get_etag(flask.request.headers)
 
-    form_dict = flask.request.form.to_dict()
+    data_json = flask.request.json
     # verif put
 
     _get_ct_verify_existence(ct_id)
 
-    form_dict['etag'] = utils.gen_etag()
+    data_json['etag'] = utils.gen_etag()
     query = models.COMPONENTYPES.update().where(
         sqlalchemy.sql.and_(
             sqlalchemy.sql.or_(models.COMPONENTYPES.c.id == ct_id,
                                models.COMPONENTYPES.c.name == ct_id),
-            models.COMPONENTYPES.c.etag == if_match_etag)).values(**form_dict)
+            models.COMPONENTYPES.c.etag == if_match_etag)).values(**data_json)
 
     try:
         result = flask.g.db_conn.execute(query)
@@ -127,7 +127,7 @@ def put_componenttype(ct_id):
         raise exceptions.DCIException("Conflict on componenttype '%s' or etag "
                                       "not matched." % ct_id, status_code=409)
 
-    return flask.Response(None, 204, headers={'ETag': form_dict['etag']},
+    return flask.Response(None, 204, headers={'ETag': data_json['etag']},
                           content_type='application/json')
 
 

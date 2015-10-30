@@ -123,7 +123,7 @@ def generate_client(app, credentials):
             kwargs['headers'] = headers
             response = func(*args, **kwargs)
             return Response(
-                response.status_code, flask.json.loads(response.data),
+                response.status_code, flask.json.loads(response.data or "{}"),
                 response.headers
             )
 
