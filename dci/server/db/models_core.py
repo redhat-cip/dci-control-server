@@ -19,7 +19,7 @@ import datetime
 import sqlalchemy as sa
 import sqlalchemy_utils as sa_utils
 
-from dci.server import utils
+from dci.server.common import utils
 
 metadata = sa.MetaData()
 

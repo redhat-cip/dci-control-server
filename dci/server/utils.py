@@ -15,12 +15,8 @@
 # under the License.
 
 import collections
-import hashlib
 import itertools
 import six
-
-import datetime
-import uuid
 
 
 def dict_merge(*dict_list):
@@ -43,29 +39,3 @@ def dict_merge(*dict_list):
             result[key] = value
 
     return dict(result)
-
-
-def json_encoder(obj):
-    """Default JSON encoder."""
-
-    if isinstance(obj, datetime.datetime):
-        return obj.isoformat()
-    elif isinstance(obj, uuid.UUID):
-        return str(obj)
-
-
-def gen_uuid():
-    return str(uuid.uuid4())
-
-
-def gen_etag():
-    """Generate random etag based on MD5."""
-
-    my_salt = gen_uuid()
-    if six.PY2:
-        my_salt = my_salt.decode('utf-8')
-    elif six.PY3:
-        my_salt = my_salt.encode('utf-8')
-    md5 = hashlib.md5()
-    md5.update(my_salt)
-    return md5.hexdigest()

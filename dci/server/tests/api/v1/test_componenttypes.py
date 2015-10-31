@@ -37,7 +37,7 @@ def test_create_componenttypes_already_exist(admin):
 
 def test_get_all_componenttypes(admin):
     created_cts_ids = []
-    for i in range(21):
+    for i in range(5):
         pct = admin.post('/api/v1/componenttypes',
                          data={'name': 'pname%s' % uuid.uuid4()}).data
         created_cts_ids.append(pct['componenttype']['id'])
@@ -49,6 +49,19 @@ def test_get_all_componenttypes(admin):
     db_all_cts_ids.sort()
 
     assert db_all_cts_ids == created_cts_ids
+
+
+def test_get_all_componenttypes_with_pagination(admin):
+    for i in range(20):
+        admin.post('/api/v1/componenttypes',
+                   data={'name': 'pname%s' % uuid.uuid4()}).data
+    cts = admin.get('/api/v1/componenttypes').data
+    assert cts['_meta']['count'] == 20
+
+    for i in range(4):
+        cts = admin.get(
+            '/api/v1/componenttypes?limit=5&offset=%s' % (i * 5)).data
+        assert len(cts['componenttypes']) == 5
 
 
 def test_get_componenttype_by_id_or_name(admin):

@@ -17,8 +17,6 @@
 import flask
 from flask import json
 
-from dci.server.api import exceptions
-
 
 api = flask.Blueprint('api_v1', __name__)
 
@@ -29,16 +27,6 @@ def index():
                                       'message': 'Distributed CI.'}),
                           status=200,
                           content_type='application/json')
-
-
-@api.errorhandler(exceptions.ConflictError)
-@api.errorhandler(exceptions.NotFound)
-@api.errorhandler(exceptions.InternalError)
-@api.errorhandler(exceptions.InvalidAPIUsage)
-def handle_error(error):
-    response = flask.jsonify(error.get_error())
-    response.status_code = error.status_code
-    return response
 
 
 import dci.server.api.v1.componenttypes  # noqa

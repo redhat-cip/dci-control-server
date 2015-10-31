@@ -23,8 +23,8 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.common import exceptions
+from dci.server.common import utils
 from dci.server.db import models_core as models
-from dci.server import utils
 
 
 def _get_ct_verify_existence(ct_id):
@@ -41,14 +41,6 @@ def _get_ct_verify_existence(ct_id):
         raise exceptions.DCIException("Component type '%s' not found." % ct_id,
                                       status_code=404)
     return result
-
-
-def _check_and_get_etag(headers):
-    if_match_etag = headers.get('If-Match')
-    if not if_match_etag:
-        raise exceptions.DCIException("'If-match' header must be provided",
-                                      status_code=412)
-    return if_match_etag
 
 
 @api.route('/componenttypes', methods=['POST'])
@@ -77,7 +69,12 @@ def create_componenttypes():
 
 @api.route('/componenttypes', methods=['GET'])
 def get_all_componenttypes():
-    query = sqlalchemy.sql.select([models.COMPONENTYPES])
+    limit = flask.request.args.get('limit', 10)
+    offset = flask.request.args.get('offset', 0)
+    query = sqlalchemy.sql.select([models.COMPONENTYPES]).\
+        limit(limit).offset(offset)
+    nb_ct = utils.get_number_of_rows(models.COMPONENTYPES)
+
     try:
         rows = flask.g.db_conn.execute(query).fetchall()
         result = [dict(row) for row in rows]
@@ -85,7 +82,7 @@ def get_all_componenttypes():
         raise exceptions.DCIException(str(e), status_code=500)
 
     # verif dump
-    result = {'componenttypes': result}
+    result = {'componenttypes': result, '_meta': {'count': nb_ct}}
     result = json.dumps(result, default=utils.json_encoder)
     return flask.Response(result, 200, content_type='application/json')
 
@@ -104,7 +101,7 @@ def get_componenttype_by_id_or_name(ct_id):
 @api.route('/componenttypes/<ct_id>', methods=['PUT'])
 def put_componenttype(ct_id):
     # get If-Match header
-    if_match_etag = _check_and_get_etag(flask.request.headers)
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     data_json = flask.request.json
     # verif put
@@ -134,7 +131,7 @@ def put_componenttype(ct_id):
 @api.route('/componenttypes/<ct_id>', methods=['DELETE'])
 def delete_componenttype_by_id_or_name(ct_id):
     # get If-Match header
-    if_match_etag = _check_and_get_etag(flask.request.headers)
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     _get_ct_verify_existence(ct_id)
 
