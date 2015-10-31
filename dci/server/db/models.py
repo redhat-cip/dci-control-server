@@ -30,7 +30,7 @@ from sqlalchemy.types import DateTime
 from sqlalchemy.types import Integer
 from sqlalchemy.types import String
 
-from dci.server import utils
+from dci.server.common import utils
 
 
 class DCIModel(object):
