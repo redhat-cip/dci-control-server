@@ -26,6 +26,8 @@ from dci.server.common import exceptions
 from dci.server.common import utils
 from dci.server.db import models_core as models
 
+from dci.server.api.v1 import components
+
 
 def _get_ct_verify_existence(ct_id):
     query = sqlalchemy.sql.select([models.COMPONENTYPES]).where(
@@ -96,6 +98,12 @@ def get_componenttype_by_id_or_name(ct_id):
     componenttype = json.dumps(componenttype, default=utils.json_encoder)
     return flask.Response(componenttype, 200, headers={'ETag': etag},
                           content_type='application/json')
+
+
+@api.route('/componenttypes/<ct_id>/components', methods=['GET'])
+def get_components_by_componenttype(ct_id):
+    componenttype = _get_ct_verify_existence(ct_id)
+    return components.get_all_components(componenttype['id'])
 
 
 @api.route('/componenttypes/<ct_id>', methods=['PUT'])
