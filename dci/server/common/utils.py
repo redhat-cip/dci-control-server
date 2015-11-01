@@ -60,9 +60,11 @@ def check_and_get_etag(headers):
     return if_match_etag
 
 
-def get_number_of_rows(table):
+def get_number_of_rows(table, where_cond=None):
     try:
         query = sqlalchemy.sql.select([sqlalchemy.func.count(table.c.id)])
+        if where_cond is not None:
+            query = query.where(where_cond)
         return flask.g.db_conn.execute(query).scalar()
     except sa_exc.DBAPIError as e:
         raise exceptions.DCIException(str(e), status_code=500)

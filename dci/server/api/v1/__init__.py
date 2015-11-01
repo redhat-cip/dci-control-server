@@ -29,4 +29,5 @@ def index():
                           content_type='application/json')
 
 
+import dci.server.api.v1.components  # noqa
 import dci.server.api.v1.componenttypes  # noqa
