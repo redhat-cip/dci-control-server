@@ -20,6 +20,8 @@ import flask
 
 import uuid
 
+from dci.server.common import utils
+
 
 def create_component(
         client,
@@ -117,7 +119,8 @@ def generate_client(app, credentials):
         def wrapper(*args, **kwargs):
             data = kwargs.get('data')
             if data:
-                kwargs['data'] = flask.json.dumps(data)
+                kwargs['data'] = flask.json.dumps(data,
+                                                  default=utils.json_encoder)
 
             headers.update(kwargs.get('headers', {}))
             kwargs['headers'] = headers
