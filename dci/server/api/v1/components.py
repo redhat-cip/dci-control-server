@@ -22,25 +22,20 @@ from sqlalchemy import exc as sa_exc
 import sqlalchemy.sql
 
 from dci.server.api.v1 import api
-from dci.server.common import exceptions
+from dci.server.api.v1 import utils as v1_utils
+from dci.server.common import exceptions as dci_exc
 from dci.server.common import utils
 from dci.server.db import models_core as models
 
 
-def _get_component_verify_existence(c_id):
-    query = sqlalchemy.sql.select([models.COMPONENTS]).where(
+_VALID_EMBED = {'componenttype': models.COMPONENTYPES}
+
+
+def _verify_existence_and_get_c(c_id):
+    return v1_utils.verify_existence_and_get(
+        models.COMPONENTS, c_id,
         sqlalchemy.sql.or_(models.COMPONENTS.c.id == c_id,
                            models.COMPONENTS.c.name == c_id))
-
-    try:
-        result = flask.g.db_conn.execute(query).fetchone()
-    except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e), status_code=500)
-
-    if result is None:
-        raise exceptions.DCIException("Component '%s' not found." % c_id,
-                                      status_code=404)
-    return result
 
 
 @api.route('/components', methods=['POST'])
@@ -68,7 +63,7 @@ def create_components():
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e))
+        raise dci_exc.DCIException(str(e))
 
     # verif dump
     result = {'component': values}
@@ -84,23 +79,40 @@ def get_all_components(ct_id=None):
     If ct_id is not None, then return all the components with a type
     pointed by ct_id.
     """
+    # get the diverse parameters
     limit = flask.request.args.get('limit', 10)
     offset = flask.request.args.get('offset', 0)
+    embed = flask.request.args.get('embed', '')
+    embed_list = v1_utils.verify_embed_and_get_list(embed, _VALID_EMBED.keys())
+
+    # the default query with no parameters
     query = sqlalchemy.sql.select([models.COMPONENTS])
+
+    # if embed then construct the query with a join
+    if embed_list:
+        resources_to_embed = (_VALID_EMBED[elem] for elem in embed_list)
+        query = v1_utils.get_query_with_join(models.COMPONENTS,
+                                             *resources_to_embed)
+
     # used for counting the number of rows when ct_id is not None
     where_ct_cond = None
     if ct_id is not None:
         where_ct_cond = models.COMPONENTS.c.componenttype_id == ct_id
         query = query.where(where_ct_cond)
+
+    # adds the limit/offset parameters
     query = query.limit(limit).offset(offset)
 
+    query = query.order_by(sqlalchemy.sql.asc(models.COMPONENTS.c.created_at))
+    # get the number of rows for the '_meta' section
     nb_cts = utils.get_number_of_rows(models.COMPONENTS, where_ct_cond)
 
     try:
         rows = flask.g.db_conn.execute(query).fetchall()
-        result = [dict(row) for row in rows]
+        result = [v1_utils.group_embedded_resources(embed_list, row)
+                  for row in rows]
     except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e), status_code=500)
+        raise dci_exc.DCIException(str(e), status_code=500)
 
     # verif dump
     result = {'components': result, '_meta': {'count': nb_cts}}
@@ -110,10 +122,35 @@ def get_all_components(ct_id=None):
 
 @api.route('/components/<c_id>', methods=['GET'])
 def get_component_by_id_or_name(c_id):
-    component = _get_component_verify_existence(c_id)
+    # get the diverse parameters
+    embed = flask.request.args.get('embed', '')
+    embed_list = v1_utils.verify_embed_and_get_list(embed, _VALID_EMBED.keys())
+
+    # the default query with no parameters
+    query = sqlalchemy.sql.select([models.COMPONENTS])
+
+    # if embed then construct the query with a join
+    if embed_list:
+        resources_to_embed = (_VALID_EMBED[elem] for elem in embed_list)
+        query = v1_utils.get_query_with_join(models.COMPONENTS,
+                                             *resources_to_embed)
+
+    query = query.where(sqlalchemy.sql.or_(models.COMPONENTS.c.id == c_id,
+                                           models.COMPONENTS.c.name == c_id))
+
+    try:
+        row = flask.g.db_conn.execute(query).fetchone()
+        component = v1_utils.group_embedded_resources(embed_list, row)
+    except sa_exc.DBAPIError as e:
+        raise dci_exc.DCIException(str(e), status_code=500)
+
+    if row is None:
+        raise dci_exc.DCIException("component '%s' not found." % c_id,
+                                   status_code=404)
+
     etag = component['etag']
     # verif dump
-    component = {'component': dict(component)}
+    component = {'component': component}
     component = json.dumps(component, default=utils.json_encoder)
     return flask.Response(component, 200, headers={'ETag': etag},
                           content_type='application/json')
@@ -124,7 +161,7 @@ def delete_component_by_id_or_name(c_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    _get_component_verify_existence(c_id)
+    _verify_existence_and_get_c(c_id)
 
     query = models.COMPONENTS.delete().where(
         sqlalchemy.sql.and_(
@@ -135,11 +172,11 @@ def delete_component_by_id_or_name(c_id):
     try:
         result = flask.g.db_conn.execute(query)
     except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e), status_code=500)
+        raise dci_exc.DCIException(str(e), status_code=500)
 
     if result.rowcount == 0:
-        raise exceptions.DCIException("Component '%s' already deleted or "
-                                      "etag not matched." % c_id,
-                                      status_code=409)
+        raise dci_exc.DCIException("Component '%s' already deleted or "
+                                   "etag not matched." % c_id,
+                                   status_code=409)
 
     return flask.Response(None, 204, content_type='application/json')
