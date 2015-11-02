@@ -69,7 +69,7 @@ def test_get_all_components_with_pagination(admin, pct_id):
     for i in range(20):
         admin.post('/api/v1/components',
                    data={'name': 'pname%s' % uuid.uuid4(),
-                         'componenttype_id': pct_id}).data
+                         'componenttype_id': pct_id})
     cs = admin.get('/api/v1/components').data
     assert cs['_meta']['count'] == 20
 
@@ -83,6 +83,22 @@ def test_get_all_components_with_pagination(admin, pct_id):
     cs = admin.get('/api/v1/components?limit=5&offset=300')
     assert cs.status_code == 200
     assert cs.data['components'] == []
+
+
+def test_get_all_components_with_embed(admin, pct_id):
+    # create 20 component types and check meta data count
+    for i in range(10):
+        admin.post('/api/v1/components',
+                   data={'name': 'pname%s' % uuid.uuid4(),
+                         'componenttype_id': pct_id})
+
+    # verify embed
+    cs = admin.get('/api/v1/components?embed=componenttype').data
+
+    for component in cs['components']:
+        assert 'componenttype_id' not in component
+        assert 'componenttype' in component
+        assert component['componenttype']['id'] == pct_id
 
 
 def test_get_component_by_id_or_name(admin, pct_id):

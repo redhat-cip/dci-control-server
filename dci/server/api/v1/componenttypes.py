@@ -22,6 +22,7 @@ from sqlalchemy import exc as sa_exc
 import sqlalchemy.sql
 
 from dci.server.api.v1 import api
+from dci.server.api.v1 import v1_utils
 from dci.server.common import exceptions
 from dci.server.common import utils
 from dci.server.db import models_core as models
@@ -29,20 +30,11 @@ from dci.server.db import models_core as models
 from dci.server.api.v1 import components
 
 
-def _get_ct_verify_existence(ct_id):
-    query = sqlalchemy.sql.select([models.COMPONENTYPES]).where(
+def _verify_existence_and_get_ct(ct_id):
+    return v1_utils.verify_existence_and_get(
+        models.COMPONENTYPES, ct_id,
         sqlalchemy.sql.or_(models.COMPONENTYPES.c.id == ct_id,
                            models.COMPONENTYPES.c.name == ct_id))
-
-    try:
-        result = flask.g.db_conn.execute(query).fetchone()
-    except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e), status_code=500)
-
-    if result is None:
-        raise exceptions.DCIException("Component type '%s' not found." % ct_id,
-                                      status_code=404)
-    return result
 
 
 @api.route('/componenttypes', methods=['POST'])
@@ -91,7 +83,7 @@ def get_all_componenttypes():
 
 @api.route('/componenttypes/<ct_id>', methods=['GET'])
 def get_componenttype_by_id_or_name(ct_id):
-    componenttype = _get_ct_verify_existence(ct_id)
+    componenttype = _verify_existence_and_get_ct(ct_id)
     etag = componenttype['etag']
     # verif dump
     componenttype = {'componenttype': dict(componenttype)}
@@ -102,7 +94,7 @@ def get_componenttype_by_id_or_name(ct_id):
 
 @api.route('/componenttypes/<ct_id>/components', methods=['GET'])
 def get_components_by_componenttype(ct_id):
-    componenttype = _get_ct_verify_existence(ct_id)
+    componenttype = _verify_existence_and_get_ct(ct_id)
     return components.get_all_components(componenttype['id'])
 
 
@@ -114,7 +106,7 @@ def put_componenttype(ct_id):
     data_json = flask.request.json
     # verif put
 
-    _get_ct_verify_existence(ct_id)
+    _verify_existence_and_get_ct(ct_id)
 
     data_json['etag'] = utils.gen_etag()
     query = models.COMPONENTYPES.update().where(
@@ -141,7 +133,7 @@ def delete_componenttype_by_id_or_name(ct_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    _get_ct_verify_existence(ct_id)
+    _verify_existence_and_get_ct(ct_id)
 
     query = models.COMPONENTYPES.delete().where(
         sqlalchemy.sql.and_(
