@@ -69,7 +69,7 @@ def test_get_all_components_with_pagination(admin, pct_id):
     for i in range(20):
         admin.post('/api/v1/components',
                    data={'name': 'pname%s' % uuid.uuid4(),
-                         'componenttype_id': pct_id}).data
+                         'componenttype_id': pct_id})
     cs = admin.get('/api/v1/components').data
     assert cs['_meta']['count'] == 20
 
@@ -83,6 +83,34 @@ def test_get_all_components_with_pagination(admin, pct_id):
     cs = admin.get('/api/v1/components?limit=5&offset=300')
     assert cs.status_code == 200
     assert cs.data['components'] == []
+
+
+def test_get_all_components_with_embed(admin, pct_id):
+    # create 20 component types and check meta data count
+    for i in range(10):
+        admin.post('/api/v1/components',
+                   data={'name': 'pname%s' % uuid.uuid4(),
+                         'componenttype_id': pct_id})
+
+    # verify embed
+    cs = admin.get('/api/v1/components?embed=componenttype').data
+
+    for component in cs['components']:
+        assert 'componenttype_id' not in component
+        assert 'componenttype' in component
+        assert component['componenttype']['id'] == pct_id
+
+
+def test_get_all_components_with_embed_not_valid(admin, pct_id):
+    # create 20 component types and check meta data count
+    for i in range(10):
+        admin.post('/api/v1/components',
+                   data={'name': 'pname%s' % uuid.uuid4(),
+                         'componenttype_id': pct_id})
+
+    # verify embed
+    cs = admin.get('/api/v1/components?embed=mdr')
+    assert cs.status_code == 400
 
 
 def test_get_component_by_id_or_name(admin, pct_id):
@@ -126,6 +154,27 @@ def test_delete_component_by_id(admin, pct_id):
 
     gct = admin.get('/api/v1/components/%s' % pc_id)
     assert gct.status_code == 404
+
+
+def test_get_component_with_embed(admin, pct_id):
+    admin.post('/api/v1/components', data={'name': 'pname',
+               'componenttype_id': pct_id})
+
+    # verify embed
+    cpt = admin.get('/api/v1/components/pname?embed=componenttype').data
+
+    assert 'componenttype_id' not in cpt['component']
+    assert 'componenttype' in cpt['component']
+    assert cpt['component']['componenttype']['id'] == pct_id
+
+
+def test_get_component_with_embed_not_valid(admin, pct_id):
+    admin.post('/api/v1/components', data={'name': 'pname',
+               'componenttype_id': pct_id})
+
+    # verify embed
+    cs = admin.get('/api/v1/components/pname?embed=mdr')
+    assert cs.status_code == 400
 
 
 def test_delete_component_not_found(admin):
