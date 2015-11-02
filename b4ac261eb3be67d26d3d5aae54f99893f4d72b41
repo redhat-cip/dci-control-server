@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a79b1b5_485c0f26",
+        "filename": "dci/server/common/utils.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-11-02T18:14:52Z",
+      "side": 1,
+      "message": "This sounds like a super complicated way to generate a random string. What don\u0027t you just reuse gen_uuid()?",
+      "revId": "b4ac261eb3be67d26d3d5aae54f99893f4d72b41",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
