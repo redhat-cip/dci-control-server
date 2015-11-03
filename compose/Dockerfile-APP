@@ -1,7 +1,12 @@
-FROM fedora
+# Due to an issue with the extraction of phantom this file fallback on debian
+FROM debian
 
-RUN dnf update -y
-RUN dnf install -y nodejs npm
+RUN apt-get update
+# For fedora libfreetype6 becomes freetype,
+# and libfontconfig1 becomes fontconfig
+
+RUN apt-get install -y nodejs npm libfreetype6 libfontconfig1
+RUN ln -s /usr/bin/nodejs /usr/local/bin/node
 
 WORKDIR /tmp
 
