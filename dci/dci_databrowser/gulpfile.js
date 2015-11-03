@@ -3,16 +3,17 @@
 var gulp       = require('gulp');
 var $          = require('gulp-load-plugins')();
 var del        = require('del');
-var config     = require('./config');
 var browserify = require('browserify');
 var source     = require('vinyl-source-stream');
 var buffer     = require('vinyl-buffer');
 var globby     = require('globby');
 var through    = require('through2');
 var merge      = require('merge2');
+var config     = require('./config');
+var utils      = require('./utils');
 
 gulp.task('jscs', function() {
-  return gulp.src(['src/**.js', 'gulpfile.js'])
+  return gulp.src(['src/**.js', 'gulpfile.js', 'utils.js'])
   .pipe($.jscs());
 });
 
@@ -99,27 +100,38 @@ gulp.task('fonts', ['clean'], function() {
   .pipe(gulp.dest('static/fonts/'));
 });
 
-gulp.task('connect', function() {
-  var url = require('url');
-  var proxy = require('proxy-middleware');
+gulp.task('serve', ['build'], function(_) {
+  utils.server('static', config.port, true);
+});
 
-  return $.connect.server({
-    host: config.host,
-    port: config.port,
-    livereload: true,
-    root: 'static',
-    middleware: function(connect, opt) {
-      var url = require('url');
-      var config = url.parse(process.env.API_PORT_5000_TCP);
-      config.protocol = 'http:';
+gulp.task('test:e2e', function(cb) {
+  var Q = require('q');
+  var d = Q.defer();
+  var phantom;
+  var server;
+  var error;
 
-      config = url.parse(url.resolve(url.format(config), 'api'));
-      config.route = '/api';
-      return [proxy(config)];
-    }
+  Q.all([
+    utils.server('static', config.portTest, false),
+    utils.phantom()
+  ])
+  .then(function(results) {
+    phantom = results.pop();
+    server = results.pop();
+    return utils.protractor(server.address, 'protractor.conf.js');
+  })
+  .fail(function(err) {
+    error = err;
+  })
+  .fin(function() {
+    return Q.all([
+      phantom.close(),
+      server.close()
+    ]);
+  })
+  .then(function() {
+    cb(error);
   });
 });
 
-gulp.task('serve', ['build', 'watch', 'connect']);
-
-gulp.task('test', ['jscs']);
+gulp.task('test', ['jscs', 'test:e2e']);
