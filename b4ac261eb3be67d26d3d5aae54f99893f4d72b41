@@ -16,6 +16,24 @@
       "revId": "b4ac261eb3be67d26d3d5aae54f99893f4d72b41",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_c85edf12",
+        "filename": "dci/server/common/utils.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-03T16:13:48Z",
+      "side": 1,
+      "message": "Indeed, uuid is a string with 36 characters and etag is a string with 40 characters.\n\nMaybe we could use String(36) for etag too, i can do it in another patch.",
+      "parentUuid": "3a79b1b5_485c0f26",
+      "revId": "b4ac261eb3be67d26d3d5aae54f99893f4d72b41",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
