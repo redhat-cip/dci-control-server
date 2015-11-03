@@ -15,8 +15,11 @@
 // under the License.
 
 'use strict';
+var moment = require('moment');
 
 module.exports = angular.module('app', [
   'ngCookies', 'angular-loading-bar', 'ui.router', 'googlechart', 'ngResource'
-]);
-
+])
+.factory('moment', function () {
+  return moment;
+});

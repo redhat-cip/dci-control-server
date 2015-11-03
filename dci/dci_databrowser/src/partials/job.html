@@ -1,34 +1,47 @@
-<h1 class="page-header">Job details</h1>
-<table class="table table-striped">
-  <tr>
-    <th>Remote CI name</th>
-    <th>Creation date</th>
-    <th>Last update date</th>
-    <th>Test name</th>
-    <th>Status</th>
-  </tr>
-  <tr>
-    <td>{{job.remoteci.name}}</td>
-    <td>{{job.created_at}}</td>
-    <td>{{job.updated_at}}</td>
-    <td>{{job.jobdefinition.test}}</td>
-    <td>{{job.jobstate.status}}</td>
-  </tr>
-</table><br/>
+<header>
+<h1 class="job-header">
+  {{job.remoteci.name}} / {{job.jobdefinition.name}}
+</h1>
+</header>
 
-<h2>Test details</h2>
-<ul ng-repeat="component in job.data.components">
-    <li ng-repeat="(key, value) in component">{{key}}: {{value}}</li>
-</ul>
+<div class="job-container">
+  <section class="tile" ng-class="status">
+    <div class="tile-status">
+    </div>
+    <div class="tile-main">
+      <ul>
+        <li ng-repeat="(key, value) in job.remoteci.data">
+          <span class="data-key">{{key}}</span>: {{value}}
+        <li>
+      </ul>
+      <span ng-if="!job.remoteci.data">No data for this CI</span>
+    </div>
+    <div class="tile-additional">
+      <ul>
+        <li ng-class="status">
+          <span class="glyphicon" ng-class="glyphicon()"></span>{{status}}
+        </li>
+        <li><span class="glyphicon glyphicon-time"></span>ran for {{job.timeRunning}}</li>
+        <li><span class="glyphicon glyphicon-calendar"></span>{{job.jobstate.created_at}}</li>
+      </ul>
+    </div>
+    <div class="tile-refresh">
+      <span class="glyphicon glyphicon-repeat"></span>
+    </div>
+  </section>
 
-<h2>Job states</h2>
-<!-- id: {{jobstate.id}} -->
-<small>{{job.jobstate.created_at}} → {{job.jobstate.updated_at}} ({{job.jobstate.status}})</small>
-<div ng-repeat="file in job.jobstate.files">
-  {{file.name}}
-  <!-- TODO(Gonéri): I think we can replace that with something
-        like https://github.com/drudru/ansi_up -->
-  <div style="overflow: auto;word-wrap: normal;white-space: pre; background: #cccccc;">
-    {{file.content}}
-  </div>
+  <section class="job-detail">
+  </section>
+
+  <section>
+    <h2>Job states</h2>
+    <!-- id: {{jobstate.id}}
+    <small>{{job.jobstate.created_at}} → {{job.jobstate.updated_at}} ({{job.jobstate.status}})</small> -->
+    <div ng-repeat="file in job.jobstate.files">
+      <h3>{{file.name}}</h3>
+      <pre>
+        {{file.content}}
+      </pre>
+    </div>
+  </section>
 </div>

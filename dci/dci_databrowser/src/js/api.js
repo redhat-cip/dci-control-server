@@ -56,7 +56,8 @@ require('./app.js')
       }).$promise
     ]).then(function(data) {
       job = data.shift();
-      job.jobstate = data.shift()._items.pop();
+      job.jobstates = data.shift()._items;
+      job.jobstate = job.jobstates[job.jobstates.length - 1]
       return job;
     });
   }
