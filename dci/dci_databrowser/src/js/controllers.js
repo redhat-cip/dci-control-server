@@ -77,6 +77,31 @@ require('./app.js')
   }
 ])
 
-.controller('JobCtrl', ['$scope', 'job', function($scope, job) {
-  $scope.job = job;
-}]);
+.controller('JobCtrl', [
+  '$scope', 'job', 'moment', function($scope, job, moment) {
+    $scope.job = job;
+    var end = moment(new Date(job.jobstate.created_at));
+    var start = moment(new Date(job.jobstates[0].created_at));
+
+    job.jobstate.created_at = moment(new Date(job.jobstate.created_at)).fromNow()
+    job.timeRunning = end.to(start, true);
+
+    var status = $scope.status = job.jobstate.status;
+
+    end = moment(job.jobstates[job.jobstates.length]);
+    start = moment(job.jobstates[0]);
+
+    var glyphiconStatus = {
+      'failure': 'glyphicon-remove',
+      'success': 'glyphicon-ok',
+      'new': 'glyphicon-record',
+      'initializing': 'glyphicon-record',
+      'killed': 'glyphicon-minus',
+      'unfinished': 'glyphicon-minus'
+    };
+
+    $scope.glyphicon = function () {
+      return glyphiconStatus[status];
+    }
+  }
+]);
