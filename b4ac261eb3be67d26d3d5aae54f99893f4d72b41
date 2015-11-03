@@ -34,6 +34,24 @@
       "revId": "b4ac261eb3be67d26d3d5aae54f99893f4d72b41",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_a88fe374",
+        "filename": "dci/server/common/utils.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-11-03T20:03:44Z",
+      "side": 1,
+      "message": "I don\u0027t think there is such limitation regarding the eTag length. https://en.wikipedia.org/wiki/HTTP_ETag",
+      "parentUuid": "3a79b1b5_c85edf12",
+      "revId": "b4ac261eb3be67d26d3d5aae54f99893f4d72b41",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
