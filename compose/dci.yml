@@ -24,6 +24,9 @@ tox:
 app:
     build: ..
     dockerfile: compose/Dockerfile-APP
+    ports:
+        - 8000:8000
+        - 35729:35729
     volumes:
         - ../dci/dci_databrowser:/opt/dci_databrowser
     links:
