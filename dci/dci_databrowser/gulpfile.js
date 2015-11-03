@@ -48,6 +48,7 @@ gulp.task('js', ['clean'], function() {
     'node_modules/angular-bootstrap/ui-bootstrap-tpls.js',
     'node_modules/angular-ui-router/release/angular-ui-router.js',
     'node_modules/angular-loading-bar/build/loading-bar.js',
+    'node_modules/moment/moment.js',
     'src/js/**/*.js',
   ];
 
