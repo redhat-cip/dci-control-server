@@ -26,17 +26,23 @@ function closePromise(obj) {
 }
 
 function server(root, port, livereload) {
-  var middlewares = [];
   var d = Q.defer();
-
   var api = process.env.API_PORT_5000_TCP + '/api' || config.api;
+  var app = connect();
 
   api = url.parse(api);
   // must be present here in the case of using docker compose
   api.protocol = 'http:';
   api.route = '/api';
 
-  var app = connect(middlewares);
+  if (livereload) {
+    var options = {host: config.host, port: 35729};
+    require('gulp-livereload').listen(options, function() {
+      gutil.log('Livereload started on port:',
+                gutil.colors.green(options.port));
+    })
+    app.use(require('connect-livereload')({port: options.port}));
+  }
   app.use(serveStatic(root));
   app.use(proxy(api));
 
@@ -51,7 +57,6 @@ function server(root, port, livereload) {
       port: connection[2]
     };
     gutil.log('Server started at:', gutil.colors.green(url.format(address)));
-
     server.address = address;
     d.resolve(server);
   })
@@ -59,8 +64,8 @@ function server(root, port, livereload) {
     gutil.log('Server', gutil.colors.blue('stopped'));
   });
 
-  process.on('SIGINT', server.close);
   server.listen(port, config.host);
+
   return d.promise;
 }
 
