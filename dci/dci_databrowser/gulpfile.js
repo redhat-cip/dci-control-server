@@ -12,6 +12,8 @@ var merge      = require('merge2');
 var config     = require('./config');
 var utils      = require('./utils');
 
+var DIST = 'static';
+
 gulp.task('jscs', function() {
   return gulp.src(['src/**.js', 'gulpfile.js', 'utils.js'])
   .pipe($.jscs());
@@ -21,17 +23,17 @@ gulp.task('build', ['js', 'css', 'fonts'], function() {
   return gulp.src([
     'src/**/*',
     '!src/**/*.js',
-    '!src/**/*.css'
-  ]).pipe(gulp.dest('static'));
+    '!src/**/*.scss'
+  ]).pipe(gulp.dest(DIST));
 });
 
 gulp.task('clean', function() {
-  var entries = ['static/**/*', '!static/.gitkeep'];
+  var entries = [DIST + '/**/*', '!' + DIST + '/.gitkeep'];
   return del(entries);
 });
 
 gulp.task('reload', ['build'], function() {
-  return gulp.src('static/**').pipe($.connect.reload());
+  return $.livereload.reload();
 });
 
 gulp.task('watch', function() {
@@ -67,7 +69,7 @@ gulp.task('js', ['clean'], function() {
   .pipe(buffer())
   .pipe($.sourcemaps.init({loadMaps: true}))
   .pipe($.sourcemaps.write('./'))
-  .pipe(gulp.dest('./static/js/'));
+  .pipe(gulp.dest(DIST + '/js/'));
 });
 
 gulp.task('css', ['clean'], function() {
@@ -89,7 +91,7 @@ gulp.task('css', ['clean'], function() {
   .pipe($.sourcemaps.init({loadMaps: true}))
   .pipe($.concat('dashboard.css'))
   .pipe($.sourcemaps.write('./'))
-  .pipe(gulp.dest('static/css/'));
+  .pipe(gulp.dest(DIST + '/css/'));
 });
 
 gulp.task('fonts', ['clean'], function() {
@@ -98,11 +100,15 @@ gulp.task('fonts', ['clean'], function() {
   ];
 
   return gulp.src(entries)
-  .pipe(gulp.dest('static/fonts/'));
+  .pipe(gulp.dest(DIST + '/fonts/'));
 });
 
-gulp.task('serve', ['build'], function(_) {
-  utils.server('static', config.port, true);
+gulp.task('serve', ['build'], function() {
+  return utils.server(DIST, config.port);
+});
+
+gulp.task('serve:dev', ['build', 'watch'], function () {
+  return utils.server(DIST, config.port, true);
 });
 
 gulp.task('test:e2e', function(cb) {
@@ -113,7 +119,7 @@ gulp.task('test:e2e', function(cb) {
   var error;
 
   Q.all([
-    utils.server('static', config.portTest, false),
+    utils.server(DIST, config.portTest, false),
     utils.phantom()
   ])
   .then(function(results) {
