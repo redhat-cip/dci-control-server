@@ -52,6 +52,24 @@
       "revId": "b4ac261eb3be67d26d3d5aae54f99893f4d72b41",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_e8f87bc6",
+        "filename": "dci/server/common/utils.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-04T10:02:01Z",
+      "side": 1,
+      "message": "Of course, i meant in the current code we use 40 characters because Eve use md5 which is 40 characters length.",
+      "parentUuid": "3a79b1b5_a88fe374",
+      "revId": "b4ac261eb3be67d26d3d5aae54f99893f4d72b41",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
