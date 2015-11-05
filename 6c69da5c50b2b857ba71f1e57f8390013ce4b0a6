@@ -1,0 +1,259 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a79b1b5_8836a702",
+        "filename": "dci/server/api/v1/components.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "you can directly split here, \u0027\u0027.split() -\u003e []",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_283bd3ec",
+        "filename": "dci/server/api/v1/components.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 132,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "not sure that the if is necessary, if we iter on an empty list nothing will happen",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_48408f56",
+        "filename": "dci/server/api/v1/components.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "intermediate variable not needed",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_e824fbc7",
+        "filename": "dci/server/api/v1/components.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "we need to add a DBAPIError Handler on the app, to avoid trying, catching like this on every db call",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_082297b9",
+        "filename": "dci/server/api/v1/components.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "use flask.json.dumps, the encoder can be configured for the application",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_48172f52",
+        "filename": "dci/server/api/v1/utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "comment to explain this line",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_2812f362",
+        "filename": "dci/server/api/v1/utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "we need a global handler",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_c82b3f93",
+        "filename": "dci/server/api/v1/utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "not needed see comment on controller, same for line 50",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_6818eb84",
+        "filename": "dci/server/api/v1/utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "do this in the controller",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_881d4776",
+        "filename": "dci/server/api/v1/utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "cast to a set and test result of difference",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_e80b9b29",
+        "filename": "dci/server/api/v1/utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "same here, need a comment",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_a82e03a4",
+        "filename": "dci/server/api/v1/utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "modify this to what I\u0027ve shown you",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_08093731",
+        "filename": "dci/server/tests/api/v1/test_components.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "pytest handle the dictionaries, do not test like this it is too complex",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_a805a315",
+        "filename": "dci/server/tests/api/v1/test_components.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "same comment as above for the 3 following lines",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_c8025f0b",
+        "filename": "dci/server/tests/api/v1/test_utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T19:08:47Z",
+      "side": 1,
+      "message": "same as the other test file, use a dict here",
+      "revId": "6c69da5c50b2b857ba71f1e57f8390013ce4b0a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
