@@ -16,6 +16,24 @@
       "revId": "fcb8d7a435dde451822a1efcd2de306d28d568a1",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_a31ce46b",
+        "filename": "compose/Dockerfile-APP",
+        "patchSetId": 4
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-05T20:21:22Z",
+      "side": 1,
+      "message": "when nodejs tries to fork for extracting the sources, I get a permission issue. It seems that it might be an SE linux restriction, as long as this container is not involved in the test process, I though that using Debian will not impact our environment.",
+      "parentUuid": "3a79b1b5_2309b42c",
+      "revId": "fcb8d7a435dde451822a1efcd2de306d28d568a1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
