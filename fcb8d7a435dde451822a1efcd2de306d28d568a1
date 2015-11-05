@@ -34,6 +34,24 @@
       "revId": "fcb8d7a435dde451822a1efcd2de306d28d568a1",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a79b1b5_6326ccbc",
+        "filename": "compose/Dockerfile-APP",
+        "patchSetId": 4
+      },
+      "lineNbr": 2,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2015-11-05T20:54:06Z",
+      "side": 1,
+      "message": "that\u0027s odd, are you sure selinux is enabled in the docker container?",
+      "parentUuid": "3a79b1b5_a31ce46b",
+      "revId": "fcb8d7a435dde451822a1efcd2de306d28d568a1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
