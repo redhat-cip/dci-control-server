@@ -91,6 +91,7 @@ def create_remote_cis(db_conn, company, tests):
         for _ in range(0, random.randint(0, 10)):
             data_type = random.choice(list(REMOTE_CIS_ATTRS.keys()))
             data[data_type] = random.choice(REMOTE_CIS_ATTRS[data_type])
+        return data
 
     for i, test_name in enumerate(tests):
         remote_ci = {
@@ -162,10 +163,16 @@ def create_files(db_conn, jobstate, company_id):
 
 def create_jobstates_and_files(db_conn, job, company_id):
     job_id, job = job
+    # choose the final step
+    step = random.choice(['new', 'init', 'progress', 'finish'])
+
     # create "new" jobstate do not create files
     db_insert(db_conn, models.JOBSTATES, status='new',
               comment='Job "%s" created' % (job['name'],), job_id=job_id,
               team_id=company_id)
+
+    if step == 'new':
+        return
 
     # create "initializing" jobstate and new files associated
     for i in range(0, random.randint(1, 4)):
@@ -174,12 +181,18 @@ def create_jobstates_and_files(db_conn, job, company_id):
                              job_id=job_id, team_id=company_id)
         create_files(db_conn, jobstate, company_id)
 
+    if step == 'init':
+        return
+
     # create "ongoing" jobstate
     for i in range(0, random.randint(1, 6)):
         jobstate = db_insert(db_conn, models.JOBSTATES, status='ongoing',
                              comment='running step %d...' % (i,),
                              job_id=job_id, team_id=company_id)
         create_files(db_conn, jobstate, company_id)
+
+    if step == 'progress':
+        return
 
     # choose between "success", "failure", "killed", and "unfinished" jobstate
     status = random.choice(['success', 'failure', 'killed', 'unfinished'])
@@ -303,9 +316,6 @@ if __name__ == '__main__':
     sqlalchemy_utils.functions.create_database(db_uri)
 
     engine = sqlalchemy.create_engine(db_uri)
-    with engine.begin() as conn:
-        conn.execute(models.pg_gen_uuid)
-
     models.metadata.create_all(engine)
     with engine.begin() as conn:
         init_db(conn)
