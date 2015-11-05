@@ -21,7 +21,6 @@ from sqlalchemy.dialects.postgresql import JSON
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import ForeignKey
-from sqlalchemy import func
 from sqlalchemy.orm import relationship
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.sql import text
@@ -44,7 +43,8 @@ class DCIModel(object):
         updated_at = Column(DateTime(),
                             onupdate=datetime.datetime.utcnow,
                             default=datetime.datetime.utcnow, nullable=False)
-        etag = Column(String(40), default=func.gen_etag(), nullable=False)
+        etag = Column(String(36), default=utils.gen_etag,
+                      onupdate=utils.gen_etag, nullable=False)
 
     class Team(DCIBase):
         __tablename__ = 'teams'
