@@ -30,6 +30,7 @@ from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 import flask
 import sqlalchemy
+from sqlalchemy import exc as sa_exc
 from sqlalchemy.sql import text
 
 from dci.dci_databrowser import dci_databrowser
@@ -220,6 +221,13 @@ def handle_api_exception(api_exception):
     return response
 
 
+def handle_dbapi_exception(dbapi_exception):
+    dci_exception = exceptions.DCIException(str(dbapi_exception)).to_dict()
+    response = flask.jsonify(dci_exception)
+    response.status_code = 400
+    return response
+
+
 def get_engine(conf, echo=False):
     sa_engine = sqlalchemy.create_engine(
         conf['SQLALCHEMY_DATABASE_URI'],
@@ -249,6 +257,8 @@ def create_app(conf):
     # Registering REST error handler
     dci_app.register_error_handler(exceptions.DCIException,
                                    handle_api_exception)
+    dci_app.register_error_handler(sa_exc.DBAPIError,
+                                   handle_dbapi_exception)
 
     # Registering REST API v1
     dci_app.register_blueprint(api_v1.api, url_prefix='/api/v1')

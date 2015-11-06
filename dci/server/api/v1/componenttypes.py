@@ -18,7 +18,6 @@ import datetime
 
 import flask
 from flask import json
-from sqlalchemy import exc as sa_exc
 import sqlalchemy.sql
 
 from dci.server.api.v1 import api
@@ -49,10 +48,8 @@ def create_componenttypes():
               'etag': etag}
 
     query = models.COMPONENTYPES.insert().values(**values)
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e))
+
+    flask.g.db_conn.execute(query)
 
     # verif dump
     result = {'componenttype': values}
@@ -69,11 +66,8 @@ def get_all_componenttypes():
         limit(limit).offset(offset)
     nb_cts = utils.get_number_of_rows(models.COMPONENTYPES)
 
-    try:
-        rows = flask.g.db_conn.execute(query).fetchall()
-        result = [dict(row) for row in rows]
-    except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e), status_code=500)
+    rows = flask.g.db_conn.execute(query).fetchall()
+    result = [dict(row) for row in rows]
 
     # verif dump
     result = {'componenttypes': result, '_meta': {'count': nb_cts}}
@@ -115,10 +109,7 @@ def put_componenttype(ct_id):
                                models.COMPONENTYPES.c.name == ct_id),
             models.COMPONENTYPES.c.etag == if_match_etag)).values(**data_json)
 
-    try:
-        result = flask.g.db_conn.execute(query)
-    except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e))
+    result = flask.g.db_conn.execute(query)
 
     if result.rowcount == 0:
         raise exceptions.DCIException("Conflict on componenttype '%s' or etag "
@@ -141,10 +132,7 @@ def delete_componenttype_by_id_or_name(ct_id):
                                models.COMPONENTYPES.c.name == ct_id),
             models.COMPONENTYPES.c.etag == if_match_etag))
 
-    try:
-        result = flask.g.db_conn.execute(query)
-    except sa_exc.DBAPIError as e:
-        raise exceptions.DCIException(str(e), status_code=500)
+    result = flask.g.db_conn.execute(query)
 
     if result.rowcount == 0:
         raise exceptions.DCIException("Componenttype '%s' already deleted or "
