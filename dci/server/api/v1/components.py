@@ -18,7 +18,6 @@ import datetime
 
 import flask
 from flask import json
-from sqlalchemy import exc as sa_exc
 import sqlalchemy.sql
 
 from dci.server.api.v1 import api
@@ -60,10 +59,8 @@ def create_components():
               'componenttype_id': data_json.get('componenttype_id', None)}
 
     query = models.COMPONENTS.insert().values(**values)
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.DBAPIError as e:
-        raise dci_exc.DCIException(str(e))
+
+    flask.g.db_conn.execute(query)
 
     # verif dump
     result = {'component': values}
@@ -106,12 +103,9 @@ def get_all_components(ct_id=None):
     # get the number of rows for the '_meta' section
     nb_cts = utils.get_number_of_rows(models.COMPONENTS, where_ct_cond)
 
-    try:
-        rows = flask.g.db_conn.execute(query).fetchall()
-        result = [v1_utils.group_embedded_resources(embed_list, row)
-                  for row in rows]
-    except sa_exc.DBAPIError as e:
-        raise dci_exc.DCIException(str(e), status_code=500)
+    rows = flask.g.db_conn.execute(query).fetchall()
+    result = [v1_utils.group_embedded_resources(embed_list, row)
+              for row in rows]
 
     # verif dump
     result = {'components': result, '_meta': {'count': nb_cts}}
@@ -137,11 +131,8 @@ def get_component_by_id_or_name(c_id):
     query = query.where(sqlalchemy.sql.or_(models.COMPONENTS.c.id == c_id,
                                            models.COMPONENTS.c.name == c_id))
 
-    try:
-        row = flask.g.db_conn.execute(query).fetchone()
-        component = v1_utils.group_embedded_resources(embed_list, row)
-    except sa_exc.DBAPIError as e:
-        raise dci_exc.DCIException(str(e), status_code=500)
+    row = flask.g.db_conn.execute(query).fetchone()
+    component = v1_utils.group_embedded_resources(embed_list, row)
 
     if row is None:
         raise dci_exc.DCIException("component '%s' not found." % c_id,
@@ -168,10 +159,7 @@ def delete_component_by_id_or_name(c_id):
                                models.COMPONENTS.c.name == c_id),
             models.COMPONENTS.c.etag == if_match_etag))
 
-    try:
-        result = flask.g.db_conn.execute(query)
-    except sa_exc.DBAPIError as e:
-        raise dci_exc.DCIException(str(e), status_code=500)
+    result = flask.g.db_conn.execute(query)
 
     if result.rowcount == 0:
         raise dci_exc.DCIException("Component '%s' already deleted or "
