@@ -28,6 +28,9 @@ from dci.server.db import models_core as models
 
 from dci.server.api.v1 import components
 
+# associate column names with the corresponding SA Column object
+_CT_COLUMNS = v1_utils.get_columns_name_with_objects(models.COMPONENTYPES)
+
 
 def _verify_existence_and_get_ct(ct_id):
     return v1_utils.verify_existence_and_get(
@@ -43,8 +46,8 @@ def create_componenttypes():
     etag = utils.gen_etag()
     values = {'id': utils.gen_uuid(),
               'name': data_json['name'],
-              'created_at': datetime.datetime.utcnow(),
-              'updated_at': datetime.datetime.utcnow(),
+              'created_at': datetime.datetime.utcnow().isoformat(),
+              'updated_at': datetime.datetime.utcnow().isoformat(),
               'etag': etag}
 
     query = models.COMPONENTYPES.insert().values(**values)
@@ -62,8 +65,14 @@ def create_componenttypes():
 def get_all_componenttypes():
     limit = flask.request.args.get('limit', 10)
     offset = flask.request.args.get('offset', 0)
+    sort = flask.request.args.get('sort', '')
+
     query = sqlalchemy.sql.select([models.COMPONENTYPES]).\
         limit(limit).offset(offset)
+
+    if sort:
+        query = v1_utils.sort_query(query, sort, _CT_COLUMNS)
+
     nb_cts = utils.get_number_of_rows(models.COMPONENTYPES)
 
     rows = flask.g.db_conn.execute(query).fetchall()
