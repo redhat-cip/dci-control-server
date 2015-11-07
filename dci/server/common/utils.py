@@ -21,7 +21,6 @@ import uuid
 import flask
 import six
 import sqlalchemy
-from sqlalchemy import exc as sa_exc
 
 from dci.server.common import exceptions
 
