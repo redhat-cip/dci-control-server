@@ -55,7 +55,7 @@ def test_get_all_componenttypes_with_pagination(admin):
     # create 20 component types and check meta data count
     for i in range(20):
         admin.post('/api/v1/componenttypes',
-                   data={'name': 'pname%s' % uuid.uuid4()}).data
+                   data={'name': 'pname%s' % uuid.uuid4()})
     cts = admin.get('/api/v1/componenttypes').data
     assert cts['_meta']['count'] == 20
 
@@ -69,6 +69,23 @@ def test_get_all_componenttypes_with_pagination(admin):
     cts = admin.get('/api/v1/componenttypes?limit=5&offset=300')
     assert cts.status_code == 200
     assert cts.data['componenttypes'] == []
+
+
+def test_get_all_componenttypes_with_sort(admin):
+    # create 5 component types ordered by created time
+    ct_list = []
+    for i in range(5):
+        p_ct = admin.post('/api/v1/componenttypes',
+                          data={'name': 'pname%s' % uuid.uuid4()}).data
+        ct_list.append(p_ct['componenttype'])
+
+    cts = admin.get('/api/v1/componenttypes?sort=created_at').data
+    assert cts['componenttypes'] == ct_list
+
+    # test in reverse order
+    ct_list.reverse()
+    cts = admin.get('/api/v1/componenttypes?sort=-created_at').data
+    assert cts['componenttypes'] == ct_list
 
 
 def test_get_componenttype_by_id_or_name(admin):

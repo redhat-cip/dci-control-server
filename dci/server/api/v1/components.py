@@ -26,7 +26,8 @@ from dci.server.common import exceptions as dci_exc
 from dci.server.common import utils
 from dci.server.db import models_core as models
 
-
+# associate column names with the corresponding SA Column object
+_C_COLUMNS = v1_utils.get_columns_name_with_objects(models.COMPONENTS)
 _VALID_EMBED = {'componenttype': models.COMPONENTYPES}
 
 
@@ -77,9 +78,11 @@ def get_all_components(ct_id=None):
     pointed by ct_id.
     """
     # get the diverse parameters
-    limit = flask.request.args.get('limit', 10)
+    limit = flask.request.args.get('limit', 20)
     offset = flask.request.args.get('offset', 0)
     embed_list = flask.request.args.get('embed', '').split(',')
+    sort = flask.request.args.get('sort', '')
+
     v1_utils.verify_embed_list(embed_list, _VALID_EMBED.keys())
 
     # the default query with no parameters
@@ -90,6 +93,9 @@ def get_all_components(ct_id=None):
         resources_to_embed = (_VALID_EMBED[elem] for elem in embed_list)
         query = v1_utils.get_query_with_join(models.COMPONENTS,
                                              *resources_to_embed)
+
+    if sort:
+        query = v1_utils.sort_query(query, sort, _C_COLUMNS)
 
     # used for counting the number of rows when ct_id is not None
     where_ct_cond = None
