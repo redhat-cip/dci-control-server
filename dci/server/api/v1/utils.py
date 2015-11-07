@@ -111,3 +111,24 @@ def group_embedded_resources(embed_list, row):
         else:
             result[key] = value
     return result
+
+
+def get_columns_name_with_objects(table):
+    result = {}
+    for column in table.columns:
+        column_name = str(column).split('.', 1)[1]
+        result[column_name] = getattr(table.c, column_name)
+    return result
+
+
+def get_sort_query(sort_key, columns):
+    sort_order = sqlalchemy.sql.asc
+    if sort_key.startswith('-'):
+        sort_key = sort_key[1:]
+        sort_order = sqlalchemy.sql.desc
+
+    if sort_key not in columns:
+        raise dci_exc.DCIException("Invalid sort key: '%s'" % sort_key,
+                                   payload={'Valid sort keys':
+                                            list(columns.keys())})
+    return sort_order(columns[sort_key])
