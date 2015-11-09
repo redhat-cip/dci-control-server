@@ -42,5 +42,5 @@ class DCIException(Exception):
         return {
             'status_code': self.status_code,
             'message': self.message,
-            'payload': dict(self.payload or ())
+            'payload': self.payload or {}
         }
