@@ -23,4 +23,3 @@ OPTIONS="--client-encoding=utf8 --full-page_writes=off \
 # init the database directory and start the process
 pg_ctl initdb -D "$DCI_DB_DIR" -o "--no-locale"
 pg_ctl start -w -D "$DCI_DB_DIR" -o "-k $DCI_DB_DIR -F -h '' $OPTIONS"
-
