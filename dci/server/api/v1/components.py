@@ -82,6 +82,7 @@ def get_all_components(ct_id=None):
     offset = flask.request.args.get('offset', 0)
     embed_list = flask.request.args.get('embed', '').split(',')
     sort = flask.request.args.get('sort', '')
+    where = flask.request.args.get('where', '')
 
     v1_utils.verify_embed_list(embed_list, _VALID_EMBED.keys())
 
@@ -96,6 +97,10 @@ def get_all_components(ct_id=None):
 
     if sort:
         query = v1_utils.sort_query(query, sort, _C_COLUMNS)
+
+    if where:
+        query = v1_utils.where_query(query, where, models.COMPONENTS,
+                                     _C_COLUMNS)
 
     # used for counting the number of rows when ct_id is not None
     where_ct_cond = None
