@@ -113,6 +113,21 @@ def test_get_all_components_with_embed_not_valid(admin, pct_id):
     assert cs.status_code == 400
 
 
+def test_get_all_components_with_where(admin, pct_id):
+    pc = admin.post('/api/v1/components',
+                    data={'name': 'pname1',
+                          'componenttype_id': pct_id}).data
+    pc_id = pc['component']['id']
+
+    db_c = admin.get('/api/v1/components?where=id:%s' % pc_id).data
+    db_c_id = db_c['components'][0]['id']
+    assert db_c_id == pc_id
+
+    db_c = admin.get('/api/v1/components?where=name:pname1').data
+    db_c_id = db_c['components'][0]['id']
+    assert db_c_id == pc_id
+
+
 def test_get_component_by_id_or_name(admin, pct_id):
     pc = admin.post('/api/v1/components',
                     data={'name': 'pname', 'componenttype_id': pct_id}).data
