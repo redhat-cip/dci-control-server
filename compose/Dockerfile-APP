@@ -1,7 +1,7 @@
 FROM fedora
 
 RUN dnf update -y
-RUN dnf install -y nodejs npm
+RUN dnf install -y nodejs npm tar bzip2
 
 WORKDIR /tmp
 
