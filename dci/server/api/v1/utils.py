@@ -15,7 +15,6 @@
 # under the License.
 
 import flask
-from sqlalchemy import exc as sa_exc
 import sqlalchemy.sql
 
 from dci.server.common import exceptions as dci_exc
@@ -31,10 +30,7 @@ def verify_existence_and_get(table, resource_id, cond_exist):
     resource_name = table.name[:-1]
     query = sqlalchemy.sql.select([table]).where(cond_exist)
 
-    try:
-        result = flask.g.db_conn.execute(query).fetchone()
-    except sa_exc.DBAPIError as e:
-        raise dci_exc.DCIException(str(e), status_code=500)
+    result = flask.g.db_conn.execute(query).fetchone()
 
     if result is None:
         raise dci_exc.DCIException("%s type '%s' not found." %
