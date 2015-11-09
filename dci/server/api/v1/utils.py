@@ -132,3 +132,15 @@ def sort_query(query, sort_args, valid_columns):
                                    payload={'Valid sort keys':
                                             list(valid_columns.keys())})
     return query.order_by(sort_order(valid_columns[sort_args]))
+
+
+def where_query(query, where_args, table, columns):
+    where_list = where_args.split(',')
+    for where_elem in where_list:
+        name, value = where_elem.split('==', 1)
+        if name not in columns:
+            raise dci_exc.DCIException("Invalid where key: '%s'" % name,
+                                       payload={'Valid where keys':
+                                                list(columns.keys())})
+        query = query.where(getattr(table.c, name) == value)
+    return query
