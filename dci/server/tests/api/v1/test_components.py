@@ -113,6 +113,50 @@ def test_get_all_components_with_embed_not_valid(admin, pct_id):
     assert cs.status_code == 400
 
 
+def test_get_all_components_with_sort(admin, pct_id):
+    # create 10 components ordered by created time
+    c_list = []
+    for i in range(5):
+        p_ct_1 = admin.post('/api/v1/components',
+                            data={'name': "pname%s" % uuid.uuid4(),
+                                  'title': chr(i + 65),
+                                  'componenttype_id': pct_id}).data
+        p_ct_2 = admin.post('/api/v1/components',
+                            data={'name': "pname%s" % uuid.uuid4(),
+                                  'title': chr(i + 65),
+                                  'componenttype_id': pct_id}).data
+        c_list.append(p_ct_1['component'])
+        c_list.append(p_ct_2['component'])
+
+    cts = admin.get('/api/v1/components?sort=created_at').data
+    assert cts['components'] == c_list
+
+    # sort by title first and then reverse by created_at
+    for i in range(0, 9, 2):
+        c_list[i], c_list[i + 1] = c_list[i + 1], c_list[i]
+    cts = admin.get('/api/v1/components?sort=title,-created_at').data
+    assert cts['components'] == c_list
+
+
+def test_get_all_components_with_where(admin, pct_id):
+    created_cs_ids = []
+    for i in range(5):
+        pc = admin.post('/api/v1/components',
+                        data={'name': 'pname%s' % uuid.uuid4(),
+                              'componenttype_id': pct_id}).data
+        created_cs_ids.append(pc['component']['id'])
+    created_cs_ids.sort()
+
+    db_all_cs_ids = []
+    for c_id in created_cs_ids:
+        db_c = admin.get('/api/v1/components?where=id==%s' % c_id).data
+        db_c = db_c['components'][0]
+        db_all_cs_ids.append(db_c['id'])
+
+    db_all_cs_ids.sort()
+    assert db_all_cs_ids == created_cs_ids
+
+
 def test_get_component_by_id_or_name(admin, pct_id):
     pc = admin.post('/api/v1/components',
                     data={'name': 'pname', 'componenttype_id': pct_id}).data
@@ -154,31 +198,6 @@ def test_delete_component_by_id(admin, pct_id):
 
     gct = admin.get('/api/v1/components/%s' % pc_id)
     assert gct.status_code == 404
-
-
-def test_get_all_components_with_sort(admin, pct_id):
-    # create 10 components ordered by created time
-    c_list = []
-    for i in range(5):
-        p_ct_1 = admin.post('/api/v1/components',
-                            data={'name': "pname%s" % uuid.uuid4(),
-                                  'title': chr(i + 65),
-                                  'componenttype_id': pct_id}).data
-        p_ct_2 = admin.post('/api/v1/components',
-                            data={'name': "pname%s" % uuid.uuid4(),
-                                  'title': chr(i + 65),
-                                  'componenttype_id': pct_id}).data
-        c_list.append(p_ct_1['component'])
-        c_list.append(p_ct_2['component'])
-
-    cts = admin.get('/api/v1/components?sort=created_at').data
-    assert cts['components'] == c_list
-
-    # sort by title first and then reverse by created_at
-    for i in range(0, 9, 2):
-        c_list[i], c_list[i + 1] = c_list[i + 1], c_list[i]
-    cts = admin.get('/api/v1/components?sort=title,-created_at').data
-    assert cts['components'] == c_list
 
 
 def test_get_component_with_embed(admin, pct_id):
