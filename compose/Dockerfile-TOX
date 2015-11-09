@@ -7,7 +7,7 @@ FROM fedora
 
 RUN dnf update -y
 RUN dnf install -y gcc libpqxx-devel libffi-devel python-devel nodejs npm \
-    python-tox git python3-devel
+    python-tox git python3-devel redhat-rpm-config
 
 ADD requirements.txt /tmp/
 

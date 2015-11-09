@@ -6,7 +6,7 @@
 FROM fedora
 
 RUN dnf update -y
-RUN dnf install -y gcc libpqxx-devel libffi-devel python-devel
+RUN dnf install -y gcc libpqxx-devel libffi-devel python-devel redhat-rpm-config
 
 ADD requirements.txt /tmp/
 RUN pip install -r /tmp/requirements.txt
