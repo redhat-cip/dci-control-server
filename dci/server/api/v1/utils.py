@@ -132,3 +132,24 @@ def sort_query(query, sort_args, valid_columns):
                                                 list(valid_columns.keys())})
         query = query.order_by(sort_order(valid_columns[sort_elem]))
     return query
+
+
+def where_query(query, where_args, table, columns):
+    where_list = where_args.split(',')
+    for where_elem in where_list:
+        name, value = where_elem.split(':', 1)
+        if name not in columns:
+            raise dci_exc.DCIException("Invalid where key: '%s'" % name,
+                                       payload={'Valid where keys':
+                                                list(columns.keys())})
+        m_column = getattr(table.c, name)
+        # TODO(yassine): do the same for columns type different from string
+        # if it's an Integer column, then try to cast the value
+        if m_column.type.python_type == int:
+            try:
+                value = int(value)
+            except ValueError:
+                raise dci_exc.DCIException("Invalid where key: '%s'" % name,
+                                           payload={name: 'not integer'})
+        query = query.where(m_column == value)
+    return query
