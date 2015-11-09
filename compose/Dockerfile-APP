@@ -5,7 +5,7 @@ RUN dnf install -y nodejs npm tar bzip2 make freetype fontconfig
 
 WORKDIR /tmp
 
-RUN npm install -g gulp
+RUN npm install -g gulp npm-cache
 WORKDIR /opt/dci_databrowser
 
 CMD ["gulp", "serve"]
