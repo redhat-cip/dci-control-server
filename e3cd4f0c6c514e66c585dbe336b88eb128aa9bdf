@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fad0f9df_120c0c94",
+        "filename": "dci/server/settings.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-10T15:36:04Z",
+      "side": 1,
+      "message": "replace this with a DEBUG\u003dFalse by default, it will avoid some issues later",
+      "revId": "e3cd4f0c6c514e66c585dbe336b88eb128aa9bdf",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
