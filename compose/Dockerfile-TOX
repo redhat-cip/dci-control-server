@@ -7,7 +7,8 @@ FROM fedora
 
 RUN dnf update -y
 RUN dnf install -y gcc libpqxx-devel libffi-devel python-devel nodejs npm \
-    python-tox git python3-devel redhat-rpm-config
+    python-tox git python3-devel redhat-rpm-config tar bzip2 make freetype \
+    fontconfig
 
 ADD requirements.txt /tmp/
 
