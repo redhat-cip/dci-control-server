@@ -19,5 +19,5 @@
 
 import dci.server.app
 
-conf = dci.server.app.generate_conf()
+conf = dci.server.app.genreate_conf()
 application = dci.server.app.create_app(conf)

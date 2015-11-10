@@ -16,10 +16,27 @@
 
 import os
 
+
+# Global parameters about the API itself
+#
+HOST = '127.0.0.1'
+PORT = 5000
+
+# Database (SQLAlchemy) related parameters
+#
 SQLALCHEMY_DATABASE_URI = os.environ.get(
     'OPENSHIFT_POSTGRESQL_DB_URL',
     'postgresql://dci:dci@127.0.0.1:5432/dci'
 )
+# The following two lines will output the SQL statements
+# executed by SQLAlchemy. Useful while debugging and in
+# development. Turned off by default
+# --------
+SQLALCHEMY_ECHO = False
+SQLALCHEMY_RECORD_QUERIES = False
+SQLALCHEMY_POOL_SIZE = 20
+SQLALCHEMY_MAX_OVERFLOW = 0
+SQLALCHEMY_NATIVE_UNICODE = True
 
 
 LAST_UPDATED = 'updated_at'
@@ -34,12 +51,6 @@ DEBUG = True
 URL_PREFIX = 'api'
 X_DOMAINS = '*'
 X_HEADERS = 'Authorization'
-# The following two lines will output the SQL statements
-# executed by SQLAlchemy. Useful while debugging and in
-# development. Turned off by default
-# --------
-SQLALCHEMY_ECHO = False
-SQLALCHEMY_RECORD_QUERIES = False
 
 # detect if we are using docker_compose
 db_port = os.environ.get('DB_PORT')
