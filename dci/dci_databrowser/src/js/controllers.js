@@ -80,17 +80,17 @@ require('./app.js')
 .controller('JobCtrl', [
   '$scope', 'job', 'moment', function($scope, job, moment) {
     $scope.job = job;
-    var end = moment(new Date(job.jobstate.created_at));
-    var start = moment(new Date(job.jobstates[0].created_at));
+    job.jobstate = job.jobstate || {created_at: null};
 
-    job.jobstate.created_at = moment(new Date(job.jobstate.created_at)).fromNow()
+    var end = moment(job.jobstate.created_at);
+    var start = moment(
+      job.jobstates.length ? job.jobstates[0].created_at : null
+    );
+
+    job.jobstate.created_at = end.fromNow()
     job.timeRunning = end.to(start, true);
 
     var status = $scope.status = job.jobstate.status;
-
-    end = moment(job.jobstates[job.jobstates.length]);
-    start = moment(job.jobstates[0]);
-
     var glyphiconStatus = {
       'failure': 'glyphicon-remove',
       'success': 'glyphicon-ok',

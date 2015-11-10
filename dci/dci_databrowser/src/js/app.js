@@ -20,6 +20,14 @@ var moment = require('moment');
 module.exports = angular.module('app', [
   'ngCookies', 'angular-loading-bar', 'ui.router', 'googlechart', 'ngResource'
 ])
-.factory('moment', function () {
-  return moment;
+.factory('moment', ['config', function (config) {
+  moment.locale('en', {invalidDate: 'N/A'});
+  moment.locale('fr', {invalidDate: 'N/A'});
+
+  return function(string) {
+    return moment(string, config.datePattern, true);
+  }
+}])
+.value('config', {
+  'datePattern': 'ddd, DD MMM YYYY HH:mm:ss [GMT]'
 });
