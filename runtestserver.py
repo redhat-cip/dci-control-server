@@ -20,5 +20,5 @@ from dci.server import app
 conf = app.generate_conf()
 dci_app = app.create_app(conf)
 
-dci_app.run(conf.get('HOST', '127.0.0.1'),
-            conf.get('PORT', 5000))
+dci_app.run(dci_app.config['HOST'],
+            dci_app.config['PORT'])
