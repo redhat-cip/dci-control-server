@@ -1,7 +1,7 @@
 require('./app.js')
 
 .factory('api', ['$resource', '$q', function($resource, $q) {
-  var Jobs = $resource('/api/jobs/:id');
+  var Jobs = $resource('/api/jobs/:id?recheck=:recheck&job_id=:jobID');
   var JobStates = $resource('/api/jobstates');
   var JobDefinitions = $resource('/api/jobdefinitions/:id');
   var CIs = $resource('/api/remotecis');
@@ -62,10 +62,18 @@ require('./app.js')
     });
   }
 
+  function recheckJob(job) {
+    return Jobs.save(
+      {jobID: job.id, recheck: 1},
+      {remoteci_id: job.remoteci.id, recheck: true}
+    ).$promise;
+  }
+
 
   return {
     getJobs: getJobs,
     getJob: getJob,
+    recheckJob: recheckJob,
     getJobDefinitions: getJobDefinitions,
     getJobDefinition: getJobDefinition,
     getCIs: getCIs
