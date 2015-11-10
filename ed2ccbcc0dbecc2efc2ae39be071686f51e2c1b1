@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fad0f9df_32ed908c",
+        "filename": "dci/server/api/v1/utils.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 119,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-10T16:20:34Z",
+      "side": 1,
+      "message": "this is directly accessible with column.name, no split needed",
+      "revId": "ed2ccbcc0dbecc2efc2ae39be071686f51e2c1b1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_52bcd46c",
+        "filename": "dci/server/api/v1/utils.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-10T16:20:34Z",
+      "side": 1,
+      "message": "this is not really readable, I think a if else or a ternary operator will be better, also as long as you are using strip you can remove the \u0027-\u0027 character:\n\n    sort_order \u003d (sqlalchemy.sql.desc                                       \n                           if sort_elem.startswith(\u0027-\u0027)\n                           else sqlalchemy.sql.asc)\n \n    sort_elem \u003d sort_elem.strip(\u0027 -\u0027)",
+      "revId": "ed2ccbcc0dbecc2efc2ae39be071686f51e2c1b1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_b24ae0aa",
+        "filename": "dci/server/tests/api/v1/test_components.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-10T16:20:34Z",
+      "side": 1,
+      "message": "This function is really not clear, I prefer that you create only 4 elements by hand, without loop and uuid, in order to correctly see what is happening for the elements and avoiding the second strange loop, ie: range(0, 9, 2)\n\nExample:\n\n    elt_1_1 \u003d ...\n    elt_1_2 \u003d ...\n    elt_2_1 \u003d ...\n    elt_2_2 \u003d ...\n\n    # then test\n    assert result \u003d\u003d [elt_1_1, elt_1_2, elt_2_1, elt_2_2]\n\n    # and second sorting\n    assert result \u003d\u003d [elt_1_2, elt_1_1, elt_2_2, elt_2_1]",
+      "revId": "ed2ccbcc0dbecc2efc2ae39be071686f51e2c1b1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_d2da04e9",
+        "filename": "dci/server/tests/api/v1/test_componenttypes.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-10T16:20:34Z",
+      "side": 1,
+      "message": "maybe another patch, but who cares...",
+      "revId": "ed2ccbcc0dbecc2efc2ae39be071686f51e2c1b1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_72cc7836",
+        "filename": "dci/server/tests/api/v1/test_componenttypes.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-10T16:20:34Z",
+      "side": 1,
+      "message": "same as the other test, avoid using loops for generation, just use 2 or 3 elements",
+      "revId": "ed2ccbcc0dbecc2efc2ae39be071686f51e2c1b1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
