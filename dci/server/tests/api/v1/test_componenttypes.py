@@ -72,20 +72,20 @@ def test_get_all_componenttypes_with_pagination(admin):
 
 
 def test_get_all_componenttypes_with_sort(admin):
-    # create 5 component types ordered by created time
-    ct_list = []
-    for i in range(5):
-        p_ct = admin.post('/api/v1/componenttypes',
-                          data={'name': 'pname%s' % uuid.uuid4()}).data
-        ct_list.append(p_ct['componenttype'])
+    # create 3 components types ordered by created time
+    p_ct_1 = admin.post('/api/v1/componenttypes',
+                        data={'name': 'pname1'}).data['componenttype']
+    p_ct_2 = admin.post('/api/v1/componenttypes',
+                        data={'name': 'pname2'}).data['componenttype']
+    p_ct_3 = admin.post('/api/v1/componenttypes',
+                        data={'name': 'pname3'}).data['componenttype']
 
     cts = admin.get('/api/v1/componenttypes?sort=created_at').data
-    assert cts['componenttypes'] == ct_list
+    assert cts['componenttypes'] == [p_ct_1, p_ct_2, p_ct_3]
 
     # test in reverse order
-    ct_list.reverse()
     cts = admin.get('/api/v1/componenttypes?sort=-created_at').data
-    assert cts['componenttypes'] == ct_list
+    assert cts['componenttypes'] == [p_ct_3, p_ct_2, p_ct_1]
 
 
 def test_get_componenttype_by_id_or_name(admin):

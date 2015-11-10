@@ -116,20 +116,16 @@ def group_embedded_resources(embed_list, row):
 def get_columns_name_with_objects(table):
     result = {}
     for column in table.columns:
-        column_name = str(column).split('.', 1)[1]
-        result[column_name] = getattr(table.c, column_name)
+        result[column.name] = getattr(table.c, column.name)
     return result
 
 
 def sort_query(query, sort_args, valid_columns):
     sort_list = sort_args.split(',')
     for sort_elem in sort_list:
-        sort_order = sqlalchemy.sql.asc
-        sort_elem = sort_elem.strip()
-        if sort_elem.startswith('-'):
-            sort_elem = sort_elem[1:]
-            sort_order = sqlalchemy.sql.desc
-
+        sort_order = (sqlalchemy.sql.desc
+                      if sort_elem.startswith('-') else sqlalchemy.sql.asc)
+        sort_elem = sort_elem.strip(' -')
         if sort_elem not in valid_columns:
             raise dci_exc.DCIException("Invalid sort key: '%s'" % sort_elem,
                                        payload={'Valid sort keys':
