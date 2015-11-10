@@ -210,8 +210,9 @@ class DciControlServer(Eve):
 
 def generate_conf():
     conf = flask.Config('')
-    conf.from_object(
-        os.environ.get('DCI_SETTINGS_MODULE') or 'dci.server.settings')
+    conf.from_object('dci.server.settings')
+    conf.from_object(os.environ.get('DCI_SETTINGS_MODULE'))
+    conf.from_envvar('DCI_SETTINGS_FILE', silent=True)
     return conf
 
 
@@ -228,11 +229,14 @@ def handle_dbapi_exception(dbapi_exception):
     return response
 
 
-def get_engine(conf, echo=False):
+def get_engine(conf):
     sa_engine = sqlalchemy.create_engine(
         conf['SQLALCHEMY_DATABASE_URI'],
-        pool_size=20, max_overflow=0, encoding='utf8', convert_unicode=True,
-        echo=echo)
+        pool_size=conf['SQLALCHEMY_POOL_SIZE'],
+        max_overflow=conf['SQLALCHEMY_MAX_OVERFLOW'],
+        encoding='utf8',
+        convert_unicode=conf['SQLALCHEMY_NATIVE_UNICODE'],
+        echo=conf['SQLALCHEMY_ECHO'])
     return sa_engine
 
 
