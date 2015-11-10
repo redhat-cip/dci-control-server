@@ -157,28 +157,26 @@ def test_delete_component_by_id(admin, pct_id):
 
 
 def test_get_all_components_with_sort(admin, pct_id):
-    # create 10 components ordered by created time
-    c_list = []
-    for i in range(5):
-        p_ct_1 = admin.post('/api/v1/components',
-                            data={'name': "pname%s" % uuid.uuid4(),
-                                  'title': chr(i + 65),
-                                  'componenttype_id': pct_id}).data
-        p_ct_2 = admin.post('/api/v1/components',
-                            data={'name': "pname%s" % uuid.uuid4(),
-                                  'title': chr(i + 65),
-                                  'componenttype_id': pct_id}).data
-        c_list.append(p_ct_1['component'])
-        c_list.append(p_ct_2['component'])
+    # create 4 components ordered by created time
+    ct_1_1 = admin.post('/api/v1/components',
+                        data={'name': "pname1", 'title': 'aaa',
+                              'componenttype_id': pct_id}).data['component']
+    ct_1_2 = admin.post('/api/v1/components',
+                        data={'name': "pname2", 'title': 'aaa',
+                              'componenttype_id': pct_id}).data['component']
+    ct_2_1 = admin.post('/api/v1/components',
+                        data={'name': "pname3", 'title': 'bbb',
+                              'componenttype_id': pct_id}).data['component']
+    ct_2_2 = admin.post('/api/v1/components',
+                        data={'name': "pname3", 'title': 'bbb',
+                              'componenttype_id': pct_id}).data['component']
 
     cts = admin.get('/api/v1/components?sort=created_at').data
-    assert cts['components'] == c_list
+    assert cts['components'] == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
 
     # sort by title first and then reverse by created_at
-    for i in range(0, 9, 2):
-        c_list[i], c_list[i + 1] = c_list[i + 1], c_list[i]
     cts = admin.get('/api/v1/components?sort=title,-created_at').data
-    assert cts['components'] == c_list
+    assert cts['components'] == [ct_1_2, ct_1_1, ct_2_2, ct_2_1]
 
 
 def test_get_component_with_embed(admin, pct_id):
