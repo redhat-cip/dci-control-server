@@ -44,7 +44,7 @@ class DCIModel(object):
         updated_at = Column(DateTime(),
                             onupdate=datetime.datetime.utcnow,
                             default=datetime.datetime.utcnow, nullable=False)
-        etag = Column(String(40), default=func.gen_etag(), nullable=False)
+        etag = Column(String(40), default=utils.gen_etag, nullable=False)
 
     class Team(DCIBase):
         __tablename__ = 'teams'
