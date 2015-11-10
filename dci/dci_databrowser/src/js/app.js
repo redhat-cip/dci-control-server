@@ -1,5 +1,3 @@
-// -*- coding: utf-8 -*-
-//
 // Copyright 2015 Red Hat, Inc.
 //
 // Licensed under the Apache License, Version 2.0 (the 'License'); you may
@@ -15,6 +13,7 @@
 // under the License.
 
 'use strict';
+
 var moment = require('moment');
 
 module.exports = angular.module('app', [
