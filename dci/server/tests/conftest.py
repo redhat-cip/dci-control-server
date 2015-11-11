@@ -83,3 +83,9 @@ def company_b_user(app, db_provisioning):
 @pytest.fixture
 def unauthorized(app, db_provisioning):
     return utils.generate_client(app, ('admin', 'bob'))
+
+
+@pytest.fixture
+def test_id(admin):
+    test = admin.post('/api/v1/tests', data={'name': 'pname'}).data
+    return test['test']['id']

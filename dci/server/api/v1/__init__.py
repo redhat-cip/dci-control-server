@@ -31,4 +31,5 @@ def index():
 
 import dci.server.api.v1.components  # noqa
 import dci.server.api.v1.componenttypes  # noqa
+import dci.server.api.v1.jobdefinitions  # noqa
 import dci.server.api.v1.tests  # noqa
