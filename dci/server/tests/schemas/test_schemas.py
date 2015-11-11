@@ -210,3 +210,46 @@ class TestComponent(utils.SchemaTesting):
 
     def test_put(self):
         super(TestComponent, self).test_put(self.data, self.data)
+
+
+class TestJobDefinition(utils.SchemaTesting):
+    schema = schemas.jobdefinition
+    data = dict([utils.NAME, utils.TEST])
+
+    @staticmethod
+    def generate_invalids_and_errors():
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_TEST,
+                         ('priority', -1)])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_TEST_ERROR,
+                       utils.INVALID_PRIORITY_ERROR])
+        return invalids, errors
+
+    def test_post_extra_data(self):
+        data = utils.dict_merge(self.data, {'priority': 10})
+        super(TestJobDefinition, self).test_post_extra_data(data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name', 'test_id')
+        super(TestJobDefinition, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids, errors = TestJobDefinition.generate_invalids_and_errors()
+        super(TestJobDefinition, self).test_post_invalid_data(invalids, errors)
+        invalids['priority'] = 1001
+        super(TestJobDefinition, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestJobDefinition, self).test_post(self.data, self.data)
+
+    def test_put_extra_data(self):
+        super(TestJobDefinition, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        invalids, errors = TestJobDefinition.generate_invalids_and_errors()
+
+        super(TestJobDefinition, self).test_put_invalid_data(invalids, errors)
+        invalids['priority'] = 1001
+        super(TestJobDefinition, self).test_put_invalid_data(invalids, errors)
+
+    def test_put(self):
+        super(TestJobDefinition, self).test_put(self.data, self.data)

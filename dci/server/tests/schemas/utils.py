@@ -57,6 +57,12 @@ INVALID_COMPONENTTYPE = 'componenttype_id', INVALID_ID
 INVALID_COMPONENTTYPE_ERROR = ('componenttype_id',
                                schemas.INVALID_COMPONENT_TYPE)
 
+TEST = 'test_id', ID[1]
+INVALID_TEST = 'test_id', INVALID_ID
+INVALID_TEST_ERROR = 'test_id', schemas.INVALID_TEST
+
+INVALID_PRIORITY_ERROR = 'priority', schemas.INVALID_PRIORITY
+
 
 def generate_errors(*fields):
     return dict([(field, schemas.INVALID_REQUIRED) for field in fields])
