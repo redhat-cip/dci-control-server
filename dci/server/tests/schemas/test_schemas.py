@@ -239,3 +239,56 @@ class TestComponent(utils.SchemaTesting):
 
     def test_put(self):
         super(TestComponent, self).test_put(self.data, self.data)
+
+
+class TestJobDefinition(utils.SchemaTesting):
+    TEST = 'test', utils.ID[1]
+    INVALID_TEST = 'test', {}
+    INVALID_TEST_ERROR = 'test', [schemas.INVALID_TEST]
+    INVALID_PRIORITY_ERROR = 'priority', [schemas.INVALID_PRIORITY]
+
+    schema = schemas.jobdefinition
+    data = dict([utils.NAME, TEST])
+
+    def test_post_extra_data(self):
+        data = utils.dict_merge(self.data, {'priority': 10})
+        super(TestJobDefinition, self).test_post_extra_data(data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name', 'test')
+        super(TestJobDefinition, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids = dict([utils.INVALID_NAME, self.INVALID_TEST,
+                         ('priority', -1)])
+        errors = dict([utils.INVALID_NAME_ERROR, self.INVALID_TEST_ERROR,
+                       self.INVALID_PRIORITY_ERROR])
+
+        super(TestJobDefinition, self).test_post_invalid_data(invalids, errors)
+        invalids['test'] = utils.INVALID_ID
+        invalids['priority'] = 1001
+        super(TestJobDefinition, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestJobDefinition, self).test_post(self.data, self.data)
+
+    def test_post_new_test(self):
+        data = utils.dict_merge(self.data, {'test': dict([utils.NAME])})
+        super(TestJobDefinition, self).test_post(data, data)
+
+    def test_put_extra_data(self):
+        super(TestJobDefinition, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        invalids = dict([utils.INVALID_NAME, self.INVALID_TEST,
+                         ('priority', -1)])
+        errors = dict([utils.INVALID_NAME_ERROR, self.INVALID_TEST_ERROR,
+                       self.INVALID_PRIORITY_ERROR])
+
+        super(TestJobDefinition, self).test_put_invalid_data(invalids, errors)
+        invalids['test'] = utils.INVALID_ID
+        invalids['priority'] = 1001
+        super(TestJobDefinition, self).test_put_invalid_data(invalids, errors)
+
+    def test_put(self):
+        super(TestJobDefinition, self).test_put(self.data, self.data)

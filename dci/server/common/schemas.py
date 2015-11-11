@@ -38,9 +38,11 @@ INVALID_UUID = 'not a valid uuid'
 INVALID_JSON = 'not a valid json'
 INVALID_STRING = 'not a valid string'
 INVALID_URL = 'not a valid URL'
+INVALID_PRIORITY = 'not a valid priority integer (must be beetween 0 and 1000)'
 
 INVALID_TEAM = 'not a valid team id or team object'
 INVALID_COMPONENT_TYPE = 'not a valid componenttype id or componenttype object'
+INVALID_TEST = 'not a valid test id or test object'
 
 INVALID_REQUIRED = 'required key not provided'
 
@@ -86,7 +88,6 @@ def schema_factory(schema):
     for key, value in six.iteritems(schema):
         if not isinstance(key, v.Marker):
             key = v.Required(key)
-
         schema_post[key] = value
 
     return DCISchema(Schema(schema_post), Schema(schema))
@@ -148,3 +149,18 @@ component = utils.dict_merge(base, DATA_FIELD, {
 })
 
 component = schema_factory(component)
+
+###############################################################################
+#                                                                             #
+#                           Job Definition schemas                            #
+#                                                                             #
+###############################################################################
+
+jobdefinition = utils.dict_merge(base, {
+    'test': v.Any(UUID_FIELD, test.post.schema, msg=INVALID_TEST),
+    v.Optional('priority'): v.All(
+        int, v.Range(min=0, max=1000), msg=INVALID_PRIORITY
+    )
+})
+
+jobdefinition = schema_factory(jobdefinition)
