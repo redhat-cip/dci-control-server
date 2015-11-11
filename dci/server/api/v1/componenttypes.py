@@ -23,6 +23,7 @@ import sqlalchemy.sql
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
 from dci.server.common import exceptions
+from dci.server.common import schemas
 from dci.server.common import utils
 from dci.server.db import models_core as models
 
@@ -41,24 +42,23 @@ def _verify_existence_and_get_ct(ct_id):
 
 @api.route('/componenttypes', methods=['POST'])
 def create_componenttypes():
-    data_json = flask.request.json
-    # verif post
+    values = schemas.componenttype.post(flask.request.json)
     etag = utils.gen_etag()
-    values = {'id': utils.gen_uuid(),
-              'name': data_json['name'],
-              'created_at': datetime.datetime.utcnow().isoformat(),
-              'updated_at': datetime.datetime.utcnow().isoformat(),
-              'etag': etag}
+    values.update({
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': etag
+    })
 
     query = models.COMPONENTYPES.insert().values(**values)
 
     flask.g.db_conn.execute(query)
 
-    # verif dump
-    result = {'componenttype': values}
-    result = json.dumps(result)
-    return flask.Response(result, 201, headers={'ETag': etag},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({'componenttype': values}), 201,
+        headers={'ETag': etag}, content_type='application/json'
+    )
 
 
 @api.route('/componenttypes', methods=['GET'])
@@ -106,8 +106,7 @@ def put_componenttype(ct_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    data_json = flask.request.json
-    # verif put
+    data_json = schemas.componenttype.put(flask.request.json)
 
     _verify_existence_and_get_ct(ct_id)
 
