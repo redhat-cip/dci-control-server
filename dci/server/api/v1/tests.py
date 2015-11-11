@@ -21,6 +21,7 @@ from flask import json
 import sqlalchemy.sql
 
 from dci.server.api.v1 import api
+from dci.server.api.v1 import jobdefinitions
 from dci.server.api.v1 import utils as v1_utils
 from dci.server.common import exceptions
 from dci.server.common import utils
@@ -98,6 +99,12 @@ def get_test_by_id_or_name(t_id):
     test = json.dumps(test, default=utils.json_encoder)
     return flask.Response(test, 200, headers={'ETag': etag},
                           content_type='application/json')
+
+
+@api.route('/tests/<t_id>/jobdefinitions', methods=['GET'])
+def get_jobdefinitions_by_test(t_id):
+    test = _verify_existence_and_get_t(t_id)
+    return jobdefinitions.get_all_jobdefinitions(test['id'])
 
 
 @api.route('/tests/<t_id>', methods=['PUT'])
