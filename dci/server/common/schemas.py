@@ -105,7 +105,7 @@ base = {
 }
 
 
-component_type = schema_factory(base)
+componenttype = schema_factory(base)
 team = schema_factory(base)
 role = schema_factory(base)
 
