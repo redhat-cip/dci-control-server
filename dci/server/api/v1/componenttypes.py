@@ -66,12 +66,17 @@ def get_all_componenttypes():
     limit = flask.request.args.get('limit', 20)
     offset = flask.request.args.get('offset', 0)
     sort = flask.request.args.get('sort', '')
+    where = flask.request.args.get('where', '')
 
     query = sqlalchemy.sql.select([models.COMPONENTYPES]).\
         limit(limit).offset(offset)
 
     if sort:
         query = v1_utils.sort_query(query, sort, _CT_COLUMNS)
+
+    if where:
+        query = v1_utils.where_query(query, where, models.COMPONENTYPES,
+                                     _CT_COLUMNS)
 
     nb_cts = utils.get_number_of_rows(models.COMPONENTYPES)
 

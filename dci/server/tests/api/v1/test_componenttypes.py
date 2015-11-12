@@ -51,6 +51,21 @@ def test_get_all_componenttypes(admin):
     assert db_all_cts_ids == created_cts_ids
 
 
+def test_get_all_componenttypes_with_where(admin):
+    ct = admin.post('/api/v1/componenttypes',
+                    data={'name': 'pname1'}).data
+    ct_id = ct['componenttype']['id']
+
+    db_ct = admin.get('/api/v1/componenttypes?where=id:%s'
+                      % ct_id).data
+    db_ct_id = db_ct['componenttypes'][0]['id']
+    assert db_ct_id == ct_id
+
+    db_ct = admin.get('/api/v1/componenttypes?where=name:pname1').data
+    db_ct_id = db_ct['componenttypes'][0]['id']
+    assert db_ct_id == ct_id
+
+
 def test_get_all_componenttypes_with_pagination(admin):
     # create 20 component types and check meta data count
     for i in range(20):
