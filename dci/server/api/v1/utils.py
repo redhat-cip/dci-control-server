@@ -43,10 +43,6 @@ def verify_embed_list(embed_list, valid_embedded_resources):
     """Verify the embed list according the supported valid list. If it's not
     valid then raise an exception.
     """
-
-    if embed_list == ['']:
-        return
-
     for resource in embed_list:
         if resource not in valid_embedded_resources:
             raise dci_exc.DCIException(
@@ -120,9 +116,8 @@ def get_columns_name_with_objects(table):
     return result
 
 
-def sort_query(query, sort_args, valid_columns):
-    sort_list = sort_args.split(',')
-    for sort_elem in sort_list:
+def sort_query(query, sort, valid_columns):
+    for sort_elem in sort:
         sort_order = (sqlalchemy.sql.desc
                       if sort_elem.startswith('-') else sqlalchemy.sql.asc)
         sort_elem = sort_elem.strip(' -')
@@ -134,9 +129,8 @@ def sort_query(query, sort_args, valid_columns):
     return query
 
 
-def where_query(query, where_args, table, columns):
-    where_list = where_args.split(',')
-    for where_elem in where_list:
+def where_query(query, where, table, columns):
+    for where_elem in where:
         name, value = where_elem.split(':', 1)
         if name not in columns:
             raise dci_exc.DCIException("Invalid where key: '%s'" % name,
