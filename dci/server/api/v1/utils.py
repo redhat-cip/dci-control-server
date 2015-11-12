@@ -33,7 +33,7 @@ def verify_existence_and_get(table, resource_id, cond_exist):
     result = flask.g.db_conn.execute(query).fetchone()
 
     if result is None:
-        raise dci_exc.DCIException("%s type '%s' not found." %
+        raise dci_exc.DCIException("%s '%s' not found." %
                                    (resource_name, resource_id),
                                    status_code=404)
     return result
