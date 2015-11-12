@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_f5c0527e",
+        "filename": "dci/server/api/v1/utils.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 148,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T10:41:33Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_75eea224",
+      "revId": "996960409363e38362aca1d51eb17273d3e72db9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_f592929e",
         "filename": "dci/server/tests/api/v1/test_components.py",
         "patchSetId": 8
@@ -30,6 +48,24 @@
       "writtenOn": "2015-11-12T09:39:57Z",
       "side": 1,
       "message": "nitpick, I don\u0027t see the interest of creating a variable here, we just reuse the variable one time and it is not for avoiding a 80 characters line issue",
+      "revId": "996960409363e38362aca1d51eb17273d3e72db9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_95bd4605",
+        "filename": "dci/server/tests/api/v1/test_components.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T10:41:33Z",
+      "side": 1,
+      "message": "It\u0027s more for readability actually. It doesn\u0027t matter..",
+      "parentUuid": "fad0f9df_f592929e",
       "revId": "996960409363e38362aca1d51eb17273d3e72db9",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_b5baca08",
+        "filename": "dci/server/tests/api/v1/test_components.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T10:41:33Z",
+      "side": 1,
+      "message": "It\u0027s more for readability actually. It doesn\u0027t matter..",
+      "parentUuid": "fad0f9df_55e91e19",
+      "revId": "996960409363e38362aca1d51eb17273d3e72db9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_958f8675",
         "filename": "dci/server/tests/api/v1/test_componenttypes.py",
         "patchSetId": 8
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_5537deb0",
+        "filename": "dci/server/tests/api/v1/test_componenttypes.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T10:41:33Z",
+      "side": 1,
+      "message": "It\u0027s more for readability actually. It doesn\u0027t matter..",
+      "parentUuid": "fad0f9df_958f8675",
+      "revId": "996960409363e38362aca1d51eb17273d3e72db9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_b58c0a81",
         "filename": "dci/server/tests/api/v1/test_componenttypes.py",
         "patchSetId": 8
@@ -81,6 +153,24 @@
       "writtenOn": "2015-11-12T09:39:57Z",
       "side": 1,
       "message": "same here",
+      "revId": "996960409363e38362aca1d51eb17273d3e72db9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_753c6294",
+        "filename": "dci/server/tests/api/v1/test_componenttypes.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T10:41:33Z",
+      "side": 1,
+      "message": "It\u0027s more for readability actually. It doesn\u0027t matter..",
+      "parentUuid": "fad0f9df_b58c0a81",
       "revId": "996960409363e38362aca1d51eb17273d3e72db9",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
