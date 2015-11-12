@@ -1,0 +1,140 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fad0f9df_55603e35",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:47:44Z",
+      "side": 1,
+      "message": "avoid this line break create a data intermediate variable",
+      "revId": "57a23b9ac59327bef66aa99abd97a36fa9968201",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_75654244",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 223,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:47:44Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "57a23b9ac59327bef66aa99abd97a36fa9968201",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_155ab683",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 228,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:47:44Z",
+      "side": 1,
+      "message": "an URL variable can also be interesting as it will save 2 line breaks, here and on line 233",
+      "revId": "57a23b9ac59327bef66aa99abd97a36fa9968201",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_355fba74",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 240,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:47:44Z",
+      "side": 1,
+      "message": "create a data intermediate variable",
+      "revId": "57a23b9ac59327bef66aa99abd97a36fa9968201",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_d553ce6a",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 246,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:47:44Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "57a23b9ac59327bef66aa99abd97a36fa9968201",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_f5505260",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 250,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:47:44Z",
+      "side": 1,
+      "message": "url variable",
+      "revId": "57a23b9ac59327bef66aa99abd97a36fa9968201",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_9576a605",
+        "filename": "dci/server/tests/conftest.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:47:44Z",
+      "side": 1,
+      "message": "pct ? maybe a more verbose name (at least for the p, ct is for componenttype I guess)",
+      "revId": "57a23b9ac59327bef66aa99abd97a36fa9968201",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_b573aa14",
+        "filename": "dci/server/tests/conftest.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:47:44Z",
+      "side": 1,
+      "message": "test_id can be more comprehensible",
+      "revId": "57a23b9ac59327bef66aa99abd97a36fa9968201",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
