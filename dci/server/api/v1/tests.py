@@ -24,6 +24,7 @@ from dci.server.api.v1 import api
 from dci.server.api.v1 import jobdefinitions
 from dci.server.api.v1 import utils as v1_utils
 from dci.server.common import exceptions
+from dci.server.common import schemas
 from dci.server.common import utils
 from dci.server.db import models_core as models
 
@@ -64,20 +65,14 @@ def create_tests():
 
 @api.route('/tests', methods=['GET'])
 def get_all_tests():
-    limit = flask.request.args.get('limit', 20)
-    offset = flask.request.args.get('offset', 0)
-    sort = flask.request.args.get('sort', '')
-    where = flask.request.args.get('where', '')
+    args = schemas.args(flask.request.args.to_dict())
 
-    query = sqlalchemy.sql.select([models.TESTS]).\
-        limit(limit).offset(offset)
+    query = (sqlalchemy.sql.select([models.TESTS])
+             .limit(args['limit']).offset(args['offset']))
 
-    if sort:
-        query = v1_utils.sort_query(query, sort, _T_COLUMNS)
-
-    if where:
-        query = v1_utils.where_query(query, where, models.TESTS,
-                                     _T_COLUMNS)
+    query = v1_utils.sort_query(query, args['sort'], _T_COLUMNS)
+    query = v1_utils.where_query(query, args['where'], models.TESTS,
+                                 _T_COLUMNS)
 
     nb_cts = utils.get_number_of_rows(models.TESTS)
 
