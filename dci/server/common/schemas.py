@@ -42,6 +42,9 @@ INVALID_URL = 'not a valid URL'
 INVALID_TEAM = 'not a valid team id'
 INVALID_COMPONENT_TYPE = 'not a valid componenttype id'
 
+INVALID_OFFSET = 'not a valid offset integer (must be greater than 0)'
+INVALID_LIMIT = 'not a valid limit integer (must be greater than 0)'
+
 INVALID_REQUIRED = 'required key not provided'
 
 UUID_FIELD = v.All(six.text_type, msg=INVALID_UUID)
@@ -90,6 +93,24 @@ def schema_factory(schema):
         schema_post[key] = value
 
     return DCISchema(Schema(schema_post), Schema(schema))
+
+###############################################################################
+#                                                                             #
+#                                 Args schemas                                #
+#                                                                             #
+###############################################################################
+
+split = lambda string: string.split(',')
+
+args = Schema({
+    v.Optional('limit', default=20): v.All(v.Coerce(int), v.Range(0),
+                                           msg=INVALID_LIMIT),
+    v.Optional('offset', default=0): v.All(v.Coerce(int), v.Range(0),
+                                           msg=INVALID_OFFSET),
+    v.Optional('sort', default=[]): v.Coerce(split),
+    v.Optional('where', default=[]): v.Coerce(split),
+    v.Optional('embed', default=[]): v.Coerce(split)
+}, extra=v.REMOVE_EXTRA)
 
 ###############################################################################
 #                                                                             #
