@@ -36,6 +36,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_952ea6a4",
+        "filename": "dci/server/api/v1/tests.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_55c7de12",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_75cc6236",
         "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
         "patchSetId": 4
@@ -47,6 +65,24 @@
       "writtenOn": "2015-11-12T16:01:37Z",
       "side": 1,
       "message": "avoid line break",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_55183e84",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_75cc6236",
       "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -70,6 +106,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_751d4273",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_15d156cd",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_35ed7a8c",
         "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
         "patchSetId": 4
@@ -81,6 +135,24 @@
       "writtenOn": "2015-11-12T16:01:37Z",
       "side": 1,
       "message": "add the condition of enable, need some precisions here",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_1512b662",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_35ed7a8c",
       "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -104,6 +176,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_d50bce29",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_35d6dac6",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_d5daeee8",
         "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
         "patchSetId": 4
@@ -115,6 +205,24 @@
       "writtenOn": "2015-11-12T16:01:37Z",
       "side": 1,
       "message": "same here",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_f508522f",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_d5daeee8",
       "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -138,6 +246,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_78045915",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_f5d7f2bd",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_95e466ad",
         "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
         "patchSetId": 4
@@ -149,6 +275,24 @@
       "writtenOn": "2015-11-12T16:01:37Z",
       "side": 1,
       "message": "line break",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_18098d2c",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_95e466ad",
       "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -172,6 +316,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_380ed135",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "dunno",
+      "parentUuid": "fad0f9df_b5e16a9c",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_55eefe8c",
         "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
         "patchSetId": 4
@@ -183,6 +345,24 @@
       "writtenOn": "2015-11-12T16:01:37Z",
       "side": 1,
       "message": "only 2 needed",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_981c9d6c",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_55eefe8c",
       "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -206,6 +386,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_b819617b",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_75f30274",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_15e8767b",
         "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
         "patchSetId": 4
@@ -217,6 +415,24 @@
       "writtenOn": "2015-11-12T16:01:37Z",
       "side": 1,
       "message": "20 in comment, 10 in practice, 2 really needed",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_582635bc",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_15e8767b",
       "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -240,6 +456,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_782bf982",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_55959ee2",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_35a49a56",
         "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
         "patchSetId": 4
@@ -251,6 +485,24 @@
       "writtenOn": "2015-11-12T16:01:37Z",
       "side": 1,
       "message": "line break",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_1820ad9a",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_35a49a56",
       "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -274,6 +526,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_584dd571",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_95fb0647",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_b5f88a4a",
         "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
         "patchSetId": 4
@@ -285,6 +555,24 @@
       "writtenOn": "2015-11-12T16:01:37Z",
       "side": 1,
       "message": "use an URL constant",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_f83609e7",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_b5f88a4a",
       "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -308,6 +596,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_98333df6",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_f5fe1238",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_d5018e3a",
         "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
         "patchSetId": 4
@@ -319,6 +625,24 @@
       "writtenOn": "2015-11-12T16:01:37Z",
       "side": 1,
       "message": "same here",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_b83081e9",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 210,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T17:40:49Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_d5018e3a",
       "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
