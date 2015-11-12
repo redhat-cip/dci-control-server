@@ -1,0 +1,157 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fad0f9df_d53e6e29",
+        "filename": "dci/server/tests/api/v1/test_tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:09:23Z",
+      "side": 1,
+      "message": "need more explanation here plz",
+      "revId": "d9619f9682a5ad2b042c717d0234c0218359d8d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_f53b7236",
+        "filename": "dci/server/tests/api/v1/test_tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:09:23Z",
+      "side": 1,
+      "message": "avoid loop (2 samples is enought), avoid sort the entries will be saved in order so no need to sort again (save lines, avoid headaches)",
+      "revId": "d9619f9682a5ad2b042c717d0234c0218359d8d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_9548e6cd",
+        "filename": "dci/server/tests/api/v1/test_tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:09:23Z",
+      "side": 1,
+      "message": "line break not needed (line \u003c 80) or if you want to break",
+      "revId": "d9619f9682a5ad2b042c717d0234c0218359d8d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_150cf693",
+        "filename": "dci/server/tests/api/v1/test_tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:09:23Z",
+      "side": 1,
+      "message": "as long as pt will no longer be used avoid creating too much variables\n\nif you want to be readable you can do this\n    \n    pt \u003d admin.post(\u0027/api/v1/tests\u0027, data\u003d{\u0027name\u0027: \u0027pname1\u0027})\n    pt \u003d pt.data\n    pt \u003d pt[\u0027test\u0027][\u0027id\u0027]",
+      "revId": "d9619f9682a5ad2b042c717d0234c0218359d8d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_b545eab4",
+        "filename": "dci/server/tests/api/v1/test_tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:09:23Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "d9619f9682a5ad2b042c717d0234c0218359d8d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_3511faac",
+        "filename": "dci/server/tests/api/v1/test_tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:09:23Z",
+      "side": 1,
+      "message": "why so many loops ? those are http calls, it will slow down the jenkins and does not provide something in addition, 2 samples are good enough",
+      "revId": "d9619f9682a5ad2b042c717d0234c0218359d8d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_d5250e0b",
+        "filename": "dci/server/tests/api/v1/test_tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:09:23Z",
+      "side": 1,
+      "message": "verify*",
+      "revId": "d9619f9682a5ad2b042c717d0234c0218359d8d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_f5229200",
+        "filename": "dci/server/tests/api/v1/test_tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:09:23Z",
+      "side": 1,
+      "message": "limit can be limit\u003d2 according to previous comment",
+      "revId": "d9619f9682a5ad2b042c717d0234c0218359d8d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_951f86b7",
+        "filename": "dci/server/tests/api/v1/test_tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T15:09:23Z",
+      "side": 1,
+      "message": "okay for 3 but 2 is still good enough for testing",
+      "revId": "d9619f9682a5ad2b042c717d0234c0218359d8d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
