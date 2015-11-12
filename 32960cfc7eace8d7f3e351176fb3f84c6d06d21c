@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fad0f9df_b5ff2aaa",
+        "filename": "dci/server/tests/schemas/utils.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T12:32:01Z",
+      "side": 1,
+      "message": "why not using alias ?",
+      "revId": "32960cfc7eace8d7f3e351176fb3f84c6d06d21c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
