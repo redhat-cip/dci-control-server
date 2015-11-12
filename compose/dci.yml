@@ -1,6 +1,8 @@
 db:
     build: ..
     dockerfile: compose/Dockerfile-DB
+    ports:
+        - "5432:5432"
 api:
     build: ..
     dockerfile: compose/Dockerfile-API
@@ -8,6 +10,8 @@ api:
         - ..:/opt/dci-control-server
     links:
         - db
+    ports:
+        - "5000:5000"
     command: /bin/bash
     stdin_open: true
     tty: true
@@ -24,6 +28,9 @@ tox:
 app:
     build: ..
     dockerfile: compose/Dockerfile-APP
+    ports:
+        - "8000:8000"
+        - "35729:35729"
     volumes:
         - ../dci/dci_databrowser:/opt/dci_databrowser
     links:
