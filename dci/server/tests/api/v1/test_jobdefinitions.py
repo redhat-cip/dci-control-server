@@ -16,15 +16,6 @@
 
 import uuid
 
-import pytest
-
-
-@pytest.fixture
-def t_id(admin):
-    t = admin.post('/api/v1/tests',
-                   data={'name': 'pname'}).data
-    return t['test']['id']
-
 
 def test_create_jobdefinitions(admin, t_id):
     jd = admin.post('/api/v1/jobdefinitions',
@@ -219,3 +210,55 @@ def test_delete_jobdefinition_not_found(admin):
     result = admin.delete('/api/v1/jobdefinitions/ptdr',
                           headers={'If-match': 'mdr'})
     assert result.status_code == 404
+
+
+# Tests for jobdefinition and components management
+def test_add_component_to_jobdefinitions_and_get(admin, t_id, pct_id):
+    # create a jobdefinition
+    pjd = admin.post('/api/v1/jobdefinitions', data={'name': 'pname',
+                     'test_id': t_id}).data
+    pjd_id = pjd['jobdefinition']['id']
+
+    # create a component
+    pc = admin.post('/api/v1/components',
+                    data={'name': 'pname', 'componenttype_id': pct_id}).data
+    pc_id = pc['component']['id']
+
+    # add component to jobdefinition
+    admin.post('/api/v1/jobdefinitions/%s/components' % pjd_id,
+               data={'component_id': pc_id})
+
+    # get component from jobdefinition
+    component_from_jobdefinition = admin.get(
+        '/api/v1/jobdefinitions/%s/components' % pjd_id).data
+    assert component_from_jobdefinition['_meta']['count'] == 1
+    assert component_from_jobdefinition['components'][0] == pc['component']
+
+
+def test_delete_component_from_jobdefinition(admin, t_id, pct_id):
+    # create a jobdefinition
+    pjd = admin.post('/api/v1/jobdefinitions', data={'name': 'pname',
+                     'test_id': t_id}).data
+    pjd_id = pjd['jobdefinition']['id']
+
+    # create a component
+    pc = admin.post('/api/v1/components',
+                    data={'name': 'pname', 'componenttype_id': pct_id}).data
+    pc_id = pc['component']['id']
+
+    # add component to jobdefinition
+    admin.post('/api/v1/jobdefinitions/%s/components' % pjd_id,
+               data={'component_id': pc_id})
+    component_from_jobdefinition = admin.get(
+        '/api/v1/jobdefinitions/%s/components' % pjd_id).data
+    assert component_from_jobdefinition['_meta']['count'] == 1
+
+    # delete component from jobdefinition
+    admin.delete('/api/v1/jobdefinitions/%s/components/%s' % (pjd_id, pc_id))
+    component_from_jobdefinition = admin.get(
+        '/api/v1/jobdefinitions/%s/components' % pjd_id).data
+    assert component_from_jobdefinition['_meta']['count'] == 0
+
+    # verify component still exist on /components
+    c = admin.get('/api/v1/components/%s' % pc_id)
+    assert c.status_code == 200

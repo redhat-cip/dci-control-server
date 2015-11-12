@@ -16,15 +16,6 @@
 
 import uuid
 
-import pytest
-
-
-@pytest.fixture
-def pct_id(admin):
-    pct = admin.post('/api/v1/componenttypes',
-                     data={'name': 'pname'}).data
-    return pct['componenttype']['id']
-
 
 def test_create_components(admin, pct_id):
     pc = admin.post('/api/v1/components',

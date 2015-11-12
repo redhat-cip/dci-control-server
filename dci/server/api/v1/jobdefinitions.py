@@ -171,3 +171,52 @@ def delete_jobdefinition_by_id_or_name(jd_id):
                                    status_code=409)
 
     return flask.Response(None, 204, content_type='application/json')
+
+# Controllers for jobdefinition and components management
+
+
+@api.route('/jobdefinitions/<jd_id>/components', methods=['POST'])
+def add_component_to_jobdefinitions(jd_id):
+    data_json = flask.request.json
+    # verif post
+    values = {'jobdefinition_id': jd_id,
+              'component_id': data_json.get('component_id', None)}
+
+    _verify_existence_and_get_jd(jd_id)
+
+    query = models.JOIN_JOBDEFINITIONS_COMPONENTS.insert().values(**values)
+    flask.g.db_conn.execute(query)
+    return flask.Response(None, 201, content_type='application/json')
+
+
+@api.route('/jobdefinitions/<jd_id>/components', methods=['GET'])
+def get_all_components_from_jobdefinitions(jd_id):
+    _verify_existence_and_get_jd(jd_id)
+
+    # Get all components which belongs to a given jobdefinition
+    query = sqlalchemy.sql.select([models.COMPONENTS]).select_from(
+        models.JOIN_JOBDEFINITIONS_COMPONENTS.join(models.COMPONENTS)).where(
+        models.JOIN_JOBDEFINITIONS_COMPONENTS.c.jobdefinition_id == jd_id)
+
+    rows = flask.g.db_conn.execute(query)
+    result = [dict(row) for row in rows]
+    result = {'components': result, '_meta': {'count': len(result)}}
+    result = json.dumps(result, default=utils.json_encoder)
+    return flask.Response(result, 201, content_type='application/json')
+
+
+@api.route('/jobdefinitions/<jd_id>/components/<c_id>', methods=['DELETE'])
+def delete_component_from_jobdefinition(jd_id, c_id):
+    _verify_existence_and_get_jd(jd_id)
+
+    JDC = models.JOIN_JOBDEFINITIONS_COMPONENTS
+    query = JDC.delete().where(
+        sqlalchemy.sql.and_(JDC.c.jobdefinition_id == jd_id,
+                            JDC.c.component_id == c_id))
+    result = flask.g.db_conn.execute(query)
+
+    if result.rowcount == 0:
+        raise dci_exc.DCIException("Component '%s' already deleted." % c_id,
+                                   status_code=409)
+
+    return flask.Response(None, 204, content_type='application/json')
