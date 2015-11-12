@@ -1,7 +1,7 @@
 FROM fedora
 
 RUN dnf update -y
-RUN dnf install -y nodejs npm tar bzip2
+RUN dnf install -y nodejs npm tar bzip2 make freetype fontconfig
 
 WORKDIR /tmp
 
