@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fad0f9df_d5f8aec6",
+        "filename": "dci/server/api/v1/componenttypes.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T12:27:39Z",
+      "side": 1,
+      "message": "if a POST with no values is sent, then flask.request.json is None.\nwe should test it before to process it.\n\na test for that case would be awesome :)",
+      "revId": "10e3729d123ceff40cfd53aa202e01a53ed919e3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_f5f5b2cb",
+        "filename": "dci/server/api/v1/componenttypes.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T12:27:39Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "10e3729d123ceff40cfd53aa202e01a53ed919e3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
