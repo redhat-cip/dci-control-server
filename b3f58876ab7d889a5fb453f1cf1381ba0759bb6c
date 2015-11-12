@@ -1,0 +1,327 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fad0f9df_b54acaaa",
+        "filename": "dci/server/api/v1/jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "as we discussed, replace test_id with test",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_55c7de12",
+        "filename": "dci/server/api/v1/tests.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "why not test_id ? We do not really need to obfuscate the name here",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_75cc6236",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "avoid line break",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_15d156cd",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "same here, create a data intermediate variable if needed",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_35ed7a8c",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "add the condition of enable, need some precisions here",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_35d6dac6",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "same here we have three lines which can become\n\n    data \u003d {\u0027name\u0027: \u0027pname\u0027, \u0027test_id\u0027: t_id}\n    jd \u003d admin.post(\u0027/api/v1/jobdefinitions\u0027, data)\n    status_code \u003d jd.status_code",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_d5daeee8",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_f5d7f2bd",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "only 2 are needed",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_95e466ad",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "line break",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_b5e16a9c",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "no need for sorting I think, because it is stored in order of creation in the db",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_55eefe8c",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "only 2 needed",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_75f30274",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "works with 2 examples too",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_15e8767b",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "20 in comment, 10 in practice, 2 really needed",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_55959ee2",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "same here, furthermore this creation is not needed as the controller raise a 400 error",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_35a49a56",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "line break",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_95fb0647",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "create data before",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_b5f88a4a",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "use an URL constant",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_f5fe1238",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "create data before",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_d5018e3a",
+        "filename": "dci/server/tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 210,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-12T16:01:37Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "b3f58876ab7d889a5fb453f1cf1381ba0759bb6c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
