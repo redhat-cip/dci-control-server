@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fad0f9df_15263669",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T12:39:21Z",
+      "side": 1,
+      "message": "test object ?",
+      "revId": "f0c98c5e6fb3582b0834c50c55ce4e2e2970c67e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_7531c2a1",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-12T12:39:21Z",
+      "side": 1,
+      "message": "test_id ?",
+      "revId": "f0c98c5e6fb3582b0834c50c55ce4e2e2970c67e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
