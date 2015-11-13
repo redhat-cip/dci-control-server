@@ -25,8 +25,8 @@
         <li><span class="glyphicon glyphicon-calendar"></span>{{job.jobstate.created_at}}</li>
       </ul>
     </div>
-    <div class="tile-refresh">
-      <span class="glyphicon glyphicon-repeat"></span>
+    <div class="tile-refresh" ng-controller="JobRecheckCtrl">
+      <span class="glyphicon glyphicon-repeat" ng-click="recheck(job)"></span>
     </div>
   </section>
 

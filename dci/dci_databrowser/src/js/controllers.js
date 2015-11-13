@@ -100,8 +100,18 @@ require('./app.js')
       'unfinished': 'glyphicon-minus'
     };
 
-    $scope.glyphicon = function () {
+    $scope.glyphicon = function() {
       return glyphiconStatus[status];
+    }
+
+  }
+])
+.controller('JobRecheckCtrl', [
+  '$scope', '$state', 'api', function ($scope, $state, api) {
+    $scope.recheck = function(job) {
+      api.recheckJob(job).then(function(job) {
+        $state.go('job', {'id': job.id});
+      });
     }
   }
 ]);
