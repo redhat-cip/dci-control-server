@@ -15,6 +15,6 @@ ADD requirements.txt /tmp/
 RUN easy_install -U pip
 RUN easy_install-3.4 -U pip
 
-RUN npm install -g gulp
+RUN npm install -g gulp npm-cache
 ENV LANG "en_US.UTF-8"
 WORKDIR /opt/dci
