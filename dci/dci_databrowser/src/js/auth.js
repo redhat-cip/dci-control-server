@@ -19,7 +19,8 @@ require('./app.js')
 .constant('authStates', {
   'DISCONNECTED': 0,
   'AUTHENTICATING': 1,
-  'AUTHENTICATED': 2
+  'AUTHENTICATED': 2,
+  'UNAUTHORIZED': 3
 })
 
 .config(['$httpProvider', function ($httpProvider) {
@@ -67,6 +68,5 @@ require('./app.js')
         $cookies.auth = $window.btoa('None');
         this.state = authStates.DISCONNECTED
       }
-
   }
-])
+]);
