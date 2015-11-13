@@ -16,43 +16,32 @@
 
 import uuid
 
-import pytest
 
-
-@pytest.fixture
-def pct_id(admin):
-    pct = admin.post('/api/v1/componenttypes',
-                     data={'name': 'pname'}).data
-    return pct['componenttype']['id']
-
-
-def test_create_components(admin, pct_id):
-    pc = admin.post('/api/v1/components',
-                    data={'name': 'pname', 'componenttype_id': pct_id}).data
+def test_create_components(admin, componenttype_id):
+    data = {'name': 'pname', 'componenttype_id': componenttype_id}
+    pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
     gc = admin.get('/api/v1/components/%s' % pc_id).data
     assert gc['component']['name'] == 'pname'
 
 
 # enabled later
-def loltest_create_components_already_exist(admin, pct_id):
-    pstatus_code = admin.post('/api/v1/components',
-                              data={'name': 'pname',
-                                    'componenttype_id': pct_id}).status_code
+def loltest_create_components_already_exist(admin, componenttype_id):
+    data = {'name': 'pname', 'componenttype_id': componenttype_id}
+    pstatus_code = admin.post('/api/v1/components', data=data).status_code
     assert pstatus_code == 201
 
-    pstatus_code = admin.post('/api/v1/components',
-                              data={'name': 'pname',
-                                    'componenttype_id': pct_id}).status_code
+    data = {'name': 'pname', 'componenttype_id': componenttype_id}
+    pstatus_code = admin.post('/api/v1/components', data=data).status_code
     assert pstatus_code == 400
 
 
-def test_get_all_components(admin, pct_id):
+def test_get_all_components(admin, componenttype_id):
     created_c_ids = []
     for i in range(5):
         pc = admin.post('/api/v1/components',
                         data={'name': 'pname%s' % uuid.uuid4(),
-                              'componenttype_id': pct_id}).data
+                              'componenttype_id': componenttype_id}).data
         created_c_ids.append(pc['component']['id'])
     created_c_ids.sort()
 
@@ -64,12 +53,12 @@ def test_get_all_components(admin, pct_id):
     assert db_all_cs_ids == created_c_ids
 
 
-def test_get_all_components_with_pagination(admin, pct_id):
+def test_get_all_components_with_pagination(admin, componenttype_id):
     # create 20 component types and check meta data count
     for i in range(20):
         admin.post('/api/v1/components',
                    data={'name': 'pname%s' % uuid.uuid4(),
-                         'componenttype_id': pct_id})
+                         'componenttype_id': componenttype_id})
     cs = admin.get('/api/v1/components').data
     assert cs['_meta']['count'] == 20
 
@@ -85,12 +74,12 @@ def test_get_all_components_with_pagination(admin, pct_id):
     assert cs.data['components'] == []
 
 
-def test_get_all_components_with_embed(admin, pct_id):
+def test_get_all_components_with_embed(admin, componenttype_id):
     # create 20 component types and check meta data count
     for i in range(10):
         admin.post('/api/v1/components',
                    data={'name': 'pname%s' % uuid.uuid4(),
-                         'componenttype_id': pct_id})
+                         'componenttype_id': componenttype_id})
 
     # verify embed
     cs = admin.get('/api/v1/components?embed=componenttype').data
@@ -98,25 +87,25 @@ def test_get_all_components_with_embed(admin, pct_id):
     for component in cs['components']:
         assert 'componenttype_id' not in component
         assert 'componenttype' in component
-        assert component['componenttype']['id'] == pct_id
+        assert component['componenttype']['id'] == componenttype_id
 
 
-def test_get_all_components_with_embed_not_valid(admin, pct_id):
+def test_get_all_components_with_embed_not_valid(admin, componenttype_id):
     # create 20 component types and check meta data count
     for i in range(10):
         admin.post('/api/v1/components',
                    data={'name': 'pname%s' % uuid.uuid4(),
-                         'componenttype_id': pct_id})
+                         'componenttype_id': componenttype_id})
 
     # verify embed
     cs = admin.get('/api/v1/components?embed=mdr')
     assert cs.status_code == 400
 
 
-def test_get_all_components_with_where(admin, pct_id):
+def test_get_all_components_with_where(admin, componenttype_id):
     pc = admin.post('/api/v1/components',
                     data={'name': 'pname1',
-                          'componenttype_id': pct_id}).data
+                          'componenttype_id': componenttype_id}).data
     pc_id = pc['component']['id']
 
     db_c = admin.get('/api/v1/components?where=id:%s' % pc_id).data
@@ -128,9 +117,9 @@ def test_get_all_components_with_where(admin, pct_id):
     assert db_c_id == pc_id
 
 
-def test_get_component_by_id_or_name(admin, pct_id):
-    pc = admin.post('/api/v1/components',
-                    data={'name': 'pname', 'componenttype_id': pct_id}).data
+def test_get_component_by_id_or_name(admin, componenttype_id):
+    data = {'name': 'pname', 'componenttype_id': componenttype_id}
+    pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
 
     # get by uuid
@@ -153,9 +142,9 @@ def test_get_component_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_component_by_id(admin, pct_id):
-    pc = admin.post('/api/v1/components',
-                    data={'name': 'pname', 'componenttype_id': pct_id})
+def test_delete_component_by_id(admin, componenttype_id):
+    data = {'name': 'pname', 'componenttype_id': componenttype_id}
+    pc = admin.post('/api/v1/components', data=data)
     pct_etag = pc.headers.get("ETag")
     pc_id = pc.data['component']['id']
     assert pc.status_code == 201
@@ -171,20 +160,20 @@ def test_delete_component_by_id(admin, pct_id):
     assert gct.status_code == 404
 
 
-def test_get_all_components_with_sort(admin, pct_id):
+def test_get_all_components_with_sort(admin, componenttype_id):
     # create 4 components ordered by created time
-    ct_1_1 = admin.post('/api/v1/components',
-                        data={'name': "pname1", 'title': 'aaa',
-                              'componenttype_id': pct_id}).data['component']
-    ct_1_2 = admin.post('/api/v1/components',
-                        data={'name': "pname2", 'title': 'aaa',
-                              'componenttype_id': pct_id}).data['component']
-    ct_2_1 = admin.post('/api/v1/components',
-                        data={'name': "pname3", 'title': 'bbb',
-                              'componenttype_id': pct_id}).data['component']
-    ct_2_2 = admin.post('/api/v1/components',
-                        data={'name': "pname3", 'title': 'bbb',
-                              'componenttype_id': pct_id}).data['component']
+    data = {'name': "pname1", 'title': 'aaa',
+            'componenttype_id': componenttype_id}
+    ct_1_1 = admin.post('/api/v1/components', data=data).data['component']
+    data = {'name': "pname2", 'title': 'aaa',
+            'componenttype_id': componenttype_id}
+    ct_1_2 = admin.post('/api/v1/components', data=data).data['component']
+    data = {'name': "pname3", 'title': 'bbb',
+            'componenttype_id': componenttype_id}
+    ct_2_1 = admin.post('/api/v1/components', data=data).data['component']
+    data = {'name': "pname3", 'title': 'bbb',
+            'componenttype_id': componenttype_id}
+    ct_2_2 = admin.post('/api/v1/components', data=data).data['component']
 
     cts = admin.get('/api/v1/components?sort=created_at').data
     assert cts['components'] == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
@@ -194,10 +183,10 @@ def test_get_all_components_with_sort(admin, pct_id):
     assert cts['components'] == [ct_1_2, ct_1_1, ct_2_2, ct_2_1]
 
 
-def test_get_component_with_embed(admin, pct_id):
-    pct = admin.get('/api/v1/componenttypes/%s' % pct_id).data
+def test_get_component_with_embed(admin, componenttype_id):
+    pct = admin.get('/api/v1/componenttypes/%s' % componenttype_id).data
     ccpt = admin.post('/api/v1/components', data={'name': 'pname',
-                      'componenttype_id': pct_id}).data
+                      'componenttype_id': componenttype_id}).data
     del ccpt['component']['componenttype_id']
     ccpt['component'][u'componenttype'] = pct['componenttype']
 
@@ -206,9 +195,9 @@ def test_get_component_with_embed(admin, pct_id):
     assert ccpt == cpt
 
 
-def test_get_component_with_embed_not_valid(admin, pct_id):
+def test_get_component_with_embed_not_valid(admin, componenttype_id):
     admin.post('/api/v1/components', data={'name': 'pname',
-               'componenttype_id': pct_id})
+               'componenttype_id': componenttype_id})
 
     # verify embed
     cs = admin.get('/api/v1/components/pname?embed=mdr')
