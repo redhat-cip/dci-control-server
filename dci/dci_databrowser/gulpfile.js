@@ -56,23 +56,15 @@ gulp.task('watch', function() {
 
 gulp.task('js', ['clean'], function() {
   var bundledStream = through();
-  var entries = [
-    'node_modules/angular/angular.js',
-    'node_modules/angular-cookies/angular-cookies.js',
-    'node_modules/angular-resource/angular-resource.js',
-    'node_modules/angular-google-chart/ng-google-chart.js',
-    'node_modules/angular-bootstrap/ui-bootstrap-tpls.js',
-    'node_modules/angular-ui-router/release/angular-ui-router.js',
-    'node_modules/angular-loading-bar/build/loading-bar.js',
-    'node_modules/moment/moment.js',
-    'src/js/**/*.js',
-  ];
 
-  globby(entries).then(function(entries) {
+  globby(['src/js/**/*.js']).then(function(entries) {
     browserify({
       entries: entries,
       debug: true
-    }).bundle().pipe(bundledStream);
+    })
+    .require('./src/js/app.js', {'expose': 'app'})
+    .bundle()
+    .pipe(bundledStream);
   }).catch(function(err) {
     // ensure any errors from globby are handled
     bundledStream.emit('error', err);

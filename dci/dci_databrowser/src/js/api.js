@@ -14,7 +14,7 @@
 
 'use strict';
 
-require('./app.js')
+require('app')
 .factory('api', ['$resource', '$q', function($resource, $q) {
   var Jobs = $resource('/api/jobs/:id?recheck=:recheck&job_id=:jobID');
   var JobStates = $resource('/api/jobstates');
