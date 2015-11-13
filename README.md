@@ -97,6 +97,104 @@ You can develop into a safe environment by using [docker-compose](http://docs.do
 
 The REST API is available for any type of objects. You can browse the database on http://127.0.0.1:5000/.
 
+## Endpoints
+
+The resources of DCI can be accessed through our API in a Restful way.
+Currently, only the json output format is supported.
+
+Each resource provides two endpoints, one for listing: `/resources/`,
+one for fetching a dedicated element: `/resources/<resource_id>/`.
+
+On those endpoints we can use some parameters on the GET method to filter,
+search or complete results.
+
+On the listing endpoint:
+
+`/resources?sort=field1,-field2&limit=20&offset=0&where=field1:foo,field2:bar&embed:resource1,resource2`
+
+* `sort` parameter will allow the user to sort the listing output according to
+fields, the sorting is done by ascending results, if the field is prefixed with
+`-`, the sorting is done descending. The order also matter, it sorts the first
+field, when its done it sorts the second field with the resources which have
+the same first field values, and so on. In our example, it will sort ascending
+on field1 and on resources which have the same value for field1 will sort
+descending on field2.
+
+* `limit` parameter is usually used with the offset one in order to paginate
+results. It will limit the number of resources retrivied, by default it is
+set to 20 entries, but you can augment that value. Be careful, the more you
+fetch the longer the http call can be.
+
+* `offset` parameter is the second pagination parameter, this will indicate at
+which entry we want to start the listing in the order defined by default or
+with other parameters.
+
+* `where` parameter is here to filter the resources according to a field value.
+In this example we will retrieve the resources which field1 is equal to foo and
+field2 equal to bar.
+
+* `embed` parameter is for shipping linked resources in the result, in this
+example, the result will contain the resource1 and resource2 object into the
+resources fetched. Like the paginations parameter be careful when using this
+parameter as it can considerably slow down the http request.
+
+On the resource endpoint:
+
+`/resources/<resource_id>?embed:resource1,resource2`
+
+* `embed` parameter is the only one available at this endpoint and provides
+the same features as the one in the listing endpoint.
+
+
+### Component Type
+
+object attributes:
+
+* id
+* created_at
+* updated_at
+* name
+
+
+listing url: `/api/v1/componenttypes`
+
+* `GET`: get all the components type
+* `POST`: create a component type element
+  * name
+
+resource url: `/api/v1/componenttypes/<componenttype_id>`
+
+* `GET`: retrieve the dedicated component type
+* `PUT`: update the given component type
+  * name
+* `DELETE`: remove the given component type
+
+
+### Component
+
+object attributes
+
+* id
+* created_at
+* updated_at
+* name
+* componenttype
+
+listing url: `/api/v1/components`
+
+* `GET`: get all the components
+* `POST`: create a component element
+  * name
+  * componenttype
+
+resource url: `/api/v1/components/<component_id>`
+
+* `GET`: retrieve the dedicated component
+* `PUT`: update the given component
+  * name
+  * componenttype
+* `DELETE`: remove the given component
+
 # The API documentation
 
 By installing these extra requirements, you can enable the /docs API documentation
