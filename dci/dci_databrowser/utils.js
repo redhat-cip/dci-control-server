@@ -24,6 +24,9 @@ var proxy        = require('proxy-middleware');
 var gutil        = require('gulp-util');
 var serveStatic  = require('serve-static');
 var childProcess = require('child_process');
+var through      = require('through2');
+var browserify   = require('browserify');
+var globby       = require('globby');
 
 /*
  * The close function is async, so we wrap it in order
@@ -37,6 +40,25 @@ function closePromise(obj) {
     oldClose.call(obj);
     return d.promise;
   };
+}
+
+function bundledStream(entries) {
+  var bundledStream = through();
+
+  globby(entries).then(function(entries) {
+    browserify({
+      entries: entries,
+      debug: true
+    })
+    .require('./src/js/app.js', {'expose': 'app'})
+    .bundle()
+    .pipe(bundledStream);
+  }).catch(function(err) {
+    // ensure any errors from globby are handled
+    bundledStream.emit('error', err);
+  });
+
+  return bundledStream;
 }
 
 function server(root, port, livereload) {
@@ -133,6 +155,7 @@ function protractor(address, configFile) {
 }
 
 module.exports = {
+  bundledStream: bundledStream,
   server: server,
   phantom: phantom,
   protractor: protractor

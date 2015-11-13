@@ -16,8 +16,20 @@
 
 /*globals describe, it, expect, element, browser*/
 describe('DCI homepage', function () {
+  beforeEach(function() {
+    browser.addMockModule('app', function() {
+      var dependencies = ['ngCookies', 'angular-loading-bar', 'ui.router',
+                          'googlechart', 'ngResource', 'ngMockE2E']
+      angular
+      .module('app', dependencies)
+      .run(['$httpBackend', function($httpBackend) {
+        $httpBackend.whenGET(/^\/partials\//).passThrough();
+      }]);
+    })
+  });
+
   it('should display a login page', function () {
-      browser.get('/');
-      expect(browser.getTitle()).toEqual('Distributed CI');
-    });
+    browser.get('/#/login');
+    expect(browser.getTitle()).toEqual('Distributed CI');
+  });
 });

@@ -14,32 +14,33 @@
 
 'use strict';
 
-var gulp       = require('gulp');
-var $          = require('gulp-load-plugins')();
-var del        = require('del');
-var browserify = require('browserify');
-var source     = require('vinyl-source-stream');
-var buffer     = require('vinyl-buffer');
-var globby     = require('globby');
-var through    = require('through2');
-var merge      = require('merge2');
-var config     = require('./config');
-var utils      = require('./utils');
+var gulp   = require('gulp');
+var $      = require('gulp-load-plugins')();
+var del    = require('del');
+var source = require('vinyl-source-stream');
+var buffer = require('vinyl-buffer');
+var merge  = require('merge2');
+var config = require('./config');
+var utils  = require('./utils');
 
 var DIST = 'static';
+var JS = ['src/js/**/*.js'];
 
 gulp.task('jscs', function() {
   return gulp.src(['src/**.js', 'gulpfile.js', 'utils.js'])
   .pipe($.jscs());
 });
 
-gulp.task('build', ['js', 'css', 'fonts'], function() {
+gulp.task('copy', ['clean'], function() {
   return gulp.src([
     'src/**/*',
     '!src/**/*.js',
     '!src/**/*.scss'
   ]).pipe(gulp.dest(DIST));
 });
+
+gulp.task('build', ['js', 'css', 'fonts', 'copy']);
+gulp.task('build:test', ['js:test', 'css', 'fonts', 'copy']);
 
 gulp.task('clean', function() {
   var entries = [DIST + '/**/*', '!' + DIST + '/.gitkeep'];
@@ -54,28 +55,21 @@ gulp.task('watch', function() {
   gulp.watch('src/**', ['reload']);
 });
 
-gulp.task('js', ['clean'], function() {
-  var bundledStream = through();
-
-  globby(['src/js/**/*.js']).then(function(entries) {
-    browserify({
-      entries: entries,
-      debug: true
-    })
-    .require('./src/js/app.js', {'expose': 'app'})
-    .bundle()
-    .pipe(bundledStream);
-  }).catch(function(err) {
-    // ensure any errors from globby are handled
-    bundledStream.emit('error', err);
-  });
-
-  return bundledStream
+function buildJS(jsFiles) {
+  return utils.bundledStream(jsFiles)
   .pipe(source('app.js'))
   .pipe(buffer())
   .pipe($.sourcemaps.init({loadMaps: true}))
   .pipe($.sourcemaps.write('./'))
   .pipe(gulp.dest(DIST + '/js/'));
+}
+
+gulp.task('js', ['clean'], function() {
+  return buildJS(JS);
+});
+
+gulp.task('js:test', ['clean'], function() {
+  return buildJS(JS.concat('node_modules/angular-mocks/ngMockE2E.js'));
 });
 
 gulp.task('css', ['clean'], function() {
@@ -117,7 +111,7 @@ gulp.task('serve:dev', ['build', 'watch'], function() {
   return utils.server(DIST, config.port, true);
 });
 
-gulp.task('test:e2e', ['build'], function(cb) {
+gulp.task('test:e2e', ['build:test'], function(cb) {
   var Q = require('q');
   var d = Q.defer();
   var phantom;
