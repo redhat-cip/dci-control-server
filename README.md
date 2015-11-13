@@ -145,6 +145,55 @@ On the resource endpoint:
 * `embed` parameter is the only one available at this endpoint and provides
 the same features as the one in the listing endpoint.
 
+Concurrency control with etag:
+
+The REST API support etag headers, each request result contains the HTTP
+header 'ETag' which is a fingerprint of the requested resource.
+
+When a user wants to update or delete a resource then the API requires the
+user to provide the HTTP header 'If-match' with the corresponding etag in
+order to prevent concurrency errors.
+
+This mechanism ensure that the user has read the most up to date value of the
+resource before to update/delete it.
+
+Example:
+
+    $ http POST http://127.0.0.1:5000/api/v1/componenttypes name=kikoolol
+    HTTP/1.0 201 CREATED
+    Content-Length: 217
+    Content-Type: application/json
+    Date: Fri, 13 Nov 2015 12:46:18 GMT
+    ETag: 8f5dc53c14b865d2c2f0ca6654a4a5c2
+    Server: Eve/0.6 Werkzeug/0.10.4 Python/2.7.6
+
+Here is the etag 'ETag: 8f5dc53c14b865d2c2f0ca6654a4a5c2'.
+
+    $ http PUT http://127.0.0.1:5000/api/v1/componenttypes/kikoolol name=kikoolol2
+    HTTP/1.0 412 PRECONDITION FAILED
+    Content-Length: 92
+    Content-Type: application/json
+    Date: Fri, 13 Nov 2015 12:47:33 GMT
+    Server: Eve/0.6 Werkzeug/0.10.4 Python/2.7.6
+    
+    {
+        "message": "'If-match' header must be provided", 
+        "payload": {}, 
+        "status_code": 412
+    }
+
+Here an update request must provide the 'If-match' header.
+
+    $ http PUT http://127.0.0.1:5000/api/v1/componenttypes/kikoolol \
+    If-match:8f5dc53c14b865d2c2f0ca6654a4a5c2 name=kikoolol2
+    HTTP/1.0 204 NO CONTENT
+    Content-Length: 0
+    Content-Type: application/json
+    Date: Fri, 13 Nov 2015 12:48:45 GMT
+    ETag: 71c076a7ccda10632a40be60ba065511
+    Server: Eve/0.6 Werkzeug/0.10.4 Python/2.7.6
+
+The update succeed and the etag has been updated.
 
 ### Component Type
 
