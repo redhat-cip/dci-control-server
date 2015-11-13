@@ -14,7 +14,7 @@
 
 'use strict';
 
-require('./app.js')
+require('app')
 .config([
   '$stateProvider', '$urlRouterProvider',
   function($stateProvider, $urlRouterProvider) {

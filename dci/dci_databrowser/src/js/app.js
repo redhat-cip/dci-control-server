@@ -15,6 +15,13 @@
 'use strict';
 
 var moment = require('moment');
+var angular = require('angular');
+
+require('angular-cookies');
+require('angular-resource');
+require('angular-loading-bar');
+require('angular-ui-router');
+require('angular-google-chart');
 
 module.exports = angular.module('app', [
   'ngCookies', 'angular-loading-bar', 'ui.router', 'googlechart', 'ngResource'
