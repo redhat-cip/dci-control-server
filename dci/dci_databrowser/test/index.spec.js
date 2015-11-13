@@ -15,9 +15,19 @@
 'use strict';
 
 /*globals describe, it, expect, element, browser*/
-describe('DCI homepage', function() {
-  it('should display a login page', function() {
-      browser.get('/');
-      expect(browser.getTitle()).toEqual('Distributed CI');
-    });
+describe('DCI homepage', function () {
+  beforeEach(function() {
+    browser.addMockModule('APIMock', function() {
+      angular
+      .module('APIMock', ['ngMockE2E'])
+      .run(['$httpBackend', function($httpBackend) {
+        $httpBackend.whenGET(/^\/partials\//).passThrough();
+      }]);
+    })
+  });
+
+  it('should display a login page', function () {
+    browser.get('/#/login');
+    expect(browser.getTitle()).toEqual('Distributed CI');
+  });
 });

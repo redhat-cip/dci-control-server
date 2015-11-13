@@ -35,7 +35,7 @@ require('app')
         }]
       },
       controller: 'authCtrl',
-      templateUrl: 'partials/auth.html'
+      templateUrl: '/partials/auth.html'
     })
     .state('index', {
       url: '/',
@@ -56,13 +56,13 @@ require('app')
         }]
       },
       onEnter: scrollTop,
-      templateUrl: 'partials/jobs.html',
+      templateUrl: '/partials/jobs.html',
       controller: 'ListJobsCtrl'
     })
     .state('job', {
       url: '/jobs/:id',
       parent: 'auth',
-      templateUrl: 'partials/job.html',
+      templateUrl: '/partials/job.html',
       resolve: {
         job: ['$stateParams', 'api', function($stateParams, api) {
           return api.getJob($stateParams.id);
@@ -81,7 +81,7 @@ require('app')
           return api.getJobDefinitions(page);
         }]
       },
-      templateUrl: 'partials/jobdefinitions.html',
+      templateUrl: '/partials/jobdefinitions.html',
       controller: 'ListJobDefinitionsCtrl'
     })
     .state('jobdefinition', {
@@ -92,14 +92,14 @@ require('app')
           return api.getJobDefinition($stateParams.id);
         }]
       },
-      templateUrl: 'partials/jobdefinition.html',
+      templateUrl: '/partials/jobdefinition.html',
       controller: 'JobDefinitionCtrl'
     })
 
     .state('remotecis', {
       url: '/remotecis?page',
       parent: 'auth',
-      templateUrl: 'partials/remotecis.html',
+      templateUrl: '/partials/remotecis.html',
       resolve: {
         page: ['$stateParams', function ($stateParams) {
           return parseInt($stateParams.page) || 1;
@@ -123,7 +123,7 @@ require('app')
           };
         }]
       },
-      templateUrl: 'partials/login.html',
+      templateUrl: '/partials/login.html',
     });
 
     $urlRouterProvider.otherwise('/');
