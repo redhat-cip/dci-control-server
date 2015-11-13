@@ -145,6 +145,17 @@ On the resource endpoint:
 * `embed` parameter is the only one available at this endpoint and provides
 the same features as the one in the listing endpoint.
 
+Concurrency control with etag:
+
+The REST API support etag headers, each request result contains the HTTP
+header 'ETag' which is a fingerprint of the request resource.
+
+When a user wants to update or delete a resource then the API requires the
+user to provide the HTTP header 'If-Match:' with the corresponding etag in
+order to prevent concurrency errors.
+
+This mechanism ensure that the user has read the most up to date value of the
+resource before to update/delete it.
 
 ### Component Type
 
