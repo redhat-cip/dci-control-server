@@ -16,12 +16,13 @@
 
 require('./app.js')
 .controller('LoginCtrl', [
-  '$scope', '$state', 'next', 'auth',
-  function($scope, $state, next, auth) {
+  '$scope', '$state', 'next', 'auth', 'authStates',
+  function($scope, $state, next, auth, authStates) {
     $scope.authenticate = function(credentials) {
       auth.login(credentials.username, credentials.password);
       $state.go(next.state, next.args);
     }
+    $scope.unauthorized = auth.state == authStates.UNAUTHORIZED;
   }
 ])
 

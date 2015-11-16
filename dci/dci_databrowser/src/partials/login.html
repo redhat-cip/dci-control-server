@@ -4,19 +4,24 @@
       ng-submit="authenticate(credentials)">
 
       <h2 class="form-signin-heading">Please sign in</h2>
+      <p class="text-danger" ng-if="unauthorized">
+      Login or/and Password Incorrect
+      </p>
 
-      <label for="inputLogin" class="sr-only">Login</label>
+      <div class="form-group">
+        <label for="inputLogin" class="sr-only">Login</label>
 
-      <input type="login" ng-model="credentials.username"
+        <input type="login" ng-model="credentials.username"
         name="userName" id="inputLogin" class="form-control"
         placeholder="Login" required autofocus>
+      </div>
+      <div class="form-group">
+        <label for="inputPassword" class="sr-only">Password</label>
 
-      <label for="inputPassword" class="sr-only">Password</label>
-
-      <input type="password" ng-model="credentials.password"
+        <input type="password" ng-model="credentials.password"
         id="inputPassword" class="form-control"
         placeholder="Password" required>
-
+      </div>
       <button class="btn btn-lg btn-primary btn-block" type="submit">Sign in</button>
 
     </form>

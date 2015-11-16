@@ -141,16 +141,25 @@ require('./app.js')
 ])
 
 .run([
-  '$rootScope', '$state', 'authStates',
-  function($rootScope, $state, authStates) {
+  '$rootScope', '$state', 'authStates', 'auth',
+  function($rootScope, $state, authStates, auth) {
     $rootScope.$on(
       '$stateChangeError',
       function(event, toState, toParams, fromState, fromParams, error) {
-        if (error === authStates.DISCONNECTED) {
+        function redirect() {
           $state.go('login', {
             next: toState.name,
             args: btoa(angular.toJson(toParams))
+          }, {
+            reload: true
           });
+        }
+        if (error.status == 401) {
+          auth.state = authStates.UNAUTHORIZED;
+          redirect();
+        }
+        if (error === authStates.DISCONNECTED) {
+          redirect();
         }
       }
     );
