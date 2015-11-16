@@ -22,12 +22,32 @@ describe('DCI homepage', function() {
       .module('APIMock', ['ngMockE2E'])
       .run(['$httpBackend', function($httpBackend) {
         $httpBackend.whenGET(/^\/partials\//).passThrough();
+        $httpBackend.whenGET(/^\/api\/jobstates/).respond(function() {
+          return [200, {_items: []}, {}];
+        });
+
+        $httpBackend.whenGET(/^\/api\/jobs\/1234/).respond(function() {
+          return [200, {id: 1234, remoteci: {id: 1234}}, {}];
+        });
+
+        $httpBackend.whenPOST(/^\/api\/jobs/).respond(function() {
+          return [200, {id: 5678}, {}];
+        });
+        $httpBackend.whenGET(/^\/api\/jobs\/5678/).respond(function() {
+          return [200, {}, {}];
+        });
       }]);
     });
   });
 
-  it('should display a login page', function() {
-    browser.get('/#/login');
-    expect(browser.getTitle()).toEqual('Distributed CI');
+  beforeEach(function() {
+    browser.get('/');
+    browser.manage().addCookie('token', 'sometoken', '/');
+  });
+
+  it('should be possible to recheck a job', function() {
+    browser.get('/#/jobs/1234');
+    element(by.css('.glyphicon-repeat')).click();
+    expect(browser.getLocationAbsUrl()).toBe('/jobs/5678');
   });
 });
