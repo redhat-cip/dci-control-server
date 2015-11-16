@@ -14,7 +14,7 @@
 
 'use strict';
 
-require('./app.js')
+require('app')
 .controller('LoginCtrl', [
   '$scope', '$state', 'next', 'auth', 'authStates',
   function($scope, $state, next, auth, authStates) {

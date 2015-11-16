@@ -14,7 +14,7 @@
 
 'use strict';
 
-require('./app.js')
+require('app')
 
 .constant('authStates', {
   'DISCONNECTED': 0,
