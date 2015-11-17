@@ -161,3 +161,16 @@ jobdefinition = utils.dict_merge(base, {
 })
 
 jobdefinition = schema_factory(jobdefinition)
+
+###############################################################################
+#                                                                             #
+#                             Remote CI schemas                               #
+#                                                                             #
+###############################################################################
+
+remoteci = utils.dict_merge(base, DATA_FIELD, {
+    'test': v.Any(UUID_FIELD, msg=INVALID_TEST),
+    'team': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+})
+
+remoteci = schema_factory(remoteci)
