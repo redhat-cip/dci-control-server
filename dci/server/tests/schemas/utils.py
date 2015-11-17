@@ -63,6 +63,15 @@ INVALID_TEST_ERROR = 'test_id', schemas.INVALID_TEST
 
 INVALID_PRIORITY_ERROR = 'priority', schemas.INVALID_PRIORITY
 
+JOB_DEFINITION = 'jobdefinition_id', ID[1]
+INVALID_JOB_DEFINITION = 'jobdefinition_id', INVALID_ID
+INVALID_JOB_DEFINITION_ERROR = ('jobdefinition_id',
+                                schemas.INVALID_JOB_DEFINITION)
+
+REMOTE_CI = 'remoteci_id', ID[1]
+INVALID_REMOTE_CI = 'remoteci_id', INVALID_ID
+INVALID_REMOTE_CI_ERROR = 'remoteci_id', schemas.INVALID_REMOTE_CI
+
 
 def generate_errors(*fields):
     return dict([(field, schemas.INVALID_REQUIRED) for field in fields])
