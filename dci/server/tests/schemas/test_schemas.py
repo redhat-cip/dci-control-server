@@ -317,3 +317,56 @@ class TestRemoteCI(utils.SchemaTesting):
 
     def test_put(self):
         super(TestRemoteCI, self).test_put(self.data, self.data)
+
+
+class TestJob(utils.SchemaTesting):
+    TEAM = 'team', utils.ID[1]
+    INVALID_TEAM = 'team', utils.INVALID_ID
+    INVALID_TEAM_ERROR = 'team', schemas.INVALID_TEAM
+
+    JOB_DEFINITION = 'jobdefinition', utils.ID[1]
+    INVALID_JOB_DEFINITION = 'jobdefinition', utils.INVALID_ID
+    INVALID_JOB_DEFINITION_ERROR = ('jobdefinition',
+                                    schemas.INVALID_JOB_DEFINITION)
+
+    REMOTE_CI = 'remoteci', utils.ID[1]
+    INVALID_REMOTE_CI = 'remoteci', utils.INVALID_ID
+    INVALID_REMOTE_CI_ERROR = 'remoteci', schemas.INVALID_REMOTE_CI
+
+    schema = schemas.job
+    data = dict([utils.NAME, JOB_DEFINITION, REMOTE_CI, TEAM])
+
+    def test_post_extra_data(self):
+        super(TestJob, self).test_post(self.data, self.data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name', 'jobdefinition', 'remoteci',
+                                       'team')
+        super(TestJob, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids = dict([utils.INVALID_NAME, self.INVALID_JOB_DEFINITION,
+                         self.INVALID_REMOTE_CI, self.INVALID_TEAM])
+        errors = dict([utils.INVALID_NAME_ERROR, self.INVALID_REMOTE_CI_ERROR,
+                       self.INVALID_JOB_DEFINITION_ERROR,
+                       self.INVALID_TEAM_ERROR])
+
+        super(TestJob, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestJob, self).test_post(self.data, self.data)
+
+    def test_put_extra_data(self):
+        super(TestJob, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        invalids = dict([utils.INVALID_NAME, self.INVALID_JOB_DEFINITION,
+                         self.INVALID_REMOTE_CI, self.INVALID_TEAM])
+        errors = dict([utils.INVALID_NAME_ERROR, self.INVALID_REMOTE_CI_ERROR,
+                       self.INVALID_JOB_DEFINITION_ERROR,
+                       self.INVALID_TEAM_ERROR])
+
+        super(TestJob, self).test_put_invalid_data(invalids, errors)
+
+    def test_put(self):
+        super(TestJob, self).test_put(self.data, self.data)
