@@ -43,6 +43,8 @@ INVALID_PRIORITY = 'not a valid priority integer (must be beetween 0 and 1000)'
 INVALID_TEAM = 'not a valid team id'
 INVALID_COMPONENT_TYPE = 'not a valid componenttype id'
 INVALID_TEST = 'not a valid test id'
+INVALID_JOB_DEFINITION = 'not a valid jobdefinition id'
+INVALID_REMOTE_CI = 'not a valid remoteci id'
 
 INVALID_OFFSET = 'not a valid offset integer (must be greater than 0)'
 INVALID_LIMIT = 'not a valid limit integer (must be greater than 0)'
@@ -195,3 +197,17 @@ remoteci = utils.dict_merge(base, DATA_FIELD, {
 })
 
 remoteci = schema_factory(remoteci)
+
+###############################################################################
+#                                                                             #
+#                                Job schemas                                  #
+#                                                                             #
+###############################################################################
+
+job = utils.dict_merge(base, {
+    'jobdefinition': v.Any(UUID_FIELD, msg=INVALID_JOB_DEFINITION),
+    'remoteci': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
+    'team': v.Any(UUID_FIELD, msg=INVALID_TEAM)
+})
+
+job = schema_factory(job)
