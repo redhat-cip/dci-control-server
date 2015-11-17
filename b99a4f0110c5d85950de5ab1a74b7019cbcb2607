@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fad0f9df_e6c3c688",
+        "filename": "dci/server/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-17T16:59:26Z",
+      "side": 1,
+      "message": "team_id ?",
+      "revId": "b99a4f0110c5d85950de5ab1a74b7019cbcb2607",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
