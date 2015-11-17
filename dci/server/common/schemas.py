@@ -45,6 +45,7 @@ INVALID_COMPONENT_TYPE = 'not a valid componenttype id'
 INVALID_TEST = 'not a valid test id'
 INVALID_JOB_DEFINITION = 'not a valid jobdefinition id'
 INVALID_REMOTE_CI = 'not a valid remoteci id'
+INVALID_JOB = 'not a valid job id'
 
 INVALID_REQUIRED = 'required key not provided'
 
@@ -190,3 +191,18 @@ job = utils.dict_merge(base, {
 })
 
 job = schema_factory(job)
+
+###############################################################################
+#                                                                             #
+#                             Job State schemas                               #
+#                                                                             #
+###############################################################################
+
+jobstate = utils.dict_merge(base, {
+    'status': six.text_type,
+    'job': v.Any(UUID_FIELD, msg=INVALID_JOB),
+    'team': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    v.Optional('comment'): six.text_type,
+})
+
+jobstate = schema_factory(jobstate)
