@@ -23,6 +23,7 @@ import sqlalchemy.sql
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
 from dci.server.common import exceptions as dci_exc
+from dci.server.common import schemas
 from dci.server.common import utils
 from dci.server.db import models_core as models
 
@@ -70,29 +71,24 @@ def get_all_jobdefinitions(t_id=None):
     pointed by t_id.
     """
     # get the diverse parameters
-    limit = flask.request.args.get('limit', 20)
-    offset = flask.request.args.get('offset', 0)
-    embed_list = flask.request.args.get('embed', '').split(',')
-    sort = flask.request.args.get('sort', '')
-    where = flask.request.args.get('where', '')
+    args = schemas.args(flask.request.args.to_dict())
+    # convenient alias
+    embed = args['embed']
 
-    v1_utils.verify_embed_list(embed_list, _VALID_EMBED.keys())
+    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
     # the default query with no parameters
     query = sqlalchemy.sql.select([models.JOBDEFINITIONS])
 
     # if embed then construct the query with a join
-    if embed_list != ['']:
-        resources_to_embed = (_VALID_EMBED[elem] for elem in embed_list)
+    if embed:
+        resources_to_embed = (_VALID_EMBED[elem] for elem in embed)
         query = v1_utils.get_query_with_join(models.JOBDEFINITIONS,
                                              *resources_to_embed)
 
-    if sort:
-        query = v1_utils.sort_query(query, sort, _JD_COLUMNS)
-
-    if where:
-        query = v1_utils.where_query(query, where, models.JOBDEFINITIONS,
-                                     _JD_COLUMNS)
+    query = v1_utils.sort_query(query, args['sort'], _JD_COLUMNS)
+    query = v1_utils.where_query(query, args['where'], models.JOBDEFINITIONS,
+                                 _JD_COLUMNS)
 
     # used for counting the number of rows when t_id is not None
     where_t_cond = None
@@ -101,14 +97,13 @@ def get_all_jobdefinitions(t_id=None):
         query = query.where(where_t_cond)
 
     # adds the limit/offset parameters
-    query = query.limit(limit).offset(offset)
+    query = query.limit(args['limit']).offset(args['offset'])
 
     # get the number of rows for the '_meta' section
     nb_row = utils.get_number_of_rows(models.JOBDEFINITIONS, where_t_cond)
 
     rows = flask.g.db_conn.execute(query).fetchall()
-    result = [v1_utils.group_embedded_resources(embed_list, row)
-              for row in rows]
+    result = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
     # verif dump
     result = {'jobdefinitions': result, '_meta': {'count': nb_row}}
@@ -119,15 +114,15 @@ def get_all_jobdefinitions(t_id=None):
 @api.route('/jobdefinitions/<jd_id>', methods=['GET'])
 def get_jobdefinition_by_id_or_name(jd_id):
     # get the diverse parameters
-    embed_list = flask.request.args.get('embed', '').split(',')
-    v1_utils.verify_embed_list(embed_list, _VALID_EMBED.keys())
+    embed = schemas.args(flask.request.args.to_dict())['embed']
+    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
     # the default query with no parameters
     query = sqlalchemy.sql.select([models.JOBDEFINITIONS])
 
     # if embed then construct the query with a join
-    if embed_list != ['']:
-        resources_to_embed = (_VALID_EMBED[elem] for elem in embed_list)
+    if embed:
+        resources_to_embed = (_VALID_EMBED[elem] for elem in embed)
         query = v1_utils.get_query_with_join(models.JOBDEFINITIONS,
                                              *resources_to_embed)
 
@@ -136,7 +131,7 @@ def get_jobdefinition_by_id_or_name(jd_id):
                            models.JOBDEFINITIONS.c.name == jd_id))
 
     row = flask.g.db_conn.execute(query).fetchone()
-    jobdefinition = v1_utils.group_embedded_resources(embed_list, row)
+    jobdefinition = v1_utils.group_embedded_resources(embed, row)
 
     if row is None:
         raise dci_exc.DCIException("Jobdefinition '%s' not found." % jd_id,
