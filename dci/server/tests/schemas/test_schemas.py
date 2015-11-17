@@ -331,3 +331,43 @@ class TestJob(utils.SchemaTesting):
 
     def test_put(self):
         super(TestJob, self).test_put(self.data, self.data)
+
+
+class TestJobState(utils.SchemaTesting):
+    schema = schemas.jobstate
+    data = dict([utils.NAME, utils.STATUS, utils.JOB, utils.TEAM])
+
+    @staticmethod
+    def generate_invalids_and_errors():
+        status_invalid, status_error = utils.generate_invalid_string('status')
+
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_JOB,
+                         utils.INVALID_TEAM, status_invalid])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_JOB_ERROR,
+                       utils.INVALID_TEAM_ERROR, status_error])
+        return invalids, errors
+
+    def test_post_extra_data(self):
+        data = utils.dict_merge(self.data, {'comment': 'some comment'})
+        super(TestJobState, self).test_post_extra_data(data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name', 'status', 'team_id', 'job_id')
+        super(TestJobState, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids, errors = TestJobState.generate_invalids_and_errors()
+        super(TestJobState, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestJobState, self).test_post(self.data, self.data)
+
+    def test_put_extra_data(self):
+        super(TestJobState, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        invalids, errors = TestJobState.generate_invalids_and_errors()
+        super(TestJobState, self).test_put_invalid_data(invalids, errors)
+
+    def test_put(self):
+        super(TestJobState, self).test_put(self.data, self.data)
