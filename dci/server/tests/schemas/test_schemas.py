@@ -370,3 +370,53 @@ class TestJob(utils.SchemaTesting):
 
     def test_put(self):
         super(TestJob, self).test_put(self.data, self.data)
+
+
+class TestJobState(utils.SchemaTesting):
+    JOB = 'job', utils.ID[1]
+    INVALID_JOB = 'job', utils.INVALID_ID
+    INVALID_JOB_ERROR = 'job', schemas.INVALID_JOB
+
+    TEAM = 'team', utils.ID[1]
+    INVALID_TEAM = 'team', utils.INVALID_ID
+    INVALID_TEAM_ERROR = 'team', schemas.INVALID_TEAM
+
+    schema = schemas.jobstate
+    data = dict([utils.NAME, utils.STATUS, JOB, TEAM])
+
+    def test_post_extra_data(self):
+        data = utils.dict_merge(self.data, {'comment': 'some comment'})
+        super(TestJobState, self).test_post_extra_data(data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name', 'status', 'team', 'job')
+        super(TestJobState, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        status_invalid, status_error = utils.generate_invalid_string('status')
+
+        invalids = dict([utils.INVALID_NAME, self.INVALID_JOB,
+                         self.INVALID_TEAM, status_invalid])
+        errors = dict([utils.INVALID_NAME_ERROR, self.INVALID_JOB_ERROR,
+                       self.INVALID_TEAM_ERROR, status_error])
+
+        super(TestJobState, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestJobState, self).test_post(self.data, self.data)
+
+    def test_put_extra_data(self):
+        super(TestJobState, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        status_invalid, status_error = utils.generate_invalid_string('status')
+
+        invalids = dict([utils.INVALID_NAME, self.INVALID_JOB,
+                         self.INVALID_TEAM, status_invalid])
+        errors = dict([utils.INVALID_NAME_ERROR, self.INVALID_JOB_ERROR,
+                       self.INVALID_TEAM_ERROR, status_error])
+
+        super(TestJobState, self).test_put_invalid_data(invalids, errors)
+
+    def test_put(self):
+        super(TestJobState, self).test_put(self.data, self.data)
