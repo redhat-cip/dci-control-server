@@ -46,6 +46,7 @@ INVALID_OFFSET = 'not a valid offset integer (must be greater than 0)'
 INVALID_LIMIT = 'not a valid limit integer (must be greater than 0)'
 
 INVALID_REQUIRED = 'required key not provided'
+INVALID_OBJECT = 'not a valid object'
 
 UUID_FIELD = v.All(six.text_type, msg=INVALID_UUID)
 DATA_FIELD = {v.Optional('data'): dict}
@@ -58,22 +59,24 @@ class Schema(v.Schema):
         'expected dict': INVALID_JSON,
         'expected unicode': INVALID_STRING,
         'expected str': INVALID_STRING,
-        'expected a URL': INVALID_URL
+        'expected a URL': INVALID_URL,
+        'expected a dictionary': INVALID_OBJECT
     }
 
     def __call__(self, data):
         def format_error(error):
-            path = error.path.pop()
             msg = error.error_message
             error.error_message = self.error_messages.get(msg, msg)
-
-            err = format_error(error) if error.path else error.error_message
-            return {six.text_type(path): err}
+            if error.path:
+                path = six.text_type(error.path.pop())
+                return {path: format_error(error)}
+            else:
+                return error.error_message
 
         try:
             return super(Schema, self).__call__(data)
         except v.MultipleInvalid as exc:
-            errors = {}
+            errors = format_error(exc.errors.pop())
             for error in exc.errors:
                 errors = utils.dict_merge(errors, format_error(error))
             raise exceptions.DCIException('Request malformed',

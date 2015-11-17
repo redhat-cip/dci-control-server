@@ -60,6 +60,15 @@ def generate_invalid_string(field):
 class SchemaTesting(object):
     schema = None
 
+    def test_none(self):
+        with pytest.raises(exceptions.DCIException) as exc:
+            self.schema.post(None)
+        assert exc.value.payload == {'errors': schemas.INVALID_OBJECT}
+
+        with pytest.raises(exceptions.DCIException) as exc:
+            self.schema.put(None)
+        assert exc.value.payload == {'errors': schemas.INVALID_OBJECT}
+
     def test_post_extra_data(self, data):
         data_post = {'extra': 'bar'}
         data_post.update(data)
