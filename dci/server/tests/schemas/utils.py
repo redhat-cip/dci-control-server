@@ -34,27 +34,27 @@ PASSWORD = 'password', text_type
 URL = 'url', 'http://valid.url'
 
 INVALID_NAME = 'name', None
-INVALID_NAME_ERROR = 'name', [schemas.INVALID_STRING]
+INVALID_NAME_ERROR = 'name', schemas.INVALID_STRING
 
 INVALID_ID = 'id', None
-INVALID_ID_ERROR = 'id', [schemas.INVALID_UUID]
+INVALID_ID_ERROR = 'id', schemas.INVALID_UUID
 
 INVALID_DATA = 'data', []
-INVALID_DATA_ERROR = 'data', [schemas.INVALID_JSON]
+INVALID_DATA_ERROR = 'data', schemas.INVALID_JSON
 
 INVALID_PASSWORD = 'password', None
-INVALID_PASSWORD_ERROR = 'password', [schemas.INVALID_STRING]
+INVALID_PASSWORD_ERROR = 'password', schemas.INVALID_STRING
 
 INVALID_URL = 'url', text_type
-INVALID_URL_ERROR = 'url', [schemas.INVALID_URL]
+INVALID_URL_ERROR = 'url', schemas.INVALID_URL
 
 
 def generate_errors(*fields):
-    return dict([(field, [schemas.INVALID_REQUIRED]) for field in fields])
+    return dict([(field, schemas.INVALID_REQUIRED) for field in fields])
 
 
 def generate_invalid_string(field):
-    return (field, None), (field, [schemas.INVALID_STRING])
+    return (field, None), (field, schemas.INVALID_STRING)
 
 
 class SchemaTesting(object):
@@ -67,7 +67,7 @@ class SchemaTesting(object):
             self.schema.post(data_post)
 
         assert exc.value.payload == {
-            'errors': {'extra': ['extra keys not allowed']}
+            'errors': {'extra': 'extra keys not allowed'}
         }
 
     def test_post_missing_data(self, errors):
@@ -92,7 +92,7 @@ class SchemaTesting(object):
             self.schema.put(data_put)
 
         assert exc.value.payload == {
-            'errors': {'extra': ['extra keys not allowed']}
+            'errors': {'extra': 'extra keys not allowed'}
         }
 
     def test_put_invalid_data(self, data, errors):
