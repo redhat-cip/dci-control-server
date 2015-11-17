@@ -253,3 +253,41 @@ class TestJobDefinition(utils.SchemaTesting):
 
     def test_put(self):
         super(TestJobDefinition, self).test_put(self.data, self.data)
+
+
+class TestRemoteCI(utils.SchemaTesting):
+    schema = schemas.remoteci
+    data = dict([utils.NAME, utils.TEAM])
+
+    @staticmethod
+    def generate_invalids_and_errors():
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_TEAM])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_TEAM_ERROR])
+        return invalids, errors
+
+    def test_post_extra_data(self):
+        data = data_expected = utils.dict_merge(
+            self.data, {'data': {'foo': {'bar': 'baz'}}}
+        )
+        super(TestRemoteCI, self).test_post(data, data_expected)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name', 'team_id')
+        super(TestRemoteCI, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids, errors = TestRemoteCI.generate_invalids_and_errors()
+        super(TestRemoteCI, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestRemoteCI, self).test_post(self.data, self.data)
+
+    def test_put_extra_data(self):
+        super(TestRemoteCI, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        invalids, errors = TestRemoteCI.generate_invalids_and_errors()
+        super(TestRemoteCI, self).test_put_invalid_data(invalids, errors)
+
+    def test_put(self):
+        super(TestRemoteCI, self).test_put(self.data, self.data)
