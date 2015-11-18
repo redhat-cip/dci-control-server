@@ -29,7 +29,7 @@ var utils      = require('./utils');
 var DIST = 'static';
 
 gulp.task('jscs', function() {
-  return gulp.src(['src/**.js', 'gulpfile.js', 'utils.js'])
+  return gulp.src(['src/**.js', 'test/**.js', 'gulpfile.js', 'utils.js'])
   .pipe($.jscs());
 });
 
