@@ -55,8 +55,8 @@ def test_default_args():
 
 
 def test_invalid_args():
-    errors = {'limit': [schemas.INVALID_LIMIT],
-              'offset': [schemas.INVALID_OFFSET]}
+    errors = {'limit': schemas.INVALID_LIMIT,
+              'offset': schemas.INVALID_OFFSET}
 
     data = {'limit': -1, 'offset': -1}
     _invalid_args(data, errors)

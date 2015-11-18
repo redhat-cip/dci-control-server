@@ -67,7 +67,7 @@ class Schema(v.Schema):
             msg = error.error_message
             error.error_message = self.error_messages.get(msg, msg)
 
-            err = format_error(error) if error.path else [error.error_message]
+            err = format_error(error) if error.path else error.error_message
             return {six.text_type(path): err}
 
         try:

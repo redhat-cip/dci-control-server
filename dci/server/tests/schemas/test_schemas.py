@@ -32,7 +32,7 @@ def test_validation_error_handling(app):
         'status_code': 400,
         'message': 'Request malformed',
         'payload': {
-            'errors': {'id': ['required key not provided']}
+            'errors': {'id': 'required key not provided'}
         }
     }
 
@@ -119,7 +119,7 @@ class TestTest(utils.SchemaTesting):
 class TestUser(utils.SchemaTesting):
     TEAM = 'team', utils.ID[1]
     INVALID_TEAM = 'team', utils.INVALID_ID
-    INVALID_TEAM_ERROR = 'team', [schemas.INVALID_TEAM]
+    INVALID_TEAM_ERROR = 'team', schemas.INVALID_TEAM
 
     schema = schemas.user
     data = dict([utils.NAME, utils.PASSWORD, TEAM])
@@ -161,7 +161,7 @@ class TestComponent(utils.SchemaTesting):
     COMPONENTTYPE = 'componenttype', utils.ID[1]
     INVALID_COMPONENTTYPE = 'componenttype', utils.INVALID_ID
     INVALID_COMPONENTTYPE_ERROR = ('componenttype',
-                                   [schemas.INVALID_COMPONENT_TYPE])
+                                   schemas.INVALID_COMPONENT_TYPE)
 
     schema = schemas.component
     data = dict([utils.NAME, COMPONENTTYPE])
@@ -175,7 +175,8 @@ class TestComponent(utils.SchemaTesting):
 
     @staticmethod
     def generate_optionals_errors():
-        invalids = errors = []
+        invalids = []
+        errors = []
         for field in ['sha', 'title', 'message', 'git', 'ref',
                       'canonical_project_name']:
             invalid, error = utils.generate_invalid_string(field)
