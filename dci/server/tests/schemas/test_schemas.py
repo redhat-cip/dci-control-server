@@ -420,3 +420,65 @@ class TestJobState(utils.SchemaTesting):
 
     def test_put(self):
         super(TestJobState, self).test_put(self.data, self.data)
+
+
+class TestFile(utils.SchemaTesting):
+    JOB_STATE = 'jobstate', utils.ID[1]
+    INVALID_JOB_STATE = 'jobstate', utils.INVALID_ID
+    INVALID_JOB_STATE_ERROR = 'jobstate', schemas.INVALID_JOB_STATE
+
+    TEAM = 'team', utils.ID[1]
+    INVALID_TEAM = 'team', utils.INVALID_ID
+    INVALID_TEAM_ERROR = 'team', schemas.INVALID_TEAM
+
+    schema = schemas.file
+    data = dict([utils.NAME, utils.CONTENT, JOB_STATE, TEAM])
+
+    def test_post_extra_data(self):
+        data = utils.dict_merge(self.data, {'mime': 'mime', 'md5': 'md5'})
+        super(TestFile, self).test_post_extra_data(data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name', 'content', 'team', 'jobstate')
+        super(TestFile, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids = []
+        errors = []
+
+        for field in ['content', 'md5', 'mime']:
+            invalid, error = utils.generate_invalid_string(field)
+            invalids.append(invalid)
+            errors.append(error)
+
+        invalids = dict([utils.INVALID_NAME, self.INVALID_JOB_STATE,
+                         self.INVALID_TEAM] + invalids)
+        errors = dict([utils.INVALID_NAME_ERROR, self.INVALID_JOB_STATE_ERROR,
+                       self.INVALID_TEAM_ERROR] + errors)
+
+        super(TestFile, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestFile, self).test_post(self.data, self.data)
+
+    def test_put_extra_data(self):
+        super(TestFile, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        invalids = []
+        errors = []
+
+        for field in ['content', 'md5', 'mime']:
+            invalid, error = utils.generate_invalid_string(field)
+            invalids.append(invalid)
+            errors.append(error)
+
+        invalids = dict([utils.INVALID_NAME, self.INVALID_JOB_STATE,
+                         self.INVALID_TEAM] + invalids)
+        errors = dict([utils.INVALID_NAME_ERROR, self.INVALID_JOB_STATE_ERROR,
+                       self.INVALID_TEAM_ERROR] + errors)
+
+        super(TestFile, self).test_put_invalid_data(invalids, errors)
+
+    def test_put(self):
+        super(TestFile, self).test_put(self.data, self.data)
