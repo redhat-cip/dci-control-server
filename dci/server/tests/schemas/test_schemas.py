@@ -85,6 +85,12 @@ class TestTest(utils.SchemaTesting):
     schema = schemas.test
     data = dict([utils.NAME])
 
+    @staticmethod
+    def generate_invalids_and_errors():
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_DATA])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_DATA_ERROR])
+        return invalids, errors
+
     def test_post_extra_data(self):
         data = data_expected = utils.dict_merge(
             self.data, {'data': {'foo': {'bar': 'baz'}}}
@@ -96,48 +102,46 @@ class TestTest(utils.SchemaTesting):
         super(TestTest, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
-        data = dict([utils.INVALID_NAME, utils.INVALID_DATA])
-        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_DATA_ERROR])
-
-        super(TestTest, self).test_post_invalid_data(data, errors)
+        invalids, errors = TestTest.generate_invalids_and_errors()
+        super(TestTest, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
         super(TestTest, self).test_post(self.data, self.data)
 
     def test_put_extra_data(self):
+        invalids, errors = TestTest.generate_invalids_and_errors()
         super(TestTest, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
-        data = dict([utils.INVALID_NAME, utils.INVALID_DATA])
-        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_DATA_ERROR])
-        super(TestTest, self).test_put_invalid_data(data, errors)
+        invalids, errors = TestTest.generate_invalids_and_errors()
+        super(TestTest, self).test_put_invalid_data(invalids, errors)
 
     def test_put(self):
         super(TestTest, self).test_put(self.data, self.data)
 
 
 class TestUser(utils.SchemaTesting):
-    TEAM = 'team', utils.ID[1]
-    INVALID_TEAM = 'team', utils.INVALID_ID
-    INVALID_TEAM_ERROR = 'team', schemas.INVALID_TEAM
-
     schema = schemas.user
-    data = dict([utils.NAME, utils.PASSWORD, TEAM])
+    data = dict([utils.NAME, utils.PASSWORD, utils.TEAM])
+
+    @staticmethod
+    def generate_invalids_and_errors():
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_PASSWORD,
+                         utils.INVALID_TEAM])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_TEAM_ERROR,
+                       utils.INVALID_PASSWORD_ERROR])
+        return invalids, errors
 
     def test_post_extra_data(self):
         super(TestUser, self).test_post_extra_data(self.data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'password', 'team')
+        errors = utils.generate_errors('name', 'password', 'team_id')
         super(TestUser, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
-        data = dict([utils.INVALID_NAME, utils.INVALID_PASSWORD,
-                     self.INVALID_TEAM])
-        errors = dict([utils.INVALID_NAME_ERROR, self.INVALID_TEAM_ERROR,
-                       utils.INVALID_PASSWORD_ERROR])
-
-        super(TestUser, self).test_post_invalid_data(data, errors)
+        invalids, errors = TestUser.generate_invalids_and_errors()
+        super(TestUser, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
         super(TestUser, self).test_post(self.data, self.data)
@@ -146,25 +150,16 @@ class TestUser(utils.SchemaTesting):
         super(TestUser, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
-        data = dict([utils.INVALID_NAME, utils.INVALID_PASSWORD,
-                     self.INVALID_TEAM])
-        errors = dict([utils.INVALID_NAME_ERROR, self.INVALID_TEAM_ERROR,
-                       utils.INVALID_PASSWORD_ERROR])
-
-        super(TestUser, self).test_put_invalid_data(data, errors)
+        invalids, errors = TestUser.generate_invalids_and_errors()
+        super(TestUser, self).test_put_invalid_data(invalids, errors)
 
     def test_put(self):
         super(TestUser, self).test_put(self.data, self.data)
 
 
 class TestComponent(utils.SchemaTesting):
-    COMPONENTTYPE = 'componenttype', utils.ID[1]
-    INVALID_COMPONENTTYPE = 'componenttype', utils.INVALID_ID
-    INVALID_COMPONENTTYPE_ERROR = ('componenttype',
-                                   schemas.INVALID_COMPONENT_TYPE)
-
     schema = schemas.component
-    data = dict([utils.NAME, COMPONENTTYPE])
+    data = dict([utils.NAME, utils.COMPONENTTYPE])
 
     @staticmethod
     def generate_optionals():
@@ -174,7 +169,7 @@ class TestComponent(utils.SchemaTesting):
                      ('canonical_project_name', utils.text_type)])
 
     @staticmethod
-    def generate_optionals_errors():
+    def generate_invalids_and_errors():
         invalids = []
         errors = []
         for field in ['sha', 'title', 'message', 'git', 'ref',
@@ -182,25 +177,25 @@ class TestComponent(utils.SchemaTesting):
             invalid, error = utils.generate_invalid_string(field)
             invalids.append(invalid)
             errors.append(error)
+
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_COMPONENTTYPE,
+                         utils.INVALID_DATA] + invalids)
+        errors = dict([utils.INVALID_NAME_ERROR,
+                       utils.INVALID_COMPONENTTYPE_ERROR,
+                       utils.INVALID_DATA_ERROR] + errors)
+
         return invalids, errors
 
     def test_post_extra_data(self):
         super(TestComponent, self).test_post_extra_data(self.data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'componenttype')
+        errors = utils.generate_errors('name', 'componenttype_id')
         super(TestComponent, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
-        invalids, errors = TestComponent.generate_optionals_errors()
-
-        data = dict([utils.INVALID_NAME, self.INVALID_COMPONENTTYPE,
-                     utils.INVALID_DATA] + invalids)
-        errors = dict([utils.INVALID_NAME_ERROR,
-                       self.INVALID_COMPONENTTYPE_ERROR,
-                       utils.INVALID_DATA_ERROR] + errors)
-
-        super(TestComponent, self).test_post_invalid_data(data, errors)
+        invalids, errors = TestComponent.generate_invalids_and_errors()
+        super(TestComponent, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
         data_expected = utils.dict_merge(self.data)
@@ -210,15 +205,8 @@ class TestComponent(utils.SchemaTesting):
         super(TestComponent, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
-        invalids, errors = TestComponent.generate_optionals_errors()
-        data = dict([utils.INVALID_NAME, self.INVALID_COMPONENTTYPE,
-                     utils.INVALID_DATA, utils.INVALID_URL] + invalids)
-
-        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_DATA_ERROR,
-                       self.INVALID_COMPONENTTYPE_ERROR,
-                       utils.INVALID_URL_ERROR] + errors)
-
-        super(TestComponent, self).test_put_invalid_data(data, errors)
+        invalids, errors = TestComponent.generate_invalids_and_errors()
+        super(TestComponent, self).test_put_invalid_data(invalids, errors)
 
     def test_put(self):
         super(TestComponent, self).test_put(self.data, self.data)

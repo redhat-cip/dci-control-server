@@ -48,6 +48,15 @@ INVALID_PASSWORD_ERROR = 'password', schemas.INVALID_STRING
 INVALID_URL = 'url', text_type
 INVALID_URL_ERROR = 'url', schemas.INVALID_URL
 
+TEAM = 'team_id', ID[1]
+INVALID_TEAM = 'team_id', INVALID_ID
+INVALID_TEAM_ERROR = 'team_id', schemas.INVALID_TEAM
+
+COMPONENTTYPE = 'componenttype_id', ID[1]
+INVALID_COMPONENTTYPE = 'componenttype_id', INVALID_ID
+INVALID_COMPONENTTYPE_ERROR = ('componenttype_id',
+                               schemas.INVALID_COMPONENT_TYPE)
+
 
 def generate_errors(*fields):
     return dict([(field, schemas.INVALID_REQUIRED) for field in fields])
