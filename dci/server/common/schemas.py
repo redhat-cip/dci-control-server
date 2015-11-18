@@ -143,7 +143,7 @@ test = schema_factory(utils.dict_merge(base, DATA_FIELD))
 
 user = utils.dict_merge(base, {
     'password': six.text_type,
-    'team': v.Any(UUID_FIELD, msg=INVALID_TEAM)
+    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM)
 })
 
 user = schema_factory(user)
@@ -162,7 +162,7 @@ component = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('ref'): six.text_type,
     v.Optional('canonical_project_name'): six.text_type,
     v.Optional('url'): Url(),
-    'componenttype': v.Any(UUID_FIELD, msg=INVALID_COMPONENT_TYPE)
+    'componenttype_id': v.Any(UUID_FIELD, msg=INVALID_COMPONENT_TYPE)
 })
 
 component = schema_factory(component)
