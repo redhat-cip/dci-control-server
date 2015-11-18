@@ -64,3 +64,29 @@ def provision(db_conn):
               role_id=role_partner_id)
     db_insert(models_core.JOIN_USERS_ROLES, user_id=company_b_user_id,
               role_id=role_partner_id)
+
+
+def provision_admin(db_conn):
+    """Create only one admin team."""
+
+    def db_insert(model_item, **kwargs):
+        query = model_item.insert().values(**kwargs)
+        return db_conn.execute(query).inserted_primary_key[0]
+
+    # Create admin team
+    admin_team_id = db_insert(models_core.TEAMS, name='admin')
+
+    # Create users
+    admin_password = bcrypt.hashpw('admin'.encode('utf-8'),
+                                   bcrypt.gensalt()).decode('utf-8')
+    admin_user_id = db_insert(models_core.USERS,
+                              name='admin',
+                              password=admin_password,
+                              team_id=admin_team_id)
+
+    # Create roles
+    role_admin_id = db_insert(models_core.ROLES, name='admin')
+
+    # Create user_roles
+    db_insert(models_core.JOIN_USERS_ROLES, user_id=admin_user_id,
+              role_id=role_admin_id)
