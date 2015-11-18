@@ -70,7 +70,7 @@ class BaseSchemaTesting(utils.SchemaTesting):
 
 
 class TestComponentType(BaseSchemaTesting):
-    schema = schemas.component_type
+    schema = schemas.componenttype
 
 
 class TestTeam(BaseSchemaTesting):
