@@ -96,3 +96,9 @@ def componenttype_id(admin):
 def test_id(admin):
     test = admin.post('/api/v1/tests', data={'name': 'pname'}).data
     return test['test']['id']
+
+
+@pytest.fixture
+def team_id(admin):
+    team = admin.post('/api/v1/teams', data={'name': 'pname'}).data
+    return team['team']['id']
