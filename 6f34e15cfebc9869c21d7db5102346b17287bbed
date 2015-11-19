@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "fad0f9df_0c238b06",
+        "filename": "dci/server/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-19T16:22:25Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "fad0f9df_cc4583b4",
+      "revId": "6f34e15cfebc9869c21d7db5102346b17287bbed",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fad0f9df_6c1257b6",
         "filename": "dci/server/api/v1/teams.py",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2015-11-19T16:08:03Z",
       "side": 1,
       "message": "is there any explanation for this ?",
+      "revId": "6f34e15cfebc9869c21d7db5102346b17287bbed",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_ac1fdfb6",
+        "filename": "dci/server/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-19T16:22:25Z",
+      "side": 1,
+      "message": "Yea, this will be decommented in the upcoming patch for remotecis controller.",
+      "parentUuid": "fad0f9df_6c1257b6",
       "revId": "6f34e15cfebc9869c21d7db5102346b17287bbed",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
