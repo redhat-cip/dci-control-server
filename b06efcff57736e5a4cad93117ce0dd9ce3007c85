@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fad0f9df_ec53a76a",
+        "filename": "dci/server/api/v1/teams.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-19T16:36:38Z",
+      "side": 1,
+      "message": "this one too need to be removed",
+      "revId": "b06efcff57736e5a4cad93117ce0dd9ce3007c85",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fad0f9df_0c514b62",
+        "filename": "dci/server/api/v1/teams.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-19T16:36:38Z",
+      "side": 1,
+      "message": "can you just add the explanation here and not in the review ?",
+      "revId": "b06efcff57736e5a4cad93117ce0dd9ce3007c85",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
