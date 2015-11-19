@@ -98,12 +98,6 @@ def get_remoteci_by_id_or_name(r_id):
                           content_type='application/json')
 
 
-# @api.route('/remotecis/<r_id>/jobdefinitions', methods=['GET'])
-# def get_jobdefinitions_by_remoteci(tesr_id):
-#    test = _verify_existence_and_get_remoteci(tesr_id)
-#    return jobdefinitions.get_all_jobdefinitions(test['id'])
-
-
 @api.route('/remotecis/<r_id>', methods=['PUT'])
 def put_remoteci(r_id):
     # get If-Match header

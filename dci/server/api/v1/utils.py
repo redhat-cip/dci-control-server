@@ -68,13 +68,18 @@ def get_query_with_join(table_a, *tables_to_join):
                 result.append(table.c[c_name].label(column_name_with_prefix))
         return result
 
-    # TODO(yassine): this code will evolve in order to
-    # support a list of tables to join as in the Jobs table. For now it joins
-    # only two tables.
-    table_b = tables_to_join[0]
-    q_select = _flatten_columns_with_prefix(table_b)
-    q_select.append(table_a)
-    return sqlalchemy.sql.select(q_select).select_from(table_a.join(table_b))
+    # flatten all tables for the SQL select
+    query_select = []
+    for table_to_join in tables_to_join:
+        query_select.extend(_flatten_columns_with_prefix(table_to_join))
+    query_select.append(table_a)
+
+    # chain SQL join on all tables
+    query_join = table_a
+    for table_to_join in tables_to_join:
+        query_join = query_join.join(table_to_join)
+
+    return sqlalchemy.sql.select(query_select).select_from(query_join)
 
 
 def group_embedded_resources(embed_list, row):

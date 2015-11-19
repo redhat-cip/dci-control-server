@@ -102,3 +102,18 @@ def test_id(admin):
 def team_id(admin):
     team = admin.post('/api/v1/teams', data={'name': 'pname'}).data
     return team['team']['id']
+
+
+@pytest.fixture
+def remoteci_id(admin, team_id):
+    remoteci = admin.post('/api/v1/remotecis',
+                          data={'name': 'pname',
+                                'team_id': team_id}).data
+    return remoteci['remoteci']['id']
+
+
+@pytest.fixture
+def jobdefinition_id(admin, test_id):
+    jd = admin.post('/api/v1/jobdefinitions',
+                    data={'name': 'pname', 'test_id': test_id}).data
+    return jd['jobdefinition']['id']
