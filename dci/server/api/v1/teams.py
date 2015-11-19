@@ -21,6 +21,7 @@ from flask import json
 import sqlalchemy.sql
 
 from dci.server.api.v1 import api
+from dci.server.api.v1 import remotecis
 from dci.server.api.v1 import utils as v1_utils
 from dci.server.common import exceptions
 from dci.server.common import schemas
