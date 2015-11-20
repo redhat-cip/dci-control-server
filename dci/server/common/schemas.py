@@ -206,10 +206,10 @@ remoteci = schema_factory(remoteci)
 #                                                                             #
 ###############################################################################
 
-job = utils.dict_merge(base, {
+job = {
     'jobdefinition_id': v.Any(UUID_FIELD, msg=INVALID_JOB_DEFINITION),
     'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
     'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM)
-})
+}
 
 job = schema_factory(job)

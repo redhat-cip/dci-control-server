@@ -295,14 +295,13 @@ class TestRemoteCI(utils.SchemaTesting):
 
 class TestJob(utils.SchemaTesting):
     schema = schemas.job
-    data = dict([utils.NAME, utils.JOB_DEFINITION, utils.REMOTE_CI,
-                 utils.TEAM])
+    data = dict([utils.JOB_DEFINITION, utils.REMOTE_CI, utils.TEAM])
 
     @staticmethod
     def generate_invalids_and_errors():
-        invalids = dict([utils.INVALID_NAME, utils.INVALID_JOB_DEFINITION,
+        invalids = dict([utils.INVALID_JOB_DEFINITION,
                          utils.INVALID_REMOTE_CI, utils.INVALID_TEAM])
-        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_REMOTE_CI_ERROR,
+        errors = dict([utils.INVALID_REMOTE_CI_ERROR,
                        utils.INVALID_JOB_DEFINITION_ERROR,
                        utils.INVALID_TEAM_ERROR])
         return invalids, errors
@@ -311,7 +310,7 @@ class TestJob(utils.SchemaTesting):
         super(TestJob, self).test_post(self.data, self.data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'jobdefinition_id',
+        errors = utils.generate_errors('jobdefinition_id',
                                        'remoteci_id', 'team_id')
         super(TestJob, self).test_post_missing_data(errors)
 
