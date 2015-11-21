@@ -117,3 +117,12 @@ def jobdefinition_id(admin, test_id):
     jd = admin.post('/api/v1/jobdefinitions',
                     data={'name': 'pname', 'test_id': test_id}).data
     return jd['jobdefinition']['id']
+
+
+@pytest.fixture
+def job_id(admin, jobdefinition_id, team_id, remoteci_id):
+    job = admin.post('/api/v1/jobs',
+                     data={'jobdefinition_id': jobdefinition_id,
+                           'team_id': team_id,
+                           'remoteci_id': remoteci_id}).data
+    return job['job']['id']
