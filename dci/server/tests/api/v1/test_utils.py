@@ -36,12 +36,14 @@ def test_verify_embed_list_not_valid():
 
 
 def test_group_embedded_resources():
-    embed_list = ['a', 'b']
+    embed_list = ['a', 'b', 'a.c']
     row = {'id': '12', 'name': 'lol',
-           'a_id': '123', 'a_name': 'lol2',
-           'b_id': '1234', 'b_name': 'lol3'}
+           'a_id': '123', 'a_name': 'lol2', 'a_c_id': '12345',
+           'b_id': '1234', 'b_name': 'lol3',
+           'a.c_name': 'mdr1'}
     result = utils.group_embedded_resources(embed_list, row)
 
     assert {'id': '12', 'name': 'lol',
-            'a': {'id': '123', 'name': 'lol2'},
+            'a': {'id': '123', 'name': 'lol2',
+                  'c': {'id': '12345', 'name': 'mdr1'}},
             'b': {'id': '1234', 'name': 'lol3'}} == result

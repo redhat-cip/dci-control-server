@@ -30,6 +30,7 @@ from dci.server.db import models_core as models
 # associate column names with the corresponding SA Column object
 _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBS)
 _VALID_EMBED = {'jobdefinition': models.JOBDEFINITIONS,
+                'jobdefinition.test': models.TESTS,
                 'team': models.TEAMS,
                 'remoteci': models.REMOTECIS}
 
@@ -72,17 +73,12 @@ def get_all_jobs(jd_id=None):
     # convenient alias
     embed = args['embed']
 
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
-
     # the default query with no parameters
     query = sqlalchemy.sql.select([models.JOBS])
 
     # if embed then construct the query with a join
     if embed:
-        embed.sort()
-        resources_to_embed = (_VALID_EMBED[elem] for elem in embed)
-        query = v1_utils.get_query_with_join(models.JOBS,
-                                             *resources_to_embed)
+        query = v1_utils.get_query_with_join(models.JOBS, embed, _VALID_EMBED)
 
     query = v1_utils.sort_query(query, args['sort'], _JOBS_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.JOBS,
@@ -119,9 +115,7 @@ def get_job_by_id(jd_id):
 
     # if embed then construct the query with a join
     if embed:
-        resources_to_embed = (_VALID_EMBED[elem] for elem in embed)
-        query = v1_utils.get_query_with_join(models.JOBS,
-                                             *resources_to_embed)
+        query = v1_utils.get_query_with_join(models.JOBS, embed, _VALID_EMBED)
 
     query = query.where(models.JOBS.c.id == jd_id)
 

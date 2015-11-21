@@ -82,9 +82,8 @@ def get_all_jobdefinitions(t_id=None):
 
     # if embed then construct the query with a join
     if embed:
-        resources_to_embed = (_VALID_EMBED[elem] for elem in embed)
-        query = v1_utils.get_query_with_join(models.JOBDEFINITIONS,
-                                             *resources_to_embed)
+        query = v1_utils.get_query_with_join(models.JOBDEFINITIONS, embed,
+                                             _VALID_EMBED)
 
     query = v1_utils.sort_query(query, args['sort'], _JD_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.JOBDEFINITIONS,
@@ -122,9 +121,8 @@ def get_jobdefinition_by_id_or_name(jd_id):
 
     # if embed then construct the query with a join
     if embed:
-        resources_to_embed = (_VALID_EMBED[elem] for elem in embed)
-        query = v1_utils.get_query_with_join(models.JOBDEFINITIONS,
-                                             *resources_to_embed)
+        query = v1_utils.get_query_with_join(models.JOBDEFINITIONS, embed,
+                                             _VALID_EMBED)
 
     query = query.where(
         sqlalchemy.sql.or_(models.JOBDEFINITIONS.c.id == jd_id,
