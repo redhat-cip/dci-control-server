@@ -14,7 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import collections
+
 import flask
+import six
 import sqlalchemy.sql
 
 from dci.server.common import exceptions as dci_exc
@@ -50,15 +53,14 @@ def verify_embed_list(embed_list, valid_embedded_resources):
                 payload={'Valid elements': list(valid_embedded_resources)})
 
 
-def get_query_with_join(table_a, *tables_to_join):
+def get_query_with_join(table_a, embed_list, valid_embedded_resources):
     """Give a table table_a and a list of tables tables tables_to_join, this
     function construct the correct sqlalchemy query to make a join.
     """
 
-    def _flatten_columns_with_prefix(table):
+    def _flatten_columns_with_prefix(prefix, table):
         result = []
         # remove the last 's' character from the table name
-        prefix = table.name[:-1]
         for c_name in table.c.keys():
             # Condition to avoid conflict when fetching the data because by
             # default there is the key 'prefix_id' when prefix is the table
@@ -68,49 +70,76 @@ def get_query_with_join(table_a, *tables_to_join):
                 result.append(table.c[c_name].label(column_name_with_prefix))
         return result
 
+    verify_embed_list(embed_list, valid_embedded_resources.keys())
+
+    resources_to_embed = {elem: valid_embedded_resources[elem]
+                          for elem in embed_list}
+
     # flatten all tables for the SQL select
-    query_select = []
-    for table_to_join in tables_to_join:
-        query_select.extend(_flatten_columns_with_prefix(table_to_join))
-    query_select.append(table_a)
+    query_select = [table_a]
+    for prefix, table in six.iteritems(resources_to_embed):
+        query_select.extend(_flatten_columns_with_prefix(prefix, table))
 
     # chain SQL join on all tables
     query_join = table_a
-    for table_to_join in tables_to_join:
+    # order is important for the SQL join
+    resources_to_embed_ordered = \
+        collections.OrderedDict(sorted(resources_to_embed.items()))
+    for table_to_join in six.itervalues(resources_to_embed_ordered):
         query_join = query_join.join(table_to_join)
 
     return sqlalchemy.sql.select(query_select).select_from(query_join)
 
 
-def group_embedded_resources(embed_list, row):
+def group_embedded_resources(items_to_embed, row):
     """Given the embed list and a row this function group the items by embedded
-    element.
+    element. Handle dot notation for nested fields.
 
     For instance:
         - embed_list = ['a', 'b']
         - row = {'id': '12', 'name' : 'lol',
-                 'a_id': '123', 'a_name': 'lol2',
-                 'b_id': '1234', 'b_name': 'lol3'}
+                 'a_id': '123', 'a_name': 'lol2', 'a_c_id': '12345',
+                 'b_id': '1234', 'b_name': 'lol3',
+                 'a.c_name': 'mdr1'}
     Output:
         {'id': '12', 'name': 'lol',
-         'a': {'id': '123', 'name': 'lol2'},
+         'a': {'id': '123', 'name': 'lol2',
+               'c': {'name': 'mdr1', 'id': '12345'}},
          'b': {'id': '1234', 'name': 'lol3'}}
     """
     if row is None:
         return None
-    if not embed_list:
+    if not items_to_embed:
         return dict(row)
     result = {}
-    embed_list = [embed + '_' for embed in embed_list]
+    items_to_embed_with_suffix = [item + '_' for item in items_to_embed]
 
     for key, value in row.items():
-        if any((key.startswith(embed) for embed in embed_list)):
+        if any((key.startswith(item) for item in items_to_embed_with_suffix)):
             embd_elt_name, embd_elt_column = key.split('_', 1)
             embd_elt = result.get(embd_elt_name, {})
             embd_elt[embd_elt_column] = value
             result[embd_elt_name] = embd_elt
         else:
             result[key] = value
+
+    for embed_item in items_to_embed:
+        if '.' in embed_item:
+            # split the embed element from its nested element
+            # ie. jobdefinition.test -> jobdefinition, test
+            elem, nested_elem = embed_item.split('.', 1)
+
+            # copy the the nested element into its right place
+            # ie jobdefinition['test'] = ...
+            result[elem][nested_elem] = result[embed_item]
+            # add the id of the nested elem
+            nested_elem_id = nested_elem + '_id'
+            result[elem][nested_elem]['id'] = result[elem][nested_elem_id]
+            # remove the nested elem id
+            del result[elem][nested_elem_id]
+            # remove the nested elem from the global result
+            del result[embed_item]
+
     return result
 
 
