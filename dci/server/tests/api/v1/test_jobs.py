@@ -75,8 +75,8 @@ def test_get_all_jobs_with_pagination(admin, jobdefinition_id, team_id,
     assert jobs.data['jobs'] == []
 
 
-def test_get_all_jobdefinitions_with_embed(admin, jobdefinition_id, team_id,
-                                           remoteci_id):
+def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
+                                 remoteci_id, test_id):
     # create 2 jobs and check meta data count
     data = {'jobdefinition_id': jobdefinition_id,
             'team_id': team_id,
@@ -85,7 +85,9 @@ def test_get_all_jobdefinitions_with_embed(admin, jobdefinition_id, team_id,
     admin.post('/api/v1/jobs', data=data)
 
     # verify embed
-    jobs = admin.get('/api/v1/jobs?embed=team,jobdefinition,remoteci').data
+    query_embed = '/api/v1/jobs?embed=team,remoteci,jobdefinition.test,'\
+                  'jobdefinition'
+    jobs = admin.get(query_embed).data
 
     for job in jobs['jobs']:
         assert 'team_id' not in job
@@ -94,6 +96,7 @@ def test_get_all_jobdefinitions_with_embed(admin, jobdefinition_id, team_id,
         assert 'jobdefinition_id' not in job
         assert 'jobdefinition' in job
         assert job['jobdefinition']['id'] == jobdefinition_id
+        assert job['jobdefinition']['test']['id'] == test_id
         assert 'remoteci_id' not in job
         assert 'remoteci' in job
         assert job['remoteci']['id'] == remoteci_id
