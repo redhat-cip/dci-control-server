@@ -88,9 +88,8 @@ def get_all_components(ct_id=None):
 
     # if embed then construct the query with a join
     if args['embed']:
-        resources_to_embed = (_VALID_EMBED[elem] for elem in args['embed'])
-        query = v1_utils.get_query_with_join(models.COMPONENTS,
-                                             *resources_to_embed)
+        query = v1_utils.get_query_with_join(models.COMPONENTS, args['embed'],
+                                             _VALID_EMBED)
 
     query = v1_utils.sort_query(query, args['sort'], _C_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.COMPONENTS,
@@ -129,9 +128,8 @@ def get_component_by_id_or_name(c_id):
 
     # if embed then construct the query with a join
     if embed:
-        resources_to_embed = (_VALID_EMBED[elem] for elem in embed)
-        query = v1_utils.get_query_with_join(models.COMPONENTS,
-                                             *resources_to_embed)
+        query = v1_utils.get_query_with_join(models.COMPONENTS, embed,
+                                             _VALID_EMBED)
 
     query = query.where(sqlalchemy.sql.or_(models.COMPONENTS.c.id == c_id,
                                            models.COMPONENTS.c.name == c_id))
