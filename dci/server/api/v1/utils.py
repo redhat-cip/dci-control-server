@@ -21,6 +21,7 @@ import six
 import sqlalchemy.sql
 
 from dci.server.common import exceptions as dci_exc
+from dci.server import utils
 
 
 def verify_existence_and_get(table, resource_id, cond_exist):
@@ -111,36 +112,41 @@ def group_embedded_resources(items_to_embed, row):
         return None
     if not items_to_embed:
         return dict(row)
+
     result = {}
-    items_to_embed_with_suffix = [item + '_' for item in items_to_embed]
+    # reverse to process the embedded first
+    items_to_embed.reverse()
 
-    for key, value in row.items():
-        if any((key.startswith(item) for item in items_to_embed_with_suffix)):
-            embd_elt_name, embd_elt_column = key.split('_', 1)
-            embd_elt = result.get(embd_elt_name, {})
-            embd_elt[embd_elt_column] = value
-            result[embd_elt_name] = embd_elt
+    for item_to_embed in items_to_embed:
+        item_to_embed_splited = item_to_embed.split('.')
+        embed = result.get(item_to_embed, {})
+
+        # check if we have a double container
+        if len(item_to_embed_splited) == 2:
+            # retrieve the id of the embedded element
+            id_field = '_'.join(item_to_embed_splited) + '_id'
+            embed['id'] = row[id_field]
+            # create the element
+            result[item_to_embed_splited[0]] = {
+                item_to_embed_splited[1]: embed
+            }
+            # remove the id from the original
+            del row[id_field]
         else:
-            result[key] = value
+            result[item_to_embed] = embed
 
-    for embed_item in items_to_embed:
-        if '.' in embed_item:
-            # split the embed element from its nested element
-            # ie. jobdefinition.test -> jobdefinition, test
-            elem, nested_elem = embed_item.split('.', 1)
-
-            # copy the the nested element into its right place
-            # ie jobdefinition['test'] = ...
-            result[elem][nested_elem] = result[embed_item]
-            # add the id of the nested elem
-            nested_elem_id = nested_elem + '_id'
-            result[elem][nested_elem]['id'] = result[elem][nested_elem_id]
-            # remove the nested elem id
-            del result[elem][nested_elem_id]
-            # remove the nested elem from the global result
-            del result[embed_item]
-
-    return result
+        row_tmp = {}
+        for key, value in row.items():
+            if not key.startswith(item_to_embed):
+                # store the unused values (we can't delete while processing)
+                row_tmp[key] = value
+            else:
+                # key of the field is the original key minus the suffix + 1
+                # + 1 stand for the trailing '_'
+                key = key[len(item_to_embed) + 1:]
+                embed[key] = value
+        row = row_tmp
+    return utils.dict_merge(result, row)
 
 
 def get_columns_name_with_objects(table):
