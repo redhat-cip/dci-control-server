@@ -422,7 +422,10 @@ class TestFile(utils.SchemaTesting):
         super(TestFile, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
-        super(TestFile, self).test_post(self.data, self.data)
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data,
+                                         {'mime': None, 'md5': None})
+        super(TestFile, self).test_post(self.data, data_expected)
 
     def test_put_extra_data(self):
         super(TestFile, self).test_put_extra_data(self.data)
@@ -432,4 +435,7 @@ class TestFile(utils.SchemaTesting):
         super(TestFile, self).test_put_invalid_data(invalids, errors)
 
     def test_put(self):
-        super(TestFile, self).test_put(self.data, self.data)
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data,
+                                         {'mime': None, 'md5': None})
+        super(TestFile, self).test_put(self.data, data_expected)
