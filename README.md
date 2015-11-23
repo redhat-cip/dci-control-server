@@ -89,7 +89,8 @@ Connect with the postgres user:
 You can develop into a safe environment by using [docker-compose](http://docs.docker.com/compose/)
 
 * Install docker-compose by typing `pip install docker-compose`
-* Run the environment by typing `docker-compose -f compose/dci.yml up`
+* Create a password in the root directory of the project `echo "password" > password`
+* Run the environment by typing `docker-compose -f compose/dci.yml up -d`
 * You can now attach the containers needed by typing `docker attach <container_name or container_id>`
 
 
