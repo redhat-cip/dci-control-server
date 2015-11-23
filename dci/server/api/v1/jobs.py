@@ -72,6 +72,7 @@ def get_all_jobs(jd_id=None):
     args = schemas.args(flask.request.args.to_dict())
     # convenient alias
     embed = args['embed']
+    embed.sort()
 
     # the default query with no parameters
     query = sqlalchemy.sql.select([models.JOBS])
