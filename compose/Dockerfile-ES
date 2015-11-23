@@ -1,0 +1,25 @@
+FROM fedora
+
+ENV ES_PKG_NAME elasticsearch-2.0.0
+RUN dnf update -y
+RUN dnf install -y java-1.8.0-openjdk tar gzip 
+RUN curl -o /usr/local/bin/gosu -fSL "https://github.com/tianon/gosu/releases/download/1.7/gosu-amd64"
+
+RUN \
+  cd / && \
+  curl -O https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/tar/elasticsearch/2.0.0/elasticsearch-2.0.0.tar.gz && \
+  tar xvzf $ES_PKG_NAME.tar.gz && \
+  rm -f $ES_PKG_NAME.tar.gz && \
+  mv /$ES_PKG_NAME /elasticsearch
+
+RUN chmod +x /usr/local/bin/gosu
+
+RUN adduser elasticsearch
+RUN chown -R elasticsearch:elasticsearch /elasticsearch
+RUN echo "network.host: 0.0.0.0" > /elasticsearch/config/elasticsearch.yml
+
+EXPOSE 9200 9300
+
+WORKDIR /elasticsearch
+
+CMD ["gosu","elasticsearch","/elasticsearch/bin/elasticsearch"]
