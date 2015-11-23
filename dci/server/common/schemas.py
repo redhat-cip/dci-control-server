@@ -55,7 +55,7 @@ INVALID_REQUIRED = 'required key not provided'
 INVALID_OBJECT = 'not a valid object'
 
 UUID_FIELD = v.All(six.text_type, msg=INVALID_UUID)
-DATA_FIELD = {v.Optional('data'): dict}
+DATA_FIELD = {v.Optional('data', default={}): dict}
 
 
 class Schema(v.Schema):
@@ -163,13 +163,13 @@ user = schema_factory(user)
 ###############################################################################
 
 component = utils.dict_merge(base, DATA_FIELD, {
-    v.Optional('sha'): six.text_type,
-    v.Optional('title'): six.text_type,
-    v.Optional('message'): six.text_type,
-    v.Optional('git'): six.text_type,
-    v.Optional('ref'): six.text_type,
-    v.Optional('canonical_project_name'): six.text_type,
-    v.Optional('url'): Url(),
+    v.Optional('sha', default=None): six.text_type,
+    v.Optional('title', default=None): six.text_type,
+    v.Optional('message', default=None): six.text_type,
+    v.Optional('git', default=None): six.text_type,
+    v.Optional('ref', default=None): six.text_type,
+    v.Optional('canonical_project_name', default=None): six.text_type,
+    v.Optional('url', default=None): Url(),
     'componenttype_id': v.Any(UUID_FIELD, msg=INVALID_COMPONENT_TYPE)
 })
 
@@ -183,7 +183,7 @@ component = schema_factory(component)
 
 jobdefinition = utils.dict_merge(base, {
     'test_id': v.Any(UUID_FIELD, msg=INVALID_TEST),
-    v.Optional('priority'): v.All(
+    v.Optional('priority', default=0): v.All(
         int, v.Range(min=0, max=1000), msg=INVALID_PRIORITY
     )
 })

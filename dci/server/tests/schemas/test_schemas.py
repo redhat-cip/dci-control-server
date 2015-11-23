@@ -106,7 +106,9 @@ class TestTest(utils.SchemaTesting):
         super(TestTest, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
-        super(TestTest, self).test_post(self.data, self.data)
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data, {'data': {}})
+        super(TestTest, self).test_post(self.data, data_expected)
 
     def test_put_extra_data(self):
         invalids, errors = TestTest.generate_invalids_and_errors()
@@ -117,7 +119,9 @@ class TestTest(utils.SchemaTesting):
         super(TestTest, self).test_put_invalid_data(invalids, errors)
 
     def test_put(self):
-        super(TestTest, self).test_put(self.data, self.data)
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data, {'data': {}})
+        super(TestTest, self).test_put(self.data, data_expected)
 
 
 class TestUser(utils.SchemaTesting):
@@ -163,10 +167,9 @@ class TestComponent(utils.SchemaTesting):
 
     @staticmethod
     def generate_optionals():
-        return dict([('sha', utils.text_type), ('title', utils.text_type),
-                     ('message', utils.text_type), ('git', utils.text_type),
-                     ('ref', utils.text_type),
-                     ('canonical_project_name', utils.text_type)])
+        return dict([('sha', None), ('title', None), ('message', None),
+                     ('git', None), ('ref', None), ('url', None),
+                     ('data', {}), ('canonical_project_name', None)])
 
     @staticmethod
     def generate_invalids_and_errors():
@@ -198,7 +201,9 @@ class TestComponent(utils.SchemaTesting):
         super(TestComponent, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
-        data_expected = utils.dict_merge(self.data)
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data,
+                                         TestComponent.generate_optionals())
         super(TestComponent, self).test_post(self.data, data_expected)
 
     def test_put_extra_data(self):
@@ -209,7 +214,10 @@ class TestComponent(utils.SchemaTesting):
         super(TestComponent, self).test_put_invalid_data(invalids, errors)
 
     def test_put(self):
-        super(TestComponent, self).test_put(self.data, self.data)
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data,
+                                         TestComponent.generate_optionals())
+        super(TestComponent, self).test_put(self.data, data_expected)
 
 
 class TestJobDefinition(utils.SchemaTesting):
@@ -239,7 +247,9 @@ class TestJobDefinition(utils.SchemaTesting):
         super(TestJobDefinition, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
-        super(TestJobDefinition, self).test_post(self.data, self.data)
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data, {'priority': 0})
+        super(TestJobDefinition, self).test_post(self.data, data_expected)
 
     def test_put_extra_data(self):
         super(TestJobDefinition, self).test_put_extra_data(self.data)
@@ -252,7 +262,9 @@ class TestJobDefinition(utils.SchemaTesting):
         super(TestJobDefinition, self).test_put_invalid_data(invalids, errors)
 
     def test_put(self):
-        super(TestJobDefinition, self).test_put(self.data, self.data)
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data, {'priority': 0})
+        super(TestJobDefinition, self).test_put(self.data, data_expected)
 
 
 class TestRemoteCI(utils.SchemaTesting):
@@ -280,7 +292,9 @@ class TestRemoteCI(utils.SchemaTesting):
         super(TestRemoteCI, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
-        super(TestRemoteCI, self).test_post(self.data, self.data)
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data, {'data': {}})
+        super(TestRemoteCI, self).test_post(self.data, data_expected)
 
     def test_put_extra_data(self):
         super(TestRemoteCI, self).test_put_extra_data(self.data)
@@ -290,7 +304,9 @@ class TestRemoteCI(utils.SchemaTesting):
         super(TestRemoteCI, self).test_put_invalid_data(invalids, errors)
 
     def test_put(self):
-        super(TestRemoteCI, self).test_put(self.data, self.data)
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data, {'data': {}})
+        super(TestRemoteCI, self).test_put(self.data, data_expected)
 
 
 class TestJob(utils.SchemaTesting):
