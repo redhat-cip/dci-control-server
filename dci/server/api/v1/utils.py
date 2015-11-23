@@ -21,6 +21,7 @@ import six
 import sqlalchemy.sql
 
 from dci.server.common import exceptions as dci_exc
+from dci.server import utils
 
 
 def verify_existence_and_get(table, resource_id, cond_exist):
@@ -107,41 +108,51 @@ def group_embedded_resources(items_to_embed, row):
                'c': {'name': 'mdr1', 'id': '12345'}},
          'b': {'id': '1234', 'name': 'lol3'}}
     """
+    def nestify(item_to_embed, row):
+        result_tmp = {}
+        row_tmp = {}
+
+        # build the two possible keys for nested values
+        underscore_key = item_to_embed + '_'
+        point_key = item_to_embed + '.'
+
+        for key, value in row.items():
+            if key.startswith(underscore_key) or key.startswith(point_key):
+                # if the element is a nested one, add it to result_tmp with
+                # the truncated key
+                key = key[len(item_to_embed) + 1:]
+                result_tmp[key] = value
+            else:
+                # if not, store the value to replace the row in order to
+                # avoid processing duplicate values
+                row_tmp[key] = value
+        return result_tmp, row_tmp
+
     if row is None:
         return None
     if not items_to_embed:
         return dict(row)
-    result = {}
-    items_to_embed_with_suffix = [item + '_' for item in items_to_embed]
 
-    for key, value in row.items():
-        if any((key.startswith(item) for item in items_to_embed_with_suffix)):
-            embd_elt_name, embd_elt_column = key.split('_', 1)
-            embd_elt = result.get(embd_elt_name, {})
-            embd_elt[embd_elt_column] = value
-            result[embd_elt_name] = embd_elt
+    # output of the function
+    res = {}
+    items_to_embed.sort()
+    for item_to_embed in items_to_embed:
+        if '.' in item_to_embed:
+            # if a nested element appears i.e: jobdefinition.test
+            container, nested = item_to_embed.split('.')
+            # run nestify on the container element with the nested key
+            nested_values, container_values = nestify(nested, res[container])
+            # rebuild res and put nested into its container
+            # i.e: test into jobdefinition
+            container_values[nested] = nested_values
+            res[container] = container_values
         else:
-            result[key] = value
+            # if no nested actualize res, and replace row with
+            # unprocessed values
+            res[item_to_embed], row = nestify(item_to_embed, row)
 
-    for embed_item in items_to_embed:
-        # If there is a '.' then it's a nested field
-        if '.' in embed_item:
-            # split the embed element from its nested element
-            # ie. jobdefinition.test -> jobdefinition, test
-            elem, nested_elem = embed_item.split('.', 1)
-
-            # copy the the nested element into its right place
-            # ie jobdefinition['test'] = ...
-            result[elem][nested_elem] = result[embed_item]
-            # add the id of the nested elem
-            nested_elem_id = nested_elem + '_id'
-            result[elem][nested_elem]['id'] = result[elem][nested_elem_id]
-            # remove the nested elem id
-            del result[elem][nested_elem_id]
-            # remove the nested elem from the global result
-            del result[embed_item]
-
-    return result
+    # merge top level values (not processed by nestify)
+    return utils.dict_merge(res, row)
 
 
 def get_columns_name_with_objects(table):
