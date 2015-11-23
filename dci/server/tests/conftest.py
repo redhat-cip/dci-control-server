@@ -126,3 +126,12 @@ def job_id(admin, jobdefinition_id, team_id, remoteci_id):
                            'team_id': team_id,
                            'remoteci_id': remoteci_id}).data
     return job['job']['id']
+
+
+@pytest.fixture
+def jobstate_id(admin, job_id, team_id):
+    jobstate = admin.post('/api/v1/jobstates',
+                          data={'job_id': job_id, 'team_id': team_id,
+                                'status': 'ongoing',
+                                'comment': 'kikoolol'}).data
+    return jobstate['jobstate']['id']
