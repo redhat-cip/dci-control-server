@@ -23,6 +23,11 @@ HOST = '127.0.0.1'
 PORT = 5000
 DEBUG = False
 
+# ElasticSearch Connection parameters
+#
+ES_HOST = '127.0.0.1'
+ES_PORT = '9200'
+
 # Database (SQLAlchemy) related parameters
 #
 SQLALCHEMY_DATABASE_URI = os.environ.get(
@@ -67,3 +72,13 @@ if db_port is not None:
         urlparse.urlparse(db_port).netloc
     )
     HOST = '0.0.0.0'
+
+es_url = os.environ.get('ES_PORT')
+
+if es_url is not None:
+    try:
+        import urlparse
+    except ImportError:
+        import urllib.parse as urlparse
+    ES_HOST = '%s' % urlparse.urlparse(es_url).hostname
+    ES_PORT = '%s' % urlparse.urlparse(es_url).port
