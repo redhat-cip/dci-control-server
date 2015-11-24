@@ -334,15 +334,15 @@ class TestJob(utils.SchemaTesting):
 
 class TestJobState(utils.SchemaTesting):
     schema = schemas.jobstate
-    data = dict([utils.NAME, utils.STATUS, utils.JOB, utils.TEAM])
+    data = dict([utils.STATUS, utils.JOB, utils.TEAM])
 
     @staticmethod
     def generate_invalids_and_errors():
         status_invalid, status_error = utils.generate_invalid_string('status')
 
-        invalids = dict([utils.INVALID_NAME, utils.INVALID_JOB,
+        invalids = dict([utils.INVALID_JOB,
                          utils.INVALID_TEAM, status_invalid])
-        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_JOB_ERROR,
+        errors = dict([utils.INVALID_JOB_ERROR,
                        utils.INVALID_TEAM_ERROR, status_error])
         return invalids, errors
 
@@ -351,7 +351,7 @@ class TestJobState(utils.SchemaTesting):
         super(TestJobState, self).test_post_extra_data(data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'status', 'team_id', 'job_id')
+        errors = utils.generate_errors('status', 'team_id', 'job_id')
         super(TestJobState, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
