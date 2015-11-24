@@ -222,12 +222,12 @@ job = schema_factory(job)
 #                                                                             #
 ###############################################################################
 
-jobstate = utils.dict_merge(base, {
+jobstate = {
     'status': six.text_type,
     'job_id': v.Any(UUID_FIELD, msg=INVALID_JOB),
     'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
     v.Optional('comment'): six.text_type,
-})
+}
 
 jobstate = schema_factory(jobstate)
 
