@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_b3f8a24a",
+        "filename": "compose/Dockerfile-ES",
+        "patchSetId": 2
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-24T16:30:22Z",
+      "side": 1,
+      "message": "remove vim it was for debugging purpose",
+      "revId": "43d43715725a8ba9a3344eba25b6311cc74f7fd4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_5395b6e2",
+        "filename": "compose/Dockerfile-ES",
+        "patchSetId": 2
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-24T16:30:22Z",
+      "side": 1,
+      "message": "cp -r /usr/share/elasticsearch/* ${ES_HOME}",
+      "revId": "43d43715725a8ba9a3344eba25b6311cc74f7fd4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_739a3a16",
+        "filename": "compose/Dockerfile-ES",
+        "patchSetId": 2
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-24T16:30:22Z",
+      "side": 1,
+      "message": "missing expose ports",
+      "revId": "43d43715725a8ba9a3344eba25b6311cc74f7fd4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_53bcd66c",
+        "filename": "compose/Dockerfile-ES",
+        "patchSetId": 2
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-24T16:30:22Z",
+      "side": 1,
+      "message": "use the array form of CMD http://docs.docker.com/engine/reference/builder/#cmd it is recommended by docker documentation",
+      "revId": "43d43715725a8ba9a3344eba25b6311cc74f7fd4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
