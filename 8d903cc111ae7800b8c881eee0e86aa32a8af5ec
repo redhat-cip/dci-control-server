@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_b3c42260",
+        "filename": "compose/Dockerfile-ES",
+        "patchSetId": 1
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2015-11-24T13:15:18Z",
+      "side": 1,
+      "message": "Extra space",
+      "revId": "8d903cc111ae7800b8c881eee0e86aa32a8af5ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
