@@ -370,3 +370,50 @@ class TestJobState(utils.SchemaTesting):
 
     def test_put(self):
         super(TestJobState, self).test_put(self.data, self.data)
+
+
+class TestFile(utils.SchemaTesting):
+    schema = schemas.file
+    data = dict([utils.NAME, utils.CONTENT, utils.JOB_STATE, utils.TEAM])
+
+    @staticmethod
+    def generate_invalids_and_errors():
+        invalids = []
+        errors = []
+
+        for field in ['content', 'md5', 'mime']:
+            invalid, error = utils.generate_invalid_string(field)
+            invalids.append(invalid)
+            errors.append(error)
+
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_JOB_STATE,
+                         utils.INVALID_TEAM] + invalids)
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_JOB_STATE_ERROR,
+                       utils.INVALID_TEAM_ERROR] + errors)
+        return invalids, errors
+
+    def test_post_extra_data(self):
+        data = utils.dict_merge(self.data, {'mime': 'mime', 'md5': 'md5'})
+        super(TestFile, self).test_post_extra_data(data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name', 'content', 'team_id',
+                                       'jobstate_id')
+        super(TestFile, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids, errors = TestFile.generate_invalids_and_errors()
+        super(TestFile, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestFile, self).test_post(self.data, self.data)
+
+    def test_put_extra_data(self):
+        super(TestFile, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        invalids, errors = TestFile.generate_invalids_and_errors()
+        super(TestFile, self).test_put_invalid_data(invalids, errors)
+
+    def test_put(self):
+        super(TestFile, self).test_put(self.data, self.data)

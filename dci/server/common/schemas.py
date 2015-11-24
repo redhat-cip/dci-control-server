@@ -46,6 +46,7 @@ INVALID_TEST = 'not a valid test id'
 INVALID_JOB_DEFINITION = 'not a valid jobdefinition id'
 INVALID_REMOTE_CI = 'not a valid remoteci id'
 INVALID_JOB = 'not a valid job id'
+INVALID_JOB_STATE = 'not a valid jobstate id'
 
 INVALID_OFFSET = 'not a valid offset integer (must be greater than 0)'
 INVALID_LIMIT = 'not a valid limit integer (must be greater than 0)'
@@ -229,3 +230,19 @@ jobstate = utils.dict_merge(base, {
 })
 
 jobstate = schema_factory(jobstate)
+
+###############################################################################
+#                                                                             #
+#                                File schemas                                 #
+#                                                                             #
+###############################################################################
+
+file = utils.dict_merge(base, {
+    'content': six.text_type,
+    v.Optional('md5'): six.text_type,
+    v.Optional('mime'): six.text_type,
+    'jobstate_id': v.Any(UUID_FIELD, msg=INVALID_JOB_STATE),
+    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+})
+
+file = schema_factory(file)

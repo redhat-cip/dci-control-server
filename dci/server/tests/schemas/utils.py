@@ -33,6 +33,7 @@ DATA = 'data', {'foo': 'bar'}
 PASSWORD = 'password', text_type
 URL = 'url', 'http://valid.url'
 STATUS = 'status', text_type
+CONTENT = 'content', text_type
 
 INVALID_NAME = 'name', None
 INVALID_NAME_ERROR = 'name', schemas.INVALID_STRING
@@ -76,6 +77,10 @@ INVALID_REMOTE_CI_ERROR = 'remoteci_id', schemas.INVALID_REMOTE_CI
 JOB = 'job_id', ID[1]
 INVALID_JOB = 'job_id', INVALID_ID
 INVALID_JOB_ERROR = 'job_id', schemas.INVALID_JOB
+
+JOB_STATE = 'jobstate_id', ID[1]
+INVALID_JOB_STATE = 'jobstate_id', INVALID_ID
+INVALID_JOB_STATE_ERROR = 'jobstate_id', schemas.INVALID_JOB_STATE
 
 
 def generate_errors(*fields):
