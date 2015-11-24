@@ -42,25 +42,22 @@ def _verify_existence_and_get_t(t_id):
 
 @api.route('/tests', methods=['POST'])
 def create_tests():
-    data_json = flask.request.json
-    # verif post
     etag = utils.gen_etag()
-    values = {'id': utils.gen_uuid(),
-              'name': data_json['name'],
-              'created_at': datetime.datetime.utcnow().isoformat(),
-              'updated_at': datetime.datetime.utcnow().isoformat(),
-              'etag': etag,
-              'data': data_json.get('data', {})}
+    data_json = schemas.test.post(flask.request.json)
+    data_json.update({
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': etag
+    })
 
-    query = models.TESTS.insert().values(**values)
-
+    query = models.TESTS.insert().values(**data_json)
     flask.g.db_conn.execute(query)
 
-    # verif dump
-    result = {'test': values}
-    result = json.dumps(result)
-    return flask.Response(result, 201, headers={'ETag': etag},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({'test': data_json}), 201, headers={'ETag': etag},
+        content_type='application/json'
+    )
 
 
 @api.route('/tests', methods=['GET'])
@@ -89,7 +86,6 @@ def get_all_tests():
 def get_test_by_id_or_name(t_id):
     test = _verify_existence_and_get_t(t_id)
     etag = test['etag']
-    # verif dump
     test = {'test': dict(test)}
     test = json.dumps(test, default=utils.json_encoder)
     return flask.Response(test, 200, headers={'ETag': etag},
@@ -106,18 +102,17 @@ def get_jobdefinitions_by_test(test_id):
 def put_test(t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
-    data_json = flask.request.json
-    # verif put
+    data_json = schemas.test.put(flask.request.json)
 
     _verify_existence_and_get_t(t_id)
-
     data_json['etag'] = utils.gen_etag()
-    query = models.TESTS.update().where(
-        sqlalchemy.sql.and_(
-            sqlalchemy.sql.or_(models.TESTS.c.id == t_id,
-                               models.TESTS.c.name == t_id),
-            models.TESTS.c.etag == if_match_etag)).values(**data_json)
+
+    where_clause = sqlalchemy.sql.and_(
+        sqlalchemy.sql.or_(models.TESTS.c.id == t_id,
+                           models.TESTS.c.name == t_id),
+        models.TESTS.c.etag == if_match_etag
+    )
+    query = models.TESTS.update().where(where_clause).values(**data_json)
 
     result = flask.g.db_conn.execute(query)
 
@@ -136,12 +131,12 @@ def delete_test_by_id_or_name(t_id):
 
     _verify_existence_and_get_t(t_id)
 
-    query = models.TESTS.delete().where(
-        sqlalchemy.sql.and_(
-            sqlalchemy.sql.or_(models.TESTS.c.id == t_id,
-                               models.TESTS.c.name == t_id),
-            models.TESTS.c.etag == if_match_etag))
-
+    where_clause = sqlalchemy.sql.and_(
+        sqlalchemy.sql.or_(models.TESTS.c.id == t_id,
+                           models.TESTS.c.name == t_id),
+        models.TESTS.c.etag == if_match_etag
+    )
+    query = models.TESTS.delete().where(where_clause)
     result = flask.g.db_conn.execute(query)
 
     if result.rowcount == 0:
