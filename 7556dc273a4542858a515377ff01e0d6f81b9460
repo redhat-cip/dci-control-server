@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "bada0100_f33b8a36",
+        "filename": "dci/server/api/v1/jobstates.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-24T15:45:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bada0100_93755e34",
+      "revId": "7556dc273a4542858a515377ff01e0d6f81b9460",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "bada0100_b372e247",
         "filename": "dci/server/api/v1/jobstates.py",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2015-11-24T13:31:51Z",
       "side": 1,
       "message": "same as above",
+      "revId": "7556dc273a4542858a515377ff01e0d6f81b9460",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_9348fecd",
+        "filename": "dci/server/api/v1/jobstates.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-11-24T15:45:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "bada0100_b372e247",
       "revId": "7556dc273a4542858a515377ff01e0d6f81b9460",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
