@@ -10,3 +10,5 @@ psycopg2
 requests
 PyYAML
 voluptuous
+setuptools==18.5
+
