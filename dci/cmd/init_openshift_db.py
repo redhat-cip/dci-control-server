@@ -23,11 +23,11 @@ on openshift environment variable.
 import os
 import sys
 
-import bcrypt
 import sqlalchemy
 from sqlalchemy import exc as sa_exc
 
 from dci.server import app
+from dci.server import auth2
 from dci.server.db import models_core
 
 
@@ -39,8 +39,7 @@ if not os.environ.get('DCI_LOGIN') or not os.environ.get('DCI_PASSWORD'):
 
 DCI_LOGIN = os.environ.get('DCI_LOGIN')
 DCI_PASSWORD = os.environ.get('DCI_PASSWORD')
-DCI_PASSWORD_HASH = bcrypt.hashpw(DCI_PASSWORD.encode('utf-8'),
-                                  bcrypt.gensalt()).decode('utf-8')
+DCI_PASSWORD_HASH = auth2.hash_password(os.environ.get('DCI_PASSWORD'))
 
 
 def init_db(db_conn):

@@ -15,8 +15,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import bcrypt
 import dci.server.app as app
+from dci.server import auth2
 import dci.server.db.models_core as models
 import functools
 import hashlib
@@ -212,12 +212,6 @@ def lorem():
     return '\n'.join(LOREM_IPSUM[0:nb])
 
 
-def passwd(passwd_str):
-    return (bcrypt
-            .hashpw(passwd_str.encode('utf-8'), bcrypt.gensalt())
-            .decode('utf-8'))
-
-
 def init_db(db_conn):
     db_ins = functools.partial(db_insert, db_conn)
 
@@ -263,7 +257,8 @@ def init_db(db_conn):
     # Create the super admin user
     admin_team = db_ins(models.TEAMS, name='admin')
 
-    admin = db_ins(models.USERS, name='admin', password=passwd('admin'),
+    admin = db_ins(models.USERS, name='admin',
+                   password=auth2.hash_password('admin'),
                    team_id=admin_team)
 
     db_ins(models.JOIN_USERS_ROLES, user_id=admin, role_id=admin_role)
@@ -275,9 +270,9 @@ def init_db(db_conn):
         c['id'] = db_ins(models.TEAMS, name=company)
 
         user = {'name': '%s_user' % (company.lower(),),
-                'password': passwd(company), 'team_id': c['id']}
+                'password': auth2.hash_password(company), 'team_id': c['id']}
         admin = {'name': '%s_admin' % (company.lower(),),
-                 'password': passwd(company), 'team_id': c['id']}
+                 'password': auth2.hash_password(company), 'team_id': c['id']}
 
         c['user'] = db_ins(models.USERS, **user)
         c['admin'] = db_ins(models.USERS, **admin)

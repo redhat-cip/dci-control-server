@@ -37,7 +37,7 @@ _VALID_EMBED = {'jobdefinition': models.JOBDEFINITIONS,
 
 def _verify_existence_and_get_job(job_id):
     return v1_utils.verify_existence_and_get(
-        models.JOBS, job_id, models.JOBS.c.id == job_id)
+        [models.JOBS], job_id, models.JOBS.c.id == job_id)
 
 
 @api.route('/jobs', methods=['POST'])

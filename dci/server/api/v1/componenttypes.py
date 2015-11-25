@@ -22,6 +22,7 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
+from dci.server import auth2
 from dci.server.common import exceptions
 from dci.server.common import schemas
 from dci.server.common import utils
@@ -35,12 +36,13 @@ _CT_COLUMNS = v1_utils.get_columns_name_with_objects(models.COMPONENTYPES)
 
 def _verify_existence_and_get_ct(ct_id):
     return v1_utils.verify_existence_and_get(
-        models.COMPONENTYPES, ct_id,
+        [models.COMPONENTYPES], ct_id,
         sqlalchemy.sql.or_(models.COMPONENTYPES.c.id == ct_id,
                            models.COMPONENTYPES.c.name == ct_id))
 
 
 @api.route('/componenttypes', methods=['POST'])
+@auth2.requires_auth
 def create_componenttypes():
     values = schemas.componenttype.post(flask.request.json)
     etag = utils.gen_etag()
@@ -62,6 +64,7 @@ def create_componenttypes():
 
 
 @api.route('/componenttypes', methods=['GET'])
+@auth2.requires_auth
 def get_all_componenttypes():
     args = schemas.args(flask.request.args.to_dict())
 
@@ -84,6 +87,7 @@ def get_all_componenttypes():
 
 
 @api.route('/componenttypes/<ct_id>', methods=['GET'])
+@auth2.requires_auth
 def get_componenttype_by_id_or_name(ct_id):
     componenttype = _verify_existence_and_get_ct(ct_id)
     etag = componenttype['etag']
@@ -95,12 +99,14 @@ def get_componenttype_by_id_or_name(ct_id):
 
 
 @api.route('/componenttypes/<ct_id>/components', methods=['GET'])
+@auth2.requires_auth
 def get_components_by_componenttype(ct_id):
     componenttype = _verify_existence_and_get_ct(ct_id)
     return components.get_all_components(componenttype['id'])
 
 
 @api.route('/componenttypes/<ct_id>', methods=['PUT'])
+@auth2.requires_auth
 def put_componenttype(ct_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -127,6 +133,7 @@ def put_componenttype(ct_id):
 
 
 @api.route('/componenttypes/<ct_id>', methods=['DELETE'])
+@auth2.requires_auth
 def delete_componenttype_by_id_or_name(ct_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)

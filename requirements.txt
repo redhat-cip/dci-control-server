@@ -1,5 +1,4 @@
 alembic
-bcrypt
 Eve>=0.6
 Eve-SQLAlchemy>=0.4.0a2
 PrettyTable
@@ -10,5 +9,5 @@ psycopg2
 requests
 PyYAML
 voluptuous
+passlib==1.6.2 # EL7 version
 setuptools==18.5
-
