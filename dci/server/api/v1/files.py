@@ -22,6 +22,7 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
+from dci.server import auth2
 from dci.server.common import exceptions as dci_exc
 from dci.server.common import schemas
 from dci.server.common import utils
@@ -36,12 +37,13 @@ _VALID_EMBED = {'jobstate': models.JOBSTATES,
 
 def _verify_existence_and_get_file(js_id):
     return v1_utils.verify_existence_and_get(
-        models.FILES, js_id,
+        [models.FILES], js_id,
         sqlalchemy.sql.or_(models.FILES.c.id == js_id,
                            models.FILES.c.name == js_id))
 
 
 @api.route('/files', methods=['POST'])
+@auth2.requires_auth
 def create_files():
     values = schemas.file.post(flask.request.json)
 
@@ -63,6 +65,7 @@ def create_files():
 
 
 @api.route('/files/<file_id>', methods=['PUT'])
+@auth2.requires_auth
 def put_file(file_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -88,6 +91,7 @@ def put_file(file_id):
 
 
 @api.route('/files', methods=['GET'])
+@auth2.requires_auth
 def get_all_files():
     """Get all files.
     """
@@ -101,8 +105,8 @@ def get_all_files():
 
     # if embed then construct the query with a join
     if embed:
-        query = v1_utils.get_query_with_join(models.FILES, embed,
-                                             _VALID_EMBED)
+        query = v1_utils.get_query_with_join(models.FILES, [models.FILES],
+                                             embed, _VALID_EMBED)
 
     query = v1_utils.sort_query(query, args['sort'], _FILES_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.FILES,
@@ -123,6 +127,7 @@ def get_all_files():
 
 
 @api.route('/files/<file_id>', methods=['GET'])
+@auth2.requires_auth
 def get_file_by_id_or_name(file_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
@@ -132,8 +137,8 @@ def get_file_by_id_or_name(file_id):
 
     # if embed then construct the query with a join
     if embed:
-        query = v1_utils.get_query_with_join(models.FILES, embed,
-                                             _VALID_EMBED)
+        query = v1_utils.get_query_with_join(models.FILES, [models.FILES],
+                                             embed, _VALID_EMBED)
 
     query = query.where(
         sqlalchemy.sql.or_(models.FILES.c.id == file_id,
@@ -152,6 +157,7 @@ def get_file_by_id_or_name(file_id):
 
 
 @api.route('/files/<file_id>', methods=['DELETE'])
+@auth2.requires_auth
 def delete_file_by_id(file_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
