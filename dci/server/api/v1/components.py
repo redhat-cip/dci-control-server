@@ -22,6 +22,7 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
+from dci.server import auth2
 from dci.server.common import exceptions as dci_exc
 from dci.server.common import schemas
 from dci.server.common import utils
@@ -34,12 +35,13 @@ _VALID_EMBED = {'componenttype': models.COMPONENTYPES}
 
 def _verify_existence_and_get_c(c_id):
     return v1_utils.verify_existence_and_get(
-        models.COMPONENTS, c_id,
+        [models.COMPONENTS], c_id,
         sqlalchemy.sql.or_(models.COMPONENTS.c.id == c_id,
                            models.COMPONENTS.c.name == c_id))
 
 
 @api.route('/components', methods=['POST'])
+@auth2.requires_auth
 def create_components():
     etag = utils.gen_etag()
     values = schemas.component.post(flask.request.json)
@@ -58,6 +60,7 @@ def create_components():
 
 
 @api.route('/components', methods=['GET'])
+@auth2.requires_auth
 def get_all_components(ct_id=None):
     """Get all components.
 
@@ -103,6 +106,7 @@ def get_all_components(ct_id=None):
 
 
 @api.route('/components/<c_id>', methods=['GET'])
+@auth2.requires_auth
 def get_component_by_id_or_name(c_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
@@ -134,6 +138,7 @@ def get_component_by_id_or_name(c_id):
 
 
 @api.route('/components/<c_id>', methods=['DELETE'])
+@auth2.requires_auth
 def delete_component_by_id_or_name(c_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)

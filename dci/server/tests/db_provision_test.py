@@ -14,9 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from dci.server import auth2
 from dci.server.db import models_core
-
-import bcrypt
 
 
 def provision(db_conn):
@@ -30,25 +29,22 @@ def provision(db_conn):
     company_b_id = db_insert(models_core.TEAMS, name='company_b')
 
     # Create users
-    admin_password = bcrypt.hashpw('admin'.encode('utf-8'),
-                                   bcrypt.gensalt()).decode('utf-8')
+    admin_pw_hash = auth2.hash_password('admin')
     admin_user_id = db_insert(models_core.USERS,
                               name='admin',
-                              password=admin_password,
+                              password=admin_pw_hash,
                               team_id=company_a_id)
 
-    company_a_password = bcrypt.hashpw('company_a_user'.encode('utf-8'),
-                                       bcrypt.gensalt()).decode('utf-8')
+    company_a_pw_hash = auth2.hash_password('company_a_user')
     company_a_user_id = db_insert(models_core.USERS,
                                   name='company_a_user',
-                                  password=company_a_password,
+                                  password=company_a_pw_hash,
                                   team_id=company_a_id)
 
-    company_b_password = bcrypt.hashpw('company_b_user'.encode('utf-8'),
-                                       bcrypt.gensalt()).decode('utf-8')
+    company_b_pw_hash = auth2.hash_password('company_b_user')
     company_b_user_id = db_insert(models_core.USERS,
                                   name='company_b_user',
-                                  password=company_b_password,
+                                  password=company_b_pw_hash,
                                   team_id=company_b_id)
 
     # Create roles
