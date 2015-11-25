@@ -41,32 +41,18 @@ def _verify_existence_and_get_c(c_id):
 
 @api.route('/components', methods=['POST'])
 def create_components():
-    data_json = flask.request.json
-    # verif post
     etag = utils.gen_etag()
-    values = {'id': utils.gen_uuid(),
-              'created_at': datetime.datetime.utcnow().isoformat(),
-              'updated_at': datetime.datetime.utcnow().isoformat(),
-              'etag': etag,
-              'name': data_json['name'],
-              'canonical_project_name': data_json.get(
-                  'canonical_project_name', None),
-              'data': data_json.get('data', None),
-              'sha': data_json.get('sha', None),
-              'title': data_json.get('title', None),
-              'message': data_json.get('message', None),
-              'url': data_json.get('url', None),
-              'git': data_json.get('git', None),
-              'ref': data_json.get('ref', None),
-              'componenttype_id': data_json.get('componenttype_id', None)}
+    values = schemas.component.post(flask.request.json)
+    values.update({'id': utils.gen_uuid(),
+                   'created_at': datetime.datetime.utcnow().isoformat(),
+                   'updated_at': datetime.datetime.utcnow().isoformat(),
+                   'etag': etag})
 
     query = models.COMPONENTS.insert().values(**values)
 
     flask.g.db_conn.execute(query)
 
-    # verif dump
-    result = {'component': values}
-    result = json.dumps(result)
+    result = json.dumps({'component': values})
     return flask.Response(result, 201, headers={'ETag': etag},
                           content_type='application/json')
 
@@ -112,7 +98,6 @@ def get_all_components(ct_id=None):
     result = [v1_utils.group_embedded_resources(args['embed'], row)
               for row in rows]
 
-    # verif dump
     result = {'components': result, '_meta': {'count': nb_cts}}
     result = json.dumps(result, default=utils.json_encoder)
     return flask.Response(result, 200, content_type='application/json')
@@ -144,7 +129,6 @@ def get_component_by_id_or_name(c_id):
                                    status_code=404)
 
     etag = component['etag']
-    # verif dump
     component = {'component': component}
     component = json.dumps(component, default=utils.json_encoder)
     return flask.Response(component, 200, headers={'ETag': etag},
