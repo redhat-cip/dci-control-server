@@ -14,10 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import collections
+
 import flask
+import six
 import sqlalchemy.sql
 
 from dci.server.common import exceptions as dci_exc
+from dci.server import utils
 
 
 def verify_existence_and_get(table, resource_id, cond_exist):
@@ -50,15 +54,14 @@ def verify_embed_list(embed_list, valid_embedded_resources):
                 payload={'Valid elements': list(valid_embedded_resources)})
 
 
-def get_query_with_join(table_a, *tables_to_join):
+def get_query_with_join(table_a, embed_list, valid_embedded_resources):
     """Give a table table_a and a list of tables tables tables_to_join, this
     function construct the correct sqlalchemy query to make a join.
     """
 
-    def _flatten_columns_with_prefix(table):
+    def _flatten_columns_with_prefix(prefix, table):
         result = []
         # remove the last 's' character from the table name
-        prefix = table.name[:-1]
         for c_name in table.c.keys():
             # Condition to avoid conflict when fetching the data because by
             # default there is the key 'prefix_id' when prefix is the table
@@ -68,50 +71,88 @@ def get_query_with_join(table_a, *tables_to_join):
                 result.append(table.c[c_name].label(column_name_with_prefix))
         return result
 
+    verify_embed_list(embed_list, valid_embedded_resources.keys())
+
+    resources_to_embed = {elem: valid_embedded_resources[elem]
+                          for elem in embed_list}
+
     # flatten all tables for the SQL select
-    query_select = []
-    for table_to_join in tables_to_join:
-        query_select.extend(_flatten_columns_with_prefix(table_to_join))
-    query_select.append(table_a)
+    query_select = [table_a]
+    for prefix, table in six.iteritems(resources_to_embed):
+        query_select.extend(_flatten_columns_with_prefix(prefix, table))
 
     # chain SQL join on all tables
     query_join = table_a
-    for table_to_join in tables_to_join:
+    # order is important for the SQL join
+    resources_to_embed_ordered = \
+        collections.OrderedDict(sorted(resources_to_embed.items()))
+    for table_to_join in six.itervalues(resources_to_embed_ordered):
         query_join = query_join.join(table_to_join)
 
     return sqlalchemy.sql.select(query_select).select_from(query_join)
 
 
-def group_embedded_resources(embed_list, row):
+def group_embedded_resources(items_to_embed, row):
     """Given the embed list and a row this function group the items by embedded
-    element.
+    element. Handle dot notation for nested fields.
 
     For instance:
-        - embed_list = ['a', 'b']
+        - embed_list = ['a', 'b', 'a.c']
         - row = {'id': '12', 'name' : 'lol',
-                 'a_id': '123', 'a_name': 'lol2',
-                 'b_id': '1234', 'b_name': 'lol3'}
+                 'a_id': '123', 'a_name': 'lol2', 'a_c_id': '12345',
+                 'b_id': '1234', 'b_name': 'lol3',
+                 'a.c_name': 'mdr1'}
     Output:
         {'id': '12', 'name': 'lol',
-         'a': {'id': '123', 'name': 'lol2'},
+         'a': {'id': '123', 'name': 'lol2',
+               'c': {'name': 'mdr1', 'id': '12345'}},
          'b': {'id': '1234', 'name': 'lol3'}}
     """
+    def nestify(item_to_embed, row):
+        result_tmp = {}
+        row_tmp = {}
+
+        # build the two possible keys for nested values
+        underscore_key = item_to_embed + '_'
+        point_key = item_to_embed + '.'
+
+        for key, value in row.items():
+            if key.startswith(underscore_key) or key.startswith(point_key):
+                # if the element is a nested one, add it to result_tmp with
+                # the truncated key
+                key = key[len(item_to_embed) + 1:]
+                result_tmp[key] = value
+            else:
+                # if not, store the value to replace the row in order to
+                # avoid processing duplicate values
+                row_tmp[key] = value
+        return result_tmp, row_tmp
+
     if row is None:
         return None
-    if not embed_list:
+    if not items_to_embed:
         return dict(row)
-    result = {}
-    embed_list = [embed + '_' for embed in embed_list]
 
-    for key, value in row.items():
-        if any((key.startswith(embed) for embed in embed_list)):
-            embd_elt_name, embd_elt_column = key.split('_', 1)
-            embd_elt = result.get(embd_elt_name, {})
-            embd_elt[embd_elt_column] = value
-            result[embd_elt_name] = embd_elt
+    # output of the function
+    res = {}
+    items_to_embed.sort()
+    for item_to_embed in items_to_embed:
+        if '.' in item_to_embed:
+            # if a nested element appears i.e: jobdefinition.test
+            container, nested = item_to_embed.split('.')
+            # run nestify on the container element with the nested key
+            nested_values, container_values = nestify(nested, res[container])
+            # rebuild res and put nested into its container
+            # i.e: test into jobdefinition
+            container_values[nested] = nested_values
+            res[container] = container_values
         else:
-            result[key] = value
-    return result
+            # if no nested actualize res, and replace row with
+            # unprocessed values
+            res[item_to_embed], row = nestify(item_to_embed, row)
+
+    # merge top level values (not processed by nestify)
+    return utils.dict_merge(res, row)
 
 
 def get_columns_name_with_objects(table):
