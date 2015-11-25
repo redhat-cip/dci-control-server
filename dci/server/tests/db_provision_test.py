@@ -16,8 +16,6 @@
 
 from dci.server.db import models_core
 
-import bcrypt
-
 
 def provision(db_conn):
     def db_insert(model_item, **kwargs):
@@ -30,25 +28,19 @@ def provision(db_conn):
     company_b_id = db_insert(models_core.TEAMS, name='company_b')
 
     # Create users
-    admin_password = bcrypt.hashpw('admin'.encode('utf-8'),
-                                   bcrypt.gensalt()).decode('utf-8')
     admin_user_id = db_insert(models_core.USERS,
                               name='admin',
-                              password=admin_password,
+                              password='admin',
                               team_id=company_a_id)
 
-    company_a_password = bcrypt.hashpw('company_a_user'.encode('utf-8'),
-                                       bcrypt.gensalt()).decode('utf-8')
     company_a_user_id = db_insert(models_core.USERS,
                                   name='company_a_user',
-                                  password=company_a_password,
+                                  password='company_a_user',
                                   team_id=company_a_id)
 
-    company_b_password = bcrypt.hashpw('company_b_user'.encode('utf-8'),
-                                       bcrypt.gensalt()).decode('utf-8')
     company_b_user_id = db_insert(models_core.USERS,
                                   name='company_b_user',
-                                  password=company_b_password,
+                                  password='company_b_user',
                                   team_id=company_b_id)
 
     # Create roles
