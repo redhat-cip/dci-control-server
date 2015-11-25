@@ -22,6 +22,7 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
+from dci.server.common import exceptions as dci_exc
 from dci.server.common import exceptions
 from dci.server.common import schemas
 from dci.server.common import utils
@@ -30,6 +31,7 @@ from dci.server.db import models_core as models
 
 # associate column names with the corresponding SA Column object
 _R_COLUMNS = v1_utils.get_columns_name_with_objects(models.REMOTECIS)
+_VALID_EMBED = {'team': models.TEAMS}
 
 
 def _verify_existence_and_get_remoteci(r_id):
@@ -64,13 +66,19 @@ def create_remotecis():
 @api.route('/remotecis', methods=['GET'])
 def get_all_remotecis(t_id=None):
     args = schemas.args(flask.request.args.to_dict())
+    # convenient alias
+    embed = args['embed']
 
-    query = (sqlalchemy.sql.select([models.REMOTECIS])
-             .limit(args['limit']).offset(args['offset']))
+    query = sqlalchemy.sql.select([models.REMOTECIS])
+
+    if embed:
+        query = v1_utils.get_query_with_join(models.REMOTECIS, embed,
+                                             _VALID_EMBED)
 
     query = v1_utils.sort_query(query, args['sort'], _R_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.REMOTECIS,
                                  _R_COLUMNS)
+    query = query.limit(args['limit']).offset(args['offset'])
 
     # used for counting the number of rows when ct_id is not None
     where_t_cond = None
@@ -81,7 +89,7 @@ def get_all_remotecis(t_id=None):
     nb_remotecis = utils.get_number_of_rows(models.REMOTECIS, where_t_cond)
 
     rows = flask.g.db_conn.execute(query).fetchall()
-    result = [dict(row) for row in rows]
+    result = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
     result = {'remotecis': result, '_meta': {'count': nb_remotecis}}
     result = json.dumps(result, default=utils.json_encoder)
@@ -90,11 +98,31 @@ def get_all_remotecis(t_id=None):
 
 @api.route('/remotecis/<r_id>', methods=['GET'])
 def get_remoteci_by_id_or_name(r_id):
-    test = _verify_existence_and_get_remoteci(r_id)
-    etag = test['etag']
-    test = {'remoteci': dict(test)}
-    test = json.dumps(test, default=utils.json_encoder)
-    return flask.Response(test, 200, headers={'ETag': etag},
+    embed = schemas.args(flask.request.args.to_dict())['embed']
+    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
+
+    # the default query with no parameters
+    query = sqlalchemy.sql.select([models.REMOTECIS])
+
+    # if embed then construct the query with a join
+    if embed:
+        query = v1_utils.get_query_with_join(models.REMOTECIS, embed,
+                                             _VALID_EMBED)
+
+    query = query.where(
+        sqlalchemy.sql.or_(models.REMOTECIS.c.id == r_id,
+                           models.REMOTECIS.c.name == r_id))
+
+    row = flask.g.db_conn.execute(query).fetchone()
+    remoteci = v1_utils.group_embedded_resources(embed, row)
+
+    if row is None:
+        raise dci_exc.DCIException("Remoteci '%s' not found." % r_id,
+                                   status_code=404)
+
+    etag = remoteci['etag']
+    remoteci = json.dumps({'remoteci': remoteci}, default=utils.json_encoder)
+    return flask.Response(remoteci, 200, headers={'ETag': etag},
                           content_type='application/json')
 
 
