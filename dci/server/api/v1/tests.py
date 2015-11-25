@@ -23,6 +23,7 @@ import sqlalchemy.sql
 from dci.server.api.v1 import api
 from dci.server.api.v1 import jobdefinitions
 from dci.server.api.v1 import utils as v1_utils
+from dci.server import auth2
 from dci.server.common import exceptions
 from dci.server.common import schemas
 from dci.server.common import utils
@@ -35,12 +36,13 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(models.TESTS)
 
 def _verify_existence_and_get_t(t_id):
     return v1_utils.verify_existence_and_get(
-        models.TESTS, t_id,
+        [models.TESTS], t_id,
         sqlalchemy.sql.or_(models.TESTS.c.id == t_id,
                            models.TESTS.c.name == t_id))
 
 
 @api.route('/tests', methods=['POST'])
+@auth2.requires_auth
 def create_tests():
     etag = utils.gen_etag()
     data_json = schemas.test.post(flask.request.json)
@@ -61,6 +63,7 @@ def create_tests():
 
 
 @api.route('/tests', methods=['GET'])
+@auth2.requires_auth
 def get_all_tests():
     args = schemas.args(flask.request.args.to_dict())
 
@@ -83,6 +86,7 @@ def get_all_tests():
 
 
 @api.route('/tests/<t_id>', methods=['GET'])
+@auth2.requires_auth
 def get_test_by_id_or_name(t_id):
     test = _verify_existence_and_get_t(t_id)
     etag = test['etag']
@@ -93,12 +97,14 @@ def get_test_by_id_or_name(t_id):
 
 
 @api.route('/tests/<t_id>/jobdefinitions', methods=['GET'])
+@auth2.requires_auth
 def get_jobdefinitions_by_test(test_id):
     test = _verify_existence_and_get_t(test_id)
     return jobdefinitions.get_all_jobdefinitions(test['id'])
 
 
 @api.route('/tests/<t_id>', methods=['PUT'])
+@auth2.requires_auth
 def put_test(t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -125,6 +131,7 @@ def put_test(t_id):
 
 
 @api.route('/tests/<t_id>', methods=['DELETE'])
+@auth2.requires_auth
 def delete_test_by_id_or_name(t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)

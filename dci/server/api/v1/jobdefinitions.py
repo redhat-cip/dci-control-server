@@ -22,6 +22,7 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
+from dci.server import auth2
 from dci.server.common import exceptions as dci_exc
 from dci.server.common import schemas
 from dci.server.common import utils
@@ -34,12 +35,13 @@ _VALID_EMBED = {'test': models.TESTS}
 
 def _verify_existence_and_get_jd(jd_id):
     return v1_utils.verify_existence_and_get(
-        models.JOBDEFINITIONS, jd_id,
+        [models.JOBDEFINITIONS], jd_id,
         sqlalchemy.sql.or_(models.JOBDEFINITIONS.c.id == jd_id,
                            models.JOBDEFINITIONS.c.name == jd_id))
 
 
 @api.route('/jobdefinitions', methods=['POST'])
+@auth2.requires_auth
 def create_jobdefinitions():
     etag = utils.gen_etag()
     data_json = schemas.jobdefinition.post(flask.request.json)
@@ -60,6 +62,7 @@ def create_jobdefinitions():
 
 
 @api.route('/jobdefinitions', methods=['GET'])
+@auth2.requires_auth
 def get_all_jobdefinitions(t_id=None):
     """Get all jobdefinitions.
 
@@ -78,7 +81,8 @@ def get_all_jobdefinitions(t_id=None):
 
     # if embed then construct the query with a join
     if embed:
-        query = v1_utils.get_query_with_join(models.JOBDEFINITIONS, embed,
+        query = v1_utils.get_query_with_join(models.JOBDEFINITIONS,
+                                             [models.JOBDEFINITIONS], embed,
                                              _VALID_EMBED)
 
     query = v1_utils.sort_query(query, args['sort'], _JD_COLUMNS)
@@ -107,6 +111,7 @@ def get_all_jobdefinitions(t_id=None):
 
 
 @api.route('/jobdefinitions/<jd_id>', methods=['GET'])
+@auth2.requires_auth
 def get_jobdefinition_by_id_or_name(jd_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
@@ -117,7 +122,8 @@ def get_jobdefinition_by_id_or_name(jd_id):
 
     # if embed then construct the query with a join
     if embed:
-        query = v1_utils.get_query_with_join(models.JOBDEFINITIONS, embed,
+        query = v1_utils.get_query_with_join(models.JOBDEFINITIONS,
+                                             [models.JOBDEFINITIONS], embed,
                                              _VALID_EMBED)
 
     query = query.where(
@@ -140,6 +146,7 @@ def get_jobdefinition_by_id_or_name(jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>', methods=['DELETE'])
+@auth2.requires_auth
 def delete_jobdefinition_by_id_or_name(jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -165,6 +172,7 @@ def delete_jobdefinition_by_id_or_name(jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>/components', methods=['POST'])
+@auth2.requires_auth
 def add_component_to_jobdefinitions(jd_id):
     data_json = flask.request.json
     values = {'jobdefinition_id': jd_id,
@@ -178,6 +186,7 @@ def add_component_to_jobdefinitions(jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>/components', methods=['GET'])
+@auth2.requires_auth
 def get_all_components_from_jobdefinitions(jd_id):
     _verify_existence_and_get_jd(jd_id)
 
@@ -194,6 +203,7 @@ def get_all_components_from_jobdefinitions(jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>/components/<c_id>', methods=['DELETE'])
+@auth2.requires_auth
 def delete_component_from_jobdefinition(jd_id, c_id):
     _verify_existence_and_get_jd(jd_id)
 

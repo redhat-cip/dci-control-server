@@ -22,6 +22,7 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
+from dci.server import auth2
 from dci.server.common import exceptions as dci_exc
 from dci.server.common import schemas
 from dci.server.common import utils
@@ -39,10 +40,11 @@ _VALID_EMBED = {'jobdefinition': models.JOBDEFINITIONS,
 
 def _verify_existence_and_get_job(job_id):
     return v1_utils.verify_existence_and_get(
-        models.JOBS, job_id, models.JOBS.c.id == job_id)
+        [models.JOBS], job_id, models.JOBS.c.id == job_id)
 
 
 @api.route('/jobs', methods=['POST'])
+@auth2.requires_auth
 def create_jobs():
     values = schemas.job.post(flask.request.json)
     etag = utils.gen_etag()
@@ -64,6 +66,7 @@ def create_jobs():
 
 
 @api.route('/jobs', methods=['GET'])
+@auth2.requires_auth
 def get_all_jobs(jd_id=None):
     """Get all jobs.
 
@@ -80,7 +83,8 @@ def get_all_jobs(jd_id=None):
 
     # if embed then construct the query with a join
     if embed:
-        query = v1_utils.get_query_with_join(models.JOBS, embed, _VALID_EMBED)
+        query = v1_utils.get_query_with_join(models.JOBS, [models.JOBS],
+                                             embed, _VALID_EMBED)
 
     query = v1_utils.sort_query(query, args['sort'], _JOBS_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.JOBS,
@@ -113,6 +117,7 @@ def get_jobstates_by_job(j_id):
 
 
 @api.route('/jobs/<jd_id>', methods=['GET'])
+@auth2.requires_auth
 def get_job_by_id(jd_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
@@ -123,7 +128,8 @@ def get_job_by_id(jd_id):
 
     # if embed then construct the query with a join
     if embed:
-        query = v1_utils.get_query_with_join(models.JOBS, embed, _VALID_EMBED)
+        query = v1_utils.get_query_with_join(models.JOBS, [models.JOBS],
+                                             embed, _VALID_EMBED)
 
     query = query.where(models.JOBS.c.id == jd_id)
 
@@ -141,6 +147,7 @@ def get_job_by_id(jd_id):
 
 
 @api.route('/jobs/<jd_id>', methods=['DELETE'])
+@auth2.requires_auth
 def delete_job_by_id(jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)

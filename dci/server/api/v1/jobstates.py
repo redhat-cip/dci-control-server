@@ -22,6 +22,7 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
+from dci.server import auth2
 from dci.server.common import exceptions as dci_exc
 from dci.server.common import schemas
 from dci.server.common import utils
@@ -35,10 +36,11 @@ _VALID_EMBED = {'job': models.JOBS,
 
 def _verify_existence_and_get_jobstate(js_id):
     return v1_utils.verify_existence_and_get(
-        models.JOBSTATES, js_id, models.JOBSTATES.c.id == js_id)
+        [models.JOBSTATES], js_id, models.JOBSTATES.c.id == js_id)
 
 
 @api.route('/jobstates', methods=['POST'])
+@auth2.requires_auth
 def create_jobstates():
     values = schemas.jobstate.post(flask.request.json)
     etag = utils.gen_etag()
@@ -59,6 +61,7 @@ def create_jobstates():
 
 
 @api.route('/jobstates/<r_id>', methods=['PUT'])
+@auth2.requires_auth
 def put_jobstate(r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -83,6 +86,7 @@ def put_jobstate(r_id):
 
 
 @api.route('/jobstates', methods=['GET'])
+@auth2.requires_auth
 def get_all_jobstates(j_id=None):
     """Get all jobstates.
     """
@@ -96,7 +100,8 @@ def get_all_jobstates(j_id=None):
 
     # if embed then construct the query with a join
     if embed:
-        query = v1_utils.get_query_with_join(models.JOBSTATES, embed,
+        query = v1_utils.get_query_with_join(models.JOBSTATES,
+                                             [models.JOBSTATES], embed,
                                              _VALID_EMBED)
 
     query = v1_utils.sort_query(query, args['sort'], _JS_COLUMNS)
@@ -124,6 +129,7 @@ def get_all_jobstates(j_id=None):
 
 
 @api.route('/jobstates/<js_id>', methods=['GET'])
+@auth2.requires_auth
 def get_jobstate_by_id(js_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
@@ -133,7 +139,8 @@ def get_jobstate_by_id(js_id):
 
     # if embed then construct the query with a join
     if embed:
-        query = v1_utils.get_query_with_join(models.JOBSTATES, embed,
+        query = v1_utils.get_query_with_join(models.JOBSTATES,
+                                             [models.JOBSTATES], embed,
                                              _VALID_EMBED)
 
     query = query.where(models.JOBSTATES.c.id == js_id)
@@ -152,6 +159,7 @@ def get_jobstate_by_id(js_id):
 
 
 @api.route('/jobstates/<js_id>', methods=['DELETE'])
+@auth2.requires_auth
 def delete_jobstate_by_id(js_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
