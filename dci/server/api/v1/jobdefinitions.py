@@ -41,23 +41,19 @@ def _verify_existence_and_get_jd(jd_id):
 
 @api.route('/jobdefinitions', methods=['POST'])
 def create_jobdefinitions():
-    data_json = flask.request.json
-    # verif post
     etag = utils.gen_etag()
-    values = {'id': utils.gen_uuid(),
-              'created_at': datetime.datetime.utcnow().isoformat(),
-              'updated_at': datetime.datetime.utcnow().isoformat(),
-              'etag': etag,
-              'name': data_json['name'],
-              'priority': data_json.get('priority', 0),
-              'test_id': data_json.get('test_id', None)}
+    data_json = schemas.jobdefinition.post(flask.request.json)
+    data_json.update({
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': etag
+    })
 
-    query = models.JOBDEFINITIONS.insert().values(**values)
-
+    query = models.JOBDEFINITIONS.insert().values(**data_json)
     flask.g.db_conn.execute(query)
 
-    # verif dump
-    result = {'jobdefinition': values}
+    result = {'jobdefinition': data_json}
     result = json.dumps(result)
     return flask.Response(result, 201, headers={'ETag': etag},
                           content_type='application/json')
@@ -128,7 +124,8 @@ def get_jobdefinition_by_id_or_name(jd_id):
 
     query = query.where(
         sqlalchemy.sql.or_(models.JOBDEFINITIONS.c.id == jd_id,
-                           models.JOBDEFINITIONS.c.name == jd_id))
+                           models.JOBDEFINITIONS.c.name == jd_id)
+    )
 
     row = flask.g.db_conn.execute(query).fetchone()
     jobdefinition = v1_utils.group_embedded_resources(embed, row)
@@ -138,7 +135,6 @@ def get_jobdefinition_by_id_or_name(jd_id):
                                    status_code=404)
 
     etag = jobdefinition['etag']
-    # verif dump
     jobdefinition = {'jobdefinition': jobdefinition}
     jobdefinition = json.dumps(jobdefinition, default=utils.json_encoder)
     return flask.Response(jobdefinition, 200, headers={'ETag': etag},
@@ -173,7 +169,6 @@ def delete_jobdefinition_by_id_or_name(jd_id):
 @api.route('/jobdefinitions/<jd_id>/components', methods=['POST'])
 def add_component_to_jobdefinitions(jd_id):
     data_json = flask.request.json
-    # verif post
     values = {'jobdefinition_id': jd_id,
               'component_id': data_json.get('component_id', None)}
 
