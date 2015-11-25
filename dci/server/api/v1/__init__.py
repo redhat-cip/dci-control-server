@@ -37,3 +37,4 @@ import dci.server.api.v1.jobstates  # noqa
 import dci.server.api.v1.remotecis  # noqa
 import dci.server.api.v1.teams  # noqa
 import dci.server.api.v1.tests  # noqa
+import dci.server.api.v1.users  # noqa
