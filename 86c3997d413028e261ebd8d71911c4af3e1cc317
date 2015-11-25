@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_f6f4d888",
+        "filename": "dci/server/api/v1/users.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-25T12:14:24Z",
+      "side": 1,
+      "message": "the fields name, password and team_id didn\u0027t need to be updated",
+      "revId": "86c3997d413028e261ebd8d71911c4af3e1cc317",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
