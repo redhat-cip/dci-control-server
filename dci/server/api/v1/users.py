@@ -22,6 +22,7 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
+from dci.server import auth2
 from dci.server.common import exceptions
 from dci.server.common import schemas
 from dci.server.common import utils
@@ -41,6 +42,7 @@ def _verify_existence_and_get_user(user_id):
 
 
 @api.route('/users', methods=['POST'])
+@auth2.requires_auth
 def create_users():
     values = schemas.user.post(flask.request.json)
     etag = utils.gen_etag()
@@ -62,6 +64,7 @@ def create_users():
 
 
 @api.route('/users', methods=['GET'])
+@auth2.requires_auth
 def get_all_users(team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
@@ -95,6 +98,7 @@ def get_all_users(team_id=None):
 
 
 @api.route('/users/<user_id>', methods=['GET'])
+@auth2.requires_auth
 def get_user_by_id_or_name(user_id):
     user = _verify_existence_and_get_user(user_id)
     etag = user['etag']
@@ -104,6 +108,7 @@ def get_user_by_id_or_name(user_id):
 
 
 @api.route('/users/<user_id>', methods=['PUT'])
+@auth2.requires_auth
 def put_user(user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -131,6 +136,7 @@ def put_user(user_id):
 
 
 @api.route('/users/<user_id>', methods=['DELETE'])
+@auth2.requires_auth
 def delete_user_by_id_or_name(user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)

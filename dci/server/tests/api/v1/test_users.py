@@ -123,6 +123,9 @@ def test_get_all_users_with_sort(admin, team_id):
 
     gusers = admin.get('/api/v1/users?sort=created_at').data
     db_users.extend([user_1, user_2])
+    import pprint
+    pprint.pprint(gusers['users'])
+    pprint.pprint(db_users)
     assert gusers['users'] == db_users
 
     # test in reverse order
