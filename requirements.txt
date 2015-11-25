@@ -10,5 +10,5 @@ psycopg2
 requests
 PyYAML
 voluptuous
+passlib==1.6.2 # EL7 version
 setuptools==18.5
-

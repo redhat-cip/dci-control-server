@@ -23,6 +23,7 @@ import sqlalchemy.sql
 from dci.server.api.v1 import api
 from dci.server.api.v1 import remotecis
 from dci.server.api.v1 import utils as v1_utils
+from dci.server import auth2
 from dci.server.common import exceptions
 from dci.server.common import schemas
 from dci.server.common import utils
@@ -34,12 +35,13 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(models.TEAMS)
 
 def _verify_existence_and_get_team(t_id):
     return v1_utils.verify_existence_and_get(
-        models.TEAMS, t_id,
+        [models.TEAMS], t_id,
         sqlalchemy.sql.or_(models.TEAMS.c.id == t_id,
                            models.TEAMS.c.name == t_id))
 
 
 @api.route('/teams', methods=['POST'])
+@auth2.requires_auth
 def create_teams():
     values = schemas.team.post(flask.request.json)
     etag = utils.gen_etag()
@@ -61,6 +63,7 @@ def create_teams():
 
 
 @api.route('/teams', methods=['GET'])
+@auth2.requires_auth
 def get_all_teams():
     args = schemas.args(flask.request.args.to_dict())
 
@@ -82,6 +85,7 @@ def get_all_teams():
 
 
 @api.route('/teams/<ct_id>', methods=['GET'])
+@auth2.requires_auth
 def get_team_by_id_or_name(ct_id):
     team = _verify_existence_and_get_team(ct_id)
     etag = team['etag']
@@ -92,12 +96,14 @@ def get_team_by_id_or_name(ct_id):
 
 
 @api.route('/teams/<team_id>/remotecis', methods=['GET'])
+@auth2.requires_auth
 def get_remotecis_by_team(team_id):
     team = _verify_existence_and_get_team(team_id)
     return remotecis.get_all_remotecis(team['id'])
 
 
 @api.route('/teams/<ct_id>', methods=['PUT'])
+@auth2.requires_auth
 def put_team(ct_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -124,6 +130,7 @@ def put_team(ct_id):
 
 
 @api.route('/teams/<ct_id>', methods=['DELETE'])
+@auth2.requires_auth
 def delete_team_by_id_or_name(ct_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
