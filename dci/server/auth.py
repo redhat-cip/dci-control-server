@@ -14,8 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# WARNING(Gonéri): both python-bcrypt and bcrypt provide a bcrypt package
-import bcrypt
+from dci.server import auth2
 import eve.auth
 import flask
 import sqlalchemy.orm.exc
@@ -42,12 +41,7 @@ class DCIBasicAuth(eve.auth.BasicAuth):
             return False
         finally:
             session.close()
-        if bcrypt.hashpw(
-                password.encode('utf-8'),
-                self.user.password.encode('utf-8')
-        ) == self.user.password.encode('utf-8'):
-            return True
-        return False
+        return auth2.check_auth(name, password)
 
     def authorized(self, allowed_roles, resource, method):
         auth = flask.request.authorization

@@ -21,24 +21,22 @@ import six
 import sqlalchemy.sql
 
 from dci.server.common import exceptions as dci_exc
+from dci.server.db import models_core as models
 from dci.server import utils
 
 
-def verify_existence_and_get(table, resource_id, cond_exist):
+def verify_existence_and_get(select, resource_id, cond_exist):
     """Verify the existence of a resource in the database and then
     return it if it exists, according to the condition, or raise an
     exception.
     """
 
-    # remove the the last 's' character of the table name
-    resource_name = table.name[:-1]
-    query = sqlalchemy.sql.select([table]).where(cond_exist)
+    query = sqlalchemy.sql.select(select).where(cond_exist)
 
     result = flask.g.db_conn.execute(query).fetchone()
 
     if result is None:
-        raise dci_exc.DCIException("%s '%s' not found." %
-                                   (resource_name, resource_id),
+        raise dci_exc.DCIException("Resource '%s' not found." % resource_id,
                                    status_code=404)
     return result
 
@@ -76,10 +74,15 @@ def get_query_with_join(table_a, embed_list, valid_embedded_resources):
     resources_to_embed = {elem: valid_embedded_resources[elem]
                           for elem in embed_list}
 
+    # if the table USERS then remove the password column for security reasons
+    if table_a == models.USERS:
+        q_select = [table_a.c[c_name] for c_name in table_a.c.keys()
+                    if c_name != 'password']
+    else:
+        q_select = [table_a]
     # flatten all tables for the SQL select
-    query_select = [table_a]
     for prefix, table in six.iteritems(resources_to_embed):
-        query_select.extend(_flatten_columns_with_prefix(prefix, table))
+        q_select.extend(_flatten_columns_with_prefix(prefix, table))
 
     # chain SQL join on all tables
     query_join = table_a
@@ -89,7 +92,7 @@ def get_query_with_join(table_a, embed_list, valid_embedded_resources):
     for table_to_join in six.itervalues(resources_to_embed_ordered):
         query_join = query_join.join(table_to_join)
 
-    return sqlalchemy.sql.select(query_select).select_from(query_join)
+    return sqlalchemy.sql.select(q_select).select_from(query_join)
 
 
 def group_embedded_resources(items_to_embed, row):

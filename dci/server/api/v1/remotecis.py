@@ -22,6 +22,7 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
+from dci.server import auth2
 from dci.server.common import exceptions as dci_exc
 from dci.server.common import exceptions
 from dci.server.common import schemas
@@ -36,12 +37,13 @@ _VALID_EMBED = {'team': models.TEAMS}
 
 def _verify_existence_and_get_remoteci(r_id):
     return v1_utils.verify_existence_and_get(
-        models.REMOTECIS, r_id,
+        [models.REMOTECIS], r_id,
         sqlalchemy.sql.or_(models.REMOTECIS.c.id == r_id,
                            models.REMOTECIS.c.name == r_id))
 
 
 @api.route('/remotecis', methods=['POST'])
+@auth2.requires_auth
 def create_remotecis():
     values = schemas.remoteci.post(flask.request.json)
     etag = utils.gen_etag()
@@ -64,6 +66,7 @@ def create_remotecis():
 
 
 @api.route('/remotecis', methods=['GET'])
+@auth2.requires_auth
 def get_all_remotecis(t_id=None):
     args = schemas.args(flask.request.args.to_dict())
     # convenient alias
@@ -97,6 +100,7 @@ def get_all_remotecis(t_id=None):
 
 
 @api.route('/remotecis/<r_id>', methods=['GET'])
+@auth2.requires_auth
 def get_remoteci_by_id_or_name(r_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
@@ -127,6 +131,7 @@ def get_remoteci_by_id_or_name(r_id):
 
 
 @api.route('/remotecis/<r_id>', methods=['PUT'])
+@auth2.requires_auth
 def put_remoteci(r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -154,6 +159,7 @@ def put_remoteci(r_id):
 
 
 @api.route('/remotecis/<r_id>', methods=['DELETE'])
+@auth2.requires_auth
 def delete_remoteci_by_id_or_name(r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
