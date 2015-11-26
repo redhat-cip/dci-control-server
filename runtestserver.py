@@ -16,8 +16,9 @@
 # under the License.
 
 from dci.server import app
+from dci.server import dci_config
 
-conf = app.generate_conf()
+conf = dci_config.generate_conf()
 dci_app = app.create_app(conf)
 
 dci_app.run(dci_app.config['HOST'],

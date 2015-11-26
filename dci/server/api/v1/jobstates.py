@@ -40,8 +40,8 @@ def _verify_existence_and_get_jobstate(js_id):
 
 
 @api.route('/jobstates', methods=['POST'])
-@auth2.requires_auth
-def create_jobstates():
+@auth2.requires_auth()
+def create_jobstates(user_info):
     values = schemas.jobstate.post(flask.request.json)
     etag = utils.gen_etag()
     values.update({
@@ -61,8 +61,8 @@ def create_jobstates():
 
 
 @api.route('/jobstates/<r_id>', methods=['PUT'])
-@auth2.requires_auth
-def put_jobstate(r_id):
+@auth2.requires_auth()
+def put_jobstate(user_info, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     data_json = schemas.jobstate.put(flask.request.json)
@@ -86,8 +86,8 @@ def put_jobstate(r_id):
 
 
 @api.route('/jobstates', methods=['GET'])
-@auth2.requires_auth
-def get_all_jobstates(j_id=None):
+@auth2.requires_auth()
+def get_all_jobstates(user_info, j_id=None):
     """Get all jobstates.
     """
     args = schemas.args(flask.request.args.to_dict())
@@ -129,8 +129,8 @@ def get_all_jobstates(j_id=None):
 
 
 @api.route('/jobstates/<js_id>', methods=['GET'])
-@auth2.requires_auth
-def get_jobstate_by_id(js_id):
+@auth2.requires_auth()
+def get_jobstate_by_id(user_info, js_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
@@ -159,8 +159,8 @@ def get_jobstate_by_id(js_id):
 
 
 @api.route('/jobstates/<js_id>', methods=['DELETE'])
-@auth2.requires_auth
-def delete_jobstate_by_id(js_id):
+@auth2.requires_auth()
+def delete_jobstate_by_id(user_info, js_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 

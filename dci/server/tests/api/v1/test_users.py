@@ -19,6 +19,7 @@ def test_create_users(admin, team_id):
     pu = admin.post('/api/v1/users',
                     data={'name': 'pname', 'password': 'ppass',
                           'team_id': team_id}).data
+
     pu_id = pu['user']['id']
     gu = admin.get('/api/v1/users/%s' % pu_id).data
     assert gu['user']['name'] == 'pname'
@@ -90,7 +91,7 @@ def test_get_all_users_with_pagination(admin, team_id):
                                       'password': 'ppass',
                                       'team_id': team_id})
     users = admin.get('/api/v1/users').data
-    assert users['_meta']['count'] == 7
+    assert users['_meta']['count'] == 9
 
     # verify limit and offset are working well
     users = admin.get('/api/v1/users?limit=2&offset=0').data
@@ -115,10 +116,12 @@ def test_get_all_users_with_sort(admin, team_id):
     user_1 = admin.post('/api/v1/users',
                         data={'name': 'pname1',
                               'password': 'ppass',
+                              'role': 'user',
                               'team_id': team_id}).data['user']
     user_2 = admin.post('/api/v1/users',
                         data={'name': 'pname2',
                               'password': 'ppass',
+                              'role': 'user',
                               'team_id': team_id}).data['user']
 
     gusers = admin.get('/api/v1/users?sort=created_at').data
@@ -205,3 +208,67 @@ def test_delete_user_not_found(admin):
     result = admin.delete('/api/v1/users/ptdr',
                           headers={'If-match': 'mdr'})
     assert result.status_code == 404
+
+
+# Tests for the isolation
+
+def test_create_user_as_user(user, user_admin, team_user_id):
+    # simple user cannot add a new user to its team
+    pu = user.post('/api/v1/users',
+                   data={'name': 'pname',
+                         'password': 'ppass',
+                         'team_id': team_user_id})
+    assert pu.status_code == 401
+
+    # admin user can add a new user to its team
+    pu = user_admin.post('/api/v1/users',
+                         data={'name': 'pname',
+                               'password': 'ppass',
+                               'team_id': team_user_id})
+    assert pu.status_code == 201
+
+
+def test_get_all_users_as_user(user, team_user_id):
+    users = user.get('/api/v1/users')
+    assert users.status_code == 200
+    for guser in users.data['users']:
+        assert guser['team_id'] == team_user_id
+
+
+def test_get_user_as_user(user):
+    # admin does not belong to this user's team
+    guser = user.get('/api/v1/users/admin')
+    assert guser.status_code == 404
+
+    guser = user.get('/api/v1/users/user')
+    assert guser.status_code == 200
+
+
+# Only super admin and an admin of a team can update the user
+def test_put_user_as_user_admin(user, user_admin):
+    puser = user.get('/api/v1/users/user')
+    user_etag = puser.headers.get("ETag")
+
+    user_put = user.put('/api/v1/users/user_admin',
+                        data={'name': 'nname'},
+                        headers={'If-match': user_etag})
+    assert user_put.status_code == 401
+
+    user_put = user_admin.put('/api/v1/users/user',
+                              data={'name': 'nname'},
+                              headers={'If-match': user_etag})
+    assert user_put.status_code == 204
+
+
+# Only super admin can delete a team
+def test_delete_as_user_admin(user, user_admin):
+    puser = user.get('/api/v1/users/user')
+    user_etag = puser.headers.get("ETag")
+
+    user_delete = user.delete('/api/v1/users/user',
+                              headers={'If-match': user_etag})
+    assert user_delete.status_code == 401
+
+    user_delete = user_admin.delete('/api/v1/users/user',
+                                    headers={'If-match': user_etag})
+    assert user_delete.status_code == 204
