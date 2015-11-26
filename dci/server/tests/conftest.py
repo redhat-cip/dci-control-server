@@ -16,6 +16,7 @@
 
 import dci.server.app
 from dci.server.db import models_core
+from dci.server import dci_config
 from dci.server.tests import db_provision_test
 import dci.server.tests.utils as utils
 
@@ -26,7 +27,7 @@ import sqlalchemy_utils.functions
 
 @pytest.fixture(scope='session')
 def engine(request):
-    conf = dci.server.app.generate_conf()
+    conf = dci_config.generate_conf()
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
 
     engine = sqlalchemy.create_engine(db_uri)
@@ -44,25 +45,25 @@ def engine(request):
 
 
 @pytest.fixture
-def app(engine):
-    app = dci.server.app.create_app(dci.server.app.generate_conf())
-    app.testing = True
-    app.engine = engine
-    return app
-
-
-@pytest.fixture
-def db_clean(request, app):
+def db_clean(request, engine):
     def fin():
         for table in reversed(models_core.metadata.sorted_tables):
-            app.engine.execute(table.delete())
+            engine.execute(table.delete())
     request.addfinalizer(fin)
 
 
 @pytest.fixture
-def db_provisioning(app, db_clean):
-    with app.engine.begin() as conn:
+def db_provisioning(db_clean, engine):
+    with engine.begin() as conn:
         db_provision_test.provision(conn)
+
+
+@pytest.fixture
+def app(db_provisioning, engine):
+    app = dci.server.app.create_app(dci_config.generate_conf())
+    app.testing = True
+    app.engine = engine
+    return app
 
 
 @pytest.fixture
@@ -86,6 +87,16 @@ def unauthorized(app, db_provisioning):
 
 
 @pytest.fixture
+def user(app, db_provisioning):
+    return utils.generate_client(app, ('user', 'user'))
+
+
+@pytest.fixture
+def user_admin(app, db_provisioning):
+    return utils.generate_client(app, ('user_admin', 'user_admin'))
+
+
+@pytest.fixture
 def componenttype_id(admin):
     pct = admin.post('/api/v1/componenttypes',
                      data={'name': 'pname'}).data
@@ -102,6 +113,20 @@ def test_id(admin):
 def team_id(admin):
     team = admin.post('/api/v1/teams', data={'name': 'pname'}).data
     return team['team']['id']
+
+
+@pytest.fixture
+def team_user_id(admin):
+    team = admin.get('/api/v1/teams/user').data
+    return team['team']['id']
+
+
+@pytest.fixture
+def remoteci_user_id(user, team_user_id):
+    remoteci = user.post('/api/v1/remotecis',
+                         data={'name': 'rname',
+                               'team_id': team_user_id}).data
+    return remoteci['remoteci']['id']
 
 
 @pytest.fixture

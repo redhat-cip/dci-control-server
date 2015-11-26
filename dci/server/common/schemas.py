@@ -151,6 +151,7 @@ test = schema_factory(utils.dict_merge(base, DATA_FIELD))
 
 user = utils.dict_merge(base, {
     'password': six.text_type,
+    v.Optional('role', default='user'): six.text_type,
     'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM)
 })
 

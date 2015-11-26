@@ -60,7 +60,7 @@ class TestAdmin(object):
         assert job.status_code == 201
         assert job.data is not None
 
-    def test_get_job_item(self, admin, company_a_user):
+    def test_get_job_item(self, admin):
         """GET /jobs should retrieve the item and feed the
         data key with the data section from the component, remoteci,
         test and version.
@@ -84,7 +84,7 @@ class TestAdmin(object):
         remoteci = utils.create_remoteci(admin)
 
         job = utils.create_job(admin, remoteci.data['id'])
-        job = company_a_user.get('/api/jobs/%s' % job.data['id'])
+        job = admin.get('/api/jobs/%s' % job.data['id'])
 
         assert job.status_code == 200
         assert job.data['data'] == {
