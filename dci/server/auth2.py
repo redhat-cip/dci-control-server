@@ -39,7 +39,7 @@ def check_auth(username, password):
         return False
     user = dict(user)
 
-    return pwd_context.verify(password, user.get('password'))
+    return user, pwd_context.verify(password, user.get('password'))
 
 
 def reject():
@@ -59,7 +59,11 @@ def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         auth = flask.request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
+        if not auth:
             return reject()
-        return f(*args, **kwargs)
+        user_info, is_authenticated = check_auth(auth.username, auth.password)
+        if is_authenticated:
+            return f(user_info, *args, **kwargs)
+        else:
+            return reject()
     return decorated

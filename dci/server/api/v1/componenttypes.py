@@ -43,7 +43,7 @@ def _verify_existence_and_get_ct(ct_id):
 
 @api.route('/componenttypes', methods=['POST'])
 @auth2.requires_auth
-def create_componenttypes():
+def create_componenttypes(user_info):
     values = schemas.componenttype.post(flask.request.json)
     etag = utils.gen_etag()
     values.update({
@@ -65,7 +65,7 @@ def create_componenttypes():
 
 @api.route('/componenttypes', methods=['GET'])
 @auth2.requires_auth
-def get_all_componenttypes():
+def get_all_componenttypes(user_info):
     args = schemas.args(flask.request.args.to_dict())
 
     query = sqlalchemy.sql.select([models.COMPONENTYPES]).\
@@ -88,7 +88,7 @@ def get_all_componenttypes():
 
 @api.route('/componenttypes/<ct_id>', methods=['GET'])
 @auth2.requires_auth
-def get_componenttype_by_id_or_name(ct_id):
+def get_componenttype_by_id_or_name(user_info, ct_id):
     componenttype = _verify_existence_and_get_ct(ct_id)
     etag = componenttype['etag']
     # verif dump
@@ -100,14 +100,14 @@ def get_componenttype_by_id_or_name(ct_id):
 
 @api.route('/componenttypes/<ct_id>/components', methods=['GET'])
 @auth2.requires_auth
-def get_components_by_componenttype(ct_id):
+def get_components_by_componenttype(user_info, ct_id):
     componenttype = _verify_existence_and_get_ct(ct_id)
     return components.get_all_components(componenttype['id'])
 
 
 @api.route('/componenttypes/<ct_id>', methods=['PUT'])
 @auth2.requires_auth
-def put_componenttype(ct_id):
+def put_componenttype(user_info, ct_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -134,7 +134,7 @@ def put_componenttype(ct_id):
 
 @api.route('/componenttypes/<ct_id>', methods=['DELETE'])
 @auth2.requires_auth
-def delete_componenttype_by_id_or_name(ct_id):
+def delete_componenttype_by_id_or_name(user_info, ct_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 

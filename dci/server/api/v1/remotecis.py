@@ -44,7 +44,7 @@ def _verify_existence_and_get_remoteci(r_id):
 
 @api.route('/remotecis', methods=['POST'])
 @auth2.requires_auth
-def create_remotecis():
+def create_remotecis(user_info):
     values = schemas.remoteci.post(flask.request.json)
     etag = utils.gen_etag()
     values.update(
@@ -67,7 +67,7 @@ def create_remotecis():
 
 @api.route('/remotecis', methods=['GET'])
 @auth2.requires_auth
-def get_all_remotecis(t_id=None):
+def get_all_remotecis(user_info, t_id=None):
     args = schemas.args(flask.request.args.to_dict())
     # convenient alias
     embed = args['embed']
@@ -102,7 +102,7 @@ def get_all_remotecis(t_id=None):
 
 @api.route('/remotecis/<r_id>', methods=['GET'])
 @auth2.requires_auth
-def get_remoteci_by_id_or_name(r_id):
+def get_remoteci_by_id_or_name(user_info, r_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
@@ -134,7 +134,7 @@ def get_remoteci_by_id_or_name(r_id):
 
 @api.route('/remotecis/<r_id>', methods=['PUT'])
 @auth2.requires_auth
-def put_remoteci(r_id):
+def put_remoteci(user_info, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -162,7 +162,7 @@ def put_remoteci(r_id):
 
 @api.route('/remotecis/<r_id>', methods=['DELETE'])
 @auth2.requires_auth
-def delete_remoteci_by_id_or_name(r_id):
+def delete_remoteci_by_id_or_name(user_info, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 

@@ -16,7 +16,6 @@
 
 
 import json
-import os
 
 from dci.server.api import v1 as api_v1
 from dci.server import auth
@@ -29,11 +28,11 @@ from eve import Eve
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
 import flask
-import sqlalchemy
 from sqlalchemy import exc as sa_exc
 from sqlalchemy.sql import text
 
 from dci.dci_databrowser import dci_databrowser
+from dci.server import dci_config
 
 
 def load_docs(app):
@@ -208,14 +207,6 @@ class DciControlServer(Eve):
         load_docs(self)
 
 
-def generate_conf():
-    conf = flask.Config('')
-    conf.from_object('dci.server.settings')
-    conf.from_object(os.environ.get('DCI_SETTINGS_MODULE'))
-    conf.from_envvar('DCI_SETTINGS_FILE', silent=True)
-    return conf
-
-
 def handle_api_exception(api_exception):
     response = flask.jsonify(api_exception.to_dict())
     response.status_code = api_exception.status_code
@@ -229,26 +220,17 @@ def handle_dbapi_exception(dbapi_exception):
     return response
 
 
-def get_engine(conf):
-    sa_engine = sqlalchemy.create_engine(
-        conf['SQLALCHEMY_DATABASE_URI'],
-        pool_size=conf['SQLALCHEMY_POOL_SIZE'],
-        max_overflow=conf['SQLALCHEMY_MAX_OVERFLOW'],
-        encoding='utf8',
-        convert_unicode=conf['SQLALCHEMY_NATIVE_UNICODE'],
-        echo=conf['SQLALCHEMY_ECHO'])
-    return sa_engine
-
-
 def create_app(conf):
     dci_model = models.DCIModel(conf['SQLALCHEMY_DATABASE_URI'])
     conf['DOMAIN'] = eve_model.domain_configuration()
     basic_auth = auth.DCIBasicAuth(dci_model)
 
+    dci_config.TEAM_ADMIN_ID = dci_config.get_team_admin_id()
+
     dci_app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
                                auth=basic_auth, settings=conf)
 
-    dci_app.engine = get_engine(conf)
+    dci_app.engine = dci_config.get_engine(conf)
 
     @dci_app.before_request
     def before_request():
