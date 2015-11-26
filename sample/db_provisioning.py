@@ -15,9 +15,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import dci.server.app as app
-from dci.server import auth2
+import dci.server.auth2 as auth2
 import dci.server.db.models_core as models
+import dci.server.dci_config as config
 import functools
 import hashlib
 import random
@@ -258,6 +258,7 @@ def init_db(db_conn):
     admin_team = db_ins(models.TEAMS, name='admin')
 
     admin = db_ins(models.USERS, name='admin',
+                   role='admin',
                    password=auth2.hash_password('admin'),
                    team_id=admin_team)
 
@@ -292,7 +293,7 @@ def init_db(db_conn):
 
 
 if __name__ == '__main__':
-    conf = app.generate_conf()
+    conf = config.generate_conf()
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
 
     if sqlalchemy_utils.functions.database_exists(db_uri):

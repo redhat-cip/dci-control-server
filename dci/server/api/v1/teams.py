@@ -41,9 +41,10 @@ def _verify_existence_and_get_team(t_id):
 
 
 @api.route('/teams', methods=['POST'])
-@auth2.requires_auth
-def create_teams():
+@auth2.requires_auth(auth2.SUPER_ADMIN)
+def create_teams(user_info):
     values = schemas.team.post(flask.request.json)
+
     etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
@@ -63,8 +64,8 @@ def create_teams():
 
 
 @api.route('/teams', methods=['GET'])
-@auth2.requires_auth
-def get_all_teams():
+@auth2.requires_auth()
+def get_all_teams(user_info):
     args = schemas.args(flask.request.args.to_dict())
 
     query = sqlalchemy.sql.select([models.TEAMS])
@@ -74,6 +75,9 @@ def get_all_teams():
 
     if args['offset'] is not None:
         query = query.offset(args['offset'])
+
+    if user_info.role != auth2.SUPER_ADMIN:
+        query = query.where(models.TEAMS.c.id == user_info.team)
 
     query = v1_utils.sort_query(query, args['sort'], _T_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.TEAMS,
@@ -89,65 +93,79 @@ def get_all_teams():
     return flask.Response(result, 200, content_type='application/json')
 
 
-@api.route('/teams/<ct_id>', methods=['GET'])
-@auth2.requires_auth
-def get_team_by_id_or_name(ct_id):
-    team = _verify_existence_and_get_team(ct_id)
-    etag = team['etag']
+@api.route('/teams/<t_id>', methods=['GET'])
+@auth2.requires_auth()
+def get_team_by_id_or_name(user_info, t_id):
+    where_clause = sqlalchemy.sql.or_(models.TEAMS.c.id == t_id,
+                                      models.TEAMS.c.name == t_id)
+    query = (sqlalchemy.sql
+             .select([models.TEAMS])
+             .where(where_clause))
 
-    team = json.dumps({'team': dict(team)}, default=utils.json_encoder)
+    team = flask.g.db_conn.execute(query).fetchone()
+    if team is None:
+        raise exceptions.DCIException("Team '%s' not found." % t_id,
+                                      status_code=404)
+    team = dict(team)
+    auth2.check_super_admin_or_same_team(user_info, team['id'])
+
+    etag = team['etag']
+    team = json.dumps({'team': team}, default=utils.json_encoder)
     return flask.Response(team, 200, headers={'ETag': etag},
                           content_type='application/json')
 
 
 @api.route('/teams/<team_id>/remotecis', methods=['GET'])
-@auth2.requires_auth
-def get_remotecis_by_team(team_id):
+@auth2.requires_auth()
+def get_remotecis_by_team(user_info, team_id):
     team = _verify_existence_and_get_team(team_id)
     return remotecis.get_all_remotecis(team['id'])
 
 
-@api.route('/teams/<ct_id>', methods=['PUT'])
-@auth2.requires_auth
-def put_team(ct_id):
+@api.route('/teams/<t_id>', methods=['PUT'])
+@auth2.requires_auth(auth2.ADMIN)
+def put_team(user_info, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    data_json = schemas.team.put(flask.request.json)
+    values = schemas.team.put(flask.request.json)
 
-    _verify_existence_and_get_team(ct_id)
+    if user_info.role != auth2.SUPER_ADMIN and user_info.team != t_id:
+        raise auth2.UNAUTHORIZED
 
-    data_json['etag'] = utils.gen_etag()
+    _verify_existence_and_get_team(t_id)
+
+    values['etag'] = utils.gen_etag()
     query = models.TEAMS.update().where(
         sqlalchemy.sql.and_(
-            sqlalchemy.sql.or_(models.TEAMS.c.id == ct_id,
-                               models.TEAMS.c.name == ct_id),
-            models.TEAMS.c.etag == if_match_etag)).values(**data_json)
+            sqlalchemy.sql.or_(models.TEAMS.c.id == t_id,
+                               models.TEAMS.c.name == t_id),
+            models.TEAMS.c.etag == if_match_etag)).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
     if result.rowcount == 0:
         raise exceptions.DCIException("Conflict on team '%s' or etag "
-                                      "not matched." % ct_id, status_code=409)
+                                      "not matched." % t_id, status_code=409)
 
-    return flask.Response(None, 204, headers={'ETag': data_json['etag']},
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
 
 
 @api.route('/teams/<ct_id>', methods=['DELETE'])
-@auth2.requires_auth
-def delete_team_by_id_or_name(ct_id):
+@auth2.requires_auth(auth2.SUPER_ADMIN)
+def delete_team_by_id_or_name(user_info, ct_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     _verify_existence_and_get_team(ct_id)
 
-    query = models.TEAMS.delete().where(
-        sqlalchemy.sql.and_(
-            sqlalchemy.sql.or_(models.TEAMS.c.id == ct_id,
-                               models.TEAMS.c.name == ct_id),
-            models.TEAMS.c.etag == if_match_etag))
-
+    where_clause = sqlalchemy.sql.and_(
+        models.TEAMS.c.etag == if_match_etag,
+        sqlalchemy.sql.or_(models.TEAMS.c.id == ct_id,
+                           models.TEAMS.c.name == ct_id)
+    )
+    query = models.TEAMS.delete().where(where_clause)
     result = flask.g.db_conn.execute(query)
 
     if result.rowcount == 0:

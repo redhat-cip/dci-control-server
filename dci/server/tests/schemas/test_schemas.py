@@ -126,7 +126,7 @@ class TestTest(utils.SchemaTesting):
 
 class TestUser(utils.SchemaTesting):
     schema = schemas.user
-    data = dict([utils.NAME, utils.PASSWORD, utils.TEAM])
+    data = dict([utils.NAME, utils.PASSWORD, utils.TEAM, utils.ROLE])
 
     @staticmethod
     def generate_invalids_and_errors():
