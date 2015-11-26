@@ -45,7 +45,7 @@ def _verify_existence_and_get_job(job_id):
 
 @api.route('/jobs', methods=['POST'])
 @auth2.requires_auth
-def create_jobs():
+def create_jobs(user_info):
     values = schemas.job.post(flask.request.json)
     etag = utils.gen_etag()
     values.update(
@@ -67,7 +67,7 @@ def create_jobs():
 
 @api.route('/jobs', methods=['GET'])
 @auth2.requires_auth
-def get_all_jobs(jd_id=None):
+def get_all_jobs(user_info, jd_id=None):
     """Get all jobs.
 
     If jd_id is not None, then return all the jobs with a jobdefinition
@@ -111,14 +111,15 @@ def get_all_jobs(jd_id=None):
 
 
 @api.route('/jobs/<j_id>/jobstates', methods=['GET'])
-def get_jobstates_by_job(j_id):
+@auth2.requires_auth
+def get_jobstates_by_job(j_id, user_info):
     _verify_existence_and_get_job(j_id)
-    return jobstates.get_all_jobstates(j_id)
+    return jobstates.get_all_jobstates(j_id=j_id)
 
 
 @api.route('/jobs/<jd_id>', methods=['GET'])
 @auth2.requires_auth
-def get_job_by_id(jd_id):
+def get_job_by_id(jd_id, user_info):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
@@ -148,7 +149,7 @@ def get_job_by_id(jd_id):
 
 @api.route('/jobs/<jd_id>', methods=['DELETE'])
 @auth2.requires_auth
-def delete_job_by_id(jd_id):
+def delete_job_by_id(jd_id, user_info):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
