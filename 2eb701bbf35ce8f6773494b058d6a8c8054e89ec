@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_5982b753",
+        "filename": "dci/server/api/v1/utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-26T08:44:01Z",
+      "side": 1,
+      "message": "can\u0027t we do that in the controller ?",
+      "revId": "2eb701bbf35ce8f6773494b058d6a8c8054e89ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_b9b5e332",
+        "filename": "dci/server/auth2.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-26T08:44:01Z",
+      "side": 1,
+      "message": "this must be mandatory ;)",
+      "revId": "2eb701bbf35ce8f6773494b058d6a8c8054e89ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_99b81f2c",
+        "filename": "dci/server/auth2.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-11-26T08:44:01Z",
+      "side": 1,
+      "message": "please change name here, it is more rejection than authenticate",
+      "revId": "2eb701bbf35ce8f6773494b058d6a8c8054e89ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
