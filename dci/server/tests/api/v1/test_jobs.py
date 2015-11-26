@@ -168,6 +168,18 @@ def test_get_job_by_id(admin, jobdefinition_id, team_id, remoteci_id):
     assert job['job']['id'] == job_id
 
 
+def test_get_jobstates_by_job_id(admin, job_id, team_id):
+    data = {'status': 'new', 'team_id': team_id, 'job_id': job_id}
+    jobstate_1 = admin.post('/api/v1/jobstates', data=data).data['jobstate']
+    jobstate_2 = admin.post('/api/v1/jobstates', data=data).data['jobstate']
+
+    jobstates = admin.get('/api/v1/jobs/%s/jobstates' % job_id)
+    jobstates = jobstates.data['jobstates']
+
+    assert jobstates[0]['id'] == jobstate_1['id']
+    assert jobstates[1]['id'] == jobstate_2['id']
+
+
 def test_get_job_not_found(admin):
     result = admin.get('/api/v1/jobs/ptdr')
     assert result.status_code == 404

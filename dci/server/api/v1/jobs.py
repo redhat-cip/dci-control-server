@@ -27,6 +27,8 @@ from dci.server.common import schemas
 from dci.server.common import utils
 from dci.server.db import models_core as models
 
+from dci.server.api.v1 import jobstates
+
 # associate column names with the corresponding SA Column object
 _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBS)
 _VALID_EMBED = {'jobdefinition': models.JOBDEFINITIONS,
@@ -102,6 +104,12 @@ def get_all_jobs(jd_id=None):
     result = {'jobs': result, '_meta': {'count': nb_row}}
     result = json.dumps(result, default=utils.json_encoder)
     return flask.Response(result, 200, content_type='application/json')
+
+
+@api.route('/jobs/<j_id>/jobstates', methods=['GET'])
+def get_jobstates_by_job(j_id):
+    _verify_existence_and_get_job(j_id)
+    return jobstates.get_all_jobstates(j_id)
 
 
 @api.route('/jobs/<jd_id>', methods=['GET'])
