@@ -16,6 +16,7 @@
 
 import dci.server.app
 from dci.server.db import models_core
+from dci.server import dci_config
 from dci.server.tests import db_provision_test
 import dci.server.tests.utils as utils
 
@@ -26,7 +27,7 @@ import sqlalchemy_utils.functions
 
 @pytest.fixture(scope='session')
 def engine(request):
-    conf = dci.server.app.generate_conf()
+    conf = dci_config.generate_conf()
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
 
     engine = sqlalchemy.create_engine(db_uri)
@@ -44,25 +45,25 @@ def engine(request):
 
 
 @pytest.fixture
-def app(engine):
-    app = dci.server.app.create_app(dci.server.app.generate_conf())
-    app.testing = True
-    app.engine = engine
-    return app
-
-
-@pytest.fixture
-def db_clean(request, app):
+def db_clean(request, engine):
     def fin():
         for table in reversed(models_core.metadata.sorted_tables):
-            app.engine.execute(table.delete())
+            engine.execute(table.delete())
     request.addfinalizer(fin)
 
 
 @pytest.fixture
-def db_provisioning(app, db_clean):
-    with app.engine.begin() as conn:
+def db_provisioning(db_clean, engine):
+    with engine.begin() as conn:
         db_provision_test.provision(conn)
+
+
+@pytest.fixture
+def app(db_provisioning, engine):
+    app = dci.server.app.create_app(dci_config.generate_conf())
+    app.testing = True
+    app.engine = engine
+    return app
 
 
 @pytest.fixture

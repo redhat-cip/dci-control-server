@@ -18,6 +18,7 @@
 import dci.server.app as app
 from dci.server import auth2
 import dci.server.db.models_core as models
+from dci.server import dci_config
 import functools
 import hashlib
 import random
