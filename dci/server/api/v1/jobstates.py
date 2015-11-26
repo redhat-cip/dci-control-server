@@ -83,7 +83,7 @@ def put_jobstate(r_id):
 
 
 @api.route('/jobstates', methods=['GET'])
-def get_all_jobstates():
+def get_all_jobstates(j_id=None):
     """Get all jobstates.
     """
     args = schemas.args(flask.request.args.to_dict())
@@ -102,6 +102,12 @@ def get_all_jobstates():
     query = v1_utils.sort_query(query, args['sort'], _JS_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.JOBSTATES,
                                  _JS_COLUMNS)
+
+    # used for counting the number of rows when j_id is not None
+    where_j_cond = None
+    if j_id is not None:
+        where_j_cond = models.JOBSTATES.c.job_id == j_id
+        query = query.where(where_j_cond)
 
     # adds the limit/offset parameters
     query = query.limit(args['limit']).offset(args['offset'])
