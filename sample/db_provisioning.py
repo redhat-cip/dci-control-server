@@ -258,6 +258,7 @@ def init_db(db_conn):
     admin_team = db_ins(models.TEAMS, name='admin')
 
     admin = db_ins(models.USERS, name='admin',
+                   role='admin',
                    password=auth2.hash_password('admin'),
                    team_id=admin_team)
 

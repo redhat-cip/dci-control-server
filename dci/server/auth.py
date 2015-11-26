@@ -41,7 +41,7 @@ class DCIBasicAuth(eve.auth.BasicAuth):
             return False
         finally:
             session.close()
-        return auth2.check_auth(name, password)
+        return auth2.check_auth(name, password)[1]
 
     def authorized(self, allowed_roles, resource, method):
         auth = flask.request.authorization

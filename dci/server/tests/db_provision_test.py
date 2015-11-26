@@ -24,7 +24,7 @@ def provision(db_conn):
         return db_conn.execute(query).inserted_primary_key[0]
 
     # Create teams
-    db_insert(models_core.TEAMS, name='admin')
+    team_admin_id = db_insert(models_core.TEAMS, name='admin')
     company_a_id = db_insert(models_core.TEAMS, name='company_a')
     company_b_id = db_insert(models_core.TEAMS, name='company_b')
 
@@ -32,8 +32,9 @@ def provision(db_conn):
     admin_pw_hash = auth2.hash_password('admin')
     admin_user_id = db_insert(models_core.USERS,
                               name='admin',
+                              role='admin',
                               password=admin_pw_hash,
-                              team_id=company_a_id)
+                              team_id=team_admin_id)
 
     company_a_pw_hash = auth2.hash_password('company_a_user')
     company_a_user_id = db_insert(models_core.USERS,

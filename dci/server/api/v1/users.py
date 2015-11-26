@@ -27,6 +27,7 @@ from dci.server.common import exceptions as dci_exc
 from dci.server.common import schemas
 from dci.server.common import utils
 from dci.server.db import models_core as models
+from dci.server import dci_config
 
 
 # associate column names with the corresponding SA Column object
@@ -48,8 +49,23 @@ def _verify_existence_and_get_user(user_id):
 
 @api.route('/users', methods=['POST'])
 @auth2.requires_auth
-def create_users():
+def create_users(user_info):
     values = schemas.user.post(flask.request.json)
+
+    user_info_team_id = user_info.get('team_id')
+    user_info_role = user_info.get('role')
+    # If it's not an admin, then its not allowed to create a new user
+    if user_info_role != 'admin':
+        raise dci_exc.DCIException("Operation not authorized.",
+                                   status_code=401)
+
+    # If it's not a user from the admin team, nor a user from the same team
+    # we want to adds this new user, then its not allowed
+    if (user_info_team_id != dci_config.TEAM_ADMIN_ID and
+       user_info_team_id != values.get('team_id')):
+        raise dci_exc.DCIException("Operation not authorized.",
+                                   status_code=401)
+
     etag = utils.gen_etag()
     password_hash = auth2.hash_password(values.get('password'))
 
@@ -75,11 +91,16 @@ def create_users():
 
 @api.route('/users', methods=['GET'])
 @auth2.requires_auth
-def get_all_users(team_id=None):
+def get_all_users(user_info, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
     query = sqlalchemy.sql.select(_SELECT_WITHOUT_PASSWORD)
+
+    user_info_team_id = user_info.get('team_id')
+    # If it's not an admin, then get only the users of the caller's team
+    if user_info_team_id != dci_config.TEAM_ADMIN_ID:
+        query = query.where(models.USERS.c.team_id == user_info_team_id)
 
     # if embed then construct the query with a join
     if embed:
@@ -110,12 +131,17 @@ def get_all_users(team_id=None):
 
 @api.route('/users/<user_id>', methods=['GET'])
 @auth2.requires_auth
-def get_user_by_id_or_name(user_id):
+def get_user_by_id_or_name(user_id, user_info):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
     # the default query with no parameters
     query = sqlalchemy.sql.select(_SELECT_WITHOUT_PASSWORD)
+
+    user_info_team_id = user_info.get('team_id')
+    # If it's not an admin, then get only the users of the caller's team
+    if user_info_team_id != dci_config.TEAM_ADMIN_ID:
+        query = query.where(models.USERS.c.team_id == user_info_team_id)
 
     if embed:
         query = v1_utils.get_query_with_join(models.USERS,
@@ -140,11 +166,24 @@ def get_user_by_id_or_name(user_id):
 
 @api.route('/users/<user_id>', methods=['PUT'])
 @auth2.requires_auth
-def put_user(user_id):
+def put_user(user_id, user_info):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
     values = schemas.user.put(flask.request.json)
+
+    user_info_team_id = user_info.get('team_id')
+    user_info_role = user_info.get('role')
+    user_info_id = user_info.get('id')
+
+    # If it's not an admin, then its not allowed to create a new user
+    if (user_info_team_id != dci_config.TEAM_ADMIN_ID and
+       user_id != user_info_id and
+            (user_info_role != 'admin' or
+                user_info_team_id != values.get('team_id'))):
+        raise dci_exc.DCIException("Operation not authorized.",
+                                   status_code=401)
+    # TODO(yassine): if the user wants to change the team, then check its done
+    # by a super admin. ie. team=dci_config.TEAM_ADMIN_ID.
 
     _verify_existence_and_get_user(user_id)
 
@@ -172,11 +211,23 @@ def put_user(user_id):
 
 @api.route('/users/<user_id>', methods=['DELETE'])
 @auth2.requires_auth
-def delete_user_by_id_or_name(user_id):
+def delete_user_by_id_or_name(user_id, user_info):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    _verify_existence_and_get_user(user_id)
+    user = _verify_existence_and_get_user(user_id)
+
+    user_info_team_id = user_info.get('team_id')
+    user_info_role = user_info.get('role')
+    user_info_id = user_info.get('id')
+
+    # If it's not an admin, then its not allowed to create a new user
+    if (user_info_team_id != dci_config.TEAM_ADMIN_ID and
+       user_id != user_info_id and
+            (user_info_role != 'admin' and
+                user_info_team_id != user['team_id'])):
+        raise dci_exc.DCIException("Operation not authorized.",
+                                   status_code=401)
 
     query = models.USERS.delete().where(
         sqlalchemy.sql.and_(
