@@ -46,11 +46,7 @@ def _verify_existence_and_get_team(t_id):
 def create_teams(user_info):
     values = schemas.team.post(flask.request.json)
 
-    user_info_team_id = user_info.get('team_id')
-    # If it's not a super admin, then its not allowed to create a new team
-    if user_info_team_id != dci_config.TEAM_ADMIN_ID:
-        raise exceptions.DCIException("Operation not authorized.",
-                                      status_code=401)
+    v1_utils.check_user_is_super_admin(user_info)
 
     etag = utils.gen_etag()
     values.update({
@@ -79,8 +75,8 @@ def get_all_teams(user_info):
         limit(args['limit']).offset(args['offset'])
 
     user_info_team_id = user_info.get('team_id')
-    if user_info_team_id != dci_config.TEAM_ADMIN_ID:
-        query = query.where(models.TEAMS.c.id == user_info_team_id)
+    query = v1_utils.add_filter_if_not_super_admin(
+        query, user_info, models.TEAMS.c.id == user_info_team_id)
 
     query = v1_utils.sort_query(query, args['sort'], _T_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.TEAMS,
@@ -99,20 +95,11 @@ def get_all_teams(user_info):
 @api.route('/teams/<t_id>', methods=['GET'])
 @auth2.requires_auth
 def get_team_by_id_or_name(user_info, t_id):
-    query = sqlalchemy.sql.select([models.TEAMS]).where(
-        sqlalchemy.sql.or_(models.TEAMS.c.id == t_id,
-                           models.TEAMS.c.name == t_id))
-
-    team = flask.g.db_conn.execute(query).fetchone()
-    if team is None:
-        raise exceptions.DCIException("Team '%s' not found." % t_id,
-                                      status_code=404)
+    team = dict(_verify_existence_and_get_team(t_id))
     team = dict(team)
-    user_info_team_id = user_info.get('team_id')
-    if (user_info_team_id != dci_config.TEAM_ADMIN_ID and
-       user_info_team_id != team['id']):
-        raise exceptions.DCIException("Operation not authorized.",
-                                      status_code=401)
+
+    v1_utils.check_user_is_super_admin_or_same_team(user_info, team['id'])
+
     etag = team['etag']
     team = json.dumps({'team': team}, default=utils.json_encoder)
     return flask.Response(team, 200, headers={'ETag': etag},
@@ -169,10 +156,7 @@ def delete_team_by_id_or_name(user_info, ct_id):
 
     _verify_existence_and_get_team(ct_id)
 
-    user_info_team_id = user_info.get('team_id')
-    if user_info_team_id != dci_config.TEAM_ADMIN_ID:
-        raise exceptions.DCIException("Operation not authorized.",
-                                      status_code=401)
+    v1_utils.check_user_is_super_admin(user_info)
 
     query = models.TEAMS.delete().where(
         sqlalchemy.sql.and_(

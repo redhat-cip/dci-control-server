@@ -122,6 +122,14 @@ def team_user_id(admin):
 
 
 @pytest.fixture
+def remoteci_user_id(user, team_user_id):
+    remoteci = user.post('/api/v1/remotecis',
+                         data={'name': 'rname',
+                               'team_id': team_user_id}).data
+    return remoteci['remoteci']['id']
+
+
+@pytest.fixture
 def remoteci_id(admin, team_id):
     remoteci = admin.post('/api/v1/remotecis',
                           data={'name': 'pname',

@@ -52,13 +52,10 @@ def _verify_existence_and_get_user(user_id):
 def create_users(user_info):
     values = schemas.user.post(flask.request.json)
 
-    user_info_team_id = user_info.get('team_id')
-    user_info_role = user_info.get('role')
     # If it's not an admin, then its not allowed to create a new user
-    if user_info_role != 'admin':
-        raise dci_exc.DCIException("Operation not authorized.",
-                                   status_code=401)
+    v1_utils.check_user_is_admin_role(user_info)
 
+    user_info_team_id = user_info.get('team_id')
     # If it's not a user from the admin team, nor a user from the same team
     # we want to adds this new user, then its not allowed
     if (user_info_team_id != dci_config.TEAM_ADMIN_ID and
@@ -97,10 +94,10 @@ def get_all_users(user_info, team_id=None):
 
     query = sqlalchemy.sql.select(_SELECT_WITHOUT_PASSWORD)
 
-    user_info_team_id = user_info.get('team_id')
     # If it's not an admin, then get only the users of the caller's team
-    if user_info_team_id != dci_config.TEAM_ADMIN_ID:
-        query = query.where(models.USERS.c.team_id == user_info_team_id)
+    user_info_team_id = user_info.get('team_id')
+    query = v1_utils.add_filter_if_not_super_admin(
+        query, user_info, models.USERS.c.team_id == user_info_team_id)
 
     # if embed then construct the query with a join
     if embed:
@@ -140,8 +137,8 @@ def get_user_by_id_or_name(user_info, user_id):
 
     user_info_team_id = user_info.get('team_id')
     # If it's not an admin, then get only the users of the caller's team
-    if user_info_team_id != dci_config.TEAM_ADMIN_ID:
-        query = query.where(models.USERS.c.team_id == user_info_team_id)
+    query = v1_utils.add_filter_if_not_super_admin(
+        query, user_info, models.USERS.c.team_id == user_info_team_id)
 
     if embed:
         query = v1_utils.get_query_with_join(models.USERS,

@@ -21,6 +21,7 @@ import six
 import sqlalchemy.sql
 
 from dci.server.common import exceptions as dci_exc
+from dci.server import dci_config
 from dci.server import utils
 
 
@@ -191,3 +192,32 @@ def where_query(query, where, table, columns):
                                            payload={name: 'not integer'})
         query = query.where(m_column == value)
     return query
+
+
+def check_user_is_super_admin(user_info):
+    user_info_team_id = user_info.get('team_id')
+    if user_info_team_id != dci_config.TEAM_ADMIN_ID:
+        raise dci_exc.DCIException("Operation not authorized.",
+                                   status_code=401)
+
+
+def check_user_is_admin_role(user_info):
+    user_info_role = user_info.get('role')
+    if user_info_role != 'admin':
+        raise dci_exc.DCIException("Operation not authorized.",
+                                   status_code=401)
+
+
+def add_filter_if_not_super_admin(query, user_info, filter_cond):
+    user_info_team_id = user_info.get('team_id')
+    if user_info_team_id != dci_config.TEAM_ADMIN_ID:
+        query = query.where(filter_cond)
+    return query
+
+
+def check_user_is_super_admin_or_same_team(user_info, team_id):
+    user_info_team_id = user_info.get('team_id')
+    if (user_info_team_id != dci_config.TEAM_ADMIN_ID and
+       user_info_team_id != team_id):
+        raise dci_exc.DCIException("Operation not authorized.",
+                                   status_code=401)
