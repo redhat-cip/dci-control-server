@@ -202,3 +202,68 @@ def test_delete_remoteci_not_found(admin):
     result = admin.delete('/api/v1/remotecis/ptdr',
                           headers={'If-match': 'mdr'})
     assert result.status_code == 404
+
+
+# Tests for the isolation
+
+def test_create_remoteci_as_user(user, team_user_id, team_id):
+    remoteci = user.post('/api/v1/remotecis',
+                         data={'name': 'rname', 'team_id': team_id})
+    assert remoteci.status_code == 401
+
+    remoteci = user.post('/api/v1/remotecis',
+                         data={'name': 'rname', 'team_id': team_user_id})
+    assert remoteci.status_code == 201
+
+
+def test_get_all_remotecis_as_user(user, team_user_id):
+    remotecis = user.get('/api/v1/remotecis')
+    assert remotecis.status_code == 200
+    for remoteci in remotecis.data['remotecis']:
+        assert remoteci['team_id'] == team_user_id
+
+
+def test_get_remoteci_as_user(user, team_user_id, remoteci_id):
+    remoteci = user.get('/api/v1/remotecis/%s' % remoteci_id)
+    assert remoteci.status_code == 404
+
+    user.post('/api/v1/remotecis',
+              data={'name': 'rname', 'team_id': team_user_id})
+    remoteci = user.get('/api/v1/remotecis/rname')
+    assert remoteci.status_code == 200
+
+
+def test_put_remoteci_as_user(user, team_user_id, remoteci_id, admin):
+    user.post('/api/v1/remotecis',
+              data={'name': 'rname', 'team_id': team_user_id})
+    remoteci = user.get('/api/v1/remotecis/rname')
+    remoteci_etag = remoteci.headers.get("ETag")
+
+    remoteci_put = user.put('/api/v1/remotecis/rname',
+                            data={'name': 'nname'},
+                            headers={'If-match': remoteci_etag})
+    assert remoteci_put.status_code == 204
+
+    remoteci = admin.get('/api/v1/remotecis/%s' % remoteci_id)
+    remoteci_etag = remoteci.headers.get("ETag")
+    remoteci_put = user.put('/api/v1/remotecis/%s' % remoteci_id,
+                            data={'name': 'nname'},
+                            headers={'If-match': remoteci_etag})
+    assert remoteci_put.status_code == 401
+
+
+def test_delete_remoteci_as_user(user, team_user_id, admin, remoteci_id):
+    user.post('/api/v1/remotecis',
+              data={'name': 'rname', 'team_id': team_user_id})
+    remoteci = user.get('/api/v1/remotecis/rname')
+    remoteci_etag = remoteci.headers.get("ETag")
+
+    remoteci_delete = user.delete('/api/v1/remotecis/rname',
+                                  headers={'If-match': remoteci_etag})
+    assert remoteci_delete.status_code == 204
+
+    remoteci = admin.get('/api/v1/remotecis/%s' % remoteci_id)
+    remoteci_etag = remoteci.headers.get("ETag")
+    remoteci_delete = user.delete('/api/v1/remotecis/%s' % remoteci_id,
+                                  headers={'If-match': remoteci_etag})
+    assert remoteci_delete.status_code == 401

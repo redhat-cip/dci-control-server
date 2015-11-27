@@ -46,14 +46,18 @@ def _verify_existence_and_get_remoteci(r_id):
 @auth2.requires_auth()
 def create_remotecis(user_info):
     values = schemas.remoteci.post(flask.request.json)
+
+    # If it's not a super admin nor belongs to the same team_id
+    auth2.check_super_admin_or_same_team(user_info, values.get('team_id'))
+
     etag = utils.gen_etag()
-    values.update(
-        {'id': utils.gen_uuid(),
-         'created_at': datetime.datetime.utcnow().isoformat(),
-         'updated_at': datetime.datetime.utcnow().isoformat(),
-         'data': values.get('data', {}),
-         'etag': etag}
-    )
+    values.update({
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'data': values.get('data', {}),
+        'etag': etag
+    })
 
     query = models.REMOTECIS.insert().values(**values)
 
@@ -78,6 +82,8 @@ def get_all_remotecis(user_info, t_id=None):
         query = v1_utils.get_query_with_join(models.REMOTECIS,
                                              [models.REMOTECIS], embed,
                                              _VALID_EMBED)
+    if user_info.role != auth2.SUPER_ADMIN:
+        query = query.where(models.REMOTECIS.c.team_id == user_info.team)
 
     query = v1_utils.sort_query(query, args['sort'], _R_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.REMOTECIS,
@@ -120,6 +126,9 @@ def get_remoteci_by_id_or_name(user_info, r_id):
                                              [models.REMOTECIS], embed,
                                              _VALID_EMBED)
 
+    if user_info.role != auth2.SUPER_ADMIN:
+        query = query.where(models.REMOTECIS.c.team_id == user_info.team)
+
     query = query.where(
         sqlalchemy.sql.or_(models.REMOTECIS.c.id == r_id,
                            models.REMOTECIS.c.name == r_id))
@@ -143,17 +152,24 @@ def put_remoteci(user_info, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    data_json = flask.request.json
-    # verif put
+    values = schemas.remoteci.put(flask.request.json)
+
+    remoteci = dict(_verify_existence_and_get_remoteci(r_id))
+
+    auth2.check_super_admin_or_same_team(user_info, remoteci['team_id'])
 
     _verify_existence_and_get_remoteci(r_id)
 
-    data_json['etag'] = utils.gen_etag()
-    query = models.REMOTECIS.update().where(
-        sqlalchemy.sql.and_(
-            sqlalchemy.sql.or_(models.REMOTECIS.c.id == r_id,
-                               models.REMOTECIS.c.name == r_id),
-            models.REMOTECIS.c.etag == if_match_etag)).values(**data_json)
+    values['etag'] = utils.gen_etag()
+    where_clause = sqlalchemy.sql.and_(
+        models.REMOTECIS.c.etag == if_match_etag,
+        sqlalchemy.sql.or_(models.REMOTECIS.c.id == r_id,
+                           models.REMOTECIS.c.name == r_id))
+
+    query = (models.REMOTECIS
+             .update()
+             .where(where_clause)
+             .values(**values))
 
     result = flask.g.db_conn.execute(query)
 
@@ -161,7 +177,7 @@ def put_remoteci(user_info, r_id):
         raise exceptions.DCIException("Conflict on test '%s' or etag "
                                       "not matched." % r_id, status_code=409)
 
-    return flask.Response(None, 204, headers={'ETag': data_json['etag']},
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
 
 
@@ -171,7 +187,9 @@ def delete_remoteci_by_id_or_name(user_info, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    _verify_existence_and_get_remoteci(r_id)
+    remoteci = dict(_verify_existence_and_get_remoteci(r_id))
+
+    auth2.check_super_admin_or_same_team(user_info, remoteci['team_id'])
 
     query = models.REMOTECIS.delete().where(
         sqlalchemy.sql.and_(

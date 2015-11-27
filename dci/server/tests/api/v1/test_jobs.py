@@ -214,3 +214,62 @@ def test_delete_job_by_id(admin, jobdefinition_id, team_id, remoteci_id):
 
     job = admin.get('/api/v1/jobs/%s' % job_id)
     assert job.status_code == 404
+
+# Tests for the isolation
+
+
+def test_create_job_as_user(user, team_user_id, team_id, jobdefinition_id,
+                            remoteci_user_id):
+    job = user.post('/api/v1/jobs',
+                    data={'team_id': team_id,
+                          'jobdefinition_id': jobdefinition_id,
+                          'remoteci_id': remoteci_user_id})
+    assert job.status_code == 401
+
+    job = user.post('/api/v1/jobs',
+                    data={'team_id': team_user_id,
+                          'jobdefinition_id': jobdefinition_id,
+                          'remoteci_id': remoteci_user_id})
+    assert job.status_code == 201
+
+
+def test_get_all_jobs_as_user(user, team_user_id):
+    jobs = user.get('/api/v1/jobs')
+    assert jobs.status_code == 200
+    for job in jobs.data['jobs']:
+        assert job['team_id'] == team_user_id
+
+
+def test_get_job_as_user(user, team_user_id, job_id, jobdefinition_id,
+                         remoteci_user_id):
+    job = user.get('/api/v1/jobs/%s' % job_id)
+    assert job.status_code == 404
+
+    job = user.post('/api/v1/jobs',
+                    data={'team_id': team_user_id,
+                          'jobdefinition_id': jobdefinition_id,
+                          'remoteci_id': remoteci_user_id}).data
+    job_id = job['job']['id']
+    job = user.get('/api/v1/jobs/%s' % job_id)
+    assert job.status_code == 200
+
+
+def test_delete_job_as_user(user, team_user_id, admin, job_id,
+                            jobdefinition_id, remoteci_user_id):
+    job = user.post('/api/v1/jobs',
+                    data={'team_id': team_user_id,
+                          'jobdefinition_id': jobdefinition_id,
+                          'remoteci_id': remoteci_user_id}).data
+    job_user_id = job['job']['id']
+    job = user.get('/api/v1/jobs/%s' % job_user_id)
+    job_etag = job.headers.get("ETag")
+
+    job_delete = user.delete('/api/v1/jobs/%s' % job_user_id,
+                             headers={'If-match': job_etag})
+    assert job_delete.status_code == 204
+
+    job = admin.get('/api/v1/jobs/%s' % job_id)
+    job_etag = job.headers.get("ETag")
+    job_delete = user.delete('/api/v1/jobs/%s' % job_id,
+                             headers={'If-match': job_etag})
+    assert job_delete.status_code == 401
