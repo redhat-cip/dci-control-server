@@ -43,6 +43,10 @@ def _verify_existence_and_get_jobstate(js_id):
 @auth2.requires_auth()
 def create_jobstates(user_info):
     values = schemas.jobstate.post(flask.request.json)
+
+    # If it's not a super admin nor belongs to the same team_id
+    auth2.check_super_admin_or_same_team(user_info, values['team_id'])
+
     etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
@@ -60,28 +64,30 @@ def create_jobstates(user_info):
                           content_type='application/json')
 
 
-@api.route('/jobstates/<r_id>', methods=['PUT'])
+@api.route('/jobstates/<js_id>', methods=['PUT'])
 @auth2.requires_auth()
-def put_jobstate(user_info, r_id):
+def put_jobstate(user_info, js_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    data_json = schemas.jobstate.put(flask.request.json)
+    values = schemas.jobstate.put(flask.request.json)
 
-    _verify_existence_and_get_jobstate(r_id)
+    jobstate = dict(_verify_existence_and_get_jobstate(js_id))
 
-    data_json['etag'] = utils.gen_etag()
+    auth2.check_super_admin_or_same_team(user_info, jobstate['team_id'])
+
+    values['etag'] = utils.gen_etag()
     query = models.JOBSTATES.update().where(
         sqlalchemy.sql.and_(
-            models.JOBSTATES.c.id == r_id,
-            models.JOBSTATES.c.etag == if_match_etag)).values(**data_json)
+            models.JOBSTATES.c.id == js_id,
+            models.JOBSTATES.c.etag == if_match_etag)).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
     if result.rowcount == 0:
         raise dci_exc.DCIException("Conflict on test '%s' or etag "
-                                   "not matched." % r_id, status_code=409)
+                                   "not matched." % js_id, status_code=409)
 
-    return flask.Response(None, 204, headers={'ETag': data_json['etag']},
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
 
 
@@ -103,6 +109,9 @@ def get_all_jobstates(user_info, j_id=None):
         query = v1_utils.get_query_with_join(models.JOBSTATES,
                                              [models.JOBSTATES], embed,
                                              _VALID_EMBED)
+
+    if user_info.role != auth2.SUPER_ADMIN:
+        query = query.where(models.JOBSTATES.c.team_id == user_info.team)
 
     query = v1_utils.sort_query(query, args['sort'], _JS_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.JOBSTATES,
@@ -143,6 +152,9 @@ def get_jobstate_by_id(user_info, js_id):
                                              [models.JOBSTATES], embed,
                                              _VALID_EMBED)
 
+    if user_info.role != auth2.SUPER_ADMIN:
+        query = query.where(models.JOBSTATES.c.team_id == user_info.team)
+
     query = query.where(models.JOBSTATES.c.id == js_id)
 
     row = flask.g.db_conn.execute(query).fetchone()
@@ -164,11 +176,15 @@ def delete_jobstate_by_id(user_info, js_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    _verify_existence_and_get_jobstate(js_id)
+    jobstate = dict(_verify_existence_and_get_jobstate(js_id))
 
-    query = models.JOBSTATES.delete().where(
-        sqlalchemy.sql.and_(models.JOBSTATES.c.id == js_id,
-                            models.JOBSTATES.c.etag == if_match_etag))
+    auth2.check_super_admin_or_same_team(user_info, jobstate['team_id'])
+
+    where_clause = sqlalchemy.sql.and_(
+        models.JOBSTATES.c.id == js_id,
+        models.JOBSTATES.c.etag == if_match_etag
+    )
+    query = models.JOBSTATES.delete().where(where_clause)
 
     result = flask.g.db_conn.execute(query)
 
