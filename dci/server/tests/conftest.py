@@ -154,9 +154,37 @@ def job_id(admin, jobdefinition_id, team_id, remoteci_id):
 
 
 @pytest.fixture
+def job_user_id(admin, jobdefinition_id, team_user_id, remoteci_user_id):
+    job = admin.post('/api/v1/jobs',
+                     data={'jobdefinition_id': jobdefinition_id,
+                           'team_id': team_user_id,
+                           'remoteci_id': remoteci_user_id}).data
+    return job['job']['id']
+
+
+@pytest.fixture
 def jobstate_id(admin, job_id, team_id):
     jobstate = admin.post('/api/v1/jobstates',
                           data={'job_id': job_id, 'team_id': team_id,
                                 'status': 'ongoing',
                                 'comment': 'kikoolol'}).data
+    return jobstate['jobstate']['id']
+
+
+@pytest.fixture
+def file_id(admin, jobstate_id, team_id):
+    file = admin.post('/api/v1/files',
+                      data={'jobstate_id': jobstate_id,
+                            'team_id': team_id,
+                            'content': 'kikoolol', 'name': 'name'}).data
+    return file['file']['id']
+
+
+@pytest.fixture
+def jobstate_user_id(user, job_user_id, team_user_id):
+    jobstate = user.post('/api/v1/jobstates',
+                         data={'job_id': job_user_id,
+                               'team_id': team_user_id,
+                               'status': 'ongoing',
+                               'comment': 'kikoolol'}).data
     return jobstate['jobstate']['id']
