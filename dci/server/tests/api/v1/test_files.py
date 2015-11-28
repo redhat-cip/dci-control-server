@@ -210,3 +210,87 @@ def test_delete_file_by_id(admin, jobstate_id, team_id):
 
     gfile = admin.get(url)
     assert gfile.status_code == 404
+
+# Tests for the isolation
+
+
+def test_create_file_as_user(user, team_user_id, team_id, jobstate_user_id):
+    file = user.post('/api/v1/files',
+                     data={'jobstate_id': jobstate_user_id,
+                           'team_id': team_id,
+                           'content': 'kikoolol', 'name': 'name'})
+    assert file.status_code == 401
+
+    file = user.post('/api/v1/files',
+                     data={'jobstate_id': jobstate_user_id,
+                           'team_id': team_user_id,
+                           'content': 'kikoolol', 'name': 'name'})
+    assert file.status_code == 201
+
+
+def test_get_all_files_as_user(user, team_user_id):
+    files = user.get('/api/v1/files')
+    assert files.status_code == 200
+    for file in files.data['files']:
+        assert file['team_id'] == team_user_id
+
+
+def test_get_file_as_user(user, team_user_id, file_id, jobstate_user_id):
+    file = user.get('/api/v1/files/%s' % file_id)
+    assert file.status_code == 404
+
+    file = user.post('/api/v1/files',
+                     data={'jobstate_id': jobstate_user_id,
+                           'team_id': team_user_id,
+                           'content': 'kikoolol', 'name': 'name'}).data
+    file_id = file['file']['id']
+    file = user.get('/api/v1/files/%s' % file_id)
+    assert file.status_code == 200
+
+
+def test_put_file_as_user(user, team_user_id, file_id, admin,
+                          jobstate_user_id):
+    js_user = user.post('/api/v1/files',
+                        data={'jobstate_id': jobstate_user_id,
+                              'team_id': team_user_id,
+                              'content': 'kikoolol', 'name': 'name'})
+    js_user_id = js_user.data['file']['id']
+    file = user.get('/api/v1/files/%s' % js_user_id)
+    file_etag = file.headers.get("ETag")
+
+    file_put = user.put('/api/v1/files/%s' % js_user_id,
+                        data={'jobstate_id': jobstate_user_id,
+                              'team_id': team_user_id,
+                              'content': 'kikoolol2', 'name': 'name2'},
+                        headers={'If-match': file_etag})
+    assert file_put.status_code == 204
+
+    file = admin.get('/api/v1/files/%s' % file_id)
+    file_etag = file.headers.get("ETag")
+    file_put = user.put('/api/v1/files/%s' % file_id,
+                        data={'jobstate_id': jobstate_user_id,
+                              'team_id': team_user_id,
+                              'content': 'kikoolol2', 'name': 'name2'},
+                        headers={'If-match': file_etag})
+    assert file_put.status_code == 401
+
+
+def test_delete_file_as_user(user, team_user_id, admin, jobstate_user_id,
+                             file_id):
+    file_user = user.post('/api/v1/files',
+                          data={'jobstate_id': jobstate_user_id,
+                                'team_id': team_user_id,
+                                'content': 'kikoolol2', 'name': 'name2'})
+    file_user_id = file_user.data['file']['id']
+    file_user = user.get('/api/v1/files/%s' % file_user_id)
+    file_etag = file_user.headers.get("ETag")
+
+    file_delete = user.delete('/api/v1/files/%s' % file_user_id,
+                              headers={'If-match': file_etag})
+    assert file_delete.status_code == 204
+
+    file_user = admin.get('/api/v1/files/%s' % file_id)
+    file_etag = file_user.headers.get("ETag")
+    file_delete = user.delete('/api/v1/files/%s' % file_id,
+                              headers={'If-match': file_etag})
+    assert file_delete.status_code == 401

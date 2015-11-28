@@ -47,6 +47,10 @@ def _verify_existence_and_get_file(js_id):
 def create_files(user_info):
     values = schemas.file.post(flask.request.json)
 
+    # If it's not a super admin nor belongs to the same team_id
+    v1_utils.check_user_is_super_admin_or_same_team(user_info,
+                                                    values.get('team_id'))
+
     etag = utils.gen_etag()
     values.update(
         {'id': utils.gen_uuid(),
@@ -70,15 +74,18 @@ def put_file(user_info, file_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    data_json = schemas.file.put(flask.request.json)
+    values = schemas.file.put(flask.request.json)
 
-    _verify_existence_and_get_file(file_id)
+    file = dict(_verify_existence_and_get_file(file_id))
 
-    data_json['etag'] = utils.gen_etag()
+    v1_utils.check_user_is_super_admin_or_same_team(user_info,
+                                                    file['team_id'])
+
+    values['etag'] = utils.gen_etag()
     query = models.FILES.update().where(
         sqlalchemy.sql.and_(
             models.FILES.c.id == file_id,
-            models.FILES.c.etag == if_match_etag)).values(**data_json)
+            models.FILES.c.etag == if_match_etag)).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
@@ -86,7 +93,7 @@ def put_file(user_info, file_id):
         raise dci_exc.DCIException("Conflict on file '%s' or etag "
                                    "not matched." % file_id, status_code=409)
 
-    return flask.Response(None, 204, headers={'ETag': data_json['etag']},
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
 
 
@@ -107,6 +114,10 @@ def get_all_files(user_info):
     if embed:
         query = v1_utils.get_query_with_join(models.FILES, [models.FILES],
                                              embed, _VALID_EMBED)
+
+    user_info_team_id = user_info.get('team_id')
+    query = v1_utils.add_filter_if_not_super_admin(
+        query, user_info, models.FILES.c.team_id == user_info_team_id)
 
     query = v1_utils.sort_query(query, args['sort'], _FILES_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.FILES,
@@ -140,6 +151,10 @@ def get_file_by_id_or_name(user_info, file_id):
         query = v1_utils.get_query_with_join(models.FILES, [models.FILES],
                                              embed, _VALID_EMBED)
 
+    user_info_team_id = user_info.get('team_id')
+    query = v1_utils.add_filter_if_not_super_admin(
+        query, user_info, models.FILES.c.team_id == user_info_team_id)
+
     query = query.where(
         sqlalchemy.sql.or_(models.FILES.c.id == file_id,
                            models.FILES.c.name == file_id))
@@ -162,7 +177,10 @@ def delete_file_by_id(user_info, file_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    _verify_existence_and_get_file(file_id)
+    file = dict(_verify_existence_and_get_file(file_id))
+
+    v1_utils.check_user_is_super_admin_or_same_team(user_info,
+                                                    file['team_id'])
 
     query = models.FILES.delete().where(
         sqlalchemy.sql.and_(
