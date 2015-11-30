@@ -45,7 +45,7 @@ describe('DCI homepage', function() {
     browser.manage().addCookie('token', 'sometoken', '/');
   });
 
-  it('should be possible to recheck a job', function() {
+  xit('should be possible to recheck a job', function() {
     browser.get('/#/jobs/1234');
     element(by.css('.glyphicon-repeat')).click();
     expect(browser.getLocationAbsUrl()).toBe('/jobs/5678');
