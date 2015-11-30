@@ -58,7 +58,7 @@ def create_files():
     query = models.FILES.insert().values(**values)
 
     flask.g.db_conn.execute(query)
-
+    flask.g.es_conn.index(values)
     result = json.dumps({'file': values})
     return flask.Response(result, 201, headers={'ETag': etag},
                           content_type='application/json')

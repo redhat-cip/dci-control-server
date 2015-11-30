@@ -22,6 +22,7 @@ from dci.server.api import v1 as api_v1
 from dci.server import auth
 import dci.server.common.exceptions as exceptions
 from dci.server.db import models
+from dci.server.elasticsearch import engine as es_engine
 from dci.server import eve_model
 from dci.server import utils
 
@@ -249,10 +250,12 @@ def create_app(conf):
                                auth=basic_auth, settings=conf)
 
     dci_app.engine = get_engine(conf)
+    dci_app.es_engine = es_engine.DCIESEngine(conf)
 
     @dci_app.before_request
     def before_request():
         flask.g.db_conn = dci_app.engine.connect()
+        flask.g.es_conn = dci_app.es_engine
 
     @dci_app.teardown_request
     def teardown_request(_):

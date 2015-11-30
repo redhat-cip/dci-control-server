@@ -1,4 +1,5 @@
 alembic
+elasticsearch>=2.0.0,<3.0.0
 Eve>=0.6
 Eve-SQLAlchemy>=0.4.0a2
 PrettyTable
