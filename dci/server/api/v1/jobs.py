@@ -85,6 +85,7 @@ def get_all_jobs(jd_id=None):
     # the default query with no parameters
     query = sqlalchemy.sql.select([models.JOBS])
 
+
     # if embed then construct the query with a join
     if embed:
         query = v1_utils.get_query_with_join(models.JOBS, [models.JOBS],

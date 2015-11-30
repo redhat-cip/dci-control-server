@@ -1,47 +1,5 @@
-<header>
-<h1 class="job-header">
-  {{job.remoteci.name}} / {{job.jobdefinition.name}}
-</h1>
-</header>
-
-<div class="job-container">
-  <section class="tile" ng-class="status">
-    <div class="tile-status">
-    </div>
-    <div class="tile-main">
-      <ul>
-        <li ng-repeat="(key, value) in job.remoteci.data">
-          <span class="data-key">{{key}}</span>: {{value}}
-        <li>
-      </ul>
-      <span ng-if="!job.remoteci.data">No data for this CI</span>
-    </div>
-    <div class="tile-additional">
-      <ul>
-        <li ng-class="status">
-          <span class="glyphicon" ng-class="glyphicon()"></span>{{status}}
-        </li>
-        <li><span class="glyphicon glyphicon-time"></span>ran for {{job.timeRunning}}</li>
-        <li><span class="glyphicon glyphicon-calendar"></span>{{job.jobstate.created_at}}</li>
-      </ul>
-    </div>
-    <div class="tile-refresh" ng-controller="JobRecheckCtrl">
-      <span class="glyphicon glyphicon-repeat" ng-click="recheck(job)"></span>
-    </div>
-  </section>
-
-  <section class="job-detail">
-  </section>
-
-  <section>
-    <h2>Job states</h2>
-    <!-- id: {{jobstate.id}}
-    <small>{{job.jobstate.created_at}} → {{job.jobstate.updated_at}} ({{job.jobstate.status}})</small> -->
-    <div ng-repeat="file in job.jobstate.files">
-      <h3>{{file.name}}</h3>
-      <pre>
-        {{file.content}}
-      </pre>
-    </div>
-  </section>
+<div dci-job></div>
+<div class="tile tile-file" ng-repeat="file in job.jobstate.files">
+  <h3>{{file.name}}</h3>
+  <pre>{{file.content}}</pre>
 </div>
