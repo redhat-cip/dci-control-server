@@ -97,7 +97,7 @@ def create_remote_cis(db_conn, company, tests):
         remote_ci = {
             'data': generate_data_field(),
             'team_id': company['id'],
-            'name': '%s - %d' % (company['name'], i)
+            'name': '%s-%d' % (company['name'], i)
         }
         remote_ci = db_insert(db_conn, models.REMOTECIS, **remote_ci)
         job_definitions = []

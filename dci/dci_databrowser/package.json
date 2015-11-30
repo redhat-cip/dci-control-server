@@ -25,7 +25,8 @@
     "through2": "~2.0.0",
     "vinyl-buffer": "~1.0.0",
     "vinyl-source-stream": "~1.1.0",
-    "angular-mocks": "~1.4.7"
+    "angular-mocks": "~1.4.7",
+    "lodash": "~3.10.1"
   },
   "engines": {
     "node": ">=0.8.0"

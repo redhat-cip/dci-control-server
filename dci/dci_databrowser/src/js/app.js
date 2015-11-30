@@ -16,6 +16,7 @@
 
 var moment = require('moment');
 var angular = require('angular');
+var lodash = require('lodash');
 
 require('angular-cookies');
 require('angular-resource');
@@ -26,14 +27,24 @@ require('angular-google-chart');
 module.exports = angular.module('app', [
   'ngCookies', 'angular-loading-bar', 'ui.router', 'googlechart', 'ngResource'
 ])
-.factory('moment', ['config', function (config) {
+.factory('moment', ['_', function(_) {
   moment.locale('en', {invalidDate: 'N/A'});
   moment.locale('fr', {invalidDate: 'N/A'});
 
-  return function(string) {
-    return moment(string, config.datePattern, true);
-  }
+  return _.partialRight(moment, moment.ISO_8601, true);
 }])
-.value('config', {
-  'datePattern': 'ddd, DD MMM YYYY HH:mm:ss [GMT]'
+.factory('_', function() {
+  return lodash;
+})
+.factory('glyphiconStatus', ['glyphicons', '_', function(glyphicons, _) {
+  return _.partial(_.get, glyphicons);
+}])
+.constant('glyphicons', {
+  'failure': 'glyphicon-remove',
+  'success': 'glyphicon-ok',
+  'ongoing': 'glyphicon-play',
+  'new': 'glyphicon-record',
+  'initializing': 'glyphicon-record',
+  'killed': 'glyphicon-minus',
+  'unfinished': 'glyphicon-minus'
 });

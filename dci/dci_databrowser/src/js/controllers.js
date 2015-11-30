@@ -27,101 +27,51 @@ require('app')
 ])
 
 .controller('ListJobsCtrl', [
-  '$state', '$scope', 'jobs', 'page', function($state, $scope, jobs, page) {
-    $scope.jobs = jobs._items;
+  '$injector', '$scope', 'jobs', 'remotecis', 'page',
+  function($injector, $scope, jobs, remotecis, page) {
+    var _ = $injector.get('_');
+    var $state = $injector.get('$state');
+    var statuses = ['failure', 'success', 'ongoing', 'new',
+                    'initializing', 'killed', 'unfinished'];
     $scope.page = page;
+    $scope.jobs = jobs.jobs;
+    $scope.remotecis = {};
+    $scope.status = {};
+    _.each(statuses, function(status) {
+      this[status] = _.contains($state.params.status, status);
+    }, $scope.status);
 
-    var total = $scope.total =
-      Math.ceil(jobs._meta.total / jobs._meta.max_results);
+    _.each(remotecis, function(remoteci) {
+      var remoteci = remoteci.name;
+      this[remoteci] = _.contains($state.params.remoteci, remoteci);
+    }, $scope.remotecis);
 
-    var go = function(page) {
-      return function () {
-        $state.go('jobs', {
-          'page': page > total && total || page > 0 && page || 1
-        });
+    $scope.search = function () {
+      var params = {
+        'status': _($scope.status).pick(_.identity).keys().join(','),
+        'remoteci': _($scope.remotecis).pick(_.identity).keys().join(',')
       }
+      $state.go('jobs', params);
     }
 
-    $scope.previous = go(page - 1);
-    $scope.next = go(page + 1);
-  }
-])
-
-.controller('ListJobDefinitionsCtrl', [
-  '$state', '$scope', 'jobdefinitions', 'page',
-  function($state, $scope, jobdefinitions, page) {
-    $scope.jobdefinitions = jobdefinitions._items;
-    $scope.page = page;
-
-    var total = $scope.total =
-      Math.ceil(jobdefinitions._meta.total / jobdefinitions._meta.max_results);
-
-    var go = function(page) {
-      return function () {
-        $state.go('jobdefinitions', {
-          'page': page > total && total || page > 0 && page || 1
-        });
+    if (!$state.params.status.length && !$state.params.remoteci.length) {
+      var total = $scope.total = Math.ceil(jobs._meta.count / 20);
+      var go = function(page) {
+        return function () {
+          $state.go('jobs', {
+            'page': page > total && total || page > 0 && page || 1
+          });
+        }
       }
+
+      $scope.previous = go(page - 1);
+      $scope.next = go(page + 1);
     }
-
-    $scope.previous = go(page - 1);
-    $scope.next = go(page + 1);
   }
 ])
-.controller('JobDefinitionCtrl', [
-  '$scope', 'jobdefinition', function($scope, jobdefinition) {
-    $scope.jobdefinition = jobdefinition;
-  }
-])
-.controller('ListCIsCtrl', [
-  '$state', '$scope', 'cis', 'page', function($state, $scope, cis, page) {
-    $scope.cis = cis._items;
-    $scope.page = page;
-    var total = $scope.total =
-      Math.ceil(cis._meta.total / cis._meta.max_results);
-
-    var go = function(page) {
-      return function () {
-        $state.go('remotecis', {
-          'page': page > total && total || page > 0 && page || 1
-        });
-      }
-    }
-
-    $scope.previous = go(page - 1);
-    $scope.next = go(page + 1);
-  }
-])
-
-.controller('JobCtrl', [
-  '$scope', 'job', 'moment', function($scope, job, moment) {
-    $scope.job = job;
-    job.jobstate = job.jobstate || {created_at: null};
-
-    var end = moment(job.jobstate.created_at);
-    var start = moment(
-      job.jobstates.length ? job.jobstates[0].created_at : null
-    );
-
-    job.jobstate.created_at = end.fromNow()
-    job.timeRunning = end.to(start, true);
-
-    var status = $scope.status = job.jobstate.status;
-    var glyphiconStatus = {
-      'failure': 'glyphicon-remove',
-      'success': 'glyphicon-ok',
-      'new': 'glyphicon-record',
-      'initializing': 'glyphicon-record',
-      'killed': 'glyphicon-minus',
-      'unfinished': 'glyphicon-minus'
-    };
-
-    $scope.glyphicon = function() {
-      return glyphiconStatus[status];
-    }
-
-  }
-])
+.controller('JobCtrl', ['$scope', 'job', function($scope, job) {
+  $scope.job = job;
+}])
 .controller('JobRecheckCtrl', [
   '$scope', '$state', 'api', function ($scope, $state, api) {
     $scope.recheck = function(job) {
