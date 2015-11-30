@@ -246,3 +246,13 @@ file = utils.dict_merge(base, {
 })
 
 file = schema_factory(file)
+
+###############################################################################
+#                                                                             #
+#                              Search schemas                                 #
+#                                                                             #
+###############################################################################
+
+search = { 'pattern': six.text_type }
+
+search = schema_factory(search)
