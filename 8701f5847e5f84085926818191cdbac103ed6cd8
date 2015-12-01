@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_7f099b94",
+        "filename": "dci/server/api/v1/search.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-01T10:11:19Z",
+      "side": 1,
+      "message": "I think that we will have to perform a two time workflow like this http://stackoverflow.com/questions/14992293/providing-complex-filtering-rest-api#14992512\n\nI am not opposed to merge this as is as a first version but I think that we can talk of a way to improve the search API",
+      "revId": "8701f5847e5f84085926818191cdbac103ed6cd8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_bfd703ed",
+        "filename": "dci/server/elasticsearch/engine.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-01T10:11:19Z",
+      "side": 1,
+      "message": "this can be changed to an init function",
+      "revId": "8701f5847e5f84085926818191cdbac103ed6cd8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_5f04d77d",
+        "filename": "dci/server/elasticsearch/engine.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-01T10:11:19Z",
+      "side": 1,
+      "message": "messy indentation here",
+      "revId": "8701f5847e5f84085926818191cdbac103ed6cd8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
