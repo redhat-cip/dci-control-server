@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "bada0100_df3e8729",
+        "filename": "dci/server/api/v1/search.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2015-12-01T13:51:39Z",
+      "side": 1,
+      "message": "Agreed, it was just for a demonstration. The search is a simple %LIKE%. But I\u0027m more than willing to go forward in the search api :-)",
+      "parentUuid": "bada0100_7f099b94",
+      "revId": "8701f5847e5f84085926818191cdbac103ed6cd8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "bada0100_bfd703ed",
         "filename": "dci/server/elasticsearch/engine.py",
         "patchSetId": 2
