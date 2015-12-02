@@ -50,7 +50,13 @@ def test_extra_args():
 
 
 def test_default_args():
-    expected = {'limit': 20, 'offset': 0, 'sort': [], 'where': [], 'embed': []}
+    expected = {
+        'limit': None,
+        'offset': None,
+        'sort': [],
+        'where': [],
+        'embed': []
+    }
     assert schemas.args({}) == expected
 
 

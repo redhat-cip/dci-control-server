@@ -68,8 +68,13 @@ def create_componenttypes():
 def get_all_componenttypes():
     args = schemas.args(flask.request.args.to_dict())
 
-    query = sqlalchemy.sql.select([models.COMPONENTYPES]).\
-        limit(args['limit']).offset(args['offset'])
+    query = sqlalchemy.sql.select([models.COMPONENTYPES])
+
+    if args['limit'] is not None:
+        query = query.limit(args['limit'])
+
+    if args['offset'] is not None:
+        query = query.offset(args['offset'])
 
     query = v1_utils.sort_query(query, args['sort'], _CT_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.COMPONENTYPES,

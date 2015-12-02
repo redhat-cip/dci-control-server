@@ -113,7 +113,11 @@ def get_all_files():
                                  _FILES_COLUMNS)
 
     # adds the limit/offset parameters
-    query = query.limit(args['limit']).offset(args['offset'])
+    if args['limit'] is not None:
+        query = query.limit(args['limit'])
+
+    if args['offset'] is not None:
+        query = query.offset(args['offset'])
 
     # get the number of rows for the '_meta' section
     nb_row = utils.get_number_of_rows(models.FILES)
