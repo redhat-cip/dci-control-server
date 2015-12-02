@@ -30,7 +30,11 @@ from dci.server.db import models_core as models
 
 # associate column names with the corresponding SA Column object
 _JD_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBDEFINITIONS)
-_VALID_EMBED = {'test': models.TESTS}
+_VALID_EMBED = {'test': models.TESTS,
+                # TODO(spredzy) : Remove this when the join and multiple
+                # entities is supported
+                'jobdefinition.jobdefinition_component':
+                models.JOIN_JOBDEFINITIONS_COMPONENTS}
 
 
 def _verify_existence_and_get_jd(jd_id):

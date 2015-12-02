@@ -33,6 +33,10 @@ from dci.server.api.v1 import jobstates
 # associate column names with the corresponding SA Column object
 _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBS)
 _VALID_EMBED = {'jobdefinition': models.JOBDEFINITIONS,
+                # TODO(spredzy) : Remove this when the join and multiple
+                # entities is supported
+                'jobdefinition.jobdefinition_component':
+                models.JOIN_JOBDEFINITIONS_COMPONENTS,
                 'jobdefinition.test': models.TESTS,
                 'team': models.TEAMS,
                 'remoteci': models.REMOTECIS}
