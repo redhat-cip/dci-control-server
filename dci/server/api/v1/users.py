@@ -96,7 +96,11 @@ def get_all_users(team_id=None):
         where_t_cond = models.USERS.c.team_id == team_id
         query = query.where(where_t_cond)
 
-    query = query.limit(args['limit']).offset(args['offset'])
+    if args['limit'] is not None:
+        query = query.limit(args['limit'])
+
+    if args['offset'] is not None:
+        query = query.offset(args['offset'])
 
     nb_users = utils.get_number_of_rows(models.USERS, where_t_cond)
 

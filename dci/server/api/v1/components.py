@@ -92,7 +92,11 @@ def get_all_components(ct_id=None):
         query = query.where(where_ct_cond)
 
     # adds the limit/offset parameters
-    query = query.limit(args['limit']).offset(args['offset'])
+    if args['limit'] is not None:
+        query = query.limit(args['limit'])
+
+    if args['offset'] is not None:
+        query = query.offset(args['offset'])
 
     # get the number of rows for the '_meta' section
     nb_cts = utils.get_number_of_rows(models.COMPONENTS, where_ct_cond)

@@ -82,7 +82,12 @@ def get_all_remotecis(t_id=None):
     query = v1_utils.sort_query(query, args['sort'], _R_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.REMOTECIS,
                                  _R_COLUMNS)
-    query = query.limit(args['limit']).offset(args['offset'])
+
+    if args['limit'] is not None:
+        query = query.limit(args['limit'])
+
+    if args['offset'] is not None:
+        query = query.offset(args['offset'])
 
     # used for counting the number of rows when ct_id is not None
     where_t_cond = None
