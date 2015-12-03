@@ -33,7 +33,7 @@ _JD_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBDEFINITIONS)
 _VALID_EMBED = {'test': models.TESTS,
                 # TODO(spredzy) : Remove this when the join and multiple
                 # entities is supported
-                'jobdefinition.jobdefinition_component':
+                'jobdefinition_component':
                 models.JOIN_JOBDEFINITIONS_COMPONENTS}
 
 
