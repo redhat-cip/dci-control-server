@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_0a512f62",
+        "filename": "dci/server/api/v1/teams.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-12-03T12:31:55Z",
+      "side": 1,
+      "message": "Each members of the \u0027admin\u0027 team could see the whole set of teams.",
+      "revId": "73b18e46060bbe3b0514445989cb83f163f769f6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_aa4d83c6",
+        "filename": "dci/server/api/v1/users.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-12-03T12:31:55Z",
+      "side": 1,
+      "message": "same here, all admin members can see the whole users set.",
+      "revId": "73b18e46060bbe3b0514445989cb83f163f769f6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_ca4a47ac",
+        "filename": "dci/server/api/v1/users.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-12-03T12:31:55Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "73b18e46060bbe3b0514445989cb83f163f769f6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_6ac79b13",
+        "filename": "dci/server/api/v1/users.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 198,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2015-12-03T12:31:55Z",
+      "side": 1,
+      "message": "should be:\n\nif you are a member of the admin team or (you are the admin of the team that you want to delete a member)",
+      "revId": "73b18e46060bbe3b0514445989cb83f163f769f6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
