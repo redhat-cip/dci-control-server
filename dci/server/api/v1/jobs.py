@@ -154,6 +154,32 @@ def get_job_by_id(jd_id):
                           content_type='application/json')
 
 
+@api.route('/jobs/<j_id>/recheck', methods=['POST'])
+@auth2.requires_auth
+def job_recheck(j_id):
+
+    job_to_recheck = dict(_verify_existence_and_get_job(j_id))
+    etag = utils.gen_etag()
+    values = {
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': etag,
+        'recheck': True,
+        'team_id': job_to_recheck.get('team_id'),
+        'jobdefinition_id': job_to_recheck.get('jobdefinition_id'),
+        'remoteci_id': job_to_recheck.get('remoteci_id')
+    }
+
+    query = models.JOBS.insert().values(**values)
+
+    flask.g.db_conn.execute(query)
+
+    return flask.Response(json.dumps({'job': values}), 201,
+                          headers={'ETag': etag},
+                          content_type='application/json')
+
+
 @api.route('/jobs/<jd_id>', methods=['DELETE'])
 @auth2.requires_auth
 def delete_job_by_id(jd_id):
