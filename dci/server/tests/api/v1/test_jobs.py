@@ -27,6 +27,25 @@ def test_create_jobs(admin, jobdefinition_id, team_id, remoteci_id):
     assert job.status_code == 200
 
 
+def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id):
+    job = admin.post('/api/v1/jobs/schedule',
+                     data={'remoteci_id': remoteci_id})
+    assert job.status_code == 201
+    job = job.data['job']
+    assert job['jobdefinition_id'] == jobdefinition_id
+    assert job['team_id'] == team_id
+    assert job['remoteci_id'] == remoteci_id
+
+
+def test_schedule_job_recheck(admin, job_id, remoteci_id):
+    job_rechecked = admin.post('/api/v1/jobs/%s/recheck' % job_id).data['job']
+    job_scheduled = admin.post('/api/v1/jobs/schedule',
+                               data={'remoteci_id': remoteci_id})
+    assert job_scheduled.status_code == 201
+    job_scheduled = job_scheduled.data['job']
+    assert job_scheduled['id'] == job_rechecked['id']
+
+
 def test_get_all_jobs(admin, jobdefinition_id, team_id, remoteci_id):
     job_1 = admin.post('/api/v1/jobs',
                        data={'jobdefinition_id': jobdefinition_id,

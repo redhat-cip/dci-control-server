@@ -217,6 +217,12 @@ job = {
 
 job = schema_factory(job)
 
+job_schedule = {
+    'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI)
+}
+
+job_schedule = schema_factory(job_schedule)
+
 ###############################################################################
 #                                                                             #
 #                             Job State schemas                               #

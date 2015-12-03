@@ -69,6 +69,76 @@ def create_jobs(user_info):
                           content_type='application/json')
 
 
+@api.route('/jobs/schedule', methods=['POST'])
+@auth2.requires_auth()
+def schedule_jobs(user_info):
+
+    def get_recheck_job(r_id):
+        query = sqlalchemy.sql.select([models.JOBS]).where(
+            sqlalchemy.sql.expression.and_(
+                models.JOBS.c.recheck == True,  # noqa
+                models.JOBS.c.remoteci_id == r_id)
+        ).limit(1)
+
+        return flask.g.db_conn.execute(query).fetchone()
+
+    values = schemas.job_schedule.post(flask.request.json)
+    etag = utils.gen_etag()
+    values.update(
+        {'id': utils.gen_uuid(),
+         'created_at': datetime.datetime.utcnow().isoformat(),
+         'updated_at': datetime.datetime.utcnow().isoformat(),
+         'etag': etag,
+         'recheck': values.get('recheck', False)}
+    )
+
+    remoteci_id = values.get('remoteci_id')
+
+    # First try to get some job to recheck
+    recheck_job = get_recheck_job(remoteci_id)
+    if recheck_job:
+        recheck_job = dict(recheck_job)
+        return flask.Response(json.dumps({'job': recheck_job}), 201,
+                              headers={'ETag': etag},
+                              content_type='application/json')
+
+    remoteci = dict(v1_utils.verify_existence_and_get(
+        [models.REMOTECIS], remoteci_id, models.REMOTECIS.c.id == remoteci_id))
+
+    # Subquery, get all the jobdefinitions which have been run by this remoteci
+    sub_query = (sqlalchemy.sql.select([models.JOBS.c.jobdefinition_id]).
+                 where(models.JOBS.c.remoteci_id == remoteci_id))
+
+    # Get one jobdefinition which has not been run by this remoteci
+    query = sqlalchemy.sql.select([models.JOBDEFINITIONS.c.id]).where(
+        sqlalchemy.sql.expression.not_(
+            models.JOBDEFINITIONS.c.id.in_(sub_query))
+    )
+
+    # Order by jobdefinition.priority and get the first one
+    query = query.order_by(
+        sqlalchemy.sql.asc(models.JOBDEFINITIONS.c.priority)).limit(1)
+
+    jobdefinition_to_run = flask.g.db_conn.execute(query).fetchone()
+
+    if jobdefinition_to_run is None:
+        raise dci_exc.DCIException("No jobs available for run.",
+                                   status_code=412)
+
+    values.update(
+        {"jobdefinition_id": jobdefinition_to_run[0],
+         "team_id": remoteci.get('team_id')}
+    )
+
+    query = models.JOBS.insert().values(**values)
+
+    flask.g.db_conn.execute(query)
+
+    return flask.Response(json.dumps({'job': values}), 201,
+                          headers={'ETag': etag},
+                          content_type='application/json')
+
+
 @api.route('/jobs', methods=['GET'])
 @auth2.requires_auth()
 def get_all_jobs(user_info, jd_id=None):
