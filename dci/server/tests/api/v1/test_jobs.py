@@ -185,6 +185,16 @@ def test_get_job_not_found(admin):
     assert result.status_code == 404
 
 
+def test_job_recheck(admin, job_id):
+    job_to_recheck = admin.get('/api/v1/jobs/%s' % job_id).data['job']
+    job_rechecked = admin.post('/api/v1/jobs/%s/recheck' % job_id).data['job']
+    assert job_rechecked['recheck'] is True
+    assert (job_rechecked['jobdefinition_id'] ==
+            job_to_recheck['jobdefinition_id'])
+    assert job_rechecked['remoteci_id'] == job_to_recheck['remoteci_id']
+    assert job_rechecked['team_id'] == job_rechecked['team_id']
+
+
 def test_delete_job_by_id(admin, jobdefinition_id, team_id, remoteci_id):
 
     job = admin.post('/api/v1/jobs',
