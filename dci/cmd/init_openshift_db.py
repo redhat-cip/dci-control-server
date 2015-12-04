@@ -25,6 +25,7 @@ import sys
 
 import sqlalchemy
 from sqlalchemy import exc as sa_exc
+import sqlalchemy_utils.functions
 
 from dci.server import app
 from dci.server import auth2
@@ -91,7 +92,12 @@ def init_db(db_conn):
 
 def main():
     conf = app.generate_conf()
-    engine = app.get_engine(conf)
+    db_uri = conf['SQLALCHEMY_DATABASE_URI']
+    if sqlalchemy_utils.functions.database_exists(db_uri):
+        sqlalchemy_utils.functions.drop_database(db_uri)
+    sqlalchemy_utils.functions.create_database(db_uri)
+    engine = sqlalchemy.create_engine(db_uri)
+    models_core.metadata.create_all(engine)
     with engine.begin() as conn:
         init_db(conn)
 
