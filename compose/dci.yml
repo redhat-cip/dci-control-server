@@ -29,6 +29,7 @@ tox:
         - ..:/opt/dci/
     links:
         - db
+        - es
     command: /bin/bash
     stdin_open: true
     tty: true
