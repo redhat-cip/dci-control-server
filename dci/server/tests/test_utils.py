@@ -14,7 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import dci.server.utils
+import dci.server.common.utils as utils
 import sample.db_provisioning
 
 
@@ -23,7 +23,7 @@ def test_dict_merge():
     b = {'tot': {'a': {'b': 'string'}, 'c': [1, 2]}}
     c = {'tot': {'c': [3, 4]}}
 
-    assert dci.server.utils.dict_merge(a, b, c) == {
+    assert utils.dict_merge(a, b, c) == {
         'a': {'b': {'c': {'d': 'bob'}}},
         'jim': 123,
         'rob': 34,

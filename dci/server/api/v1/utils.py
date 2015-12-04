@@ -21,7 +21,7 @@ import six
 import sqlalchemy.sql
 
 from dci.server.common import exceptions as dci_exc
-from dci.server import utils
+from dci.server.common import utils
 
 
 def verify_existence_and_get(select, resource_id, cond_exist):

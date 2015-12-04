@@ -20,11 +20,11 @@ import os
 
 from dci.server.api import v1 as api_v1
 from dci.server import auth
-import dci.server.common.exceptions as exceptions
+from dci.server.common import exceptions
+from dci.server.common import utils
 from dci.server.db import models
 from dci.server.elasticsearch import engine as es_engine
 from dci.server import eve_model
-from dci.server import utils
 
 from eve import Eve
 from eve_sqlalchemy import SQL

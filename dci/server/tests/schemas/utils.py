@@ -17,7 +17,7 @@ from __future__ import unicode_literals
 
 import dci.server.common.exceptions as exceptions
 import dci.server.common.schemas as schemas
-import dci.server.utils as utils
+import dci.server.common.utils as utils
 import pytest
 import six
 
