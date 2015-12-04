@@ -17,7 +17,7 @@ from __future__ import unicode_literals
 
 import collections
 import dci.server.common.exceptions as exceptions
-import dci.server.utils as utils
+import dci.server.common.utils as utils
 import six
 import six.moves.urllib as urllib
 import voluptuous as v
