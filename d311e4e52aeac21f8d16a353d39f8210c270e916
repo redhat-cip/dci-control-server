@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_25ca24a2",
+        "filename": "dci/server/api/v1/search.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2015-12-04T14:04:40Z",
+      "side": 1,
+      "message": "Why don\u0027t pass the user_info ? it would be usefull to limit the search of a team_id.",
+      "revId": "d311e4e52aeac21f8d16a353d39f8210c270e916",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
