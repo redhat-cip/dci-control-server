@@ -71,8 +71,8 @@ def test_get_all_teams_with_pagination(admin):
     admin.post('/api/v1/teams', data={'name': 'pname3'})
     admin.post('/api/v1/teams', data={'name': 'pname4'})
     ts = admin.get('/api/v1/teams').data
-    # TODO(yassine): 3 teams was already created in the db
-    assert ts['_meta']['count'] == 7
+    # TODO(yassine): 4 teams was already created in the db
+    assert ts['_meta']['count'] == 8
 
     # verify limit and offset are working well
     ts = admin.get('/api/v1/teams?limit=2&offset=0').data
@@ -177,3 +177,59 @@ def test_delete_team_not_found(admin):
     result = admin.delete('/api/v1/teams/ptdr',
                           headers={'If-match': 'mdr'})
     assert result.status_code == 404
+
+
+# Tests for the isolation
+
+def test_create_team_as_user(user):
+    team = user.post('/api/v1/teams',
+                     data={'name': 'pname'})
+    assert team.status_code == 401
+
+
+def test_get_all_teams_as_user(user):
+    teams = user.get('/api/v1/teams')
+    assert teams.status_code == 200
+
+
+def test_get_teams_as_user(user):
+    team = user.get('/api/v1/teams/admin')
+    assert team.status_code == 401
+
+    team = user.get('/api/v1/teams/user')
+    assert team.status_code == 200
+
+    teams = user.get('/api/v1/teams')
+    assert teams.status_code == 200
+    assert len(teams.data['teams']) == 1
+
+
+# Only super admin and an admin of a team can update the team
+def test_put_team_as_user_admin(user, user_admin):
+    team = user.get('/api/v1/teams/user')
+    team_etag = team.headers.get("ETag")
+    team_user_id = team.data['team']['id']
+
+    team_put = user.put('/api/v1/teams/%s' % team_user_id,
+                        data={'name': 'nname'},
+                        headers={'If-match': team_etag})
+    assert team_put.status_code == 401
+
+    team_put = user_admin.put('/api/v1/teams/%s' % team_user_id,
+                              data={'name': 'nname'},
+                              headers={'If-match': team_etag})
+    assert team_put.status_code == 204
+
+
+# Only super admin can delete a team
+def test_delete_as_user_admin(user, user_admin):
+    team = user.get('/api/v1/teams/user')
+    team_etag = team.headers.get("ETag")
+
+    team_delete = user.delete('/api/v1/teams/user',
+                              headers={'If-match': team_etag})
+    assert team_delete.status_code == 401
+
+    team_delete = user_admin.delete('/api/v1/teams/user',
+                                    headers={'If-match': team_etag})
+    assert team_delete.status_code == 401

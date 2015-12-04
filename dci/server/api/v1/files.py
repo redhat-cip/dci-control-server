@@ -43,8 +43,8 @@ def _verify_existence_and_get_file(js_id):
 
 
 @api.route('/files', methods=['POST'])
-@auth2.requires_auth
-def create_files():
+@auth2.requires_auth()
+def create_files(user_info):
     values = schemas.file.post(flask.request.json)
 
     etag = utils.gen_etag()
@@ -65,8 +65,8 @@ def create_files():
 
 
 @api.route('/files/<file_id>', methods=['PUT'])
-@auth2.requires_auth
-def put_file(file_id):
+@auth2.requires_auth()
+def put_file(user_info, file_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -91,8 +91,8 @@ def put_file(file_id):
 
 
 @api.route('/files', methods=['GET'])
-@auth2.requires_auth
-def get_all_files():
+@auth2.requires_auth()
+def get_all_files(user_info):
     """Get all files.
     """
     args = schemas.args(flask.request.args.to_dict())
@@ -131,8 +131,8 @@ def get_all_files():
 
 
 @api.route('/files/<file_id>', methods=['GET'])
-@auth2.requires_auth
-def get_file_by_id_or_name(file_id):
+@auth2.requires_auth()
+def get_file_by_id_or_name(user_info, file_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
@@ -161,8 +161,8 @@ def get_file_by_id_or_name(file_id):
 
 
 @api.route('/files/<file_id>', methods=['DELETE'])
-@auth2.requires_auth
-def delete_file_by_id(file_id):
+@auth2.requires_auth()
+def delete_file_by_id(user_info, file_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 

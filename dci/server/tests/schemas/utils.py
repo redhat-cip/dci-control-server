@@ -31,6 +31,7 @@ NAME = 'name', text_type
 ETAG = 'etag', text_type
 DATA = 'data', {'foo': 'bar'}
 PASSWORD = 'password', text_type
+ROLE = 'role', text_type
 URL = 'url', 'http://valid.url'
 STATUS = 'status', text_type
 CONTENT = 'content', text_type
