@@ -24,9 +24,14 @@ from dci.server.common import schemas
 
 @api.route('/search', methods=['POST'])
 @auth.requires_auth
-def search():
+def search(user):
     values = schemas.search.post(flask.request.json)
 
-    res = flask.g.es_conn.search_content(values['pattern'])
-    return flask.Response(json.dumps({'logs': res}), 200,
+    if auth.is_admin(user):
+        res = flask.g.es_conn.search_content(values['pattern'])
+    else:
+        res = flask.g.es_conn.search_content(values['pattern'],
+                                             user['team_id'])
+
+    return flask.Response(json.dumps({'logs': res['hits']}), 200,
                           content_type='application/json')
