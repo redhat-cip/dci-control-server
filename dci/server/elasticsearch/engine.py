@@ -18,18 +18,41 @@ from elasticsearch import Elasticsearch
 
 
 class DCIESEngine(object):
-    def __init__(self, conf, index="global-index"):
+    def __init__(self, conf, index="global"):
         self.esindex = index
         self.conn = Elasticsearch(conf['ES_HOST'], port=conf['ES_PORT'])
 
-    def get(self, id):
+    def get(self, id, team_id=None):
         res = self.conn.get(index=self.esindex, doc_type='log', id=id)
+        if team_id:
+            if res:
+                if res['_source']['team_id'] != team_id:
+                    res = {}
         return res
 
     def index(self, values):
         return self.conn.index(index=self.esindex, doc_type='log',
                                id=values['id'], body=values)
 
+    def refresh(self):
+        return self.conn.indices.refresh(index=self.esindex,
+                                         force=True)
+
     def search_content(self, pattern, team_id=None):
-        query = {"query": {"match": {"content": pattern}}}
-        return self.conn.search(index=self.esindex, body=query)
+        if team_id:
+            query = {
+                "query": {
+                    "filtered": {
+                        "filter": {"match": {"team_id": team_id}},
+                        "query": {"match": {"content": pattern}}
+                    }
+                }
+            }
+        else:
+            query = {"query": {"match": {"content": pattern}}}
+
+        return self.conn.search(index=self.esindex, body=query,
+                                request_cache=False, size=100)
+
+    def cleanup(self):
+        return self.conn.delete(index=self.esindex)

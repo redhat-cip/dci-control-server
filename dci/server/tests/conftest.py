@@ -17,6 +17,7 @@
 import dci.server.app
 from dci.server.db import models
 from dci.server import dci_config
+from dci.server.elasticsearch import engine as es_engine
 import dci.server.tests.utils as utils
 
 from passlib.apps import custom_app_context as pwd_context
@@ -65,7 +66,7 @@ def db_provisioning(db_clean, engine):
 
 
 @pytest.fixture
-def app(db_provisioning, engine):
+def app(db_provisioning, engine, es_clean):
     app = dci.server.app.create_app(dci_config.generate_conf())
     app.testing = True
     app.engine = engine
@@ -183,3 +184,10 @@ def file_user_id(user, jobstate_user_id, team_user_id):
             'content': 'kikoolol', 'name': 'name'}
     file = user.post('/api/v1/files', data=data).data
     return file['file']['id']
+
+
+@pytest.fixture
+def es_clean(request):
+    conf = dci_config.generate_conf()
+    conn = es_engine.DCIESEngine(conf)
+    conn.cleanup
