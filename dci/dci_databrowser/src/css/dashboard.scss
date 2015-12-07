@@ -1,87 +1,84 @@
+$success     : #5cb85c;
+$failure     : #d9534f;
+$new         : #337ab7;
+$unfinished  : #f0ad4e;
+$progress    : #5bc0de;
+$gray        : gray;
+$gray-darker : darken($gray, 13.5%);
+$gray-dark   : darken($gray, 22.5%);
+$background  : #fff;
+
+body {
+  margin-top: 60px;
+  font-size: 16px;
+}
+
 .navbar {
+  background-color: $background;
   .navbar-brand {
     padding-top: 3px;
   }
 }
 
-body {
-  margin-top: 50px;
-  font-size: 16px;
-}
 
-$success     : #3fa75f;
-$failure     : #db423c;
-$new         : #03718e;
-$unfinished  : #8b9595;
-$progress    : #bfb502;
-$gray        : gray;
-$gray-darker : darken($gray, 13.5%);
-$gray-dark   : darken($gray, 22.5%);
-$background  : #fafaf8;
+header.page-header {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0;
 
-header {
-  padding: 25px 0 25px 0;
-
-  .job-header {
-    margin: 0;
+  h1 {
     font-size: 25px;
     line-height: 1;
     color: $gray;
+    padding-top: 4px;
+  }
+
+  .search {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    padding: 4px;
+    width: 300px;
+    font-size: 14px;
+    color: #a6adad;
+    border: 1px solid #f2f2f2;
+    border-radius: 4px;
   }
 }
 
-
 .tile {
+  border-radius: 0;
+  border: 1px solid;
+  padding: .6em .5em;
+  font-size: 14px;
+  box-shadow: 2px 4px 4px #ccc;
+}
+
+ul {
+  padding: 0;
+  li {
+    list-style: none;
+  }
+}
+
+.job-tile {
   display: flex;
   align-items: stretch;
   background-color: $background;
-  color: $gray;
-  border: 1px solid #ccc;
-  box-shadow: 2px 4px 4px #ccc;
+  margin-bottom: 10px;
+  border-left-width: 8px;
+  min-height: 100px;
 
-  ul {
-    margin: 0;
-    padding: 0;
-    list-style-type: none;
-    li {
-      padding: 3px;
-    }
+  a {
+    cursor: pointer;
   }
-
-  .tile-status {
-    flex: 0 0 40px;
-  }
-
-  @each $name, $color in
-  (new, $new), (initializing, $progress), (ongoing, $progress),
-  (success, $success), (failure, $failure), (unfinished, $unfinished),
-  (killed, $unfinished) {
-    &.#{$name} .tile-status {
-      background-color: $color;
-    }
-
-    .tile-additional, .tile-refresh {
-      .#{$name} {
-        color: $color;
-      }
-    }
-  }
-
 
   .tile-main {
-    padding: 15px;
-    flex: 0 1 70%;
-
-    .data-key {
-      font-weight: bold;
-      text-transform: capitalize;
-    }
+    flex: 0 1 50%;
   }
-
   .tile-additional {
     display: flex;
     align-items: center;
-    flex: 0 1 30%;
+    flex: 0 1 50%;
     .glyphicon {
       margin-right: 6px;
     }
@@ -91,29 +88,70 @@ header {
     align-items: center;
     flex: 0 0 100px;
     font-weight: bold;
-    font-size: 25px;
+    font-size: 18px;
 
     .glyphicon-repeat {
       background-color: $gray-darker;
       cursor: pointer;
       border-radius: 50%;
-      padding: 10px;
+      padding: 8px;
       margin: auto;
       color: #fff;
     }
   }
+  @each $name, $color in
+  (new, $new), (initializing, $progress), (ongoing, $progress),
+  (success, $success), (failure, $failure), (unfinished, $unfinished),
+  (killed, $unfinished) {
+    &.#{$name}  {
+      border-color: $color;
+    }
+
+    .#{$name} {
+      color: $color;
+    }
+  }
 }
 
-pre {
-  background-color: #333;
-  color: #eee;
+
+.tile-file {
+  background-color: #f7f7f7;
+  margin-top: 40px;
+
+  h3 {
+    font-size: 12px;
+    padding: 5px 0 5px 0;
+    margin: 0;
+    font-weight: bold;
+  }
+
+  pre {
+    border-width: 0;
+    background-color: transparent;
+  }
 }
 
-h3 {
-  font-size: 18px;
-  color: $gray-darker;
+.form-filtering {
+  margin: 30px;
 }
 
-.job-detail {
-  margin-top: 35px;
+.filtering {
+  display: flex;
+  flex-wrap: wrap;
+
+  label {
+    font-size: 14px;
+    font-weight: normal;
+    padding: 5px 15px 5px 5px;
+  }
+
+}
+
+.pagination {
+  button:nth-child(1) {
+    margin-right: 10px;
+  }
+  button:nth-child(2) {
+    margin-left: 10px;
+  }
 }

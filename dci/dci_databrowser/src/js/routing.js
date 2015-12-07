@@ -45,84 +45,49 @@ require('app')
       }]
     })
     .state('jobs', {
-      url: '/jobs?page',
+      url: '/jobs?status&remoteci&page',
       parent: 'auth',
-      resolve: {
-        page: ['$stateParams', function ($stateParams) {
-          return parseInt($stateParams.page) || 1;
-        }],
-        jobs: ['api', 'page', function(api, page) {
-          return api.getJobs(page);
-        }]
-      },
       onEnter: scrollTop,
       templateUrl: '/partials/jobs.html',
-      controller: 'ListJobsCtrl'
+      controller: 'ListJobsCtrl',
+      resolve: {
+        page: ['$stateParams', function($stateParams) {
+          return parseInt($stateParams.page) || 1;
+        }],
+        jobs: [
+          '$stateParams', 'api', 'page', function($stateP, api, page) {
+            var remoteci = $stateP.remoteci;
+            var status = $stateP.status;
+
+            $stateP.remoteci = remoteci = remoteci ? remoteci.split(',') : [];
+            $stateP.status = status = status ? status.split(',') : [];
+
+            if (remoteci.length || status.length) {
+              return api.searchJobs(remoteci, status);
+            } else {
+              return api.getJobs(page);
+            }
+          }
+        ],
+        remotecis: ['api', function(api) {
+          return api.getRemoteCIS();
+        }]
+      }
     })
     .state('job', {
       url: '/jobs/:id',
       parent: 'auth',
+      controller: 'JobCtrl',
       templateUrl: '/partials/job.html',
       resolve: {
         job: ['$stateParams', 'api', function($stateParams, api) {
           return api.getJob($stateParams.id);
         }]
-      },
-      controller: 'JobCtrl'
-    })
-    .state('jobdefinitions', {
-      url: '/jobdefinitions?page',
-      parent: 'auth',
-      resolve: {
-        page: ['$stateParams', function ($stateParams) {
-          return parseInt($stateParams.page) || 1;
-        }],
-        jobdefinitions: ['api', 'page', function(api, page) {
-          return api.getJobDefinitions(page);
-        }]
-      },
-      templateUrl: '/partials/jobdefinitions.html',
-      controller: 'ListJobDefinitionsCtrl'
-    })
-    .state('jobdefinition', {
-      url: '/jobdefinitions/:id',
-      parent: 'auth',
-      resolve: {
-        jobdefinition: ['$stateParams', 'api', function($stateParams, api) {
-          return api.getJobDefinition($stateParams.id);
-        }]
-      },
-      templateUrl: '/partials/jobdefinition.html',
-      controller: 'JobDefinitionCtrl'
-    })
-
-    .state('remotecis', {
-      url: '/remotecis?page',
-      parent: 'auth',
-      templateUrl: '/partials/remotecis.html',
-      resolve: {
-        page: ['$stateParams', function ($stateParams) {
-          return parseInt($stateParams.page) || 1;
-        }],
-        cis: ['api', 'page', function(api, page) {
-          return api.getCIs(page);
-        }]
-      },
-      onEnter: scrollTop,
-      controller: 'ListCIsCtrl'
+      }
     })
     .state('login', {
-      url: '/login?next&args',
+      url: '/login',
       controller: 'LoginCtrl',
-      resolve: {
-        next: ['$stateParams', function($stateParams) {
-          return {
-            state: $stateParams.next || 'index',
-            args: $stateParams.args &&
-              angular.fromJson(atob($stateParams.args)) || {}
-          };
-        }]
-      },
       templateUrl: '/partials/login.html',
     });
 
@@ -146,23 +111,14 @@ require('app')
     $rootScope.$on(
       '$stateChangeError',
       function(event, toState, toParams, fromState, fromParams, error) {
-        function redirect() {
-          $state.go('login', {
-            next: toState.name,
-            args: btoa(angular.toJson(toParams))
-          }, {
-            reload: true
-          });
-        }
         if (error.status == 401) {
           auth.state = authStates.UNAUTHORIZED;
-          redirect();
+          $state.go('login');
         }
         if (error === authStates.DISCONNECTED) {
-          redirect();
+          $state.go('login', {}, {reload: true});
         }
       }
     );
   }
 ]);
-
