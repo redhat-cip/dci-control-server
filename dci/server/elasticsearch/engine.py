@@ -31,5 +31,16 @@ class DCIESEngine(object):
                                id=values['id'], body=values)
 
     def search_content(self, pattern, team_id=None):
-        query = {"query": {"match": {"content": pattern}}}
+        if team_id:
+            query = {
+                "query": {
+                    "filtered": {
+                        "filter": {"match": {"team_id": team_id}},
+                        "query": {"match": {"content": pattern}}
+                    }
+                }
+            }
+        else:
+            query = {"query": {"match": {"content": pattern}}}
+
         return self.conn.search(index=self.esindex, body=query)
