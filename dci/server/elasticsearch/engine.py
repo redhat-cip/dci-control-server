@@ -18,7 +18,7 @@ from elasticsearch import Elasticsearch
 
 
 class DCIESEngine(object):
-    def __init__(self, conf, index="global-index"):
+    def __init__(self, conf, index="global"):
         self.esindex = index
         self.conn = Elasticsearch(conf['ES_HOST'], port=conf['ES_PORT'])
 
@@ -28,8 +28,19 @@ class DCIESEngine(object):
 
     def index(self, values):
         return self.conn.index(index=self.esindex, doc_type='log',
-                               id=values['id'], body=values)
+                               id=values['id'], body=values, refresh=True)
 
     def search_content(self, pattern, team_id=None):
-        query = {"query": {"match": {"content": pattern}}}
+        if team_id:
+            query = {
+                "query": {
+                    "filtered": {
+                        "filter": {"match": {"team_id": team_id}},
+                        "query": {"match": {"content": pattern}}
+                    }
+                }
+            }
+        else:
+            query = {"query": {"match": {"content": pattern}}}
+
         return self.conn.search(index=self.esindex, body=query)
