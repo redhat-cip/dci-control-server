@@ -184,7 +184,7 @@ def test_get_jobstate_with_embed(admin, job_id, team_id):
     assert js == js_embed
 
 
-def test_get_jobdefinition_with_embed_not_valid(admin):
+def test_get_jobstate_with_embed_not_valid(admin):
     js = admin.get('/api/v1/jobstates/pname?embed=mdr')
     assert js.status_code == 400
 
@@ -207,3 +207,83 @@ def test_delete_jobstate_by_id(admin, job_id, team_id):
 
     gjs = admin.get(url)
     assert gjs.status_code == 404
+
+# Tests for the isolation
+
+
+def test_create_jobstate_as_user(user, team_user_id, team_id, job_user_id):
+    jobstate = user.post('/api/v1/jobstates',
+                         data={'job_id': job_user_id, 'team_id': team_id,
+                               'comment': 'kikoolol',
+                               'status': 'ongoing'})
+    assert jobstate.status_code == 401
+
+    jobstate = user.post('/api/v1/jobstates',
+                         data={'job_id': job_user_id, 'team_id': team_user_id,
+                               'comment': 'kikoolol',
+                               'status': 'ongoing'})
+    assert jobstate.status_code == 201
+
+
+def test_get_all_jobstates_as_user(user, team_user_id):
+    jobstates = user.get('/api/v1/jobstates')
+    assert jobstates.status_code == 200
+    for jobstate in jobstates.data['jobstates']:
+        assert jobstate['team_id'] == team_user_id
+
+
+def test_get_jobstate_as_user(user, team_user_id, jobstate_id, job_user_id):
+    jobstate = user.get('/api/v1/jobstates/%s' % jobstate_id)
+    assert jobstate.status_code == 404
+
+    jobstate = user.post('/api/v1/jobstates',
+                         data={'job_id': job_user_id, 'team_id': team_user_id,
+                               'comment': 'kikoolol',
+                               'status': 'ongoing'}).data
+    jobstate_id = jobstate['jobstate']['id']
+    jobstate = user.get('/api/v1/jobstates/%s' % jobstate_id)
+    assert jobstate.status_code == 200
+
+
+def test_put_jobstate_as_user(user, team_user_id, jobstate_id, admin,
+                              job_user_id):
+    js_user = user.post('/api/v1/jobstates',
+                        data={'job_id': job_user_id, 'team_id': team_user_id,
+                              'comment': 'kikoolol',
+                              'status': 'ongoing'})
+    js_user_id = js_user.data['jobstate']['id']
+    jobstate = user.get('/api/v1/jobstates/%s' % js_user_id)
+    jobstate_etag = jobstate.headers.get("ETag")
+
+    jobstate_put = user.put('/api/v1/jobstates/%s' % js_user_id,
+                            data={'status': 'success'},
+                            headers={'If-match': jobstate_etag})
+    assert jobstate_put.status_code == 204
+
+    jobstate = admin.get('/api/v1/jobstates/%s' % jobstate_id)
+    jobstate_etag = jobstate.headers.get("ETag")
+    jobstate_put = user.put('/api/v1/jobstates/%s' % jobstate_id,
+                            data={'status': 'succes'},
+                            headers={'If-match': jobstate_etag})
+    assert jobstate_put.status_code == 401
+
+
+def test_delete_jobstate_as_user(user, team_user_id, admin, job_user_id,
+                                 jobstate_id):
+    js_user = user.post('/api/v1/jobstates',
+                        data={'job_id': job_user_id, 'team_id': team_user_id,
+                              'comment': 'kikoolol',
+                              'status': 'ongoing'})
+    js_user_id = js_user.data['jobstate']['id']
+    jobstate = user.get('/api/v1/jobstates/%s' % js_user_id)
+    jobstate_etag = jobstate.headers.get("ETag")
+
+    jobstate_delete = user.delete('/api/v1/jobstates/%s' % js_user_id,
+                                  headers={'If-match': jobstate_etag})
+    assert jobstate_delete.status_code == 204
+
+    jobstate = admin.get('/api/v1/jobstates/%s' % jobstate_id)
+    jobstate_etag = jobstate.headers.get("ETag")
+    jobstate_delete = user.delete('/api/v1/jobstates/%s' % jobstate_id,
+                                  headers={'If-match': jobstate_etag})
+    assert jobstate_delete.status_code == 401
