@@ -51,14 +51,18 @@ def _verify_existence_and_get_job(job_id):
 @auth2.requires_auth()
 def create_jobs(user_info):
     values = schemas.job.post(flask.request.json)
+
+    # If it's not a super admin nor belongs to the same team_id
+    auth2.check_super_admin_or_same_team(user_info, values['team_id'])
+
     etag = utils.gen_etag()
-    values.update(
-        {'id': utils.gen_uuid(),
-         'created_at': datetime.datetime.utcnow().isoformat(),
-         'updated_at': datetime.datetime.utcnow().isoformat(),
-         'etag': etag,
-         'recheck': values.get('recheck', False)}
-    )
+    values.update({
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': etag,
+        'recheck': values.get('recheck', False)
+    })
 
     query = models.JOBS.insert().values(**values)
 
@@ -89,6 +93,9 @@ def get_all_jobs(user_info, jd_id=None):
     if embed:
         query = v1_utils.get_query_with_join(models.JOBS, [models.JOBS],
                                              embed, _VALID_EMBED)
+
+    if user_info.role != auth2.SUPER_ADMIN:
+        query = query.where(models.JOBS.c.team_id == user_info.team)
 
     query = v1_utils.sort_query(query, args['sort'], _JOBS_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.JOBS,
@@ -140,6 +147,9 @@ def get_job_by_id(user_info, jd_id):
         query = v1_utils.get_query_with_join(models.JOBS, [models.JOBS],
                                              embed, _VALID_EMBED)
 
+    if user_info.role != auth2.SUPER_ADMIN:
+        query = query.where(models.JOBS.c.team_id == user_info.team)
+
     query = query.where(models.JOBS.c.id == jd_id)
 
     row = flask.g.db_conn.execute(query).fetchone()
@@ -160,18 +170,15 @@ def get_job_by_id(user_info, jd_id):
 def job_recheck(user_info, j_id):
 
     job_to_recheck = dict(_verify_existence_and_get_job(j_id))
+    auth2.check_super_admin_or_same_team(user_info, job_to_recheck['team_id'])
     etag = utils.gen_etag()
-    values = {
+    values = utils.dict_merge(job_to_recheck, {
         'id': utils.gen_uuid(),
         'created_at': datetime.datetime.utcnow().isoformat(),
         'updated_at': datetime.datetime.utcnow().isoformat(),
         'etag': etag,
         'recheck': True,
-        'team_id': job_to_recheck.get('team_id'),
-        'jobdefinition_id': job_to_recheck.get('jobdefinition_id'),
-        'remoteci_id': job_to_recheck.get('remoteci_id')
-    }
-
+    })
     query = models.JOBS.insert().values(**values)
 
     flask.g.db_conn.execute(query)
@@ -187,11 +194,13 @@ def delete_job_by_id(user_info, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    _verify_existence_and_get_job(jd_id)
+    job = dict(_verify_existence_and_get_job(jd_id))
 
-    query = models.JOBS.delete().where(
-        sqlalchemy.sql.and_(models.JOBS.c.id == jd_id,
-                            models.JOBS.c.etag == if_match_etag))
+    auth2.check_super_admin_or_same_team(user_info, job['team_id'])
+
+    where_clause = sqlalchemy.sql.and_(models.JOBS.c.id == jd_id,
+                                       models.JOBS.c.etag == if_match_etag)
+    query = models.JOBS.delete().where(where_clause)
 
     result = flask.g.db_conn.execute(query)
 
