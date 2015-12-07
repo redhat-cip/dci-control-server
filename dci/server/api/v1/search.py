@@ -24,9 +24,13 @@ from dci.server.common import schemas
 
 @api.route('/search', methods=['POST'])
 @auth2.requires_auth()
-def search():
+def search(user_info):
     values = schemas.search.post(flask.request.json)
 
-    res = flask.g.es_conn.search_content(values['pattern'])
+    if user_info.role != auth2.SUPER_ADMIN:
+        res = flask.g.es_conn.search_content(values['pattern'], user_info.team)
+    else:
+        res = flask.g.es_conn.search_content(values['pattern'])
+
     return flask.Response(json.dumps({'logs': res}), 200,
                           content_type='application/json')
