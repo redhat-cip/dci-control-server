@@ -260,6 +260,9 @@ file = schema_factory(file)
 #                                                                             #
 ###############################################################################
 
-search = {'pattern': six.text_type}
+search = {
+    'pattern': six.text_type,
+    v.Optional('refresh', default=False): bool,
+}
 
 search = schema_factory(search)
