@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import collections
 import flask
 from functools import wraps
 import json
@@ -26,13 +25,7 @@ from dci.server.db import models
 from dci.server import dci_config
 
 
-USER = 0
-ADMIN = 1
-SUPER_ADMIN = 2
-
 UNAUTHORIZED = exc.DCIException('Operation not authorized.', status_code=401)
-
-UserInfo = collections.namedtuple('UserInfo', ['team', 'role'])
 
 
 def hash_password(password):
@@ -50,15 +43,9 @@ def build_auth(username, password):
     user = flask.g.db_conn.execute(query_get_user).fetchone()
     if user is None:
         return None, False
-    roles = {'admin': ADMIN, 'user': USER}
-
     user = dict(user)
-    team = user['team_id']
-    role = (SUPER_ADMIN if team == dci_config.TEAM_ADMIN_ID
-            else roles[user['role']])
 
-    return (UserInfo(team, role),
-            pwd_context.verify(password, user.get('password')))
+    return user, pwd_context.verify(password, user.get('password'))
 
 
 def reject():
@@ -74,27 +61,28 @@ def reject():
                           content_type='application/json')
 
 
-def check_super_admin_or_same_team(user_info, team_id):
-    if user_info.role != SUPER_ADMIN and user_info.team != team_id:
-        raise UNAUTHORIZED
+def is_admin(user, super=False):
+    if super and user['role'] != 'admin':
+        return False
+    return user['team_id'] == dci_config.TEAM_ADMIN_ID
 
 
-def requires_auth(level=USER):
-    def wrapper(f):
-        @wraps(f)
-        def decorated(*args, **kwargs):
-            auth = flask.request.authorization
-            if not auth:
-                return reject()
-            user_info, is_authenticated = build_auth(auth.username,
-                                                     auth.password)
-            if not is_authenticated:
-                return reject()
+def is_admin_user(user, team_id):
+    return user['team_id'] == team_id and user['role'] == 'admin'
 
-            if user_info.role < level:
-                raise UNAUTHORIZED
 
-            return f(user_info, *args, **kwargs)
+def is_in_team(user, team_id):
+    return user['team_id'] == team_id
 
-        return decorated
-    return wrapper
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = flask.request.authorization
+        if not auth:
+            return reject()
+        user, is_authenticated = build_auth(auth.username, auth.password)
+        if not is_authenticated:
+            return reject()
+        return f(user, *args, **kwargs)
+    return decorated
