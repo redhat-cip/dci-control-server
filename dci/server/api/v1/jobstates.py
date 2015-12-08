@@ -45,7 +45,7 @@ def create_jobstates(user_info):
     values = schemas.jobstate.post(flask.request.json)
 
     # If it's not a super admin nor belongs to the same team_id
-    auth2.check_super_admin_or_same_team(user_info, values['team_id'])
+    auth2.check_admin_or_same_team(user_info, values['team_id'])
 
     etag = utils.gen_etag()
     values.update({
@@ -73,7 +73,7 @@ def put_jobstate(user_info, js_id):
 
     jobstate = dict(_verify_existence_and_get_jobstate(js_id))
 
-    auth2.check_super_admin_or_same_team(user_info, jobstate['team_id'])
+    auth2.check_admin_or_same_team(user_info, jobstate['team_id'])
 
     values['etag'] = utils.gen_etag()
     query = models.JOBSTATES.update().where(
@@ -110,15 +110,14 @@ def get_all_jobstates(user_info, j_id=None):
                                              [models.JOBSTATES], embed,
                                              _VALID_EMBED)
 
-    if user_info.role != auth2.SUPER_ADMIN:
-        query = query.where(models.JOBSTATES.c.team_id == user_info.team)
+    if not auth2.is_admin(user_info):
+        query = query.where(models.JOBSTATES.c.team_id == user_info['team_id'])
 
     query = v1_utils.sort_query(query, args['sort'], _JS_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.JOBSTATES,
                                  _JS_COLUMNS)
 
     # used for counting the number of rows when j_id is not None
-    where_j_cond = None
     if j_id is not None:
         where_j_cond = models.JOBSTATES.c.job_id == j_id
         query = query.where(where_j_cond)
@@ -156,8 +155,8 @@ def get_jobstate_by_id(user_info, js_id):
                                              [models.JOBSTATES], embed,
                                              _VALID_EMBED)
 
-    if user_info.role != auth2.SUPER_ADMIN:
-        query = query.where(models.JOBSTATES.c.team_id == user_info.team)
+    if not auth2.is_admin(user_info):
+        query = query.where(models.JOBSTATES.c.team_id == user_info['team_id'])
 
     query = query.where(models.JOBSTATES.c.id == js_id)
 
@@ -182,7 +181,7 @@ def delete_jobstate_by_id(user_info, js_id):
 
     jobstate = dict(_verify_existence_and_get_jobstate(js_id))
 
-    auth2.check_super_admin_or_same_team(user_info, jobstate['team_id'])
+    auth2.check_admin_or_same_team(user_info, jobstate['team_id'])
 
     where_clause = sqlalchemy.sql.and_(
         models.JOBSTATES.c.id == js_id,

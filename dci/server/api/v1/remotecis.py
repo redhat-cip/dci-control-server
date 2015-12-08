@@ -48,7 +48,7 @@ def create_remotecis(user_info):
     values = schemas.remoteci.post(flask.request.json)
 
     # If it's not a super admin nor belongs to the same team_id
-    auth2.check_super_admin_or_same_team(user_info, values.get('team_id'))
+    auth2.check_admin_or_same_team(user_info, values.get('team_id'))
 
     etag = utils.gen_etag()
     values.update({
@@ -82,8 +82,8 @@ def get_all_remotecis(user_info, t_id=None):
         query = v1_utils.get_query_with_join(models.REMOTECIS,
                                              [models.REMOTECIS], embed,
                                              _VALID_EMBED)
-    if user_info.role != auth2.SUPER_ADMIN:
-        query = query.where(models.REMOTECIS.c.team_id == user_info.team)
+    if not auth2.is_admin(user_info):
+        query = query.where(models.REMOTECIS.c.team_id == user_info['team_id'])
 
     query = v1_utils.sort_query(query, args['sort'], _R_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.REMOTECIS,
@@ -126,8 +126,8 @@ def get_remoteci_by_id_or_name(user_info, r_id):
                                              [models.REMOTECIS], embed,
                                              _VALID_EMBED)
 
-    if user_info.role != auth2.SUPER_ADMIN:
-        query = query.where(models.REMOTECIS.c.team_id == user_info.team)
+    if not auth2.is_admin(user_info):
+        query = query.where(models.REMOTECIS.c.team_id == user_info['team_id'])
 
     query = query.where(
         sqlalchemy.sql.or_(models.REMOTECIS.c.id == r_id,
@@ -156,7 +156,7 @@ def put_remoteci(user_info, r_id):
 
     remoteci = dict(_verify_existence_and_get_remoteci(r_id))
 
-    auth2.check_super_admin_or_same_team(user_info, remoteci['team_id'])
+    auth2.check_admin_or_same_team(user_info, remoteci['team_id'])
 
     _verify_existence_and_get_remoteci(r_id)
 
@@ -189,7 +189,7 @@ def delete_remoteci_by_id_or_name(user_info, r_id):
 
     remoteci = dict(_verify_existence_and_get_remoteci(r_id))
 
-    auth2.check_super_admin_or_same_team(user_info, remoteci['team_id'])
+    auth2.check_admin_or_same_team(user_info, remoteci['team_id'])
 
     query = models.REMOTECIS.delete().where(
         sqlalchemy.sql.and_(

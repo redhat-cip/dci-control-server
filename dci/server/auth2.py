@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import collections
 import flask
 from functools import wraps
 import json
@@ -25,14 +24,17 @@ from dci.server.common import exceptions as exc
 from dci.server.db import models_core as models
 from dci.server import dci_config
 
-
+# ACCESS RIGHTS
+# A user of a normal team with 'user' role.
 USER = 0
-ADMIN = 1
-SUPER_ADMIN = 2
+# An admin of a normal team with 'admin' role.
+ADMIN_USER = 1
+# A user of the 'admin' team with 'user' role.
+ADMIN = 2
+# The super admin, belongs to the 'admin' team with the 'admin' role.
+SUPER_ADMIN = 3
 
 UNAUTHORIZED = exc.DCIException('Operation not authorized.', status_code=401)
-
-UserInfo = collections.namedtuple('UserInfo', ['team', 'role'])
 
 
 def hash_password(password):
@@ -50,15 +52,21 @@ def build_auth(username, password):
     user = flask.g.db_conn.execute(query_get_user).fetchone()
     if user is None:
         return None, False
-    roles = {'admin': ADMIN, 'user': USER}
 
     user = dict(user)
-    team = user['team_id']
-    role = (SUPER_ADMIN if team == dci_config.TEAM_ADMIN_ID
-            else roles[user['role']])
 
-    return (UserInfo(team, role),
-            pwd_context.verify(password, user.get('password')))
+    if user['team_id'] == dci_config.TEAM_ADMIN_ID:
+        user_access = ADMIN
+        if user['role'] == 'admin':
+            user_access = SUPER_ADMIN
+    elif user['role'] == 'admin':
+        user_access = ADMIN_USER
+    else:
+        user_access = USER
+
+    user['user_access'] = user_access
+
+    return user, pwd_context.verify(password, user.get('password'))
 
 
 def reject():
@@ -74,9 +82,19 @@ def reject():
                           content_type='application/json')
 
 
-def check_super_admin_or_same_team(user_info, team_id):
-    if user_info.role != SUPER_ADMIN and user_info.team != team_id:
+def check_admin_or_same_team(user, team_id):
+    if user['user_access'] < ADMIN and user['team_id'] != team_id:
         raise UNAUTHORIZED
+
+
+def check_admin_or_admin_user_team(user, team_id):
+    if (user['user_access'] < ADMIN and
+            (user['team_id'] != team_id or user['role'] != 'admin')):
+        raise UNAUTHORIZED
+
+
+def is_admin(user_info):
+    return user_info['user_access'] > ADMIN_USER
 
 
 def requires_auth(level=USER):
@@ -86,15 +104,14 @@ def requires_auth(level=USER):
             auth = flask.request.authorization
             if not auth:
                 return reject()
-            user_info, is_authenticated = build_auth(auth.username,
-                                                     auth.password)
+            user, is_authenticated = build_auth(auth.username, auth.password)
             if not is_authenticated:
                 return reject()
 
-            if user_info.role < level:
+            if user['user_access'] < level:
                 raise UNAUTHORIZED
 
-            return f(user_info, *args, **kwargs)
+            return f(user, *args, **kwargs)
 
         return decorated
     return wrapper

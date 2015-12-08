@@ -53,7 +53,7 @@ def create_jobs(user_info):
     values = schemas.job.post(flask.request.json)
 
     # If it's not a super admin nor belongs to the same team_id
-    auth2.check_super_admin_or_same_team(user_info, values['team_id'])
+    auth2.check_admin_or_same_team(user_info, values['team_id'])
 
     etag = utils.gen_etag()
     values.update({
@@ -94,8 +94,8 @@ def get_all_jobs(user_info, jd_id=None):
         query = v1_utils.get_query_with_join(models.JOBS, [models.JOBS],
                                              embed, _VALID_EMBED)
 
-    if user_info.role != auth2.SUPER_ADMIN:
-        query = query.where(models.JOBS.c.team_id == user_info.team)
+    if not auth2.is_admin(user_info):
+        query = query.where(models.JOBS.c.team_id == user_info['team_id'])
 
     query = v1_utils.sort_query(query, args['sort'], _JOBS_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.JOBS,
@@ -147,8 +147,8 @@ def get_job_by_id(user_info, jd_id):
         query = v1_utils.get_query_with_join(models.JOBS, [models.JOBS],
                                              embed, _VALID_EMBED)
 
-    if user_info.role != auth2.SUPER_ADMIN:
-        query = query.where(models.JOBS.c.team_id == user_info.team)
+    if not auth2.is_admin(user_info):
+        query = query.where(models.JOBS.c.team_id == user_info['team_id'])
 
     query = query.where(models.JOBS.c.id == jd_id)
 
@@ -170,7 +170,7 @@ def get_job_by_id(user_info, jd_id):
 def job_recheck(user_info, j_id):
 
     job_to_recheck = dict(_verify_existence_and_get_job(j_id))
-    auth2.check_super_admin_or_same_team(user_info, job_to_recheck['team_id'])
+    auth2.check_admin_or_same_team(user_info, job_to_recheck['team_id'])
     etag = utils.gen_etag()
     values = utils.dict_merge(job_to_recheck, {
         'id': utils.gen_uuid(),
@@ -196,7 +196,7 @@ def delete_job_by_id(user_info, jd_id):
 
     job = dict(_verify_existence_and_get_job(jd_id))
 
-    auth2.check_super_admin_or_same_team(user_info, job['team_id'])
+    auth2.check_admin_or_same_team(user_info, job['team_id'])
 
     where_clause = sqlalchemy.sql.and_(models.JOBS.c.id == jd_id,
                                        models.JOBS.c.etag == if_match_etag)
