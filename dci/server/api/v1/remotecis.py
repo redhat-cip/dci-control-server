@@ -43,12 +43,14 @@ def _verify_existence_and_get_remoteci(r_id):
 
 
 @api.route('/remotecis', methods=['POST'])
-@auth.requires_auth()
-def create_remotecis(user_info):
+@auth.requires_auth
+def create_remotecis(user):
     values = schemas.remoteci.post(flask.request.json)
 
     # If it's not a super admin nor belongs to the same team_id
-    auth.check_super_admin_or_same_team(user_info, values.get('team_id'))
+    if not(auth.is_admin(user) or
+           auth.is_in_team(user, values.get('team_id'))):
+        raise auth.UNAUTHORIZED
 
     etag = utils.gen_etag()
     values.update({
@@ -70,8 +72,8 @@ def create_remotecis(user_info):
 
 
 @api.route('/remotecis', methods=['GET'])
-@auth.requires_auth()
-def get_all_remotecis(user_info, t_id=None):
+@auth.requires_auth
+def get_all_remotecis(user, t_id=None):
     args = schemas.args(flask.request.args.to_dict())
     # convenient alias
     embed = args['embed']
@@ -82,8 +84,8 @@ def get_all_remotecis(user_info, t_id=None):
         query = v1_utils.get_query_with_join(models.REMOTECIS,
                                              [models.REMOTECIS], embed,
                                              _VALID_EMBED)
-    if user_info.role != auth.SUPER_ADMIN:
-        query = query.where(models.REMOTECIS.c.team_id == user_info.team)
+    if not auth.is_admin(user):
+        query = query.where(models.REMOTECIS.c.team_id == user['team_id'])
 
     query = v1_utils.sort_query(query, args['sort'], _R_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.REMOTECIS,
@@ -112,8 +114,8 @@ def get_all_remotecis(user_info, t_id=None):
 
 
 @api.route('/remotecis/<r_id>', methods=['GET'])
-@auth.requires_auth()
-def get_remoteci_by_id_or_name(user_info, r_id):
+@auth.requires_auth
+def get_remoteci_by_id_or_name(user, r_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
@@ -126,8 +128,8 @@ def get_remoteci_by_id_or_name(user_info, r_id):
                                              [models.REMOTECIS], embed,
                                              _VALID_EMBED)
 
-    if user_info.role != auth.SUPER_ADMIN:
-        query = query.where(models.REMOTECIS.c.team_id == user_info.team)
+    if not auth.is_admin(user):
+        query = query.where(models.REMOTECIS.c.team_id == user['team_id'])
 
     query = query.where(
         sqlalchemy.sql.or_(models.REMOTECIS.c.id == r_id,
@@ -147,8 +149,8 @@ def get_remoteci_by_id_or_name(user_info, r_id):
 
 
 @api.route('/remotecis/<r_id>', methods=['PUT'])
-@auth.requires_auth()
-def put_remoteci(user_info, r_id):
+@auth.requires_auth
+def put_remoteci(user, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -156,7 +158,8 @@ def put_remoteci(user_info, r_id):
 
     remoteci = dict(_verify_existence_and_get_remoteci(r_id))
 
-    auth.check_super_admin_or_same_team(user_info, remoteci['team_id'])
+    if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+        raise auth.UNAUTHORIZED
 
     _verify_existence_and_get_remoteci(r_id)
 
@@ -182,14 +185,15 @@ def put_remoteci(user_info, r_id):
 
 
 @api.route('/remotecis/<r_id>', methods=['DELETE'])
-@auth.requires_auth()
-def delete_remoteci_by_id_or_name(user_info, r_id):
+@auth.requires_auth
+def delete_remoteci_by_id_or_name(user, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     remoteci = dict(_verify_existence_and_get_remoteci(r_id))
 
-    auth.check_super_admin_or_same_team(user_info, remoteci['team_id'])
+    if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+        raise auth.UNAUTHORIZED
 
     query = models.REMOTECIS.delete().where(
         sqlalchemy.sql.and_(
