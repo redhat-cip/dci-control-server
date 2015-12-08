@@ -46,6 +46,17 @@ SQLALCHEMY_MAX_OVERFLOW = 0
 SQLALCHEMY_NATIVE_UNICODE = True
 
 
+# Logging related parameters
+LOG_FORMAT = (
+    '-' * 80 + '\n' +
+    '%(levelname)s at %(asctime)s in %(name)s:\n' +
+    '%(message)s\n' +
+    '-' * 80
+)
+
+LOG_FILE = '/tmp/dci.log'
+
+
 LAST_UPDATED = 'updated_at'
 DATE_CREATED = 'created_at'
 ID_FIELD = 'id'
