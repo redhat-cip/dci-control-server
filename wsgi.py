@@ -18,6 +18,7 @@
 # This file is OpenShift entry point
 
 import dci.server.app
+import dci.server.dci_config
 
-conf = dci.server.app.generate_conf()
+conf = dci.server.dci_config.generate_conf()
 application = dci.server.app.create_app(conf)
