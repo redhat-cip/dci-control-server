@@ -48,12 +48,12 @@ def _verify_existence_and_get_job(job_id):
 
 
 @api.route('/jobs', methods=['POST'])
-@auth2.requires_auth()
-def create_jobs(user_info):
+@auth2.requires_auth
+def create_jobs(user):
     values = schemas.job.post(flask.request.json)
 
     # If it's not a super admin nor belongs to the same team_id
-    auth2.check_super_admin_or_same_team(user_info, values['team_id'])
+    auth2.is_admin_or_in_same_team(user, values['team_id'])
 
     etag = utils.gen_etag()
     values.update({
@@ -74,7 +74,7 @@ def create_jobs(user_info):
 
 
 @api.route('/jobs/schedule', methods=['POST'])
-@auth2.requires_auth()
+@auth2.requires_auth
 def schedule_jobs(user_info):
 
     values = schemas.job_schedule.post(flask.request.json)
@@ -140,8 +140,8 @@ def schedule_jobs(user_info):
 
 
 @api.route('/jobs', methods=['GET'])
-@auth2.requires_auth()
-def get_all_jobs(user_info, jd_id=None):
+@auth2.requires_auth
+def get_all_jobs(user, jd_id=None):
     """Get all jobs.
 
     If jd_id is not None, then return all the jobs with a jobdefinition
@@ -160,8 +160,8 @@ def get_all_jobs(user_info, jd_id=None):
         query = v1_utils.get_query_with_join(models.JOBS, [models.JOBS],
                                              embed, _VALID_EMBED)
 
-    if user_info.role != auth2.SUPER_ADMIN:
-        query = query.where(models.JOBS.c.team_id == user_info.team)
+    if not auth2.is_admin(user):
+        query = query.where(models.JOBS.c.team_id == user['team_id'])
 
     query = v1_utils.sort_query(query, args['sort'], _JOBS_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.JOBS,
@@ -192,15 +192,15 @@ def get_all_jobs(user_info, jd_id=None):
 
 
 @api.route('/jobs/<j_id>/jobstates', methods=['GET'])
-@auth2.requires_auth()
-def get_jobstates_by_job(user_info, j_id):
+@auth2.requires_auth
+def get_jobstates_by_job(user, j_id):
     _verify_existence_and_get_job(j_id)
     return jobstates.get_all_jobstates(j_id=j_id)
 
 
 @api.route('/jobs/<jd_id>', methods=['GET'])
-@auth2.requires_auth()
-def get_job_by_id(user_info, jd_id):
+@auth2.requires_auth
+def get_job_by_id(user, jd_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
@@ -213,8 +213,8 @@ def get_job_by_id(user_info, jd_id):
         query = v1_utils.get_query_with_join(models.JOBS, [models.JOBS],
                                              embed, _VALID_EMBED)
 
-    if user_info.role != auth2.SUPER_ADMIN:
-        query = query.where(models.JOBS.c.team_id == user_info.team)
+    if not auth2.is_admin(user):
+        query = query.where(models.JOBS.c.team_id == user['team_id'])
 
     query = query.where(models.JOBS.c.id == jd_id)
 
@@ -232,11 +232,11 @@ def get_job_by_id(user_info, jd_id):
 
 
 @api.route('/jobs/<j_id>/recheck', methods=['POST'])
-@auth2.requires_auth()
-def job_recheck(user_info, j_id):
+@auth2.requires_auth
+def job_recheck(user, j_id):
 
     job_to_recheck = dict(_verify_existence_and_get_job(j_id))
-    auth2.check_super_admin_or_same_team(user_info, job_to_recheck['team_id'])
+    auth2.is_admin_or_in_same_team(user, job_to_recheck['team_id'])
     etag = utils.gen_etag()
     values = utils.dict_merge(job_to_recheck, {
         'id': utils.gen_uuid(),
@@ -255,14 +255,14 @@ def job_recheck(user_info, j_id):
 
 
 @api.route('/jobs/<jd_id>', methods=['DELETE'])
-@auth2.requires_auth()
-def delete_job_by_id(user_info, jd_id):
+@auth2.requires_auth
+def delete_job_by_id(user, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     job = dict(_verify_existence_and_get_job(jd_id))
 
-    auth2.check_super_admin_or_same_team(user_info, job['team_id'])
+    auth2.is_admin_or_in_same_team(user, job['team_id'])
 
     where_clause = sqlalchemy.sql.and_(models.JOBS.c.id == jd_id,
                                        models.JOBS.c.etag == if_match_etag)
