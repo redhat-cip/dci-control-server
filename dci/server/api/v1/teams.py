@@ -41,9 +41,12 @@ def _verify_existence_and_get_team(t_id):
 
 
 @api.route('/teams', methods=['POST'])
-@auth.requires_auth(auth.SUPER_ADMIN)
-def create_teams(user_info):
+@auth.requires_auth
+def create_teams(user):
     values = schemas.team.post(flask.request.json)
+
+    if not auth.is_admin(user):
+        raise auth.UNAUTHORIZED
 
     etag = utils.gen_etag()
     values.update({
@@ -64,8 +67,8 @@ def create_teams(user_info):
 
 
 @api.route('/teams', methods=['GET'])
-@auth.requires_auth()
-def get_all_teams(user_info):
+@auth.requires_auth
+def get_all_teams(user):
     args = schemas.args(flask.request.args.to_dict())
 
     query = sqlalchemy.sql.select([models.TEAMS])
@@ -76,8 +79,8 @@ def get_all_teams(user_info):
     if args['offset'] is not None:
         query = query.offset(args['offset'])
 
-    if user_info.role != auth.SUPER_ADMIN:
-        query = query.where(models.TEAMS.c.id == user_info.team)
+    if not auth.is_admin(user):
+        query = query.where(models.TEAMS.c.id == user['team_id'])
 
     query = v1_utils.sort_query(query, args['sort'], _T_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.TEAMS,
@@ -94,8 +97,8 @@ def get_all_teams(user_info):
 
 
 @api.route('/teams/<t_id>', methods=['GET'])
-@auth.requires_auth()
-def get_team_by_id_or_name(user_info, t_id):
+@auth.requires_auth
+def get_team_by_id_or_name(user, t_id):
     where_clause = sqlalchemy.sql.or_(models.TEAMS.c.id == t_id,
                                       models.TEAMS.c.name == t_id)
     query = (sqlalchemy.sql
@@ -107,7 +110,8 @@ def get_team_by_id_or_name(user_info, t_id):
         raise exceptions.DCIException("Team '%s' not found." % t_id,
                                       status_code=404)
     team = dict(team)
-    auth.check_super_admin_or_same_team(user_info, team['id'])
+    if not(auth.is_admin(user) or auth.is_in_team(user, team['id'])):
+        raise auth.UNAUTHORIZED
 
     etag = team['etag']
     team = json.dumps({'team': team}, default=utils.json_encoder)
@@ -116,21 +120,21 @@ def get_team_by_id_or_name(user_info, t_id):
 
 
 @api.route('/teams/<team_id>/remotecis', methods=['GET'])
-@auth.requires_auth()
-def get_remotecis_by_team(user_info, team_id):
+@auth.requires_auth
+def get_remotecis_by_team(user, team_id):
     team = _verify_existence_and_get_team(team_id)
     return remotecis.get_all_remotecis(team['id'])
 
 
 @api.route('/teams/<t_id>', methods=['PUT'])
-@auth.requires_auth(auth.ADMIN)
-def put_team(user_info, t_id):
+@auth.requires_auth
+def put_team(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     values = schemas.team.put(flask.request.json)
 
-    if user_info.role != auth.SUPER_ADMIN and user_info.team != t_id:
+    if not(auth.is_admin(user) or auth.is_admin_user(user, t_id)):
         raise auth.UNAUTHORIZED
 
     _verify_existence_and_get_team(t_id)
@@ -153,10 +157,13 @@ def put_team(user_info, t_id):
 
 
 @api.route('/teams/<ct_id>', methods=['DELETE'])
-@auth.requires_auth(auth.SUPER_ADMIN)
-def delete_team_by_id_or_name(user_info, ct_id):
+@auth.requires_auth
+def delete_team_by_id_or_name(user, ct_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    if not auth.is_admin(user):
+        raise auth.UNAUTHORIZED
 
     _verify_existence_and_get_team(ct_id)
 
