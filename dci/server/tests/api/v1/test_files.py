@@ -248,31 +248,35 @@ def test_get_file_as_user(user, team_user_id, file_id, jobstate_user_id):
     assert file.status_code == 200
 
 
-def test_put_file_as_user(user, team_user_id, file_id, admin,
+def test_put_file_as_user(user, team_user_id, team_admin_id, file_id, admin,
                           jobstate_user_id):
-    js_user = user.post('/api/v1/files',
-                        data={'jobstate_id': jobstate_user_id,
-                              'team_id': team_user_id,
-                              'content': 'kikoolol', 'name': 'name'})
-    js_user_id = js_user.data['file']['id']
-    file = user.get('/api/v1/files/%s' % js_user_id)
-    file_etag = file.headers.get("ETag")
+    file_user = user.post('/api/v1/files',
+                          data={'jobstate_id': jobstate_user_id,
+                                'team_id': team_user_id,
+                                'content': 'kikoolol', 'name': 'name'})
+    file_user_id = file_user.data['file']['id']
+    file_user = user.get('/api/v1/files/%s' % file_user_id)
+    file_user_etag = file_user.headers.get("ETag")
 
-    file_put = user.put('/api/v1/files/%s' % js_user_id,
+    file_put = user.put('/api/v1/files/%s' % file_user_id,
                         data={'jobstate_id': jobstate_user_id,
                               'team_id': team_user_id,
                               'content': 'kikoolol2', 'name': 'name2'},
-                        headers={'If-match': file_etag})
+                        headers={'If-match': file_user_etag})
     assert file_put.status_code == 204
 
-    file = admin.get('/api/v1/files/%s' % file_id)
-    file_etag = file.headers.get("ETag")
-    file_put = user.put('/api/v1/files/%s' % file_id,
-                        data={'jobstate_id': jobstate_user_id,
-                              'team_id': team_user_id,
-                              'content': 'kikoolol2', 'name': 'name2'},
-                        headers={'If-match': file_etag})
-    assert file_put.status_code == 401
+    file_admin = admin.post('/api/v1/files',
+                            data={'jobstate_id': jobstate_user_id,
+                                  'team_id': team_admin_id,
+                                  'content': 'kikoolol', 'name': 'name'})
+    file_admin_id = file_admin.data['file']['id']
+    file_admin_etag = file_admin.headers.get("ETag")
+    file_admin_put = user.put('/api/v1/files/%s' % file_admin_id,
+                              data={'jobstate_id': jobstate_user_id,
+                                    'team_id': team_user_id,
+                                    'content': 'kikoolol2', 'name': 'name2'},
+                              headers={'If-match': file_admin_etag})
+    assert file_admin_put.status_code == 401
 
 
 def test_delete_file_as_user(user, team_user_id, admin, jobstate_user_id,
