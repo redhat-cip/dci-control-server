@@ -46,7 +46,7 @@ def _verify_existence_and_get_jd(jd_id):
 
 @api.route('/jobdefinitions', methods=['POST'])
 @auth2.requires_auth()
-def create_jobdefinitions(user_info):
+def create_jobdefinitions(user):
     etag = utils.gen_etag()
     data_json = schemas.jobdefinition.post(flask.request.json)
     data_json.update({
@@ -67,7 +67,7 @@ def create_jobdefinitions(user_info):
 
 @api.route('/jobdefinitions', methods=['GET'])
 @auth2.requires_auth()
-def get_all_jobdefinitions(user_info, t_id=None):
+def get_all_jobdefinitions(user, t_id=None):
     """Get all jobdefinitions.
 
     If t_id is not None, then return all the jobdefinitions with a test
@@ -120,7 +120,7 @@ def get_all_jobdefinitions(user_info, t_id=None):
 
 @api.route('/jobdefinitions/<jd_id>', methods=['GET'])
 @auth2.requires_auth()
-def get_jobdefinition_by_id_or_name(user_info, jd_id):
+def get_jobdefinition_by_id_or_name(user, jd_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
@@ -155,7 +155,7 @@ def get_jobdefinition_by_id_or_name(user_info, jd_id):
 
 @api.route('/jobdefinitions/<jd_id>', methods=['DELETE'])
 @auth2.requires_auth()
-def delete_jobdefinition_by_id_or_name(user_info, jd_id):
+def delete_jobdefinition_by_id_or_name(user, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -181,7 +181,7 @@ def delete_jobdefinition_by_id_or_name(user_info, jd_id):
 
 @api.route('/jobdefinitions/<jd_id>/components', methods=['POST'])
 @auth2.requires_auth()
-def add_component_to_jobdefinitions(user_info, jd_id):
+def add_component_to_jobdefinitions(user, jd_id):
     data_json = flask.request.json
     values = {'jobdefinition_id': jd_id,
               'component_id': data_json.get('component_id', None)}
@@ -195,7 +195,7 @@ def add_component_to_jobdefinitions(user_info, jd_id):
 
 @api.route('/jobdefinitions/<jd_id>/components', methods=['GET'])
 @auth2.requires_auth()
-def get_all_components_from_jobdefinitions(user_info, jd_id):
+def get_all_components_from_jobdefinitions(user, jd_id):
     _verify_existence_and_get_jd(jd_id)
 
     # Get all components which belongs to a given jobdefinition
@@ -212,7 +212,7 @@ def get_all_components_from_jobdefinitions(user_info, jd_id):
 
 @api.route('/jobdefinitions/<jd_id>/components/<c_id>', methods=['DELETE'])
 @auth2.requires_auth()
-def delete_component_from_jobdefinition(user_info, jd_id, c_id):
+def delete_component_from_jobdefinition(user, jd_id, c_id):
     _verify_existence_and_get_jd(jd_id)
 
     JDC = models.JOIN_JOBDEFINITIONS_COMPONENTS

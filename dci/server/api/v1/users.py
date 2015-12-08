@@ -47,11 +47,11 @@ def _verify_existence_and_get_user(user_id):
 
 
 @api.route('/users', methods=['POST'])
-@auth2.requires_auth(auth2.ADMIN)
-def create_users(user_info):
+@auth2.requires_auth()
+def create_users(user):
     values = schemas.user.post(flask.request.json)
 
-    auth2.check_super_admin_or_same_team(user_info, values['team_id'])
+    auth2.is_admin_or_admin_user_in_same_team(user, values['team_id'])
 
     etag = utils.gen_etag()
     password_hash = auth2.hash_password(values.get('password'))
@@ -78,15 +78,15 @@ def create_users(user_info):
 
 @api.route('/users', methods=['GET'])
 @auth2.requires_auth()
-def get_all_users(user_info, team_id=None):
+def get_all_users(user, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
     query = sqlalchemy.sql.select(_SELECT_WITHOUT_PASSWORD)
 
     #  If it's not an admin, then get only the users of the caller's team
-    if user_info.role != auth2.SUPER_ADMIN:
-        query = query.where(models.USERS.c.team_id == user_info.team)
+    if not auth2.is_admin(user):
+        query = query.where(models.USERS.c.team_id == user['team_id'])
 
     # if embed then construct the query with a join
     if embed:
@@ -121,7 +121,7 @@ def get_all_users(user_info, team_id=None):
 
 @api.route('/users/<user_id>', methods=['GET'])
 @auth2.requires_auth()
-def get_user_by_id_or_name(user_info, user_id):
+def get_user_by_id_or_name(user, user_id):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
@@ -129,8 +129,8 @@ def get_user_by_id_or_name(user_info, user_id):
     query = sqlalchemy.sql.select(_SELECT_WITHOUT_PASSWORD)
 
     # If it's not an admin, then get only the users of the caller's team
-    if user_info.role != auth2.SUPER_ADMIN:
-        query = query.where(models.USERS.c.team_id == user_info.team)
+    if not auth2.is_admin(user):
+        query = query.where(models.USERS.c.team_id == user['team_id'])
 
     if embed:
         query = v1_utils.get_query_with_join(models.USERS,
@@ -141,29 +141,29 @@ def get_user_by_id_or_name(user_info, user_id):
                                            models.USERS.c.name == user_id))
 
     row = flask.g.db_conn.execute(query).fetchone()
-    user = v1_utils.group_embedded_resources(embed, row)
+    guser = v1_utils.group_embedded_resources(embed, row)
 
     if row is None:
         raise dci_exc.DCIException("User '%s' not found." % user_id,
                                    status_code=404)
 
-    etag = user['etag']
-    user = json.dumps({'user': user}, default=utils.json_encoder)
-    return flask.Response(user, 200, headers={'ETag': etag},
+    etag = guser['etag']
+    guser = json.dumps({'user': guser}, default=utils.json_encoder)
+    return flask.Response(guser, 200, headers={'ETag': etag},
                           content_type='application/json')
 
 
 @api.route('/users/<user_id>', methods=['PUT'])
-@auth2.requires_auth(auth2.ADMIN)
-def put_user(user_info, user_id):
+@auth2.requires_auth()
+def put_user(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.user.put(flask.request.json)
 
-    user = dict(_verify_existence_and_get_user(user_id))
+    puser = dict(_verify_existence_and_get_user(user_id))
 
-    # If the user's not an admin, then he is not allowed to update a user
-    auth2.check_super_admin_or_same_team(user_info, user['team_id'])
+    if puser['team_id'] != user['team_id']:
+        auth2.is_admin_or_admin_user_in_same_team(user, puser['team_id'])
 
     # TODO(yassine): if the user wants to change the team, then check its done
     # by a super admin. ie. team=dci_config.TEAM_ADMIN_ID.
@@ -191,15 +191,14 @@ def put_user(user_info, user_id):
 
 
 @api.route('/users/<user_id>', methods=['DELETE'])
-@auth2.requires_auth(auth2.ADMIN)
-def delete_user_by_id_or_name(user_info, user_id):
+@auth2.requires_auth()
+def delete_user_by_id_or_name(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    user = _verify_existence_and_get_user(user_id)
+    duser = _verify_existence_and_get_user(user_id)
 
-    # If the user's not an admin, then he is not allowed to create a new user
-    auth2.check_super_admin_or_same_team(user_info, user['team_id'])
+    auth2.is_admin_or_admin_user_in_same_team(user, duser['team_id'])
 
     query = models.USERS.delete().where(
         sqlalchemy.sql.and_(
