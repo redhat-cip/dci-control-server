@@ -14,12 +14,15 @@
 
 'use strict';
 
+var conf = require('conf');
+
 require('app')
+
 .constant('apiURLS', {
-  JOBS: '/api/v1/jobs/',
-  REMOTECIS: '/api/v1/remotecis/',
-  JOBSTATES: '/api/v1/jobstates/',
-  FILES: '/api/v1/files/'
+  JOBS: conf.apiURL + '/api/v1/jobs/',
+  REMOTECIS: conf.apiURL + '/api/v1/remotecis/',
+  JOBSTATES: conf.apiURL + '/api/v1/jobstates/',
+  FILES: conf.apiURL + '/api/v1/files/'
 })
 .factory('api', ['_', '$q', '$http', 'apiURLS', function(_, $q, $http, urls) {
 
