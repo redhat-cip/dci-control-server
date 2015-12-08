@@ -20,6 +20,8 @@ from dci.server.common import exceptions
 from dci.server.elasticsearch import engine as es_engine
 
 import flask
+import logging
+
 from sqlalchemy import exc as sa_exc
 
 from dci.dci_databrowser import dci_databrowser
@@ -69,6 +71,21 @@ def create_app(conf):
     dci_config.TEAM_ADMIN_ID = dci_config.get_team_admin_id()
 
     dci_app = DciControlServer(conf)
+
+    # Logging support
+    loggers = [dci_app.logger, logging.getLogger('sqlalchemy'),
+               logging.getLogger('werkzeug')]
+    for logger in loggers:
+        format = (conf['DEBUG_LOG_FORMAT'] if conf['DEBUG']
+                  else conf['PROD_LOG_FORMAT'])
+
+        handler = (logging.StreamHandler() if conf['DEBUG']
+                   else logging.FileHandler(conf['LOG_FILE']))
+        handler.setFormatter(logging.Formatter(format))
+
+        logger.setLevel(logging.INFO if conf['DEBUG'] else logging.WARN)
+        logger.addHandler(handler)
+
 
     @dci_app.before_request
     def before_request():
