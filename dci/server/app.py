@@ -28,7 +28,10 @@ from dci.server import eve_model
 from eve import Eve
 from eve_sqlalchemy import SQL
 from eve_sqlalchemy.validation import ValidatorSQL
+
 import flask
+import logging
+
 from sqlalchemy import exc as sa_exc
 from sqlalchemy.sql import text
 
@@ -229,6 +232,16 @@ def create_app(conf):
 
     dci_app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
                                auth=basic_auth, settings=conf)
+
+    # Logging support
+    loggers = [dci_app.logger, logging.getLogger('sqlalchemy'),
+               logging.getLogger('werkzeug')]
+    for logger in loggers:
+        logger.setLevel(logging.INFO if conf['DEBUG'] else logging.WARN)
+        handler = (logging.StreamHandler() if conf['DEBUG']
+                   else logging.FileHandler(conf['LOG_FILE']))
+        handler.setFormatter(logging.Formatter(conf['LOG_FORMAT']))
+        logger.addHandler(handler)
 
     dci_app.engine = dci_config.get_engine(conf)
     dci_app.es_engine = es_engine.DCIESEngine(conf)
