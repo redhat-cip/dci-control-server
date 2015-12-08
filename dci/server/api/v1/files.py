@@ -43,12 +43,13 @@ def _verify_existence_and_get_file(js_id):
 
 
 @api.route('/files', methods=['POST'])
-@auth.requires_auth()
-def create_files(user_info):
+@auth.requires_auth
+def create_files(user):
     values = schemas.file.post(flask.request.json)
 
-    # If it's not a super admin nor belongs to the same team_id
-    auth.check_super_admin_or_same_team(user_info, values.get('team_id'))
+    # If it's an admin or belongs to the same team
+    if not (auth.is_admin(user) or auth.is_in_team(values.get('team_id'))):
+        raise auth.UNAUTHORIZED
 
     etag = utils.gen_etag()
     values.update({
@@ -68,8 +69,8 @@ def create_files(user_info):
 
 
 @api.route('/files/<file_id>', methods=['PUT'])
-@auth.requires_auth()
-def put_file(user_info, file_id):
+@auth.requires_auth
+def put_file(user, file_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -77,7 +78,9 @@ def put_file(user_info, file_id):
 
     file = dict(_verify_existence_and_get_file(file_id))
 
-    auth.check_super_admin_or_same_team(user_info, file['team_id'])
+    # If it's an admin or belongs to the same team
+    if not(auth.is_admin or auth.is_in_team(user, file['team_id'])):
+        raise auth.UNAUTHORIZED
 
     values['etag'] = utils.gen_etag()
     where_clause = sqlalchemy.sql.and_(models.FILES.c.id == file_id,
@@ -95,8 +98,8 @@ def put_file(user_info, file_id):
 
 
 @api.route('/files', methods=['GET'])
-@auth.requires_auth()
-def get_all_files(user_info):
+@auth.requires_auth
+def get_all_files(user):
     """Get all files.
     """
     args = schemas.args(flask.request.args.to_dict())
@@ -112,8 +115,9 @@ def get_all_files(user_info):
         query = v1_utils.get_query_with_join(models.FILES, [models.FILES],
                                              embed, _VALID_EMBED)
 
-    if user_info.role != auth.SUPER_ADMIN:
-        query = query.where(models.FILES.c.team_id == user_info.team)
+    # If it's not an admin then restrict the view to the team's file
+    if not auth.is_admin(user):
+        query = query.where(models.FILES.c.team_id == user['team_id'])
 
     query = v1_utils.sort_query(query, args['sort'], _FILES_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.FILES,
@@ -138,8 +142,8 @@ def get_all_files(user_info):
 
 
 @api.route('/files/<file_id>', methods=['GET'])
-@auth.requires_auth()
-def get_file_by_id_or_name(user_info, file_id):
+@auth.requires_auth
+def get_file_by_id_or_name(user, file_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
@@ -151,8 +155,8 @@ def get_file_by_id_or_name(user_info, file_id):
         query = v1_utils.get_query_with_join(models.FILES, [models.FILES],
                                              embed, _VALID_EMBED)
 
-    if user_info.role != auth.SUPER_ADMIN:
-        query = query.where(models.FILES.c.team_id == user_info.team)
+    if not auth.is_admin(user):
+        query = query.where(models.FILES.c.team_id == user['team_id'])
 
     query = query.where(
         sqlalchemy.sql.or_(models.FILES.c.id == file_id,
@@ -171,14 +175,15 @@ def get_file_by_id_or_name(user_info, file_id):
 
 
 @api.route('/files/<file_id>', methods=['DELETE'])
-@auth.requires_auth()
-def delete_file_by_id(user_info, file_id):
+@auth.requires_auth
+def delete_file_by_id(user, file_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     file = dict(_verify_existence_and_get_file(file_id))
 
-    auth.check_super_admin_or_same_team(user_info, file['team_id'])
+    if not(auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
+        raise auth.UNAUTHORIZED
 
     query = models.FILES.delete().where(
         sqlalchemy.sql.and_(
