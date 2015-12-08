@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_da68d289",
+        "filename": "dci/server/auth2.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-08T17:56:52Z",
+      "side": 0,
+      "message": "why removing this instead of adding an access attribute, dictionaries contains too more not needed informations",
+      "revId": "8fbe56abd2bea2dab66af7b26fdbf8b57bf85f39",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}

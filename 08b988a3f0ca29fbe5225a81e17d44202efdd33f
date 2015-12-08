@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_3a0f9ee3",
+        "filename": "dci/server/auth2.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-08T17:56:52Z",
+      "side": 1,
+      "message": "maybe this function and the following can be merged with a third parameters, admin\u003dFalse",
+      "revId": "08b988a3f0ca29fbe5225a81e17d44202efdd33f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_7a0526c1",
+        "filename": "dci/server/auth2.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-08T17:56:52Z",
+      "side": 1,
+      "message": "bad indent",
+      "revId": "08b988a3f0ca29fbe5225a81e17d44202efdd33f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
