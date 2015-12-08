@@ -41,8 +41,8 @@ def _verify_existence_and_get_c(c_id):
 
 
 @api.route('/components', methods=['POST'])
-@auth.requires_auth()
-def create_components(user_info):
+@auth.requires_auth
+def create_components(user):
     etag = utils.gen_etag()
     values = schemas.component.post(flask.request.json)
     values.update({'id': utils.gen_uuid(),
@@ -60,8 +60,8 @@ def create_components(user_info):
 
 
 @api.route('/components', methods=['GET'])
-@auth.requires_auth()
-def get_all_components(user_info, ct_id=None):
+@auth.requires_auth
+def get_all_components(user, ct_id=None):
     """Get all components.
 
     If ct_id is not None, then return all the components with a type
@@ -111,8 +111,8 @@ def get_all_components(user_info, ct_id=None):
 
 
 @api.route('/components/<c_id>', methods=['GET'])
-@auth.requires_auth()
-def get_component_by_id_or_name(user_info, c_id):
+@auth.requires_auth
+def get_component_by_id_or_name(user, c_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
@@ -144,8 +144,8 @@ def get_component_by_id_or_name(user_info, c_id):
 
 
 @api.route('/components/<c_id>', methods=['DELETE'])
-@auth.requires_auth()
-def delete_component_by_id_or_name(user_info, c_id):
+@auth.requires_auth
+def delete_component_by_id_or_name(user, c_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
