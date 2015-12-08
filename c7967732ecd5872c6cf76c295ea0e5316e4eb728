@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_1af65ad8",
+        "filename": "dci/server/api/v1/jobs.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-08T18:06:17Z",
+      "side": 1,
+      "message": "not sure of the utility of this one",
+      "revId": "c7967732ecd5872c6cf76c295ea0e5316e4eb728",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_faf836c6",
+        "filename": "dci/server/api/v1/jobs.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-08T18:06:17Z",
+      "side": 1,
+      "message": "use single quotes",
+      "revId": "c7967732ecd5872c6cf76c295ea0e5316e4eb728",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
