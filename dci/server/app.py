@@ -204,7 +204,6 @@ class DciControlServer(Eve):
         self.on_fetched_resource_remotecis += DciControlServer.\
             get_remotecis_extra
 
-        self.register_blueprint(dci_databrowser)
         load_docs(self)
 
 
@@ -251,5 +250,6 @@ def create_app(conf):
 
     # Registering REST API v1
     dci_app.register_blueprint(api_v1.api, url_prefix='/api/v1')
+    dci_app.register_blueprint(dci_databrowser)
 
     return dci_app
