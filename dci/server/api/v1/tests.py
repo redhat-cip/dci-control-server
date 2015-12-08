@@ -42,8 +42,8 @@ def _verify_existence_and_get_t(t_id):
 
 
 @api.route('/tests', methods=['POST'])
-@auth2.requires_auth()
-def create_tests(user_info):
+@auth2.requires_auth
+def create_tests(user):
     etag = utils.gen_etag()
     data_json = schemas.test.post(flask.request.json)
     data_json.update({
@@ -63,8 +63,8 @@ def create_tests(user_info):
 
 
 @api.route('/tests', methods=['GET'])
-@auth2.requires_auth()
-def get_all_tests(user_info):
+@auth2.requires_auth
+def get_all_tests(user):
     args = schemas.args(flask.request.args.to_dict())
 
     query = sqlalchemy.sql.select([models.TESTS])
@@ -91,8 +91,8 @@ def get_all_tests(user_info):
 
 
 @api.route('/tests/<t_id>', methods=['GET'])
-@auth2.requires_auth()
-def get_test_by_id_or_name(user_info, t_id):
+@auth2.requires_auth
+def get_test_by_id_or_name(user, t_id):
     test = _verify_existence_and_get_t(t_id)
     etag = test['etag']
     test = {'test': dict(test)}
@@ -102,15 +102,15 @@ def get_test_by_id_or_name(user_info, t_id):
 
 
 @api.route('/tests/<t_id>/jobdefinitions', methods=['GET'])
-@auth2.requires_auth()
-def get_jobdefinitions_by_test(user_info, test_id):
+@auth2.requires_auth
+def get_jobdefinitions_by_test(user, test_id):
     test = _verify_existence_and_get_t(test_id)
     return jobdefinitions.get_all_jobdefinitions(test['id'])
 
 
 @api.route('/tests/<t_id>', methods=['PUT'])
-@auth2.requires_auth()
-def put_test(user_info, t_id):
+@auth2.requires_auth
+def put_test(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     data_json = schemas.test.put(flask.request.json)
@@ -136,8 +136,8 @@ def put_test(user_info, t_id):
 
 
 @api.route('/tests/<t_id>', methods=['DELETE'])
-@auth2.requires_auth()
-def delete_test_by_id_or_name(user_info, t_id):
+@auth2.requires_auth
+def delete_test_by_id_or_name(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
