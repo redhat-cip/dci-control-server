@@ -71,6 +71,23 @@ class DciControlServer(Eve):
         self._db.Model = DciControlServer._DCI_MODEL.Base
         self._init_hooks()
 
+    def make_default_options_response(self):
+        resp = super(DciControlServer, self).make_default_options_response()
+        methods = ['GET', 'POST', 'PUT', 'DELETE']
+        headers = resp.headers
+
+        headers.add_header('Access-Control-Allow-Methods', ', '.join(methods))
+        headers.add_header('Access-Control-Allow-Headers',
+                           self.settings['X_HEADERS'])
+        return resp
+
+    def process_response(self, resp):
+        headers = resp.headers
+        headers.add_header('Access-Control-Allow-Origin',
+                           self.settings['X_DOMAINS'])
+
+        return super(DciControlServer, self).process_response(resp)
+
     @staticmethod
     def pick_jobs(documents):
         picked_job = documents[0]

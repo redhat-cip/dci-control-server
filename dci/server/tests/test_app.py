@@ -17,6 +17,25 @@
 from dci.server.tests import utils
 
 
+def test_cors_preflight(admin):
+    headers = {
+        'Origin': 'http://foo.example',
+        'Access-Control-Request-Method': 'POST',
+        'Access-Control-Request-Headers': 'Authorization'
+    }
+    resp = admin.options(headers=headers)
+    headers = resp.headers
+    assert resp.status_code == 200
+    assert headers['Access-Control-Allow-Headers'] == 'Authorization'
+    assert headers['Access-Control-Allow-Origin'] == '*'
+    assert headers['Access-Control-Allow-Methods'] == 'GET, POST, PUT, DELETE'
+
+
+def test_cors_headers(admin):
+    resp = admin.get('/api/v1/jobs')
+    assert resp.headers['Access-Control-Allow-Origin'] == '*'
+
+
 class TestAdmin(object):
 
     def test_post_component_item(self, admin):
