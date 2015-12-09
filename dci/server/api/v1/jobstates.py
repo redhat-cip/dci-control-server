@@ -22,11 +22,11 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
-from dci.server import auth2
+from dci.server import auth
 from dci.server.common import exceptions as dci_exc
 from dci.server.common import schemas
 from dci.server.common import utils
-from dci.server.db import models_core as models
+from dci.server.db import models
 
 # associate column names with the corresponding SA Column object
 _JS_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBSTATES)
@@ -40,12 +40,12 @@ def _verify_existence_and_get_jobstate(js_id):
 
 
 @api.route('/jobstates', methods=['POST'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def create_jobstates(user_info):
     values = schemas.jobstate.post(flask.request.json)
 
     # If it's not a super admin nor belongs to the same team_id
-    auth2.check_super_admin_or_same_team(user_info, values['team_id'])
+    auth.check_super_admin_or_same_team(user_info, values['team_id'])
 
     etag = utils.gen_etag()
     values.update({
@@ -65,7 +65,7 @@ def create_jobstates(user_info):
 
 
 @api.route('/jobstates/<js_id>', methods=['PUT'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def put_jobstate(user_info, js_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -73,7 +73,7 @@ def put_jobstate(user_info, js_id):
 
     jobstate = dict(_verify_existence_and_get_jobstate(js_id))
 
-    auth2.check_super_admin_or_same_team(user_info, jobstate['team_id'])
+    auth.check_super_admin_or_same_team(user_info, jobstate['team_id'])
 
     values['etag'] = utils.gen_etag()
     query = models.JOBSTATES.update().where(
@@ -92,7 +92,7 @@ def put_jobstate(user_info, js_id):
 
 
 @api.route('/jobstates', methods=['GET'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def get_all_jobstates(user_info, j_id=None):
     """Get all jobstates.
     """
@@ -110,7 +110,7 @@ def get_all_jobstates(user_info, j_id=None):
                                              [models.JOBSTATES], embed,
                                              _VALID_EMBED)
 
-    if user_info.role != auth2.SUPER_ADMIN:
+    if user_info.role != auth.SUPER_ADMIN:
         query = query.where(models.JOBSTATES.c.team_id == user_info.team)
 
     query = v1_utils.sort_query(query, args['sort'], _JS_COLUMNS)
@@ -142,7 +142,7 @@ def get_all_jobstates(user_info, j_id=None):
 
 
 @api.route('/jobstates/<js_id>', methods=['GET'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def get_jobstate_by_id(user_info, js_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
@@ -156,7 +156,7 @@ def get_jobstate_by_id(user_info, js_id):
                                              [models.JOBSTATES], embed,
                                              _VALID_EMBED)
 
-    if user_info.role != auth2.SUPER_ADMIN:
+    if user_info.role != auth.SUPER_ADMIN:
         query = query.where(models.JOBSTATES.c.team_id == user_info.team)
 
     query = query.where(models.JOBSTATES.c.id == js_id)
@@ -175,14 +175,14 @@ def get_jobstate_by_id(user_info, js_id):
 
 
 @api.route('/jobstates/<js_id>', methods=['DELETE'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def delete_jobstate_by_id(user_info, js_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     jobstate = dict(_verify_existence_and_get_jobstate(js_id))
 
-    auth2.check_super_admin_or_same_team(user_info, jobstate['team_id'])
+    auth.check_super_admin_or_same_team(user_info, jobstate['team_id'])
 
     where_clause = sqlalchemy.sql.and_(
         models.JOBSTATES.c.id == js_id,

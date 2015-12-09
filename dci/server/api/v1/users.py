@@ -22,11 +22,11 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
-from dci.server import auth2
+from dci.server import auth
 from dci.server.common import exceptions as dci_exc
 from dci.server.common import schemas
 from dci.server.common import utils
-from dci.server.db import models_core as models
+from dci.server.db import models
 
 
 # associate column names with the corresponding SA Column object
@@ -47,14 +47,14 @@ def _verify_existence_and_get_user(user_id):
 
 
 @api.route('/users', methods=['POST'])
-@auth2.requires_auth(auth2.ADMIN)
+@auth.requires_auth(auth.ADMIN)
 def create_users(user_info):
     values = schemas.user.post(flask.request.json)
 
-    auth2.check_super_admin_or_same_team(user_info, values['team_id'])
+    auth.check_super_admin_or_same_team(user_info, values['team_id'])
 
     etag = utils.gen_etag()
-    password_hash = auth2.hash_password(values.get('password'))
+    password_hash = auth.hash_password(values.get('password'))
 
     values.update({
         'id': utils.gen_uuid(),
@@ -77,7 +77,7 @@ def create_users(user_info):
 
 
 @api.route('/users', methods=['GET'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def get_all_users(user_info, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
@@ -85,7 +85,7 @@ def get_all_users(user_info, team_id=None):
     query = sqlalchemy.sql.select(_SELECT_WITHOUT_PASSWORD)
 
     #  If it's not an admin, then get only the users of the caller's team
-    if user_info.role != auth2.SUPER_ADMIN:
+    if user_info.role != auth.SUPER_ADMIN:
         query = query.where(models.USERS.c.team_id == user_info.team)
 
     # if embed then construct the query with a join
@@ -120,7 +120,7 @@ def get_all_users(user_info, team_id=None):
 
 
 @api.route('/users/<user_id>', methods=['GET'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def get_user_by_id_or_name(user_info, user_id):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
@@ -129,7 +129,7 @@ def get_user_by_id_or_name(user_info, user_id):
     query = sqlalchemy.sql.select(_SELECT_WITHOUT_PASSWORD)
 
     # If it's not an admin, then get only the users of the caller's team
-    if user_info.role != auth2.SUPER_ADMIN:
+    if user_info.role != auth.SUPER_ADMIN:
         query = query.where(models.USERS.c.team_id == user_info.team)
 
     if embed:
@@ -154,7 +154,7 @@ def get_user_by_id_or_name(user_info, user_id):
 
 
 @api.route('/users/<user_id>', methods=['PUT'])
-@auth2.requires_auth(auth2.ADMIN)
+@auth.requires_auth(auth.ADMIN)
 def put_user(user_info, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -163,7 +163,7 @@ def put_user(user_info, user_id):
     user = dict(_verify_existence_and_get_user(user_id))
 
     # If the user's not an admin, then he is not allowed to update a user
-    auth2.check_super_admin_or_same_team(user_info, user['team_id'])
+    auth.check_super_admin_or_same_team(user_info, user['team_id'])
 
     # TODO(yassine): if the user wants to change the team, then check its done
     # by a super admin. ie. team=dci_config.TEAM_ADMIN_ID.
@@ -171,7 +171,7 @@ def put_user(user_info, user_id):
     values['etag'] = utils.gen_etag()
 
     if 'password' in values:
-        values['password'] = auth2.hash_password(values.get('password'))
+        values['password'] = auth.hash_password(values.get('password'))
 
     query = models.USERS.update().where(
         sqlalchemy.sql.and_(
@@ -191,7 +191,7 @@ def put_user(user_info, user_id):
 
 
 @api.route('/users/<user_id>', methods=['DELETE'])
-@auth2.requires_auth(auth2.ADMIN)
+@auth.requires_auth(auth.ADMIN)
 def delete_user_by_id_or_name(user_info, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -199,7 +199,7 @@ def delete_user_by_id_or_name(user_info, user_id):
     user = _verify_existence_and_get_user(user_id)
 
     # If the user's not an admin, then he is not allowed to create a new user
-    auth2.check_super_admin_or_same_team(user_info, user['team_id'])
+    auth.check_super_admin_or_same_team(user_info, user['team_id'])
 
     query = models.USERS.delete().where(
         sqlalchemy.sql.and_(
