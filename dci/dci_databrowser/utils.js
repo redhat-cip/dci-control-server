@@ -133,9 +133,13 @@ function phantom() {
   return d.promise;
 }
 
-function protractor(address, configFile) {
-  var args = ['--baseUrl', url.format(address)];
+function protractor(address, configFile, debug) {
+  var args = [configFile, '--baseUrl', url.format(address)];
   var d = Q.defer();
+
+  if (debug) {
+    args = ['debug'].concat(args);
+  }
 
   var child = childProcess
   .fork(path.join(__dirname, 'node_modules/protractor/lib/cli'), args)
