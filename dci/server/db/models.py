@@ -15,174 +15,259 @@
 # under the License.
 
 import datetime
-from sqlalchemy import Column
-from sqlalchemy import create_engine
-from sqlalchemy.dialects.postgresql import JSON
-from sqlalchemy.ext.associationproxy import association_proxy
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy.sql import text
-from sqlalchemy.types import Boolean
-from sqlalchemy.types import DateTime
-from sqlalchemy.types import Integer
-from sqlalchemy.types import String
+
+import sqlalchemy as sa
+import sqlalchemy_utils as sa_utils
 
 from dci.server.common import utils
 
+metadata = sa.MetaData()
 
-class DCIModel(object):
-    Base = declarative_base()
 
-    class DCIBase(Base):
-        __abstract__ = True
-        id = Column(String(36), primary_key=True, default=utils.gen_uuid)
-        created_at = Column(DateTime(),
-                            default=datetime.datetime.utcnow, nullable=False)
-        updated_at = Column(DateTime(),
-                            onupdate=datetime.datetime.utcnow,
-                            default=datetime.datetime.utcnow, nullable=False)
-        etag = Column(String(40), default=utils.gen_etag, nullable=False)
+COMPONENTYPES = sa.Table(
+    'componenttypes', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('name', sa.String(255), unique=True, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag))
 
-    class Team(DCIBase):
-        __tablename__ = 'teams'
-        name = Column(String(100))
+COMPONENTS = sa.Table(
+    'components', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), nullable=False),
+    sa.Column('componenttype_id', sa.String(36),
+              sa.ForeignKey('componenttypes.id', ondelete="CASCADE"),
+              nullable=False),
+    sa.Column('canonical_project_name', sa.String),
+    sa.Column('data', sa_utils.JSONType),
+    sa.Column('sha', sa.Text),
+    sa.Column('title', sa.Text),
+    sa.Column('message', sa.Text),
+    sa.Column('url', sa.Text),
+    sa.Column('git', sa.Text),
+    sa.Column('ref', sa.Text))
 
-    class Componenttype(DCIBase):
-        __tablename__ = 'componenttypes'
-        name = Column(String(100))
+TESTS = sa.Table(
+    'tests', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('name', sa.String(255), nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('data', sa_utils.JSONType))
 
-    class User(DCIBase):
-        __tablename__ = 'users'
-        name = Column(String(100))
-        password = Column(String())
-        team_id = Column(String(36), ForeignKey('teams.id'))
+JOBDEFINITIONS = sa.Table(
+    'jobdefinitions', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255)),
+    sa.Column('priority', sa.Integer, default=0),
+    sa.Column('test_id', sa.String(36),
+              sa.ForeignKey('tests.id', ondelete="CASCADE"),
+              nullable=False))
 
-    class Test(DCIBase):
-        __tablename__ = 'tests'
-        data = Column(JSON())
-        name = Column(String(255))
+JOIN_JOBDEFINITIONS_COMPONENTS = sa.Table(
+    'jobdefinition_components', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('component_id', sa.String(36),
+              sa.ForeignKey('components.id', ondelete="CASCADE"),
+              nullable=False),
+    sa.Column('jobdefinition_id', sa.String(36),
+              sa.ForeignKey('jobdefinitions.id', ondelete="CASCADE"),
+              nullable=False),
+    sa.UniqueConstraint('component_id', 'jobdefinition_id'))
 
-    class Role(DCIBase):
-        __tablename__ = 'roles'
-        name = Column(String(100))
+TEAMS = sa.Table(
+    'teams', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), unique=True, nullable=False))
 
-    class UserRole(DCIBase):
-        __tablename__ = 'user_roles'
-        user_id = Column(String(36), ForeignKey('users.id'))
-        role_id = Column(String(36), ForeignKey('roles.id'))
+REMOTECIS = sa.Table(
+    'remotecis', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), unique=True),
+    sa.Column('data', sa_utils.JSONType),
+    sa.Column('team_id', sa.String(36),
+              sa.ForeignKey('teams.id', ondelete="CASCADE"),
+              nullable=False))
 
-    class Remoteci(DCIBase):
-        __tablename__ = 'remotecis'
-        name = Column(String(100))
-        data = Column(JSON())
-        team_id = Column(String(36), ForeignKey('teams.id'))
-        team = relationship('Team', uselist=False)
+JOBS = sa.Table(
+    'jobs', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('recheck', sa.Boolean, default=False),
+    sa.Column('jobdefinition_id', sa.String(36),
+              sa.ForeignKey('jobdefinitions.id', ondelete="CASCADE"),
+              nullable=False),
+    sa.Column('remoteci_id', sa.String(36),
+              sa.ForeignKey('remotecis.id', ondelete="CASCADE"),
+              nullable=False),
+    sa.Column('team_id', sa.String(36),
+              sa.ForeignKey('teams.id', ondelete="CASCADE"),
+              nullable=False))
 
-    class Jobdefinition(DCIBase):
-        __tablename__ = 'jobdefinitions'
-        name = Column(String(100))
-        priority = Column(Integer(), default=0)
-        test_id = Column(String(36), ForeignKey('tests.id'))
-        test = relationship('Test', uselist=False)
+JOBSTATES = sa.Table(
+    'jobstates', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('status', sa.String(255), nullable=False),
+    sa.Column('comment', sa.Text),
+    sa.Column('job_id', sa.String(36),
+              sa.ForeignKey('jobs.id', ondelete="CASCADE"),
+              nullable=False),
+    sa.Column('team_id', sa.String(36),
+              sa.ForeignKey('teams.id', ondelete="CASCADE"),
+              nullable=False))
 
-    class Job(DCIBase):
-        __tablename__ = 'jobs'
-        recheck = Column(Boolean(), default=False)
-        remoteci_id = Column(String(36), ForeignKey('remotecis.id'))
-        team_id = Column(String(36), ForeignKey('teams.id'))
-        remoteci = relationship('Remoteci', uselist=False)
-        jobdefinition_id = Column(String(36), ForeignKey('jobdefinitions.id'))
-        jobdefinition = relationship('Jobdefinition', uselist=False)
+FILES = sa.Table(
+    'files', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), nullable=False),
+    sa.Column('content', sa.Text, nullable=False),
+    sa.Column('mime', sa.String),
+    sa.Column('md5', sa.String(32)),
+    sa.Column('jobstate_id', sa.String(36),
+              sa.ForeignKey('jobstates.id', ondelete="CASCADE"),
+              nullable=False),
+    sa.Column('team_id', sa.String(36),
+              sa.ForeignKey('teams.id', ondelete="CASCADE"),
+              nullable=False))
 
-    class File(DCIBase):
-        __tablename__ = 'files'
-        name = Column(String(100))
-        content = Column(String())
-        mime = Column(String(100), default='text/plain')
-        md5 = Column(String(32))
-        jobstate_id = Column(String(36), ForeignKey('jobstates.id'))
-        team_id = Column(String(36), ForeignKey('teams.id'))
+USERS = sa.Table(
+    'users', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), unique=True, nullable=False),
+    sa.Column('password', sa.Text, nullable=False),
+    sa.Column('role', sa.String(255), default='user', nullable=False),
+    sa.Column('team_id', sa.String(36),
+              sa.ForeignKey('teams.id', ondelete="CASCADE"),
+              nullable=False))
 
-    class Jobstate(DCIBase):
-        __tablename__ = 'jobstates'
-        comment = Column(String())
-        job_id = Column(String(36), ForeignKey('jobs.id'))
-        team_id = Column(String(36), ForeignKey('teams.id'))
-        status = Column(String(), default='ongoing')
-        files = relationship('File')
+JOIN_USER_REMOTECIS = sa.Table(
+    'user_remotecis', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('user_id', sa.String(36),
+              sa.ForeignKey('users.id', ondelete="CASCADE"),
+              nullable=False),
+    sa.Column('remoteci_id', sa.String(36),
+              sa.ForeignKey('remotecis.id', ondelete="CASCADE"),
+              nullable=False),
+    sa.UniqueConstraint('user_id', 'remoteci_id'))
 
-    class Component(DCIBase):
-        __tablename__ = 'components'
-        name = Column(String(100))
-        componenttype_id = Column(String(36), ForeignKey('componenttypes.id'))
-        data = Column(JSON())
-        sha = Column(String())
-        title = Column(String())
-        message = Column(String())
-        url = Column(String())
-        git = Column(String())
-        ref = Column(String())
-        canonical_project_name = Column(String())
-        componenttype = relationship('Componenttype', uselist=False)
+ROLES = sa.Table(
+    'roles', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), unique=True, nullable=False))
 
-    class JobdefinitionComponent(DCIBase):
-        __tablename__ = 'jobdefinition_components'
-        component_id = Column(String(36), ForeignKey('components.id'))
-        jobdefinition_id = Column(String(36), ForeignKey('jobdefinitions.id'))
-        component = relationship('Component', uselist=False)
-        jobdefinition = relationship('Jobdefinition', uselist=False)
-
-    setattr(Jobdefinition, 'jobs', relationship(
-        Job, uselist=True))
-    setattr(Jobdefinition, 'jobdefinition_components', relationship(
-        JobdefinitionComponent))
-    setattr(Jobdefinition, 'components',
-            association_proxy(
-                'jobdefinition_components', 'component'))
-    setattr(Job, 'jobstates', relationship(
-        Jobstate,
-        order_by=Jobstate.created_at.desc()))
-    setattr(User, 'user_roles', relationship(
-        UserRole))
-    setattr(User, 'roles',
-            association_proxy(
-                'user_roles', 'role'))
-
-    def __init__(self, db_uri):
-
-        # TODO(Gonéri): Load the value for a configuration file
-        self.engine = create_engine(db_uri, pool_size=20, max_overflow=0,
-                                    encoding='utf8', convert_unicode=True)
-        self._Session = sessionmaker(bind=self.engine)
-
-    def get_session(self):
-        # NOTE(Gonéri): We should reuse the Flask-SQLAlchemy session here
-        return self._Session()
-
-    def get_table_description(self, table):
-        """Prepare a table description for Eve-Docs
-        See: https://github.com/hermannsblum/eve-docs
-        """
-        cur_db = getattr(self.base.classes, table)
-        fields = []
-        for column in cur_db.__table__.columns:
-            fields.append(str(column).split('.')[1])
-
-        table_description_query = text("""
-    SELECT
-        objsubid, description
-    FROM
-        pg_description WHERE objoid = :table ::regclass;
-    """)
-        result = {
-            'general': '',
-            'fields': {}
-        }
-        for row in self.engine.execute(table_description_query, table=table):
-            if row[0] == 0:
-                result['general'] = row[1]
-            else:
-                result['fields'][fields[row[0]]] = row[1]
-        return result
+JOIN_USERS_ROLES = sa.Table(
+    'user_roles', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('user_id', sa.String(36),
+              sa.ForeignKey('users.id', ondelete="CASCADE"), nullable=False),
+    sa.Column('role_id', sa.String(36),
+              sa.ForeignKey('roles.id', ondelete="CASCADE"), nullable=False),
+    sa.UniqueConstraint('user_id', 'role_id'))
