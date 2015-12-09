@@ -14,41 +14,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from dci.server.tests import utils
 
-
-class TestAuth(object):
-
-    def test_authorized_as_partner(self, company_a_user):
-        # partner can read files
-        assert company_a_user.get('/api/files').status_code == 200
-        # partner can create job (400 because of the missing parameters)
-        assert company_a_user.post('/api/jobs').status_code == 400
-
-    def test_wrong_pw_as_unauthorized(self, unauthorized):
-        assert unauthorized.get('/api/files').status_code == 401
-        assert unauthorized.get('/api/jobs').status_code == 401
-
-    def test_authorized_as_admin(self, admin):
-        assert admin.get('/api/files').status_code == 200
-
-    def test_team_isolation(self, admin, company_b_user, company_a_user):
-        test = utils.create_test(admin)
-        utils.create_jobdefinition(admin, test.data['id'])
-        remoteci = utils.create_remoteci(company_b_user)
-        job = utils.create_job(company_b_user, remoteci.data['id'])
-        jobstates = utils.create_jobstate(company_b_user, job.data['id'])
-        a_file = utils.create_file(company_b_user, jobstates.data['id'])
-
-        assert a_file.status_code == 201
-
-        assert company_a_user.get(
-            '/api/files/%s' % a_file.data['id']).status_code == 404
-        assert company_b_user.get(
-            '/api/files/%s' % a_file.data['id']).status_code == 200
-        assert admin.get(
-            '/api/files/%s' % a_file.data['id']).status_code == 200
-
-        assert len(company_a_user.get('/api/files').data['_items']) == 0
-        assert len(company_b_user.get('/api/files').data['_items']) == 1
-        assert len(admin.get('/api/files').data['_items']) == 1
+def test_api_with_unauthorized_credentials(unauthorized):
+    assert unauthorized.get('/api/v1/components').status_code == 401
+    assert unauthorized.get('/api/v1/componenttypes').status_code == 401
+    assert unauthorized.get('/api/v1/jobdefinitions').status_code == 401
+    assert unauthorized.get('/api/v1/jobs').status_code == 401
+    assert unauthorized.get('/api/v1/jobstates').status_code == 401
+    assert unauthorized.get('/api/v1/remotecis').status_code == 401
+    assert unauthorized.get('/api/v1/teams').status_code == 401
+    assert unauthorized.get('/api/v1/tests').status_code == 401
+    assert unauthorized.get('/api/v1/users').status_code == 401
+    assert unauthorized.get('/api/v1/files').status_code == 401
