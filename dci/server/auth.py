@@ -1,12 +1,12 @@
-# -*- encoding: utf-8 -*-
+# -*- coding: utf-8 -*-
 #
-# Copyright 2015 Red Hat, Inc.
+# Copyright (C) 2015 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -14,70 +14,87 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from dci.server import auth2
-import eve.auth
+import collections
 import flask
-import sqlalchemy.orm.exc
+from functools import wraps
+import json
+from passlib.apps import custom_app_context as pwd_context
+import sqlalchemy.sql
+
+from dci.server.common import exceptions as exc
+from dci.server.db import models
+from dci.server import dci_config
 
 
-class DCIBasicAuth(eve.auth.BasicAuth):
-    def __init__(self, dci_model):
-        self.dci_model = dci_model
+USER = 0
+ADMIN = 1
+SUPER_ADMIN = 2
 
-    def check_auth(self, name, password, allowed_roles, resource, method):
-        session = self.dci_model.get_session()
-        users_c = self.dci_model.User
-        user_roles_c = self.dci_model.UserRole
-        roles_c = self.dci_model.Role
-        try:
-            self.user = session.query(
-                users_c).filter_by(name=name).one()
-            self.user_roles = session.query(
-                user_roles_c).filter_by(user_id=self.user.id).all()
-            roles_id = [ur.role_id for ur in self.user_roles]
-            self.roles = [r.name for r in session.query(
-                roles_c).filter(roles_c.id.in_(roles_id)).all()]
-        except sqlalchemy.orm.exc.NoResultFound:
-            return False
-        finally:
-            session.close()
-        return auth2.build_auth(name, password)[1]
+UNAUTHORIZED = exc.DCIException('Operation not authorized.', status_code=401)
 
-    def authorized(self, allowed_roles, resource, method):
-        auth = flask.request.authorization
-        if not hasattr(auth, 'username') or not hasattr(auth, 'password'):
-            flask.abort(401, description='Unauthorized: username required')
-            return False
-        if not self.check_auth(auth.username, auth.password, None,
-                               resource, method):
-            flask.abort(401, description='Unauthorized')
-            return False
+UserInfo = collections.namedtuple('UserInfo', ['team', 'role'])
 
-        if 'admin' in self.roles:
-            # NOTE(Gonéri): we preserve auth_value undefined for GET,
-            # this way, admin use can read all the field from the database
-            if method != 'GET':
-                self.set_request_auth_value(self.user.team_id)
-            return True
-        self.set_request_auth_value(self.user.team_id)
 
-        # NOTE(Gonéri): We may find useful to store this matrice directly in
-        # the role entrt in the DB
-        acl = {
-            'partner': {
-                'files': ['GET', 'POST'],
-                'remotecis': ['GET', 'POST'],
-                'jobs': ['GET', 'POST'],
-                'jobstates': ['GET', 'POST'],
-                'tests': ['GET']
-            }
-        }
+def hash_password(password):
+        return pwd_context.encrypt(password)
 
-        for role in self.roles:
-            try:
-                if method in acl[role][resource]:
-                    return True
-            except KeyError:
-                pass
-        flask.abort(403, description='Forbidden')
-        return False
+
+def build_auth(username, password):
+    """Check the combination username/password that is valid on the
+    database.
+    """
+    query_get_user = (sqlalchemy.sql
+                      .select([models.USERS])
+                      .where(models.USERS.c.name == username))
+
+    user = flask.g.db_conn.execute(query_get_user).fetchone()
+    if user is None:
+        return None, False
+    roles = {'admin': ADMIN, 'user': USER}
+
+    user = dict(user)
+    team = user['team_id']
+    role = (SUPER_ADMIN if team == dci_config.TEAM_ADMIN_ID
+            else roles[user['role']])
+
+    return (UserInfo(team, role),
+            pwd_context.verify(password, user.get('password')))
+
+
+def reject():
+    """Sends a 401 reject response that enables basic auth."""
+
+    auth_message = ('Could not verify your access level for that URL.'
+                    'Please login with proper credentials.')
+    auth_message = json.dumps({'_status': 'Unauthorized',
+                               'message': auth_message})
+
+    headers = {'WWW-Authenticate': 'Basic realm="Login required"'}
+    return flask.Response(auth_message, 401, headers=headers,
+                          content_type='application/json')
+
+
+def check_super_admin_or_same_team(user_info, team_id):
+    if user_info.role != SUPER_ADMIN and user_info.team != team_id:
+        raise UNAUTHORIZED
+
+
+def requires_auth(level=USER):
+    def wrapper(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            auth = flask.request.authorization
+            if not auth:
+                return reject()
+            user_info, is_authenticated = build_auth(auth.username,
+                                                     auth.password)
+            if not is_authenticated:
+                return reject()
+
+            if user_info.role < level:
+                raise UNAUTHORIZED
+
+            return f(user_info, *args, **kwargs)
+
+        return decorated
+    return wrapper

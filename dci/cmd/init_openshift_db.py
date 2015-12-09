@@ -27,8 +27,8 @@ import sqlalchemy
 from sqlalchemy import exc as sa_exc
 import sqlalchemy_utils.functions
 
-from dci.server import auth2
-from dci.server.db import models_core
+from dci.server import auth
+from dci.server.db import models
 from dci.server import dci_config
 
 
@@ -40,7 +40,7 @@ if not os.environ.get('DCI_LOGIN') or not os.environ.get('DCI_PASSWORD'):
 
 DCI_LOGIN = os.environ.get('DCI_LOGIN')
 DCI_PASSWORD = os.environ.get('DCI_PASSWORD')
-DCI_PASSWORD_HASH = auth2.hash_password(os.environ.get('DCI_PASSWORD'))
+DCI_PASSWORD_HASH = auth.hash_password(os.environ.get('DCI_PASSWORD'))
 
 
 def init_db(db_conn):
@@ -68,19 +68,19 @@ def init_db(db_conn):
             return result['id']
 
     # Create team admin
-    team_admin_id = db_insert_with_name(models_core.TEAMS, name='admin')
+    team_admin_id = db_insert_with_name(models.TEAMS, name='admin')
 
     # Create admin role
-    role_admin_id = db_insert_with_name(models_core.ROLES, name='admin')
+    role_admin_id = db_insert_with_name(models.ROLES, name='admin')
 
     # Create admin user
-    user_admin_id = db_insert_with_name(models_core.USERS,
+    user_admin_id = db_insert_with_name(models.USERS,
                                         name=DCI_LOGIN,
                                         password=DCI_PASSWORD_HASH,
                                         team_id=team_admin_id)
 
     # Create one user_roles entry
-    query = models_core.JOIN_USERS_ROLES.insert().values(user_id=user_admin_id,
+    query = models.JOIN_USERS_ROLES.insert().values(user_id=user_admin_id,
                                                          role_id=role_admin_id)
     try:
         db_conn.execute(query)
@@ -97,7 +97,7 @@ def main():
         sqlalchemy_utils.functions.drop_database(db_uri)
     sqlalchemy_utils.functions.create_database(db_uri)
     engine = sqlalchemy.create_engine(db_uri)
-    models_core.metadata.create_all(engine)
+    models.metadata.create_all(engine)
     with engine.begin() as conn:
         init_db(conn)
 

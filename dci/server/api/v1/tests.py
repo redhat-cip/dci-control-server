@@ -23,11 +23,11 @@ import sqlalchemy.sql
 from dci.server.api.v1 import api
 from dci.server.api.v1 import jobdefinitions
 from dci.server.api.v1 import utils as v1_utils
-from dci.server import auth2
+from dci.server import auth
 from dci.server.common import exceptions
 from dci.server.common import schemas
 from dci.server.common import utils
-from dci.server.db import models_core as models
+from dci.server.db import models
 
 
 # associate column names with the corresponding SA Column object
@@ -42,7 +42,7 @@ def _verify_existence_and_get_t(t_id):
 
 
 @api.route('/tests', methods=['POST'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def create_tests(user_info):
     etag = utils.gen_etag()
     data_json = schemas.test.post(flask.request.json)
@@ -63,7 +63,7 @@ def create_tests(user_info):
 
 
 @api.route('/tests', methods=['GET'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def get_all_tests(user_info):
     args = schemas.args(flask.request.args.to_dict())
 
@@ -91,7 +91,7 @@ def get_all_tests(user_info):
 
 
 @api.route('/tests/<t_id>', methods=['GET'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def get_test_by_id_or_name(user_info, t_id):
     test = _verify_existence_and_get_t(t_id)
     etag = test['etag']
@@ -102,14 +102,14 @@ def get_test_by_id_or_name(user_info, t_id):
 
 
 @api.route('/tests/<t_id>/jobdefinitions', methods=['GET'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def get_jobdefinitions_by_test(user_info, test_id):
     test = _verify_existence_and_get_t(test_id)
     return jobdefinitions.get_all_jobdefinitions(test['id'])
 
 
 @api.route('/tests/<t_id>', methods=['PUT'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def put_test(user_info, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -136,7 +136,7 @@ def put_test(user_info, t_id):
 
 
 @api.route('/tests/<t_id>', methods=['DELETE'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def delete_test_by_id_or_name(user_info, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
