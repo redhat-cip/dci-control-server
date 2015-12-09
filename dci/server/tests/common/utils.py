@@ -88,6 +88,13 @@ def generate_invalid_string(field):
     return (field, None), (field, schemas.INVALID_STRING)
 
 
+def invalid_args(data, errors):
+    with pytest.raises(exceptions.DCIException) as exc:
+        schemas.args(data)
+
+    assert exc.value.payload == {'errors': errors}
+
+
 class SchemaTesting(object):
     schema = None
 

@@ -17,7 +17,6 @@
 import dci.server.app
 from dci.server.db import models
 from dci.server import dci_config
-from dci.server.tests import db_provision_test
 import dci.server.tests.utils as utils
 
 from passlib.apps import custom_app_context as pwd_context
@@ -62,7 +61,7 @@ def db_clean(request, engine):
 @pytest.fixture
 def db_provisioning(db_clean, engine):
     with engine.begin() as conn:
-        db_provision_test.provision(conn)
+        utils.provision(conn)
 
 
 @pytest.fixture

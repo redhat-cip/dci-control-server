@@ -16,7 +16,8 @@
 from __future__ import unicode_literals
 
 import dci.server.common.schemas as schemas
-import dci.server.tests.schemas.utils as utils
+import dci.server.tests.common.utils as utils
+
 import flask
 import voluptuous
 
@@ -471,3 +472,47 @@ class TestFile(utils.SchemaTesting):
         data_expected = utils.dict_merge(self.data,
                                          {'mime': None, 'md5': None})
         super(TestFile, self).test_put(self.data, data_expected)
+
+
+class TestArgs(object):
+    data = {
+        'limit': '50',
+        'offset': '10',
+        'sort': 'field_1,field_2',
+        'where': 'field_1:value_1,field_2:value_2',
+        'embed': 'resource_1,resource_2'
+    }
+
+    data_expected = {
+        'limit': 50,
+        'offset': 10,
+        'sort': ['field_1', 'field_2'],
+        'where': ['field_1:value_1', 'field_2:value_2'],
+        'embed': ['resource_1', 'resource_2']
+    }
+
+    def test_extra_args(self):
+        extra_data = utils.dict_merge(self.data, {'foo': 'bar'})
+        assert schemas.args(extra_data) == self.data_expected
+
+    def test_default_args(self):
+        expected = {
+            'limit': None,
+            'offset': None,
+            'sort': [],
+            'where': [],
+            'embed': []
+        }
+        assert schemas.args({}) == expected
+
+    def test_invalid_args(self):
+        errors = {'limit': schemas.INVALID_LIMIT,
+                  'offset': schemas.INVALID_OFFSET}
+
+        data = {'limit': -1, 'offset': -1}
+        utils.invalid_args(data, errors)
+        data = {'limit': 'foo', 'offset': 'bar'}
+        utils.invalid_args(data, errors)
+
+    def test_args(self):
+        assert schemas.args(self.data) == self.data_expected

@@ -20,7 +20,9 @@ import flask
 
 import uuid
 
+from dci.server import auth
 from dci.server.common import utils
+from dci.server.db import models
 
 # convenient alias
 memoized = utils.memoized
@@ -139,3 +141,36 @@ def generate_client(app, credentials):
     client.open = client_open_decorator(client.open)
 
     return client
+
+
+def provision(db_conn):
+    def db_insert(model_item, **kwargs):
+        query = model_item.insert().values(**kwargs)
+        return db_conn.execute(query).inserted_primary_key[0]
+
+    user_pw_hash = auth.hash_password('user')
+    user_admin_pw_hash = auth.hash_password('user_admin')
+    admin_pw_hash = auth.hash_password('admin')
+
+    # Create teams
+    team_admin_id = db_insert(models.TEAMS, name='admin')
+    team_user_id = db_insert(models.TEAMS, name='user')
+
+    # Create users
+    db_insert(models.USERS,
+              name='user',
+              role='user',
+              password=user_pw_hash,
+              team_id=team_user_id)
+
+    db_insert(models.USERS,
+              name='user_admin',
+              role='admin',
+              password=user_admin_pw_hash,
+              team_id=team_user_id)
+
+    db_insert(models.USERS,
+              name='admin',
+              role='admin',
+              password=admin_pw_hash,
+              team_id=team_admin_id)
