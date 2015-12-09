@@ -158,6 +158,7 @@ def get_user_by_id_or_name(user_info, user_id):
 def put_user(user_info, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
+    print('if_match_etag %s' % if_match_etag)
     values = schemas.user.put(flask.request.json)
 
     user = dict(_verify_existence_and_get_user(user_id))
