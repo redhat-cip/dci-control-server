@@ -18,12 +18,12 @@ import flask
 from flask import json
 
 from dci.server.api.v1 import api
-from dci.server import auth2
+from dci.server import auth
 from dci.server.common import schemas
 
 
 @api.route('/search', methods=['POST'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def search():
     values = schemas.search.post(flask.request.json)
 

@@ -25,7 +25,7 @@ from alembic import command
 from alembic import config
 
 from dci.server import app
-from dci.server.db import models_core
+from dci.server.db import models
 
 
 def main():
@@ -33,7 +33,7 @@ def main():
     app_conf = app.generate_conf()
     sa_engine = app.get_engine(app_conf)
 
-    models_core.metadata.create_all(sa_engine)
+    models.metadata.create_all(sa_engine)
 
     # then, load the Alembic configuration and generate the
     # version table if its the first run. Upgrading to the most
