@@ -16,26 +16,23 @@
 
 /*globals describe, it, expect, element, browser*/
 describe('DCI homepage', function() {
+
   beforeEach(function() {
     browser.addMockModule('APIMock', function() {
-      angular
-      .module('APIMock', ['ngMockE2E'])
+      angular.module('APIMock', ['ngMockE2E'])
+
       .run(['$httpBackend', function($httpBackend) {
+        var jobRecheck = {'job': {'id': 'bar'}};
+        var remotecisResp = {'remotecis': []};
+        var jobsResp = {'jobs': [{'id': 'foo'}], '_meta': {'count': 1}};
+        var jobstatesResp = {'jobstates': []};
+
         $httpBackend.whenGET(/^\/partials\//).passThrough();
-        $httpBackend.whenGET(/^\/api\/jobstates/).respond(function() {
-          return [200, {_items: []}, {}];
-        });
-
-        $httpBackend.whenGET(/^\/api\/jobs\/1234/).respond(function() {
-          return [200, {id: 1234, remoteci: {id: 1234}}, {}];
-        });
-
-        $httpBackend.whenPOST(/^\/api\/jobs/).respond(function() {
-          return [200, {id: 5678}, {}];
-        });
-        $httpBackend.whenGET(/^\/api\/jobs\/5678/).respond(function() {
-          return [200, {}, {}];
-        });
+        $httpBackend.whenGET(/\/remotecis\//).respond(remotecisResp);
+        $httpBackend.whenGET(/\/jobs\/.*?\/jobstates/).respond(jobstatesResp);
+        $httpBackend.whenPOST(/\/jobs\/foo\/recheck/).respond(jobRecheck);
+        $httpBackend.whenGET(/\/jobs\/bar/).respond(jobRecheck);
+        $httpBackend.whenGET(/\/jobs\//).respond(jobsResp);
       }]);
     });
   });
@@ -45,9 +42,9 @@ describe('DCI homepage', function() {
     browser.manage().addCookie('token', 'sometoken', '/');
   });
 
-  xit('should be possible to recheck a job', function() {
-    browser.get('/#/jobs/1234');
+  it('should be possible to recheck a job', function() {
+    browser.get('/#/jobs');
     element(by.css('.glyphicon-repeat')).click();
-    expect(browser.getLocationAbsUrl()).toBe('/jobs/5678');
+    expect(browser.getLocationAbsUrl()).toMatch('/jobs/bar$');
   });
 });
