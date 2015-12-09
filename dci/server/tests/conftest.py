@@ -17,7 +17,6 @@
 import dci.server.app
 from dci.server.db import models_core
 from dci.server import dci_config
-from dci.server.tests import db_provision_test
 import dci.server.tests.utils as utils
 
 import pytest
@@ -55,7 +54,7 @@ def db_clean(request, engine):
 @pytest.fixture
 def db_provisioning(db_clean, engine):
     with engine.begin() as conn:
-        db_provision_test.provision(conn)
+        utils.provision(conn)
 
 
 @pytest.fixture
