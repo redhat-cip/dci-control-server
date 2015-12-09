@@ -15,7 +15,7 @@
 # under the License.
 
 import dci.server.app
-from dci.server.db import models_core
+from dci.server.db import models
 from dci.server import dci_config
 from dci.server.tests import db_provision_test
 import dci.server.tests.utils as utils
@@ -40,14 +40,14 @@ def engine(request):
     request.addfinalizer(del_db)
     sqlalchemy_utils.functions.create_database(db_uri)
 
-    models_core.metadata.create_all(engine)
+    models.metadata.create_all(engine)
     return engine
 
 
 @pytest.fixture
 def db_clean(request, engine):
     def fin():
-        for table in reversed(models_core.metadata.sorted_tables):
+        for table in reversed(models.metadata.sorted_tables):
             engine.execute(table.delete())
     request.addfinalizer(fin)
 

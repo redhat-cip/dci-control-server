@@ -15,7 +15,7 @@
 # under the License.
 
 from dci.server import auth2
-from dci.server.db import models_core
+from dci.server.db import models
 
 
 def provision(db_conn):
@@ -24,55 +24,55 @@ def provision(db_conn):
         return db_conn.execute(query).inserted_primary_key[0]
 
     # Create teams
-    team_admin_id = db_insert(models_core.TEAMS, name='admin')
-    company_a_id = db_insert(models_core.TEAMS, name='company_a')
-    company_b_id = db_insert(models_core.TEAMS, name='company_b')
-    team_user_id = db_insert(models_core.TEAMS, name='user')
+    team_admin_id = db_insert(models.TEAMS, name='admin')
+    company_a_id = db_insert(models.TEAMS, name='company_a')
+    company_b_id = db_insert(models.TEAMS, name='company_b')
+    team_user_id = db_insert(models.TEAMS, name='user')
 
     # Create users
     user_pw_hash = auth2.hash_password('user')
-    db_insert(models_core.USERS,
+    db_insert(models.USERS,
               name='user',
               role='user',
               password=user_pw_hash,
               team_id=team_user_id)
 
     user_admin_pw_hash = auth2.hash_password('user_admin')
-    db_insert(models_core.USERS,
+    db_insert(models.USERS,
               name='user_admin',
               role='admin',
               password=user_admin_pw_hash,
               team_id=team_user_id)
 
     admin_pw_hash = auth2.hash_password('admin')
-    admin_user_id = db_insert(models_core.USERS,
+    admin_user_id = db_insert(models.USERS,
                               name='admin',
                               role='admin',
                               password=admin_pw_hash,
                               team_id=team_admin_id)
 
     company_a_pw_hash = auth2.hash_password('company_a_user')
-    company_a_user_id = db_insert(models_core.USERS,
+    company_a_user_id = db_insert(models.USERS,
                                   name='company_a_user',
                                   password=company_a_pw_hash,
                                   team_id=company_a_id)
 
     company_b_pw_hash = auth2.hash_password('company_b_user')
-    company_b_user_id = db_insert(models_core.USERS,
+    company_b_user_id = db_insert(models.USERS,
                                   name='company_b_user',
                                   password=company_b_pw_hash,
                                   team_id=company_b_id)
 
     # Create roles
-    role_admin_id = db_insert(models_core.ROLES, name='admin')
-    role_partner_id = db_insert(models_core.ROLES, name='partner')
+    role_admin_id = db_insert(models.ROLES, name='admin')
+    role_partner_id = db_insert(models.ROLES, name='partner')
 
     # Create user_roles
-    db_insert(models_core.JOIN_USERS_ROLES, user_id=admin_user_id,
+    db_insert(models.JOIN_USERS_ROLES, user_id=admin_user_id,
               role_id=role_admin_id)
-    db_insert(models_core.JOIN_USERS_ROLES, user_id=admin_user_id,
+    db_insert(models.JOIN_USERS_ROLES, user_id=admin_user_id,
               role_id=role_partner_id)
-    db_insert(models_core.JOIN_USERS_ROLES, user_id=company_a_user_id,
+    db_insert(models.JOIN_USERS_ROLES, user_id=company_a_user_id,
               role_id=role_partner_id)
-    db_insert(models_core.JOIN_USERS_ROLES, user_id=company_b_user_id,
+    db_insert(models.JOIN_USERS_ROLES, user_id=company_b_user_id,
               role_id=role_partner_id)
