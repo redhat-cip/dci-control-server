@@ -15,61 +15,24 @@
 # under the License.
 
 
-import json
-
 from dci.server.api import v1 as api_v1
-from dci.server import auth
 from dci.server.common import exceptions
-from dci.server.common import utils
-from dci.server.db import models
 from dci.server.elasticsearch import engine as es_engine
-from dci.server import eve_model
 
-from eve import Eve
-from eve_sqlalchemy import SQL
-from eve_sqlalchemy.validation import ValidatorSQL
 import flask
 from sqlalchemy import exc as sa_exc
-from sqlalchemy.sql import text
 
 from dci.dci_databrowser import dci_databrowser
 from dci.server import dci_config
 
 
-def load_docs(app):
-    try:
-        from eve_docs import eve_docs
-        from flask.ext.bootstrap import Bootstrap
-        Bootstrap(app)
-        app.register_blueprint(eve_docs, url_prefix='/docs')
-    except ImportError:
-        print("Failed to load eve_docs.")
+class DciControlServer(flask.Flask):
 
-
-def set_real_owner(resource, items):
-    """Hack to allow the 'admin' user to change the team_id."""
-    if flask.request.authorization.username != 'admin':
-        return
-    # NOTE(Gonéri): the fields returned by flask.request.get_json() are
-    # already mangled by the Role Based Access Control.
-    request_fields = json.loads(flask.request.data.decode('utf-8'))
-    if "team_id" in request_fields:
-        items[0]['team_id'] = request_fields['team_id']
-
-
-class DciControlServer(Eve):
-
-    _DCI_MODEL = None
-
-    def __init__(self, dci_model, **kwargs):
-        super(DciControlServer, self).__init__(**kwargs)
-
-        DciControlServer._DCI_MODEL = dci_model
-        DciControlServer._DCI_MODEL.Base.metadata.bind = DciControlServer.\
-            _DCI_MODEL.engine
-        self._db = self.data.driver
-        self._db.Model = DciControlServer._DCI_MODEL.Base
-        self._init_hooks()
+    def __init__(self, conf):
+        super(DciControlServer, self).__init__(__name__)
+        self.config.update(conf)
+        self.engine = dci_config.get_engine(conf)
+        self.es_engine = es_engine.DCIESEngine(conf)
 
     def make_default_options_response(self):
         resp = super(DciControlServer, self).make_default_options_response()
@@ -88,141 +51,6 @@ class DciControlServer(Eve):
 
         return super(DciControlServer, self).process_response(resp)
 
-    @staticmethod
-    def pick_jobs(documents):
-        picked_job = documents[0]
-        session = DciControlServer._DCI_MODEL.get_session()
-
-        # First, test if its a recheck request
-        if flask.request.args.get('recheck'):
-            job_id_to_recheck = str(flask.request.args.get('job_id'))
-            if not job_id_to_recheck:
-                flask.abort(400, "job_id missing.")
-            job_to_recheck = session.query(
-                DciControlServer._DCI_MODEL.Job).\
-                get(job_id_to_recheck)
-            if not job_to_recheck:
-                flask.abort(400, "job '%s' does not exist." %
-                            job_id_to_recheck)
-            # Replicate the recheck job
-            picked_job['jobdefinition_id'] = job_to_recheck.jobdefinition_id
-            picked_job['remoteci_id'] = job_to_recheck.remoteci_id
-            picked_job['team_id'] = job_to_recheck.team_id
-            picked_job['recheck'] = True
-        else:
-            query = text("""
-            SELECT
-                jobdefinitions.id
-            FROM
-                jobdefinitions, remotecis
-            WHERE jobdefinitions.id NOT IN (
-                SELECT
-                    jobs.jobdefinition_id
-                FROM jobs
-                WHERE jobs.created_at > now() - interval '1 day'
-                AND jobs.remoteci_id=:remoteci_id
-            ) AND remotecis.id=:remoteci_id
-            ORDER BY
-                priority ASC
-            LIMIT 1
-            """)
-
-            r = DciControlServer._DCI_MODEL.engine.execute(
-                query, remoteci_id=picked_job['remoteci_id']).fetchone()
-            if r is None:
-                flask.abort(412, "No test to run left.")
-            jobdefinition = session.query(
-                DciControlServer._DCI_MODEL.Jobdefinition).\
-                get(str(r[0]))
-            picked_job['jobdefinition_id'] = jobdefinition.id
-            session.close()
-
-    @staticmethod
-    def stop_running_jobs(documents):
-        session = DciControlServer._DCI_MODEL.get_session()
-        Jobs = DciControlServer._DCI_MODEL.Job
-        Jobstates = DciControlServer._DCI_MODEL.Jobstate
-        for d in documents:
-            jobs = session.query(Jobs).filter(
-                Jobs.remoteci_id == d['remoteci_id']).all()
-            for job in jobs:
-                jobstates = job.jobstates
-                if not jobstates:
-                    continue
-                jobstate = jobstates[0]
-                if jobstate.status in ('new', 'ongoing', 'initializing'):
-                    session.add(
-                        Jobstates(
-                            job_id=job.id,
-                            status='unfinished',
-                            comment='The remoteci has started a new job.',
-                            team_id=d['team_id']))
-        session.commit()
-        session.close()
-
-    @staticmethod
-    def aggregate_job_data(response):
-        session = DciControlServer._DCI_MODEL.get_session()
-        data = {}
-        job = session.query(DciControlServer._DCI_MODEL.Job).\
-            get(response['id'])
-        # TODO(Gonéri): do we still need that?
-        data = {}
-        data = utils.dict_merge(
-            data,
-            job.jobdefinition.test.data)
-        data = utils.dict_merge(
-            data,
-            job.remoteci.data)
-        for component in job.jobdefinition.components:
-            data = utils.dict_merge(data, component.data)
-        session.close()
-        response['data'] = data
-
-    @staticmethod
-    def get_remotecis_extra(response):
-        if not (flask.request.args.get('extra_data') and
-                flask.request.args.get('version_id')):
-            return
-
-        version_id = flask.request.args.get('version_id')
-        session = DciControlServer._DCI_MODEL.get_session()
-        Remotecis = DciControlServer._DCI_MODEL.Remoteci
-        remotecisTotal = session.query(Remotecis).count()
-
-        rate = {"success": 0, "failure": 0, "ongoing": 0,
-                "not_started": remotecisTotal}
-        for remoteci in response["_items"]:
-            Testversions = DciControlServer._DCI_MODEL.Testversions
-            testversions = session.query(Testversions).\
-                filter(Testversions.version_id == version_id).all()
-
-            for testversion in testversions:
-                Jobs = DciControlServer._DCI_MODEL.Job
-                job = session.query(Jobs).\
-                    filter((Jobs.testversion_id == testversion.id) and
-                           (Jobs.remoteci_id == remoteci["id"])).first()
-                if job:
-                    Jobstate = DciControlServer._DCI_MODEL.Jobstate
-                    jobstate = job.jobstates.filter(
-                        Jobstate.job_id == job.id).first()
-                    if jobstate:
-                        rate[jobstate.status] += 1
-                        rate["not_started"] -= 1
-        if rate["not_started"] < 0:
-            rate["not_started"] = 0
-        response["extra_data"] = rate
-
-    def _init_hooks(self):
-        self.on_insert += set_real_owner
-        self.on_insert_jobs += DciControlServer.pick_jobs
-        self.on_insert_jobs += DciControlServer.stop_running_jobs
-        self.on_fetched_item_jobs += DciControlServer.aggregate_job_data
-        self.on_fetched_resource_remotecis += DciControlServer.\
-            get_remotecis_extra
-
-        load_docs(self)
-
 
 def handle_api_exception(api_exception):
     response = flask.jsonify(api_exception.to_dict())
@@ -238,17 +66,9 @@ def handle_dbapi_exception(dbapi_exception):
 
 
 def create_app(conf):
-    dci_model = models.DCIModel(conf['SQLALCHEMY_DATABASE_URI'])
-    conf['DOMAIN'] = eve_model.domain_configuration()
-    basic_auth = auth.DCIBasicAuth(dci_model)
-
     dci_config.TEAM_ADMIN_ID = dci_config.get_team_admin_id()
 
-    dci_app = DciControlServer(dci_model, validator=ValidatorSQL, data=SQL,
-                               auth=basic_auth, settings=conf)
-
-    dci_app.engine = dci_config.get_engine(conf)
-    dci_app.es_engine = es_engine.DCIESEngine(conf)
+    dci_app = DciControlServer(conf)
 
     @dci_app.before_request
     def before_request():

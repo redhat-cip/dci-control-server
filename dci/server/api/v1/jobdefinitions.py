@@ -22,11 +22,11 @@ import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
-from dci.server import auth2
+from dci.server import auth
 from dci.server.common import exceptions as dci_exc
 from dci.server.common import schemas
 from dci.server.common import utils
-from dci.server.db import models_core as models
+from dci.server.db import models
 
 # associate column names with the corresponding SA Column object
 _JD_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBDEFINITIONS)
@@ -45,7 +45,7 @@ def _verify_existence_and_get_jd(jd_id):
 
 
 @api.route('/jobdefinitions', methods=['POST'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def create_jobdefinitions(user_info):
     etag = utils.gen_etag()
     data_json = schemas.jobdefinition.post(flask.request.json)
@@ -66,7 +66,7 @@ def create_jobdefinitions(user_info):
 
 
 @api.route('/jobdefinitions', methods=['GET'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def get_all_jobdefinitions(user_info, t_id=None):
     """Get all jobdefinitions.
 
@@ -119,7 +119,7 @@ def get_all_jobdefinitions(user_info, t_id=None):
 
 
 @api.route('/jobdefinitions/<jd_id>', methods=['GET'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def get_jobdefinition_by_id_or_name(user_info, jd_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
@@ -154,7 +154,7 @@ def get_jobdefinition_by_id_or_name(user_info, jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>', methods=['DELETE'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def delete_jobdefinition_by_id_or_name(user_info, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -180,7 +180,7 @@ def delete_jobdefinition_by_id_or_name(user_info, jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>/components', methods=['POST'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def add_component_to_jobdefinitions(user_info, jd_id):
     data_json = flask.request.json
     values = {'jobdefinition_id': jd_id,
@@ -194,7 +194,7 @@ def add_component_to_jobdefinitions(user_info, jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>/components', methods=['GET'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def get_all_components_from_jobdefinitions(user_info, jd_id):
     _verify_existence_and_get_jd(jd_id)
 
@@ -211,7 +211,7 @@ def get_all_components_from_jobdefinitions(user_info, jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>/components/<c_id>', methods=['DELETE'])
-@auth2.requires_auth()
+@auth.requires_auth()
 def delete_component_from_jobdefinition(user_info, jd_id, c_id):
     _verify_existence_and_get_jd(jd_id)
 
