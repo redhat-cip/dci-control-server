@@ -59,35 +59,20 @@ def create_jobstates(user_info):
 
     flask.g.db_conn.execute(query)
 
-    result = json.dumps({'jobstate': values})
-    return flask.Response(result, 201, headers={'ETag': etag},
-                          content_type='application/json')
+    # Update job status
+    job_id = values.get('job_id')
+    query_update_job = models.JOBS.update().where(
+        models.JOBS.c.id == job_id).values(
+        status=values.get('status'))
 
-
-@api.route('/jobstates/<js_id>', methods=['PUT'])
-@auth.requires_auth()
-def put_jobstate(user_info, js_id):
-    # get If-Match header
-    if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = schemas.jobstate.put(flask.request.json)
-
-    jobstate = dict(_verify_existence_and_get_jobstate(js_id))
-
-    auth.check_super_admin_or_same_team(user_info, jobstate['team_id'])
-
-    values['etag'] = utils.gen_etag()
-    query = models.JOBSTATES.update().where(
-        sqlalchemy.sql.and_(
-            models.JOBSTATES.c.id == js_id,
-            models.JOBSTATES.c.etag == if_match_etag)).values(**values)
-
-    result = flask.g.db_conn.execute(query)
+    result = flask.g.db_conn.execute(query_update_job)
 
     if result.rowcount == 0:
-        raise dci_exc.DCIException("Conflict on test '%s' or etag "
-                                   "not matched." % js_id, status_code=409)
+        raise dci_exc.DCIException("Conflict on job '%s'." % job_id,
+                                   status_code=409)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
+    result = json.dumps({'jobstate': values})
+    return flask.Response(result, 201, headers={'ETag': etag},
                           content_type='application/json')
 
 

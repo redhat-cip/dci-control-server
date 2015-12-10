@@ -61,7 +61,8 @@ def create_jobs(user_info):
         'created_at': datetime.datetime.utcnow().isoformat(),
         'updated_at': datetime.datetime.utcnow().isoformat(),
         'etag': etag,
-        'recheck': values.get('recheck', False)
+        'recheck': values.get('recheck', False),
+        'status': 'new'
     })
 
     query = models.JOBS.insert().values(**values)
@@ -84,7 +85,8 @@ def schedule_jobs(user_info):
          'created_at': datetime.datetime.utcnow().isoformat(),
          'updated_at': datetime.datetime.utcnow().isoformat(),
          'etag': etag,
-         'recheck': values.get('recheck', False)}
+         'recheck': values.get('recheck', False),
+         'status': 'new'}
     )
 
     remoteci_id = values.get('remoteci_id')
