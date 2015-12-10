@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_6d881223",
+        "filename": "dci/server/app.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-10T12:39:08Z",
+      "side": 0,
+      "message": "just redefine a DCIControlServe(flask.Flask) class in order to override the make_default_options_response and process_response",
+      "revId": "555cf553d2a47667ccbd2dbc39522e28b1e6e4ba",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_ad9efa61",
+        "filename": "dci/server/app.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-10T12:39:08Z",
+      "side": 0,
+      "message": "this method is needed for CORS",
+      "revId": "555cf553d2a47667ccbd2dbc39522e28b1e6e4ba",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_cd9b3e71",
+        "filename": "dci/server/app.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-10T12:39:08Z",
+      "side": 0,
+      "message": "so as this one",
+      "revId": "555cf553d2a47667ccbd2dbc39522e28b1e6e4ba",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_8d8d3634",
+        "filename": "dci/server/tests/test_app.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-10T12:39:08Z",
+      "side": 0,
+      "message": "we need to keep this test",
+      "revId": "555cf553d2a47667ccbd2dbc39522e28b1e6e4ba",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bada0100_2d820a01",
+        "filename": "dci/server/tests/test_app.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-10T12:39:08Z",
+      "side": 0,
+      "message": "and this one",
+      "revId": "555cf553d2a47667ccbd2dbc39522e28b1e6e4ba",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
