@@ -61,22 +61,18 @@ def reject():
                           content_type='application/json')
 
 
-def is_admin(user):
+def is_admin(user, super=False):
+    if super and user['role'] != 'admin':
+        return False
     return user['team_id'] == dci_config.TEAM_ADMIN_ID
 
 
-def is_super_admin(user):
-    return is_admin(user) and user['role'] == 'admin'
-
-
-def is_admin_or_in_same_team(user, team_id):
-    if not is_admin(user) and user['team_id'] != team_id:
+def is_admin_or_in_same_team(user, team_id, admin_user=False):
+    if is_admin(user):
+        return
+    if user['team_id'] != team_id:
         raise UNAUTHORIZED
-
-
-def is_admin_or_admin_user_in_same_team(user, team_id):
-    if (not is_admin(user) and
-            (user['team_id'] != team_id or user['role'] != 'admin')):
+    if admin_user and user['role'] != 'admin':
         raise UNAUTHORIZED
 
 

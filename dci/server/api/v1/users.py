@@ -51,7 +51,7 @@ def _verify_existence_and_get_user(user_id):
 def create_users(user):
     values = schemas.user.post(flask.request.json)
 
-    auth2.is_admin_or_admin_user_in_same_team(user, values['team_id'])
+    auth2.is_admin_or_in_same_team(user, values['team_id'], admin_user=True)
 
     etag = utils.gen_etag()
     password_hash = auth2.hash_password(values.get('password'))
@@ -163,7 +163,7 @@ def put_user(user, user_id):
     puser = dict(_verify_existence_and_get_user(user_id))
 
     if puser['id'] != user_id:
-        auth2.is_admin_or_admin_user_in_same_team(user, puser['team_id'])
+        auth2.is_admin_or_in_same_team(user, puser['team_id'], admin_user=True)
 
     # TODO(yassine): if the user wants to change the team, then check its done
     # by a super admin. ie. team=dci_config.TEAM_ADMIN_ID.
@@ -198,7 +198,7 @@ def delete_user_by_id_or_name(user, user_id):
 
     duser = _verify_existence_and_get_user(user_id)
 
-    auth2.is_admin_or_admin_user_in_same_team(user, duser['team_id'])
+    auth2.is_admin_or_in_same_team(user, duser['team_id'], admin_user=True)
 
     query = models.USERS.delete().where(
         sqlalchemy.sql.and_(

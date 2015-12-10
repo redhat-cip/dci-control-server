@@ -133,7 +133,7 @@ def put_team(user, t_id):
 
     values = schemas.team.put(flask.request.json)
 
-    auth2.is_admin_or_admin_user_in_same_team(user, t_id)
+    auth2.is_admin_or_in_same_team(user, t_id, admin_user=True)
 
     _verify_existence_and_get_team(t_id)
 
