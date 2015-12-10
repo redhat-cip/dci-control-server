@@ -153,6 +153,7 @@ JOBS = sa.Table(
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
     sa.Column('recheck', sa.Boolean, default=False),
+    sa.Column('status', sa.String(255), default='started'),
     sa.Column('jobdefinition_id', sa.String(36),
               sa.ForeignKey('jobdefinitions.id', ondelete="CASCADE"),
               nullable=False),
