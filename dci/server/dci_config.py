@@ -17,7 +17,7 @@
 import os
 import sys
 
-from dci.server.db import models_core as models
+from dci.server.db import models
 
 import flask
 import sqlalchemy

@@ -15,8 +15,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import dci.server.auth2 as auth2
-import dci.server.db.models_core as models
+from dci.server import auth
+from dci.server.db import models
 import dci.server.dci_config as config
 import functools
 import hashlib
@@ -259,7 +259,7 @@ def init_db(db_conn):
 
     admin = db_ins(models.USERS, name='admin',
                    role='admin',
-                   password=auth2.hash_password('admin'),
+                   password=auth.hash_password('admin'),
                    team_id=admin_team)
 
     db_ins(models.JOIN_USERS_ROLES, user_id=admin, role_id=admin_role)
@@ -271,9 +271,9 @@ def init_db(db_conn):
         c['id'] = db_ins(models.TEAMS, name=company)
 
         user = {'name': '%s_user' % (company.lower(),),
-                'password': auth2.hash_password(company), 'team_id': c['id']}
+                'password': auth.hash_password(company), 'team_id': c['id']}
         admin = {'name': '%s_admin' % (company.lower(),),
-                 'password': auth2.hash_password(company), 'team_id': c['id']}
+                 'password': auth.hash_password(company), 'team_id': c['id']}
 
         c['user'] = db_ins(models.USERS, **user)
         c['admin'] = db_ins(models.USERS, **admin)
