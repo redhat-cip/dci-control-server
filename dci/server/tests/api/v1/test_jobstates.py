@@ -21,23 +21,9 @@ def test_create_jobstates(admin, job_id, team_id):
                           'status': 'ongoing', 'comment': 'kikoolol'}).data
     js_id = js['jobstate']['id']
     js = admin.get('/api/v1/jobstates/%s' % js_id).data
+    job = admin.get('/api/v1/jobs/%s' % job_id).data
     assert js['jobstate']['comment'] == 'kikoolol'
-
-
-def test_put_jobstates(admin, job_id, team_id):
-    js = admin.post('/api/v1/jobstates',
-                    data={'job_id': job_id, 'team_id': team_id,
-                          'status': 'ongoing', 'comment': 'kikoolol'})
-    js_id = js.data['jobstate']['id']
-    js_etag = js.headers.get("ETag")
-
-    pjs = admin.put('/api/v1/jobstates/%s' % js_id,
-                    data={'status': 'ptdr'},
-                    headers={'If-match': js_etag})
-    assert pjs.status_code == 204
-
-    gjs = admin.get('/api/v1/jobstates/%s' % js_id).data
-    assert gjs['jobstate']['status'] == 'ptdr'
+    assert job['job']['status'] == 'ongoing'
 
 
 def test_get_all_jobstates(admin, job_id, team_id):
@@ -243,29 +229,6 @@ def test_get_jobstate_as_user(user, team_user_id, jobstate_id, job_user_id):
     jobstate_id = jobstate['jobstate']['id']
     jobstate = user.get('/api/v1/jobstates/%s' % jobstate_id)
     assert jobstate.status_code == 200
-
-
-def test_put_jobstate_as_user(user, team_user_id, jobstate_id, admin,
-                              job_user_id):
-    js_user = user.post('/api/v1/jobstates',
-                        data={'job_id': job_user_id, 'team_id': team_user_id,
-                              'comment': 'kikoolol',
-                              'status': 'ongoing'})
-    js_user_id = js_user.data['jobstate']['id']
-    jobstate = user.get('/api/v1/jobstates/%s' % js_user_id)
-    jobstate_etag = jobstate.headers.get("ETag")
-
-    jobstate_put = user.put('/api/v1/jobstates/%s' % js_user_id,
-                            data={'status': 'success'},
-                            headers={'If-match': jobstate_etag})
-    assert jobstate_put.status_code == 204
-
-    jobstate = admin.get('/api/v1/jobstates/%s' % jobstate_id)
-    jobstate_etag = jobstate.headers.get("ETag")
-    jobstate_put = user.put('/api/v1/jobstates/%s' % jobstate_id,
-                            data={'status': 'succes'},
-                            headers={'If-match': jobstate_etag})
-    assert jobstate_put.status_code == 401
 
 
 def test_delete_jobstate_as_user(user, team_user_id, admin, job_user_id,

@@ -155,8 +155,7 @@ def test_get_all_jobs_with_where(admin, jobdefinition_id, team_id,
     assert db_job_id == job_id
 
 
-def test_get_all_jobdefinitions_with_sort(admin, jobdefinition_id, team_id,
-                                          remoteci_id):
+def test_get_all_jobs_with_sort(admin, jobdefinition_id, team_id, remoteci_id):
     # create 3 jobs ordered by created time
     data = {'jobdefinition_id': jobdefinition_id,
             'team_id': team_id,
