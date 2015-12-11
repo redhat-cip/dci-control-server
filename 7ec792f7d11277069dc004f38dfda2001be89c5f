@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bada0100_10f639d8",
+        "filename": "dci/server/db/models.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-11T13:46:27Z",
+      "side": 1,
+      "message": "you forget to remove the table",
+      "revId": "7ec792f7d11277069dc004f38dfda2001be89c5f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
