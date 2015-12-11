@@ -22,6 +22,9 @@ import uuid
 
 from dci.server.common import utils
 
+# convenient alias
+memoized = utils.memoized
+
 
 def create_component(
         client,

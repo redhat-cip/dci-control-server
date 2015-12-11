@@ -20,6 +20,7 @@ from dci.server import dci_config
 from dci.server.tests import db_provision_test
 import dci.server.tests.utils as utils
 
+from passlib.apps import custom_app_context as pwd_context
 import pytest
 import sqlalchemy
 import sqlalchemy_utils.functions
@@ -42,6 +43,12 @@ def engine(request):
 
     models.metadata.create_all(engine)
     return engine
+
+
+@pytest.fixture(scope='session', autouse=True)
+def memoize_password_hash():
+    pwd_context.verify = utils.memoized(pwd_context.verify)
+    pwd_context.encrypt = utils.memoized(pwd_context.encrypt)
 
 
 @pytest.fixture

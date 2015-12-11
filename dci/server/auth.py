@@ -29,7 +29,7 @@ UNAUTHORIZED = exc.DCIException('Operation not authorized.', status_code=401)
 
 
 def hash_password(password):
-        return pwd_context.encrypt(password)
+    return pwd_context.encrypt(password)
 
 
 def build_auth(username, password):
