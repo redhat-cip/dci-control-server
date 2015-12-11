@@ -24,19 +24,6 @@ from dci.server.common import utils
 metadata = sa.MetaData()
 
 
-COMPONENTYPES = sa.Table(
-    'componenttypes', metadata,
-    sa.Column('id', sa.String(36), primary_key=True,
-              default=utils.gen_uuid),
-    sa.Column('created_at', sa.DateTime(),
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('updated_at', sa.DateTime(),
-              onupdate=datetime.datetime.utcnow,
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('name', sa.String(255), unique=True, nullable=False),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag))
-
 COMPONENTS = sa.Table(
     'components', metadata,
     sa.Column('id', sa.String(36), primary_key=True,
@@ -49,9 +36,7 @@ COMPONENTS = sa.Table(
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), nullable=False),
-    sa.Column('componenttype_id', sa.String(36),
-              sa.ForeignKey('componenttypes.id', ondelete="CASCADE"),
-              nullable=False),
+    sa.Column('type', sa.String(255), nullable=False),
     sa.Column('canonical_project_name', sa.String),
     sa.Column('data', sa_utils.JSONType),
     sa.Column('sha', sa.Text),
