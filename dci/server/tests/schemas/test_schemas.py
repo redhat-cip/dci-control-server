@@ -163,7 +163,7 @@ class TestUser(utils.SchemaTesting):
 
 class TestComponent(utils.SchemaTesting):
     schema = schemas.component
-    data = dict([utils.NAME, utils.COMPONENTTYPE])
+    data = dict([utils.NAME, utils.TYPE])
 
     @staticmethod
     def generate_optionals():
@@ -176,15 +176,13 @@ class TestComponent(utils.SchemaTesting):
         invalids = []
         errors = []
         for field in ['sha', 'title', 'message', 'git', 'ref',
-                      'canonical_project_name']:
+                      'canonical_project_name', 'type']:
             invalid, error = utils.generate_invalid_string(field)
             invalids.append(invalid)
             errors.append(error)
 
-        invalids = dict([utils.INVALID_NAME, utils.INVALID_COMPONENTTYPE,
-                         utils.INVALID_DATA] + invalids)
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_DATA] + invalids)
         errors = dict([utils.INVALID_NAME_ERROR,
-                       utils.INVALID_COMPONENTTYPE_ERROR,
                        utils.INVALID_DATA_ERROR] + errors)
 
         return invalids, errors
@@ -193,7 +191,7 @@ class TestComponent(utils.SchemaTesting):
         super(TestComponent, self).test_post_extra_data(self.data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'componenttype_id')
+        errors = utils.generate_errors('name', 'type')
         super(TestComponent, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):

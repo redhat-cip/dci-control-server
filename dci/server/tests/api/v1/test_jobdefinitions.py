@@ -23,7 +23,7 @@ def test_create_jobdefinitions(admin, test_id):
     assert jd['jobdefinition']['name'] == 'pname'
 
 
-# TODO(yassine): enabled later, integrity constraint missing
+# enabled later
 def loltest_create_jobdefinitions_already_exist(admin, test_id):
     data = {'name': 'pname', 'test_id': test_id}
     jd = admin.post('/api/v1/jobdefinitions', data=data).status_code
@@ -205,15 +205,14 @@ def test_delete_jobdefinition_not_found(admin):
 
 
 # Tests for jobdefinition and components management
-def test_add_component_to_jobdefinitions_and_get(admin, test_id,
-                                                 componenttype_id):
+def test_add_component_to_jobdefinitions_and_get(admin, test_id):
     # create a jobdefinition
     data = {'name': 'pname', 'test_id': test_id}
     pjd = admin.post('/api/v1/jobdefinitions', data=data).data
     pjd_id = pjd['jobdefinition']['id']
 
     # create a component
-    data = {'name': 'pname', 'componenttype_id': componenttype_id}
+    data = {'name': 'pname', 'type': 'gerrit_review'}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
 
@@ -228,14 +227,14 @@ def test_add_component_to_jobdefinitions_and_get(admin, test_id,
     assert component_from_jobdefinition['components'][0] == pc['component']
 
 
-def test_delete_component_from_jobdefinition(admin, test_id, componenttype_id):
+def test_delete_component_from_jobdefinition(admin, test_id):
     # create a jobdefinition
     data = {'name': 'pname', 'test_id': test_id}
     pjd = admin.post('/api/v1/jobdefinitions', data=data).data
     pjd_id = pjd['jobdefinition']['id']
 
     # create a component
-    data = {'name': 'pname', 'componenttype_id': componenttype_id}
+    data = {'name': 'pname', 'type': 'gerrit_review'}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
 

@@ -28,6 +28,7 @@ text_type = six.text_type()
 ID = 'id', text_type
 
 NAME = 'name', text_type
+TYPE = 'type', text_type
 ETAG = 'etag', text_type
 DATA = 'data', {'foo': 'bar'}
 PASSWORD = 'password', text_type
@@ -54,11 +55,6 @@ INVALID_URL_ERROR = 'url', schemas.INVALID_URL
 TEAM = 'team_id', ID[1]
 INVALID_TEAM = 'team_id', INVALID_ID
 INVALID_TEAM_ERROR = 'team_id', schemas.INVALID_TEAM
-
-COMPONENTTYPE = 'componenttype_id', ID[1]
-INVALID_COMPONENTTYPE = 'componenttype_id', INVALID_ID
-INVALID_COMPONENTTYPE_ERROR = ('componenttype_id',
-                               schemas.INVALID_COMPONENT_TYPE)
 
 TEST = 'test_id', ID[1]
 INVALID_TEST = 'test_id', INVALID_ID

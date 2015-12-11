@@ -17,7 +17,6 @@
 
 def test_api_with_unauthorized_credentials(unauthorized):
     assert unauthorized.get('/api/v1/components').status_code == 401
-    assert unauthorized.get('/api/v1/componenttypes').status_code == 401
     assert unauthorized.get('/api/v1/jobdefinitions').status_code == 401
     assert unauthorized.get('/api/v1/jobs').status_code == 401
     assert unauthorized.get('/api/v1/jobstates').status_code == 401
