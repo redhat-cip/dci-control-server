@@ -203,6 +203,14 @@ def create_jobstates_and_files(db_conn, job, company_id):
 
 
 def db_insert(db_conn, model_item, **kwargs):
+
+    if model_item == models.JOBSTATES:
+        job_id = kwargs['job_id']
+        query_update_job = models.JOBS.update().where(
+            models.JOBS.c.id == job_id).values(
+            status=kwargs['status'])
+        db_conn.execute(query_update_job)
+
     query = model_item.insert().values(**kwargs)
     return db_conn.execute(query).inserted_primary_key[0]
 
@@ -250,19 +258,13 @@ def init_db(db_conn):
     for test in TESTS:
         tests[test] = db_ins(models.TESTS, name=test, data={})
 
-    # Create roles
-    admin_role = db_ins(models.ROLES, name='admin')
-    user_role = db_ins(models.ROLES, name='user')
-
     # Create the super admin user
     admin_team = db_ins(models.TEAMS, name='admin')
 
-    admin = db_ins(models.USERS, name='admin',
-                   role='admin',
-                   password=auth.hash_password('admin'),
-                   team_id=admin_team)
-
-    db_ins(models.JOIN_USERS_ROLES, user_id=admin, role_id=admin_role)
+    db_ins(models.USERS, name='admin',
+           role='admin',
+           password=auth.hash_password('admin'),
+           team_id=admin_team)
 
     # For each constructor create an admin and a user, cis and jobs
     for company in COMPANIES:
@@ -277,11 +279,6 @@ def init_db(db_conn):
 
         c['user'] = db_ins(models.USERS, **user)
         c['admin'] = db_ins(models.USERS, **admin)
-
-        db_ins(models.JOIN_USERS_ROLES, user_id=c['user'],
-               role_id=user_role)
-        db_ins(models.JOIN_USERS_ROLES, user_id=c['admin'],
-               role_id=admin_role)
 
         remote_cis = create_remote_cis(db_conn, c, tests)
         jobs = create_jobs(db_conn, c['id'], remote_cis)

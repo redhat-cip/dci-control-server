@@ -103,7 +103,6 @@ def get_all_jobstates(user_info, j_id=None):
                                  _JS_COLUMNS)
 
     # used for counting the number of rows when j_id is not None
-    where_j_cond = None
     if j_id is not None:
         where_j_cond = models.JOBSTATES.c.job_id == j_id
         query = query.where(where_j_cond)
