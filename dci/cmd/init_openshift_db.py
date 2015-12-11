@@ -70,24 +70,12 @@ def init_db(db_conn):
     # Create team admin
     team_admin_id = db_insert_with_name(models.TEAMS, name='admin')
 
-    # Create admin role
-    role_admin_id = db_insert_with_name(models.ROLES, name='admin')
-
-    # Create admin user
-    user_admin_id = db_insert_with_name(models.USERS,
-                                        name=DCI_LOGIN,
-                                        password=DCI_PASSWORD_HASH,
-                                        team_id=team_admin_id)
-
-    # Create one user_roles entry
-    query = models.JOIN_USERS_ROLES.insert().values(user_id=user_admin_id,
-                                                    role_id=role_admin_id)
-    try:
-        db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        # Safely ignore this exception because the user_roles entry already
-        # exists.
-        pass
+    # Create super admin user
+    db_insert_with_name(models.USERS,
+                        name=DCI_LOGIN,
+                        password=DCI_PASSWORD_HASH,
+                        role='admin',
+                        team_id=team_admin_id)
 
 
 def main():
