@@ -97,13 +97,6 @@ def user_admin(app, db_provisioning):
 
 
 @pytest.fixture
-def componenttype_id(admin):
-    pct = admin.post('/api/v1/componenttypes',
-                     data={'name': 'pname'}).data
-    return pct['componenttype']['id']
-
-
-@pytest.fixture
 def test_id(admin):
     test = admin.post('/api/v1/tests', data={'name': 'pname'}).data
     return test['test']['id']

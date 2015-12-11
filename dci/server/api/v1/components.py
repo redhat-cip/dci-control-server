@@ -30,7 +30,6 @@ from dci.server.db import models
 
 # associate column names with the corresponding SA Column object
 _C_COLUMNS = v1_utils.get_columns_name_with_objects(models.COMPONENTS)
-_VALID_EMBED = {'componenttype': models.COMPONENTYPES}
 
 
 def _verify_existence_and_get_c(c_id):
