@@ -9,3 +9,4 @@ requests
 voluptuous
 passlib>=1.6.2
 setuptools==18.5
+Werkzeug==0.10.4
