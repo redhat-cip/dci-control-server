@@ -31,6 +31,7 @@ class DciControlServer(flask.Flask):
     def __init__(self, conf):
         super(DciControlServer, self).__init__(__name__)
         self.config.update(conf)
+        self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
         self.es_engine = es_engine.DCIESEngine(conf)
 
