@@ -17,6 +17,12 @@
 from dci.server import auth
 from dci.server.db import models
 
+user_pw_hash = auth.hash_password('user')
+user_admin_pw_hash = auth.hash_password('user_admin')
+admin_pw_hash = auth.hash_password('admin')
+company_a_pw_hash = auth.hash_password('company_a_user')
+company_b_pw_hash = auth.hash_password('company_b_user')
+
 
 def provision(db_conn):
     def db_insert(model_item, **kwargs):
@@ -30,34 +36,29 @@ def provision(db_conn):
     team_user_id = db_insert(models.TEAMS, name='user')
 
     # Create users
-    user_pw_hash = auth.hash_password('user')
     db_insert(models.USERS,
               name='user',
               role='user',
               password=user_pw_hash,
               team_id=team_user_id)
 
-    user_admin_pw_hash = auth.hash_password('user_admin')
     db_insert(models.USERS,
               name='user_admin',
               role='admin',
               password=user_admin_pw_hash,
               team_id=team_user_id)
 
-    admin_pw_hash = auth.hash_password('admin')
     admin_user_id = db_insert(models.USERS,
                               name='admin',
                               role='admin',
                               password=admin_pw_hash,
                               team_id=team_admin_id)
 
-    company_a_pw_hash = auth.hash_password('company_a_user')
     company_a_user_id = db_insert(models.USERS,
                                   name='company_a_user',
                                   password=company_a_pw_hash,
                                   team_id=company_a_id)
 
-    company_b_pw_hash = auth.hash_password('company_b_user')
     company_b_user_id = db_insert(models.USERS,
                                   name='company_b_user',
                                   password=company_b_pw_hash,

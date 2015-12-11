@@ -23,7 +23,7 @@ from dci.server.common import schemas
 
 
 @api.route('/search', methods=['POST'])
-@auth.requires_auth()
+@auth.requires_auth
 def search():
     values = schemas.search.post(flask.request.json)
 

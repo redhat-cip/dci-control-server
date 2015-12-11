@@ -40,12 +40,13 @@ def _verify_existence_and_get_jobstate(js_id):
 
 
 @api.route('/jobstates', methods=['POST'])
-@auth.requires_auth()
-def create_jobstates(user_info):
+@auth.requires_auth
+def create_jobstates(user):
     values = schemas.jobstate.post(flask.request.json)
 
     # If it's not a super admin nor belongs to the same team_id
-    auth.check_super_admin_or_same_team(user_info, values['team_id'])
+    if not(auth.is_admin(user) or auth.is_in_team(user, values['team_id'])):
+        raise auth.UNAUTHORIZED
 
     etag = utils.gen_etag()
     values.update({
@@ -77,8 +78,8 @@ def create_jobstates(user_info):
 
 
 @api.route('/jobstates', methods=['GET'])
-@auth.requires_auth()
-def get_all_jobstates(user_info, j_id=None):
+@auth.requires_auth
+def get_all_jobstates(user, j_id=None):
     """Get all jobstates.
     """
     args = schemas.args(flask.request.args.to_dict())
@@ -95,15 +96,14 @@ def get_all_jobstates(user_info, j_id=None):
                                              [models.JOBSTATES], embed,
                                              _VALID_EMBED)
 
-    if user_info.role != auth.SUPER_ADMIN:
-        query = query.where(models.JOBSTATES.c.team_id == user_info.team)
+    if not auth.is_admin(user):
+        query = query.where(models.JOBSTATES.c.team_id == user['team_id'])
 
     query = v1_utils.sort_query(query, args['sort'], _JS_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.JOBSTATES,
                                  _JS_COLUMNS)
 
     # used for counting the number of rows when j_id is not None
-    where_j_cond = None
     if j_id is not None:
         where_j_cond = models.JOBSTATES.c.job_id == j_id
         query = query.where(where_j_cond)
@@ -127,8 +127,8 @@ def get_all_jobstates(user_info, j_id=None):
 
 
 @api.route('/jobstates/<js_id>', methods=['GET'])
-@auth.requires_auth()
-def get_jobstate_by_id(user_info, js_id):
+@auth.requires_auth
+def get_jobstate_by_id(user, js_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
@@ -141,8 +141,8 @@ def get_jobstate_by_id(user_info, js_id):
                                              [models.JOBSTATES], embed,
                                              _VALID_EMBED)
 
-    if user_info.role != auth.SUPER_ADMIN:
-        query = query.where(models.JOBSTATES.c.team_id == user_info.team)
+    if not auth.is_admin(user):
+        query = query.where(models.JOBSTATES.c.team_id == user['team_id'])
 
     query = query.where(models.JOBSTATES.c.id == js_id)
 
@@ -160,14 +160,15 @@ def get_jobstate_by_id(user_info, js_id):
 
 
 @api.route('/jobstates/<js_id>', methods=['DELETE'])
-@auth.requires_auth()
-def delete_jobstate_by_id(user_info, js_id):
+@auth.requires_auth
+def delete_jobstate_by_id(user, js_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     jobstate = dict(_verify_existence_and_get_jobstate(js_id))
 
-    auth.check_super_admin_or_same_team(user_info, jobstate['team_id'])
+    if not(auth.is_admin(user) or auth.is_in_team(user, jobstate['team_id'])):
+        raise auth.UNAUTHORIZED
 
     where_clause = sqlalchemy.sql.and_(
         models.JOBSTATES.c.id == js_id,
