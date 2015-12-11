@@ -41,8 +41,11 @@ app:
         - "35729:35729"
     volumes:
         - ../dci/dci_databrowser:/opt/dci_databrowser
+        - /tmp/.X11-unix:/tmp/.X11-unix
     links:
         - api
+    environment:
+        - DISPLAY
     command: /bin/bash
     stdin_open: true
     tty: true

@@ -75,7 +75,6 @@ gulp.task('js:test', ['clean'], function() {
 gulp.task('css', ['clean'], function() {
   var cssEntries = [
     'node_modules/bootstrap/dist/css/bootstrap.css',
-    'node_modules/angular-loading-bar/build/loading-bar.css',
     'src/css/**/*.css'
   ];
 
@@ -137,6 +136,23 @@ gulp.task('test:e2e', ['build:test'], function(cb) {
     ]);
   })
   .then(function() {
+    cb(error);
+  });
+});
+
+gulp.task('test:e2e:debug', ['build:test'], function(cb) {
+  var server;
+  var error;
+  utils.server(DIST, config.portTest, false)
+  .then(function(s) {
+    server = s;
+    return utils.protractor(server.address, 'protractor.conf.debug.js', true);
+  })
+  .fail(function(err) {
+    error = err;
+  })
+  .fin(function() {
+    server.close();
     cb(error);
   });
 });
