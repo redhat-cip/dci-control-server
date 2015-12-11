@@ -71,8 +71,8 @@ def test_get_all_teams_with_pagination(admin):
     admin.post('/api/v1/teams', data={'name': 'pname3'})
     admin.post('/api/v1/teams', data={'name': 'pname4'})
     ts = admin.get('/api/v1/teams').data
-    # TODO(yassine): 4 teams was already created in the db
-    assert ts['_meta']['count'] == 8
+    # TODO(yassine): 2 teams was already created in the db
+    assert ts['_meta']['count'] == 6
 
     # verify limit and offset are working well
     ts = admin.get('/api/v1/teams?limit=2&offset=0').data
