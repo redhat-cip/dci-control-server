@@ -30,7 +30,6 @@ from dci.server.db import models
 
 # associate column names with the corresponding SA Column object
 _C_COLUMNS = v1_utils.get_columns_name_with_objects(models.COMPONENTS)
-_VALID_EMBED = {'componenttype': models.COMPONENTYPES}
 
 
 def _verify_existence_and_get_c(c_id):
@@ -70,16 +69,8 @@ def get_all_components(user, ct_id=None):
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
 
-    v1_utils.verify_embed_list(args['embed'], _VALID_EMBED.keys())
-
     # the default query with no parameters
     query = sqlalchemy.sql.select([models.COMPONENTS])
-
-    # if embed then construct the query with a join
-    if args['embed']:
-        query = v1_utils.get_query_with_join(models.COMPONENTS,
-                                             [models.COMPONENTS],
-                                             args['embed'], _VALID_EMBED)
 
     query = v1_utils.sort_query(query, args['sort'], _C_COLUMNS)
     query = v1_utils.where_query(query, args['where'], models.COMPONENTS,
@@ -115,16 +106,9 @@ def get_all_components(user, ct_id=None):
 def get_component_by_id_or_name(user, c_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
     # the default query with no parameters
     query = sqlalchemy.sql.select([models.COMPONENTS])
-
-    # if embed then construct the query with a join
-    if embed:
-        query = v1_utils.get_query_with_join(models.COMPONENTS,
-                                             [models.COMPONENTS], embed,
-                                             _VALID_EMBED)
 
     query = query.where(sqlalchemy.sql.or_(models.COMPONENTS.c.id == c_id,
                                            models.COMPONENTS.c.name == c_id))
