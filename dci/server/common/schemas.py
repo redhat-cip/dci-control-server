@@ -41,7 +41,6 @@ INVALID_URL = 'not a valid URL'
 INVALID_PRIORITY = 'not a valid priority integer (must be beetween 0 and 1000)'
 
 INVALID_TEAM = 'not a valid team id'
-INVALID_COMPONENT_TYPE = 'not a valid componenttype id'
 INVALID_TEST = 'not a valid test id'
 INVALID_JOB_DEFINITION = 'not a valid jobdefinition id'
 INVALID_REMOTE_CI = 'not a valid remoteci id'
@@ -171,7 +170,7 @@ component = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('ref', default=None): six.text_type,
     v.Optional('canonical_project_name', default=None): six.text_type,
     v.Optional('url', default=None): Url(),
-    'componenttype_id': v.Any(UUID_FIELD, msg=INVALID_COMPONENT_TYPE)
+    'type': six.text_type
 })
 
 component = schema_factory(component)

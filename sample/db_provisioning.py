@@ -223,14 +223,9 @@ def lorem():
 def init_db(db_conn):
     db_ins = functools.partial(db_insert, db_conn)
 
-    component_types = []
-    for component_type in COMPONENT_TYPES:
-        component_types.append(db_ins(models.COMPONENTYPES,
-                                      name=component_type))
-
     components = []
     for component in COMPONENTS:
-        component_type = random.choice(component_types)
+        component_type = random.choice(COMPONENT_TYPES)
 
         for _ in range(0, 5):
             project = random.choice(PROJECT_NAMES)
@@ -241,7 +236,7 @@ def init_db(db_conn):
             url = 'https://github.com/%s/commit/%s'
             attrs = {
                 'name': component,
-                'componenttype_id': component_type,
+                'type': component_type,
                 'canonical_project_name': '%s - %s' % (component, project),
                 # This entry is basically a copy of the other fields,
                 # this will may be removed in the future
