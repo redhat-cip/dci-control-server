@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from sample import db_provisioning
+
 
 def test_cors_preflight(admin):
     headers = {
@@ -32,3 +34,12 @@ def test_cors_preflight(admin):
 def test_cors_headers(admin):
     resp = admin.get('/api/v1/jobs')
     assert resp.headers['Access-Control-Allow-Origin'] == '*'
+
+
+def test_sample_db_provisionning(engine, db_clean):
+    """Test the sample init_db method, to be sure it will
+    not be broken when updating
+    """
+
+    with engine.begin() as db_conn:
+        db_provisioning.init_db(db_conn)

@@ -15,7 +15,6 @@
 # under the License.
 
 import dci.server.common.utils as utils
-import sample.db_provisioning
 
 
 def test_dict_merge():
@@ -29,12 +28,3 @@ def test_dict_merge():
         'rob': 34,
         'tot': {'a': {'b': 'string'}, 'c': [1, 2, 3, 4]}
     }
-
-
-def test_sample_db_provisionning(engine, db_clean):
-    """Test the sample init_db method, to be sure it will
-    not be broken when updating
-    """
-
-    with engine.begin() as db_conn:
-        sample.db_provisioning.init_db(db_conn)
