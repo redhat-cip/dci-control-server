@@ -1,5 +1,13 @@
 <div dci-job></div>
-<div class="tile tile-file" ng-repeat="file in job.jobstate.files">
-  <h3>{{file.name}}</h3>
-  <pre>{{file.content}}</pre>
+
+<div accordion>
+  <div accordion-group ng-repeat="jobstate in job.jobstates" is-open="$first">
+    <div accordion-heading>
+      {{ jobstate.status }}: {{ jobstate.comment }}
+    </div>
+    <div class="tile tile-file" ng-repeat="file in jobstate.files">
+      <h3>{{file.name}}</h3>
+      <pre>{{file.content}}</pre>
+    </div>
+  </div>
 </div>

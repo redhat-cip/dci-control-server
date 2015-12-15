@@ -15,6 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import datetime
 from dci.server import auth
 from dci.server.db import models
 import dci.server.dci_config as config
@@ -48,6 +49,9 @@ REMOTE_CIS_ATTRS = {
 }
 
 NAMES = ['foobar', 'fubar', 'foo', 'bar', 'baz', 'qux', 'quux', 'norf']
+
+JOB_STATUSES = ['failure', 'success', 'ongoing', 'new', 'initializing',
+                'killed', 'unfinished']
 
 LOREM_IPSUM = [
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
@@ -122,9 +126,17 @@ def create_jobs(db_conn, company_id, remote_cis):
     jobs = []
     for remote_ci, job_definitions in remote_cis.items():
         for job_definition in job_definitions:
-            jobs.append(db_insert(db_conn, models.JOBS, remoteci_id=remote_ci,
-                                  jobdefinition_id=job_definition['id'],
-                                  team_id=company_id))
+            delta = datetime.timedelta(hours=random.randint(0, 10))
+            since = datetime.timedelta(days=random.randint(0, 5),
+                                       hours=random.randint(0, 10))
+            updated_at = datetime.datetime.now() - since
+            created_at = updated_at - delta
+            status = random.choice(JOB_STATUSES)
+            job = db_insert(db_conn, models.JOBS, remoteci_id=remote_ci,
+                            jobdefinition_id=job_definition['id'],
+                            created_at=created_at, updated_at=updated_at,
+                            status=status, team_id=company_id)
+            jobs.append(job)
     return jobs
 
 
@@ -165,7 +177,6 @@ def create_jobstates_and_files(db_conn, job, company_id):
     job_id, job = job
     # choose the final step
     step = random.choice(['new', 'init', 'progress', 'finish'])
-
     # create "new" jobstate do not create files
     db_insert(db_conn, models.JOBSTATES, status='new',
               comment='Job "%s" created' % (job['name'],), job_id=job_id,
