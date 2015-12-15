@@ -20,8 +20,11 @@ var lodash = require('lodash');
 
 require('angular-cookies');
 require('angular-ui-router');
+require('angular-bootstrap');
 
-module.exports = angular.module('app', ['ngCookies', 'ui.router'])
+module.exports = angular.module('app', [
+  'ngCookies', 'ui.router', 'ui.bootstrap'
+])
 .factory('moment', ['_', function(_) {
   moment.locale('en', {invalidDate: 'N/A'});
   moment.locale('fr', {invalidDate: 'N/A'});

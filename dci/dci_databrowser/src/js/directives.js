@@ -26,17 +26,10 @@ require('app')
 
       var job = scope.job;
 
-      api.getJobStates(job.id).then(function(jobstates) {
-        if (!jobstates.length)  return;
-        var jobstate = _.last(jobstates);
-
-        var end = moment(jobstate.created_at);
-        var start = moment(_.first(jobstates).created_at);
-        job.status = jobstate.status;
-        job.createdAt = start.fromNow()
-        job.timeRunning = end.to(start, true);
-        job.glyphicon = glyphicon(job.status);
-      });
+      var start = moment(job.created_at);
+      job.time_running = moment(job.updated_at).to(job.created_at, true);
+      job.created_at = start.fromNow();
+      job.glyphicon = glyphicon(job.status);
 
       scope.recheck = function() {
         api.recheckJob(job.id).then(function(job) {

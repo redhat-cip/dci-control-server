@@ -7,6 +7,7 @@ $gray        : gray;
 $gray-darker : darken($gray, 13.5%);
 $gray-dark   : darken($gray, 22.5%);
 $background  : #fff;
+$size: 14px;
 
 body {
   margin-top: 60px;
@@ -38,7 +39,7 @@ header.page-header {
     margin-bottom: 10px;
     padding: 4px;
     width: 300px;
-    font-size: 14px;
+    font-size: $size;
     color: #a6adad;
     border: 1px solid #f2f2f2;
     border-radius: 4px;
@@ -49,7 +50,7 @@ header.page-header {
   border-radius: 0;
   border: 1px solid;
   padding: .6em .5em;
-  font-size: 14px;
+  font-size: $size;
   box-shadow: 2px 4px 4px #ccc;
 }
 
@@ -131,20 +132,31 @@ ul {
   }
 }
 
-.form-filtering {
-  margin: 30px;
+
+.panel-group {
+  .panel {
+    border-color: black;
+    box-shadow: 2px 2px 2px #ccc;
+    border-radius: 0;
+  }
 }
 
-.filtering {
+.panel-default > .panel-heading {
+  background-color: $background;
+}
+
+.panel-title {
+  font-size: $size;
+}
+
+.list {
   display: flex;
   flex-wrap: wrap;
-
   label {
-    font-size: 14px;
+    font-size: $size;
     font-weight: normal;
     padding: 5px 15px 5px 5px;
   }
-
 }
 
 .pagination {

@@ -1,20 +1,24 @@
-<form class="form-filtering" ng-submit="search()">
-  <h3>Filtering</h3>
-  <div class="filtering">
-    <div ng-repeat="(key, _) in status">
-      <input id="{{key}}" ng-model="status[key]" type="checkbox"/>
-      <label for="{{key}}">{{key}}</label>
-    </div>
+<div accordion>
+  <div accordion-group heading="Filtering" is-open="isFilteringOpen" class="filtering">
+    <form ng-submit="search()">
+      <h5> Status </h5>
+      <div class="list">
+        <div ng-repeat="(key, _) in status">
+          <input id="{{key}}" ng-model="status[key]" type="checkbox"/>
+          <label for="{{key}}">{{key}}</label>
+        </div>
+      </div>
+      <h5> RemoteCI </h5>
+      <div class="list">
+        <div ng-repeat="(remoteci, _) in remotecis">
+          <input id="{{remoteci}}" ng-model="remotecis[remoteci]" type="checkbox"/>
+          <label for="{{remoteci}}">{{remoteci}}</label>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-xs btn-primary">Search</button>
+    </form>
   </div>
-  <div class="filtering">
-    <div ng-repeat="(remoteci, _) in remotecis">
-      <input id="{{remoteci}}" ng-model="remotecis[remoteci]" type="checkbox"/>
-      <label for="{{remoteci}}">{{remoteci}}</label>
-    </div>
-  </div>
-
-  <button type="submit" class="btn btn-xs btn-primary">Search</button>
-</form>
+</div>
 
 <ul class="job-list">
   <li ng-repeat="job in jobs" dci-job></li>

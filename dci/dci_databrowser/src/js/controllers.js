@@ -33,6 +33,7 @@ require('app')
     var $state = $injector.get('$state');
     var statuses = ['failure', 'success', 'ongoing', 'new',
                     'initializing', 'killed', 'unfinished'];
+
     $scope.page = page;
     $scope.jobs = jobs.jobs;
     $scope.remotecis = {};
@@ -46,6 +47,7 @@ require('app')
       this[remoteci] = _.contains($state.params.remoteci, remoteci);
     }, $scope.remotecis);
 
+
     $scope.search = function () {
       var params = {
         'status': _($scope.status).pick(_.identity).keys().join(','),
@@ -58,14 +60,18 @@ require('app')
       var total = $scope.total = Math.ceil(jobs._meta.count / 20);
       var go = function(page) {
         return function () {
-          $state.go('jobs', {
-            'page': page > total && total || page > 0 && page || 1
-          });
+          $state.go(
+            'jobs',
+            {'page': page > total && total || page > 0 && page || 1}
+          );
         }
       }
 
       $scope.previous = go(page - 1);
       $scope.next = go(page + 1);
+      $scope.isFilteringOpen = false;
+    } else {
+      $scope.isFilteringOpen = true;
     }
   }
 ])

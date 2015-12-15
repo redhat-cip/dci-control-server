@@ -61,7 +61,6 @@ require('app')
 
             $stateP.remoteci = remoteci = remoteci ? remoteci.split(',') : [];
             $stateP.status = status = status ? status.split(',') : [];
-
             if (remoteci.length || status.length) {
               return api.searchJobs(remoteci, status);
             } else {

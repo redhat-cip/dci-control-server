@@ -28,12 +28,10 @@ require('app')
 
   function getJobs(page) {
     var offset = 20 * (page - 1);
-    var config = {
-      'params': {
+    var config = {'params': {
         'limit': 20, 'offset': offset,
         'embed': 'remoteci,jobdefinition,jobdefinition.test'
-      }
-    };
+    }};
     return $http.get(urls.JOBS, config).then(_.property('data'));
   }
 
@@ -44,14 +42,17 @@ require('app')
 
   function searchJobs(remotecis, statuses) {
 
-    function retrieveJSs(status) {
-      var conf = {'params': {'where': 'status:' + status}};
-      return $http.get(urls.JOBSTATES, conf);
-    }
-
     function retrieveRCIs(remoteci) {
       var conf = {'params': {'where': 'name:' + remoteci}};
       return $http.get(urls.REMOTECIS, conf);
+    }
+
+    function retrieveJobs(status) {
+      var conf = {'params': {
+        'where': 'status:' + status,
+        'embed': 'remoteci,jobdefinition,jobdefinition.test'
+      }};
+      return $http.get(urls.JOBS, conf);
     }
 
     function retrieveJsRCI(remoteciResps) {
@@ -60,60 +61,33 @@ require('app')
       .flatten()
       .map(_.property('id'))
       .map(function(remoteci){
-        var conf = {'params': {'where': 'remoteci_id:' + remoteci}};
+        var conf = {'params': {
+          'embed': 'remoteci,jobdefinition,jobdefinition.test',
+          'where': 'remoteci_id:' + remoteci,
+        }};
         return $http.get(urls.JOBS, conf);
       })
       .thru($q.all)
-      .value()
-      .then(_.partialRight(_.map, _.property('data.jobs')))
-      .then(_.flatten)
-      .then(_.partialRight(_.map, _.property('id')));
+      .value();
     }
-
-    function retrieveJsS(jobstateResps) {
-      return _(jobstateResps)
-      .map(_.property('data.jobstates'))
-      .flatten()
-      .map(_.property('job_id'))
-      .uniq()
-      .map(function(job) {
-        var conf = {'params': {
-          'where': 'job_id:' + job, 'sort': '-created_at', 'limit': 1
-        }};
-        return $http.get(urls.JOBSTATES, conf);
-      })
-      .thru($q.all)
-      .value()
-      .then(_.partialRight(_.map, _.property('data.jobstates')))
-      .then(_.flatten)
-      .then(_.partialRight(_.filter, function(jobstate) {
-        return _.include(statuses, jobstate.status);
-      }))
-      .then(_.partialRight(_.map, _.property('job_id')));
-    }
-
     return $q.all([
       _(remotecis).map(retrieveRCIs).thru($q.all).value().then(retrieveJsRCI),
-      _(statuses).map(retrieveJSs).thru($q.all).value().then(retrieveJsS)
+      _(statuses).map(retrieveJobs).thru($q.all).value()
     ])
     .then(function(data) {
-      var remotecisJobs = data[0];
-      var statusesJobs = data[1];
-      if (statusesJobs.length && remotecisJobs.length) {
-        return _.intersection(statusesJobs, remotecisJobs);
+      var getJobs= _().map(_.property('data.jobs')).flatten();
+      var RCISJobs = getJobs.plant(_.first(data)).value();
+      var SSJobs = getJobs.plant(_.last(data)).value();
+
+      if (SSJobs.length && RCISJobs.length) {
+        var RCISJobsIds = _.pluck(RCISJobs, 'id');
+        return _.filter(SSJobs, function(job) {
+          return _.contains(RCISJobsIds, job.id);
+        });
       } else {
-        return statusesJobs.concat(remotecisJobs);
+        return SSJobs.concat(RCISJobs);
       }
     })
-    .then(function(jobs) {
-      return $q.all(_.map(jobs, function(job) {
-        var config = {'params': {
-          'embed': 'remoteci,jobdefinition,jobdefinition.test',
-        }};
-        return $http.get(urls.JOBS + job, config);
-      }));
-    })
-    .then(_.partialRight(_.map, _.property('data.job')))
     .then(function(jobs) {
       return {'jobs': jobs};
     });
@@ -140,15 +114,14 @@ require('app')
       })
       .value();
 
-      var job = _.last(data);
-      job.jobstate = _.last(job.jobstates);
-      return job;
+      return _.last(data);
     }
     var conf = {'params': {'embed': 'remoteci,jobdefinition'}};
+    var JSconf = {'params': {'sort': '-created_at'}};
 
     return $q.all([
       $http.get(urls.JOBS + job, conf),
-      $http.get(urls.JOBS + job + '/jobstates')
+      $http.get(urls.JOBS + job + '/jobstates', JSconf)
     ])
     .then(retrieveFiles)
     .then($q.all)
