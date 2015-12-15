@@ -95,13 +95,10 @@ require('app')
 
   function getJob(job) {
     var retrieveFiles = function(data) {
-      var job = _.assign(_.first(data).data.job,
-                         {'jobstates': _.last(data).data.jobstates});
-
-      return _.map(job.jobstates, function(js) {
-        var conf = {'params': {'where': 'jobstate_id:' + js.id}};
-        return $http.get(urls.FILES, conf);
-      }).concat([job]);
+      return _.assign(
+        _.first(data).data.job,
+        {'jobstates': _.last(data).data.jobstates}
+      );
     }
 
     var parseFiles = function(data) {
@@ -124,8 +121,12 @@ require('app')
       $http.get(urls.JOBS + job + '/jobstates', JSconf)
     ])
     .then(retrieveFiles)
-    .then($q.all)
-    .then(parseFiles);
+  }
+
+  function getFiles(jobstateID) {
+    var conf = {'params': {'where': 'jobstate_id:' + jobstateID}};
+    return $http.get(urls.FILES, conf)
+    .then(_.property('data.files'));
   }
 
   function getRemoteCIS() {
@@ -142,6 +143,7 @@ require('app')
     getJobs: getJobs,
     getJob: getJob,
     getJobStates: getJobStates,
+    getFiles: getFiles,
     getRemoteCIS: getRemoteCIS,
     recheckJob: recheckJob,
     searchJobs: searchJobs
