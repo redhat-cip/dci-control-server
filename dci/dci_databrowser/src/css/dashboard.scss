@@ -61,6 +61,11 @@ ul {
   }
 }
 
+a {
+  cursor: pointer;
+}
+
+
 .job-tile {
   display: flex;
   align-items: stretch;
@@ -68,10 +73,6 @@ ul {
   margin-bottom: 10px;
   border-left-width: 8px;
   min-height: 100px;
-
-  a {
-    cursor: pointer;
-  }
 
   .tile-main {
     flex: 0 1 50%;
@@ -173,4 +174,8 @@ ul {
     font-weight: normal;
     padding: 5px 15px 5px 5px;
   }
+}
+
+.alerts  {
+  margin-top: 25px;
 }

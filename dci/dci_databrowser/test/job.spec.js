@@ -38,8 +38,12 @@ describe('DCI homepage', function() {
   });
 
   beforeEach(function() {
+    var cookie = JSON.stringify({
+      status: 2,
+      team: {name: 'admin'}
+    });
     browser.get('/');
-    browser.manage().addCookie('token', 'sometoken', '/');
+    browser.manage().addCookie('user', encodeURIComponent(cookie), '/');
   });
 
   it('should be possible to recheck a job', function() {

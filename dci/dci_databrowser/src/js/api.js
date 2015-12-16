@@ -22,11 +22,14 @@ require('app')
   JOBS: conf.apiURL + '/api/v1/jobs/',
   REMOTECIS: conf.apiURL + '/api/v1/remotecis/',
   JOBSTATES: conf.apiURL + '/api/v1/jobstates/',
-  FILES: conf.apiURL + '/api/v1/files/'
+  FILES: conf.apiURL + '/api/v1/files/',
+  USERS: conf.apiURL + '/api/v1/users/',
+  TEAMS: conf.apiURL + '/api/v1/teams/'
 })
 .factory('api', ['_', '$q', '$http', 'apiURLS', function(_, $q, $http, urls) {
+  var api = {};
 
-  function getJobs(page) {
+  api.getJobs = function(page) {
     var offset = 20 * (page - 1);
     var config = {'params': {
         'limit': 20, 'offset': offset,
@@ -35,12 +38,12 @@ require('app')
     return $http.get(urls.JOBS, config).then(_.property('data'));
   }
 
-  function getJobStates(job) {
+  api.getJobStates = function(job) {
     var url = urls.JOBS + job + '/jobstates';
     return $http.get(url).then(_.property('data.jobstates'));
   }
 
-  function searchJobs(remotecis, statuses) {
+  api.searchJobs = function(remotecis, statuses) {
 
     function retrieveRCIs(remoteci) {
       var conf = {'params': {'where': 'name:' + remoteci}};
@@ -93,7 +96,7 @@ require('app')
     });
   }
 
-  function getJob(job) {
+  api.getJob = function(job) {
     var retrieveFiles = function(data) {
       return _.assign(
         _.first(data).data.job,
@@ -123,29 +126,38 @@ require('app')
     .then(retrieveFiles)
   }
 
-  function getFiles(jobstateID) {
+  api.getFiles = function(jobstateID) {
     var conf = {'params': {'where': 'jobstate_id:' + jobstateID}};
     return $http.get(urls.FILES, conf)
     .then(_.property('data.files'));
   }
 
-  function getRemoteCIS() {
+  api.getRemoteCIS = function() {
     var extractRemoteCIS = _.partialRight(_.get, 'data.remotecis');
     return $http.get(urls.REMOTECIS).then(extractRemoteCIS);
   }
 
-  function recheckJob(jobID) {
+  api.recheckJob = function(jobID) {
     return $http.post(urls.JOBS + jobID + '/recheck')
     .then(_.property('data.job'));
   }
 
-  return {
-    getJobs: getJobs,
-    getJob: getJob,
-    getJobStates: getJobStates,
-    getFiles: getFiles,
-    getRemoteCIS: getRemoteCIS,
-    recheckJob: recheckJob,
-    searchJobs: searchJobs
+  api.getUser = function(name) {
+    var conf = {'params': {'embed': 'team'}};
+    return $http.get(urls.USERS + name, conf).then(_.property('data.user'));
   }
+
+  api.getTeams = function() {
+    return $http.get(urls.TEAMS).then(_.property('data.teams'));
+  }
+
+  api.postTeam = function(team) {
+    return $http.post(urls.TEAMS, team).then(_.property('data.team'));
+  }
+
+  api.postUser = function(user) {
+    return $http.post(urls.USERS, user).then(_.property('data.user'));
+  }
+
+  return api;
 }]);

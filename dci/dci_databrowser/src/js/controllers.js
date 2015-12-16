@@ -16,13 +16,13 @@
 
 require('app')
 .controller('LoginCtrl', [
-  '$scope', '$state', 'auth', 'authStates',
-  function($scope, $state, auth, authStates) {
+  '$scope', '$state', 'auth', function($scope, $state, auth) {
     $scope.authenticate = function(credentials) {
-      auth.login(credentials.username, credentials.password);
-      $state.go('index');
+      auth.login(credentials.username, credentials.password).then(function(){
+        $state.go('index');
+      });
     }
-    $scope.unauthorized = auth.state == authStates.UNAUTHORIZED;
+    $scope.unauthorized = auth.isUnauthorized();
   }
 ])
 
@@ -76,12 +76,65 @@ require('app')
     });
   });
 }])
-.controller('JobRecheckCtrl', [
-  '$scope', '$state', 'api', function ($scope, $state, api) {
-    $scope.recheck = function(job) {
-      api.recheckJob(job).then(function(job) {
-        $state.go('job', {'id': job.id});
-      });
+
+.controller('AdminCtrl', [
+  '$scope', 'teams', 'api', function($scope, teams, api) {
+    $scope.teams = teams;
+    $scope.team = {};
+    $scope.user = {
+      admin: false,
+      team: teams.length && teams[0].id
+    };
+    $scope.alerts = [];
+
+    $scope.closeAlert = function(index) {
+      $scope.alerts.splice(index, 1);
+    };
+
+    $scope.showError = function(form, field) {
+      return field.$invalid && (field.$dirty || form.$submitted);
+    }
+
+    $scope.submitUser = function() {
+      if ($scope.userForm.$invalid) return;
+      var user = {
+        name: $scope.user.name,
+        password: $scope.user.password,
+        role: $scope.user.admin ? 'admin' : 'user',
+        team_id: $scope.user.team
+      }
+      api.postUser(user).then(
+        function(user) {
+          $scope.alerts.push({
+            msg: 'Successfully created user "' + user.name + '"',
+            type: 'success'
+          });
+        },
+        function(error) {
+          $scope.alerts.push({
+            msg: 'Error user "' + $scope.user.name + '" already exist',
+            type: 'danger'
+          })
+        }
+      );
+    }
+    $scope.submitTeam = function() {
+      if ($scope.teamForm.$invalid) return;
+      api.postTeam({name: $scope.team.name}).then(
+        function(team) {
+          $scope.teams.push(team);
+          $scope.alerts.push({
+            msg: 'Successfully created team "' + team.name + '"',
+            type: 'success'
+          });
+        },
+        function(error) {
+          $scope.alerts.push({
+            msg: 'Error team "' + $scope.team.name + '" already exist',
+            type: 'danger'
+          })
+        }
+      );
     }
   }
 ]);
