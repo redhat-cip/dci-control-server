@@ -74,7 +74,7 @@ def get_query_with_join(table_a, table_a_select_c, embed_list,
     resources_to_embed = {elem: valid_embedded_resources[elem]
                           for elem in embed_list}
 
-    q_select = table_a_select_c
+    q_select = list(table_a_select_c)
     # flatten all tables for the SQL select
     for prefix, table in six.iteritems(resources_to_embed):
         q_select.extend(_flatten_columns_with_prefix(prefix, table))
