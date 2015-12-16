@@ -114,6 +114,22 @@ ul {
   }
 }
 
+.jobstates-files {
+  a {
+    &:hover, &:focus {
+      text-decoration: none;
+    }
+  }
+  @each $name, $color in
+    (new, $new), (initializing, $progress), (ongoing, $progress),
+    (success, $success), (failure, $failure), (unfinished, $unfinished),
+    (killed, $unfinished) {
+
+    .#{$name} {
+      color: $color;
+    }
+  }
+}
 
 .tile-file {
   background-color: #f7f7f7;
