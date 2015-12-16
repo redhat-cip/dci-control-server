@@ -1,5 +1,5 @@
 <div accordion>
-  <div accordion-group heading="Filtering" is-open="isFilteringOpen" class="filtering">
+  <div accordion-group heading="Filtering" is-open="isFiltering" class="filtering">
     <form ng-submit="search()">
       <h5> Status </h5>
       <div class="list">
@@ -23,12 +23,11 @@
 <ul class="job-list">
   <li ng-repeat="job in jobs" dci-job></li>
 </ul>
-<div class="pagination" ng-if="total">
-  <button class="btn btn-sm btn-primary" ng-click='previous()'>
-    <i class="glyphicon glyphicon-menu-left"></i>
-  </button>
-  {{page}} / {{total}}
-  <button class="btn btn-sm btn-primary" ng-click='next()'>
-    <i class="glyphicon glyphicon-menu-right"></i>
-  </button>
+
+
+<div class="pagination" ng-if="pagination">
+  <div pagination total-items="pagination.total" max-size="5"
+    ng-model="pagination.page" class="pagination-sm" boundary-links="true"
+    rotate="false" items-per-page="20" ng-change="pagination.pageChanged()">
+  </div>
 </div>

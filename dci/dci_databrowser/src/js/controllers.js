@@ -33,8 +33,6 @@ require('app')
     var $state = $injector.get('$state');
     var statuses = ['failure', 'success', 'ongoing', 'new',
                     'initializing', 'killed', 'unfinished'];
-
-    $scope.page = page;
     $scope.jobs = jobs.jobs;
     $scope.remotecis = {};
     $scope.status = {};
@@ -56,22 +54,17 @@ require('app')
       $state.go('jobs', params);
     }
 
-    if (!$state.params.status.length && !$state.params.remoteci.length) {
-      var total = $scope.total = Math.ceil(jobs._meta.count / 20);
-      var go = function(page) {
-        return function () {
-          $state.go(
-            'jobs',
-            {'page': page > total && total || page > 0 && page || 1}
-          );
-        }
-      }
+    $scope.isFiltering = !!(
+      $state.params.status.length || $state.params.remoteci.length
+    );
 
-      $scope.previous = go(page - 1);
-      $scope.next = go(page + 1);
-      $scope.isFilteringOpen = false;
-    } else {
-      $scope.isFilteringOpen = true;
+    if (!$scope.isFiltering) {
+      $scope.pagination = {
+        total: jobs._meta.count, page: page,
+        pageChanged: function() {
+          $state.go('jobs', $scope.pagination);
+        }
+      };
     }
   }
 ])
