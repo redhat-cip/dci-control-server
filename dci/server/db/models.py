@@ -122,6 +122,7 @@ REMOTECIS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), unique=True),
     sa.Column('data', sa_utils.JSONType),
+    sa.Column('active', sa.BOOLEAN, default=True),
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
               nullable=False))

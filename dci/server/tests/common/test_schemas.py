@@ -268,7 +268,7 @@ class TestJobDefinition(utils.SchemaTesting):
 
 class TestRemoteCI(utils.SchemaTesting):
     schema = schemas.remoteci
-    data = dict([utils.NAME, utils.TEAM])
+    data = dict([utils.NAME, utils.TEAM, utils.ACTIVE])
 
     @staticmethod
     def generate_invalids_and_errors():
