@@ -27,15 +27,25 @@ require('app')
       'abstract': true,
       resolve: {
         _: ['auth', '$q', function (auth, $q) {
-          if (auth.isAuthenticated()) {
-            return;
-          } else {
-            return $q.reject(auth.state);
+          if (!auth.isAuthenticated()) {
+            return $q.reject({status: 401});
           }
         }]
       },
       controller: 'authCtrl',
       templateUrl: '/partials/auth.html'
+    })
+    .state('authAdmin', {
+      'abstract': true,
+      'parent': 'auth',
+      'template': '<ui-view></ui-view>',
+      resolve: {
+        _: ['auth', '$q', function(auth, $q) {
+          if (!auth.isAdmin()) {
+            return $q.reject({status: 401});
+          }
+        }]
+      }
     })
     .state('index', {
       url: '/',
@@ -84,6 +94,17 @@ require('app')
         }]
       }
     })
+    .state('administrate', {
+      url: '/administrate',
+      parent: 'authAdmin',
+      controller: 'AdminCtrl',
+      templateUrl: '/partials/admin.html',
+      resolve: {
+        teams: ['api', function(api) {
+          return api.getTeams();
+        }]
+      }
+    })
     .state('login', {
       url: '/login',
       controller: 'LoginCtrl',
@@ -96,7 +117,9 @@ require('app')
 
 .controller('authCtrl', [
   '$scope', '$state', 'auth', function ($scope, $state, auth) {
-    $scope.isAuthenticated = auth.isAuthenticated;
+    // currently just create roles and user when admin
+    $scope.admin = auth.isAdmin();
+
     $scope.logout = function () {
       auth.logout();
       $state.go('login');
@@ -105,19 +128,13 @@ require('app')
 ])
 
 .run([
-  '$rootScope', '$state', 'authStates', 'auth',
-  function($rootScope, $state, authStates, auth) {
-    $rootScope.$on(
-      '$stateChangeError',
-      function(event, toState, toParams, fromState, fromParams, error) {
-        if (error.status == 401) {
-          auth.state = authStates.UNAUTHORIZED;
-          $state.go('login');
-        }
-        if (error === authStates.DISCONNECTED) {
-          $state.go('login', {}, {reload: true});
-        }
+  '$rootScope', '$state', '$log', function($rootScope, $state, $log) {
+    $rootScope.$on('$stateChangeError', function(e, tS, tPs, fS, fPs, err) {
+      if (err.status === 401) {
+        $state.go('login', {}, {reload: true});
+      } else {
+        $log.error(err);
       }
-    );
+    });
   }
 ]);

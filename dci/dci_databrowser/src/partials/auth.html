@@ -1,14 +1,19 @@
-<nav class="navbar navbar-fixed-top">
+<nav class="navbar navbar-fixed-top navbar-default">
   <div class="container">
-    <div class="navbar-header">
-      <a class="navbar-brand" ui-sref="index">
-        <img class= "logo" src="images/redhat.png">
-      </a>
-    </div>
-    <div id="navbar" class="navbar-collapse collapse">
-      <ul class="nav navbar-nav navbar-right">
-        <li><a ng-click="logout()" class="glyphicon glyphicon-log-out"></a></li>
+    <div class="col-md-12">
+      <div class="navbar-header">
+        <a class="navbar-brand" ui-sref="index">
+          <img class= "logo" src="images/redhat.png">
+        </a>
+      </div>
+      <ul class="nav navbar-nav" ng-if="admin">
+        <li><a ui-sref="administrate">Administrate</a></li>
       </ul>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav navbar-right">
+          <li><a ng-click="logout()" class="glyphicon glyphicon-log-out"></a></li>
+        </ul>
+      </div>
     </div>
   </div>
 </nav>

@@ -15,58 +15,70 @@
 'use strict';
 
 require('app')
-
-.constant('authStates', {
+.constant('userStatus', {
   'DISCONNECTED': 0,
-  'AUTHENTICATING': 1,
-  'AUTHENTICATED': 2,
-  'UNAUTHORIZED': 3
+  'UNAUTHORIZED': 1,
+  'AUTHENTICATED': 2
 })
 
+.value('user', {})
+
 .config(['$httpProvider', function ($httpProvider) {
-  $httpProvider.interceptors.push([
-    '$q', 'authStates', 'auth', function($q, authStates, auth) {
-      return {
-        request: function (config) {
-          if (auth.state === authStates.DISCONNECTED) {
-            config.status = 401;
-          } else {
-            config.headers.Authorization = 'Basic ' + auth.token;
-          }
-          return config
-        },
-        responseError: function (error) {
-          if (error.status === 401) {
-            auth.state = authStates.DISCONNECTED;
-          }
-          return $q.reject(error);
+  var interceptor = ['$q', 'user', 'userStatus', function($q, user, status) {
+    var apiURL = new RegExp('api\/');
+
+    return {
+      request: function (conf) {
+        if (!conf.url.match(apiURL)) return conf;
+        if (!user.token) return angular.extend(conf, {status: 401});
+
+        conf.headers['Authorization'] = 'Basic ' + user.token;
+        return conf;
+      },
+      responseError: function(error) {
+        if (user.status !== status.DISCONNECTED && error.status === 401) {
+          user.status = status.UNAUTHORIZED;
         }
+        return $q.reject(error);
       }
-    }]);
+    };
+  }];
+  $httpProvider.interceptors.push(interceptor);
+
 }])
-
 .service('auth', [
-  '$window', '$cookies', 'authStates',
-  function ($window, $cookies, authStates) {
-    this.token = $cookies.token;
-    this.state = angular.isDefined(this.token)
-    && authStates.AUTHENTICATED
-      || authStates.DISCONNECTED;
+  '$window', '$cookieStore', 'api', 'user', 'userStatus',
+  function ($window, $cookies, api, user, status) {
+    angular.extend(user, {status: status.DISCONNECTED}, $cookies.get('user'));
 
-      this.login = function(username, password) {
-        this.token = $cookies.token =
-          $window.btoa(username.concat(':', password));
+    this.user = user;
 
-          this.state = authStates.AUTHENTICATED;
-      }
+    this.login = function(username, password) {
+      user.token = $window.btoa(username.concat(':', password));
 
-      this.isAuthenticated = function() {
-        return this.state === authStates.AUTHENTICATED;
-      }
+      return api.getUser(username).then(function(userRes) {
+        angular.extend(user, userRes, {status: status.AUTHENTICATED});
+        $cookies.put('user', user);
+        return user;
+      });
+    }
 
-      this.logout = function() {
-        $cookies.auth = $window.btoa('None');
-        this.state = authStates.DISCONNECTED
-      }
+    this.isAuthenticated = function() {
+      return user.status === status.AUTHENTICATED;
+    }
+    this.isUnauthorized = function() {
+      return user.status === status.UNAUTHORIZED;
+    }
+
+    this.isAdmin = function() {
+      return user.team.name === 'admin';
+    }
+
+    this.logout = function() {
+      $cookies.put('user', {});
+      user.status = status.DISCONNECTED;
+    }
   }
-]);
+])
+.run(['auth', angular.noop]);
+
