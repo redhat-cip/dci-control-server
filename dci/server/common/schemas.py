@@ -198,6 +198,7 @@ jobdefinition = schema_factory(jobdefinition)
 
 remoteci = utils.dict_merge(base, DATA_FIELD, {
     'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    v.Optional('active', default=True): bool,
 })
 
 remoteci = schema_factory(remoteci)

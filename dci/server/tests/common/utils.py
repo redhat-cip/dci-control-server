@@ -70,6 +70,7 @@ INVALID_JOB_DEFINITION_ERROR = ('jobdefinition_id',
 REMOTE_CI = 'remoteci_id', ID[1]
 INVALID_REMOTE_CI = 'remoteci_id', INVALID_ID
 INVALID_REMOTE_CI_ERROR = 'remoteci_id', schemas.INVALID_REMOTE_CI
+ACTIVE = 'active', True
 
 JOB = 'job_id', ID[1]
 INVALID_JOB = 'job_id', INVALID_ID
