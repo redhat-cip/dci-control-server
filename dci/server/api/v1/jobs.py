@@ -89,8 +89,14 @@ def schedule_jobs(user):
          'recheck': values.get('recheck', False),
          'status': 'new'}
     )
-
     remoteci_id = values.get('remoteci_id')
+
+    remoteci = dict(v1_utils.verify_existence_and_get(
+        [models.REMOTECIS], remoteci_id, models.REMOTECIS.c.id == remoteci_id))
+    if remoteci['active'] is False:
+        raise dci_exc.DCIException(("RemoteCI '%s' is not activated."
+                                    % remoteci_id),
+                                   status_code=412)
 
     # First try to get some job to recheck
     get_recheck_job_query = sqlalchemy.sql.select([models.JOBS]).where(
@@ -104,9 +110,6 @@ def schedule_jobs(user):
         return flask.Response(json.dumps({'job': recheck_job}), 201,
                               headers={'ETag': etag},
                               content_type='application/json')
-
-    remoteci = dict(v1_utils.verify_existence_and_get(
-        [models.REMOTECIS], remoteci_id, models.REMOTECIS.c.id == remoteci_id))
 
     # Subquery, get all the jobdefinitions which have been run by this remoteci
     sub_query = (sqlalchemy.sql.select([models.JOBS.c.jobdefinition_id]).
