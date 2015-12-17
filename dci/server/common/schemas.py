@@ -14,12 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import unicode_literals
+from six.moves.urllib.parse import urlparse
 
 import collections
 import dci.server.common.exceptions as exceptions
 import dci.server.common.utils as utils
 import six
-import six.moves.urllib as urllib
 import voluptuous as v
 
 
@@ -27,7 +27,7 @@ import voluptuous as v
 @v.message('expected a URL', cls=v.UrlInvalid)
 def Url(value):
     try:
-        parsed = urllib.urlparse(value)
+        parsed = urlparse(value)
         if not parsed.scheme or not parsed.netloc:
             raise v.UrlInvalid("must have a URL scheme and host")
         return value
