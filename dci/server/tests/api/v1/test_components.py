@@ -18,7 +18,7 @@ import uuid
 
 
 def test_create_components(admin):
-    data = {'name': 'pname', 'type': 'gerrit_review'}
+    data = {'name': 'pname', 'type': 'gerrit_review', 'url': 'http://example.com/'}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
     gc = admin.get('/api/v1/components/%s' % pc_id).data
