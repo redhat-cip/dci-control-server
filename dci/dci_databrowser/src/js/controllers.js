@@ -75,8 +75,13 @@ require('app')
     }
   }
 ])
-.controller('JobCtrl', ['$scope', 'job', function($scope, job) {
+.controller('JobCtrl', ['$scope', 'job', 'api', function($scope, job, api) {
   $scope.job = job;
+  angular.forEach(job.jobstates, function(jobstate) {
+    api.getFiles(jobstate.id).then(function(files) {
+      jobstate.files = files
+    });
+  });
 }])
 .controller('JobRecheckCtrl', [
   '$scope', '$state', 'api', function ($scope, $state, api) {
