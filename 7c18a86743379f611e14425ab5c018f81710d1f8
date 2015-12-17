@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9adffdf1_f52130b5",
+        "filename": "dci/server/api/v1/jobs.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 98,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-17T10:55:51Z",
+      "side": 1,
+      "message": "create a variable message instead of messing up with the indentation",
+      "revId": "7c18a86743379f611e14425ab5c018f81710d1f8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
