@@ -14,28 +14,29 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import collections
-
 import flask
 import six
-import sqlalchemy.sql
+from sqlalchemy import sql, func
 
 from dci.server.common import exceptions as dci_exc
 from dci.server.common import utils
 
 
-def verify_existence_and_get(select, resource_id, cond_exist):
+def verify_existence_and_get(id, table):
     """Verify the existence of a resource in the database and then
     return it if it exists, according to the condition, or raise an
     exception.
     """
+    if 'name' in table.columns:
+        where_clause = sql.or_(table.c.id == id, table.c.name == id)
+    else:
+        where_clause = table.c.id == id
 
-    query = sqlalchemy.sql.select(select).where(cond_exist)
-
+    query = sql.select([table]).where(where_clause)
     result = flask.g.db_conn.execute(query).fetchone()
 
     if result is None:
-        raise dci_exc.DCIException("Resource '%s' not found." % resource_id,
+        raise dci_exc.DCIException('Resource "%s" not found.' % id,
                                    status_code=404)
     return result
 
@@ -51,8 +52,7 @@ def verify_embed_list(embed_list, valid_embedded_resources):
                 payload={'Valid elements': list(valid_embedded_resources)})
 
 
-def get_query_with_join(table_a, table_a_select_c, embed_list,
-                        valid_embedded_resources):
+def get_query_with_join(embed_list, valid_embedded_resources):
     """Given a select query on one table columns and a list of tables to_join
     with, this unction construct the correct sqlalchemy query to make a join.
     """
@@ -74,20 +74,15 @@ def get_query_with_join(table_a, table_a_select_c, embed_list,
     resources_to_embed = {elem: valid_embedded_resources[elem]
                           for elem in embed_list}
 
-    q_select = list(table_a_select_c)
     # flatten all tables for the SQL select
+    select = []
     for prefix, table in six.iteritems(resources_to_embed):
-        q_select.extend(_flatten_columns_with_prefix(prefix, table))
+        select.extend(_flatten_columns_with_prefix(prefix, table))
 
-    # chain SQL join on all tables
-    query_join = table_a
     # order is important for the SQL join
-    resources_to_embed_ordered = \
-        collections.OrderedDict(sorted(resources_to_embed.items()))
-    for table_to_join in six.itervalues(resources_to_embed_ordered):
-        query_join = query_join.join(table_to_join)
+    join = [item[1] for item in sorted(resources_to_embed.items())]
 
-    return sqlalchemy.sql.select(q_select).select_from(query_join)
+    return select, join
 
 
 def group_embedded_resources(items_to_embed, row):
@@ -160,24 +155,27 @@ def get_columns_name_with_objects(table):
     return result
 
 
-def sort_query(query, sort, valid_columns):
+def sort_query(sort, valid_columns):
+    order_by = []
     for sort_elem in sort:
-        sort_order = (sqlalchemy.sql.desc
-                      if sort_elem.startswith('-') else sqlalchemy.sql.asc)
+        sort_order = (sql.desc
+                      if sort_elem.startswith('-') else sql.asc)
         sort_elem = sort_elem.strip(' -')
         if sort_elem not in valid_columns:
-            raise dci_exc.DCIException("Invalid sort key: '%s'" % sort_elem,
-                                       payload={'Valid sort keys':
-                                                list(valid_columns.keys())})
-        query = query.order_by(sort_order(valid_columns[sort_elem]))
-    return query
+            raise dci_exc.DCIException(
+                'Invalid sort key: "%s"' % sort_elem,
+                payload={'Valid sort keys': list(valid_columns.keys())}
+            )
+        order_by.append(sort_order(valid_columns[sort_elem]))
+    return order_by
 
 
-def where_query(query, where, table, columns):
+def where_query(where, table, columns):
+    where_conds = []
     for where_elem in where:
         name, value = where_elem.split(':', 1)
         if name not in columns:
-            raise dci_exc.DCIException("Invalid where key: '%s'" % name,
+            raise dci_exc.DCIException('Invalid where key: "%s"' % name,
                                        payload={'Valid where keys':
                                                 list(columns.keys())})
         m_column = getattr(table.c, name)
@@ -187,7 +185,56 @@ def where_query(query, where, table, columns):
             try:
                 value = int(value)
             except ValueError:
-                raise dci_exc.DCIException("Invalid where key: '%s'" % name,
+                raise dci_exc.DCIException('Invalid where key: "%s"' % name,
                                            payload={name: 'not integer'})
-        query = query.where(m_column == value)
-    return query
+        where_conds.append(m_column == value)
+    return where_conds
+
+
+class QueryBuilder(object):
+
+    def __init__(self, table, offset=None, limit=None):
+        self.table = table
+        self.offset = offset
+        self.limit = limit
+        self.sort = []
+        self.where = []
+        self.select = [table]
+        self.join = []
+
+    def build(self):
+        query = sql.select(self.select)
+
+        for where in self.where:
+            query = query.where(where)
+
+        for sort in self.sort:
+            query = query.order_by(sort)
+
+        if self.limit:
+            query = query.limit(self.limit)
+
+        if self.offset:
+            query = query.offset(self.offset)
+
+        if self.join:
+            query_from = self.table
+            for join in self.join:
+                query_from = query_from.join(join)
+            query = query.select_from(query_from)
+
+        return query
+
+    def build_nb_row(self):
+        query = sql.select([func.count(self.table.c.id)])
+        for where in self.where:
+            query = query.where(where)
+
+        if self.join:
+            query_join = self.table
+            for join in self.join:
+                query_join = query_join.join(join)
+
+            query = query.select_from(query_join)
+
+        return query

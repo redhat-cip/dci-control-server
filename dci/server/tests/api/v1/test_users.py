@@ -229,8 +229,11 @@ def test_create_user_as_user(user, user_admin, team_user_id):
 
 
 def test_get_all_users_as_user(user, team_user_id):
+    # 2 users already exists for tests: user_admin, user, so we can directly
+    # retrieve informations without inserting new entries
     users = user.get('/api/v1/users')
     assert users.status_code == 200
+    assert users.data['_meta']['count'] == 2
     for guser in users.data['users']:
         assert guser['team_id'] == team_user_id
 

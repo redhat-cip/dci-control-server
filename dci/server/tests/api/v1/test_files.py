@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import pytest
 
 
 def test_create_files(admin, jobstate_id, team_id):
@@ -176,12 +177,13 @@ def test_get_file_not_found(admin):
 
 def test_get_file_with_embed(admin, jobstate_id, team_id):
     pt = admin.get('/api/v1/teams/%s' % team_id).data
-    file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id, 'team_id': team_id,
-                            'content': 'content', 'name': 'kikoolol'}).data
+    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+            'content': 'content', 'name': 'kikoolol'}
+    file = admin.post('/api/v1/files', data=data).data
+
     file_id = file['file']['id']
     del file['file']['team_id']
-    file['file'][u'team'] = pt['team']
+    file['file']['team'] = pt['team']
 
     # verify embed
     file_embed = admin.get('/api/v1/files/%s?embed=team' % file_id).data
@@ -228,9 +230,11 @@ def test_create_file_as_user(user, team_user_id, team_id, jobstate_user_id):
     assert file.status_code == 201
 
 
+@pytest.mark.usefixtures('file_id', 'file_user_id')
 def test_get_all_files_as_user(user, team_user_id):
     files = user.get('/api/v1/files')
     assert files.status_code == 200
+    assert files.data['_meta']['count']
     for file in files.data['files']:
         assert file['team_id'] == team_user_id
 

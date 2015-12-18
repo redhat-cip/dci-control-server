@@ -78,16 +78,6 @@ def admin(app, db_provisioning):
 
 
 @pytest.fixture
-def company_a_user(app, db_provisioning):
-    return utils.generate_client(app, ('company_a_user', 'company_a_user'))
-
-
-@pytest.fixture
-def company_b_user(app, db_provisioning):
-    return utils.generate_client(app, ('company_b_user', 'company_b_user'))
-
-
-@pytest.fixture
 def unauthorized(app, db_provisioning):
     return utils.generate_client(app, ('admin', 'bob'))
 
@@ -127,69 +117,69 @@ def team_admin_id(admin):
 
 
 @pytest.fixture
-def remoteci_user_id(user, team_user_id):
-    remoteci = user.post('/api/v1/remotecis',
-                         data={'name': 'rname',
-                               'team_id': team_user_id}).data
+def remoteci_id(admin, team_id):
+    data = {'name': 'pname', 'team_id': team_id}
+    remoteci = admin.post('/api/v1/remotecis', data=data).data
     return remoteci['remoteci']['id']
 
 
 @pytest.fixture
-def remoteci_id(admin, team_id):
-    remoteci = admin.post('/api/v1/remotecis',
-                          data={'name': 'pname',
-                                'team_id': team_id}).data
+def remoteci_user_id(user, team_user_id):
+    data = {'name': 'rname', 'team_id': team_user_id}
+    remoteci = user.post('/api/v1/remotecis', data=data).data
     return remoteci['remoteci']['id']
 
 
 @pytest.fixture
 def jobdefinition_id(admin, test_id):
-    jd = admin.post('/api/v1/jobdefinitions',
-                    data={'name': 'pname', 'test_id': test_id}).data
+    data = {'name': 'pname', 'test_id': test_id}
+    jd = admin.post('/api/v1/jobdefinitions', data=data).data
     return jd['jobdefinition']['id']
 
 
 @pytest.fixture
 def job_id(admin, jobdefinition_id, team_id, remoteci_id):
-    job = admin.post('/api/v1/jobs',
-                     data={'jobdefinition_id': jobdefinition_id,
-                           'team_id': team_id,
-                           'remoteci_id': remoteci_id}).data
+    data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
+            'remoteci_id': remoteci_id}
+    job = admin.post('/api/v1/jobs', data=data).data
     return job['job']['id']
 
 
 @pytest.fixture
 def job_user_id(admin, jobdefinition_id, team_user_id, remoteci_user_id):
-    job = admin.post('/api/v1/jobs',
-                     data={'jobdefinition_id': jobdefinition_id,
-                           'team_id': team_user_id,
-                           'remoteci_id': remoteci_user_id}).data
+    data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_user_id,
+            'remoteci_id': remoteci_user_id}
+    job = admin.post('/api/v1/jobs', data=data).data
     return job['job']['id']
 
 
 @pytest.fixture
 def jobstate_id(admin, job_id, team_id):
-    jobstate = admin.post('/api/v1/jobstates',
-                          data={'job_id': job_id, 'team_id': team_id,
-                                'status': 'ongoing',
-                                'comment': 'kikoolol'}).data
+    data = {'job_id': job_id, 'team_id': team_id,
+            'status': 'ongoing', 'comment': 'kikoolol'}
+    jobstate = admin.post('/api/v1/jobstates', data=data).data
+    return jobstate['jobstate']['id']
+
+
+@pytest.fixture
+def jobstate_user_id(user, job_user_id, team_user_id):
+    data = {'job_id': job_user_id, 'team_id': team_user_id,
+            'status': 'ongoing', 'comment': 'kikoolol'}
+    jobstate = user.post('/api/v1/jobstates', data=data).data
     return jobstate['jobstate']['id']
 
 
 @pytest.fixture
 def file_id(admin, jobstate_id, team_id):
-    file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id,
-                            'team_id': team_id,
-                            'content': 'kikoolol', 'name': 'name'}).data
+    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+            'content': 'kikoolol', 'name': 'name'}
+    file = admin.post('/api/v1/files', data=data).data
     return file['file']['id']
 
 
 @pytest.fixture
-def jobstate_user_id(user, job_user_id, team_user_id):
-    jobstate = user.post('/api/v1/jobstates',
-                         data={'job_id': job_user_id,
-                               'team_id': team_user_id,
-                               'status': 'ongoing',
-                               'comment': 'kikoolol'}).data
-    return jobstate['jobstate']['id']
+def file_user_id(user, jobstate_user_id, team_user_id):
+    data = {'jobstate_id': jobstate_user_id, 'team_id': team_user_id,
+            'content': 'kikoolol', 'name': 'name'}
+    file = user.post('/api/v1/files', data=data).data
+    return file['file']['id']

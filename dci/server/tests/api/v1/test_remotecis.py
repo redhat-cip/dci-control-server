@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import pytest
 
 
 def test_create_remotecis(admin, team_id):
@@ -217,9 +218,11 @@ def test_create_remoteci_as_user(user, team_user_id, team_id):
     assert remoteci.status_code == 201
 
 
+@pytest.mark.usefixtures('remoteci_id', 'remoteci_user_id')
 def test_get_all_remotecis_as_user(user, team_user_id):
     remotecis = user.get('/api/v1/remotecis')
     assert remotecis.status_code == 200
+    assert remotecis.data['_meta']['count'] == 1
     for remoteci in remotecis.data['remotecis']:
         assert remoteci['team_id'] == team_user_id
 

@@ -30,21 +30,19 @@ from dci.server.db import models
 
 from dci.server.api.v1 import jobstates
 
+_TABLE = models.JOBS
 # associate column names with the corresponding SA Column object
-_JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBS)
-_VALID_EMBED = {'jobdefinition': models.JOBDEFINITIONS,
-                # TODO(spredzy) : Remove this when the join and multiple
-                # entities is supported
-                'jobdefinition.jobdefinition_component':
-                models.JOIN_JOBDEFINITIONS_COMPONENTS,
-                'jobdefinition.test': models.TESTS,
-                'team': models.TEAMS,
-                'remoteci': models.REMOTECIS}
-
-
-def _verify_existence_and_get_job(job_id):
-    return v1_utils.verify_existence_and_get(
-        [models.JOBS], job_id, models.JOBS.c.id == job_id)
+_JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_VALID_EMBED = {
+    'jobdefinition': models.JOBDEFINITIONS,
+    # TODO(spredzy) : Remove this when the join and multiple
+    # entities is supported
+    'jobdefinition.jobdefinition_component':
+        models.JOIN_JOBDEFINITIONS_COMPONENTS,
+    'jobdefinition.test': models.TESTS,
+    'team': models.TEAMS,
+    'remoteci': models.REMOTECIS
+}
 
 
 @api.route('/jobs', methods=['POST'])
@@ -66,7 +64,7 @@ def create_jobs(user):
         'status': 'new'
     })
 
-    query = models.JOBS.insert().values(**values)
+    query = _TABLE.insert().values(**values)
 
     flask.g.db_conn.execute(query)
 
@@ -81,48 +79,50 @@ def schedule_jobs(user):
 
     values = schemas.job_schedule.post(flask.request.json)
     etag = utils.gen_etag()
-    values.update(
-        {'id': utils.gen_uuid(),
-         'created_at': datetime.datetime.utcnow().isoformat(),
-         'updated_at': datetime.datetime.utcnow().isoformat(),
-         'etag': etag,
-         'recheck': values.get('recheck', False),
-         'status': 'new'}
-    )
-    remoteci_id = values.get('remoteci_id')
+    values.update({
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': etag,
+        'recheck': values.get('recheck', False),
+        'status': 'new'
+    })
+    rci_id = values.get('remoteci_id')
+    remoteci = v1_utils.verify_existence_and_get(rci_id, models.REMOTECIS)
 
-    remoteci = dict(v1_utils.verify_existence_and_get(
-        [models.REMOTECIS], remoteci_id, models.REMOTECIS.c.id == remoteci_id))
     if remoteci['active'] is False:
-        message = "RemoteCI '%s' is not activated." % remoteci_id
+        message = 'RemoteCI "%s" is not activated.' % rci_id
         raise dci_exc.DCIException(message, status_code=412)
 
     # First try to get some job to recheck
-    get_recheck_job_query = sqlalchemy.sql.select([models.JOBS]).where(
-        sqlalchemy.sql.expression.and_(
-            models.JOBS.c.recheck == True,  # noqa
-            models.JOBS.c.remoteci_id == remoteci_id)
-    ).limit(1)
+    where_clause = sqlalchemy.sql.expression.and_(
+        _TABLE.c.recheck == True,  # noqa
+        _TABLE.c.remoteci_id == rci_id
+    )
+    get_recheck_job_query = (sqlalchemy.sql.select([_TABLE])
+                             .where(where_clause)
+                             .limit(1))
+
     recheck_job = flask.g.db_conn.execute(get_recheck_job_query).fetchone()
     if recheck_job:
-        recheck_job = dict(recheck_job)
         return flask.Response(json.dumps({'job': recheck_job}), 201,
                               headers={'ETag': etag},
                               content_type='application/json')
 
     # Subquery, get all the jobdefinitions which have been run by this remoteci
-    sub_query = (sqlalchemy.sql.select([models.JOBS.c.jobdefinition_id]).
-                 where(models.JOBS.c.remoteci_id == remoteci_id))
+    sub_query = (sqlalchemy.sql
+                 .select([_TABLE.c.jobdefinition_id])
+                 .where(_TABLE.c.remoteci_id == rci_id))
 
     # Get one jobdefinition which has not been run by this remoteci
-    query = sqlalchemy.sql.select([models.JOBDEFINITIONS.c.id]).where(
-        sqlalchemy.sql.expression.not_(
-            models.JOBDEFINITIONS.c.id.in_(sub_query))
+    where_clause = sqlalchemy.sql.expression.not_(
+        models.JOBDEFINITIONS.c.id.in_(sub_query)
     )
-
+    query = (sqlalchemy.sql.select([models.JOBDEFINITIONS.c.id])
+             .where(where_clause)
+             .order_by(sqlalchemy.sql.asc(models.JOBDEFINITIONS.c.priority))
+             .limit(1))
     # Order by jobdefinition.priority and get the first one
-    query = query.order_by(
-        sqlalchemy.sql.asc(models.JOBDEFINITIONS.c.priority)).limit(1)
 
     jobdefinition_to_run = flask.g.db_conn.execute(query).fetchone()
 
@@ -130,12 +130,12 @@ def schedule_jobs(user):
         raise dci_exc.DCIException('No jobs available for run.',
                                    status_code=412)
 
-    values.update(
-        {'jobdefinition_id': jobdefinition_to_run[0],
-         'team_id': remoteci.get('team_id')}
-    )
+    values.update({
+        'jobdefinition_id': jobdefinition_to_run[0],
+        'team_id': remoteci['team_id']
+    })
 
-    query = models.JOBS.insert().values(**values)
+    query = _TABLE.insert().values(**values)
 
     flask.g.db_conn.execute(query)
 
@@ -154,52 +154,37 @@ def get_all_jobs(user, jd_id=None):
     """
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
-    # convenient alias
     embed = args['embed']
 
-    # the default query with no parameters
-    query = sqlalchemy.sql.select([models.JOBS])
+    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
 
-    # if embed then construct the query with a join
-    if embed:
-        query = v1_utils.get_query_with_join(models.JOBS, [models.JOBS],
-                                             embed, _VALID_EMBED)
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
 
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
+    q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_COLUMNS)
+    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _JOBS_COLUMNS)
+
+    # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
-        query = query.where(models.JOBS.c.team_id == user['team_id'])
+        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    query = v1_utils.sort_query(query, args['sort'], _JOBS_COLUMNS)
-    query = v1_utils.where_query(query, args['where'], models.JOBS,
-                                 _JOBS_COLUMNS)
-
-    # used for counting the number of rows when jd_id is not None
-    where_jd_cond = None
     if jd_id is not None:
-        where_jd_cond = models.JOBS.c.jobdefinition_id == jd_id
-        query = query.where(where_jd_cond)
-
-    # adds the limit/offset parameters
-    if args['limit'] is not None:
-        query = query.limit(args['limit'])
-
-    if args['offset'] is not None:
-        query = query.offset(args['offset'])
+        q_bd.where.append(_TABLE.c.jobdefinition_id == jd_id)
 
     # get the number of rows for the '_meta' section
-    nb_row = utils.get_number_of_rows(models.JOBS, where_jd_cond)
+    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
-    rows = flask.g.db_conn.execute(query).fetchall()
-    result = [v1_utils.group_embedded_resources(embed, row) for row in rows]
-
-    result = {'jobs': result, '_meta': {'count': nb_row}}
-    result = json.dumps(result, default=utils.json_encoder)
-    return flask.Response(result, 200, content_type='application/json')
+    return flask.jsonify({'jobs': rows, '_meta': {'count': nb_row}})
 
 
 @api.route('/jobs/<j_id>/jobstates', methods=['GET'])
 @auth.requires_auth
 def get_jobstates_by_job(user, j_id):
-    _verify_existence_and_get_job(j_id)
+    v1_utils.verify_existence_and_get(j_id, _TABLE)
     return jobstates.get_all_jobstates(j_id=j_id)
 
 
@@ -210,49 +195,44 @@ def get_job_by_id(user, jd_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    # the default query with no parameters
-    query = sqlalchemy.sql.select([models.JOBS])
+    q_bd = v1_utils.QueryBuilder(_TABLE)
 
-    # if embed then construct the query with a join
-    if embed:
-        query = v1_utils.get_query_with_join(models.JOBS, [models.JOBS],
-                                             embed, _VALID_EMBED)
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
 
     if not auth.is_admin(user):
-        query = query.where(models.JOBS.c.team_id == user['team_id'])
+        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    query = query.where(models.JOBS.c.id == jd_id)
+    q_bd.where.append(_TABLE.c.id == jd_id)
 
-    row = flask.g.db_conn.execute(query).fetchone()
-    job = v1_utils.group_embedded_resources(embed, row)
-
+    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
     if row is None:
-        raise dci_exc.DCIException("Job '%s' not found." % jd_id,
-                                   status_code=404)
+        raise dci_exc.DCINotFound('Job', jd_id)
 
-    etag = job['etag']
-    job = json.dumps({'job': job}, default=utils.json_encoder)
-    return flask.Response(job, 200, headers={'ETag': etag},
-                          content_type='application/json')
+    job = v1_utils.group_embedded_resources(embed, row)
+    res = flask.jsonify({'job': job})
+    res.headers.add_header('ETag', job['etag'])
+    return res
 
 
 @api.route('/jobs/<j_id>/recheck', methods=['POST'])
 @auth.requires_auth
 def job_recheck(user, j_id):
 
-    job_to_recheck = dict(_verify_existence_and_get_job(j_id))
+    job_to_recheck = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not (auth.is_admin(user) or
             auth.is_in_team(user, job_to_recheck['team_id'])):
         raise auth.UNAUTHORIZED
     etag = utils.gen_etag()
-    values = utils.dict_merge(job_to_recheck, {
+    values = utils.dict_merge(dict(job_to_recheck), {
         'id': utils.gen_uuid(),
         'created_at': datetime.datetime.utcnow().isoformat(),
         'updated_at': datetime.datetime.utcnow().isoformat(),
         'etag': etag,
         'recheck': True,
     })
-    query = models.JOBS.insert().values(**values)
+    query = _TABLE.insert().values(**values)
 
     flask.g.db_conn.execute(query)
 
@@ -261,26 +241,24 @@ def job_recheck(user, j_id):
                           content_type='application/json')
 
 
-@api.route('/jobs/<jd_id>', methods=['DELETE'])
+@api.route('/jobs/<j_id>', methods=['DELETE'])
 @auth.requires_auth
-def delete_job_by_id(user, jd_id):
+def delete_job_by_id(user, j_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    job = dict(_verify_existence_and_get_job(jd_id))
+    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
     if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
         raise auth.UNAUTHORIZED
 
-    where_clause = sqlalchemy.sql.and_(models.JOBS.c.id == jd_id,
-                                       models.JOBS.c.etag == if_match_etag)
-    query = models.JOBS.delete().where(where_clause)
+    where_clause = sqlalchemy.sql.and_(_TABLE.c.id == j_id,
+                                       _TABLE.c.etag == if_match_etag)
+    query = _TABLE.delete().where(where_clause)
 
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise dci_exc.DCIException("Job '%s' already deleted or "
-                                   "etag not matched." % jd_id,
-                                   status_code=409)
+    if not result.rowcount:
+        raise dci_exc.DCIDeleteConflict('Job', j_id)
 
     return flask.Response(None, 204, content_type='application/json')

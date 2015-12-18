@@ -18,7 +18,8 @@ import datetime
 
 import flask
 from flask import json
-import sqlalchemy.sql
+from sqlalchemy import exc as sa_exc
+from sqlalchemy import sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
@@ -28,20 +29,16 @@ from dci.server.common import schemas
 from dci.server.common import utils
 from dci.server.db import models
 
+_TABLE = models.JOBDEFINITIONS
 # associate column names with the corresponding SA Column object
-_JD_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBDEFINITIONS)
-_VALID_EMBED = {'test': models.TESTS,
-                # TODO(spredzy) : Remove this when the join and multiple
-                # entities is supported
-                'jobdefinition_component':
-                models.JOIN_JOBDEFINITIONS_COMPONENTS}
-
-
-def _verify_existence_and_get_jd(jd_id):
-    return v1_utils.verify_existence_and_get(
-        [models.JOBDEFINITIONS], jd_id,
-        sqlalchemy.sql.or_(models.JOBDEFINITIONS.c.id == jd_id,
-                           models.JOBDEFINITIONS.c.name == jd_id))
+_JD_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_VALID_EMBED = {
+    'test': models.TESTS,
+    # TODO(spredzy) : Remove this when the join and multiple
+    # entities is supported
+    'jobdefinition_component':
+    models.JOIN_JOBDEFINITIONS_COMPONENTS
+}
 
 
 @api.route('/jobdefinitions', methods=['POST'])
@@ -56,11 +53,13 @@ def create_jobdefinitions(user):
         'etag': etag
     })
 
-    query = models.JOBDEFINITIONS.insert().values(**data_json)
-    flask.g.db_conn.execute(query)
+    query = _TABLE.insert().values(**data_json)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
 
-    result = {'jobdefinition': data_json}
-    result = json.dumps(result)
+    result = json.dumps({'jobdefinition': data_json})
     return flask.Response(result, 201, headers={'ETag': etag},
                           content_type='application/json')
 
@@ -75,47 +74,30 @@ def get_all_jobdefinitions(user, t_id=None):
     """
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
-    # convenient alias
     embed = args['embed']
 
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    # the default query with no parameters
-    query = sqlalchemy.sql.select([models.JOBDEFINITIONS])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
 
-    # if embed then construct the query with a join
-    if embed:
-        query = v1_utils.get_query_with_join(models.JOBDEFINITIONS,
-                                             [models.JOBDEFINITIONS], embed,
-                                             _VALID_EMBED)
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
 
-    query = v1_utils.sort_query(query, args['sort'], _JD_COLUMNS)
-    query = v1_utils.where_query(query, args['where'], models.JOBDEFINITIONS,
-                                 _JD_COLUMNS)
+    q_bd.sort = v1_utils.sort_query(args['sort'], _JD_COLUMNS)
+    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _JD_COLUMNS)
 
     # used for counting the number of rows when t_id is not None
-    where_t_cond = None
     if t_id is not None:
-        where_t_cond = models.JOBDEFINITIONS.c.test_id == t_id
-        query = query.where(where_t_cond)
-
-    # adds the limit/offset parameters
-    if args['limit'] is not None:
-        query = query.limit(args['limit'])
-
-    if args['offset'] is not None:
-        query = query.offset(args['offset'])
+        q_bd.where.append(_TABLE.c.test_id == t_id)
 
     # get the number of rows for the '_meta' section
-    nb_row = utils.get_number_of_rows(models.JOBDEFINITIONS, where_t_cond)
+    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
-    rows = flask.g.db_conn.execute(query).fetchall()
-    result = [v1_utils.group_embedded_resources(embed, row) for row in rows]
+    rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
-    # verif dump
-    result = {'jobdefinitions': result, '_meta': {'count': nb_row}}
-    result = json.dumps(result, default=utils.json_encoder)
-    return flask.Response(result, 200, content_type='application/json')
+    return flask.jsonify({'jobdefinitions': rows, '_meta': {'count': nb_row}})
 
 
 @api.route('/jobdefinitions/<jd_id>', methods=['GET'])
@@ -125,32 +107,24 @@ def get_jobdefinition_by_id_or_name(user, jd_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    # the default query with no parameters
-    query = sqlalchemy.sql.select([models.JOBDEFINITIONS])
+    q_bd = v1_utils.QueryBuilder(_TABLE)
 
-    # if embed then construct the query with a join
-    if embed:
-        query = v1_utils.get_query_with_join(models.JOBDEFINITIONS,
-                                             [models.JOBDEFINITIONS], embed,
-                                             _VALID_EMBED)
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
 
-    query = query.where(
-        sqlalchemy.sql.or_(models.JOBDEFINITIONS.c.id == jd_id,
-                           models.JOBDEFINITIONS.c.name == jd_id)
-    )
+    where_clause = sql.or_(_TABLE.c.id == jd_id, _TABLE.c.name == jd_id)
+    q_bd.where.append(where_clause)
 
-    row = flask.g.db_conn.execute(query).fetchone()
+    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
     jobdefinition = v1_utils.group_embedded_resources(embed, row)
 
     if row is None:
-        raise dci_exc.DCIException("Jobdefinition '%s' not found." % jd_id,
-                                   status_code=404)
+        raise dci_exc.DCINotFound('Jobdefinition', jd_id)
 
-    etag = jobdefinition['etag']
-    jobdefinition = {'jobdefinition': jobdefinition}
-    jobdefinition = json.dumps(jobdefinition, default=utils.json_encoder)
-    return flask.Response(jobdefinition, 200, headers={'ETag': etag},
-                          content_type='application/json')
+    res = flask.jsonify({'jobdefinition': jobdefinition})
+    res.headers.add_header('ETag', jobdefinition['etag'])
+    return res
 
 
 @api.route('/jobdefinitions/<jd_id>', methods=['DELETE'])
@@ -159,20 +133,18 @@ def delete_jobdefinition_by_id_or_name(user, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    _verify_existence_and_get_jd(jd_id)
+    v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
-    query = models.JOBDEFINITIONS.delete().where(
-        sqlalchemy.sql.and_(
-            sqlalchemy.sql.or_(models.JOBDEFINITIONS.c.id == jd_id,
-                               models.JOBDEFINITIONS.c.name == jd_id),
-            models.JOBDEFINITIONS.c.etag == if_match_etag))
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == jd_id, _TABLE.c.name == jd_id)
+    )
+    query = _TABLE.delete().where(where_clause)
 
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise dci_exc.DCIException("Jobdefinition '%s' already deleted or "
-                                   "etag not matched." % jd_id,
-                                   status_code=409)
+    if not result.rowcount:
+        raise dci_exc.DCIDeleteConflict('Jobdefinition', jd_id)
 
     return flask.Response(None, 204, content_type='application/json')
 
@@ -186,7 +158,7 @@ def add_component_to_jobdefinitions(user, jd_id):
     values = {'jobdefinition_id': jd_id,
               'component_id': data_json.get('component_id', None)}
 
-    _verify_existence_and_get_jd(jd_id)
+    v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
     query = models.JOIN_JOBDEFINITIONS_COMPONENTS.insert().values(**values)
     flask.g.db_conn.execute(query)
@@ -196,33 +168,33 @@ def add_component_to_jobdefinitions(user, jd_id):
 @api.route('/jobdefinitions/<jd_id>/components', methods=['GET'])
 @auth.requires_auth
 def get_all_components_from_jobdefinitions(user, jd_id):
-    _verify_existence_and_get_jd(jd_id)
+    v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
     # Get all components which belongs to a given jobdefinition
-    query = sqlalchemy.sql.select([models.COMPONENTS]).select_from(
-        models.JOIN_JOBDEFINITIONS_COMPONENTS.join(models.COMPONENTS)).where(
-        models.JOIN_JOBDEFINITIONS_COMPONENTS.c.jobdefinition_id == jd_id)
-
+    JDC = models.JOIN_JOBDEFINITIONS_COMPONENTS
+    query = (sql.select([models.COMPONENTS])
+             .select_from(JDC.join(models.COMPONENTS))
+             .where(JDC.c.jobdefinition_id == jd_id))
     rows = flask.g.db_conn.execute(query)
-    result = [dict(row) for row in rows]
-    result = {'components': result, '_meta': {'count': len(result)}}
-    result = json.dumps(result, default=utils.json_encoder)
-    return flask.Response(result, 201, content_type='application/json')
+
+    res = flask.jsonify({'components': rows,
+                         '_meta': {'count': rows.rowcount}})
+    res.status_code = 201
+    return res
 
 
 @api.route('/jobdefinitions/<jd_id>/components/<c_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_component_from_jobdefinition(user, jd_id, c_id):
-    _verify_existence_and_get_jd(jd_id)
+    v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
     JDC = models.JOIN_JOBDEFINITIONS_COMPONENTS
-    query = JDC.delete().where(
-        sqlalchemy.sql.and_(JDC.c.jobdefinition_id == jd_id,
-                            JDC.c.component_id == c_id))
+    where_clause = sql.and_(JDC.c.jobdefinition_id == jd_id,
+                            JDC.c.component_id == c_id)
+    query = JDC.delete().where(where_clause)
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise dci_exc.DCIException("Component '%s' already deleted." % c_id,
-                                   status_code=409)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Component', c_id)
 
     return flask.Response(None, 204, content_type='application/json')

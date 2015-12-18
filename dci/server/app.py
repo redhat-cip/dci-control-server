@@ -17,6 +17,7 @@
 
 from dci.server.api import v1 as api_v1
 from dci.server.common import exceptions
+from dci.server.common import utils
 from dci.server.elasticsearch import engine as es_engine
 
 import flask
@@ -105,5 +106,8 @@ def create_app(conf):
     # Registering REST API v1
     dci_app.register_blueprint(api_v1.api, url_prefix='/api/v1')
     dci_app.register_blueprint(dci_databrowser)
+
+    # Registering custom encoder
+    dci_app.json_encoder = utils.JSONEncoder
 
     return dci_app
