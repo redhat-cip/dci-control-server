@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import pytest
 
 
 def test_create_jobstates(admin, job_id, team_id):
@@ -211,9 +212,11 @@ def test_create_jobstate_as_user(user, team_user_id, team_id, job_user_id):
     assert jobstate.status_code == 201
 
 
+@pytest.mark.usefixtures('jobstate_id', 'jobstate_user_id')
 def test_get_all_jobstates_as_user(user, team_user_id):
     jobstates = user.get('/api/v1/jobstates')
     assert jobstates.status_code == 200
+    assert jobstates.data['_meta']['count'] == 1
     for jobstate in jobstates.data['jobstates']:
         assert jobstate['team_id'] == team_user_id
 

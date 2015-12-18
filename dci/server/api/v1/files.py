@@ -18,7 +18,7 @@ import datetime
 
 import flask
 from flask import json
-import sqlalchemy.sql
+from sqlalchemy import sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
@@ -28,18 +28,14 @@ from dci.server.common import schemas
 from dci.server.common import utils
 from dci.server.db import models
 
+_TABLE = models.FILES
 # associate column names with the corresponding SA Column object
-_FILES_COLUMNS = v1_utils.get_columns_name_with_objects(models.FILES)
-_VALID_EMBED = {'jobstate': models.JOBSTATES,
-                'jobstate.job': models.JOBS,
-                'team': models.TEAMS}
-
-
-def _verify_existence_and_get_file(js_id):
-    return v1_utils.verify_existence_and_get(
-        [models.FILES], js_id,
-        sqlalchemy.sql.or_(models.FILES.c.id == js_id,
-                           models.FILES.c.name == js_id))
+_FILES_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_VALID_EMBED = {
+    'jobstate': models.JOBSTATES,
+    'jobstate.job': models.JOBS,
+    'team': models.TEAMS
+}
 
 
 @api.route('/files', methods=['POST'])
@@ -60,7 +56,7 @@ def create_files(user):
         'etag': etag
     })
 
-    query = models.FILES.insert().values(**values)
+    query = _TABLE.insert().values(**values)
 
     flask.g.db_conn.execute(query)
     flask.g.es_conn.index(values)
@@ -74,25 +70,23 @@ def create_files(user):
 def put_file(user, file_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
     values = schemas.file.put(flask.request.json)
 
-    file = dict(_verify_existence_and_get_file(file_id))
+    file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
     # If it's an admin or belongs to the same team
     if not(auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
     values['etag'] = utils.gen_etag()
-    where_clause = sqlalchemy.sql.and_(models.FILES.c.id == file_id,
-                                       models.FILES.c.etag == if_match_etag)
-    query = models.FILES.update().where(where_clause).values(**values)
+    where_clause = sql.and_(_TABLE.c.id == file_id,
+                            _TABLE.c.etag == if_match_etag)
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise dci_exc.DCIException("Conflict on file '%s' or etag "
-                                   "not matched." % file_id, status_code=409)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('File', file_id)
 
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
@@ -104,75 +98,59 @@ def get_all_files(user):
     """Get all files.
     """
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
 
+    embed = args['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    # the default query with no parameters
-    query = sqlalchemy.sql.select([models.FILES])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
 
-    # if embed then construct the query with a join
-    if embed:
-        query = v1_utils.get_query_with_join(models.FILES, [models.FILES],
-                                             embed, _VALID_EMBED)
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
+
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
+    q_bd.sort = v1_utils.sort_query(args['sort'], _FILES_COLUMNS)
+    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _FILES_COLUMNS)
 
     # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
-        query = query.where(models.FILES.c.team_id == user['team_id'])
-
-    query = v1_utils.sort_query(query, args['sort'], _FILES_COLUMNS)
-    query = v1_utils.where_query(query, args['where'], models.FILES,
-                                 _FILES_COLUMNS)
-
-    # adds the limit/offset parameters
-    if args['limit'] is not None:
-        query = query.limit(args['limit'])
-
-    if args['offset'] is not None:
-        query = query.offset(args['offset'])
+        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
     # get the number of rows for the '_meta' section
-    nb_row = utils.get_number_of_rows(models.FILES)
+    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
-    rows = flask.g.db_conn.execute(query).fetchall()
     result = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
-    result = {'files': result, '_meta': {'count': nb_row}}
-    result = json.dumps(result, default=utils.json_encoder)
-    return flask.Response(result, 200, content_type='application/json')
+    return json.jsonify({'files': result, '_meta': {'count': nb_row}})
 
 
 @api.route('/files/<file_id>', methods=['GET'])
 @auth.requires_auth
 def get_file_by_id_or_name(user, file_id):
+    # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    # the default query with no parameters
-    query = sqlalchemy.sql.select([models.FILES])
+    q_bd = v1_utils.QueryBuilder(_TABLE)
 
-    # if embed then construct the query with a join
-    if embed:
-        query = v1_utils.get_query_with_join(models.FILES, [models.FILES],
-                                             embed, _VALID_EMBED)
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
 
     if not auth.is_admin(user):
-        query = query.where(models.FILES.c.team_id == user['team_id'])
+        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    query = query.where(
-        sqlalchemy.sql.or_(models.FILES.c.id == file_id,
-                           models.FILES.c.name == file_id))
+    where_clause = sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
+    q_bd.where.append(where_clause)
 
-    row = flask.g.db_conn.execute(query).fetchone()
+    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
     if row is None:
-        raise dci_exc.DCIException("File '%s' not found." % file_id,
-                                   status_code=404)
+        raise dci_exc.DCINotFound('File', file_id)
 
     dfile = v1_utils.group_embedded_resources(embed, row)
-    etag = dfile['etag']
-    dfile = json.dumps({'file': dfile}, default=utils.json_encoder)
-    return flask.Response(dfile, 200, headers={'ETag': etag},
-                          content_type='application/json')
+    result = json.jsonify({'file': dfile})
+    result.headers.add_header('ETag', dfile['etag'])
+    return result
 
 
 @api.route('/files/<file_id>', methods=['DELETE'])
@@ -181,22 +159,20 @@ def delete_file_by_id(user, file_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    file = dict(_verify_existence_and_get_file(file_id))
+    file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
     if not(auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
-    query = models.FILES.delete().where(
-        sqlalchemy.sql.and_(
-            sqlalchemy.sql.or_(models.FILES.c.id == file_id,
-                               models.FILES.c.name == file_id),
-            models.FILES.c.etag == if_match_etag))
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
+    )
+    query = _TABLE.delete().where(where_clause)
 
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise dci_exc.DCIException("Files '%s' already deleted or "
-                                   "etag not matched." % file_id,
-                                   status_code=409)
+    if not result.rowcount:
+        raise dci_exc.DCIDeleteConflict('File', file_id)
 
     return flask.Response(None, 204, content_type='application/json')

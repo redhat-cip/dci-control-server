@@ -16,18 +16,6 @@
 from __future__ import unicode_literals
 
 
-class ServerError(Exception):
-    """Exception raised when an error occurs."""
-
-
-class NotFound(ServerError):
-    """Exception raised when the caller request a resource which does
-    not exist.
-    """
-    def __init__(self, message):
-        super(NotFound, self).__init__("'%s' does not exist" % message)
-
-
 class DCIException(Exception):
     """Exception raised for all errors on call REST API, customize
     error output
@@ -48,3 +36,26 @@ class DCIException(Exception):
 
     def __str__(self):
         return str(self.to_dict())
+
+
+class DCIConflict(DCIException):
+
+    def __init__(self, resource_name, resource_value):
+        super(DCIConflict, self).__init__(self._message(), status_code=409)
+
+    def _message(self):
+        msg = 'Conflict on %s "%s" or etag not matched'
+        return msg % (self.resource_name, self.resource_value)
+
+
+class DCIDeleteConflict(DCIException):
+
+    def _message(self):
+        msg = '%s "%s" already deleted or etag not matched.'
+        return msg % (self.resource_name, self.resource_value)
+
+
+class DCINotFound(DCIException):
+    def __init__(self, resource_name, resource_value):
+        msg = '%s "%s" not found.' % (resource_name, resource_value)
+        super(DCINotFound, self).__init__(msg, status_code=404)

@@ -23,18 +23,20 @@ import uuid
 
 import flask
 import six
-import sqlalchemy
 
 from dci.server.common import exceptions
+from sqlalchemy.engine import result
 
 
-def json_encoder(obj):
+class JSONEncoder(flask.json.JSONEncoder):
     """Default JSON encoder."""
-
-    if isinstance(obj, datetime.datetime):
-        return obj.isoformat()
-    elif isinstance(obj, uuid.UUID):
-        return str(obj)
+    def default(self, o):
+        if isinstance(o, datetime.datetime):
+            return o.isoformat()
+        elif isinstance(o, result.RowProxy):
+            return dict(o)
+        elif isinstance(o, result.ResultProxy):
+            return list(o)
 
 
 def gen_uuid():
@@ -60,13 +62,6 @@ def check_and_get_etag(headers):
         raise exceptions.DCIException("'If-match' header must be provided",
                                       status_code=412)
     return if_match_etag
-
-
-def get_number_of_rows(table, where_cond=None):
-    query = sqlalchemy.sql.select([sqlalchemy.func.count(table.c.id)])
-    if where_cond is not None:
-        query = query.where(where_cond)
-    return flask.g.db_conn.execute(query).scalar()
 
 
 def dict_merge(*dict_list):

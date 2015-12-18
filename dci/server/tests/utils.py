@@ -18,95 +18,12 @@ import base64
 import collections
 import flask
 
-import uuid
-
 from dci.server import auth
 from dci.server.common import utils
 from dci.server.db import models
 
 # convenient alias
 memoized = utils.memoized
-
-
-def create_component(
-        client,
-        name='bob',
-        data={'component_keys': {'foo': ['bar1', 'bar2']}}):
-    _, component_type, _ = client.post(
-        '/api/componenttypes',
-        data={'name': str(uuid.uuid4())}
-    )
-    component = client.post(
-        '/api/components',
-        data={
-            'name': name,
-            'canonical_project_name': 'this_is_something',
-            'componenttype_id': component_type['id'],
-            'data': data
-        }
-    )
-
-    return component
-
-
-def create_test(client):
-    return client.post(
-        '/api/tests',
-        data={
-            'name': 'bob',
-            'data': {'test_keys': {'foo': ['bar1', 'bar2']}}
-        })
-
-
-def create_jobdefinition(client, test_id, priority=0, name='bob'):
-    return client.post(
-        '/api/jobdefinitions',
-        data={'name': name,
-              'test_id': test_id,
-              'priority': priority}
-    )
-
-
-def create_jobdefinition_component(client, jobdefinition_id, component_id):
-    return client.post(
-        '/api/jobdefinition_components',
-        data={
-            'jobdefinition_id': jobdefinition_id,
-            'component_id': component_id
-        }
-    )
-
-
-def create_jobstate(client, job_id, status='ongoing'):
-    return client.post(
-        '/api/jobstates',
-        data={'job_id': job_id, 'status': status}
-    )
-
-
-def create_file(client, jobstate_id):
-    return client.post(
-        '/api/files',
-        data={'content': 'bob', 'name': 'bob', 'jobstate_id': jobstate_id}
-    )
-
-
-def create_remoteci(client):
-    return client.post(
-        '/api/remotecis',
-        data={
-            'name': 'a_remoteci',
-            'data': {'remoteci_keys': {'foo': ['bar1', 'bar2']}}
-        }
-    )
-
-
-def create_job(client, remoteci_id, recheck=False, job_id=None):
-    path = '/api/jobs'
-    if recheck:
-        path = '/api/jobs?recheck=1&job_id=%s' % job_id
-    return client.post(path, data={'remoteci_id': remoteci_id,
-                                   'recheck': recheck})
 
 
 def generate_client(app, credentials):
@@ -124,8 +41,7 @@ def generate_client(app, credentials):
         def wrapper(*args, **kwargs):
             data = kwargs.get('data')
             if data:
-                kwargs['data'] = flask.json.dumps(data,
-                                                  default=utils.json_encoder)
+                kwargs['data'] = flask.json.dumps(data, cls=utils.JSONEncoder)
 
             headers.update(kwargs.get('headers', {}))
             kwargs['headers'] = headers

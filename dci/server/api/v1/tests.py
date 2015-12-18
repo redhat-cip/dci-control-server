@@ -19,8 +19,7 @@ import datetime
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
-import sqlalchemy.sql
-
+from sqlalchemy import sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import jobdefinitions
@@ -32,15 +31,9 @@ from dci.server.common import utils
 from dci.server.db import models
 
 
+_TABLE = models.TESTS
 # associate column names with the corresponding SA Column object
-_T_COLUMNS = v1_utils.get_columns_name_with_objects(models.TESTS)
-
-
-def _verify_existence_and_get_t(t_id):
-    return v1_utils.verify_existence_and_get(
-        [models.TESTS], t_id,
-        sqlalchemy.sql.or_(models.TESTS.c.id == t_id,
-                           models.TESTS.c.name == t_id))
+_T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
 @api.route('/tests', methods=['POST'])
@@ -55,7 +48,7 @@ def create_tests(user):
         'etag': etag
     })
 
-    query = models.TESTS.insert().values(**data_json)
+    query = _TABLE.insert().values(**data_json)
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError as e:
@@ -72,44 +65,31 @@ def create_tests(user):
 def get_all_tests(user):
     args = schemas.args(flask.request.args.to_dict())
 
-    query = sqlalchemy.sql.select([models.TESTS])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
 
-    if args['limit'] is not None:
-        query = query.limit(args['limit'])
+    q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
+    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
 
-    if args['offset'] is not None:
-        query = query.offset(args['offset'])
+    # get the number of rows for the '_meta' section
+    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
-    query = v1_utils.sort_query(query, args['sort'], _T_COLUMNS)
-    query = v1_utils.where_query(query, args['where'], models.TESTS,
-                                 _T_COLUMNS)
-
-    nb_cts = utils.get_number_of_rows(models.TESTS)
-
-    rows = flask.g.db_conn.execute(query).fetchall()
-    result = [dict(row) for row in rows]
-
-    # verif dump
-    result = {'tests': result, '_meta': {'count': nb_cts}}
-    result = json.dumps(result, default=utils.json_encoder)
-    return flask.Response(result, 200, content_type='application/json')
+    return flask.jsonify({'tests': rows, '_meta': {'count': nb_row}})
 
 
 @api.route('/tests/<t_id>', methods=['GET'])
 @auth.requires_auth
 def get_test_by_id_or_name(user, t_id):
-    test = _verify_existence_and_get_t(t_id)
-    etag = test['etag']
-    test = {'test': dict(test)}
-    test = json.dumps(test, default=utils.json_encoder)
-    return flask.Response(test, 200, headers={'ETag': etag},
-                          content_type='application/json')
+    test = v1_utils.verify_existence_and_get(t_id, _TABLE)
+    res = flask.jsonify({'test': test})
+    res.headers.add_header('ETag', test['etag'])
+    return res
 
 
 @api.route('/tests/<t_id>/jobdefinitions', methods=['GET'])
 @auth.requires_auth
 def get_jobdefinitions_by_test(user, test_id):
-    test = _verify_existence_and_get_t(test_id)
+    test = v1_utils.verify_existence_and_get(test_id, _TABLE)
     return jobdefinitions.get_all_jobdefinitions(test['id'])
 
 
@@ -120,21 +100,19 @@ def put_test(user, t_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     data_json = schemas.test.put(flask.request.json)
 
-    _verify_existence_and_get_t(t_id)
+    v1_utils.verify_existence_and_get(t_id, _TABLE)
     data_json['etag'] = utils.gen_etag()
 
-    where_clause = sqlalchemy.sql.and_(
-        sqlalchemy.sql.or_(models.TESTS.c.id == t_id,
-                           models.TESTS.c.name == t_id),
-        models.TESTS.c.etag == if_match_etag
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id),
     )
-    query = models.TESTS.update().where(where_clause).values(**data_json)
+    query = _TABLE.update().where(where_clause).values(**data_json)
 
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise exceptions.DCIException("Conflict on test '%s' or etag "
-                                      "not matched." % t_id, status_code=409)
+    if not result.rowcount:
+        raise exceptions.DCIConflict('Test', t_id)
 
     return flask.Response(None, 204, headers={'ETag': data_json['etag']},
                           content_type='application/json')
@@ -146,19 +124,16 @@ def delete_test_by_id_or_name(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    _verify_existence_and_get_t(t_id)
+    v1_utils.verify_existence_and_get(t_id, _TABLE)
 
-    where_clause = sqlalchemy.sql.and_(
-        sqlalchemy.sql.or_(models.TESTS.c.id == t_id,
-                           models.TESTS.c.name == t_id),
-        models.TESTS.c.etag == if_match_etag
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
     )
-    query = models.TESTS.delete().where(where_clause)
+    query = _TABLE.delete().where(where_clause)
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise exceptions.DCIException("Test '%s' already deleted or "
-                                      "etag not matched." % t_id,
-                                      status_code=409)
+    if not result.rowcount:
+        raise exceptions.DCIDeleteConflict('Test', t_id)
 
     return flask.Response(None, 204, content_type='application/json')

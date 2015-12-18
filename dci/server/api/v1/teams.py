@@ -19,7 +19,7 @@ import datetime
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
-import sqlalchemy.sql
+from sqlalchemy import sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import remotecis
@@ -31,14 +31,8 @@ from dci.server.common import utils
 from dci.server.db import models
 
 # associate column names with the corresponding SA Column object
-_T_COLUMNS = v1_utils.get_columns_name_with_objects(models.TEAMS)
-
-
-def _verify_existence_and_get_team(t_id):
-    return v1_utils.verify_existence_and_get(
-        [models.TEAMS], t_id,
-        sqlalchemy.sql.or_(models.TEAMS.c.id == t_id,
-                           models.TEAMS.c.name == t_id))
+_TABLE = models.TEAMS
+_T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
 @api.route('/teams', methods=['POST'])
@@ -57,7 +51,7 @@ def create_teams(user):
         'etag': etag
     })
 
-    query = models.TEAMS.insert().values(**values)
+    query = _TABLE.insert().values(**values)
 
     try:
         flask.g.db_conn.execute(query)
@@ -75,58 +69,42 @@ def create_teams(user):
 def get_all_teams(user):
     args = schemas.args(flask.request.args.to_dict())
 
-    query = sqlalchemy.sql.select([models.TEAMS])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
 
-    if args['limit'] is not None:
-        query = query.limit(args['limit'])
-
-    if args['offset'] is not None:
-        query = query.offset(args['offset'])
+    q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
+    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
 
     if not auth.is_admin(user):
-        query = query.where(models.TEAMS.c.id == user['team_id'])
+        q_bd.where.append(_TABLE.c.id == user['team_id'])
 
-    query = v1_utils.sort_query(query, args['sort'], _T_COLUMNS)
-    query = v1_utils.where_query(query, args['where'], models.TEAMS,
-                                 _T_COLUMNS)
+    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
-    nb_cts = utils.get_number_of_rows(models.TEAMS)
-
-    rows = flask.g.db_conn.execute(query).fetchall()
-    result = [dict(row) for row in rows]
-
-    result = {'teams': result, '_meta': {'count': nb_cts}}
-    result = json.dumps(result, default=utils.json_encoder)
-    return flask.Response(result, 200, content_type='application/json')
+    return flask.jsonify({'teams': rows, '_meta': {'count': nb_row}})
 
 
 @api.route('/teams/<t_id>', methods=['GET'])
 @auth.requires_auth
 def get_team_by_id_or_name(user, t_id):
-    where_clause = sqlalchemy.sql.or_(models.TEAMS.c.id == t_id,
-                                      models.TEAMS.c.name == t_id)
-    query = (sqlalchemy.sql
-             .select([models.TEAMS])
-             .where(where_clause))
+    where_clause = sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
 
+    query = sql.select([_TABLE]).where(where_clause)
     team = flask.g.db_conn.execute(query).fetchone()
+
     if team is None:
-        raise exceptions.DCIException("Team '%s' not found." % t_id,
-                                      status_code=404)
-    team = dict(team)
+        raise exceptions.DCINotFound('Team', t_id)
     if not(auth.is_admin(user) or auth.is_in_team(user, team['id'])):
         raise auth.UNAUTHORIZED
 
-    etag = team['etag']
-    team = json.dumps({'team': team}, default=utils.json_encoder)
-    return flask.Response(team, 200, headers={'ETag': etag},
-                          content_type='application/json')
+    res = flask.jsonify({'team': team})
+    res.headers.add_header('ETag', team['etag'])
+    return res
 
 
 @api.route('/teams/<team_id>/remotecis', methods=['GET'])
 @auth.requires_auth
 def get_remotecis_by_team(user, team_id):
-    team = _verify_existence_and_get_team(team_id)
+    team = v1_utils.verify_existence_and_get(team_id, _TABLE)
     return remotecis.get_all_remotecis(team['id'])
 
 
@@ -141,47 +119,43 @@ def put_team(user, t_id):
     if not(auth.is_admin(user) or auth.is_admin_user(user, t_id)):
         raise auth.UNAUTHORIZED
 
-    _verify_existence_and_get_team(t_id)
+    v1_utils.verify_existence_and_get(t_id, _TABLE)
 
     values['etag'] = utils.gen_etag()
-    query = models.TEAMS.update().where(
-        sqlalchemy.sql.and_(
-            sqlalchemy.sql.or_(models.TEAMS.c.id == t_id,
-                               models.TEAMS.c.name == t_id),
-            models.TEAMS.c.etag == if_match_etag)).values(**values)
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
+    )
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise exceptions.DCIException("Conflict on team '%s' or etag "
-                                      "not matched." % t_id, status_code=409)
+    if not result.rowcount:
+        raise exceptions.DCIConflict('Team', t_id)
 
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
 
 
-@api.route('/teams/<ct_id>', methods=['DELETE'])
+@api.route('/teams/<t_id>', methods=['DELETE'])
 @auth.requires_auth
-def delete_team_by_id_or_name(user, ct_id):
+def delete_team_by_id_or_name(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
 
-    _verify_existence_and_get_team(ct_id)
+    v1_utils.verify_existence_and_get(t_id, _TABLE)
 
-    where_clause = sqlalchemy.sql.and_(
-        models.TEAMS.c.etag == if_match_etag,
-        sqlalchemy.sql.or_(models.TEAMS.c.id == ct_id,
-                           models.TEAMS.c.name == ct_id)
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
     )
-    query = models.TEAMS.delete().where(where_clause)
+    query = _TABLE.delete().where(where_clause)
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise exceptions.DCIException("Team '%s' already deleted or "
-                                      "etag not matched." % ct_id,
-                                      status_code=409)
+    if not result.rowcount:
+        raise exceptions.DCIDeleteConflict('Team', t_id)
 
     return flask.Response(None, 204, content_type='application/json')

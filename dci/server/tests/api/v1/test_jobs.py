@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import pytest
 
 
 def test_create_jobs(admin, jobdefinition_id, team_id, remoteci_id):
@@ -111,8 +112,8 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
     admin.post('/api/v1/jobs', data=data)
 
     # verify embed with all embedded options
-    query_embed = '/api/v1/jobs?embed=team,remoteci,jobdefinition.test,'\
-                  'jobdefinition'
+    query_embed = ('/api/v1/jobs?embed='
+                   'team,remoteci,jobdefinition.test,jobdefinition')
     jobs = admin.get(query_embed).data
 
     for job in jobs['jobs']:
@@ -128,8 +129,8 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
         assert job['remoteci']['id'] == remoteci_id
 
     # verify embed with jobdefinition.test nested
-    query_embed = '/api/v1/jobs?embed=jobdefinition.test,'\
-                  'jobdefinition'
+    query_embed = ('/api/v1/jobs?embed='
+                   'jobdefinition.test,jobdefinition')
     jobs = admin.get(query_embed).data
 
     for job in jobs['jobs']:
@@ -258,9 +259,11 @@ def test_create_job_as_user(user, team_user_id, team_id, jobdefinition_id,
     assert job.status_code == 201
 
 
+@pytest.mark.usefixtures('job_id', 'job_user_id')
 def test_get_all_jobs_as_user(user, team_user_id):
     jobs = user.get('/api/v1/jobs')
     assert jobs.status_code == 200
+    assert jobs.data['_meta']['count'] == 1
     for job in jobs.data['jobs']:
         assert job['team_id'] == team_user_id
 
