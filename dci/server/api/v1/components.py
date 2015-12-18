@@ -18,7 +18,7 @@ import datetime
 
 import flask
 from flask import json
-import sqlalchemy.sql
+from sqlalchemy import sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
@@ -29,14 +29,8 @@ from dci.server.common import utils
 from dci.server.db import models
 
 # associate column names with the corresponding SA Column object
-_C_COLUMNS = v1_utils.get_columns_name_with_objects(models.COMPONENTS)
-
-
-def _verify_existence_and_get_c(c_id):
-    return v1_utils.verify_existence_and_get(
-        [models.COMPONENTS], c_id,
-        sqlalchemy.sql.or_(models.COMPONENTS.c.id == c_id,
-                           models.COMPONENTS.c.name == c_id))
+_TABLE = models.COMPONENTS
+_C_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
 @api.route('/components', methods=['POST'])
@@ -44,12 +38,14 @@ def _verify_existence_and_get_c(c_id):
 def create_components(user):
     etag = utils.gen_etag()
     values = schemas.component.post(flask.request.json)
-    values.update({'id': utils.gen_uuid(),
-                   'created_at': datetime.datetime.utcnow().isoformat(),
-                   'updated_at': datetime.datetime.utcnow().isoformat(),
-                   'etag': etag})
+    values.update({
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': etag
+    })
 
-    query = models.COMPONENTS.insert().values(**values)
+    query = _TABLE.insert().values(**values)
 
     flask.g.db_conn.execute(query)
 
@@ -69,62 +65,36 @@ def get_all_components(user, ct_id=None):
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
 
-    # the default query with no parameters
-    query = sqlalchemy.sql.select([models.COMPONENTS])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
 
-    query = v1_utils.sort_query(query, args['sort'], _C_COLUMNS)
-    query = v1_utils.where_query(query, args['where'], models.COMPONENTS,
-                                 _C_COLUMNS)
+    q_bd.sort = v1_utils.sort_query(args['sort'], _C_COLUMNS)
+    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _C_COLUMNS)
 
     # used for counting the number of rows when ct_id is not None
-    where_ct_cond = None
     if ct_id is not None:
-        where_ct_cond = models.COMPONENTS.c.componenttype_id == ct_id
-        query = query.where(where_ct_cond)
+        q_bd.where.append(_TABLE.c.componenttype_id == ct_id)
 
-    # adds the limit/offset parameters
-    if args['limit'] is not None:
-        query = query.limit(args['limit'])
+    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
-    if args['offset'] is not None:
-        query = query.offset(args['offset'])
-
-    # get the number of rows for the '_meta' section
-    nb_cts = utils.get_number_of_rows(models.COMPONENTS, where_ct_cond)
-
-    rows = flask.g.db_conn.execute(query).fetchall()
-    result = [v1_utils.group_embedded_resources(args['embed'], row)
-              for row in rows]
-
-    result = {'components': result, '_meta': {'count': nb_cts}}
-    result = json.dumps(result, default=utils.json_encoder)
-    return flask.Response(result, 200, content_type='application/json')
+    return flask.jsonify({'components': rows, '_meta': {'count': nb_row}})
 
 
 @api.route('/components/<c_id>', methods=['GET'])
 @auth.requires_auth
 def get_component_by_id_or_name(user, c_id):
-    # get the diverse parameters
-    embed = schemas.args(flask.request.args.to_dict())['embed']
+    where_clause = sql.or_(_TABLE.c.id == c_id,
+                           _TABLE.c.name == c_id)
 
-    # the default query with no parameters
-    query = sqlalchemy.sql.select([models.COMPONENTS])
+    query = sql.select([_TABLE]).where(where_clause)
 
-    query = query.where(sqlalchemy.sql.or_(models.COMPONENTS.c.id == c_id,
-                                           models.COMPONENTS.c.name == c_id))
+    component = flask.g.db_conn.execute(query).fetchone()
+    if component is None:
+        raise dci_exc.DCINotFound('Component', c_id)
 
-    row = flask.g.db_conn.execute(query).fetchone()
-    component = v1_utils.group_embedded_resources(embed, row)
-
-    if row is None:
-        raise dci_exc.DCIException("component '%s' not found." % c_id,
-                                   status_code=404)
-
-    etag = component['etag']
-    component = {'component': component}
-    component = json.dumps(component, default=utils.json_encoder)
-    return flask.Response(component, 200, headers={'ETag': etag},
-                          content_type='application/json')
+    res = flask.jsonify({'component': component})
+    res.headers.add_header('ETag', component['etag'])
+    return res
 
 
 @api.route('/components/<c_id>', methods=['DELETE'])
@@ -133,19 +103,18 @@ def delete_component_by_id_or_name(user, c_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    _verify_existence_and_get_c(c_id)
+    v1_utils.verify_existence_and_get(c_id, _TABLE)
 
-    query = models.COMPONENTS.delete().where(
-        sqlalchemy.sql.and_(
-            sqlalchemy.sql.or_(models.COMPONENTS.c.id == c_id,
-                               models.COMPONENTS.c.name == c_id),
-            models.COMPONENTS.c.etag == if_match_etag))
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == c_id, _TABLE.c.name == c_id)
+    )
+
+    query = _TABLE.delete().where(where_clause)
 
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise dci_exc.DCIException("Component '%s' already deleted or "
-                                   "etag not matched." % c_id,
-                                   status_code=409)
+    if not result.rowcount:
+        raise dci_exc.DCIDeleteConflict('Component', c_id)
 
     return flask.Response(None, 204, content_type='application/json')

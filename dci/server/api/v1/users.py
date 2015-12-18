@@ -19,7 +19,7 @@ import datetime
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
-import sqlalchemy.sql
+from sqlalchemy import sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
@@ -31,20 +31,26 @@ from dci.server.db import models
 
 
 # associate column names with the corresponding SA Column object
-_USERS_COLUMNS = v1_utils.get_columns_name_with_objects(models.USERS)
+_TABLE = models.USERS
+_USERS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _VALID_EMBED = {'team': models.TEAMS}
 
 # select without the password column for security reasons
-_SELECT_WITHOUT_PASSWORD = [models.USERS.c[c_name]
-                            for c_name in models.USERS.c.keys()
-                            if c_name != 'password']
+_SELECT_WITHOUT_PASSWORD = [
+    _TABLE.c[c_name] for c_name in _TABLE.c.keys() if c_name != 'password'
+]
 
 
 def _verify_existence_and_get_user(user_id):
-    return v1_utils.verify_existence_and_get(
-        _SELECT_WITHOUT_PASSWORD, user_id,
-        sqlalchemy.sql.or_(models.USERS.c.id == user_id,
-                           models.USERS.c.name == user_id))
+    where_clause = sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
+    query = sql.select(_SELECT_WITHOUT_PASSWORD).where(where_clause)
+    result = flask.g.db_conn.execute(query).fetchone()
+
+    if result is None:
+        raise dci_exc.DCIException('Resource "%s" not found.' % user_id,
+                                   status_code=404)
+
+    return result
 
 
 @api.route('/users', methods=['POST'])
@@ -66,7 +72,7 @@ def create_users(user):
         'password': password_hash
     })
 
-    query = models.USERS.insert().values(**values)
+    query = _TABLE.insert().values(**values)
 
     try:
         flask.g.db_conn.execute(query)
@@ -88,75 +94,60 @@ def get_all_users(user, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
-    query = sqlalchemy.sql.select(_SELECT_WITHOUT_PASSWORD)
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+    q_bd.select = _SELECT_WITHOUT_PASSWORD
 
-    #  If it's not an admin, then get only the users of the caller's team
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
+
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
+    q_bd.sort = v1_utils.sort_query(args['sort'], _USERS_COLUMNS)
+    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _USERS_COLUMNS)
+
+    # If it's not an admin, then get only the users of the caller's team
     if not auth.is_admin(user):
-        query = query.where(models.USERS.c.team_id == user['team_id'])
+        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    # if embed then construct the query with a join
-    if embed:
-        query = v1_utils.get_query_with_join(models.USERS,
-                                             _SELECT_WITHOUT_PASSWORD, embed,
-                                             _VALID_EMBED)
-    query = v1_utils.sort_query(query, args['sort'], _USERS_COLUMNS)
-    query = v1_utils.where_query(query, args['where'], models.USERS,
-                                 _USERS_COLUMNS)
-
-    # used for counting the number of rows when ct_id is not None
-    where_t_cond = None
     if team_id is not None:
-        where_t_cond = models.USERS.c.team_id == team_id
-        query = query.where(where_t_cond)
+        q_bd.where.append(_TABLE.c.team_id == team_id)
 
-    if args['limit'] is not None:
-        query = query.limit(args['limit'])
+    # get the number of rows for the '_meta' section
+    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
-    if args['offset'] is not None:
-        query = query.offset(args['offset'])
-
-    nb_users = utils.get_number_of_rows(models.USERS, where_t_cond)
-
-    rows = flask.g.db_conn.execute(query).fetchall()
-    result = [v1_utils.group_embedded_resources(embed, row) for row in rows]
-
-    result = {'users': result, '_meta': {'count': nb_users}}
-    result = json.dumps(result, default=utils.json_encoder)
-    return flask.Response(result, 200, content_type='application/json')
+    return flask.jsonify({'users': rows, '_meta': {'count': nb_row}})
 
 
 @api.route('/users/<user_id>', methods=['GET'])
 @auth.requires_auth
 def get_user_by_id_or_name(user, user_id):
-    args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
+    embed = schemas.args(flask.request.args.to_dict())['embed']
+    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    # the default query with no parameters
-    query = sqlalchemy.sql.select(_SELECT_WITHOUT_PASSWORD)
+    q_bd = v1_utils.QueryBuilder(_TABLE)
+
+    q_bd.select = _SELECT_WITHOUT_PASSWORD
+
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
 
     # If it's not an admin, then get only the users of the caller's team
     if not auth.is_admin(user):
-        query = query.where(models.USERS.c.team_id == user['team_id'])
+        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    if embed:
-        query = v1_utils.get_query_with_join(models.USERS,
-                                             _SELECT_WITHOUT_PASSWORD, embed,
-                                             _VALID_EMBED)
+    where_clause = sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
+    q_bd.where.append(where_clause)
 
-    query = query.where(sqlalchemy.sql.or_(models.USERS.c.id == user_id,
-                                           models.USERS.c.name == user_id))
-
-    row = flask.g.db_conn.execute(query).fetchone()
-    guser = v1_utils.group_embedded_resources(embed, row)
+    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
 
     if row is None:
-        raise dci_exc.DCIException("User '%s' not found." % user_id,
-                                   status_code=404)
+        raise dci_exc.DCINotFound('User', user_id)
 
-    etag = guser['etag']
-    guser = json.dumps({'user': guser}, default=utils.json_encoder)
-    return flask.Response(guser, 200, headers={'ETag': etag},
-                          content_type='application/json')
+    guser = v1_utils.group_embedded_resources(embed, row)
+    res = flask.jsonify({'user': guser})
+    res.headers.add_header('ETag', guser['etag'])
+    return res
 
 
 @api.route('/users/<user_id>', methods=['PUT'])
@@ -181,18 +172,16 @@ def put_user(user, user_id):
     if 'password' in values:
         values['password'] = auth.hash_password(values.get('password'))
 
-    query = models.USERS.update().where(
-        sqlalchemy.sql.and_(
-            sqlalchemy.sql.or_(models.USERS.c.id == user_id,
-                               models.USERS.c.name == user_id),
-            models.USERS.c.etag == if_match_etag)).values(**values)
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
+    )
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise dci_exc.DCIException("Conflict on user '%s' or etag "
-                                   "not matched." % user_id,
-                                   status_code=409)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('User', user_id)
 
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
@@ -210,17 +199,15 @@ def delete_user_by_id_or_name(user, user_id):
            auth.is_admin_user(user, duser['team_id'])):
         raise auth.UNAUTHORIZED
 
-    query = models.USERS.delete().where(
-        sqlalchemy.sql.and_(
-            sqlalchemy.sql.or_(models.USERS.c.id == user_id,
-                               models.USERS.c.name == user_id),
-            models.USERS.c.etag == if_match_etag))
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
+    )
+    query = _TABLE.delete().where(where_clause)
 
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise dci_exc.DCIException("User '%s' already deleted or "
-                                   "etag not matched." % user_id,
-                                   status_code=409)
+    if not result.rowcount:
+        raise dci_exc.DCIDeleteConflict('User', user_id)
 
     return flask.Response(None, 204, content_type='application/json')

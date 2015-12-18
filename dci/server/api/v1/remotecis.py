@@ -19,7 +19,7 @@ import datetime
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
-import sqlalchemy.sql
+from sqlalchemy import sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
@@ -31,15 +31,9 @@ from dci.server.db import models
 
 
 # associate column names with the corresponding SA Column object
-_R_COLUMNS = v1_utils.get_columns_name_with_objects(models.REMOTECIS)
+_TABLE = models.REMOTECIS
+_R_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _VALID_EMBED = {'team': models.TEAMS}
-
-
-def _verify_existence_and_get_remoteci(r_id):
-    return v1_utils.verify_existence_and_get(
-        [models.REMOTECIS], r_id,
-        sqlalchemy.sql.or_(models.REMOTECIS.c.id == r_id,
-                           models.REMOTECIS.c.name == r_id))
 
 
 @api.route('/remotecis', methods=['POST'])
@@ -61,7 +55,7 @@ def create_remotecis(user):
         'etag': etag
     })
 
-    query = models.REMOTECIS.insert().values(**values)
+    query = _TABLE.insert().values(**values)
 
     try:
         flask.g.db_conn.execute(query)
@@ -78,42 +72,31 @@ def create_remotecis(user):
 @auth.requires_auth
 def get_all_remotecis(user, t_id=None):
     args = schemas.args(flask.request.args.to_dict())
-    # convenient alias
     embed = args['embed']
 
-    query = sqlalchemy.sql.select([models.REMOTECIS])
+    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    if embed:
-        query = v1_utils.get_query_with_join(models.REMOTECIS,
-                                             [models.REMOTECIS], embed,
-                                             _VALID_EMBED)
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
+
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
+    q_bd.sort = v1_utils.sort_query(args['sort'], _R_COLUMNS)
+    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _R_COLUMNS)
+
+    # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
-        query = query.where(models.REMOTECIS.c.team_id == user['team_id'])
+        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    query = v1_utils.sort_query(query, args['sort'], _R_COLUMNS)
-    query = v1_utils.where_query(query, args['where'], models.REMOTECIS,
-                                 _R_COLUMNS)
-
-    if args['limit'] is not None:
-        query = query.limit(args['limit'])
-
-    if args['offset'] is not None:
-        query = query.offset(args['offset'])
-
-    # used for counting the number of rows when ct_id is not None
-    where_t_cond = None
     if t_id is not None:
-        where_t_cond = models.REMOTECIS.c.team_id == t_id
-        query = query.where(where_t_cond)
+        q_bd.where.append(_TABLE.c.team_id == t_id)
 
-    nb_remotecis = utils.get_number_of_rows(models.REMOTECIS, where_t_cond)
+    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
-    rows = flask.g.db_conn.execute(query).fetchall()
-    result = [v1_utils.group_embedded_resources(embed, row) for row in rows]
-
-    result = {'remotecis': result, '_meta': {'count': nb_remotecis}}
-    result = json.dumps(result, default=utils.json_encoder)
-    return flask.Response(result, 200, content_type='application/json')
+    return flask.jsonify({'remotecis': rows, '_meta': {'count': nb_row}})
 
 
 @api.route('/remotecis/<r_id>', methods=['GET'])
@@ -122,33 +105,26 @@ def get_remoteci_by_id_or_name(user, r_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    # the default query with no parameters
-    query = sqlalchemy.sql.select([models.REMOTECIS])
+    q_bd = v1_utils.QueryBuilder(_TABLE)
 
-    # if embed then construct the query with a join
-    if embed:
-        query = v1_utils.get_query_with_join(models.REMOTECIS,
-                                             [models.REMOTECIS], embed,
-                                             _VALID_EMBED)
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
 
     if not auth.is_admin(user):
-        query = query.where(models.REMOTECIS.c.team_id == user['team_id'])
+        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    query = query.where(
-        sqlalchemy.sql.or_(models.REMOTECIS.c.id == r_id,
-                           models.REMOTECIS.c.name == r_id))
+    q_bd.where.append(sql.or_(_TABLE.c.id == r_id, _TABLE.c.name == r_id))
 
-    row = flask.g.db_conn.execute(query).fetchone()
-    remoteci = v1_utils.group_embedded_resources(embed, row)
+    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
 
     if row is None:
-        raise dci_exc.DCIException("Remoteci '%s' not found." % r_id,
-                                   status_code=404)
+        raise dci_exc.DCINotFound('RemoteCI', r_id)
 
-    etag = remoteci['etag']
-    remoteci = json.dumps({'remoteci': remoteci}, default=utils.json_encoder)
-    return flask.Response(remoteci, 200, headers={'ETag': etag},
-                          content_type='application/json')
+    remoteci = v1_utils.group_embedded_resources(embed, row)
+    res = flask.jsonify({'remoteci': remoteci})
+    res.headers.add_header('ETag', remoteci['etag'])
+    return res
 
 
 @api.route('/remotecis/<r_id>', methods=['PUT'])
@@ -159,29 +135,26 @@ def put_remoteci(user, r_id):
 
     values = schemas.remoteci.put(flask.request.json)
 
-    remoteci = dict(_verify_existence_and_get_remoteci(r_id))
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
     if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
         raise auth.UNAUTHORIZED
 
-    _verify_existence_and_get_remoteci(r_id)
-
     values['etag'] = utils.gen_etag()
-    where_clause = sqlalchemy.sql.and_(
-        models.REMOTECIS.c.etag == if_match_etag,
-        sqlalchemy.sql.or_(models.REMOTECIS.c.id == r_id,
-                           models.REMOTECIS.c.name == r_id))
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == r_id, _TABLE.c.name == r_id)
+    )
 
-    query = (models.REMOTECIS
+    query = (_TABLE
              .update()
              .where(where_clause)
              .values(**values))
 
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise dci_exc.DCIException("Conflict on test '%s' or etag "
-                                   "not matched." % r_id, status_code=409)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('RemoteCI', r_id)
 
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
@@ -193,22 +166,20 @@ def delete_remoteci_by_id_or_name(user, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    remoteci = dict(_verify_existence_and_get_remoteci(r_id))
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
     if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
         raise auth.UNAUTHORIZED
 
-    query = models.REMOTECIS.delete().where(
-        sqlalchemy.sql.and_(
-            sqlalchemy.sql.or_(models.REMOTECIS.c.id == r_id,
-                               models.REMOTECIS.c.name == r_id),
-            models.REMOTECIS.c.etag == if_match_etag))
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == r_id, _TABLE.c.name == r_id)
+    )
+    query = _TABLE.delete().where(where_clause)
 
     result = flask.g.db_conn.execute(query)
 
-    if result.rowcount == 0:
-        raise dci_exc.DCIException("Test '%s' already deleted or "
-                                   "etag not matched." % r_id,
-                                   status_code=409)
+    if not result.rowcount:
+        raise dci_exc.DCIDeleteConflict('RemoteCI', r_id)
 
     return flask.Response(None, 204, content_type='application/json')
