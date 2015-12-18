@@ -31,8 +31,8 @@ require('app')
   function($injector, $scope, jobs, remotecis, page) {
     var _ = $injector.get('_');
     var $state = $injector.get('$state');
-    var statuses = ['failure', 'success', 'ongoing', 'new',
-                    'initializing', 'killed', 'unfinished'];
+    var statuses = ['failure', 'success', 'running', 'new',
+                    'pre-run', 'post-run'];
     $scope.jobs = jobs.jobs;
     $scope.remotecis = {};
     $scope.status = {};

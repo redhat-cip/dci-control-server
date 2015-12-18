@@ -40,9 +40,8 @@ module.exports = angular.module('app', [
 .constant('glyphicons', {
   'failure': 'glyphicon-remove',
   'success': 'glyphicon-ok',
-  'ongoing': 'glyphicon-play',
+  'running': 'glyphicon-play',
   'new': 'glyphicon-record',
-  'initializing': 'glyphicon-record',
-  'killed': 'glyphicon-minus',
-  'unfinished': 'glyphicon-minus'
+  'pre-run': 'glyphicon-record',
+  'post-run': 'glyphicon-record'
 });

@@ -18,23 +18,23 @@
 def test_create_jobstates(admin, job_id, team_id):
     js = admin.post('/api/v1/jobstates',
                     data={'job_id': job_id, 'team_id': team_id,
-                          'status': 'ongoing', 'comment': 'kikoolol'}).data
+                          'status': 'running', 'comment': 'kikoolol'}).data
     js_id = js['jobstate']['id']
     js = admin.get('/api/v1/jobstates/%s' % js_id).data
     job = admin.get('/api/v1/jobs/%s' % job_id).data
     assert js['jobstate']['comment'] == 'kikoolol'
-    assert job['job']['status'] == 'ongoing'
+    assert job['job']['status'] == 'running'
 
 
 def test_get_all_jobstates(admin, job_id, team_id):
     js_1 = admin.post('/api/v1/jobstates',
                       data={'job_id': job_id, 'team_id': team_id,
-                            'status': 'ongoing', 'comment': 'kikoolol1'}).data
+                            'status': 'running', 'comment': 'kikoolol1'}).data
     js_1_id = js_1['jobstate']['id']
 
     js_2 = admin.post('/api/v1/jobstates',
                       data={'job_id': job_id, 'team_id': team_id,
-                            'status': 'ongoing', 'comment': 'kikoolol2'}).data
+                            'status': 'running', 'comment': 'kikoolol2'}).data
     js_2_id = js_2['jobstate']['id']
 
     db_all_js = admin.get('/api/v1/jobstates?sort=created_at').data
@@ -46,16 +46,16 @@ def test_get_all_jobstates(admin, job_id, team_id):
 
 def test_get_all_jobstates_with_pagination(admin, job_id, team_id):
     # create 4 jobstates types and check meta count
-    data = {'job_id': job_id, 'team_id': team_id, 'status': 'ongoing',
+    data = {'job_id': job_id, 'team_id': team_id, 'status': 'running',
             'comment': 'kikoolol1'}
     admin.post('/api/v1/jobstates', data=data)
-    data = {'job_id': job_id, 'team_id': team_id, 'status': 'ongoing',
+    data = {'job_id': job_id, 'team_id': team_id, 'status': 'running',
             'comment': 'kikoolol2'}
     admin.post('/api/v1/jobstates', data=data)
-    data = {'job_id': job_id, 'team_id': team_id, 'status': 'ongoing',
+    data = {'job_id': job_id, 'team_id': team_id, 'status': 'running',
             'comment': 'kikoolol3'}
     admin.post('/api/v1/jobstates', data=data)
-    data = {'job_id': job_id, 'team_id': team_id, 'status': 'ongoing',
+    data = {'job_id': job_id, 'team_id': team_id, 'status': 'running',
             'comment': 'kikoolol4'}
     admin.post('/api/v1/jobstates', data=data)
 
@@ -78,10 +78,10 @@ def test_get_all_jobstates_with_pagination(admin, job_id, team_id):
 
 def test_get_all_jobstates_with_embed(admin, job_id, team_id):
     # create 2 jobstates and check meta data count
-    data = {'job_id': job_id, 'team_id': team_id, 'status': 'ongoing',
+    data = {'job_id': job_id, 'team_id': team_id, 'status': 'running',
             'comment': 'kikoolol1'}
     admin.post('/api/v1/jobstates', data=data)
-    data = {'job_id': job_id, 'team_id': team_id, 'status': 'ongoing',
+    data = {'job_id': job_id, 'team_id': team_id, 'status': 'running',
             'comment': 'kikoolol2'}
     admin.post('/api/v1/jobstates', data=data)
 
@@ -97,7 +97,7 @@ def test_get_all_jobstates_with_embed(admin, job_id, team_id):
 def test_get_all_jobstates_with_where(admin, job_id, team_id):
     js = admin.post('/api/v1/jobstates',
                     data={'job_id': job_id, 'team_id': team_id,
-                          'status': 'ongoing', 'comment': 'kikoolol'}).data
+                          'status': 'running', 'comment': 'kikoolol'}).data
     js_id = js['jobstate']['id']
 
     db_js = admin.get('/api/v1/jobstates?where=id:%s' % js_id).data
@@ -113,19 +113,19 @@ def test_get_all_jobstates_with_sort(admin, job_id, team_id):
     # create 4 jobstates ordered by created time
     jd_1_1 = admin.post('/api/v1/jobstates',
                         data={'job_id': job_id, 'team_id': team_id,
-                              'status': 'ongoing',
+                              'status': 'running',
                               'comment': 'a'}).data['jobstate']
     jd_1_2 = admin.post('/api/v1/jobstates',
                         data={'job_id': job_id, 'team_id': team_id,
-                              'status': 'ongoing',
+                              'status': 'running',
                               'comment': 'a'}).data['jobstate']
     jd_2_1 = admin.post('/api/v1/jobstates',
                         data={'job_id': job_id, 'team_id': team_id,
-                              'status': 'ongoing',
+                              'status': 'running',
                               'comment': 'b'}).data['jobstate']
     jd_2_2 = admin.post('/api/v1/jobstates',
                         data={'job_id': job_id, 'team_id': team_id,
-                              'status': 'ongoing',
+                              'status': 'running',
                               'comment': 'b'}).data['jobstate']
 
     jds = admin.get('/api/v1/jobstates?sort=created_at').data
@@ -140,14 +140,14 @@ def test_get_jobstate_by_id(admin, job_id, team_id):
     js = admin.post('/api/v1/jobstates',
                     data={'job_id': job_id, 'team_id': team_id,
                           'comment': 'kikoolol',
-                          'status': 'ongoing'}).data
+                          'status': 'running'}).data
     js_id = js['jobstate']['id']
 
     # get by uuid
     created_js = admin.get('/api/v1/jobstates/%s' % js_id)
     assert created_js.status_code == 200
     assert created_js.data['jobstate']['comment'] == 'kikoolol'
-    assert created_js.data['jobstate']['status'] == 'ongoing'
+    assert created_js.data['jobstate']['status'] == 'running'
 
 
 def test_get_jobstate_not_found(admin):
@@ -160,7 +160,7 @@ def test_get_jobstate_with_embed(admin, job_id, team_id):
     js = admin.post('/api/v1/jobstates',
                     data={'job_id': job_id, 'team_id': team_id,
                           'comment': 'kikoolol',
-                          'status': 'ongoing'}).data
+                          'status': 'running'}).data
     js_id = js['jobstate']['id']
     del js['jobstate']['team_id']
     js['jobstate'][u'team'] = pt['team']
@@ -179,7 +179,7 @@ def test_delete_jobstate_by_id(admin, job_id, team_id):
     js = admin.post('/api/v1/jobstates',
                     data={'job_id': job_id, 'team_id': team_id,
                           'comment': 'kikoolol',
-                          'status': 'ongoing'})
+                          'status': 'running'})
     js_id = js.data['jobstate']['id']
     js_etag = js.headers.get("ETag")
 
@@ -201,13 +201,13 @@ def test_create_jobstate_as_user(user, team_user_id, team_id, job_user_id):
     jobstate = user.post('/api/v1/jobstates',
                          data={'job_id': job_user_id, 'team_id': team_id,
                                'comment': 'kikoolol',
-                               'status': 'ongoing'})
+                               'status': 'running'})
     assert jobstate.status_code == 401
 
     jobstate = user.post('/api/v1/jobstates',
                          data={'job_id': job_user_id, 'team_id': team_user_id,
                                'comment': 'kikoolol',
-                               'status': 'ongoing'})
+                               'status': 'running'})
     assert jobstate.status_code == 201
 
 
@@ -225,7 +225,7 @@ def test_get_jobstate_as_user(user, team_user_id, jobstate_id, job_user_id):
     jobstate = user.post('/api/v1/jobstates',
                          data={'job_id': job_user_id, 'team_id': team_user_id,
                                'comment': 'kikoolol',
-                               'status': 'ongoing'}).data
+                               'status': 'running'}).data
     jobstate_id = jobstate['jobstate']['id']
     jobstate = user.get('/api/v1/jobstates/%s' % jobstate_id)
     assert jobstate.status_code == 200
@@ -236,7 +236,7 @@ def test_delete_jobstate_as_user(user, team_user_id, admin, job_user_id,
     js_user = user.post('/api/v1/jobstates',
                         data={'job_id': job_user_id, 'team_id': team_user_id,
                               'comment': 'kikoolol',
-                              'status': 'ongoing'})
+                              'status': 'running'})
     js_user_id = js_user.data['jobstate']['id']
     jobstate = user.get('/api/v1/jobstates/%s' % js_user_id)
     jobstate_etag = jobstate.headers.get("ETag")

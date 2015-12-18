@@ -50,8 +50,7 @@ REMOTE_CIS_ATTRS = {
 
 NAMES = ['foobar', 'fubar', 'foo', 'bar', 'baz', 'qux', 'quux', 'norf']
 
-JOB_STATUSES = ['failure', 'success', 'ongoing', 'new', 'initializing',
-                'killed', 'unfinished']
+JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run', 'success', 'failure']
 
 LOREM_IPSUM = [
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
@@ -185,9 +184,9 @@ def create_jobstates_and_files(db_conn, job, company_id):
     if step == 'new':
         return
 
-    # create "initializing" jobstate and new files associated
+    # create "pre-run" jobstate and new files associated
     for i in range(0, random.randint(1, 4)):
-        jobstate = db_insert(db_conn, models.JOBSTATES, status='initializing',
+        jobstate = db_insert(db_conn, models.JOBSTATES, status='pre-run',
                              comment='initializing step %d' % (i,),
                              job_id=job_id, team_id=company_id)
         create_files(db_conn, jobstate, company_id)
@@ -195,9 +194,9 @@ def create_jobstates_and_files(db_conn, job, company_id):
     if step == 'init':
         return
 
-    # create "ongoing" jobstate
+    # create "running" jobstate
     for i in range(0, random.randint(1, 6)):
-        jobstate = db_insert(db_conn, models.JOBSTATES, status='ongoing',
+        jobstate = db_insert(db_conn, models.JOBSTATES, status='running',
                              comment='running step %d...' % (i,),
                              job_id=job_id, team_id=company_id)
         create_files(db_conn, jobstate, company_id)
@@ -205,8 +204,8 @@ def create_jobstates_and_files(db_conn, job, company_id):
     if step == 'progress':
         return
 
-    # choose between "success", "failure", "killed", and "unfinished" jobstate
-    status = random.choice(['success', 'failure', 'killed', 'unfinished'])
+    # choose between "success", "failure" jobstate
+    status = random.choice(['success', 'failure'])
     jobstate = db_insert(db_conn, models.JOBSTATES, status=status,
                          comment='%s %s' % (job['name'], status),
                          job_id=job_id, team_id=company_id)

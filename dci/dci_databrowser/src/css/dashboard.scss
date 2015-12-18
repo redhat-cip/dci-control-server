@@ -102,9 +102,8 @@ a {
     }
   }
   @each $name, $color in
-  (new, $new), (initializing, $progress), (ongoing, $progress),
-  (success, $success), (failure, $failure), (unfinished, $unfinished),
-  (killed, $unfinished) {
+  (new, $new), (pre-run, $progress), (running, $progress),
+  (post-run, $unfinished), (success, $success), (failure, $failure) {
     &.#{$name}  {
       border-color: $color;
     }
@@ -122,10 +121,8 @@ a {
     }
   }
   @each $name, $color in
-    (new, $new), (initializing, $progress), (ongoing, $progress),
-    (success, $success), (failure, $failure), (unfinished, $unfinished),
-    (killed, $unfinished) {
-
+  (new, $new), (pre-run, $progress), (running, $progress),
+  (post-run, $unfinished), (success, $success), (failure, $failure) {
     .#{$name} {
       color: $color;
     }
