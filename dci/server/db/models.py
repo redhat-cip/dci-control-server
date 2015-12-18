@@ -139,6 +139,7 @@ JOBS = sa.Table(
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
     sa.Column('recheck', sa.Boolean, default=False),
+    # new, pre-run, running, post-run, success, failure
     sa.Column('status', sa.String(255), default='new'),
     sa.Column('jobdefinition_id', sa.String(36),
               sa.ForeignKey('jobdefinitions.id', ondelete="CASCADE"),
@@ -161,6 +162,7 @@ JOBSTATES = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
+    # new, pre-run, running, post-run, success, failure
     sa.Column('status', sa.String(255), nullable=False),
     sa.Column('comment', sa.Text),
     sa.Column('job_id', sa.String(36),
