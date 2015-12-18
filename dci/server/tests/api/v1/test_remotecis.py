@@ -24,14 +24,20 @@ def test_create_remotecis(admin, team_id):
 
 
 def test_create_remotecis_already_exist(admin, team_id):
-    pstatus_code = admin.post('/api/v1/remotecis',
-                              data={'name': 'pname',
-                                    'team_id': team_id}).status_code
-    assert pstatus_code == 201
+    data = {'name': 'pname', 'team_id': team_id}
 
-    pstatus_code = admin.post('/api/v1/remotecis',
-                              data={'name': 'pname'}).status_code
-    assert pstatus_code == 400
+    res = admin.post('/api/v1/remotecis', data=data)
+    assert res.status_code == 201
+
+    res = admin.post('/api/v1/remotecis', data=data)
+    assert res.status_code == 409
+    assert res.data == {
+        'status_code': 409,
+        'message': 'Entry "name=pname" already exists',
+        'payload': {
+            'name': 'pname already exists'
+        }
+    }
 
 
 def test_get_all_remotecis(admin, team_id):

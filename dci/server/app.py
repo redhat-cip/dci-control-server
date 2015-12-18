@@ -55,19 +55,6 @@ class DciControlServer(flask.Flask):
         return super(DciControlServer, self).process_response(resp)
 
 
-def handle_api_exception(api_exception):
-    response = flask.jsonify(api_exception.to_dict())
-    response.status_code = api_exception.status_code
-    return response
-
-
-def handle_dbapi_exception(dbapi_exception):
-    dci_exception = exceptions.DCIException(str(dbapi_exception)).to_dict()
-    response = flask.jsonify(dci_exception)
-    response.status_code = 400
-    return response
-
-
 def create_app(conf):
     dci_config.TEAM_ADMIN_ID = dci_config.get_team_admin_id()
 
@@ -98,9 +85,9 @@ def create_app(conf):
 
     # Registering REST error handler
     dci_app.register_error_handler(exceptions.DCIException,
-                                   handle_api_exception)
+                                   exceptions.handle_api_exception)
     dci_app.register_error_handler(sa_exc.DBAPIError,
-                                   handle_dbapi_exception)
+                                   exceptions.handle_dbapi_exception)
 
     # Registering REST API v1
     dci_app.register_blueprint(api_v1.api, url_prefix='/api/v1')

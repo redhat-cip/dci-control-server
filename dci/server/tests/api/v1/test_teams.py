@@ -24,13 +24,20 @@ def test_create_teams(admin):
 
 
 def test_create_teams_already_exist(admin):
-    pstatus_code = admin.post('/api/v1/teams',
-                              data={'name': 'pname'}).status_code
-    assert pstatus_code == 201
+    data = {'name': 'pname'}
 
-    pstatus_code = admin.post('/api/v1/teams',
-                              data={'name': 'pname'}).status_code
-    assert pstatus_code == 400
+    res = admin.post('/api/v1/teams', data=data)
+    assert res.status_code == 201
+
+    res = admin.post('/api/v1/teams', data=data)
+    assert res.status_code == 409
+    assert res.data == {
+        'status_code': 409,
+        'message': 'Entry "name=pname" already exists',
+        'payload': {
+            'name': 'pname already exists'
+        }
+    }
 
 
 def test_get_all_teams(admin):

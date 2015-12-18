@@ -27,12 +27,19 @@ def test_create_components(admin):
 
 def test_create_components_already_exist(admin):
     data = {'name': 'pname', 'type': 'gerrit_review'}
-    pstatus_code = admin.post('/api/v1/components', data=data).status_code
-    assert pstatus_code == 201
 
-    data = {'name': 'pname', 'type': 'gerrit_review'}
-    pstatus_code = admin.post('/api/v1/components', data=data).status_code
-    assert pstatus_code == 400
+    res = admin.post('/api/v1/components', data=data)
+    assert res.status_code == 201
+
+    res = admin.post('/api/v1/components', data=data)
+    assert res.status_code == 409
+    assert res.data == {
+        'status_code': 409,
+        'message': 'Entry "name=pname" already exists',
+        'payload': {
+            'name': 'pname already exists'
+        }
+    }
 
 
 def test_get_all_components(admin):

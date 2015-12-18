@@ -15,6 +15,16 @@
 # under the License.
 from __future__ import unicode_literals
 
+import flask
+import re
+
+from sqlalchemy import exc as sa_exc
+
+
+# We have to parse the message because sqlalchemy does not provide a fine
+# grained exception
+retrieve_integrity_error_details = re.compile('DETAIL:.*?\((.*?)\)=\((.*?)\)')
+
 
 class ServerError(Exception):
     """Exception raised when an error occurs."""
@@ -48,3 +58,22 @@ class DCIException(Exception):
 
     def __str__(self):
         return str(self.to_dict())
+
+
+def handle_api_exception(api_exception):
+    response = flask.jsonify(api_exception.to_dict())
+    response.status_code = api_exception.status_code
+    return response
+
+
+def handle_dbapi_exception(dbapi_exception):
+    if isinstance(dbapi_exception, sa_exc.IntegrityError):
+        res = retrieve_integrity_error_details.search(dbapi_exception.message)
+        msg = 'Entry "%s=%s" already exists' % res.groups()
+        payload = {res.group(1): '%s already exists' % res.group(2)}
+        exc = DCIException(msg, payload, status_code=409)
+    else:
+        exc = DCIException('Something bad happened with the db',
+                           dbapi_exception.to_dict(), 500)
+
+    return handle_api_exception(exc)
