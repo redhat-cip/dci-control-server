@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9adffdf1_decd2988",
+        "filename": "dci/server/api/v1/search.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-21T15:02:22Z",
+      "side": 1,
+      "message": "use flask.jsonify({\u0027logs\u0027: res[\u0027hits\u0027]}) it creates a response object with the correct headers and content_type and is also less verbose",
+      "revId": "18f14619df3e7a87288af1e613172ee9b6ec85b8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9adffdf1_1eabb18a",
+        "filename": "dci/server/tests/api/v1/test_search.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2015-12-21T15:02:22Z",
+      "side": 1,
+      "message": "can you use a fixture for the file creation ? I think file_id already exist you just have to create the file_user_id one, scoped to the user, it will reduce the amount of code in the test and provide some reusable code for further tests",
+      "revId": "18f14619df3e7a87288af1e613172ee9b6ec85b8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
