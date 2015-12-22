@@ -25,6 +25,7 @@ import random
 import sqlalchemy
 import sqlalchemy_utils.functions
 import sys
+import time
 
 
 COMPANIES = ['IBM', 'HP', 'DELL', 'Rackspace', 'Brocade', 'Redhat', 'Huawei',
@@ -127,16 +128,19 @@ def create_jobs(db_conn, company_id, remote_cis):
     for remote_ci, job_definitions in remote_cis.items():
         for job_definition in job_definitions:
             delta = datetime.timedelta(hours=random.randint(0, 10))
-            since = datetime.timedelta(days=random.randint(0, 5),
+            since = datetime.timedelta(days=random.randint(0, 3),
                                        hours=random.randint(0, 10))
-            updated_at = datetime.datetime.now() - since
-            created_at = updated_at - delta
-            status = random.choice(JOB_STATUSES)
-            job = db_insert(db_conn, models.JOBS, remoteci_id=remote_ci,
-                            jobdefinition_id=job_definition['id'],
-                            created_at=created_at, updated_at=updated_at,
-                            status=status, team_id=company_id)
+            job = {
+                'remoteci_id': remote_ci,
+                'jobdefinition_id': job_definition['id'],
+                'created_at': datetime.datetime.now() - since - delta,
+                'updated_at': datetime.datetime.now() - since,
+                'status': random.choice(JOB_STATUSES),
+                'team_id': company_id
+            }
+            job['id'] = db_insert(db_conn, models.JOBS, **job)
             jobs.append(job)
+
     return jobs
 
 
@@ -174,54 +178,81 @@ def create_files(db_conn, jobstate, company_id):
 
 
 def create_jobstates_and_files(db_conn, job, company_id):
-    job_id, job = job
-    # choose the final step
-    step = random.choice(['new', 'init', 'progress', 'finish'])
+    job, job_def = job
+
+    name = job_def['name']
+    step = job['status']
+    id = job['id']
+
     # create "new" jobstate do not create files
     db_insert(db_conn, models.JOBSTATES, status='new',
-              comment='Job "%s" created' % (job['name'],), job_id=job_id,
-              team_id=company_id)
+              comment='Job "%s" created' % name,
+              job_id=id, team_id=company_id,
+              created_at=job['created_at'])
 
     if step == 'new':
         return
 
-    # create "pre-run" jobstate and new files associated
-    for i in range(0, random.randint(1, 4)):
-        jobstate = db_insert(db_conn, models.JOBSTATES, status='pre-run',
-                             comment='initializing step %d' % (i,),
-                             job_id=job_id, team_id=company_id)
-        create_files(db_conn, jobstate, company_id)
+    start, end  = job['created_at'], job['updated_at']
+    start = time.mktime(start.timetuple())
+    end = time.mktime(end.timetuple())
 
-    if step == 'init':
+    step_number = JOB_STATUSES.index(step)
+
+    # calculate timedelta for job running
+    job_start = int(start + random.random() * (end - start))
+    job_duration = end - job_start
+
+    def compute_creation(current_step):
+        step_index = JOB_STATUSES.index(current_step)
+        creation = job_start +  (job_duration * step_index / step_number)
+        return datetime.datetime.fromtimestamp(creation)
+
+    # create "pre-run" jobstate and new files associated
+    created_at = compute_creation('pre-run')
+    jobstate = db_insert(db_conn, models.JOBSTATES, status='pre-run',
+                         comment='initializing %s' % name,
+                         job_id=id, team_id=company_id,
+                         created_at=created_at, updated_at=created_at)
+    create_files(db_conn, jobstate, company_id)
+
+    if step == 'pre-run':
         return
 
     # create "running" jobstate
-    for i in range(0, random.randint(1, 6)):
-        jobstate = db_insert(db_conn, models.JOBSTATES, status='running',
-                             comment='running step %d...' % (i,),
-                             job_id=job_id, team_id=company_id)
+    created_at = compute_creation('running')
+    jobstate = db_insert(db_conn, models.JOBSTATES, status='running',
+                         comment='running %s...' % name,
+                         job_id=id, team_id=company_id,
+                         created_at=created_at, updated_at=created_at)
+    create_files(db_conn, jobstate, company_id)
+
+    if step == 'running':
+        return
+
+    # create "post-run" jobstate sometimes
+    created_at = compute_creation('post-run')
+    if random.random() > 0.7 and step != 'post-run':
+        jobstate = db_insert(db_conn, models.JOBSTATES, status='post-run',
+                             comment='finalizing %s...' % name,
+                             job_id=id, team_id=company_id,
+                             created_at=created_at, updated_at=created_at)
+
         create_files(db_conn, jobstate, company_id)
 
-    if step == 'progress':
+    if step == 'post-run':
         return
 
     # choose between "success", "failure" jobstate
-    status = random.choice(['success', 'failure'])
-    jobstate = db_insert(db_conn, models.JOBSTATES, status=status,
-                         comment='%s %s' % (job['name'], status),
-                         job_id=job_id, team_id=company_id)
-    create_files(db_conn, jobstate, company_id)
+    created_at = compute_creation('success')
+    jobstate = db_insert(db_conn, models.JOBSTATES, status=job['status'],
+                         comment='%s %s' % (name, step),
+                         job_id=id, team_id=company_id,
+                         created_at=created_at, updated_at=created_at)
+    # no file creation on last state
 
 
 def db_insert(db_conn, model_item, **kwargs):
-
-    if model_item == models.JOBSTATES:
-        job_id = kwargs['job_id']
-        query_update_job = models.JOBS.update().where(
-            models.JOBS.c.id == job_id).values(
-            status=kwargs['status'])
-        db_conn.execute(query_update_job)
-
     query = model_item.insert().values(**kwargs)
     return db_conn.execute(query).inserted_primary_key[0]
 
