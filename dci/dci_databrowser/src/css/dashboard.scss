@@ -1,178 +1,74 @@
-$success     : #5cb85c;
-$failure     : #d9534f;
-$new         : #337ab7;
-$unfinished  : #f0ad4e;
-$progress    : #5bc0de;
-$gray        : gray;
-$gray-darker : darken($gray, 13.5%);
-$gray-dark   : darken($gray, 22.5%);
-$background  : #fff;
-$size: 14px;
+@import "bootstrap";
 
 body {
   margin-top: 60px;
-  font-size: 16px;
 }
 
 .navbar {
-  background-color: $background;
   .navbar-brand {
     padding-top: 3px;
   }
 }
 
+.checkbox-inline {
+  margin-right: 15px;
 
-header.page-header {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 0;
-
-  h1 {
-    font-size: 25px;
-    line-height: 1;
-    color: $gray;
-    padding-top: 4px;
-  }
-
-  .search {
-    margin-top: 20px;
-    margin-bottom: 10px;
-    padding: 4px;
-    width: 300px;
-    font-size: $size;
-    color: #a6adad;
-    border: 1px solid #f2f2f2;
-    border-radius: 4px;
+  & + .checkbox-inline {
+    margin-left: 0;
   }
 }
 
-.tile {
-  border-radius: 0;
-  border: 1px solid;
-  padding: .6em .5em;
-  font-size: $size;
-  box-shadow: 2px 4px 4px #ccc;
-}
+.bs-callout {
+  padding: 15px;
+  margin: 20px 0;
+  border: 1px solid $btn-default-border;
+  border-left-width: 5px;
+  border-radius: 3px;
 
-ul {
-  padding: 0;
-  li {
-    list-style: none;
+  h4 {
+    margin-top: 0;
+    margin-bottom: 5px;
+  }
+  p:last-child {
+    margin-bottom: 0;
+  }
+
+  & + .bs-callout {
+    margin-top: -5px;
+  }
+
+  code {
+    border-radius: 3px;
+  }
+
+  .btn-xs {
+    margin-top: -2px;
   }
 }
 
-a {
-  cursor: pointer;
-}
+@each $name, $color in
+(primary, $brand-primary), (success, $brand-success), (info, $brand-info),
+(warning, $brand-warning), (danger, $brand-danger) {
+  .bs-callout-#{$name} {
+    border-left-color: $color;
 
+    .title {
+      color: $color
+    }
 
-.job-tile {
-  display: flex;
-  align-items: stretch;
-  background-color: $background;
-  margin-bottom: 10px;
-  border-left-width: 8px;
-  min-height: 100px;
-
-  .tile-main {
-    flex: 0 1 50%;
-  }
-  .tile-additional {
-    display: flex;
-    align-items: center;
-    flex: 0 1 50%;
-    .glyphicon {
-      margin-right: 6px;
+    a.title:hover {
+      color: darken($color, 15%)
     }
   }
-  .tile-refresh {
-    display: flex;
-    align-items: center;
-    flex: 0 0 100px;
-    font-weight: bold;
+}
+
+.job {
+  .glyphicon-repeat, .glyphicon-minus-sign {
+    margin-top: 5px;
     font-size: 18px;
-
-    .glyphicon-repeat {
-      background-color: $gray-darker;
-      cursor: pointer;
-      border-radius: 50%;
-      padding: 8px;
-      margin: auto;
-      color: #fff;
-    }
-  }
-  @each $name, $color in
-  (new, $new), (pre-run, $progress), (running, $progress),
-  (post-run, $unfinished), (success, $success), (failure, $failure) {
-    &.#{$name}  {
-      border-color: $color;
-    }
-
-    .#{$name} {
-      color: $color;
-    }
-  }
-}
-
-.jobstates-files {
-  a {
-    &:hover, &:focus {
-      text-decoration: none;
-    }
-  }
-  @each $name, $color in
-  (new, $new), (pre-run, $progress), (running, $progress),
-  (post-run, $unfinished), (success, $success), (failure, $failure) {
-    .#{$name} {
-      color: $color;
-    }
-  }
-}
-
-.tile-file {
-  background-color: #f7f7f7;
-  margin-top: 40px;
-
-  h3 {
-    font-size: 12px;
-    padding: 5px 0 5px 0;
-    margin: 0;
-    font-weight: bold;
-  }
-
-  pre {
-    border-width: 0;
-    background-color: transparent;
+    border-radius: 50%;
+    padding: 8px 12px;
   }
 }
 
 
-.panel-group {
-  .panel {
-    border-color: black;
-    box-shadow: 2px 2px 2px #ccc;
-    border-radius: 0;
-  }
-}
-
-.panel-default > .panel-heading {
-  background-color: $background;
-}
-
-.panel-title {
-  font-size: $size;
-}
-
-.list {
-  display: flex;
-  flex-wrap: wrap;
-  label {
-    font-size: $size;
-    font-weight: normal;
-    padding: 5px 15px 5px 5px;
-  }
-}
-
-.alerts  {
-  margin-top: 25px;
-}

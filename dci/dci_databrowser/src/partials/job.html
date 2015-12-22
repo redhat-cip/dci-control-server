@@ -1,16 +1,27 @@
 <div dci-job></div>
 
-<div accordion class="jobstates-files">
-  <div accordion-group ng-repeat="jobstate in job.jobstates" is-open="$first">
-    <div accordion-heading>
-      <span ng-class="jobstate.status">
-        {{ jobstate.status }}
+<div ng-repeat="jobstate in job.jobstates" class="bs-callout row" ng-class="jobstate.statusClass">
+  <div class="col-md-12">
+    <span class="title">
+      {{ jobstate.status }}
+    </span>
+    : {{ jobstate.comment }}
+
+    <button type="button" class="pull-right btn btn-primary btn-xs"
+      ng-if="jobstate.files.length" ng-click="jobstate.isOpen = !jobstate.isOpen">
+      <span ng-if="!jobstate.isOpen">
+        see details
       </span>
-      : {{ jobstate.comment }}
-    </div>
+      <span ng-if="jobstate.isOpen">
+        close details
+      </span>
+    </button>
+  </div>
+  <div collapse="!jobstate.isOpen" class="col-md-12">
     <div class="tile tile-file" ng-repeat="file in jobstate.files">
       <h3>{{file.name}}</h3>
       <pre>{{file.content}}</pre>
     </div>
+
   </div>
 </div>
