@@ -9,8 +9,8 @@
       <li ng-class="job.status">
         <span class="glyphicon" ng-class="job.glyphicon"></span>{{job.status}}
       </li>
+      <li><span class="glyphicon glyphicon-calendar"></span>{{job.updated_at}}</li>
       <li><span class="glyphicon glyphicon-time"></span>ran for {{job.time_running}}</li>
-      <li><span class="glyphicon glyphicon-calendar"></span>{{job.created_at}}</li>
     </ul>
   </div>
   <div class="tile-refresh">
