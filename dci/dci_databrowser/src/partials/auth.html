@@ -2,12 +2,12 @@
   <div class="container">
     <div class="col-md-12">
       <div class="navbar-header">
-        <a class="navbar-brand" ui-sref="index">
+        <a class="navbar-brand" ui-sref="auth.index">
           <img class= "logo" src="images/redhat.png">
         </a>
       </div>
       <ul class="nav navbar-nav" ng-if="admin">
-        <li><a ui-sref="administrate">Administrate</a></li>
+        <li ui-sref-active="active"><a ui-sref="auth.authAdmin.administrate">Administrate</a></li>
       </ul>
       <div id="navbar" class="navbar-collapse collapse">
         <ul class="nav navbar-nav navbar-right">
