@@ -32,7 +32,7 @@ require('app')
   api.getJobs = function(page) {
     var offset = 20 * (page - 1);
     var config = {'params': {
-        'limit': 20, 'offset': offset,
+        'limit': 20, 'offset': offset, 'sort': '-updated_at',
         'embed': 'remoteci,jobdefinition,jobdefinition.test'
     }};
     return $http.get(urls.JOBS, config).then(_.property('data'));
