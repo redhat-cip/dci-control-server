@@ -259,7 +259,9 @@ def db_insert(db_conn, model_item, **kwargs):
 
 def lorem():
     nb = random.randint(1, len(LOREM_IPSUM))
-    return '\n'.join(LOREM_IPSUM[0:nb])
+    long_line = ' '.join(LOREM_IPSUM[0:7])
+
+    return long_line + '\n'.join(LOREM_IPSUM[0:nb])
 
 
 def init_db(db_conn):

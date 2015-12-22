@@ -1,19 +1,21 @@
-<div class="tile job-tile" ng-class="job.status">
-  <div class="tile-main">
-    <a ui-sref="job({id: job.id})" ng-class="job.status">
+<div class="bs-callout container-fluid job" ng-class="job.statusClass">
+  <div class="col-md-6">
+    <a ui-sref="auth.job({id: job.id})" class="title">
       {{job.remoteci.name}} / {{job.jobdefinition.name}}
     </a>
   </div>
-  <div class="tile-additional">
-    <ul>
-      <li ng-class="job.status">
-        <span class="glyphicon" ng-class="job.glyphicon"></span>{{job.status}}
-      </li>
-      <li><span class="glyphicon glyphicon-calendar"></span>{{job.updated_at}}</li>
-      <li><span class="glyphicon glyphicon-time"></span>ran for {{job.time_running}}</li>
-    </ul>
+  <div class="col-md-5">
+    <div class="title">
+      <span class="glyphicon" ng-class="job.glyphicon"></span> {{job.status}}
+    </div>
+    <div><span class="glyphicon glyphicon-calendar"></span> {{job.updated_at}}</div>
+    <div><span class="glyphicon glyphicon-time"></span> ran for {{job.time_running}}</div>
   </div>
-  <div class="tile-refresh">
-    <span class="glyphicon glyphicon-repeat" ng-click="recheck()"></span>
+  <div class="col-md-1">
+    <a class="btn btn-default glyphicon glyphicon-minus-sign"
+      disabled="disabled" ng-if="job.recheck" title="Job currently rechecking">
+    <a class="btn btn-default glyphicon glyphicon-repeat" title="Recheck job"
+      ng-click="recheck()" ng-if="!job.recheck">
+    </a>
   </div>
 </div>

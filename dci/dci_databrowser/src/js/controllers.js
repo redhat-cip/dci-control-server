@@ -19,7 +19,7 @@ require('app')
   '$scope', '$state', 'auth', function($scope, $state, auth) {
     $scope.authenticate = function(credentials) {
       auth.login(credentials.username, credentials.password).then(function(){
-        $state.go('index');
+        $state.go('auth.index');
       });
     }
     $scope.unauthorized = auth.isUnauthorized();
@@ -51,7 +51,7 @@ require('app')
         'status': _($scope.status).pick(_.identity).keys().join(','),
         'remoteci': _($scope.remotecis).pick(_.identity).keys().join(',')
       }
-      $state.go('jobs', params);
+      $state.go('auth.jobs', params);
     }
 
     $scope.isFiltering = !!(
@@ -62,20 +62,27 @@ require('app')
       $scope.pagination = {
         total: jobs._meta.count, page: page,
         pageChanged: function() {
-          $state.go('jobs', $scope.pagination);
+          $state.go('auth.jobs', $scope.pagination);
         }
       };
     }
   }
 ])
-.controller('JobCtrl', ['$scope', 'job', 'api', function($scope, job, api) {
-  $scope.job = job;
-  angular.forEach(job.jobstates, function(jobstate) {
-    api.getFiles(jobstate.id).then(function(files) {
-      jobstate.files = files
+.controller('JobCtrl', [
+  '$scope', 'job', 'api', 'status', function($scope, job, api, status) {
+    $scope.job = job;
+    var opened = false;
+    angular.forEach(job.jobstates, function(jobstate) {
+      jobstate.statusClass = 'bs-callout-' + status[jobstate.status]['color'];
+      api.getFiles(jobstate.id).then(function(files) {
+        if (!opened && files.length) {
+          opened = jobstate.isOpen = true;
+        }
+        jobstate.files = files
+      });
     });
-  });
-}])
+  }
+])
 
 .controller('AdminCtrl', [
   '$scope', 'teams', 'api', function($scope, teams, api) {

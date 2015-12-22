@@ -1,29 +1,30 @@
-<div accordion>
-  <div accordion-group heading="Filtering" is-open="isFiltering" class="filtering">
-    <form ng-submit="search()">
-      <h5> Status </h5>
-      <div class="list">
-        <div ng-repeat="(key, _) in status">
-          <input id="{{key}}" ng-model="status[key]" type="checkbox"/>
-          <label for="{{key}}">{{key}}</label>
-        </div>
-      </div>
-      <h5> RemoteCI </h5>
-      <div class="list">
-        <div ng-repeat="(remoteci, _) in remotecis">
-          <input id="{{remoteci}}" ng-model="remotecis[remoteci]" type="checkbox"/>
-          <label for="{{remoteci}}">{{remoteci}}</label>
-        </div>
-      </div>
-      <button type="submit" class="btn btn-xs btn-primary">Search</button>
-    </form>
+<div class="row">
+  <div class="col-md-4 col-md-offset-8">
+    <button class="btn btn-default btn-block" ng-click="isFiltering = !isFiltering">
+      Filtering
+    </button>
   </div>
 </div>
-
-<ul class="job-list">
-  <li ng-repeat="job in jobs" dci-job></li>
-</ul>
-
+<div class="row">
+<form ng-submit="search()" collapse="!isFiltering" class="col-md-12">
+  <div class="form-group">
+    <h4> Status </h4>
+    <label ng-repeat="(key, _) in status" class="checkbox-inline">
+      <input ng-model="status[key]" type="checkbox"/>
+      {{key}}
+    </label>
+  </div>
+  <div class="form-group">
+    <h4> RemoteCI </h4>
+    <label ng-repeat="(remoteci, _) in remotecis" class="checkbox-inline">
+      <input ng-model="remotecis[remoteci]" type="checkbox"/>
+      {{remoteci}}
+    </label>
+  </div>
+  <button type="submit" class="btn btn-primary col-md-3">Search</button>
+</form>
+</div>
+<div ng-repeat="job in jobs" dci-job></div>
 
 <div class="pagination" ng-if="pagination">
   <div pagination total-items="pagination.total" max-size="5"

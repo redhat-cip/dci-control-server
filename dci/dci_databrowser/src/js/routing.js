@@ -35,9 +35,8 @@ require('app')
       controller: 'authCtrl',
       templateUrl: '/partials/auth.html'
     })
-    .state('authAdmin', {
+    .state('auth.authAdmin', {
       'abstract': true,
-      'parent': 'auth',
       'template': '<ui-view></ui-view>',
       resolve: {
         _: ['auth', '$q', function(auth, $q) {
@@ -47,16 +46,16 @@ require('app')
         }]
       }
     })
-    .state('index', {
+    .state('auth.index', {
       url: '/',
-      parent: 'auth',
-      onEnter: ['$state', function ($state) {
-        $state.go('jobs');
-      }]
+      resolve: {
+        _: ['$q', function($q) {
+          return $q.reject({status: 301})
+        }]
+      }
     })
-    .state('jobs', {
+    .state('auth.jobs', {
       url: '/jobs?status&remoteci&page',
-      parent: 'auth',
       onEnter: scrollTop,
       templateUrl: '/partials/jobs.html',
       controller: 'ListJobsCtrl',
@@ -83,9 +82,8 @@ require('app')
         }]
       }
     })
-    .state('job', {
+    .state('auth.job', {
       url: '/jobs/:id',
-      parent: 'auth',
       controller: 'JobCtrl',
       templateUrl: '/partials/job.html',
       resolve: {
@@ -94,9 +92,8 @@ require('app')
         }]
       }
     })
-    .state('administrate', {
+    .state('auth.authAdmin.administrate', {
       url: '/administrate',
-      parent: 'authAdmin',
       controller: 'AdminCtrl',
       templateUrl: '/partials/admin.html',
       resolve: {
@@ -132,6 +129,8 @@ require('app')
     $rootScope.$on('$stateChangeError', function(e, tS, tPs, fS, fPs, err) {
       if (err.status === 401) {
         $state.go('login', {}, {reload: true});
+      } else if (err.status == 301) {
+        $state.go('auth.jobs', {}, {reload: true, inherit: false});
       } else {
         $log.error(err);
       }

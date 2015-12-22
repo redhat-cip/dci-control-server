@@ -19,12 +19,12 @@ var $      = require('gulp-load-plugins')();
 var del    = require('del');
 var source = require('vinyl-source-stream');
 var buffer = require('vinyl-buffer');
-var merge  = require('merge2');
 var config = require('./config');
 var utils  = require('./utils');
 
 var DIST = 'static';
 var JS = ['src/js/**/*.js'];
+var SCSS = ['src/css/**/*.scss'];
 
 gulp.task('jscs', function() {
   return gulp.src(['src/**.js', 'test/**.js', 'gulpfile.js', 'utils.js'])
@@ -73,20 +73,12 @@ gulp.task('js:test', ['clean'], function() {
 });
 
 gulp.task('css', ['clean'], function() {
-  var cssEntries = [
-    'node_modules/bootstrap/dist/css/bootstrap.css',
-    'src/css/**/*.css'
-  ];
+  var conf = {
+    includePaths: ['node_modules/bootstrap-sass/assets/stylesheets/']
+  };
 
-  var scssEntries = [
-    'src/css/**/*.scss'
-  ];
-
-  var cssStream = gulp.src(cssEntries);
-  var scssStream = gulp.src(scssEntries)
-  .pipe($.sass().on('error', $.sass.logError));
-
-  return merge(cssStream, scssStream)
+  return gulp.src(SCSS)
+  .pipe($.sass(conf).on('error', $.sass.logError))
   .pipe($.sourcemaps.init({loadMaps: true}))
   .pipe($.concat('dashboard.css'))
   .pipe($.sourcemaps.write('./'))
@@ -95,7 +87,7 @@ gulp.task('css', ['clean'], function() {
 
 gulp.task('fonts', ['clean'], function() {
   var entries = [
-    'node_modules/bootstrap/dist/fonts/**'
+    'node_modules/bootstrap-sass/assets/fonts/**'
   ];
 
   return gulp.src(entries)

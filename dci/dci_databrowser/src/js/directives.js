@@ -21,18 +21,21 @@ require('app')
       var _ = $injector.get('_');
       var api = $injector.get('api');
       var moment = $injector.get('moment');
-      var glyphicon = $injector.get('glyphiconStatus');
+      var status = $injector.get('status');
       var $state = $injector.get('$state');
 
       var job = scope.job;
       var start = moment(job.created_at);
       job.time_running = moment(job.updated_at).to(job.created_at, true);
       job.updated_at = moment(job.updated_at).fromNow();
-      job.glyphicon = glyphicon(job.status);
+
+      job.glyphicon = status[job.status]['glyphicon'];
+      job.statusClass = 'bs-callout-' + status[job.status]['color'];
+
 
       scope.recheck = function() {
         api.recheckJob(job.id).then(function(job) {
-          $state.go('job', {id: job.id});
+          $state.go('auth.job', {id: job.id});
         });
       }
     },

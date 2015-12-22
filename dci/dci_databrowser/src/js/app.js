@@ -34,14 +34,29 @@ module.exports = angular.module('app', [
 .factory('_', function() {
   return lodash;
 })
-.factory('glyphiconStatus', ['glyphicons', '_', function(glyphicons, _) {
-  return _.partial(_.get, glyphicons);
-}])
-.constant('glyphicons', {
-  'failure': 'glyphicon-remove',
-  'success': 'glyphicon-ok',
-  'running': 'glyphicon-play',
-  'new': 'glyphicon-record',
-  'pre-run': 'glyphicon-record',
-  'post-run': 'glyphicon-record'
+.constant('status', {
+  'failure': {
+    'color': 'danger',
+    'glyphicon': 'glyphicon-remove'
+  },
+  'success': {
+    'color': 'success',
+    'glyphicon': 'glyphicon-ok'
+  },
+  'running': {
+    'color': 'warning',
+    'glyphicon': 'glyphicon-play'
+  },
+  'new': {
+    'color': 'primary',
+    'glyphicon': 'glyphicon-record'
+  },
+  'pre-run': {
+    'color': 'info',
+    'glyphicon': 'glyphicon-record'
+  },
+  'post-run': {
+    'color': 'info',
+    'glyphicon': 'glyphicon-record'
+  }
 });

@@ -24,7 +24,8 @@ describe('DCI homepage', function() {
       .run(['$httpBackend', function($httpBackend) {
         var jobRecheck = {'job': {'id': 'bar'}};
         var remotecisResp = {'remotecis': []};
-        var jobsResp = {'jobs': [{'id': 'foo'}], '_meta': {'count': 1}};
+        var jobsResp = {'jobs': [{'id': 'foo', 'status': 'new'}],
+                        '_meta': {'count': 1}};
         var jobstatesResp = {'jobstates': []};
 
         $httpBackend.whenGET(/^\/partials\//).passThrough();
