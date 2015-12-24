@@ -81,7 +81,8 @@ def create_remote_cis(db_conn, company, tests):
     remote_cis = {}
 
     def generate_jd_names(test_name, job_definition_names):
-        name = '%s %s' % (test_name, random.choice(VERSIONS))
+        name = '%s %s %s' % (company['name'], test_name,
+                             random.choice(VERSIONS))
         if len(job_definition_names) == 3:
             return job_definition_names
         if name not in job_definition_names:

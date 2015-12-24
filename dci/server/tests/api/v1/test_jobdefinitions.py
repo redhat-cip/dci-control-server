@@ -23,16 +23,15 @@ def test_create_jobdefinitions(admin, test_id):
     assert jd['jobdefinition']['name'] == 'pname'
 
 
-# enabled later
-def loltest_create_jobdefinitions_already_exist(admin, test_id):
+def test_create_jobdefinitions_already_exist(admin, test_id):
     data = {'name': 'pname', 'test_id': test_id}
-    jd = admin.post('/api/v1/jobdefinitions', data=data).status_code
+    jd = admin.post('/api/v1/jobdefinitions', data=data)
     status_code = jd.status_code
     assert status_code == 201
 
     jd = admin.post('/api/v1/jobdefinitions', data=data)
     status_code = jd.status_code
-    assert status_code == 400
+    assert status_code == 422
 
 
 def test_get_all_jobdefinitions(admin, test_id):
@@ -170,7 +169,7 @@ def test_get_all_jobdefinitions_with_sort(admin, test_id):
                         data={'name': "pname3", 'priority': 1,
                               'test_id': test_id}).data['jobdefinition']
     jd_2_2 = admin.post('/api/v1/jobdefinitions',
-                        data={'name': "pname3", 'priority': 1,
+                        data={'name': "pname4", 'priority': 1,
                               'test_id': test_id}).data['jobdefinition']
 
     jds = admin.get('/api/v1/jobdefinitions?sort=created_at').data

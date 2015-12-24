@@ -18,7 +18,9 @@ import datetime
 
 import flask
 from flask import json
+from sqlalchemy import exc as sa_exc
 import sqlalchemy.sql
+
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import jobdefinitions
@@ -54,7 +56,10 @@ def create_tests(user):
     })
 
     query = models.TESTS.insert().values(**data_json)
-    flask.g.db_conn.execute(query)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError as e:
+        raise exceptions.DCIException(str(e.orig), status_code=422)
 
     return flask.Response(
         json.dumps({'test': data_json}), 201, headers={'ETag': etag},

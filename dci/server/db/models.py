@@ -55,7 +55,7 @@ TESTS = sa.Table(
     sa.Column('updated_at', sa.DateTime(),
               onupdate=datetime.datetime.utcnow,
               default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('name', sa.String(255), nullable=False),
+    sa.Column('name', sa.String(255), nullable=False, unique=True),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
     sa.Column('data', sa_utils.JSONType))
@@ -71,7 +71,7 @@ JOBDEFINITIONS = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
-    sa.Column('name', sa.String(255)),
+    sa.Column('name', sa.String(255), unique=True),
     sa.Column('priority', sa.Integer, default=0),
     sa.Column('test_id', sa.String(36),
               sa.ForeignKey('tests.id', ondelete="CASCADE"),

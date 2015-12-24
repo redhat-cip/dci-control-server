@@ -18,6 +18,7 @@ import datetime
 
 import flask
 from flask import json
+from sqlalchemy import exc as sa_exc
 import sqlalchemy.sql
 
 from dci.server.api.v1 import api
@@ -57,7 +58,10 @@ def create_jobdefinitions(user):
     })
 
     query = models.JOBDEFINITIONS.insert().values(**data_json)
-    flask.g.db_conn.execute(query)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError as e:
+        raise dci_exc.DCIException(str(e.orig), status_code=422)
 
     result = {'jobdefinition': data_json}
     result = json.dumps(result)

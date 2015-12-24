@@ -23,16 +23,14 @@ def test_create_tests(admin):
     assert gt['test']['name'] == 'pname'
 
 
-# TODO(yassine): activated later
-# because the unique integrity constraint on name is missing so far
-def loltest_create_tests_already_exist(admin):
+def test_create_tests_already_exist(admin):
     pstatus_code = admin.post('/api/v1/tests',
                               data={'name': 'pname'}).status_code
     assert pstatus_code == 201
 
     pstatus_code = admin.post('/api/v1/tests',
                               data={'name': 'pname'}).status_code
-    assert pstatus_code == 400
+    assert pstatus_code == 422
 
 
 def test_get_all_tests(admin):
