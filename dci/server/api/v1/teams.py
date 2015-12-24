@@ -18,6 +18,7 @@ import datetime
 
 import flask
 from flask import json
+from sqlalchemy import exc as sa_exc
 import sqlalchemy.sql
 
 from dci.server.api.v1 import api
@@ -59,6 +60,10 @@ def create_teams(user):
     query = models.TEAMS.insert().values(**values)
 
     flask.g.db_conn.execute(query)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError as e:
+        raise exceptions.DCIException(str(e.orig), status_code=422)
 
     return flask.Response(
         json.dumps({'team': values}), 201,

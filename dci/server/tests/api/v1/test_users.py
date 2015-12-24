@@ -36,7 +36,7 @@ def test_create_users_already_exist(admin, team_id):
                               data={'name': 'pname',
                                     'password': 'ppass',
                                     'team_id': team_id}).status_code
-    assert pstatus_code == 400
+    assert pstatus_code == 422
 
 
 def test_get_all_users(admin, team_id):

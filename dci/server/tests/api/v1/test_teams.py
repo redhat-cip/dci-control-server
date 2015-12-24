@@ -30,7 +30,7 @@ def test_create_teams_already_exist(admin):
 
     pstatus_code = admin.post('/api/v1/teams',
                               data={'name': 'pname'}).status_code
-    assert pstatus_code == 400
+    assert pstatus_code == 422
 
 
 def test_get_all_teams(admin):

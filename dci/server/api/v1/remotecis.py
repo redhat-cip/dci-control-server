@@ -18,13 +18,13 @@ import datetime
 
 import flask
 from flask import json
+from sqlalchemy import exc as sa_exc
 import sqlalchemy.sql
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
 from dci.server import auth
 from dci.server.common import exceptions as dci_exc
-from dci.server.common import exceptions
 from dci.server.common import schemas
 from dci.server.common import utils
 from dci.server.db import models
@@ -64,6 +64,10 @@ def create_remotecis(user):
     query = models.REMOTECIS.insert().values(**values)
 
     flask.g.db_conn.execute(query)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError as e:
+        raise dci_exc.DCIException(str(e.orig), status_code=422)
 
     return flask.Response(
         json.dumps({'remoteci': values}), 201,
@@ -177,8 +181,8 @@ def put_remoteci(user, r_id):
     result = flask.g.db_conn.execute(query)
 
     if result.rowcount == 0:
-        raise exceptions.DCIException("Conflict on test '%s' or etag "
-                                      "not matched." % r_id, status_code=409)
+        raise dci_exc.DCIException("Conflict on test '%s' or etag "
+                                   "not matched." % r_id, status_code=409)
 
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
@@ -204,8 +208,8 @@ def delete_remoteci_by_id_or_name(user, r_id):
     result = flask.g.db_conn.execute(query)
 
     if result.rowcount == 0:
-        raise exceptions.DCIException("Test '%s' already deleted or "
-                                      "etag not matched." % r_id,
-                                      status_code=409)
+        raise dci_exc.DCIException("Test '%s' already deleted or "
+                                   "etag not matched." % r_id,
+                                   status_code=409)
 
     return flask.Response(None, 204, content_type='application/json')
