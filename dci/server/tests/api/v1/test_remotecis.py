@@ -30,8 +30,9 @@ def test_create_remotecis_already_exist(admin, team_id):
     assert pstatus_code == 201
 
     pstatus_code = admin.post('/api/v1/remotecis',
-                              data={'name': 'pname'}).status_code
-    assert pstatus_code == 400
+                              data={'name': 'pname',
+                                    'team_id': team_id}).status_code
+    assert pstatus_code == 422
 
 
 def test_get_all_remotecis(admin, team_id):

@@ -18,6 +18,7 @@ import datetime
 
 import flask
 from flask import json
+from sqlalchemy import exc as sa_exc
 import sqlalchemy.sql
 
 from dci.server.api.v1 import api
@@ -67,7 +68,11 @@ def create_users(user):
 
     query = models.USERS.insert().values(**values)
 
-    flask.g.db_conn.execute(query)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError as e:
+        raise dci_exc.DCIException(str(e.orig), status_code=422)
+
     # remove the password in the result for security reasons
     del values['password']
 
