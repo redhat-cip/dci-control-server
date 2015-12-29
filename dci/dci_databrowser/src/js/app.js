@@ -29,7 +29,9 @@ module.exports = angular.module('app', [
   moment.locale('en', {invalidDate: 'N/A'});
   moment.locale('fr', {invalidDate: 'N/A'});
 
-  return _.partialRight(moment, moment.ISO_8601, true);
+  return _.assign(
+    _.partialRight(moment, moment.ISO_8601, true), {'moment': moment}
+  );
 }])
 .factory('_', function() {
   return lodash;
