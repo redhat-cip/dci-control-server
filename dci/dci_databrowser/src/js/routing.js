@@ -35,9 +35,10 @@ require('app')
       controller: 'authCtrl',
       templateUrl: '/partials/auth.html'
     })
-    .state('auth.authAdmin', {
+    .state('authAdmin', {
       'abstract': true,
-      'template': '<ui-view></ui-view>',
+      parent: 'auth',
+      template: '<ui-view></ui-view>',
       resolve: {
         _: ['auth', '$q', function(auth, $q) {
           if (!auth.isAdmin()) {
@@ -46,15 +47,17 @@ require('app')
         }]
       }
     })
-    .state('auth.index', {
+    .state('index', {
       url: '/',
+      parent: 'auth',
       resolve: {
         _: ['$q', function($q) {
           return $q.reject({status: 301})
         }]
       }
     })
-    .state('auth.jobs', {
+    .state('jobs', {
+      parent: 'auth',
       url: '/jobs?status&remoteci&page',
       onEnter: scrollTop,
       templateUrl: '/partials/jobs.html',
@@ -82,7 +85,8 @@ require('app')
         }]
       }
     })
-    .state('auth.job', {
+    .state('job', {
+      parent: 'auth',
       url: '/jobs/:id',
       controller: 'JobCtrl',
       templateUrl: '/partials/job.html',
@@ -92,7 +96,8 @@ require('app')
         }]
       }
     })
-    .state('auth.authAdmin.administrate', {
+    .state('administrate', {
+      parent: 'authAdmin',
       url: '/administrate',
       controller: 'AdminCtrl',
       templateUrl: '/partials/admin.html',
@@ -130,7 +135,7 @@ require('app')
       if (err.status === 401) {
         $state.go('login', {}, {reload: true});
       } else if (err.status == 301) {
-        $state.go('auth.jobs', {}, {reload: true, inherit: false});
+        $state.go('jobs', {}, {reload: true, inherit: false});
       } else {
         $log.error(err);
       }

@@ -1,27 +1,52 @@
+<div class="job">
 <div dci-job></div>
+<div tabset>
+  <div tab heading="Files">
 
-<div ng-repeat="jobstate in job.jobstates" class="bs-callout row" ng-class="jobstate.statusClass">
-  <div class="col-md-12">
-    <span class="title">
-      {{ jobstate.status }}
-    </span>
-    : {{ jobstate.comment }}
+    <div ng-repeat="jobstate in job.jobstates" class="row" ng-class="jobstate.statusClass">
+      <div class="col-md-12">
+        <h4>
+          <span class="title">
+            {{ jobstate.status }}
+          </span>
+          <small>
+            : {{ jobstate.comment }}
+          </small>
+          <button type="button" class="pull-right btn btn-primary btn-xs"
+            ng-if="jobstate.files.length" ng-click="jobstate.isOpen = !jobstate.isOpen">
+            <span ng-if="!jobstate.isOpen">
+              see details
+            </span>
+            <span ng-if="jobstate.isOpen">
+              close details
+            </span>
+          </button>
+        </h4>
+        <hr>
 
-    <button type="button" class="pull-right btn btn-primary btn-xs"
-      ng-if="jobstate.files.length" ng-click="jobstate.isOpen = !jobstate.isOpen">
-      <span ng-if="!jobstate.isOpen">
-        see details
-      </span>
-      <span ng-if="jobstate.isOpen">
-        close details
-      </span>
-    </button>
-  </div>
-  <div collapse="!jobstate.isOpen" class="col-md-12">
-    <div class="tile tile-file" ng-repeat="file in jobstate.files">
-      <h3>{{file.name}}</h3>
-      <pre>{{file.content}}</pre>
+      </div>
+      <div collapse="!jobstate.isOpen" class="col-md-12">
+        <div class="tile tile-file" ng-repeat="file in jobstate.files">
+          <h5>{{file.name}}</h5>
+          <pre>{{file.content}}</pre>
+        </div>
+
+      </div>
     </div>
 
   </div>
+  <div tab heading="Remote CI">
+    <div class="row">
+      <div class="col-md-12">
+        <h4>{{ job.remoteci.name }} <small>remote ci data</small></h4>
+        <hr>
+        <table class="table table-striped">
+          <tr ng-repeat="(key, value) in job.remoteci.data">
+            <th>{{ key }}</th><td> {{ value }}</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
 </div>

@@ -19,7 +19,7 @@ require('app')
   '$scope', '$state', 'auth', function($scope, $state, auth) {
     $scope.authenticate = function(credentials) {
       auth.login(credentials.username, credentials.password).then(function(){
-        $state.go('auth.index');
+        $state.go('index');
       });
     }
     $scope.unauthorized = auth.isUnauthorized();
@@ -51,7 +51,7 @@ require('app')
         'status': _($scope.status).pick(_.identity).keys().join(','),
         'remoteci': _($scope.remotecis).pick(_.identity).keys().join(',')
       }
-      $state.go('auth.jobs', params);
+      $state.go('jobs', params);
     }
 
     $scope.isFiltering = !!(
@@ -62,7 +62,7 @@ require('app')
       $scope.pagination = {
         total: jobs._meta.count, page: page,
         pageChanged: function() {
-          $state.go('auth.jobs', $scope.pagination);
+          $state.go('jobs', $scope.pagination);
         }
       };
     }

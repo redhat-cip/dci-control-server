@@ -35,7 +35,7 @@ require('app')
 
       scope.recheck = function() {
         api.recheckJob(job.id).then(function(job) {
-          $state.go('auth.job', {id: job.id});
+          $state.go('job', {id: job.id});
         });
       }
     },
