@@ -4,6 +4,11 @@ body {
   margin-top: 60px;
 }
 
+
+.tab-content {
+  margin-top: 20px;
+}
+
 .navbar {
   .navbar-brand {
     padding-top: 3px;
@@ -25,24 +30,8 @@ body {
   border-left-width: 5px;
   border-radius: 3px;
 
-  h4 {
-    margin-top: 0;
-    margin-bottom: 5px;
-  }
-  p:last-child {
-    margin-bottom: 0;
-  }
-
   & + .bs-callout {
     margin-top: -5px;
-  }
-
-  code {
-    border-radius: 3px;
-  }
-
-  .btn-xs {
-    margin-top: -2px;
   }
 }
 
@@ -70,5 +59,3 @@ body {
     padding: 8px 12px;
   }
 }
-
-
