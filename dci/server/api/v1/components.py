@@ -18,7 +18,9 @@ import datetime
 
 import flask
 from flask import json
+from sqlalchemy import exc as sa_exc
 import sqlalchemy.sql
+
 
 from dci.server.api.v1 import api
 from dci.server.api.v1 import utils as v1_utils
@@ -51,7 +53,10 @@ def create_components(user):
 
     query = models.COMPONENTS.insert().values(**values)
 
-    flask.g.db_conn.execute(query)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError as e:
+        raise dci_exc.DCIException(str(e.orig), status_code=422)
 
     result = json.dumps({'component': values})
     return flask.Response(result, 201, headers={'ETag': etag},
