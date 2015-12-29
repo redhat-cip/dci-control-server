@@ -35,9 +35,10 @@ require('app')
       controller: 'authCtrl',
       templateUrl: '/partials/auth.html'
     })
-    .state('auth.authAdmin', {
+    .state('authAdmin', {
       'abstract': true,
-      'template': '<ui-view></ui-view>',
+      parent: 'auth',
+      template: '<ui-view></ui-view>',
       resolve: {
         _: ['auth', '$q', function(auth, $q) {
           if (!auth.isAdmin()) {
@@ -54,7 +55,8 @@ require('app')
         }]
       }
     })
-    .state('auth.jobs', {
+    .state('jobs', {
+      parent: 'auth',
       url: '/jobs?status&remoteci&page',
       onEnter: scrollTop,
       templateUrl: '/partials/jobs.html',
@@ -82,7 +84,8 @@ require('app')
         }]
       }
     })
-    .state('auth.job', {
+    .state('job', {
+      parent: 'auth',
       url: '/jobs/:id',
       controller: 'JobCtrl',
       templateUrl: '/partials/job.html',
@@ -92,7 +95,8 @@ require('app')
         }]
       }
     })
-    .state('auth.authAdmin.administrate', {
+    .state('administrate', {
+      parent: 'authAdmin',
       url: '/administrate',
       controller: 'AdminCtrl',
       templateUrl: '/partials/admin.html',
