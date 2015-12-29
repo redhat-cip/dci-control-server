@@ -23,17 +23,6 @@ def test_create_jobdefinitions(admin, test_id):
     assert jd['jobdefinition']['name'] == 'pname'
 
 
-def test_create_jobdefinitions_already_exist(admin, test_id):
-    data = {'name': 'pname', 'test_id': test_id}
-    jd = admin.post('/api/v1/jobdefinitions', data=data)
-    status_code = jd.status_code
-    assert status_code == 201
-
-    jd = admin.post('/api/v1/jobdefinitions', data=data)
-    status_code = jd.status_code
-    assert status_code == 422
-
-
 def test_get_all_jobdefinitions(admin, test_id):
     data = {'name': 'pname1', 'test_id': test_id}
     jd_1 = admin.post('/api/v1/jobdefinitions', data=data).data

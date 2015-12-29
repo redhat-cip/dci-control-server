@@ -71,7 +71,7 @@ JOBDEFINITIONS = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
-    sa.Column('name', sa.String(255), unique=True),
+    sa.Column('name', sa.String(255)),
     sa.Column('priority', sa.Integer, default=0),
     sa.Column('test_id', sa.String(36),
               sa.ForeignKey('tests.id', ondelete="CASCADE"),
