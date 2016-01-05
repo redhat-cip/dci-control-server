@@ -21,17 +21,19 @@ var lodash = require('lodash');
 require('angular-cookies');
 require('angular-ui-router');
 require('angular-bootstrap');
+require('jsonformatter');
 
 module.exports = angular.module('app', [
-  'ngCookies', 'ui.router', 'ui.bootstrap'
+  'ngCookies', 'ui.router', 'ui.bootstrap', 'jsonFormatter'
 ])
 .factory('moment', ['_', function(_) {
   moment.locale('en', {invalidDate: 'N/A'});
   moment.locale('fr', {invalidDate: 'N/A'});
-
-  return _.assign(
-    _.partialRight(moment, moment.ISO_8601, true), {'moment': moment}
-  );
+  var parser = _.partialRight(moment, moment.ISO_8601, true);
+  return _.assign( parser, {
+    'moment': moment,
+    'format': function(date) { return parser(date).format('LLLL'); }
+  });
 }])
 .factory('_', function() {
   return lodash;

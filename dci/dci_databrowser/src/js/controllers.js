@@ -69,9 +69,20 @@ require('app')
   }
 ])
 .controller('JobCtrl', [
-  '$scope', 'job', 'api', 'status', function($scope, job, api, status) {
+  '$scope', 'job', 'api', 'status', 'moment',
+  function($scope, job, api, status, moment) {
     $scope.job = job;
     var opened = false;
+    job.jobdefinition.created_at = moment.format(job.jobdefinition.created_at);
+    job.jobdefinition.updated_at = moment.format(job.jobdefinition.updated_at);
+
+    job.remoteci.created_at = moment.format(job.remoteci.created_at);
+    job.remoteci.updated_at = moment.format(job.remoteci.updated_at);
+
+    var test = job.jobdefinition.test;
+    test.created_at = moment.format(test.created_at);
+    test.updated_at = moment.format(test.updated_at);
+
     angular.forEach(job.jobstates, function(jobstate) {
       jobstate.statusClass = 'bs-callout-' + status[jobstate.status]['color'];
       api.getFiles(jobstate.id).then(function(files) {
@@ -80,6 +91,9 @@ require('app')
         }
         jobstate.files = files
       });
+    });
+    api.getComponents(job.jobdefinition.id).then(function(components) {
+      $scope.components = components;
     });
   }
 ])
