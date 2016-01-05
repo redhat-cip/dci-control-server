@@ -24,14 +24,14 @@ from os import path
 from alembic import command
 from alembic import config
 
-from dci.server import app
 from dci.server.db import models
+from dci.server import dci_config
 
 
 def main():
     # Create model from application database schema
-    app_conf = app.generate_conf()
-    sa_engine = app.get_engine(app_conf)
+    app_conf = dci_config.generate_conf()
+    sa_engine = dci_config.get_engine(app_conf)
 
     models.metadata.create_all(sa_engine)
 
