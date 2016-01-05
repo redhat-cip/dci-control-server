@@ -76,6 +76,38 @@ LOREM_IPSUM = [
     'Mauris vitae nisi at sem facilisis semper ac in est.'
 ]
 
+DATA = {
+    "ksgen_args": {
+        "installer-network-variant": "ml2-vxlan",
+        "installer-env": "virthost",
+        "installer-tempest": "minimal",
+        "installer-network": "neutron",
+        "installer-topology": "minimal",
+        "distro": "centos-7.0",
+        "product": "rdo",
+        "extra-vars": {
+            "installer": {
+                "nodes": {
+                    "node_cpu": 24
+                }
+            },
+            "provisioner": {
+                "type": "manual"
+            }
+        },
+        "installer-images": "build",
+        "installer-deploy": "templates",
+        "installer-network-isolation": "single_nic_vlans",
+        "product-version-build": "last_known_good_mgt",
+        "product-version": "liberty",
+        "installer": "rdo_manager",
+        "product-version-repo": "delorean_mgt",
+        "workarounds": "enabled",
+        "installer-post_action": "none",
+        "provisioner": "manual"
+    }
+}
+
 
 def create_remote_cis(db_conn, company, tests):
     # create 3 remote CIS per company (one for each test)
@@ -100,7 +132,7 @@ def create_remote_cis(db_conn, company, tests):
 
     for i, test_name in enumerate(tests):
         remote_ci = {
-            'data': generate_data_field(),
+            'data': DATA,
             'team_id': company['id'],
             'name': '%s - %d' % (company['name'], i)
         }
@@ -284,7 +316,7 @@ def init_db(db_conn):
                 'canonical_project_name': '%s - %s' % (component, project),
                 # This entry is basically a copy of the other fields,
                 # this will may be removed in the future
-                'data': {},
+                'data': DATA,
                 'sha': commit,
                 'title': project,
                 'message': lorem(),
@@ -295,7 +327,7 @@ def init_db(db_conn):
 
     tests = {}
     for test in TESTS:
-        tests[test] = db_ins(models.TESTS, name=test, data={})
+        tests[test] = db_ins(models.TESTS, name=test, data=DATA)
 
     # Create the super admin user
     admin_team = db_ins(models.TEAMS, name='admin')
