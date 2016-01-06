@@ -56,7 +56,7 @@ setuptools.setup(
     entry_points={
         "console_scripts": [
             "dci-dbsync = dci.cmd.dbsync:main",
-            "dci-openshift-dbinit = dci.cmd.init_openshift_db:main"
+            "dci-dbinit = dci.cmd.dbinit:main"
         ],
     }
 )

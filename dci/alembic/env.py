@@ -18,8 +18,8 @@ from __future__ import with_statement
 from alembic import context
 from logging.config import fileConfig
 
-from dci.server import app
 from dci.server.db import models
+from dci.server import dci_config
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
@@ -44,7 +44,7 @@ def run_migrations_offline():
     script output.
 
     """
-    app_conf = app.generate_conf()
+    app_conf = dci_config.generate_conf()
     url = app_conf['SQLALCHEMY_DATABASE_URI']
     context.configure(
         url=url, target_metadata=target_metadata, literal_binds=True)
@@ -61,8 +61,8 @@ def run_migrations_online():
 
     """
 
-    app_conf = app.generate_conf()
-    connectable = app.get_engine(app_conf)
+    app_conf = dci_config.generate_conf()
+    connectable = dci_config.get_engine(app_conf)
 
     with connectable.connect() as connection:
         context.configure(
