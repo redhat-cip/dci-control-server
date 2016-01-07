@@ -59,3 +59,86 @@ body {
     padding: 8px 12px;
   }
 }
+
+/*!
+ * jsonformatter
+ *
+ * Version: 0.4.1 - 2015-12-03T03:38:59.933Z
+ * License: MIT
+ */
+
+
+.json-formatter-row {
+  font-family: monospace;
+
+  &, a, a:hover {
+    color: black;
+    text-decoration: none;
+  }
+
+  .json-formatter-row {
+    margin-left: 1em;
+  }
+
+  .children.empty {
+    opacity: 0.5;
+    margin-left: 1em;
+
+    &.object:after {
+      content: "No properties";
+    }
+    &.array:after {
+      content: "[]";
+    }
+  }
+
+  .string {
+    color: $brand-success;
+    white-space: pre;
+    word-wrap: break-word;
+  }
+
+  .number {
+    color: $brand-info;
+  }
+  .null {
+    color: $brand-warning;
+  }
+
+  .boolean {
+    color: $brand-danger;
+  }
+  .key {
+    color: $brand-primary;
+    cursor: pointer;
+  }
+  .toggler {
+    font-size: 0.8em;
+    line-height: 1.2em;
+    vertical-align: middle;
+    opacity: 0.6;
+    cursor: pointer;
+
+    &:after {
+      display: inline-block;
+      transition: transform 100ms ease-in;
+      content: "►";
+    }
+    &.open:after {
+      transform: rotate(90deg);
+    }
+  }
+
+  & > a > .thumbnail-text {
+    opacity: 0;
+    transition: opacity 0.15s ease-in;
+    font-style: italic;
+  }
+
+  &:hover > a > .thumbnail-text {
+    opacity: 0.6;
+  }
+  .constructor-name {
+    cursor: pointer;
+  }
+}

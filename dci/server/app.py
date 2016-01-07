@@ -85,7 +85,7 @@ def create_app(conf):
                    else logging.FileHandler(conf['LOG_FILE']))
         handler.setFormatter(logging.Formatter(format))
 
-        logger.setLevel(logging.INFO if conf['DEBUG'] else logging.WARN)
+        logger.setLevel(logging.DEBUG if conf['DEBUG'] else logging.WARN)
         logger.addHandler(handler)
 
     @dci_app.before_request

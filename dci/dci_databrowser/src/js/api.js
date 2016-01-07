@@ -24,7 +24,8 @@ require('app')
   JOBSTATES: conf.apiURL + '/api/v1/jobstates/',
   FILES: conf.apiURL + '/api/v1/files/',
   USERS: conf.apiURL + '/api/v1/users/',
-  TEAMS: conf.apiURL + '/api/v1/teams/'
+  TEAMS: conf.apiURL + '/api/v1/teams/',
+  COMPONENTS: conf.apiURL + '/api/v1/components/'
 })
 .factory('api', ['_', '$q', '$http', 'apiURLS', function(_, $q, $http, urls) {
   var api = {};
@@ -116,7 +117,9 @@ require('app')
 
       return _.last(data);
     }
-    var conf = {'params': {'embed': 'remoteci,jobdefinition'}};
+    var conf = {'params': {
+      'embed': 'remoteci,jobdefinition,jobdefinition.test'
+    }};
     var JSconf = {'params': {'sort': '-created_at'}};
 
     return $q.all([
@@ -124,6 +127,10 @@ require('app')
       $http.get(urls.JOBS + job + '/jobstates', JSconf)
     ])
     .then(retrieveFiles)
+  }
+
+  api.getComponents = function(jobDef) {
+    return $http.get(urls.COMPONENTS).then(_.property('data.components'));
   }
 
   api.getFiles = function(jobstateID) {

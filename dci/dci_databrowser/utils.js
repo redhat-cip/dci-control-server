@@ -51,6 +51,7 @@ function bundledStream(entries) {
       debug: true
     })
     .require('./src/js/app.js', {'expose': 'app'})
+    .require('./src/js/jsonformatter.js', {'expose': 'jsonformatter'})
     .require('./src/config.js', {'expose': 'conf'})
     .bundle()
     .pipe(bundledStream);
