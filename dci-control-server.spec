@@ -49,6 +49,7 @@ Requires:       python-psycopg2
 Requires:       python-requests
 Requires:       python-six
 Requires:       python-sqlalchemy
+Requires:       python-sqlalchemy-utils
 Requires:       python-voluptuous
 Requires:       python-werkzeug
 
@@ -123,7 +124,7 @@ find %{buildroot}/%{python2_sitelib}/control_server* -name 'requires.txt' | xarg
 
 %files -n dci-common
 %{_bindir}/dci-dbsync
-%{_bindir}/dci-openshift-dbinit
+%{_bindir}/dci-dbinit
 %{_datarootdir}/dci-api/sample
 %{_datarootdir}/dci-api/wsgi.py
 # TODO(spredzy): Find a way for those files not to be generated
