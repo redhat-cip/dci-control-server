@@ -49,6 +49,7 @@ Requires:       python-psycopg2
 Requires:       python-requests
 Requires:       python-six
 Requires:       python-sqlalchemy
+Requires:       python-sqlalchemy-utils
 Requires:       python-voluptuous
 Requires:       python-werkzeug
 
