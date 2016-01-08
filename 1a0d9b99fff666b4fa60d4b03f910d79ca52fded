@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3ace114c_ef739de5",
+        "filename": "dci/server/tests/conftest.py",
+        "patchSetId": 15
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-01-08T12:19:01Z",
+      "side": 1,
+      "message": "you do not really call cleanup, should be \n\n    conn.cleanup()\n\nright ?",
+      "range": {
+        "startLine": 193,
+        "startChar": 9,
+        "endLine": 193,
+        "endChar": 16
+      },
+      "revId": "1a0d9b99fff666b4fa60d4b03f910d79ca52fded",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
