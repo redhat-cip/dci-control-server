@@ -57,62 +57,24 @@ Requires:       python-werkzeug
 The implementation of the DCI control server API.
 
 
-%package -n dci-ui
-Summary:  DCI UI
-BuildRequires:  python2-devel
-BuildRequires:  python-setuptools
-BuildRequires:  python-simplejson
-BuildRequires:  epel-release
-BuildRequires:  nodejs
-BuildRequires:  npm
-BuildRequires:  tar
-BuildRequires:  bzip2
-
-%description -n dci-ui
-The DCI UI static files
-
-
 %prep -a
 %setup -qc
 
 %build
 %py2_build
-# NOTE(spredzy): With py2_build only the python related files
-# are copied to the build dir, we need to copy along the UI
-# files
-cp -r dci/dci_databrowser/* build/lib/dci/dci_databrowser/
-cp -r wsgi.py build/lib/dci/
 
 
 %install
-# NOTE(spredzy): mock needs to be able to install modules
-# in its own path - not the global one.
-npm config set prefix '/tmp/npm-global'
-npm install -g gulp
 %py2_install
 install -d %{buildroot}/%{_datarootdir}/dci-api
-cd %{buildroot}/%{python2_sitelib}/dci/dci_databrowser
-npm install
-/tmp/npm-global/bin/gulp build
-# NOTE(spredzy): The following files are empty and breaks during
-# nodejs.prov hence we remove them
-rm /builddir/.npm/npmconf/2.1.2/package/test/fixtures/package.json
-rm /builddir/.npm/npmconf/2.1.1/package/test/fixtures/package.json
-rm %{buildroot}/%{python2_sitelib}/dci/dci_databrowser/node_modules/phantomjs/node_modules/npmconf/test/fixtures/package.json
-rm %{buildroot}/%{python2_sitelib}/dci/dci_databrowser/node_modules/gulp-sass/node_modules/node-sass/node_modules/npmconf/test/fixtures/package.json
-rm -rf /buildir/.npm
-rm -rf /tmp/npm-global
-rm -rf %{buildroot}/%{python2_sitelib}/dci/dci_databrowser/node_modules/
-mv %{buildroot}/%{python2_sitelib}/sample %{buildroot}/%{_datarootdir}/dci-api/sample
-mv %{buildroot}/%{python2_sitelib}/dci/wsgi.py %{buildroot}/%{_datarootdir}/dci-api/wsgi.py
+mv sample %{buildroot}/%{_datarootdir}/dci-api/sample
+mv wsgi.py %{buildroot}/%{_datarootdir}/dci-api/wsgi.py
+rm -rf %{buildroot}/%{python2_sitelib}/sample
 # NOTE(spredzy): Do this trick until we can upload updated rpm
 find %{buildroot}/%{python2_sitelib}/control_server* -name 'requires.txt' | xargs sed -i '2s/elasticsearch.*/elasticsearch/'
 find %{buildroot}/%{python2_sitelib}/control_server* -name 'requires.txt' | xargs sed -i '11s/setuptools.*/setuptools/'
 find %{buildroot}/%{python2_sitelib}/control_server* -name 'requires.txt' | xargs sed -i '12s/Werkzeug.*/Werkzeug/'
 
-%files -n dci-ui
-%doc
-%{python2_sitelib}/dci/dci_databrowser/static
 
 %files -n dci-agents
 %doc
@@ -125,11 +87,8 @@ find %{buildroot}/%{python2_sitelib}/control_server* -name 'requires.txt' | xarg
 %files -n dci-common
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
-%{_datarootdir}/dci-api/sample
-%{_datarootdir}/dci-api/wsgi.py
-# TODO(spredzy): Find a way for those files not to be generated
-%{_datarootdir}/dci-api/wsgi.pyo
-%{_datarootdir}/dci-api/wsgi.pyc
+%{_datarootdir}/dci-api/sample/*
+%{_datarootdir}/dci-api/wsgi.py*
 
 
 %files -n dci-api
