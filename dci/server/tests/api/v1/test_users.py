@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from __future__ import unicode_literals
+
 
 def test_create_users(admin, team_id):
     pu = admin.post('/api/v1/users',
@@ -74,6 +76,19 @@ def test_get_all_users_with_where(admin, team_id):
     db_u = admin.get('/api/v1/users?where=name:pname1').data
     db_u_id = db_u['users'][0]['id']
     assert db_u_id == pu_id
+
+
+def test_where_invalid(admin):
+    err = admin.get('/api/v1/users?where=id')
+
+    assert err.status_code == 400
+    assert err.data == {
+        'status_code': 400,
+        'message': 'Invalid where key: "id"',
+        'payload': {
+            'error': 'where key must have the following form "key:value"'
+        }
+    }
 
 
 def test_get_all_users_with_pagination(admin, team_id):

@@ -172,12 +172,19 @@ def sort_query(sort, valid_columns):
 
 def where_query(where, table, columns):
     where_conds = []
+    err_msg = 'Invalid where key: "%s"'
     for where_elem in where:
-        name, value = where_elem.split(':', 1)
+        try:
+            name, value = where_elem.split(':', 1)
+        except ValueError:
+            payload = {'error': 'where key must have the following form '
+                                '"key:value"'}
+            raise dci_exc.DCIException(err_msg % where_elem, payload=payload)
+
         if name not in columns:
-            raise dci_exc.DCIException('Invalid where key: "%s"' % name,
-                                       payload={'Valid where keys':
-                                                list(columns.keys())})
+            payload = {'valid_keys': list(columns.keys())}
+            raise dci_exc.DCIException(err_msg % name, payload=payload)
+
         m_column = getattr(table.c, name)
         # TODO(yassine): do the same for columns type different from string
         # if it's an Integer column, then try to cast the value
@@ -185,8 +192,9 @@ def where_query(where, table, columns):
             try:
                 value = int(value)
             except ValueError:
-                raise dci_exc.DCIException('Invalid where key: "%s"' % name,
-                                           payload={name: 'not integer'})
+                payload = {name: 'not integer'}
+                raise dci_exc.DCIException(err_msg % name, payload=payload)
+
         where_conds.append(m_column == value)
     return where_conds
 
