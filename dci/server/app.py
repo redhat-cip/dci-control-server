@@ -25,7 +25,6 @@ import logging
 
 from sqlalchemy import exc as sa_exc
 
-from dci.dci_databrowser import dci_databrowser
 from dci.server import dci_config
 
 
@@ -105,7 +104,6 @@ def create_app(conf):
 
     # Registering REST API v1
     dci_app.register_blueprint(api_v1.api, url_prefix='/api/v1')
-    dci_app.register_blueprint(dci_databrowser)
 
     # Registering custom encoder
     dci_app.json_encoder = utils.JSONEncoder
