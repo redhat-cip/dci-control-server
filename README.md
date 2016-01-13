@@ -18,30 +18,6 @@ You can initialize the database with fake entries by launching the following com
 
 BE CAREFUL: this script will override your database, so use it after saving your datas.
 
-### Using OpenShift
-
-[OpenShift](https://www.openshift.com/) is the simplest and recommanded way to
-deploy the Control-Server.
-
-First create an account on [OpenShift website](https://www.openshift.com/),
-install the rhc command and run `rhc setup`.
-
-In this example `mydomain` is your domain as returned by the `rhc domain list` command.
-
-    $ rhc create-app dcistable python-3.3 postgresql-9.2
-    (...)
-    Your application 'dcistable' is now available.
-      URL:        http://dcistable-mydomain.rhcloud.com/
-      SSH to:     552643edfcf933d464000135@dcistable-mydomain.rhcloud.com
-      Git remote: ssh://blablabla@dcistable-mydomain.rhcloud.com/~/git/dcistable.git/
-      Cloned to:  /home/goneri/dcistable
-    $ rhc env set --app stable DCI_LOGIN=admin DCI_PASSWORD=admin
-    $ git push ssh://blablabla@dcistable-mydomain.rhcloud.com/~/git/dcistable.git/ master:master -f
-
-Your website should be able on the http://dcistable-mydomain.rhcloud.com/ URL. If it's not the
-case, you can call `rhc tail dcistable` to watch the application logs.
-
-
 ### Manual
 
 #### PostgreSQL configuration
@@ -79,7 +55,7 @@ Connect with the postgres user:
 
 ## dependencies to run tox
 
-### Fedora 22
+### Fedora 22 or 3
 
     # dnf install nodejs npm python-tox postgresql-server postgresql-devel postgresql-contrib
     # dnf install python-devel python3-devel libffi-devel git
@@ -272,14 +248,6 @@ resource url: `/api/v1/components/<component_id>`
 *   `DELETE`: remove the given component
 
     response: 204
-
-# The API documentation
-
-By installing these extra requirements, you can enable the /docs API documentation
-end-point:
-
-    # pip install git+https://github.com/hermannsblum/eve-docs
-    # pip install Flask-Bootstrap
 
 ## Recheck a job
 
