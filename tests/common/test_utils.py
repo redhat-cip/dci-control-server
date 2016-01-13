@@ -1,7 +1,6 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015 Red Hat, Inc
+# Copyright (C) 2015 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -15,10 +14,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# This file is OpenShift entry point
+import dci.common.utils as utils
 
-import dci.app
-import dci.dci_config
 
-conf = dci.dci_config.generate_conf()
-application = dci.app.create_app(conf)
+def test_dict_merge():
+    a = {'jim': 123, 'a': {'b': {'c': {'d': 'bob'}}}, 'rob': 34}
+    b = {'tot': {'a': {'b': 'string'}, 'c': [1, 2]}}
+    c = {'tot': {'c': [3, 4]}}
+
+    assert utils.dict_merge(a, b, c) == {
+        'a': {'b': {'c': {'d': 'bob'}}},
+        'jim': 123,
+        'rob': 34,
+        'tot': {'a': {'b': 'string'}, 'c': [1, 2, 3, 4]}
+    }
