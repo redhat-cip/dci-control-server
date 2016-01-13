@@ -1,13 +1,12 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
+# -*- encoding: utf-8 -*-
 #
-# Copyright (C) 2015 Red Hat, Inc
+# Copyright 2015 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -15,10 +14,19 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# This file is OpenShift entry point
+import os
+import uuid
 
-import dci.app
-import dci.dci_config
+DEBUG = False
 
-conf = dci.dci_config.generate_conf()
-application = dci.app.create_app(conf)
+LOG_FILE = '/dev/null'
+
+SQLALCHEMY_DATABASE_URI = "postgresql:///%s?host=%s" % (
+    uuid.uuid4(), os.path.abspath(os.environ['DCI_DB_DIR'])
+)
+
+# detect if we are using docker_compose
+if os.environ.get('DB_PORT'):
+    import dci.settings
+    SQLALCHEMY_DATABASE_URI = dci.settings.SQLALCHEMY_DATABASE_URI
+    SQLALCHEMY_DATABASE_URI += "_test"
