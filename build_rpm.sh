@@ -1,6 +1,6 @@
 #!/bin/bash
 set -eux
-PROJ_NAME=dci-control-server
+PROJ_NAME=dci
 DATE=$(date +%Y%m%d%H%M)
 SHA=$(git rev-parse HEAD | cut -c1-8)
 

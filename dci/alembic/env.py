@@ -18,8 +18,8 @@ from __future__ import with_statement
 from alembic import context
 from logging.config import fileConfig
 
-from dci.server.db import models
-from dci.server import dci_config
+from dci.db import models
+from dci import dci_config
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
