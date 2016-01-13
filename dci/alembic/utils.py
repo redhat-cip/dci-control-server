@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2015 Red Hat, Inc
@@ -15,10 +14,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# This file is OpenShift entry point
+from os import path
 
-import dci.app
-import dci.dci_config
+from alembic import command
+from alembic import config
 
-conf = dci.dci_config.generate_conf()
-application = dci.app.create_app(conf)
+from dci import alembic as dci_alembic
+
+
+def sync():
+    # then, load the Alembic configuration and generate the
+    # version table if its the first run. Upgrading to the most
+    # recent rev
+    dci_alembic_path = path.dirname(path.abspath(dci_alembic.__file__))
+    alembic_cfg_path = path.join(dci_alembic_path, 'alembic.ini')
+
+    alembic_cfg = config.Config(alembic_cfg_path)
+    command.upgrade(alembic_cfg, 'head')
