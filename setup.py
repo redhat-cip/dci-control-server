@@ -32,9 +32,9 @@ _README_CONTENT = open("%s/%s" % (os.path.dirname(os.path.abspath(__file__)),
 
 
 setuptools.setup(
-    name='control-server',
+    name='dci',
     version=version.__version__,
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
     author="Distributed ci team.",
     author_email="distributed-ci@redhat.com",
     description="Server which manage products deployments",
@@ -42,7 +42,7 @@ setuptools.setup(
     install_requires=_get_requirements(),
     url="https://github.com/redhat-cip/dci-control-server",
     license="Apache v2.0",
-    include_package_data=True,
+    package_data={'dci': ['alembic/alembic.ini']},
     classifiers=[
         "Environment :: Console",
         "Intended Audience :: Developers",
@@ -53,10 +53,8 @@ setuptools.setup(
         "Programming Language :: Python :: 3.4",
         "Topic :: System :: Distributed Computing"
     ],
-    entry_points={
-        "console_scripts": [
-            "dci-dbsync = dci.cmd.dbsync:main",
-            "dci-dbinit = dci.cmd.dbinit:main"
-        ],
-    }
+    scripts=[
+        'bin/dci-dbsync',
+        'bin/dci-dbinit'
+    ]
 )

@@ -15,10 +15,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# This file is OpenShift entry point
+from dci import app
+from dci import dci_config
 
-import dci.app
-import dci.dci_config
+conf = dci_config.generate_conf()
+dci_app = app.create_app(conf)
 
-conf = dci.dci_config.generate_conf()
-application = dci.app.create_app(conf)
+dci_app.run(dci_app.config['HOST'],
+            dci_app.config['PORT'])
