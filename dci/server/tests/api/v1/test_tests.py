@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from __future__ import unicode_literals
+
 
 def test_create_tests(admin):
     pt = admin.post('/api/v1/tests',
@@ -55,6 +57,19 @@ def test_get_all_tests_with_where(admin):
     db_t = admin.get('/api/v1/tests?where=name:pname1').data
     db_t_id = db_t['tests'][0]['id']
     assert db_t_id == pt_id
+
+
+def test_where_invalid(admin):
+    err = admin.get('/api/v1/tests?where=id')
+
+    assert err.status_code == 400
+    assert err.data == {
+        'status_code': 400,
+        'message': 'Invalid where key: "id"',
+        'payload': {
+            'error': 'where key must have the following form "key:value"'
+        }
+    }
 
 
 def test_get_all_tests_with_pagination(admin):

@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from __future__ import unicode_literals
 import uuid
 
 
@@ -89,6 +90,19 @@ def test_get_all_components_with_where(admin):
     db_c = admin.get('/api/v1/components?where=name:pname1').data
     db_c_id = db_c['components'][0]['id']
     assert db_c_id == pc_id
+
+
+def test_where_invalid(admin):
+    err = admin.get('/api/v1/components?where=id')
+
+    assert err.status_code == 400
+    assert err.data == {
+        'status_code': 400,
+        'message': 'Invalid where key: "id"',
+        'payload': {
+            'error': 'where key must have the following form "key:value"'
+        }
+    }
 
 
 def test_get_component_by_id_or_name(admin):

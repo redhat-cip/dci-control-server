@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+from __future__ import unicode_literals
 import pytest
 
 
@@ -161,6 +163,19 @@ def test_get_all_jobs_with_where(admin, jobdefinition_id, team_id,
         '/api/v1/jobs?where=team_id:%s' % team_id).data
     db_job_id = db_job['jobs'][0]['id']
     assert db_job_id == job_id
+
+
+def test_where_invalid(admin):
+    err = admin.get('/api/v1/jobs?where=id')
+
+    assert err.status_code == 400
+    assert err.data == {
+        'status_code': 400,
+        'message': 'Invalid where key: "id"',
+        'payload': {
+            'error': 'where key must have the following form "key:value"'
+        }
+    }
 
 
 def test_get_all_jobs_with_sort(admin, jobdefinition_id, team_id, remoteci_id):

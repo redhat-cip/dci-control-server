@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
+from __future__ import unicode_literals
 import pytest
 
 
@@ -128,6 +130,19 @@ def test_get_all_files_with_where(admin, jobstate_id, team_id):
     db_job = admin.get('/api/v1/files?where=name:lol1').data
     db_job_id = db_job['files'][0]['id']
     assert db_job_id == file_id
+
+
+def test_where_invalid(admin):
+    err = admin.get('/api/v1/files?where=id')
+
+    assert err.status_code == 400
+    assert err.data == {
+        'status_code': 400,
+        'message': 'Invalid where key: "id"',
+        'payload': {
+            'error': 'where key must have the following form "key:value"'
+        }
+    }
 
 
 def test_get_all_files_with_sort(admin, jobstate_id, team_id):

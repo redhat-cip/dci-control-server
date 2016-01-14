@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from __future__ import unicode_literals
+
 
 def test_create_jobdefinitions(admin, test_id):
     jd = admin.post('/api/v1/jobdefinitions',
@@ -100,6 +102,19 @@ def test_get_all_jobdefinitions_with_where(admin, test_id):
     db_jd = admin.get('/api/v1/jobdefinitions?where=name:pname1').data
     db_jd_id = db_jd['jobdefinitions'][0]['id']
     assert db_jd_id == pjd_id
+
+
+def test_where_invalid(admin):
+    err = admin.get('/api/v1/jobdefinitions?where=id')
+
+    assert err.status_code == 400
+    assert err.data == {
+        'status_code': 400,
+        'message': 'Invalid where key: "id"',
+        'payload': {
+            'error': 'where key must have the following form "key:value"'
+        }
+    }
 
 
 def test_get_jobdefinition_by_id_or_name(admin, test_id):
