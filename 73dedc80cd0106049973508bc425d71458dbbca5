@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9ab8dda7_2aa43f56",
+        "filename": "dci.spec",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-01-15T16:02:20Z",
+      "side": 1,
+      "message": "s/-control-server//",
+      "revId": "73dedc80cd0106049973508bc425d71458dbbca5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ab8dda7_ca8803c9",
+        "filename": "dci.spec",
+        "patchSetId": 2
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-01-15T16:02:20Z",
+      "side": 1,
+      "message": "can be removed",
+      "revId": "73dedc80cd0106049973508bc425d71458dbbca5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ab8dda7_ea85c7ad",
+        "filename": "dci.spec",
+        "patchSetId": 2
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-01-15T16:02:20Z",
+      "side": 1,
+      "message": "can be removed",
+      "revId": "73dedc80cd0106049973508bc425d71458dbbca5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
