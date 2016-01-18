@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9ab8dda7_70d54642",
+        "filename": "dci.spec",
+        "patchSetId": 7
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-01-18T15:29:00Z",
+      "side": 1,
+      "message": "can you replace dci* by dci-* please :)",
+      "revId": "b346deaea45a34206aa24a8f18cc38476fc4b1d7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
