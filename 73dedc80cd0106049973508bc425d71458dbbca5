@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "9ab8dda7_8dc30538",
+        "filename": "bin/dci-dbinit",
+        "patchSetId": 2
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-01-18T08:31:43Z",
+      "side": 1,
+      "message": "s/dci.server/dci/g\n\ndci.server does not exist anymore it is now dci only",
+      "revId": "73dedc80cd0106049973508bc425d71458dbbca5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9ab8dda7_2aa43f56",
         "filename": "dci.spec",
         "patchSetId": 2
