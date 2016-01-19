@@ -25,7 +25,7 @@ import sys
 
 import sqlalchemy
 from sqlalchemy import exc as sa_exc
-from sqlalchemy_utils import functions as sa_func
+from sqlalchemy_utils import functions as sa_funcs
 
 from dci import auth
 from dci.db import models

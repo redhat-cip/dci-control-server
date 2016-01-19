@@ -69,7 +69,7 @@ The implementation of the DCI control server API.
 install -d %{buildroot}/%{_datarootdir}/dci-api
 install -d %{buildroot}%{_sysconfdir}/dci-api
 mv wsgi.py %{buildroot}/%{_datarootdir}/dci-api/wsgi.py
-%{__ln_s} %{python2_sitelib}/dci/server/settings.py %{buildroot}%{_sysconfdir}/dci-api/settings.py
+%{__ln_s} %{python2_sitelib}/dci/settings.py %{buildroot}%{_sysconfdir}/dci-api/settings.py
 rm -rf %{buildroot}/%{python2_sitelib}/sample
 # NOTE(spredzy): Do this trick until we can upload updated rpm
 find %{buildroot}/%{python2_sitelib}/*.egg-info -name 'requires.txt' | xargs sed -i '2s/elasticsearch.*/elasticsearch/'
