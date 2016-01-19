@@ -19,7 +19,7 @@ This module synchronize the database with the most up to
 date schema through Alembic.
 """
 
-import dci.server.alembic.utils as dci_alembic
+import dci.alembic.utils as dci_alembic
 
 if __name__ == '__main__':
     dci_alembic.sync()
