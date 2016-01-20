@@ -68,7 +68,7 @@ ITEM_LOOKUP_FIELD = 'id'
 ETAG = 'etag'
 URL_PREFIX = 'api'
 X_DOMAINS = '*'
-X_HEADERS = 'Authorization'
+X_HEADERS = 'Authorization, Content-Type'
 
 # detect if we are using docker_compose
 db_port = os.environ.get('DB_PORT')
