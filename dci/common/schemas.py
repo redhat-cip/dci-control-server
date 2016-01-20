@@ -232,7 +232,6 @@ job_schedule = schema_factory(job_schedule)
 jobstate = {
     'status': six.text_type,
     'job_id': v.Any(UUID_FIELD, msg=INVALID_JOB),
-    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
     v.Optional('comment'): six.text_type,
 }
 
