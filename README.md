@@ -267,3 +267,7 @@ After it finish, it set the recheck flag to False.
 Each jobdefinition contains a 'priority' attribute which is used to weight it. When an agent requests
 a new job then the server will sort the jobdefinition by using the 'priority' attribute in order to
 select one.
+
+## Full documentation
+
+Full documentation is available at http://doc.dci.enovance.com
