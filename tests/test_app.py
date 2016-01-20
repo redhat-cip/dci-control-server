@@ -21,12 +21,14 @@ def test_cors_preflight(admin):
     headers = {
         'Origin': 'http://foo.example',
         'Access-Control-Request-Method': 'POST',
-        'Access-Control-Request-Headers': 'Authorization'
     }
     resp = admin.options('/api/v1', headers=headers)
     headers = resp.headers
+
+    allowed_headers = 'Authorization, Content-Type'
+
     assert resp.status_code == 200
-    assert headers['Access-Control-Allow-Headers'] == 'Authorization'
+    assert headers['Access-Control-Allow-Headers'] == allowed_headers
     assert headers['Access-Control-Allow-Origin'] == '*'
     assert headers['Access-Control-Allow-Methods'] == 'GET, POST, PUT, DELETE'
 
