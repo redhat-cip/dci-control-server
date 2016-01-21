@@ -270,4 +270,4 @@ select one.
 
 ## Full documentation
 
-Full documentation is available at http://doc.dci.enovance.com
+Full documentation is available online at http://doc.dci.enovance.com
