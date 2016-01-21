@@ -16,7 +16,7 @@
 from __future__ import unicode_literals
 
 import dci.common.schemas as schemas
-import tests.common.utils as utils
+import dci.tests.common.utils as utils
 
 import flask
 import voluptuous

@@ -34,7 +34,7 @@ _README_CONTENT = open("%s/%s" % (os.path.dirname(os.path.abspath(__file__)),
 setuptools.setup(
     name='dci',
     version=version.__version__,
-    packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
+    packages=setuptools.find_packages(exclude=['*.tests.*']),
     author="Distributed ci team.",
     author_email="distributed-ci@redhat.com",
     description="Server which manage products deployments",

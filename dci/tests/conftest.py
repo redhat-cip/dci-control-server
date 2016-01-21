@@ -18,7 +18,7 @@ import dci.app
 from dci.db import models
 from dci import dci_config
 from dci.elasticsearch import engine as es_engine
-import tests.utils as utils
+import dci.tests.utils as utils
 
 from passlib.apps import custom_app_context as pwd_context
 import pytest
