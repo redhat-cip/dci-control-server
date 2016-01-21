@@ -220,7 +220,7 @@ def create_jobstates_and_files(db_conn, job, company_id):
     db_insert(db_conn, models.JOBSTATES, status='new',
               comment='Job "%s" created' % name,
               job_id=id, team_id=company_id,
-              created_at=job['created_at'])
+              created_at=job['created_at'], updated_at=job['created_at'])
 
     if step == 'new':
         return
