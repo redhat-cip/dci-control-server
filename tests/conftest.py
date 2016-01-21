@@ -170,16 +170,16 @@ def jobstate_user_id(user, job_user_id):
 
 
 @pytest.fixture
-def file_id(admin, jobstate_id, team_id):
-    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+def file_id(admin, jobstate_id):
+    data = {'jobstate_id': jobstate_id,
             'content': 'kikoolol', 'name': 'name'}
     file = admin.post('/api/v1/files', data=data).data
     return file['file']['id']
 
 
 @pytest.fixture
-def file_user_id(user, jobstate_user_id, team_user_id):
-    data = {'jobstate_id': jobstate_user_id, 'team_id': team_user_id,
+def file_user_id(user, jobstate_user_id):
+    data = {'jobstate_id': jobstate_user_id,
             'content': 'kikoolol', 'name': 'name'}
     file = user.post('/api/v1/files', data=data).data
     return file['file']['id']

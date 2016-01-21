@@ -18,19 +18,19 @@ from __future__ import unicode_literals
 import pytest
 
 
-def test_create_files(admin, jobstate_id, team_id):
+def test_create_files(admin, jobstate_id):
     file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id, 'team_id': team_id,
-                            'content': 'content', 'name': 'kikoolol'}).data
+                      data={'jobstate_id': jobstate_id, 'content': 'content',
+                            'name': 'kikoolol'}).data
     file_id = file['file']['id']
     file = admin.get('/api/v1/files/%s' % file_id).data
     assert file['file']['name'] == 'kikoolol'
 
 
-def test_put_files(admin, jobstate_id, team_id):
+def test_put_files(admin, jobstate_id):
     file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id, 'team_id': team_id,
-                            'content': 'content', 'name': 'kikoolol'})
+                      data={'jobstate_id': jobstate_id, 'content': 'content',
+                            'name': 'kikoolol'})
     file_id = file.data['file']['id']
     file_etag = file.headers.get("ETag")
 
@@ -44,15 +44,14 @@ def test_put_files(admin, jobstate_id, team_id):
     assert gfile['file']['content'] == 'kijiji'
 
 
-def test_get_all_files(admin, jobstate_id, team_id):
+def test_get_all_files(admin, jobstate_id):
     file_1 = admin.post('/api/v1/files',
-                        data={'jobstate_id': jobstate_id, 'team_id': team_id,
-                              'content': 'content', 'name': 'kikoolol1'}).data
+                        data={'jobstate_id': jobstate_id, 'content': 'content',
+                              'name': 'kikoolol1'}).data
     file_1_id = file_1['file']['id']
 
     file_2_2 = admin.post('/api/v1/files',
                           data={'jobstate_id': jobstate_id,
-                                'team_id': team_id,
                                 'content': 'content',
                                 'name': 'kikoolol2'}).data
     file_2_id = file_2_2['file']['id']
@@ -64,18 +63,18 @@ def test_get_all_files(admin, jobstate_id, team_id):
     assert db_all_files_ids == [file_1_id, file_2_id]
 
 
-def test_get_all_files_with_pagination(admin, jobstate_id, team_id):
+def test_get_all_files_with_pagination(admin, jobstate_id):
     # create 4 files types and check meta count
-    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+    data = {'jobstate_id': jobstate_id,
             'content': 'content', 'name': 'lol1'}
     admin.post('/api/v1/files', data=data)
-    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+    data = {'jobstate_id': jobstate_id,
             'content': 'content', 'name': 'lol2'}
     admin.post('/api/v1/files', data=data)
-    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+    data = {'jobstate_id': jobstate_id,
             'content': 'content', 'name': 'lol3'}
     admin.post('/api/v1/files', data=data)
-    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+    data = {'jobstate_id': jobstate_id,
             'content': 'content', 'name': 'lol4'}
     admin.post('/api/v1/files', data=data)
 
@@ -96,11 +95,11 @@ def test_get_all_files_with_pagination(admin, jobstate_id, team_id):
     assert files.data['files'] == []
 
 
-def test_get_all_files_with_embed(admin, jobstate_id, team_id, job_id):
-    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+def test_get_all_files_with_embed(admin, jobstate_id, team_admin_id, job_id):
+    data = {'jobstate_id': jobstate_id,
             'content': 'content', 'name': 'lol1'}
     admin.post('/api/v1/files', data=data)
-    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+    data = {'jobstate_id': jobstate_id,
             'content': 'content', 'name': 'lol2'}
     admin.post('/api/v1/files', data=data)
 
@@ -110,16 +109,16 @@ def test_get_all_files_with_embed(admin, jobstate_id, team_id, job_id):
     for file in files['files']:
         assert 'team_id' not in file
         assert 'team' in file
-        assert file['team']['id'] == team_id
+        assert file['team']['id'] == team_admin_id
         assert 'jobstate_id' not in file
         assert 'jobstate' in file
         assert file['jobstate']['id'] == jobstate_id
         assert file['jobstate']['job']['id'] == job_id
 
 
-def test_get_all_files_with_where(admin, jobstate_id, team_id):
+def test_get_all_files_with_where(admin, jobstate_id):
     file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id, 'team_id': team_id,
+                      data={'jobstate_id': jobstate_id,
                             'content': 'content', 'name': 'lol1'}).data
     file_id = file['file']['id']
 
@@ -145,18 +144,18 @@ def test_where_invalid(admin):
     }
 
 
-def test_get_all_files_with_sort(admin, jobstate_id, team_id):
+def test_get_all_files_with_sort(admin, jobstate_id):
     # create 4 files ordered by created time
-    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+    data = {'jobstate_id': jobstate_id,
             'content': 'content', 'name': 'a'}
     file_1_1 = admin.post('/api/v1/files', data=data).data['file']
-    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+    data = {'jobstate_id': jobstate_id,
             'content': 'content', 'name': 'a'}
     file_1_2 = admin.post('/api/v1/files', data=data).data['file']
-    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+    data = {'jobstate_id': jobstate_id,
             'content': 'content', 'name': 'b'}
     file_2_1 = admin.post('/api/v1/files', data=data).data['file']
-    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+    data = {'jobstate_id': jobstate_id,
             'content': 'content', 'name': 'b'}
     file_2_2 = admin.post('/api/v1/files', data=data).data['file']
 
@@ -168,9 +167,9 @@ def test_get_all_files_with_sort(admin, jobstate_id, team_id):
     assert files['files'] == [file_1_2, file_1_1, file_2_2, file_2_1]
 
 
-def test_get_file_by_id_or_name(admin, jobstate_id, team_id):
+def test_get_file_by_id_or_name(admin, jobstate_id):
     file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id, 'team_id': team_id,
+                      data={'jobstate_id': jobstate_id,
                             'content': 'content', 'name': 'kikoolol'}).data
     file_id = file['file']['id']
 
@@ -190,9 +189,9 @@ def test_get_file_not_found(admin):
     assert result.status_code == 404
 
 
-def test_get_file_with_embed(admin, jobstate_id, team_id):
-    pt = admin.get('/api/v1/teams/%s' % team_id).data
-    data = {'jobstate_id': jobstate_id, 'team_id': team_id,
+def test_get_file_with_embed(admin, jobstate_id, team_admin_id):
+    pt = admin.get('/api/v1/teams/%s' % team_admin_id).data
+    data = {'jobstate_id': jobstate_id,
             'content': 'content', 'name': 'kikoolol'}
     file = admin.post('/api/v1/files', data=data).data
 
@@ -210,9 +209,9 @@ def test_get_jobdefinition_with_embed_not_valid(admin):
     assert file.status_code == 400
 
 
-def test_delete_file_by_id(admin, jobstate_id, team_id):
+def test_delete_file_by_id(admin, jobstate_id):
     file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id, 'team_id': team_id,
+                      data={'jobstate_id': jobstate_id,
                             'content': 'kikoolol', 'name': 'name'})
     file_id = file.data['file']['id']
     file_etag = file.headers.get("ETag")
@@ -231,16 +230,9 @@ def test_delete_file_by_id(admin, jobstate_id, team_id):
 # Tests for the isolation
 
 
-def test_create_file_as_user(user, team_user_id, team_id, jobstate_user_id):
+def test_create_file_as_user(user, jobstate_user_id):
     file = user.post('/api/v1/files',
                      data={'jobstate_id': jobstate_user_id,
-                           'team_id': team_id,
-                           'content': 'kikoolol', 'name': 'name'})
-    assert file.status_code == 401
-
-    file = user.post('/api/v1/files',
-                     data={'jobstate_id': jobstate_user_id,
-                           'team_id': team_user_id,
                            'content': 'kikoolol', 'name': 'name'})
     assert file.status_code == 201
 
@@ -254,13 +246,12 @@ def test_get_all_files_as_user(user, team_user_id):
         assert file['team_id'] == team_user_id
 
 
-def test_get_file_as_user(user, team_user_id, file_id, jobstate_user_id):
+def test_get_file_as_user(user, file_id, jobstate_user_id):
     file = user.get('/api/v1/files/%s' % file_id)
     assert file.status_code == 404
 
     file = user.post('/api/v1/files',
                      data={'jobstate_id': jobstate_user_id,
-                           'team_id': team_user_id,
                            'content': 'kikoolol', 'name': 'name'}).data
     file_id = file['file']['id']
     file = user.get('/api/v1/files/%s' % file_id)
@@ -271,7 +262,6 @@ def test_put_file_as_user(user, team_user_id, team_admin_id, file_id, admin,
                           jobstate_user_id):
     file_user = user.post('/api/v1/files',
                           data={'jobstate_id': jobstate_user_id,
-                                'team_id': team_user_id,
                                 'content': 'kikoolol', 'name': 'name'})
     file_user_id = file_user.data['file']['id']
     file_user = user.get('/api/v1/files/%s' % file_user_id)
@@ -279,30 +269,26 @@ def test_put_file_as_user(user, team_user_id, team_admin_id, file_id, admin,
 
     file_put = user.put('/api/v1/files/%s' % file_user_id,
                         data={'jobstate_id': jobstate_user_id,
-                              'team_id': team_user_id,
                               'content': 'kikoolol2', 'name': 'name2'},
                         headers={'If-match': file_user_etag})
     assert file_put.status_code == 204
 
     file_admin = admin.post('/api/v1/files',
                             data={'jobstate_id': jobstate_user_id,
-                                  'team_id': team_admin_id,
                                   'content': 'kikoolol', 'name': 'name'})
     file_admin_id = file_admin.data['file']['id']
     file_admin_etag = file_admin.headers.get("ETag")
     file_admin_put = user.put('/api/v1/files/%s' % file_admin_id,
                               data={'jobstate_id': jobstate_user_id,
-                                    'team_id': team_user_id,
                                     'content': 'kikoolol2', 'name': 'name2'},
                               headers={'If-match': file_admin_etag})
     assert file_admin_put.status_code == 401
 
 
-def test_delete_file_as_user(user, team_user_id, admin, jobstate_user_id,
+def test_delete_file_as_user(user, admin, jobstate_user_id,
                              file_id):
     file_user = user.post('/api/v1/files',
                           data={'jobstate_id': jobstate_user_id,
-                                'team_id': team_user_id,
                                 'content': 'kikoolol2', 'name': 'name2'})
     file_user_id = file_user.data['file']['id']
     file_user = user.get('/api/v1/files/%s' % file_user_id)

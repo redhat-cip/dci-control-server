@@ -43,17 +43,13 @@ _VALID_EMBED = {
 def create_files(user):
     values = schemas.file.post(flask.request.json)
 
-    # If it's an admin or belongs to the same team
-    if not (auth.is_admin(user) or
-            auth.is_in_team(user, values.get('team_id'))):
-        raise auth.UNAUTHORIZED
-
     etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
         'created_at': datetime.datetime.utcnow().isoformat(),
         'updated_at': datetime.datetime.utcnow().isoformat(),
-        'etag': etag
+        'etag': etag,
+        'team_id': user['team_id']
     })
 
     query = _TABLE.insert().values(**values)
