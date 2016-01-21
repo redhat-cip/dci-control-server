@@ -56,8 +56,9 @@ def create_jobdefinitions(user):
     query = _TABLE.insert().values(**data_json)
     try:
         flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
+    except sa_exc.IntegrityError as e:
+        raise dci_exc.DCIException("Integrity error on 'test_id' field.",
+                                   payload=str(e))
 
     result = json.dumps({'jobdefinition': data_json})
     return flask.Response(result, 201, headers={'ETag': etag},
