@@ -14,9 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
-
-
 # Global parameters about the API itself
 #
 HOST = '127.0.0.1'
@@ -30,10 +27,8 @@ ES_PORT = '9200'
 
 # Database (SQLAlchemy) related parameters
 #
-SQLALCHEMY_DATABASE_URI = os.environ.get(
-    'OPENSHIFT_POSTGRESQL_DB_URL',
-    'postgresql://dci:dci@127.0.0.1:5432/dci'
-)
+SQLALCHEMY_DATABASE_URI = 'postgresql://dci:dci@127.0.0.1:5432/dci'
+
 # The following two lines will output the SQL statements
 # executed by SQLAlchemy. Useful while debugging and in
 # development. Turned off by default
@@ -69,28 +64,3 @@ ETAG = 'etag'
 URL_PREFIX = 'api'
 X_DOMAINS = '*'
 X_HEADERS = 'Authorization, Content-Type'
-
-# detect if we are using docker_compose
-db_port = os.environ.get('DB_PORT')
-
-if db_port is not None:
-    try:
-        import urlparse
-    except ImportError:
-        import urllib.parse as urlparse
-
-    SQLALCHEMY_DATABASE_URI = (
-        'postgresql://dci:password@%s/dci_control_server' %
-        urlparse.urlparse(db_port).netloc
-    )
-    HOST = '0.0.0.0'
-
-es_url = os.environ.get('ES_PORT')
-
-if es_url is not None:
-    try:
-        import urlparse
-    except ImportError:
-        import urllib.parse as urlparse
-    ES_HOST = '%s' % urlparse.urlparse(es_url).hostname
-    ES_PORT = '%s' % urlparse.urlparse(es_url).port

@@ -6,8 +6,8 @@ DCI_DB_DIR=${DCI_DB_DIR:-".db_dir"}
 # get dci_db_dir absolute path
 DCI_DB_DIR="$(cd "$(dirname "$0")/.." && pwd)/$DCI_DB_DIR"
 
-# checks if we are in a docker_compose configuration
-[ ! -z "$DB_PORT" ] &&exit 0
+# if the database is already running we do not want to run this script
+[ ! -z "$DISABLE_DB_START" ] &&exit 0
 
 # checks if pg_ctl command exists
 type "pg_ctl"
