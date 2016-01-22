@@ -6,8 +6,8 @@ DCI_ES_DIR=${DCI_ES_DIR:-".es_dir"}
 # get dci_es_dir absolute path
 DCI_ES_DIR="$(cd $(dirname "$0") && pwd)/$DCI_ES_DIR"
 
-# checks if we are in a docker_compose configuration
-[ ! -z "$ES_PORT" ] &&exit 0
+# if elasticsearch is already running we do not want to run this script
+[ ! -z "$DISABLE_ES_START" ] &&exit 0
 
 # checks if not already running
 PROCESS=$(ps auxfw | grep elasticsearch | grep -v grep | awk '{print $2}')

@@ -24,9 +24,3 @@ LOG_FILE = '/dev/null'
 SQLALCHEMY_DATABASE_URI = "postgresql:///%s?host=%s" % (
     uuid.uuid4(), os.path.abspath(os.environ['DCI_DB_DIR'])
 )
-
-# detect if we are using docker_compose
-if os.environ.get('DB_PORT'):
-    import dci.settings
-    SQLALCHEMY_DATABASE_URI = dci.settings.SQLALCHEMY_DATABASE_URI
-    SQLALCHEMY_DATABASE_URI += "_test"
