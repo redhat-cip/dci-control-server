@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from __future__ import with_statement
 from alembic import context
 from logging.config import fileConfig
 
@@ -47,7 +46,8 @@ def run_migrations_offline():
     app_conf = dci_config.generate_conf()
     url = app_conf['SQLALCHEMY_DATABASE_URI']
     context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True)
+        url=url, target_metadata=target_metadata, literal_binds=True,
+    )
 
     with context.begin_transaction():
         context.run_migrations()
@@ -60,18 +60,17 @@ def run_migrations_online():
     and associate a connection with the context.
 
     """
-
     app_conf = dci_config.generate_conf()
     connectable = dci_config.get_engine(app_conf)
-
     with connectable.connect() as connection:
         context.configure(
             connection=connection,
-            target_metadata=target_metadata
+            target_metadata=target_metadata,
         )
 
         with context.begin_transaction():
             context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()

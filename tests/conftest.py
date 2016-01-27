@@ -45,6 +45,12 @@ def engine(request):
     return engine
 
 
+@pytest.fixture
+def clean_all(request, engine):
+    models.metadata.drop_all(engine)
+    request.addfinalizer(lambda: models.metadata.create_all(engine))
+
+
 @pytest.fixture(scope='session', autouse=True)
 def memoize_password_hash():
     pwd_context.verify = utils.memoized(pwd_context.verify)

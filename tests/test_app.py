@@ -16,6 +16,13 @@
 
 import imp
 
+import alembic.autogenerate
+import alembic.environment
+import alembic.script
+
+import dci.alembic.utils
+import dci.db.models as models
+
 
 def test_cors_preflight(admin):
     headers = {
@@ -47,3 +54,27 @@ def test_sample_db_provisionning(engine, db_clean):
     )
     with engine.begin() as db_conn:
         db_provisioning.init_db(db_conn)
+
+
+def test_db_migration(engine, clean_all):
+    config = dci.alembic.utils.generate_conf()
+    context = alembic.context
+    script = alembic.script.ScriptDirectory.from_config(config)
+
+    env_context = alembic.environment.EnvironmentContext(
+        config, script, destination_rev='head',
+        fn=lambda rev, _: script._upgrade_revs('head', rev)
+    )
+
+    with env_context, engine.connect() as connection:
+        context.configure(connection, target_metadata=models.metadata,
+                          compare_type=True)
+
+        with context.begin_transaction():
+            context.run_migrations()
+
+        diff = alembic.autogenerate.api.compare_metadata(
+            context.get_context(), models.metadata
+        )
+
+    assert diff == []
