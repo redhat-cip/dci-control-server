@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9ab8dda7_c46b0f84",
+        "filename": "dci/alembic/versions/3a7cafffb2e3_change_user_role_from_varchar_to_enum.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-01-27T19:09:55Z",
+      "side": 1,
+      "message": "I\u0027m a bit confused by the syntax.\n\nDon\u0027t you have to create the roles type first and reuse it after?\n\nCREATE TYPE roles AS ENUM (\u0027admin\u0027, \u0027user\u0027);\n\nhttp://www.postgresql.org/docs/9.4/static/datatype-enum.html",
+      "revId": "3cf1339cdb6737767186e27af061f72ace02bb43",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
