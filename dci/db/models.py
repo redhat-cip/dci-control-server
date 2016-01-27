@@ -23,6 +23,8 @@ from dci.common import utils
 
 metadata = sa.MetaData()
 
+USER_ROLES = ['user', 'admin']
+ROLES = sa.Enum(*USER_ROLES, name='roles')
 
 COMPONENTS = sa.Table(
     'components', metadata,
@@ -207,7 +209,7 @@ USERS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), unique=True, nullable=False),
     sa.Column('password', sa.Text, nullable=False),
-    sa.Column('role', sa.String(255), default='user', nullable=False),
+    sa.Column('role', ROLES, default=USER_ROLES[0], nullable=False),
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
               nullable=False))
