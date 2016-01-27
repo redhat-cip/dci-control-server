@@ -19,6 +19,7 @@ from six.moves.urllib.parse import urlparse
 import collections
 import dci.common.exceptions as exceptions
 import dci.common.utils as utils
+import dci.db.models as models
 import six
 import voluptuous as v
 
@@ -46,7 +47,8 @@ INVALID_JOB_DEFINITION = 'not a valid jobdefinition id'
 INVALID_REMOTE_CI = 'not a valid remoteci id'
 INVALID_JOB = 'not a valid job id'
 INVALID_JOB_STATE = 'not a valid jobstate id'
-
+INVALID_ROLE = ('not a valid role (must be %s)' %
+                ' or '.join(models.USER_ROLES))
 INVALID_OFFSET = 'not a valid offset integer (must be greater than 0)'
 INVALID_LIMIT = 'not a valid limit integer (must be greater than 0)'
 
@@ -150,7 +152,7 @@ test = schema_factory(utils.dict_merge(base, DATA_FIELD))
 
 user = utils.dict_merge(base, {
     'password': six.text_type,
-    v.Optional('role', default='user'): six.text_type,
+    v.Optional('role'): v.Any(*models.USER_ROLES, msg=INVALID_ROLE),
     'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM)
 })
 

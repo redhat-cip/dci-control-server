@@ -162,7 +162,7 @@ def job_user_id(admin, jobdefinition_id, team_user_id, remoteci_user_id):
 
 @pytest.fixture
 def jobstate_id(admin, job_id):
-    data = {'job_id': job_id, 'status': 'ongoing',
+    data = {'job_id': job_id, 'status': 'running',
             'comment': 'kikoolol'}
     jobstate = admin.post('/api/v1/jobstates', data=data).data
     return jobstate['jobstate']['id']
@@ -170,7 +170,7 @@ def jobstate_id(admin, job_id):
 
 @pytest.fixture
 def jobstate_user_id(user, job_user_id):
-    data = {'job_id': job_user_id, 'status': 'ongoing', 'comment': 'kikoolol'}
+    data = {'job_id': job_user_id, 'status': 'running', 'comment': 'kikoolol'}
     jobstate = user.post('/api/v1/jobstates', data=data).data
     return jobstate['jobstate']['id']
 
