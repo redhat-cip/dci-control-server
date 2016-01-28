@@ -27,6 +27,19 @@ def test_create_users(admin, team_id):
     assert gu['user']['name'] == 'pname'
 
 
+def test_create_unique_user_against_teams(admin, team_admin_id, team_user_id):
+    data = {'name': 'foo', 'password': 'psswd', 'team_id': team_user_id}
+    res = admin.post('/api/v1/users', data=data)
+    assert res.status_code == 201
+
+    res = admin.post('/api/v1/users', data=data)
+    assert res.status_code == 422
+
+    data['team_id'] = team_admin_id
+    res = admin.post('/api/v1/users', data=data)
+    assert res.status_code == 201
+
+
 def test_create_users_already_exist(admin, team_id):
     pstatus_code = admin.post('/api/v1/users',
                               data={'name': 'pname',
