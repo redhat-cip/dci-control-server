@@ -38,6 +38,20 @@ def test_create_remotecis_already_exist(admin, team_id):
     assert pstatus_code == 422
 
 
+def test_create_unique_remoteci_against_teams(admin, team_admin_id,
+                                              team_user_id):
+    data = {'name': 'foo', 'team_id': team_user_id}
+    res = admin.post('/api/v1/remotecis', data=data)
+    assert res.status_code == 201
+
+    res = admin.post('/api/v1/remotecis', data=data)
+    assert res.status_code == 422
+
+    data['team_id'] = team_admin_id
+    res = admin.post('/api/v1/remotecis', data=data)
+    assert res.status_code == 201
+
+
 def test_get_all_remotecis(admin, team_id):
     remoteci_1 = admin.post('/api/v1/remotecis',
                             data={'name': 'pname1', 'team_id': team_id}).data

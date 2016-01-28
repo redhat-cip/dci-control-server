@@ -106,12 +106,14 @@ REMOTECIS = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
-    sa.Column('name', sa.String(255), unique=True),
+    sa.Column('name', sa.String(255)),
     sa.Column('data', sa_utils.JSONType),
     sa.Column('active', sa.BOOLEAN, default=True),
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
-              nullable=False))
+              nullable=False),
+    sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key')
+)
 
 JOBS = sa.Table(
     'jobs', metadata,
@@ -179,12 +181,15 @@ USERS = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
-    sa.Column('name', sa.String(255), unique=True, nullable=False),
+    sa.Column('name', sa.String(255), nullable=False),
     sa.Column('password', sa.Text, nullable=False),
     sa.Column('role', ROLES, default=USER_ROLES[0], nullable=False),
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
-              nullable=False))
+              nullable=False),
+    sa.UniqueConstraint('name', 'team_id', name='users_name_team_id_key')
+)
+
 
 JOIN_USER_REMOTECIS = sa.Table(
     'user_remotecis', metadata,
