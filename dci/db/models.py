@@ -32,11 +32,6 @@ COMPONENTS = sa.Table(
               default=utils.gen_uuid),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('updated_at', sa.DateTime(),
-              onupdate=datetime.datetime.utcnow,
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), unique=True, nullable=False),
     sa.Column('type', sa.String(255), nullable=False),
     sa.Column('canonical_project_name', sa.String),
@@ -54,12 +49,7 @@ TESTS = sa.Table(
               default=utils.gen_uuid),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('updated_at', sa.DateTime(),
-              onupdate=datetime.datetime.utcnow,
-              default=datetime.datetime.utcnow, nullable=False),
     sa.Column('name', sa.String(255), nullable=False, unique=True),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
     sa.Column('data', sa_utils.JSONType))
 
 JOBDEFINITIONS = sa.Table(
@@ -81,22 +71,13 @@ JOBDEFINITIONS = sa.Table(
 
 JOIN_JOBDEFINITIONS_COMPONENTS = sa.Table(
     'jobdefinition_components', metadata,
-    sa.Column('id', sa.String(36), primary_key=True,
-              default=utils.gen_uuid),
-    sa.Column('created_at', sa.DateTime(),
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('updated_at', sa.DateTime(),
-              onupdate=datetime.datetime.utcnow,
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
     sa.Column('component_id', sa.String(36),
               sa.ForeignKey('components.id', ondelete="CASCADE"),
-              nullable=False),
+              nullable=False, primary_key=True),
     sa.Column('jobdefinition_id', sa.String(36),
               sa.ForeignKey('jobdefinitions.id', ondelete="CASCADE"),
-              nullable=False),
-    sa.UniqueConstraint('component_id', 'jobdefinition_id'))
+              nullable=False, primary_key=True)
+)
 
 TEAMS = sa.Table(
     'teams', metadata,
@@ -159,11 +140,6 @@ JOBSTATES = sa.Table(
               default=utils.gen_uuid),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('updated_at', sa.DateTime(),
-              onupdate=datetime.datetime.utcnow,
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
     # new, pre-run, running, post-run, success, failure
     sa.Column('status', sa.String(255), nullable=False),
     sa.Column('comment', sa.Text),
@@ -180,11 +156,6 @@ FILES = sa.Table(
               default=utils.gen_uuid),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('updated_at', sa.DateTime(),
-              onupdate=datetime.datetime.utcnow,
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), nullable=False),
     sa.Column('content', sa.Text, nullable=False),
     sa.Column('mime', sa.String),
@@ -216,19 +187,10 @@ USERS = sa.Table(
 
 JOIN_USER_REMOTECIS = sa.Table(
     'user_remotecis', metadata,
-    sa.Column('id', sa.String(36), primary_key=True,
-              default=utils.gen_uuid),
-    sa.Column('created_at', sa.DateTime(),
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('updated_at', sa.DateTime(),
-              onupdate=datetime.datetime.utcnow,
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
     sa.Column('user_id', sa.String(36),
               sa.ForeignKey('users.id', ondelete="CASCADE"),
-              nullable=False),
+              nullable=False, primary_key=True),
     sa.Column('remoteci_id', sa.String(36),
               sa.ForeignKey('remotecis.id', ondelete="CASCADE"),
-              nullable=False),
-    sa.UniqueConstraint('user_id', 'remoteci_id'))
+              nullable=False, primary_key=True)
+)

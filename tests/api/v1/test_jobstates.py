@@ -195,14 +195,13 @@ def test_delete_jobstate_by_id(admin, job_id):
                           'comment': 'kikoolol',
                           'status': 'running'})
     js_id = js.data['jobstate']['id']
-    js_etag = js.headers.get("ETag")
 
     url = '/api/v1/jobstates/%s' % js_id
 
     created_js = admin.get(url)
     assert created_js.status_code == 200
 
-    deleted_js = admin.delete(url, headers={'If-match': js_etag})
+    deleted_js = admin.delete(url)
     assert deleted_js.status_code == 204
 
     gjs = admin.get(url)
@@ -252,15 +251,9 @@ def test_delete_jobstate_as_user(user, admin, job_user_id,
                               'comment': 'kikoolol',
                               'status': 'running'})
     js_user_id = js_user.data['jobstate']['id']
-    jobstate = user.get('/api/v1/jobstates/%s' % js_user_id)
-    jobstate_etag = jobstate.headers.get("ETag")
 
-    jobstate_delete = user.delete('/api/v1/jobstates/%s' % js_user_id,
-                                  headers={'If-match': jobstate_etag})
+    jobstate_delete = user.delete('/api/v1/jobstates/%s' % js_user_id)
     assert jobstate_delete.status_code == 204
 
-    jobstate = admin.get('/api/v1/jobstates/%s' % jobstate_id)
-    jobstate_etag = jobstate.headers.get("ETag")
-    jobstate_delete = user.delete('/api/v1/jobstates/%s' % jobstate_id,
-                                  headers={'If-match': jobstate_etag})
+    jobstate_delete = user.delete('/api/v1/jobstates/%s' % jobstate_id)
     assert jobstate_delete.status_code == 401
