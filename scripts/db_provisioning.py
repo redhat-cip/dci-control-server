@@ -220,7 +220,7 @@ def create_jobstates_and_files(db_conn, job, company_id):
     db_insert(db_conn, models.JOBSTATES, status='new',
               comment='Job "%s" created' % name,
               job_id=id, team_id=company_id,
-              created_at=job['created_at'], updated_at=job['created_at'])
+              created_at=job['created_at'])
 
     if step == 'new':
         return
@@ -244,8 +244,7 @@ def create_jobstates_and_files(db_conn, job, company_id):
     created_at = compute_creation('pre-run')
     jobstate = db_insert(db_conn, models.JOBSTATES, status='pre-run',
                          comment='initializing %s' % name,
-                         job_id=id, team_id=company_id,
-                         created_at=created_at, updated_at=created_at)
+                         job_id=id, team_id=company_id, created_at=created_at)
     create_files(db_conn, jobstate, company_id)
 
     if step == 'pre-run':
@@ -255,8 +254,7 @@ def create_jobstates_and_files(db_conn, job, company_id):
     created_at = compute_creation('running')
     jobstate = db_insert(db_conn, models.JOBSTATES, status='running',
                          comment='running %s...' % name,
-                         job_id=id, team_id=company_id,
-                         created_at=created_at, updated_at=created_at)
+                         job_id=id, team_id=company_id, created_at=created_at)
     create_files(db_conn, jobstate, company_id)
 
     if step == 'running':
@@ -268,7 +266,7 @@ def create_jobstates_and_files(db_conn, job, company_id):
         jobstate = db_insert(db_conn, models.JOBSTATES, status='post-run',
                              comment='finalizing %s...' % name,
                              job_id=id, team_id=company_id,
-                             created_at=created_at, updated_at=created_at)
+                             created_at=created_at)
 
         create_files(db_conn, jobstate, company_id)
 
@@ -280,7 +278,7 @@ def create_jobstates_and_files(db_conn, job, company_id):
     jobstate = db_insert(db_conn, models.JOBSTATES, status=job['status'],
                          comment='%s %s' % (name, step),
                          job_id=id, team_id=company_id,
-                         created_at=created_at, updated_at=created_at)
+                         created_at=created_at)
     # no file creation on last state
 
 

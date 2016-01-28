@@ -133,15 +133,13 @@ def test_get_component_not_found(admin):
 def test_delete_component_by_id(admin):
     data = {'name': 'pname', 'type': 'gerrit_review'}
     pc = admin.post('/api/v1/components', data=data)
-    pct_etag = pc.headers.get("ETag")
     pc_id = pc.data['component']['id']
     assert pc.status_code == 201
 
     created_ct = admin.get('/api/v1/components/%s' % pc_id)
     assert created_ct.status_code == 200
 
-    deleted_ct = admin.delete('/api/v1/components/%s' % pc_id,
-                              headers={'If-match': pct_etag})
+    deleted_ct = admin.delete('/api/v1/components/%s' % pc_id)
     assert deleted_ct.status_code == 204
 
     gct = admin.get('/api/v1/components/%s' % pc_id)

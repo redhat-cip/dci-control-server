@@ -32,11 +32,9 @@ def test_put_files(admin, jobstate_id):
                       data={'jobstate_id': jobstate_id, 'content': 'content',
                             'name': 'kikoolol'})
     file_id = file.data['file']['id']
-    file_etag = file.headers.get("ETag")
 
     pfile = admin.put('/api/v1/files/%s' % file_id,
-                      data={'name': 'ptdr', 'content': 'kijiji'},
-                      headers={'If-match': file_etag})
+                      data={'name': 'ptdr', 'content': 'kijiji'})
     assert pfile.status_code == 204
 
     gfile = admin.get('/api/v1/files/%s' % file_id).data
@@ -214,14 +212,13 @@ def test_delete_file_by_id(admin, jobstate_id):
                       data={'jobstate_id': jobstate_id,
                             'content': 'kikoolol', 'name': 'name'})
     file_id = file.data['file']['id']
-    file_etag = file.headers.get("ETag")
 
     url = '/api/v1/files/%s' % file_id
 
     created_file = admin.get(url)
     assert created_file.status_code == 200
 
-    deleted_file = admin.delete(url, headers={'If-match': file_etag})
+    deleted_file = admin.delete(url)
     assert deleted_file.status_code == 204
 
     gfile = admin.get(url)
@@ -265,23 +262,19 @@ def test_put_file_as_user(user, team_user_id, team_admin_id, file_id, admin,
                                 'content': 'kikoolol', 'name': 'name'})
     file_user_id = file_user.data['file']['id']
     file_user = user.get('/api/v1/files/%s' % file_user_id)
-    file_user_etag = file_user.headers.get("ETag")
 
     file_put = user.put('/api/v1/files/%s' % file_user_id,
                         data={'jobstate_id': jobstate_user_id,
-                              'content': 'kikoolol2', 'name': 'name2'},
-                        headers={'If-match': file_user_etag})
+                              'content': 'kikoolol2', 'name': 'name2'})
     assert file_put.status_code == 204
 
     file_admin = admin.post('/api/v1/files',
                             data={'jobstate_id': jobstate_user_id,
                                   'content': 'kikoolol', 'name': 'name'})
     file_admin_id = file_admin.data['file']['id']
-    file_admin_etag = file_admin.headers.get("ETag")
     file_admin_put = user.put('/api/v1/files/%s' % file_admin_id,
                               data={'jobstate_id': jobstate_user_id,
-                                    'content': 'kikoolol2', 'name': 'name2'},
-                              headers={'If-match': file_admin_etag})
+                                    'content': 'kikoolol2', 'name': 'name2'})
     assert file_admin_put.status_code == 401
 
 
@@ -292,14 +285,10 @@ def test_delete_file_as_user(user, admin, jobstate_user_id,
                                 'content': 'kikoolol2', 'name': 'name2'})
     file_user_id = file_user.data['file']['id']
     file_user = user.get('/api/v1/files/%s' % file_user_id)
-    file_etag = file_user.headers.get("ETag")
 
-    file_delete = user.delete('/api/v1/files/%s' % file_user_id,
-                              headers={'If-match': file_etag})
+    file_delete = user.delete('/api/v1/files/%s' % file_user_id)
     assert file_delete.status_code == 204
 
     file_user = admin.get('/api/v1/files/%s' % file_id)
-    file_etag = file_user.headers.get("ETag")
-    file_delete = user.delete('/api/v1/files/%s' % file_id,
-                              headers={'If-match': file_etag})
+    file_delete = user.delete('/api/v1/files/%s' % file_id)
     assert file_delete.status_code == 401

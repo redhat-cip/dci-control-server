@@ -18,7 +18,6 @@ import datetime
 
 import flask
 from flask import json
-from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
@@ -40,12 +39,9 @@ _VALID_EMBED = {'job': models.JOBS,
 def create_jobstates(user):
     values = schemas.jobstate.post(flask.request.json)
 
-    etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
         'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
-        'etag': etag,
         'team_id': user['team_id']
     })
 
@@ -66,8 +62,7 @@ def create_jobstates(user):
         raise dci_exc.DCIConflict('Job', job_id)
 
     result = json.dumps({'jobstate': values})
-    return flask.Response(result, 201, headers={'ETag': etag},
-                          content_type='application/json')
+    return flask.Response(result, 201, content_type='application/json')
 
 
 @api.route('/jobstates', methods=['GET'])
@@ -80,8 +75,7 @@ def get_all_jobstates(user, j_id=None):
 
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE,
-                                 args['limit'], args['offset'])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['limit'], args['offset'])
 
     select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
 
@@ -132,25 +126,18 @@ def get_jobstate_by_id(user, js_id):
 
     jobstate = v1_utils.group_embedded_resources(embed, row)
     res = flask.jsonify({'jobstate': jobstate})
-    res.headers.add_header('ETag', jobstate['etag'])
     return res
 
 
 @api.route('/jobstates/<js_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_jobstate_by_id(user, js_id):
-    # get If-Match header
-    if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
     jobstate = v1_utils.verify_existence_and_get(js_id, _TABLE)
 
     if not(auth.is_admin(user) or auth.is_in_team(user, jobstate['team_id'])):
         raise auth.UNAUTHORIZED
 
-    where_clause = sql.and_(
-        _TABLE.c.id == js_id,
-        _TABLE.c.etag == if_match_etag
-    )
+    where_clause = _TABLE.c.id == js_id
     query = _TABLE.delete().where(where_clause)
 
     result = flask.g.db_conn.execute(query)
