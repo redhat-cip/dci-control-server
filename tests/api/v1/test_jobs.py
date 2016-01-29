@@ -48,6 +48,12 @@ def test_schedule_job_recheck(admin, job_id, remoteci_id):
     job_scheduled = job_scheduled.data['job']
     assert job_scheduled['id'] == job_rechecked['id']
 
+    # all jobstate are dispatched, a new schedule call should not return a new
+    # job but a err 412
+    job_scheduled = admin.post('/api/v1/jobs/schedule',
+                               data={'remoteci_id': remoteci_id})
+    assert job_scheduled.status_code == 412
+
 
 def test_schedule_job_with_remoteci_deactivated(admin, remoteci_id):
     admin.put('/api/v1/remotecis/%s' % remoteci_id, data={'active': False})

@@ -105,6 +105,15 @@ def schedule_jobs(user):
 
     recheck_job = flask.g.db_conn.execute(get_recheck_job_query).fetchone()
     if recheck_job:
+        # Reinit the pending job like if it was a new one
+        query = _TABLE.update().where(_TABLE.c.id == recheck_job.id).values({
+            'created_at': datetime.datetime.utcnow().isoformat(),
+            'updated_at': datetime.datetime.utcnow().isoformat(),
+            'etag': etag,
+            'recheck': False,
+            'status': 'new'
+        })
+        flask.g.db_conn.execute(query)
         return flask.Response(json.dumps({'job': recheck_job}), 201,
                               headers={'ETag': etag},
                               content_type='application/json')
