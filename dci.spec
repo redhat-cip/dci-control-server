@@ -37,8 +37,22 @@ DCI feeders.
 
 %package -n dci-api
 Summary:        DCI control server API
+BuildRequires:  net-tools
 BuildRequires:  python2-devel
 BuildRequires:  python-setuptools
+BuildRequires:  postgresql
+BuildRequires:  postgresql-devel
+BuildRequires:  postgresql-server
+BuildRequires:  python-psycopg2
+BuildRequires:  python-tox
+BuildRequires:  python-alembic
+BuildRequires:  python-flask
+BuildRequires:  python-requests
+BuildRequires:  python-six
+BuildRequires:  python-passlib
+BuildRequires:  gcc
+BuildRequires:  java-1.8.0-openjdk
+BuildRequires:  elasticsearch
 
 Requires:       python-alembic
 Requires:       python-elasticsearch
@@ -75,6 +89,13 @@ rm -rf %{buildroot}/%{python2_sitelib}/sample
 find %{buildroot}/%{python2_sitelib}/*.egg-info -name 'requires.txt' | xargs sed -i '2s/elasticsearch.*/elasticsearch/'
 find %{buildroot}/%{python2_sitelib}/*.egg-info -name 'requires.txt' | xargs sed -i '11s/setuptools.*/setuptools/'
 find %{buildroot}/%{python2_sitelib}/*.egg-info -name 'requires.txt' | xargs sed -i '12s/Werkzeug.*/Werkzeug/'
+sed -i '2s/elasticsearch.*/elasticsearch/' requirements.txt
+sed -i '11s/setuptools.*/setuptools/' requirements.txt
+sed -i '12s/Werkzeug.*/Werkzeug/' requirements.txt
+
+
+%check -n dci-api
+%{__python2} setup.py test
 
 
 %files -n dci-agents
