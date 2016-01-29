@@ -21,6 +21,6 @@ mkdir -p ${DCI_ES_DIR}/config ${DCI_ES_DIR}/logs ${DCI_ES_DIR}/data
 cp -r /usr/share/elasticsearch/* $DCI_ES_DIR/
 echo "network.host: 0.0.0.0" > ${DCI_ES_DIR}/config/elasticsearch.yml
 ${DCI_ES_DIR}/bin/elasticsearch -d
-until $(netstat -lntp | grep -q ":9200 "); do
+until $(ss -lntp | grep -q ":9200 "); do
     sleep 1
 done

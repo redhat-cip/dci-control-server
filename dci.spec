@@ -37,8 +37,22 @@ DCI feeders.
 
 %package -n dci-api
 Summary:        DCI control server API
+BuildRequires:  iproute
 BuildRequires:  python2-devel
 BuildRequires:  python-setuptools
+BuildRequires:  postgresql
+BuildRequires:  postgresql-devel
+BuildRequires:  postgresql-server
+BuildRequires:  python-psycopg2
+BuildRequires:  python-tox
+BuildRequires:  python-alembic
+BuildRequires:  python-flask
+BuildRequires:  python-requests
+BuildRequires:  python-six
+BuildRequires:  python-passlib
+BuildRequires:  gcc
+BuildRequires:  java-1.8.0-openjdk
+BuildRequires:  elasticsearch
 
 Requires:       python-alembic
 Requires:       python-elasticsearch
@@ -76,6 +90,9 @@ find %{buildroot}/%{python2_sitelib}/*.egg-info -name 'requires.txt' | xargs sed
 find %{buildroot}/%{python2_sitelib}/*.egg-info -name 'requires.txt' | xargs sed -i '11s/setuptools.*/setuptools/'
 find %{buildroot}/%{python2_sitelib}/*.egg-info -name 'requires.txt' | xargs sed -i '12s/Werkzeug.*/Werkzeug/'
 
+%check -n dci-api
+tox -e pep8
+tox -e py27
 
 %files -n dci-agents
 %doc
