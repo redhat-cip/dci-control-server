@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7aade967_66e26ed7",
+        "filename": "dci.spec",
+        "patchSetId": 2
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-01-29T16:46:05Z",
+      "side": 1,
+      "message": "I was more think of something like adviced in this document:\nhttps://fedoraproject.org/wiki/Packaging:Python\n\n%check\n%{__python2} setup.py test\n%{__python3} setup.py test\n\nAs soon as we use tox, we lose the ability to ensure the consistency with the dependency RPMs.",
+      "revId": "4da920aa57f0c9d94e85ee4b0422240eb8b53246",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
