@@ -76,7 +76,15 @@ def create_jobs(user):
 @api.route('/jobs/schedule', methods=['POST'])
 @auth.requires_auth
 def schedule_jobs(user):
+    """Dispatch jobs to remotecis.
 
+    The remoteci can use this method to request a new job. The server will try in the
+    following order:
+    - to reuse an existing job associated to the remoteci if the recheck field is True. In
+      this case, the job is reinitialized has if it was a new job.
+    - or to search a jobdefinition that has not been proceeded yet and create a fresh job
+      associated to this jobdefinition and remoteci.
+    """
     values = schemas.job_schedule.post(flask.request.json)
     etag = utils.gen_etag()
     values.update({
@@ -105,6 +113,15 @@ def schedule_jobs(user):
 
     recheck_job = flask.g.db_conn.execute(get_recheck_job_query).fetchone()
     if recheck_job:
+        # Reinit the pending job like if it was a new one
+        query = _TABLE.update().where(_TABLE.c.id == recheck_job.id).values({
+            'created_at': datetime.datetime.utcnow().isoformat(),
+            'updated_at': datetime.datetime.utcnow().isoformat(),
+            'etag': etag,
+            'recheck': False,
+            'status': 'new'
+        })
+        flask.g.db_conn.execute(query)
         return flask.Response(json.dumps({'job': recheck_job}), 201,
                               headers={'ETag': etag},
                               content_type='application/json')
