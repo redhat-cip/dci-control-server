@@ -16,6 +16,24 @@
       "revId": "4da920aa57f0c9d94e85ee4b0422240eb8b53246",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7aade967_066dba04",
+        "filename": "dci.spec",
+        "patchSetId": 2
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-01-31T20:22:05Z",
+      "side": 1,
+      "message": "You\u0027re absolutely right. My bad. Fixed. Thanks for pointing that out.",
+      "parentUuid": "7aade967_66e26ed7",
+      "revId": "4da920aa57f0c9d94e85ee4b0422240eb8b53246",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
