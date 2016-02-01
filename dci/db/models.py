@@ -23,6 +23,11 @@ from dci.common import utils
 
 metadata = sa.MetaData()
 
+USER_ROLES = ['user', 'admin']
+ROLES = sa.Enum(*USER_ROLES, name='roles')
+
+JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run', 'success', 'failure']
+STATUSES = sa.Enum(*JOB_STATUSES, name='statuses')
 
 COMPONENTS = sa.Table(
     'components', metadata,
@@ -139,8 +144,7 @@ JOBS = sa.Table(
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
     sa.Column('recheck', sa.Boolean, default=False),
-    # new, pre-run, running, post-run, success, failure
-    sa.Column('status', sa.String(255), default='new'),
+    sa.Column('status', STATUSES, default='new'),
     sa.Column('jobdefinition_id', sa.String(36),
               sa.ForeignKey('jobdefinitions.id', ondelete="CASCADE"),
               nullable=False),
@@ -162,8 +166,7 @@ JOBSTATES = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
-    # new, pre-run, running, post-run, success, failure
-    sa.Column('status', sa.String(255), nullable=False),
+    sa.Column('status', STATUSES, nullable=False),
     sa.Column('comment', sa.Text),
     sa.Column('job_id', sa.String(36),
               sa.ForeignKey('jobs.id', ondelete="CASCADE"),
@@ -207,7 +210,7 @@ USERS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), unique=True, nullable=False),
     sa.Column('password', sa.Text, nullable=False),
-    sa.Column('role', sa.String(255), default='user', nullable=False),
+    sa.Column('role', ROLES, default=USER_ROLES[0], nullable=False),
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
               nullable=False))

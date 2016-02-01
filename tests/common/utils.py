@@ -32,7 +32,7 @@ TYPE = 'type', text_type
 ETAG = 'etag', text_type
 DATA = 'data', {'foo': 'bar'}
 PASSWORD = 'password', text_type
-ROLE = 'role', text_type
+ROLE = 'role', 'admin'
 URL = 'url', 'http://valid.url'
 STATUS = 'status', text_type
 CONTENT = 'content', text_type
@@ -48,6 +48,9 @@ INVALID_DATA_ERROR = 'data', schemas.INVALID_JSON
 
 INVALID_PASSWORD = 'password', None
 INVALID_PASSWORD_ERROR = 'password', schemas.INVALID_STRING
+
+INVALID_ROLE = 'role', text_type
+INVALID_ROLE_ERROR = 'role', schemas.INVALID_ROLE
 
 INVALID_URL = 'url', text_type
 INVALID_URL_ERROR = 'url', schemas.INVALID_URL

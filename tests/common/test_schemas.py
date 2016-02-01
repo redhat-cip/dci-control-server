@@ -132,9 +132,9 @@ class TestUser(utils.SchemaTesting):
     @staticmethod
     def generate_invalids_and_errors():
         invalids = dict([utils.INVALID_NAME, utils.INVALID_PASSWORD,
-                         utils.INVALID_TEAM])
+                         utils.INVALID_TEAM, utils.INVALID_ROLE])
         errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_TEAM_ERROR,
-                       utils.INVALID_PASSWORD_ERROR])
+                       utils.INVALID_PASSWORD_ERROR, utils.INVALID_ROLE_ERROR])
         return invalids, errors
 
     def test_post_extra_data(self):
