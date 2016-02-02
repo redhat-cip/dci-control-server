@@ -21,20 +21,6 @@ Summary:  DCI Common commands
 DCI common commands.
 
 
-%package -n dci-agents
-Summary:  DCI agents
-
-%description -n dci-agents
-DCI agents
-
-
-%package -n dci-feeders
-Summary:  DCI feeders
-
-%description -n dci-feeders
-DCI feeders.
-
-
 %package -n dci-api
 Summary:        DCI control server API
 BuildRequires:  net-tools
@@ -96,14 +82,6 @@ sed -i '12s/Werkzeug.*/Werkzeug/' requirements.txt
 
 %check -n dci-api
 %{__python2} setup.py test
-
-
-%files -n dci-agents
-%doc
-
-
-%files -n dci-feeders
-%doc
 
 
 %files -n dci-common
