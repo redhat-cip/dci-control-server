@@ -11,7 +11,7 @@ rm -rf ${HOME}/rpmbuild
 mock --clean
 rpmdev-setuptree
 cp ${PROJ_NAME}.spec ${HOME}/rpmbuild/SPECS/
-git archive master --format=tgz --output=${HOME}/rpmbuild/SOURCES/${PROJ_NAME}-0.0.${DATE}git${SHA}.tgz
+git archive HEAD --format=tgz --output=${HOME}/rpmbuild/SOURCES/${PROJ_NAME}-0.0.${DATE}git${SHA}.tgz
 sed -i "s/VERS/${DATE}git${SHA}/g" ${HOME}/rpmbuild/SPECS/${PROJ_NAME}.spec
 rpmbuild -bs ${HOME}/rpmbuild/SPECS/${PROJ_NAME}.spec
 
