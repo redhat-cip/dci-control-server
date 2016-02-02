@@ -29,6 +29,7 @@ def index():
                           content_type='application/json')
 
 
+import dci.api.v1.audits #noqa
 import dci.api.v1.components  # noqa
 import dci.api.v1.files  # noqa
 import dci.api.v1.jobdefinitions  # noqa
