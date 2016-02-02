@@ -255,6 +255,21 @@ def upgrade():
         sa.UniqueConstraint('user_id', 'remoteci_id')
     )
 
+    op.create_table(
+        'logs',
+        sa.Column('id', sa.String(36), primary_key=True,
+                  default=utils.gen_uuid),
+        sa.Column('created_at', sa.DateTime(),
+                  default=datetime.datetime.utcnow, nullable=False),
+        sa.Column('user_id', sa.String(36),
+                  sa.ForeignKey('users.id', ondelete="CASCADE"),
+                  nullable=False),
+        sa.Column('team_id', sa.String(36),
+                  sa.ForeignKey('teams.id', ondelete="CASCADE"),
+                  nullable=False),
+        sa.Column('action', sa.Text, nullable=False)
+    )
+
 
 def downgrade():
     pass

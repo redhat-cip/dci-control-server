@@ -264,3 +264,15 @@ search = {
 }
 
 search = schema_factory(search)
+
+###############################################################################
+#                                                                             #
+#                               Audit schemas                                 #
+#                                                                             #
+###############################################################################
+
+audit = {
+    v.Optional('limit', default=10): int
+}
+
+audit = schema_factory(audit)
