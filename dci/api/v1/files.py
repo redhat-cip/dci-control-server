@@ -43,12 +43,9 @@ _VALID_EMBED = {
 def create_files(user):
     values = schemas.file.post(flask.request.json)
 
-    etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
         'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
-        'etag': etag,
         'team_id': user['team_id']
     })
 
@@ -57,15 +54,13 @@ def create_files(user):
     flask.g.db_conn.execute(query)
     flask.g.es_conn.index(values)
     result = json.dumps({'file': values})
-    return flask.Response(result, 201, headers={'ETag': etag},
-                          content_type='application/json')
+    return flask.Response(result, 201, content_type='application/json')
 
 
 @api.route('/files/<file_id>', methods=['PUT'])
 @auth.requires_auth
 def put_file(user, file_id):
     # get If-Match header
-    if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.file.put(flask.request.json)
 
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
@@ -74,9 +69,7 @@ def put_file(user, file_id):
     if not(auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
-    values['etag'] = utils.gen_etag()
-    where_clause = sql.and_(_TABLE.c.id == file_id,
-                            _TABLE.c.etag == if_match_etag)
+    where_clause = _TABLE.c.id == file_id
     query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
@@ -84,8 +77,7 @@ def put_file(user, file_id):
     if not result.rowcount:
         raise dci_exc.DCIConflict('File', file_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    return flask.Response(None, 204, content_type='application/json')
 
 
 @api.route('/files', methods=['GET'])
@@ -145,7 +137,6 @@ def get_file_by_id_or_name(user, file_id):
 
     dfile = v1_utils.group_embedded_resources(embed, row)
     result = json.jsonify({'file': dfile})
-    result.headers.add_header('ETag', dfile['etag'])
     return result
 
 
@@ -153,17 +144,13 @@ def get_file_by_id_or_name(user, file_id):
 @auth.requires_auth
 def delete_file_by_id(user, file_id):
     # get If-Match header
-    if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
     if not(auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
-    )
+    where_clause = sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
     query = _TABLE.delete().where(where_clause)
 
     result = flask.g.db_conn.execute(query)

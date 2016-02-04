@@ -39,13 +39,10 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 @api.route('/tests', methods=['POST'])
 @auth.requires_auth
 def create_tests(user):
-    etag = utils.gen_etag()
     data_json = schemas.test.post(flask.request.json)
     data_json.update({
         'id': utils.gen_uuid(),
         'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
-        'etag': etag
     })
 
     query = _TABLE.insert().values(**data_json)
@@ -55,7 +52,7 @@ def create_tests(user):
         raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
 
     return flask.Response(
-        json.dumps({'test': data_json}), 201, headers={'ETag': etag},
+        json.dumps({'test': data_json}), 201,
         content_type='application/json'
     )
 
@@ -82,7 +79,6 @@ def get_all_tests(user):
 def get_test_by_id_or_name(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
     res = flask.jsonify({'test': test})
-    res.headers.add_header('ETag', test['etag'])
     return res
 
 
@@ -96,17 +92,11 @@ def get_jobdefinitions_by_test(user, test_id):
 @api.route('/tests/<t_id>', methods=['PUT'])
 @auth.requires_auth
 def put_test(user, t_id):
-    # get If-Match header
-    if_match_etag = utils.check_and_get_etag(flask.request.headers)
     data_json = schemas.test.put(flask.request.json)
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
-    data_json['etag'] = utils.gen_etag()
 
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id),
-    )
+    where_clause = sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
     query = _TABLE.update().where(where_clause).values(**data_json)
 
     result = flask.g.db_conn.execute(query)
@@ -114,22 +104,16 @@ def put_test(user, t_id):
     if not result.rowcount:
         raise dci_exc.DCIConflict('Test', t_id)
 
-    return flask.Response(None, 204, headers={'ETag': data_json['etag']},
-                          content_type='application/json')
+    return flask.Response(None, 204, content_type='application/json')
 
 
 @api.route('/tests/<t_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_test_by_id_or_name(user, t_id):
-    # get If-Match header
-    if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
 
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
-    )
+    where_clause = sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
     query = _TABLE.delete().where(where_clause)
     result = flask.g.db_conn.execute(query)
 

@@ -96,10 +96,8 @@ def test_get_all_tests_with_pagination(admin):
 
 def test_get_all_tests_with_sort(admin):
     # create 2 tests ordered by created time
-    t_1 = admin.post('/api/v1/tests',
-                     data={'name': 'pname1'}).data['test']
-    t_2 = admin.post('/api/v1/tests',
-                     data={'name': 'pname2'}).data['test']
+    t_1 = admin.post('/api/v1/tests', data={'name': 'pname1'}).data['test']
+    t_2 = admin.post('/api/v1/tests', data={'name': 'pname2'}).data['test']
 
     gts = admin.get('/api/v1/tests?sort=created_at').data
     assert gts['tests'] == [t_1, t_2]
@@ -110,8 +108,7 @@ def test_get_all_tests_with_sort(admin):
 
 
 def test_get_test_by_id_or_name(admin):
-    pt = admin.post('/api/v1/tests',
-                    data={'name': 'pname'}).data
+    pt = admin.post('/api/v1/tests', data={'name': 'pname'}).data
     pt_id = pt['test']['id']
 
     # get by uuid
@@ -138,14 +135,10 @@ def test_put_tests(admin):
     pt = admin.post('/api/v1/tests', data={'name': 'pname'})
     assert pt.status_code == 201
 
-    pt_etag = pt.headers.get("ETag")
-
     gt = admin.get('/api/v1/tests/pname')
     assert gt.status_code == 200
 
-    ppt = admin.put('/api/v1/tests/pname',
-                    data={'name': 'nname'},
-                    headers={'If-match': pt_etag})
+    ppt = admin.put('/api/v1/tests/pname', data={'name': 'nname'})
     assert ppt.status_code == 204
 
     gt = admin.get('/api/v1/tests/pname')
@@ -156,17 +149,14 @@ def test_put_tests(admin):
 
 
 def test_delete_test_by_id(admin):
-    pt = admin.post('/api/v1/tests',
-                    data={'name': 'pname'})
-    pt_etag = pt.headers.get("ETag")
+    pt = admin.post('/api/v1/tests', data={'name': 'pname'})
     pt_id = pt.data['test']['id']
     assert pt.status_code == 201
 
     created_t = admin.get('/api/v1/tests/%s' % pt_id)
     assert created_t.status_code == 200
 
-    deleted_t = admin.delete('/api/v1/tests/%s' % pt_id,
-                             headers={'If-match': pt_etag})
+    deleted_t = admin.delete('/api/v1/tests/%s' % pt_id)
     assert deleted_t.status_code == 204
 
     gt = admin.get('/api/v1/tests/%s' % pt_id)
@@ -174,6 +164,5 @@ def test_delete_test_by_id(admin):
 
 
 def test_delete_test_not_found(admin):
-    result = admin.delete('/api/v1/tests/ptdr',
-                          headers={'If-match': 'mdr'})
+    result = admin.delete('/api/v1/tests/ptdr')
     assert result.status_code == 404

@@ -37,13 +37,10 @@ _C_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 @api.route('/components', methods=['POST'])
 @auth.requires_auth
 def create_components(user):
-    etag = utils.gen_etag()
     values = schemas.component.post(flask.request.json)
     values.update({
         'id': utils.gen_uuid(),
         'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
-        'etag': etag
     })
 
     query = _TABLE.insert().values(**values)
@@ -54,8 +51,7 @@ def create_components(user):
         raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
 
     result = json.dumps({'component': values})
-    return flask.Response(result, 201, headers={'ETag': etag},
-                          content_type='application/json')
+    return flask.Response(result, 201, content_type='application/json')
 
 
 @api.route('/components', methods=['GET'])
@@ -97,7 +93,6 @@ def get_component_by_id_or_name(user, c_id):
         raise dci_exc.DCINotFound('Component', c_id)
 
     res = flask.jsonify({'component': component})
-    res.headers.add_header('ETag', component['etag'])
     return res
 
 
@@ -105,14 +100,10 @@ def get_component_by_id_or_name(user, c_id):
 @auth.requires_auth
 def delete_component_by_id_or_name(user, c_id):
     # get If-Match header
-    if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     v1_utils.verify_existence_and_get(c_id, _TABLE)
 
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == c_id, _TABLE.c.name == c_id)
-    )
+    where_clause = sql.or_(_TABLE.c.id == c_id, _TABLE.c.name == c_id)
 
     query = _TABLE.delete().where(where_clause)
 
