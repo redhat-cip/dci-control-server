@@ -193,5 +193,18 @@ JOIN_USER_REMOTECIS = sa.Table(
               nullable=False, primary_key=True),
     sa.Column('remoteci_id', sa.String(36),
               sa.ForeignKey('remotecis.id', ondelete="CASCADE"),
-              nullable=False, primary_key=True)
-)
+              nullable=False, primary_key=True))
+
+LOGS = sa.Table(
+    'logs', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('user_id', sa.String(36),
+              sa.ForeignKey('users.id', ondelete="CASCADE"),
+              nullable=False),
+    sa.Column('team_id', sa.String(36),
+              sa.ForeignKey('teams.id', ondelete="CASCADE"),
+              nullable=False),
+    sa.Column('action', sa.Text, nullable=False))
