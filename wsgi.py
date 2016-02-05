@@ -17,6 +17,9 @@
 
 # This file is OpenShift entry point
 
+# test
+#
+
 import dci.app
 import dci.dci_config
 
