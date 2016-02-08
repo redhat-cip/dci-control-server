@@ -4,8 +4,13 @@ PROJ_NAME=dci
 DATE=$(date +%Y%m%d%H%M)
 SHA=$(git rev-parse HEAD | cut -c1-8)
 
-# Create the proper filesystem hierarchy to proceed with srpm creatioon
+
+# Configure rpmmacros to enable signing packages
 #
+echo '%_signature gpg' >> ~/.rpmmacros
+echo '%_gpg_name Distributed-CI' >> ~/.rpmmacros
+
+# Create the proper filesystem hierarchy to proceed with srpm creatioon
 #
 rm -rf ${HOME}/rpmbuild
 mock --clean
@@ -31,7 +36,12 @@ sed -i '$ibaseurl=http://dci.enovance.com/repos/extras/el/7/x86_64/' ${HOME}/.mo
 sed -i '$igpgcheck=0' ${HOME}/.mock/${arch}-with-es.cfg
 sed -i '$ienabled=1' ${HOME}/.mock/${arch}-with-es.cfg
 
-
+# NOTE(spredzy) Add signing options
+#
+sed -i "\$aconfig_opts['plugin_conf']['sign_enable'] = True" ${HOME}/.mock/${arch}-with-es.cfg
+sed -i "\$aconfig_opts['plugin_conf']['sign_opts'] = {}" ${HOME}/.mock/${arch}-with-es.cfg
+sed -i "\$aconfig_opts['plugin_conf']['sign_opts']['cmd'] = 'rpmsign'" ${HOME}/.mock/${arch}-with-es.cfg
+sed -i "\$aconfig_opts['plugin_conf']['sign_opts']['opts'] = '--addsign %(rpms)s'" ${HOME}/.mock/${arch}-with-es.cfg
 
 # Build the RPMs in a clean chroot environment with mock to detect missing
 # BuildRequires lines.

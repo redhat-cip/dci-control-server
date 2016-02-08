@@ -1,0 +1,7 @@
+#!/usr/bin/expect
+
+set timeout 3600
+spawn ./build_rpm.sh
+expect "Enter pass phrase: "
+send -- "\r"
+expect eof
