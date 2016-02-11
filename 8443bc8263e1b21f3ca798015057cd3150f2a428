@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a4c51b2_fcc7c962",
+        "filename": "dci/alembic/versions/07630dc60809_database_initialization.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 257,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-02-11T15:33:04Z",
+      "side": 1,
+      "message": "this is not the right place for creating new tables, run \n\n    alembic revision -m \"create logs table\"\n\nin the alembic directory then add this in the file generated",
+      "revId": "8443bc8263e1b21f3ca798015057cd3150f2a428",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
