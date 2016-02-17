@@ -46,6 +46,31 @@ COMPONENTS = sa.Table(
     sa.Column('git', sa.Text),
     sa.Column('ref', sa.Text))
 
+
+TOPICS = sa.Table(
+    'topics', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), unique=True, nullable=False)
+)
+
+JOINS_TOPICS_TEAMS = sa.Table(
+    'topics_teams', metadata,
+    sa.Column('topic_id', sa.String(36),
+              sa.ForeignKey('topics.id', ondelete="CASCADE"),
+              nullable=False, primary_key=True),
+    sa.Column('team_id', sa.String(36),
+              sa.ForeignKey('teams.id', ondelete="CASCADE"),
+              nullable=False, primary_key=True)
+)
+
 TESTS = sa.Table(
     'tests', metadata,
     sa.Column('id', sa.String(36), primary_key=True,
