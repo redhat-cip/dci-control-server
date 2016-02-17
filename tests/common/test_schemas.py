@@ -471,6 +471,40 @@ class TestFile(utils.SchemaTesting):
         super(TestFile, self).test_put(self.data, data_expected)
 
 
+class TestTopic(utils.SchemaTesting):
+    schema = schemas.topic
+    data = dict([utils.NAME])
+
+    @staticmethod
+    def generate_invalids_and_errors():
+        invalids = dict([utils.INVALID_NAME])
+        errors = dict([utils.INVALID_NAME_ERROR])
+        return invalids, errors
+
+    def test_post_extra_data(self):
+        super(TestTopic, self).test_post(self.data, self.data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name')
+        super(TestTopic, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids, errors = TestTopic.generate_invalids_and_errors()
+        super(TestTopic, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestTopic, self).test_post(self.data, self.data)
+
+    def test_put_extra_data(self):
+        pass
+
+    def test_put_invalid_data(self):
+        pass
+
+    def test_put(self):
+        pass
+
+
 class TestArgs(object):
     data = {
         'limit': '50',
