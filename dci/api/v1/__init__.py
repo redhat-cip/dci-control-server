@@ -39,4 +39,5 @@ import dci.api.v1.remotecis  # noqa
 import dci.api.v1.search  # noqa
 import dci.api.v1.teams  # noqa
 import dci.api.v1.tests  # noqa
+import dci.api.v1.topics  # noqa
 import dci.api.v1.users  # noqa
