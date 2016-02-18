@@ -65,9 +65,7 @@ def create_jobdefinitions(user):
                           content_type='application/json')
 
 
-@api.route('/jobdefinitions', methods=['GET'])
-@auth.requires_auth
-def get_all_jobdefinitions(user, t_id=None):
+def get_all_jobdefinitions(user, topic_id):
     """Get all jobdefinitions.
 
     If t_id is not None, then return all the jobdefinitions with a test
@@ -87,10 +85,7 @@ def get_all_jobdefinitions(user, t_id=None):
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _JD_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _JD_COLUMNS)
-
-    # used for counting the number of rows when t_id is not None
-    if t_id is not None:
-        q_bd.where.append(_TABLE.c.test_id == t_id)
+    q_bd.where.append(_TABLE.c.topic_id == topic_id)
 
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
