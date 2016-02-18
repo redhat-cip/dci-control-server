@@ -109,7 +109,7 @@ DATA = {
 }
 
 
-def create_remote_cis(db_conn, company, tests):
+def create_remote_cis(db_conn, company, tests, topic_id):
     # create 3 remote CIS per company (one for each test)
     remote_cis = {}
 
@@ -144,7 +144,8 @@ def create_remote_cis(db_conn, company, tests):
             job_definition = {
                 'name': job_definition_name,
                 'priority': random.randint(0, 10) * 100,
-                'test_id': tests[test_name]
+                'test_id': tests[test_name],
+                'topic_id': topic_id
             }
             job_definition['id'] = db_insert(db_conn, models.JOBDEFINITIONS,
                                              **job_definition)
@@ -320,6 +321,8 @@ def lorem():
 def init_db(db_conn):
     db_ins = functools.partial(db_insert, db_conn)
 
+    topic_id = db_ins(models.TOPICS, name="the_topic")
+
     components = []
     for component in COMPONENTS:
         component_type = random.choice(COMPONENT_TYPES)
@@ -342,13 +345,15 @@ def init_db(db_conn):
                 'title': project,
                 'message': lorem(),
                 'url': url % (project_slug, commit),
-                'ref': ''
+                'ref': '',
+                'topic_id': topic_id
             }
             components.append(db_ins(models.COMPONENTS, **attrs))
 
     tests = {}
     for test in TESTS:
-        tests[test] = db_ins(models.TESTS, name=test, data=DATA)
+        tests[test] = db_ins(models.TESTS, name=test, data=DATA,
+                             topic_id=topic_id)
 
     # Create the super admin user
     admin_team = db_ins(models.TEAMS, name='admin')
@@ -372,7 +377,7 @@ def init_db(db_conn):
         c['user'] = db_ins(models.USERS, **user)
         c['admin'] = db_ins(models.USERS, **admin)
 
-        remote_cis = create_remote_cis(db_conn, c, tests)
+        remote_cis = create_remote_cis(db_conn, c, tests, topic_id)
         jobs = create_jobs(db_conn, c['id'], remote_cis)
         # flatten job_definitions
         job_definitions = [jd for jds in remote_cis.values() for jd in jds]
