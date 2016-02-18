@@ -344,19 +344,20 @@ class TestJob(utils.SchemaTesting):
 
 class TestJobSchedule(utils.SchemaTesting):
     schema = schemas.job_schedule
-    data = dict([utils.REMOTE_CI])
+    data = dict([utils.REMOTE_CI, utils.TOPIC])
 
     @staticmethod
     def generate_invalids_and_errors():
-        invalids = dict([utils.INVALID_REMOTE_CI])
-        errors = dict([utils.INVALID_REMOTE_CI_ERROR])
+        invalids = dict([utils.INVALID_REMOTE_CI, utils.INVALID_TOPIC])
+        errors = dict([utils.INVALID_REMOTE_CI_ERROR,
+                       utils.INVALID_TOPIC_ERROR])
         return invalids, errors
 
     def test_post_extra_data(self):
         super(TestJobSchedule, self).test_post(self.data, self.data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('remoteci_id')
+        errors = utils.generate_errors('remoteci_id', 'topic_id')
         super(TestJobSchedule, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
