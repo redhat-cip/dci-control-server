@@ -43,6 +43,7 @@ INVALID_PRIORITY = 'not a valid priority integer (must be beetween 0 and 1000)'
 
 INVALID_TEAM = 'not a valid team id'
 INVALID_TEST = 'not a valid test id'
+INVALID_TOPIC = 'not a valid topic id'
 INVALID_JOB_DEFINITION = 'not a valid jobdefinition id'
 INVALID_REMOTE_CI = 'not a valid remoteci id'
 INVALID_JOB = 'not a valid job id'
@@ -142,7 +143,9 @@ role = schema_factory(base)
 #                                                                             #
 ###############################################################################
 
-test = schema_factory(utils.dict_merge(base, DATA_FIELD))
+test = schema_factory(utils.dict_merge(base, DATA_FIELD, {
+    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC)
+}))
 
 ###############################################################################
 #                                                                             #
@@ -172,7 +175,8 @@ component = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('ref', default=None): six.text_type,
     v.Optional('canonical_project_name', default=None): six.text_type,
     v.Optional('url', default=None): Url(),
-    'type': six.text_type
+    'type': six.text_type,
+    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC)
 })
 
 component = schema_factory(component)
@@ -187,7 +191,8 @@ jobdefinition = utils.dict_merge(base, {
     'test_id': v.Any(UUID_FIELD, msg=INVALID_TEST),
     v.Optional('priority', default=0): v.All(
         int, v.Range(min=0, max=1000), msg=INVALID_PRIORITY
-    )
+    ),
+    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC)
 })
 
 jobdefinition = schema_factory(jobdefinition)
