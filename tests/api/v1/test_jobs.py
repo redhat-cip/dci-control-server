@@ -30,9 +30,11 @@ def test_create_jobs(admin, jobdefinition_id, team_id, remoteci_id):
     assert job.status_code == 200
 
 
-def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id):
+def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id,
+                       topic_id):
     job = admin.post('/api/v1/jobs/schedule',
-                     data={'remoteci_id': remoteci_id})
+                     data={'remoteci_id': remoteci_id,
+                           'topic_id': topic_id})
     assert job.status_code == 201
     job = job.data['job']
     assert job['jobdefinition_id'] == jobdefinition_id
@@ -40,10 +42,11 @@ def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id):
     assert job['remoteci_id'] == remoteci_id
 
 
-def test_schedule_job_recheck(admin, job_id, remoteci_id):
+def test_schedule_job_recheck(admin, job_id, remoteci_id, topic_id):
     job_rechecked = admin.post('/api/v1/jobs/%s/recheck' % job_id).data['job']
     job_scheduled = admin.post('/api/v1/jobs/schedule',
-                               data={'remoteci_id': remoteci_id})
+                               data={'remoteci_id': remoteci_id,
+                                     'topic_id': topic_id})
     assert job_scheduled.status_code == 201
     job_scheduled = job_scheduled.data['job']
     assert job_scheduled['id'] == job_rechecked['id']
@@ -51,14 +54,58 @@ def test_schedule_job_recheck(admin, job_id, remoteci_id):
     # all jobstate are dispatched, a new schedule call should not return a new
     # job but a err 412
     job_scheduled = admin.post('/api/v1/jobs/schedule',
-                               data={'remoteci_id': remoteci_id})
+                               data={'remoteci_id': remoteci_id,
+                                     'topic_id': topic_id})
     assert job_scheduled.status_code == 412
 
 
-def test_schedule_job_with_remoteci_deactivated(admin, remoteci_id):
+def test_schedule_job_with_new_topic(admin, remoteci_id, team_admin_id):
+    # create a new topic and schedule a new job
+    data = {'name': 'new_topic'}
+    pt = admin.post('/api/v1/topics', data=data).data
+    new_topic_id = pt['topic']['id']
+
+    # The team does not belongs to topic yet
+    job_scheduled = admin.post('/api/v1/jobs/schedule',
+                               data={'remoteci_id': remoteci_id,
+                                     'topic_id': new_topic_id})
+    assert job_scheduled.status_code == 412
+
+    # Add the team to the topic
+    admin.post('/api/v1/topics/%s/teams' % new_topic_id,
+               data={'team_id': team_admin_id})
+
+    # There is no jobdefinition for this topic yet
+    job_scheduled = admin.post('/api/v1/jobs/schedule',
+                               data={'remoteci_id': remoteci_id,
+                                     'topic_id': new_topic_id})
+    assert job_scheduled.status_code == 412
+
+    # Create a jobdefinition for this topic
+    new_test = admin.post('/api/v1/tests',
+                          data={'name': 'pname',
+                                'topic_id': new_topic_id}).data
+    new_test_id = new_test['test']['id']
+
+    jd = admin.post('/api/v1/jobdefinitions',
+                    data={'name': 'pname', 'test_id': new_test_id,
+                          'topic_id': new_topic_id}).data
+    jd_id = jd['jobdefinition']['id']
+
+    # now schedule a job on that new topic
+    job_scheduled = admin.post('/api/v1/jobs/schedule',
+                               data={'remoteci_id': remoteci_id,
+                                     'topic_id': new_topic_id})
+    assert job_scheduled.status_code == 201
+    job = job_scheduled.data['job']
+    assert job['jobdefinition_id'] == jd_id
+
+
+def test_schedule_job_with_remoteci_deactivated(admin, remoteci_id, topic_id):
     admin.put('/api/v1/remotecis/%s' % remoteci_id, data={'active': False})
     job_scheduled = admin.post('/api/v1/jobs/schedule',
-                               data={'remoteci_id': remoteci_id})
+                               data={'remoteci_id': remoteci_id,
+                                     'topic_id': topic_id})
     assert job_scheduled.status_code == 412
 
 

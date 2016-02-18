@@ -87,6 +87,7 @@ def schedule_jobs(user):
       a fresh job associated to this jobdefinition and remoteci.
     """
     values = schemas.job_schedule.post(flask.request.json)
+    topic_id = values.pop('topic_id')
     etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
@@ -98,6 +99,7 @@ def schedule_jobs(user):
     })
     rci_id = values.get('remoteci_id')
     remoteci = v1_utils.verify_existence_and_get(rci_id, models.REMOTECIS)
+    v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
 
     if remoteci['active'] is False:
         message = 'RemoteCI "%s" is not activated.' % rci_id
@@ -127,15 +129,31 @@ def schedule_jobs(user):
                               headers={'ETag': etag},
                               content_type='application/json')
 
+    # Verify that the team of the user belongs to the topic
+    belongs_to_topic_q = (
+        sqlalchemy.sql.select([models.JOINS_TOPICS_TEAMS.c.team_id]).where(
+            sqlalchemy.sql.expression.and_(
+                models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id'],  # noqa
+                models.JOINS_TOPICS_TEAMS.c.topic_id == topic_id  # noqa
+            )))
+    belongs_to_topic = flask.g.db_conn.execute(belongs_to_topic_q).fetchone()
+    if not belongs_to_topic:
+        raise dci_exc.DCIException('User team does not belongs to topic %s.'
+                                   % topic_id, status_code=412)
+    # The user belongs to the topic then we can start the scheduling
+
     # Subquery, get all the jobdefinitions which have been run by this remoteci
     sub_query = (sqlalchemy.sql
                  .select([_TABLE.c.jobdefinition_id])
                  .where(_TABLE.c.remoteci_id == rci_id))
 
     # Get one jobdefinition which has not been run by this remoteci
-    where_clause = sqlalchemy.sql.expression.not_(
-        models.JOBDEFINITIONS.c.id.in_(sub_query)
+    where_clause = sqlalchemy.sql.expression.and_(
+        sqlalchemy.sql.expression.not_(
+            models.JOBDEFINITIONS.c.id.in_(sub_query)),
+        models.JOBDEFINITIONS.c.topic_id == topic_id  # noqa
     )
+
     query = (sqlalchemy.sql.select([models.JOBDEFINITIONS.c.id])
              .where(where_clause)
              .order_by(sqlalchemy.sql.asc(models.JOBDEFINITIONS.c.priority))
