@@ -17,20 +17,21 @@
 from __future__ import unicode_literals
 
 
-def test_create_jobdefinitions(admin, test_id):
+def test_create_jobdefinitions(admin, test_id, topic_id):
     jd = admin.post('/api/v1/jobdefinitions',
-                    data={'name': 'pname', 'test_id': test_id}).data
+                    data={'name': 'pname', 'test_id': test_id,
+                          'topic_id': topic_id}).data
     jd_id = jd['jobdefinition']['id']
     jd = admin.get('/api/v1/jobdefinitions/%s' % jd_id).data
     assert jd['jobdefinition']['name'] == 'pname'
 
 
-def test_get_all_jobdefinitions(admin, test_id):
-    data = {'name': 'pname1', 'test_id': test_id}
+def test_get_all_jobdefinitions(admin, test_id, topic_id):
+    data = {'name': 'pname1', 'test_id': test_id, 'topic_id': topic_id}
     jd_1 = admin.post('/api/v1/jobdefinitions', data=data).data
     jd_1_id = jd_1['jobdefinition']['id']
 
-    data = {'name': 'pname2', 'test_id': test_id}
+    data = {'name': 'pname2', 'test_id': test_id, 'topic_id': topic_id}
     jd_2 = admin.post('/api/v1/jobdefinitions', data=data).data
     jd_2_id = jd_2['jobdefinition']['id']
 
@@ -41,15 +42,15 @@ def test_get_all_jobdefinitions(admin, test_id):
     assert db_all_jds_ids == [jd_1_id, jd_2_id]
 
 
-def test_get_all_jobdefinitions_with_pagination(admin, test_id):
+def test_get_all_jobdefinitions_with_pagination(admin, test_id, topic_id):
     # create 4 jobdefinition types and check meta count
-    data = {'name': 'pname1', 'test_id': test_id}
+    data = {'name': 'pname1', 'test_id': test_id, 'topic_id': topic_id}
     admin.post('/api/v1/jobdefinitions', data=data)
-    data = {'name': 'pname2', 'test_id': test_id}
+    data = {'name': 'pname2', 'test_id': test_id, 'topic_id': topic_id}
     admin.post('/api/v1/jobdefinitions', data=data)
-    data = {'name': 'pname3', 'test_id': test_id}
+    data = {'name': 'pname3', 'test_id': test_id, 'topic_id': topic_id}
     admin.post('/api/v1/jobdefinitions', data=data)
-    data = {'name': 'pname4', 'test_id': test_id}
+    data = {'name': 'pname4', 'test_id': test_id, 'topic_id': topic_id}
     admin.post('/api/v1/jobdefinitions', data=data)
 
     # check meta count
@@ -69,11 +70,11 @@ def test_get_all_jobdefinitions_with_pagination(admin, test_id):
     assert jds.data['jobdefinitions'] == []
 
 
-def test_get_all_jobdefinitions_with_embed(admin, test_id):
+def test_get_all_jobdefinitions_with_embed(admin, test_id, topic_id):
     # create 2 jobdefinition and check meta data count
-    data = {'name': 'pname1', 'test_id': test_id}
+    data = {'name': 'pname1', 'test_id': test_id, 'topic_id': topic_id}
     admin.post('/api/v1/jobdefinitions', data=data)
-    data = {'name': 'pname2', 'test_id': test_id}
+    data = {'name': 'pname2', 'test_id': test_id, 'topic_id': topic_id}
     admin.post('/api/v1/jobdefinitions', data=data)
 
     # verify embed
@@ -90,8 +91,8 @@ def test_get_all_jobdefinitions_with_embed_not_valid(admin, test_id):
     assert jds.status_code == 400
 
 
-def test_get_all_jobdefinitions_with_where(admin, test_id):
-    data = {'name': 'pname1', 'test_id': test_id}
+def test_get_all_jobdefinitions_with_where(admin, test_id, topic_id):
+    data = {'name': 'pname1', 'test_id': test_id, 'topic_id': topic_id}
     pjd = admin.post('/api/v1/jobdefinitions', data=data).data
     pjd_id = pjd['jobdefinition']['id']
 
@@ -117,9 +118,10 @@ def test_where_invalid(admin):
     }
 
 
-def test_get_jobdefinition_by_id_or_name(admin, test_id):
+def test_get_jobdefinition_by_id_or_name(admin, test_id, topic_id):
     pjd = admin.post('/api/v1/jobdefinitions',
-                     data={'name': 'pname', 'test_id': test_id}).data
+                     data={'name': 'pname', 'test_id': test_id,
+                           'topic_id': topic_id}).data
     pjd_id = pjd['jobdefinition']['id']
 
     # get by uuid
@@ -142,8 +144,8 @@ def test_get_jobdefinition_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_jobdefinition_by_id(admin, test_id):
-    data = {'name': 'pname', 'test_id': test_id}
+def test_delete_jobdefinition_by_id(admin, test_id, topic_id):
+    data = {'name': 'pname', 'test_id': test_id, 'topic_id': topic_id}
     pjd = admin.post('/api/v1/jobdefinitions', data=data)
     pct_etag = pjd.headers.get("ETag")
     pjd_id = pjd.data['jobdefinition']['id']
@@ -161,20 +163,24 @@ def test_delete_jobdefinition_by_id(admin, test_id):
     assert gjd.status_code == 404
 
 
-def test_get_all_jobdefinitions_with_sort(admin, test_id):
+def test_get_all_jobdefinitions_with_sort(admin, test_id, topic_id):
     # create 4 jobdefinitions ordered by created time
     jd_1_1 = admin.post('/api/v1/jobdefinitions',
                         data={'name': "pname1", 'priority': 0,
-                              'test_id': test_id}).data['jobdefinition']
+                              'test_id': test_id,
+                              'topic_id': topic_id}).data['jobdefinition']
     jd_1_2 = admin.post('/api/v1/jobdefinitions',
                         data={'name': "pname2", 'priority': 0,
-                              'test_id': test_id}).data['jobdefinition']
+                              'test_id': test_id,
+                              'topic_id': topic_id}).data['jobdefinition']
     jd_2_1 = admin.post('/api/v1/jobdefinitions',
                         data={'name': "pname3", 'priority': 1,
-                              'test_id': test_id}).data['jobdefinition']
+                              'test_id': test_id,
+                              'topic_id': topic_id}).data['jobdefinition']
     jd_2_2 = admin.post('/api/v1/jobdefinitions',
                         data={'name': "pname4", 'priority': 1,
-                              'test_id': test_id}).data['jobdefinition']
+                              'test_id': test_id,
+                              'topic_id': topic_id}).data['jobdefinition']
 
     jds = admin.get('/api/v1/jobdefinitions?sort=created_at').data
     assert jds['jobdefinitions'] == [jd_1_1, jd_1_2, jd_2_1, jd_2_2]
@@ -184,9 +190,9 @@ def test_get_all_jobdefinitions_with_sort(admin, test_id):
     assert jds['jobdefinitions'] == [jd_1_2, jd_1_1, jd_2_2, jd_2_1]
 
 
-def test_get_jobdefinition_with_embed(admin, test_id):
+def test_get_jobdefinition_with_embed(admin, test_id, topic_id):
     pt = admin.get('/api/v1/tests/%s' % test_id).data
-    data = {'name': 'pname', 'test_id': test_id}
+    data = {'name': 'pname', 'test_id': test_id, 'topic_id': topic_id}
     pjd = admin.post('/api/v1/jobdefinitions', data=data).data
     del pjd['jobdefinition']['test_id']
     pjd['jobdefinition'][u'test'] = pt['test']
@@ -208,14 +214,14 @@ def test_delete_jobdefinition_not_found(admin):
 
 
 # Tests for jobdefinition and components management
-def test_add_component_to_jobdefinitions_and_get(admin, test_id):
+def test_add_component_to_jobdefinitions_and_get(admin, test_id, topic_id):
     # create a jobdefinition
-    data = {'name': 'pname', 'test_id': test_id}
+    data = {'name': 'pname', 'test_id': test_id, 'topic_id': topic_id}
     pjd = admin.post('/api/v1/jobdefinitions', data=data).data
     pjd_id = pjd['jobdefinition']['id']
 
     # create a component
-    data = {'name': 'pname', 'type': 'gerrit_review'}
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
 
@@ -230,14 +236,14 @@ def test_add_component_to_jobdefinitions_and_get(admin, test_id):
     assert component_from_jobdefinition['components'][0] == pc['component']
 
 
-def test_delete_component_from_jobdefinition(admin, test_id):
+def test_delete_component_from_jobdefinition(admin, test_id, topic_id):
     # create a jobdefinition
-    data = {'name': 'pname', 'test_id': test_id}
+    data = {'name': 'pname', 'test_id': test_id, 'topic_id': topic_id}
     pjd = admin.post('/api/v1/jobdefinitions', data=data).data
     pjd_id = pjd['jobdefinition']['id']
 
     # create a component
-    data = {'name': 'pname', 'type': 'gerrit_review'}
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
 

@@ -89,24 +89,6 @@ def get_jobdefinitions_by_test(user, test_id):
     return jobdefinitions.get_all_jobdefinitions(test['id'])
 
 
-@api.route('/tests/<t_id>', methods=['PUT'])
-@auth.requires_auth
-def put_test(user, t_id):
-    data_json = schemas.test.put(flask.request.json)
-
-    v1_utils.verify_existence_and_get(t_id, _TABLE)
-
-    where_clause = sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
-    query = _TABLE.update().where(where_clause).values(**data_json)
-
-    result = flask.g.db_conn.execute(query)
-
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('Test', t_id)
-
-    return flask.Response(None, 204, content_type='application/json')
-
-
 @api.route('/tests/<t_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_test_by_id_or_name(user, t_id):
