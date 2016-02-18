@@ -50,7 +50,7 @@ def test_get_all_components(admin, topic_id):
         created_c_ids.append(pc['component']['id'])
     created_c_ids.sort()
 
-    db_all_cs = admin.get('/api/v1/components').data
+    db_all_cs = admin.get('/api/v1/topics/%s/components' % topic_id).data
     db_all_cs = db_all_cs['components']
     db_all_cs_ids = [db_ct['id'] for db_ct in db_all_cs]
     db_all_cs_ids.sort()
@@ -65,17 +65,19 @@ def test_get_all_components_with_pagination(admin, topic_id):
                    data={'name': 'pname%s' % uuid.uuid4(),
                          'type': 'gerrit_review',
                          'topic_id': topic_id})
-    cs = admin.get('/api/v1/components').data
+    cs = admin.get('/api/v1/topics/%s/components' % topic_id).data
     assert cs['_meta']['count'] == 20
 
     # verify limit and offset are working well
     for i in range(4):
         cs = admin.get(
-            '/api/v1/components?limit=5&offset=%s' % (i * 5)).data
+            '/api/v1/topics/%s/components?limit=5&offset=%s' %
+            (topic_id, (i * 5))).data
         assert len(cs['components']) == 5
 
     # if offset is out of bound, the api returns an empty list
-    cs = admin.get('/api/v1/components?limit=5&offset=300')
+    cs = admin.get(
+        '/api/v1/topics/%s/components?limit=5&offset=300' % topic_id)
     assert cs.status_code == 200
     assert cs.data['components'] == []
 
@@ -87,17 +89,19 @@ def test_get_all_components_with_where(admin, topic_id):
                           'topic_id': topic_id}).data
     pc_id = pc['component']['id']
 
-    db_c = admin.get('/api/v1/components?where=id:%s' % pc_id).data
+    db_c = admin.get(
+        '/api/v1/topics/%s/components?where=id:%s' % (topic_id, pc_id)).data
     db_c_id = db_c['components'][0]['id']
     assert db_c_id == pc_id
 
-    db_c = admin.get('/api/v1/components?where=name:pname1').data
+    db_c = admin.get(
+        '/api/v1/topics/%s/components?where=name:pname1' % topic_id).data
     db_c_id = db_c['components'][0]['id']
     assert db_c_id == pc_id
 
 
-def test_where_invalid(admin):
-    err = admin.get('/api/v1/components?where=id')
+def test_where_invalid(admin, topic_id):
+    err = admin.get('/api/v1/topics/%s/components?where=id' % topic_id)
 
     assert err.status_code == 400
     assert err.data == {
@@ -169,11 +173,13 @@ def test_get_all_components_with_sort(admin, topic_id):
             'topic_id': topic_id}
     ct_2_2 = admin.post('/api/v1/components', data=data).data['component']
 
-    cts = admin.get('/api/v1/components?sort=created_at').data
+    cts = admin.get(
+        '/api/v1/topics/%s/components?sort=created_at' % topic_id).data
     assert cts['components'] == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
 
     # sort by title first and then reverse by created_at
-    cts = admin.get('/api/v1/components?sort=title,-created_at').data
+    cts = admin.get(
+        '/api/v1/topics/%s/components?sort=title,-created_at' % topic_id).data
     assert cts['components'] == [ct_1_2, ct_1_1, ct_2_2, ct_2_1]
 
 

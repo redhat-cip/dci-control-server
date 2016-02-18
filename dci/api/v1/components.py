@@ -54,14 +54,8 @@ def create_components(user):
     return flask.Response(result, 201, content_type='application/json')
 
 
-@api.route('/components', methods=['GET'])
-@auth.requires_auth
-def get_all_components(user, ct_id=None):
-    """Get all components.
-
-    If ct_id is not None, then return all the components with a type
-    pointed by ct_id.
-    """
+def get_all_components(user, topic_id):
+    """Get all components of a topic."""
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
 
@@ -69,10 +63,7 @@ def get_all_components(user, ct_id=None):
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _C_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _C_COLUMNS)
-
-    # used for counting the number of rows when ct_id is not None
-    if ct_id is not None:
-        q_bd.where.append(_TABLE.c.componenttype_id == ct_id)
+    q_bd.where.append(_TABLE.c.topic_id == topic_id)
 
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()

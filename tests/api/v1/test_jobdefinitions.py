@@ -35,7 +35,8 @@ def test_get_all_jobdefinitions(admin, test_id, topic_id):
     jd_2 = admin.post('/api/v1/jobdefinitions', data=data).data
     jd_2_id = jd_2['jobdefinition']['id']
 
-    db_all_jds = admin.get('/api/v1/jobdefinitions?sort=created_at').data
+    db_all_jds = admin.get(
+        '/api/v1/topics/%s/jobdefinitions?sort=created_at' % topic_id).data
     db_all_jds = db_all_jds['jobdefinitions']
     db_all_jds_ids = [db_jd['id'] for db_jd in db_all_jds]
 
@@ -54,18 +55,21 @@ def test_get_all_jobdefinitions_with_pagination(admin, test_id, topic_id):
     admin.post('/api/v1/jobdefinitions', data=data)
 
     # check meta count
-    jds = admin.get('/api/v1/jobdefinitions').data
+    jds = admin.get('/api/v1/topics/%s/jobdefinitions' % topic_id).data
     assert jds['_meta']['count'] == 4
 
     # verify limit and offset are working well
-    jds = admin.get('/api/v1/jobdefinitions?limit=2&offset=0').data
+    jds = admin.get(
+        '/api/v1/topics/%s/jobdefinitions?limit=2&offset=0' % topic_id).data
     assert len(jds['jobdefinitions']) == 2
 
-    jds = admin.get('/api/v1/jobdefinitions?limit=2&offset=2').data
+    jds = admin.get(
+        '/api/v1/topics/%s/jobdefinitions?limit=2&offset=2' % topic_id).data
     assert len(jds['jobdefinitions']) == 2
 
     # if offset is out of bound, the api returns an empty list
-    jds = admin.get('/api/v1/jobdefinitions?limit=5&offset=300')
+    jds = admin.get(
+        '/api/v1/topics/%s/jobdefinitions?limit=5&offset=300' % topic_id)
     assert jds.status_code == 200
     assert jds.data['jobdefinitions'] == []
 
@@ -78,7 +82,8 @@ def test_get_all_jobdefinitions_with_embed(admin, test_id, topic_id):
     admin.post('/api/v1/jobdefinitions', data=data)
 
     # verify embed
-    jds = admin.get('/api/v1/jobdefinitions?embed=test').data
+    jds = admin.get(
+        '/api/v1/topics/%s/jobdefinitions?embed=test' % topic_id).data
 
     for jobdefinition in jds['jobdefinitions']:
         assert 'test_id' not in jobdefinition
@@ -86,8 +91,8 @@ def test_get_all_jobdefinitions_with_embed(admin, test_id, topic_id):
         assert jobdefinition['test']['id'] == test_id
 
 
-def test_get_all_jobdefinitions_with_embed_not_valid(admin, test_id):
-    jds = admin.get('/api/v1/jobdefinitions?embed=mdr')
+def test_get_all_jobdefinitions_with_embed_not_valid(admin, test_id, topic_id):
+    jds = admin.get('/api/v1/topics/%s/jobdefinitions?embed=mdr' % topic_id)
     assert jds.status_code == 400
 
 
@@ -96,17 +101,20 @@ def test_get_all_jobdefinitions_with_where(admin, test_id, topic_id):
     pjd = admin.post('/api/v1/jobdefinitions', data=data).data
     pjd_id = pjd['jobdefinition']['id']
 
-    db_jd = admin.get('/api/v1/jobdefinitions?where=id:%s' % pjd_id).data
+    db_jd = admin.get(
+        '/api/v1/topics/%s/jobdefinitions?where=id:%s' %
+        (topic_id, pjd_id)).data
     db_jd_id = db_jd['jobdefinitions'][0]['id']
     assert db_jd_id == pjd_id
 
-    db_jd = admin.get('/api/v1/jobdefinitions?where=name:pname1').data
+    db_jd = admin.get(
+        '/api/v1/topics/%s/jobdefinitions?where=name:pname1' % topic_id).data
     db_jd_id = db_jd['jobdefinitions'][0]['id']
     assert db_jd_id == pjd_id
 
 
-def test_where_invalid(admin):
-    err = admin.get('/api/v1/jobdefinitions?where=id')
+def test_where_invalid(admin, topic_id):
+    err = admin.get('/api/v1/topics/%s/jobdefinitions?where=id' % topic_id)
 
     assert err.status_code == 400
     assert err.data == {
@@ -182,11 +190,14 @@ def test_get_all_jobdefinitions_with_sort(admin, test_id, topic_id):
                               'test_id': test_id,
                               'topic_id': topic_id}).data['jobdefinition']
 
-    jds = admin.get('/api/v1/jobdefinitions?sort=created_at').data
+    jds = admin.get(
+        '/api/v1/topics/%s/jobdefinitions?sort=created_at' % topic_id).data
     assert jds['jobdefinitions'] == [jd_1_1, jd_1_2, jd_2_1, jd_2_2]
 
     # sort by priority first and then reverse by created_at
-    jds = admin.get('/api/v1/jobdefinitions?sort=priority,-created_at').data
+    jds = admin.get(
+        '/api/v1/topics/%s/jobdefinitions?sort=priority,-created_at' %
+        topic_id).data
     assert jds['jobdefinitions'] == [jd_1_2, jd_1_1, jd_2_2, jd_2_1]
 
 

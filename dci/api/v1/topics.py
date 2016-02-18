@@ -22,6 +22,9 @@ from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
 from dci.api.v1 import api
+from dci.api.v1 import components
+from dci.api.v1 import jobdefinitions
+from dci.api.v1 import tests
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci.common import exceptions as dci_exc
@@ -106,6 +109,26 @@ def delete_topic_by_id_or_name(user, t_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
+# components, jobdefinitions, tests GET
+@api.route('/topics/<topic_id>/components', methods=['GET'])
+@auth.requires_auth
+def get_all_components(user, topic_id):
+    return components.get_all_components(user, topic_id=topic_id)
+
+
+@api.route('/topics/<topic_id>/jobdefinitions', methods=['GET'])
+@auth.requires_auth
+def get_all_jobdefinitions(user, topic_id):
+    return jobdefinitions.get_all_jobdefinitions(user, topic_id=topic_id)
+
+
+@api.route('/topics/<topic_id>/tests', methods=['GET'])
+@auth.requires_auth
+def get_all_tests(user, topic_id):
+    return tests.get_all_tests(user, topic_id=topic_id)
+
+
+# teams set apis
 @api.route('/topics/<t_id>/teams', methods=['POST'])
 @auth.requires_auth
 def add_team_to_topic(user, t_id):

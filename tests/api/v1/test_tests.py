@@ -43,7 +43,8 @@ def test_get_all_tests(admin, topic_id):
     test_2 = admin.post('/api/v1/tests', data={'name': 'pname2',
                                                'topic_id': topic_id}).data
 
-    db_all_tests = admin.get('/api/v1/tests?sort=created_at').data
+    db_all_tests = admin.get(
+        '/api/v1/topics/%s/tests?sort=created_at' % topic_id).data
     db_all_tests = db_all_tests['tests']
     db_all_tests_ids = [db_t['id'] for db_t in db_all_tests]
 
@@ -55,17 +56,19 @@ def test_get_all_tests_with_where(admin, topic_id):
                                            'topic_id': topic_id}).data
     pt_id = pt['test']['id']
 
-    db_t = admin.get('/api/v1/tests?where=id:%s' % pt_id).data
+    db_t = admin.get('/api/v1/topics/%s/tests?where=id:%s' %
+                     (topic_id, pt_id)).data
     db_t_id = db_t['tests'][0]['id']
     assert db_t_id == pt_id
 
-    db_t = admin.get('/api/v1/tests?where=name:pname1').data
+    db_t = admin.get(
+        '/api/v1/topics/%s/tests?where=name:pname1' % topic_id).data
     db_t_id = db_t['tests'][0]['id']
     assert db_t_id == pt_id
 
 
-def test_where_invalid(admin):
-    err = admin.get('/api/v1/tests?where=id')
+def test_where_invalid(admin, topic_id):
+    err = admin.get('/api/v1/topics/%s/tests?where=id' % topic_id)
 
     assert err.status_code == 400
     assert err.data == {
@@ -83,18 +86,20 @@ def test_get_all_tests_with_pagination(admin, topic_id):
     admin.post('/api/v1/tests', data={'name': 'pname2', 'topic_id': topic_id})
     admin.post('/api/v1/tests', data={'name': 'pname3', 'topic_id': topic_id})
     admin.post('/api/v1/tests', data={'name': 'pname4', 'topic_id': topic_id})
-    ts = admin.get('/api/v1/tests').data
+    ts = admin.get('/api/v1/topics/%s/tests' % topic_id).data
     assert ts['_meta']['count'] == 4
 
     # verify limit and offset are working well
-    ts = admin.get('/api/v1/tests?limit=2&offset=0').data
+    ts = admin.get(
+        '/api/v1/topics/%s/tests?limit=2&offset=0' % topic_id).data
     assert len(ts['tests']) == 2
 
-    ts = admin.get('/api/v1/tests?limit=2&offset=2').data
+    ts = admin.get(
+        '/api/v1/topics/%s/tests?limit=2&offset=2' % topic_id).data
     assert len(ts['tests']) == 2
 
     # if offset is out of bound, the api returns an empty list
-    ts = admin.get('/api/v1/tests?limit=5&offset=300')
+    ts = admin.get('/api/v1/topics/%s/tests?limit=5&offset=300' % topic_id)
     assert ts.status_code == 200
     assert ts.data['tests'] == []
 
@@ -106,11 +111,11 @@ def test_get_all_tests_with_sort(admin, topic_id):
     t_2 = admin.post('/api/v1/tests', data={'name': 'pname2',
                                             'topic_id': topic_id}).data['test']
 
-    gts = admin.get('/api/v1/tests?sort=created_at').data
+    gts = admin.get('/api/v1/topics/%s/tests?sort=created_at' % topic_id).data
     assert gts['tests'] == [t_1, t_2]
 
     # test in reverse order
-    gts = admin.get('/api/v1/tests?sort=-created_at').data
+    gts = admin.get('/api/v1/topics/%s/tests?sort=-created_at' % topic_id).data
     assert gts['tests'] == [t_2, t_1]
 
 
