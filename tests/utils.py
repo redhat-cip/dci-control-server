@@ -46,10 +46,10 @@ def generate_client(app, credentials):
             headers.update(kwargs.get('headers', {}))
             kwargs['headers'] = headers
             response = func(*args, **kwargs)
-            return Response(
-                response.status_code, flask.json.loads(response.data or "{}"),
-                response.headers
-            )
+            data = (flask.json.loads(response.data or '{}')
+                    if response.content_type == 'application/json'
+                    else response.data)
+            return Response(response.status_code, data, response.headers)
 
         return wrapper
 
