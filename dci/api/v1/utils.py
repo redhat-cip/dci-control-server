@@ -199,6 +199,15 @@ def where_query(where, table, columns):
     return where_conds
 
 
+def request_wants_html():
+    best = (flask.request.accept_mimetypes
+            .best_match(['text/html', 'application/json']))
+
+    return (best == 'text/html' and
+            flask.request.accept_mimetypes[best] >
+            flask.request.accept_mimetypes['application/json'])
+
+
 class QueryBuilder(object):
 
     def __init__(self, table, offset=None, limit=None):

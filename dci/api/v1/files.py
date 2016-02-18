@@ -18,6 +18,8 @@ import datetime
 
 import flask
 from flask import json
+
+import six
 from sqlalchemy import sql
 
 from dci.api.v1 import api
@@ -136,15 +138,32 @@ def get_file_by_id_or_name(user, file_id):
         raise dci_exc.DCINotFound('File', file_id)
 
     dfile = v1_utils.group_embedded_resources(embed, row)
+
     result = json.jsonify({'file': dfile})
     return result
+
+
+@api.route('/files/<file_id>/content', methods=['GET'])
+@auth.requires_auth
+def get_file_content(user, file_id):
+    file = v1_utils.verify_existence_and_get(file_id, _TABLE)
+
+    if not(auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
+        raise auth.UNAUTHORIZED
+
+    if v1_utils.request_wants_html():
+        return flask.send_file(
+            six.BytesIO(file['content'].encode('utf8')), add_etags=False,
+            attachment_filename=file['name'], mimetype=file['mime'],
+            as_attachment=True
+        )
+
+    return json.jsonify({'content': file['content']})
 
 
 @api.route('/files/<file_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_file_by_id(user, file_id):
-    # get If-Match header
-
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
     if not(auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
