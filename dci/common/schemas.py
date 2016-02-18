@@ -225,7 +225,8 @@ job = {
 job = schema_factory(job)
 
 job_schedule = {
-    'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI)
+    'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
+    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC)
 }
 
 job_schedule = schema_factory(job_schedule)
