@@ -57,15 +57,14 @@ def create_tests(user):
     )
 
 
-@api.route('/tests', methods=['GET'])
-@auth.requires_auth
-def get_all_tests(user):
+def get_all_tests(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
 
     q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
+    q_bd.where.append(_TABLE.c.topic_id == topic_id)
 
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
