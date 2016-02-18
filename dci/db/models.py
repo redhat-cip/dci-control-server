@@ -44,7 +44,10 @@ COMPONENTS = sa.Table(
     sa.Column('message', sa.Text),
     sa.Column('url', sa.Text),
     sa.Column('git', sa.Text),
-    sa.Column('ref', sa.Text))
+    sa.Column('ref', sa.Text),
+    sa.Column('topic_id', sa.String(36),
+              sa.ForeignKey('topics.id', ondelete="CASCADE"),
+              nullable=False))
 
 
 TOPICS = sa.Table(
@@ -73,7 +76,10 @@ TESTS = sa.Table(
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('name', sa.String(255), nullable=False, unique=True),
-    sa.Column('data', sa_utils.JSONType))
+    sa.Column('data', sa_utils.JSONType),
+    sa.Column('topic_id', sa.String(36),
+              sa.ForeignKey('topics.id', ondelete="CASCADE"),
+              nullable=False))
 
 JOBDEFINITIONS = sa.Table(
     'jobdefinitions', metadata,
@@ -90,6 +96,9 @@ JOBDEFINITIONS = sa.Table(
     sa.Column('priority', sa.Integer, default=0),
     sa.Column('test_id', sa.String(36),
               sa.ForeignKey('tests.id', ondelete="CASCADE"),
+              nullable=False),
+    sa.Column('topic_id', sa.String(36),
+              sa.ForeignKey('topics.id', ondelete="CASCADE"),
               nullable=False))
 
 JOIN_JOBDEFINITIONS_COMPONENTS = sa.Table(
