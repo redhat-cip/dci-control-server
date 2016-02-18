@@ -129,17 +129,7 @@ def schedule_jobs(user):
                               headers={'ETag': etag},
                               content_type='application/json')
 
-    # Verify that the team of the user belongs to the topic
-    belongs_to_topic_q = (
-        sqlalchemy.sql.select([models.JOINS_TOPICS_TEAMS.c.team_id]).where(
-            sqlalchemy.sql.expression.and_(
-                models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id'],  # noqa
-                models.JOINS_TOPICS_TEAMS.c.topic_id == topic_id  # noqa
-            )))
-    belongs_to_topic = flask.g.db_conn.execute(belongs_to_topic_q).fetchone()
-    if not belongs_to_topic:
-        raise dci_exc.DCIException('User team does not belongs to topic %s.'
-                                   % topic_id, status_code=412)
+    v1_utils.verify_team_in_topic(user, topic_id)
     # The user belongs to the topic then we can start the scheduling
 
     # Subquery, get all the jobdefinitions which have been run by this remoteci
