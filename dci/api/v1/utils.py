@@ -20,6 +20,7 @@ from sqlalchemy import sql, func
 
 from dci.common import exceptions as dci_exc
 from dci.common import utils
+from dci.db import models
 
 
 def verify_existence_and_get(id, table):
@@ -39,6 +40,20 @@ def verify_existence_and_get(id, table):
         raise dci_exc.DCIException('Resource "%s" not found.' % id,
                                    status_code=404)
     return result
+
+
+def verify_team_in_topic(user, topic_id):
+    team_id = user['team_id']
+    belongs_to_topic_q = (
+        sql.select([models.JOINS_TOPICS_TEAMS.c.team_id]).where(
+            sql.expression.and_(
+                models.JOINS_TOPICS_TEAMS.c.team_id == team_id,  # noqa
+                models.JOINS_TOPICS_TEAMS.c.topic_id == topic_id)  # noqa
+        ))
+    belongs_to_topic = flask.g.db_conn.execute(belongs_to_topic_q).fetchone()
+    if not belongs_to_topic:
+        raise dci_exc.DCIException('User team does not belongs to topic %s.'
+                                   % topic_id, status_code=412)
 
 
 def verify_embed_list(embed_list, valid_embedded_resources):
