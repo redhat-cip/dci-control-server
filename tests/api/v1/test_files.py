@@ -292,3 +292,25 @@ def test_delete_file_as_user(user, admin, jobstate_user_id,
     file_user = admin.get('/api/v1/files/%s' % file_id)
     file_delete = user.delete('/api/v1/files/%s' % file_id)
     assert file_delete.status_code == 401
+
+
+def test_get_file_content(admin, file_id):
+    url = '/api/v1/files/%s/content' % file_id
+    f = admin.get(url).data
+
+    assert f['content'] == 'kikoolol'
+
+    # retrieve the html form
+    f = admin.get(url, headers={'Accept': 'text/html'})
+    headers = f.headers
+    data = f.data
+
+    assert headers['Content-Disposition'] == 'attachment; filename=name'
+    assert data.decode('utf8') == 'kikoolol'
+
+
+def test_get_file_content_as_user(user, file_id, file_user_id):
+    url = '/api/v1/files/%s/content'
+
+    assert user.get(url % file_id).status_code == 401
+    assert user.get(url % file_user_id).status_code == 200
