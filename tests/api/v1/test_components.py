@@ -18,33 +18,35 @@ from __future__ import unicode_literals
 import uuid
 
 
-def test_create_components(admin):
+def test_create_components(admin, topic_id):
     data = {
         'name': 'pname',
         'type': 'gerrit_review',
-        'url': 'http://example.com/'}
+        'url': 'http://example.com/',
+        'topic_id': topic_id}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
     gc = admin.get('/api/v1/components/%s' % pc_id).data
     assert gc['component']['name'] == 'pname'
 
 
-def test_create_components_already_exist(admin):
-    data = {'name': 'pname', 'type': 'gerrit_review'}
+def test_create_components_already_exist(admin, topic_id):
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
     pstatus_code = admin.post('/api/v1/components', data=data).status_code
     assert pstatus_code == 201
 
-    data = {'name': 'pname', 'type': 'gerrit_review'}
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
     pstatus_code = admin.post('/api/v1/components', data=data).status_code
     assert pstatus_code == 422
 
 
-def test_get_all_components(admin):
+def test_get_all_components(admin, topic_id):
     created_c_ids = []
     for i in range(5):
         pc = admin.post('/api/v1/components',
                         data={'name': 'pname%s' % uuid.uuid4(),
-                              'type': 'gerrit_review'}).data
+                              'type': 'gerrit_review',
+                              'topic_id': topic_id}).data
         created_c_ids.append(pc['component']['id'])
     created_c_ids.sort()
 
@@ -56,12 +58,13 @@ def test_get_all_components(admin):
     assert db_all_cs_ids == created_c_ids
 
 
-def test_get_all_components_with_pagination(admin):
+def test_get_all_components_with_pagination(admin, topic_id):
     # create 20 component types and check meta data count
     for i in range(20):
         admin.post('/api/v1/components',
                    data={'name': 'pname%s' % uuid.uuid4(),
-                         'type': 'gerrit_review'})
+                         'type': 'gerrit_review',
+                         'topic_id': topic_id})
     cs = admin.get('/api/v1/components').data
     assert cs['_meta']['count'] == 20
 
@@ -77,10 +80,11 @@ def test_get_all_components_with_pagination(admin):
     assert cs.data['components'] == []
 
 
-def test_get_all_components_with_where(admin):
+def test_get_all_components_with_where(admin, topic_id):
     pc = admin.post('/api/v1/components',
                     data={'name': 'pname1',
-                          'type': 'gerrit_review'}).data
+                          'type': 'gerrit_review',
+                          'topic_id': topic_id}).data
     pc_id = pc['component']['id']
 
     db_c = admin.get('/api/v1/components?where=id:%s' % pc_id).data
@@ -105,8 +109,8 @@ def test_where_invalid(admin):
     }
 
 
-def test_get_component_by_id_or_name(admin):
-    data = {'name': 'pname', 'type': 'gerrit_review'}
+def test_get_component_by_id_or_name(admin, topic_id):
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
 
@@ -130,8 +134,8 @@ def test_get_component_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_component_by_id(admin):
-    data = {'name': 'pname', 'type': 'gerrit_review'}
+def test_delete_component_by_id(admin, topic_id):
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
     pc = admin.post('/api/v1/components', data=data)
     pc_id = pc.data['component']['id']
     assert pc.status_code == 201
@@ -146,19 +150,23 @@ def test_delete_component_by_id(admin):
     assert gct.status_code == 404
 
 
-def test_get_all_components_with_sort(admin):
+def test_get_all_components_with_sort(admin, topic_id):
     # create 4 components ordered by created time
     data = {'name': "pname1", 'title': 'aaa',
-            'type': 'gerrit_review'}
+            'type': 'gerrit_review',
+            'topic_id': topic_id}
     ct_1_1 = admin.post('/api/v1/components', data=data).data['component']
     data = {'name': "pname2", 'title': 'aaa',
-            'type': 'gerrit_review'}
+            'type': 'gerrit_review',
+            'topic_id': topic_id}
     ct_1_2 = admin.post('/api/v1/components', data=data).data['component']
     data = {'name': "pname3", 'title': 'bbb',
-            'type': 'gerrit_review'}
+            'type': 'gerrit_review',
+            'topic_id': topic_id}
     ct_2_1 = admin.post('/api/v1/components', data=data).data['component']
     data = {'name': "pname4", 'title': 'bbb',
-            'type': 'gerrit_review'}
+            'type': 'gerrit_review',
+            'topic_id': topic_id}
     ct_2_2 = admin.post('/api/v1/components', data=data).data['component']
 
     cts = admin.get('/api/v1/components?sort=created_at').data

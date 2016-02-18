@@ -17,27 +17,31 @@
 from __future__ import unicode_literals
 
 
-def test_create_tests(admin):
+def test_create_tests(admin, topic_id):
     pt = admin.post('/api/v1/tests',
-                    data={'name': 'pname'}).data
+                    data={'name': 'pname', 'topic_id': topic_id}).data
     pt_id = pt['test']['id']
     gt = admin.get('/api/v1/tests/%s' % pt_id).data
     assert gt['test']['name'] == 'pname'
 
 
-def test_create_tests_already_exist(admin):
+def test_create_tests_already_exist(admin, topic_id):
     pstatus_code = admin.post('/api/v1/tests',
-                              data={'name': 'pname'}).status_code
+                              data={'name': 'pname',
+                                    'topic_id': topic_id}).status_code
     assert pstatus_code == 201
 
     pstatus_code = admin.post('/api/v1/tests',
-                              data={'name': 'pname'}).status_code
+                              data={'name': 'pname',
+                                    'topic_id': topic_id}).status_code
     assert pstatus_code == 422
 
 
-def test_get_all_tests(admin):
-    test_1 = admin.post('/api/v1/tests', data={'name': 'pname1'}).data
-    test_2 = admin.post('/api/v1/tests', data={'name': 'pname2'}).data
+def test_get_all_tests(admin, topic_id):
+    test_1 = admin.post('/api/v1/tests', data={'name': 'pname1',
+                                               'topic_id': topic_id}).data
+    test_2 = admin.post('/api/v1/tests', data={'name': 'pname2',
+                                               'topic_id': topic_id}).data
 
     db_all_tests = admin.get('/api/v1/tests?sort=created_at').data
     db_all_tests = db_all_tests['tests']
@@ -46,8 +50,9 @@ def test_get_all_tests(admin):
     assert db_all_tests_ids == [test_1['test']['id'], test_2['test']['id']]
 
 
-def test_get_all_tests_with_where(admin):
-    pt = admin.post('/api/v1/tests', data={'name': 'pname1'}).data
+def test_get_all_tests_with_where(admin, topic_id):
+    pt = admin.post('/api/v1/tests', data={'name': 'pname1',
+                                           'topic_id': topic_id}).data
     pt_id = pt['test']['id']
 
     db_t = admin.get('/api/v1/tests?where=id:%s' % pt_id).data
@@ -72,12 +77,12 @@ def test_where_invalid(admin):
     }
 
 
-def test_get_all_tests_with_pagination(admin):
+def test_get_all_tests_with_pagination(admin, topic_id):
     # create 4 components types and check meta data count
-    admin.post('/api/v1/tests', data={'name': 'pname1'})
-    admin.post('/api/v1/tests', data={'name': 'pname2'})
-    admin.post('/api/v1/tests', data={'name': 'pname3'})
-    admin.post('/api/v1/tests', data={'name': 'pname4'})
+    admin.post('/api/v1/tests', data={'name': 'pname1', 'topic_id': topic_id})
+    admin.post('/api/v1/tests', data={'name': 'pname2', 'topic_id': topic_id})
+    admin.post('/api/v1/tests', data={'name': 'pname3', 'topic_id': topic_id})
+    admin.post('/api/v1/tests', data={'name': 'pname4', 'topic_id': topic_id})
     ts = admin.get('/api/v1/tests').data
     assert ts['_meta']['count'] == 4
 
@@ -94,10 +99,12 @@ def test_get_all_tests_with_pagination(admin):
     assert ts.data['tests'] == []
 
 
-def test_get_all_tests_with_sort(admin):
+def test_get_all_tests_with_sort(admin, topic_id):
     # create 2 tests ordered by created time
-    t_1 = admin.post('/api/v1/tests', data={'name': 'pname1'}).data['test']
-    t_2 = admin.post('/api/v1/tests', data={'name': 'pname2'}).data['test']
+    t_1 = admin.post('/api/v1/tests', data={'name': 'pname1',
+                                            'topic_id': topic_id}).data['test']
+    t_2 = admin.post('/api/v1/tests', data={'name': 'pname2',
+                                            'topic_id': topic_id}).data['test']
 
     gts = admin.get('/api/v1/tests?sort=created_at').data
     assert gts['tests'] == [t_1, t_2]
@@ -107,8 +114,9 @@ def test_get_all_tests_with_sort(admin):
     assert gts['tests'] == [t_2, t_1]
 
 
-def test_get_test_by_id_or_name(admin):
-    pt = admin.post('/api/v1/tests', data={'name': 'pname'}).data
+def test_get_test_by_id_or_name(admin, topic_id):
+    pt = admin.post('/api/v1/tests', data={'name': 'pname',
+                                           'topic_id': topic_id}).data
     pt_id = pt['test']['id']
 
     # get by uuid
@@ -131,25 +139,9 @@ def test_get_test_not_found(admin):
     assert result.status_code == 404
 
 
-def test_put_tests(admin):
-    pt = admin.post('/api/v1/tests', data={'name': 'pname'})
-    assert pt.status_code == 201
-
-    gt = admin.get('/api/v1/tests/pname')
-    assert gt.status_code == 200
-
-    ppt = admin.put('/api/v1/tests/pname', data={'name': 'nname'})
-    assert ppt.status_code == 204
-
-    gt = admin.get('/api/v1/tests/pname')
-    assert gt.status_code == 404
-
-    gt = admin.get('/api/v1/tests/nname')
-    assert gt.status_code == 200
-
-
-def test_delete_test_by_id(admin):
-    pt = admin.post('/api/v1/tests', data={'name': 'pname'})
+def test_delete_test_by_id(admin, topic_id):
+    pt = admin.post('/api/v1/tests', data={'name': 'pname',
+                                           'topic_id': topic_id})
     pt_id = pt.data['test']['id']
     assert pt.status_code == 201
 

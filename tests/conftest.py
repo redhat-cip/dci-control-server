@@ -100,8 +100,16 @@ def user_admin(app, db_provisioning):
 
 
 @pytest.fixture
-def test_id(admin):
-    test = admin.post('/api/v1/tests', data={'name': 'pname'}).data
+def topic_id(admin):
+    data = {'name': 'topic_name'}
+    topic = admin.post('/api/v1/topics', data=data).data
+    return topic['topic']['id']
+
+
+@pytest.fixture
+def test_id(admin, topic_id):
+    test = admin.post('/api/v1/tests', data={'name': 'pname',
+                                             'topic_id': topic_id}).data
     return test['test']['id']
 
 
@@ -138,8 +146,8 @@ def remoteci_user_id(user, team_user_id):
 
 
 @pytest.fixture
-def jobdefinition_id(admin, test_id):
-    data = {'name': 'pname', 'test_id': test_id}
+def jobdefinition_id(admin, test_id, topic_id):
+    data = {'name': 'pname', 'test_id': test_id, 'topic_id': topic_id}
     jd = admin.post('/api/v1/jobdefinitions', data=data).data
     return jd['jobdefinition']['id']
 
