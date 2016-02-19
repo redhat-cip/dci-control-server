@@ -42,7 +42,7 @@ def test_create_topics_already_exist(admin):
     assert pstatus_code == 422
 
 
-def test_get_all_topics(admin, user):
+def test_get_all_topics_by_admin(admin):
     created_topics_ids = []
     for i in range(5):
         pc = admin.post('/api/v1/topics',
@@ -50,7 +50,7 @@ def test_get_all_topics(admin, user):
         created_topics_ids.append(pc['topic']['id'])
     created_topics_ids.sort()
 
-    db_all_cs = user.get('/api/v1/topics').data
+    db_all_cs = admin.get('/api/v1/topics').data
     db_all_cs = db_all_cs['topics']
     db_all_cs_ids = [db_ct['id'] for db_ct in db_all_cs]
     db_all_cs_ids.sort()
@@ -58,24 +58,35 @@ def test_get_all_topics(admin, user):
     assert db_all_cs_ids == created_topics_ids
 
 
-def test_get_all_topics_with_pagination(admin, user):
+def test_get_all_topics_with_pagination(admin):
     # create 20 topic types and check meta data count
     for i in range(20):
         admin.post('/api/v1/topics',
                    data={'name': 'tname%s' % uuid.uuid4()})
-    cs = user.get('/api/v1/topics').data
+    cs = admin.get('/api/v1/topics').data
     assert cs['_meta']['count'] == 20
 
     # verify limit and offset are working well
     for i in range(4):
-        cs = user.get(
+        cs = admin.get(
             '/api/v1/topics?limit=5&offset=%s' % (i * 5)).data
         assert len(cs['topics']) == 5
 
     # if offset is out of bound, the api returns an empty list
-    cs = user.get('/api/v1/topics?limit=5&offset=300')
+    cs = admin.get('/api/v1/topics?limit=5&offset=300')
     assert cs.status_code == 200
     assert cs.data['topics'] == []
+
+
+def test_get_topics_of_user(admin, user, team_user_id):
+    data = {'name': 'test_name'}
+    topic = admin.post('/api/v1/topics', data=data).data['topic']
+    topic_id = topic['id']
+    admin.post('/api/v1/topics/%s/teams' % topic_id,
+               data={'team_id': team_user_id})
+    topics_user = user.get('/api/v1/topics').data
+    topics_user = topics_user['topics'][0]
+    assert topic == topics_user
 
 
 def test_get_topic_by_id_or_name(admin, user):
@@ -132,7 +143,7 @@ def test_delete_topic_by_id_as_user(admin, user):
     assert deleted_ct.status_code == 401
 
 
-def test_get_all_topics_with_sort(admin, user):
+def test_get_all_topics_with_sort(admin):
     # create 4 topics ordered by created time
     data = {'name': "tname1"}
     ct_1_1 = admin.post('/api/v1/topics', data=data).data['topic']
@@ -143,11 +154,11 @@ def test_get_all_topics_with_sort(admin, user):
     data = {'name': "tname4"}
     ct_2_2 = admin.post('/api/v1/topics', data=data).data['topic']
 
-    cts = user.get('/api/v1/topics?sort=created_at').data
+    cts = admin.get('/api/v1/topics?sort=created_at').data
     assert cts['topics'] == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
 
     # sort by title first and then reverse by created_at
-    cts = user.get('/api/v1/topics?sort=-name').data
+    cts = admin.get('/api/v1/topics?sort=-name').data
     assert cts['topics'] == [ct_2_2, ct_2_1, ct_1_2, ct_1_1]
 
 

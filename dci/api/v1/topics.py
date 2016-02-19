@@ -80,16 +80,35 @@ def get_topic_by_id_or_name(user, t_id):
 @auth.requires_auth
 def get_all_topics(user):
     args = schemas.args(flask.request.args.to_dict())
+    # if the user is an admin then he can get all the topics
+    if auth.is_admin(user):
+        q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+        q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
 
-    q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
+        # get the number of rows for the '_meta' section
+        nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+        rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
-    # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+        return flask.jsonify({'topics': rows, '_meta': {'count': nb_row}})
+    # otherwise the user will only get the topics on which his team
+    # subscribed to
+    else:
+        team_id = user['team_id']
+        JTT = models.JOINS_TOPICS_TEAMS
+        # TODO(yassine): use QueryBuilder and sort
+        query = (sql.select([models.TOPICS])
+                 .select_from(JTT.join(models.TOPICS))
+                 .where(JTT.c.team_id == team_id))
+        query = query.limit(args['limit'])
+        query = query.offset(args['offset'])
 
-    return flask.jsonify({'topics': rows, '_meta': {'count': nb_row}})
+        rows = flask.g.db_conn.execute(query)
+
+        res = flask.jsonify({'topics': rows,
+                             '_meta': {'count': rows.rowcount}})
+        res.status_code = 201
+        return res
 
 
 @api.route('/topics/<t_id>', methods=['DELETE'])
