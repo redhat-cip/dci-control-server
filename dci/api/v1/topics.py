@@ -76,10 +76,28 @@ def get_topic_by_id_or_name(user, t_id):
     return res
 
 
+@api.route('/topics/user', methods=['GET'])
+@auth.requires_auth
+def get_all_topics_of_user(user):
+    team_id = user['team_id']
+    JTT = models.JOINS_TOPICS_TEAMS
+    query = (sql.select([models.TOPICS])
+             .select_from(JTT.join(models.TOPICS))
+             .where(JTT.c.team_id == team_id))
+    rows = flask.g.db_conn.execute(query)
+
+    res = flask.jsonify({'topics': rows,
+                         '_meta': {'count': rows.rowcount}})
+    res.status_code = 201
+    return res
+
+
 @api.route('/topics', methods=['GET'])
 @auth.requires_auth
 def get_all_topics(user):
     args = schemas.args(flask.request.args.to_dict())
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
 
     q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
 
