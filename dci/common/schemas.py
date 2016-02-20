@@ -35,6 +35,8 @@ def Url(value):
     except Exception:
         raise ValueError
 
+VALID_STATUS_UPDATE = ['success', 'failure']
+
 INVALID_UUID = 'not a valid uuid'
 INVALID_JSON = 'not a valid json'
 INVALID_STRING = 'not a valid string'
@@ -55,6 +57,8 @@ INVALID_LIMIT = 'not a valid limit integer (must be greater than 0)'
 
 INVALID_REQUIRED = 'required key not provided'
 INVALID_OBJECT = 'not a valid object'
+INVALID_STATUS_UPDATE = ('not a valid status update (must be %s)' %
+                         ' or '.join(VALID_STATUS_UPDATE))
 
 UUID_FIELD = v.All(six.text_type, msg=INVALID_UUID)
 DATA_FIELD = {v.Optional('data', default={}): dict}
@@ -219,10 +223,17 @@ remoteci = schema_factory(remoteci)
 job = {
     'jobdefinition_id': v.Any(UUID_FIELD, msg=INVALID_JOB_DEFINITION),
     'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
-    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM)
+    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    v.Optional('comment', default=None): six.text_type
 }
 
-job = schema_factory(job)
+job_put = {
+    v.Optional('comment'): six.text_type,
+    v.Optional('status'): v.Any(*VALID_STATUS_UPDATE,
+                                msg=INVALID_STATUS_UPDATE)
+}
+
+job = DCISchema(schema_factory(job).post, Schema(job_put))
 
 job_schedule = {
     'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
@@ -240,7 +251,7 @@ job_schedule = schema_factory(job_schedule)
 jobstate = {
     'status': six.text_type,
     'job_id': v.Any(UUID_FIELD, msg=INVALID_JOB),
-    v.Optional('comment'): six.text_type,
+    v.Optional('comment', default=None): six.text_type,
 }
 
 jobstate = schema_factory(jobstate)

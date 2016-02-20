@@ -18,7 +18,7 @@ import datetime
 
 import flask
 from flask import json
-import sqlalchemy.sql
+from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
@@ -106,11 +106,11 @@ def schedule_jobs(user):
         raise dci_exc.DCIException(message, status_code=412)
 
     # First try to get some job to recheck
-    where_clause = sqlalchemy.sql.expression.and_(
+    where_clause = sql.expression.and_(
         _TABLE.c.recheck == True,  # noqa
         _TABLE.c.remoteci_id == rci_id
     )
-    get_recheck_job_query = (sqlalchemy.sql.select([_TABLE])
+    get_recheck_job_query = (sql.select([_TABLE])
                              .where(where_clause)
                              .limit(1))
 
@@ -133,20 +133,20 @@ def schedule_jobs(user):
     # The user belongs to the topic then we can start the scheduling
 
     # Subquery, get all the jobdefinitions which have been run by this remoteci
-    sub_query = (sqlalchemy.sql
+    sub_query = (sql
                  .select([_TABLE.c.jobdefinition_id])
                  .where(_TABLE.c.remoteci_id == rci_id))
 
     # Get one jobdefinition which has not been run by this remoteci
-    where_clause = sqlalchemy.sql.expression.and_(
-        sqlalchemy.sql.expression.not_(
+    where_clause = sql.expression.and_(
+        sql.expression.not_(
             models.JOBDEFINITIONS.c.id.in_(sub_query)),
         models.JOBDEFINITIONS.c.topic_id == topic_id  # noqa
     )
 
-    query = (sqlalchemy.sql.select([models.JOBDEFINITIONS.c.id])
+    query = (sql.select([models.JOBDEFINITIONS.c.id])
              .where(where_clause)
-             .order_by(sqlalchemy.sql.asc(models.JOBDEFINITIONS.c.priority))
+             .order_by(sql.asc(models.JOBDEFINITIONS.c.priority))
              .limit(1))
     # Order by jobdefinition.priority and get the first one
 
@@ -242,6 +242,46 @@ def get_job_by_id(user, jd_id):
     return res
 
 
+@api.route('/jobs/<job_id>', methods=['PUT'])
+@auth.requires_auth
+def update_job_by_id(user, job_id):
+    """Update a job
+    """
+    # get If-Match header
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    # get the diverse parameters
+    values = schemas.job.put(flask.request.json)
+
+    job = v1_utils.verify_existence_and_get(job_id, _TABLE)
+
+    # If it's an admin or belongs to the same team
+    if not(auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+        raise auth.UNAUTHORIZED
+
+    # Update jobstate if needed
+    status = values.get('status')
+    if status and job.status != status:
+        jobstates.insert_jobstate(user, {
+            'status': status,
+            'job_id': job_id
+        })
+
+    where_clause = sql.and_(_TABLE.c.etag == if_match_etag,
+                            _TABLE.c.id == job_id)
+
+    values['etag'] = utils.gen_etag()
+    query = _TABLE.update().where(where_clause).values(**values)
+
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Job', job_id)
+
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
+                          content_type='application/json')
+
+
 @api.route('/jobs/<j_id>/recheck', methods=['POST'])
 @auth.requires_auth
 def job_recheck(user, j_id):
@@ -297,8 +337,8 @@ def delete_job_by_id(user, j_id):
     if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
         raise auth.UNAUTHORIZED
 
-    where_clause = sqlalchemy.sql.and_(_TABLE.c.id == j_id,
-                                       _TABLE.c.etag == if_match_etag)
+    where_clause = sql.and_(_TABLE.c.id == j_id,
+                            _TABLE.c.etag == if_match_etag)
     query = _TABLE.delete().where(where_clause)
 
     result = flask.g.db_conn.execute(query)

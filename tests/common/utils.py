@@ -35,6 +35,7 @@ PASSWORD = 'password', text_type
 ROLE = 'role', 'admin'
 URL = 'url', 'http://valid.url'
 STATUS = 'status', text_type
+COMMENT = 'comment', text_type
 CONTENT = 'content', text_type
 
 INVALID_NAME = 'name', None
@@ -86,6 +87,9 @@ INVALID_JOB_ERROR = 'job_id', schemas.INVALID_JOB
 JOB_STATE = 'jobstate_id', ID[1]
 INVALID_JOB_STATE = 'jobstate_id', INVALID_ID
 INVALID_JOB_STATE_ERROR = 'jobstate_id', schemas.INVALID_JOB_STATE
+
+INVALID_COMMENT = 'comment', None
+INVALID_COMMENT_ERROR = 'comment', schemas.INVALID_STRING
 
 
 def generate_errors(*fields):

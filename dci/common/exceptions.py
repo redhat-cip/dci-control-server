@@ -41,6 +41,8 @@ class DCIException(Exception):
 class DCIConflict(DCIException):
 
     def __init__(self, resource_name, resource_value):
+        self.resource_name = resource_name
+        self.resource_value = resource_value
         super(DCIConflict, self).__init__(self._message(), status_code=409)
 
     def _message(self):
