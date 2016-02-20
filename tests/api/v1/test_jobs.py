@@ -19,15 +19,28 @@ import pytest
 
 
 def test_create_jobs(admin, jobdefinition_id, team_id, remoteci_id):
-    job = admin.post('/api/v1/jobs',
-                     data={'jobdefinition_id': jobdefinition_id,
-                           'team_id': team_id,
-                           'remoteci_id': remoteci_id})
+    data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
+            'remoteci_id': remoteci_id, 'comment': 'kikoolol'}
+    job = admin.post('/api/v1/jobs', data=data)
     job_id = job.data['job']['id']
+
     assert job.status_code == 201
+    assert job.data['job']['comment'] == 'kikoolol'
 
     job = admin.get('/api/v1/jobs/%s' % job_id)
     assert job.status_code == 200
+    assert job.data['job']['comment'] == 'kikoolol'
+
+
+def test_create_jobs_empty_comment(admin, jobdefinition_id, team_id,
+                                   remoteci_id):
+    data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
+            'remoteci_id': remoteci_id}
+    job = admin.post('/api/v1/jobs', data=data).data
+    assert job['job']['comment'] is None
+
+    job = admin.get('/api/v1/jobs/%s' % job['job']['id']).data
+    assert job['job']['comment'] is None
 
 
 def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id,
@@ -198,6 +211,33 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
 def test_get_all_jobs_with_embed_not_valid(admin):
     jds = admin.get('/api/v1/jobs?embed=mdr')
     assert jds.status_code == 400
+
+
+def test_update_job(admin, jobdefinition_id, team_id, remoteci_id):
+    data = {
+        'jobdefinition_id': jobdefinition_id,
+        'team_id': team_id,
+        'remoteci_id': remoteci_id,
+        'comment': 'foo'
+    }
+    job = admin.post('/api/v1/jobs', data=data)
+    job = job.data['job']
+
+    assert job['comment'] == 'foo'
+
+    data_update = {'status': 'failure', 'comment': 'bar'}
+
+    res = admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
+                    headers={'If-match': job['etag']})
+
+    assert res.status_code == 204
+
+    res = admin.get('/api/v1/jobs/%s' % job['id'])
+    job = res.data['job']
+
+    assert res.status_code == 200
+    assert job['status'] == 'failure'
+    assert job['comment'] == 'bar'
 
 
 def test_get_all_jobs_with_where(admin, jobdefinition_id, team_id,

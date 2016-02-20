@@ -171,6 +171,11 @@ def create_jobs(db_conn, company_id, remote_cis):
                 'status': random.choice(JOB_STATUSES),
                 'team_id': company_id
             }
+
+            if not bool(random.randint(0, 4)):
+                c = lorem(1, bool(random.randint(0, 3)))
+                job['comment'] = c
+
             job['id'] = db_insert(db_conn, models.JOBS, **job)
             jobs.append(job)
 
@@ -311,11 +316,12 @@ def db_insert(db_conn, model_item, **kwargs):
     return db_conn.execute(query).inserted_primary_key[0]
 
 
-def lorem():
+def lorem(size=len(LOREM_IPSUM), l=True):
     nb = random.randint(1, len(LOREM_IPSUM))
-    long_line = ' '.join(LOREM_IPSUM[0:7])
 
-    return long_line + '\n'.join(LOREM_IPSUM[0:nb])
+    line = ' '.join(LOREM_IPSUM[0:7]) if l else ''
+
+    return line + '\n'.join(LOREM_IPSUM[0:nb])
 
 
 def init_db(db_conn):
