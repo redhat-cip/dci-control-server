@@ -34,11 +34,7 @@ _VALID_EMBED = {'job': models.JOBS,
                 'team': models.TEAMS}
 
 
-@api.route('/jobstates', methods=['POST'])
-@auth.requires_auth
-def create_jobstates(user):
-    values = schemas.jobstate.post(flask.request.json)
-
+def insert_jobstate(user, values):
     values.update({
         'id': utils.gen_uuid(),
         'created_at': datetime.datetime.utcnow().isoformat(),
@@ -48,6 +44,14 @@ def create_jobstates(user):
     query = _TABLE.insert().values(**values)
 
     flask.g.db_conn.execute(query)
+
+
+@api.route('/jobstates', methods=['POST'])
+@auth.requires_auth
+def create_jobstates(user):
+    values = schemas.jobstate.post(flask.request.json)
+
+    insert_jobstate(user, values)
 
     # Update job status
     job_id = values.get('job_id')

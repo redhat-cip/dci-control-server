@@ -306,6 +306,7 @@ class TestRemoteCI(utils.SchemaTesting):
 class TestJob(utils.SchemaTesting):
     schema = schemas.job
     data = dict([utils.JOB_DEFINITION, utils.REMOTE_CI, utils.TEAM])
+    data_put = dict([('status', 'success'), utils.COMMENT])
 
     @staticmethod
     def generate_invalids_and_errors():
@@ -316,8 +317,16 @@ class TestJob(utils.SchemaTesting):
                        utils.INVALID_TEAM_ERROR])
         return invalids, errors
 
+    @staticmethod
+    def generate_invalids_and_errors_put():
+        invalids = dict([utils.INVALID_COMMENT, utils.STATUS])
+        errors = dict([utils.INVALID_COMMENT_ERROR,
+                       ('status', schemas.INVALID_STATUS_UPDATE)])
+        return invalids, errors
+
     def test_post_extra_data(self):
-        super(TestJob, self).test_post(self.data, self.data)
+        data = utils.dict_merge(self.data, {'comment': 'some comment'})
+        super(TestJob, self).test_post_extra_data(data)
 
     def test_post_missing_data(self):
         errors = utils.generate_errors('jobdefinition_id',
@@ -329,17 +338,20 @@ class TestJob(utils.SchemaTesting):
         super(TestJob, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
-        super(TestJob, self).test_post(self.data, self.data)
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data, {'comment': None})
+        super(TestJob, self).test_post(self.data, data_expected)
 
     def test_put_extra_data(self):
-        super(TestJob, self).test_put_extra_data(self.data)
+        super(TestJob, self).test_put_extra_data(self.data_put)
 
     def test_put_invalid_data(self):
-        invalids, errors = TestJob.generate_invalids_and_errors()
+        invalids, errors = TestJob.generate_invalids_and_errors_put()
         super(TestJob, self).test_put_invalid_data(invalids, errors)
 
     def test_put(self):
-        super(TestJob, self).test_put(self.data, self.data)
+        # add default values to voluptuous output
+        super(TestJob, self).test_put(self.data_put, self.data_put)
 
 
 class TestJobSchedule(utils.SchemaTesting):
@@ -402,7 +414,10 @@ class TestJobState(utils.SchemaTesting):
         super(TestJobState, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
-        super(TestJobState, self).test_post(self.data, self.data)
+        pass
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data, {'comment': None})
+        super(TestJobState, self).test_post(self.data, data_expected)
 
     def test_put_extra_data(self):
         super(TestJobState, self).test_put_extra_data(self.data)
@@ -412,7 +427,9 @@ class TestJobState(utils.SchemaTesting):
         super(TestJobState, self).test_put_invalid_data(invalids, errors)
 
     def test_put(self):
-        super(TestJobState, self).test_put(self.data, self.data)
+        # add default values to voluptuous output
+        data_expected = utils.dict_merge(self.data, {'comment': None})
+        super(TestJobState, self).test_put(self.data, data_expected)
 
 
 class TestFile(utils.SchemaTesting):

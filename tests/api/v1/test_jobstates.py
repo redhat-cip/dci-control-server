@@ -19,14 +19,26 @@ import pytest
 
 
 def test_create_jobstates(admin, job_id):
-    js = admin.post('/api/v1/jobstates',
-                    data={'job_id': job_id, 'status': 'running',
-                          'comment': 'kikoolol'}).data
+    data = {'job_id': job_id, 'status': 'running', 'comment': 'kikoolol'}
+
+    js = admin.post('/api/v1/jobstates', data=data).data
     js_id = js['jobstate']['id']
+
     js = admin.get('/api/v1/jobstates/%s' % js_id).data
     job = admin.get('/api/v1/jobs/%s' % job_id).data
+
     assert js['jobstate']['comment'] == 'kikoolol'
     assert job['job']['status'] == 'running'
+
+
+def test_create_jobstates_empty_comment(admin, job_id):
+    data = {'job_id': job_id, 'status': 'running'}
+
+    js = admin.post('/api/v1/jobstates', data=data).data
+    assert js['jobstate']['comment'] is None
+
+    js = admin.get('/api/v1/jobstates/%s' % js['jobstate']['id']).data
+    assert js['jobstate']['comment'] is None
 
 
 def test_get_all_jobstates(admin, job_id):

@@ -49,6 +49,8 @@ class DciControlServer(flask.Flask):
 
     def process_response(self, resp):
         headers = resp.headers
+        headers.add_header('Access-Control-Expose-Headers',
+                           self.config['X_HEADERS'])
         headers.add_header('Access-Control-Allow-Origin',
                            self.config['X_DOMAINS'])
 
