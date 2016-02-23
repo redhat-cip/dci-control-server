@@ -421,7 +421,7 @@ class TestJobState(utils.SchemaTesting):
 
 class TestFile(utils.SchemaTesting):
     schema = schemas.file
-    data = dict([utils.NAME, utils.CONTENT, utils.JOB_STATE])
+    data = dict([utils.NAME, utils.CONTENT, utils.JOB_STATE, utils.JOB])
 
     @staticmethod
     def generate_invalids_and_errors():
@@ -444,7 +444,7 @@ class TestFile(utils.SchemaTesting):
         super(TestFile, self).test_post_extra_data(data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'content', 'jobstate_id')
+        errors = utils.generate_errors('name', 'content')
         super(TestFile, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
