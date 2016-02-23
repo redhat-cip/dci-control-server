@@ -249,7 +249,10 @@ file = utils.dict_merge(base, {
     'content': six.text_type,
     v.Optional('md5', default=None): six.text_type,
     v.Optional('mime', default=None): six.text_type,
-    'jobstate_id': v.Any(UUID_FIELD, msg=INVALID_JOB_STATE)
+    v.Optional('jobstate_id', default=None): v.Any(UUID_FIELD,
+                                                   msg=INVALID_JOB_STATE)
+    v.Optional('job_id', default=None): v.Any(UUID_FIELD,
+                                              msg=INVALID_JOB)
 })
 
 file = schema_factory(file)
