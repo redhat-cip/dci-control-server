@@ -42,8 +42,14 @@ _VALID_EMBED = {
 
 @api.route('/files', methods=['POST'])
 @auth.requires_auth
-def create_files(user):
-    values = schemas.file.post(flask.request.json)
+def create_files(user, values=None):
+    if values is None:
+        values = schemas.file.post(flask.request.json)
+
+    if values.get('jobstate_id', None) is None and \
+       values.get('job_id', None) is None:
+        raise dci_exc.DCIException('jobstate_id or job_id must be specified',
+                                   status_code=400)
 
     values.update({
         'id': utils.gen_uuid(),
@@ -84,7 +90,7 @@ def put_file(user, file_id):
 
 @api.route('/files', methods=['GET'])
 @auth.requires_auth
-def get_all_files(user):
+def get_all_files(user, j_id=None):
     """Get all files.
     """
     args = schemas.args(flask.request.args.to_dict())
@@ -104,6 +110,9 @@ def get_all_files(user):
     # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+
+    if j_id is not None:
+        q_bd.where.append(_TABLE.c.job_id == j_id)
 
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()

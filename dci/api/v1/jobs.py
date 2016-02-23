@@ -28,6 +28,7 @@ from dci.common import schemas
 from dci.common import utils
 from dci.db import models
 
+from dci.api.v1 import files
 from dci.api.v1 import jobstates
 
 _TABLE = models.JOBS
@@ -257,6 +258,26 @@ def job_recheck(user, j_id):
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
                           content_type='application/json')
+
+
+@api.route('/jobs/<j_id>/files', methods=['POST'])
+@auth.requires_auth
+def add_file_to_jobs(user, j_id):
+    values = schemas.job.post(flask.request.json)
+
+    values.update({
+        'job_id': j_id
+    })
+
+    return files.create_files(user, values)
+
+
+@api.route('/jobs/<j_id>/files', methods=['GET'])
+@auth.requires_auth
+def get_all_files_from_jobs(user, j_id):
+    """Get all files.
+    """
+    return files.get_all_files(j_id)
 
 
 @api.route('/jobs/<j_id>', methods=['DELETE'])
