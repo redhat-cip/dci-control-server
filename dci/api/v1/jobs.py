@@ -259,6 +259,38 @@ def job_recheck(user, j_id):
                           content_type='application/json')
 
 
+@api.route('/jobs/<j_id>/files', methods=['POST'])
+@auth.requires_auth
+def add_file_to_jobs(user, j_id):
+    data_json = flask.request.json
+    values = {'job_id': j_id,
+              'file_id': data_json.get('file_id', None)}
+
+    v1_utils.verify_existence_and_get(j_id, _TABLE)
+
+    query = models.JOIN_JOBS_FILES.insert().values(**values)
+    flask.g.db_conn.execute(query)
+    return flask.Response(None, 201, content_type='application/json')
+
+
+@api.route('/jobs/<j_id>/files', methods=['GET'])
+@auth.requires_auth
+def get_all_files_from_jobs(user, j_id):
+    v1_utils.verify_existence_and_get(j_id, _TABLE)
+
+    # Get all files which belongs to a given job
+    JDC = models.JOIN_JOBS_FILES
+    query = (sqlalchemy.sql.select([models.FILES])
+             .select_from(JDC.join(models.FILES))
+             .where(JDC.c.job_id == j_id))
+    rows = flask.g.db_conn.execute(query)
+
+    res = flask.jsonify({'files': rows,
+                         '_meta': {'count': rows.rowcount}})
+    res.status_code = 201
+    return res
+
+
 @api.route('/jobs/<j_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_job_by_id(user, j_id):
