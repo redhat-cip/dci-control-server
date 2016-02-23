@@ -165,10 +165,13 @@ FILES = sa.Table(
     sa.Column('md5', sa.String(32)),
     sa.Column('jobstate_id', sa.String(36),
               sa.ForeignKey('jobstates.id', ondelete="CASCADE"),
-              nullable=False),
+              nullable=True),
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
-              nullable=False))
+              nullable=False),
+    sa.Column('job_id', sa.String(36),
+              sa.ForeignKey('jobs.id', ondelete="CASCADE"),
+              nullable=True))
 
 USERS = sa.Table(
     'users', metadata,
