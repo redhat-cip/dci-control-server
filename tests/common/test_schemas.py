@@ -444,7 +444,7 @@ class TestFile(utils.SchemaTesting):
         super(TestFile, self).test_post_extra_data(data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'content', 'jobstate_id')
+        errors = utils.generate_errors('name', 'content')
         super(TestFile, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
