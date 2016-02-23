@@ -136,6 +136,16 @@ JOBS = sa.Table(
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
               nullable=False))
 
+JOIN_JOBS_FILES = sa.Table(
+    'job_files', metadata,
+    sa.Column('job_id', sa.String(36),
+              sa.ForeignKey('jobs.id', ondelete="CASCADE"),
+              nullable=False, primary_key=True),
+    sa.Column('file_id', sa.String(36),
+              sa.ForeignKey('files.id', ondelete="CASCADE"),
+              nullable=False, primary_key=True)
+)
+
 JOBSTATES = sa.Table(
     'jobstates', metadata,
     sa.Column('id', sa.String(36), primary_key=True,
@@ -163,7 +173,7 @@ FILES = sa.Table(
     sa.Column('md5', sa.String(32)),
     sa.Column('jobstate_id', sa.String(36),
               sa.ForeignKey('jobstates.id', ondelete="CASCADE"),
-              nullable=False),
+              nullable=True),
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
               nullable=False))
