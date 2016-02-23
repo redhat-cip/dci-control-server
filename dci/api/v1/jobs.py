@@ -259,6 +259,58 @@ def job_recheck(user, j_id):
                           content_type='application/json')
 
 
+@api.route('/jobs/<j_id>/files', methods=['POST'])
+@auth.requires_auth
+def add_file_to_jobs(user, j_id):
+    values = schemas.file.post(flask.request.json)
+
+    values.update({
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'team_id': user['team_id'],
+        'job_id': j_id
+    })
+
+    query = _TABLE.insert().values(**values)
+
+    flask.g.db_conn.execute(query)
+    flask.g.es_conn.index(values)
+    result = json.dumps({'file': values})
+    return flask.Response(result, 201, content_type='application/json')
+
+
+@api.route('/jobs/<j_id>/files', methods=['GET'])
+@auth.requires_auth
+def get_all_files_from_jobs(user, j_id):
+    """Get all files.
+    """
+    args = schemas.args(flask.request.args.to_dict())
+
+    embed = args['embed']
+    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
+
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
+
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
+    q_bd.sort = v1_utils.sort_query(args['sort'], _FILES_COLUMNS)
+    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _FILES_COLUMNS)
+    q_bd.where.append(_TABLE.c.job_id == j_id)
+
+    # If it's not an admin then restrict the view to the team's file
+    if not auth.is_admin(user):
+        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+
+    # get the number of rows for the '_meta' section
+    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+
+    result = [v1_utils.group_embedded_resources(embed, row) for row in rows]
+
+    return json.jsonify({'files': result, '_meta': {'count': nb_row}})
+
 @api.route('/jobs/<j_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_job_by_id(user, j_id):

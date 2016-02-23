@@ -45,6 +45,11 @@ _VALID_EMBED = {
 def create_files(user):
     values = schemas.file.post(flask.request.json)
 
+    if values.get('jobstate_id', None) is None and \
+       values.get('job_id', None) is None:
+        raise dci_exc.DCIException('jobstate_id or job_id must be specified',
+                                   status_code=400)
+
     values.update({
         'id': utils.gen_uuid(),
         'created_at': datetime.datetime.utcnow().isoformat(),
