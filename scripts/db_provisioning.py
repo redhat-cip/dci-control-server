@@ -209,6 +209,29 @@ def create_files(db_conn, jobstate, company_id):
         db_insert(db_conn, models.FILES, **args)
 
 
+def attach_files_to_jobs(db_conn, job, company_id):
+    job, job_def = job
+    id = job['id']
+
+    def filename_generator():
+        words = []
+        for _ in range(0, random.randint(1, 4)):
+            words.append(random.choice(NAMES))
+        return '_'.join(words)
+
+    name = '%s.txt' % filename_generator()
+    args = {
+        'name': name,
+        'content': lorem(),
+        'mime': 'text/plain',
+        'md5': hashlib.md5(name.encode('utf8')).hexdigest(),
+        'job_id': id,
+        'team_id': company_id
+    }
+
+    db_insert(db_conn, models.FILES, **args)
+
+
 def create_jobstates_and_files(db_conn, job, company_id):
     job, job_def = job
 
@@ -356,6 +379,7 @@ def init_db(db_conn):
         create_jobdefinition_components(db_conn, components, job_definitions)
         for job in zip(jobs, job_definitions):
             create_jobstates_and_files(db_conn, job, c['id'])
+            attach_files_to_jobs(db_conn, job, c['id'])
 
 
 if __name__ == '__main__':
