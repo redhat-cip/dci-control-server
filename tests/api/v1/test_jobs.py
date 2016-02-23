@@ -336,3 +336,33 @@ def test_delete_job_as_user(user, team_user_id, admin, job_id,
     job_delete = user.delete('/api/v1/jobs/%s' % job_id,
                              headers={'If-match': job_etag})
     assert job_delete.status_code == 401
+
+
+def test_create_file_for_job_id(user, jobdefinition_id, team_id, remoteci_id):
+    # create a job
+    job = user.post('/api/v1/jobs',
+                    data={'jobdefinition_id': jobdefinition_id,
+                          'team_id': team_id,
+                          'remoteci_id': remoteci_id})
+    job_id = job.data['job']['id']
+    assert job.status_code == 201
+
+    # create a file
+    file = user.post('/api/v1/files',
+                     data={'content': 'content',
+                           'name': 'foobar',
+                           'job_id': job_id})
+    file_id = file.data['file']['id']
+    file = user.get('/api/v1/files/%s' % file_id).data
+    assert file['file']['name'] == 'foobar'
+
+
+@pytest.mark.usefixtures('file_job_user_id')
+def test_get_file_by_job_id(user, job_id):
+    url = '/api/v1/jobs/%s/files' % job_id
+
+    # get file from job
+    file_from_job = user.get(url).data
+    assert file_from_job['_meta']['count'] == 1
+    assert file_from_job['files'][0] == file['file']
+    assert file_from_job['files'][0]['content'] == 'foobar'
