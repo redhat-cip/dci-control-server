@@ -336,3 +336,33 @@ def test_delete_job_as_user(user, team_user_id, admin, job_id,
     job_delete = user.delete('/api/v1/jobs/%s' % job_id,
                              headers={'If-match': job_etag})
     assert job_delete.status_code == 401
+
+
+def test_add_file_to_jobs_and_get(admin, jobdefinition_id, team_id,
+                                  remoteci_id):
+    # create a job
+    job = admin.post('/api/v1/jobs',
+                     data={'jobdefinition_id': jobdefinition_id,
+                           'team_id': team_id,
+                           'remoteci_id': remoteci_id})
+    job_id = job.data['job']['id']
+    assert job.status_code == 201
+
+    # create a file
+    file = admin.post('/api/v1/files',
+                      data={'content': 'content',
+                            'name': 'foobar',
+                            'job_id': job_id})
+    file_id = file.data['file']['id']
+    file = admin.get('/api/v1/files/%s' % file_id).data
+    assert file['file']['name'] == 'foobar'
+
+    url = '/api/v1/jobs/%s/files' % job_id
+    # add file to job
+    data = {'file_id': file_id}
+    admin.post(url, data=data)
+
+    # get file from job
+    file_from_job = admin.get(url).data
+    assert file_from_job['_meta']['count'] == 1
+    assert file_from_job['files'][0] == file['file']
