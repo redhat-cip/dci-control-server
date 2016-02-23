@@ -192,6 +192,14 @@ def file_user_id(user, jobstate_user_id):
 
 
 @pytest.fixture
+def file_job_user_id(user, job_id):
+    data = {'job_id': job_id,
+            'content': 'foobar', 'name': 'name'}
+    file = user.post('/api/v1/files', data=data).data
+    return file['file']['id']
+
+
+@pytest.fixture
 def es_clean(request):
     conf = dci_config.generate_conf()
     conn = es_engine.DCIESEngine(conf)
