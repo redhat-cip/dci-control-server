@@ -250,7 +250,7 @@ file = utils.dict_merge(base, {
     v.Optional('md5', default=None): six.text_type,
     v.Optional('mime', default=None): six.text_type,
     v.Optional('jobstate_id', default=None): v.Any(UUID_FIELD,
-                                                   msg=INVALID_JOB_STATE)
+                                                   msg=INVALID_JOB_STATE),
     v.Optional('job_id', default=None): v.Any(UUID_FIELD,
                                               msg=INVALID_JOB),
 })
