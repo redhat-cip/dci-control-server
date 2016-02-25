@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa57193c_8e0c8b96",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-02-25T08:14:20Z",
+      "side": 1,
+      "message": "Should we add a PUT in order to rename the topic if needed or should the topic be re created with a new name ?",
+      "revId": "d61e953b476188b50f6a3be108c2242c831a6bf7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
