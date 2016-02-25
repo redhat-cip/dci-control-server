@@ -16,6 +16,23 @@
       "revId": "d61e953b476188b50f6a3be108c2242c831a6bf7",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa57193c_2e7e1fe5",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-02-25T08:49:52Z",
+      "side": 1,
+      "message": "Should the API returns only \u0027all_topics\u0027 a team_id is entitled to see.\n\nIf I am Dell for example get_all_topic would return only osp\nIf I am Rackspace it might return osp and osp-nfv\nIf I am Boa team it might return dci\n\nAnd finally if I am admin it might return osp, osp-nfv and dci.\n\nElse we have information leak.",
+      "revId": "d61e953b476188b50f6a3be108c2242c831a6bf7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
