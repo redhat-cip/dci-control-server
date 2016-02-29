@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a682502_b5d0c0f8",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 268,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-02-29T10:31:14Z",
+      "side": 1,
+      "message": "nitpick, the line return is not needed here:\n\n    values.update({\u0027job_id\u0027: j_id})",
+      "revId": "c3290a5f908f8a25241a02f526fcd3675ef6c600",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a682502_75e748e5",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 341,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-02-29T10:31:14Z",
+      "side": 1,
+      "message": "I\u0027d preferred that you divide this test in two, test_create_file_for_job_id, test_get_file_by_job_id, and use a fixture to create a job_file which can be reused later, see the conftest file for how to create this fixture.\n\nI also will be more comfortable if we could test 404 (if job does not exist) and 401 (if user does not have accesses), but this is not mandatory as we need to reorganise the testing workflow in order to avoid redundant code",
+      "revId": "c3290a5f908f8a25241a02f526fcd3675ef6c600",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
