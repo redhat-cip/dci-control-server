@@ -162,15 +162,17 @@ def add_team_to_topic(user, t_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
 
+    # TODO(yassine): use voluptuous schema
     data_json = flask.request.json
     values = {'topic_id': t_id,
-              'team_id': data_json.get('team_id', None)}
+              'team_id': data_json.get('team_id')}
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
 
     query = models.JOINS_TOPICS_TEAMS.insert().values(**values)
     flask.g.db_conn.execute(query)
-    return flask.Response(None, 201, content_type='application/json')
+    result = json.dumps(values)
+    return flask.Response(result, 201, content_type='application/json')
 
 
 @api.route('/topics/<t_id>/teams/<team_id>', methods=['DELETE'])

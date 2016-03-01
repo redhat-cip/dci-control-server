@@ -182,7 +182,11 @@ def test_add_team_to_topic_and_get(admin):
     url = '/api/v1/topics/%s/teams' % pt_id
     # add team to topic
     data = {'team_id': team_id}
-    admin.post(url, data=data)
+    res = admin.post(url, data=data)
+    assert res.status_code == 201
+    add_data = res.data
+    assert add_data['topic_id'] == pt_id
+    assert add_data['team_id'] == team_id
 
     # get teams from topic
     team_from_topic = admin.get(url).data
