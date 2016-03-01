@@ -47,7 +47,7 @@ COMPONENTS = sa.Table(
     sa.Column('ref', sa.Text),
     sa.Column('topic_id', sa.String(36),
               sa.ForeignKey('topics.id', ondelete="CASCADE"),
-              nullable=False))
+              nullable=True))
 
 
 TOPICS = sa.Table(
@@ -84,7 +84,7 @@ TESTS = sa.Table(
     sa.Column('data', sa_utils.JSONType),
     sa.Column('topic_id', sa.String(36),
               sa.ForeignKey('topics.id', ondelete="CASCADE"),
-              nullable=False))
+              nullable=True))
 
 JOBDEFINITIONS = sa.Table(
     'jobdefinitions', metadata,
@@ -104,7 +104,7 @@ JOBDEFINITIONS = sa.Table(
               nullable=False),
     sa.Column('topic_id', sa.String(36),
               sa.ForeignKey('topics.id', ondelete="CASCADE"),
-              nullable=False))
+              nullable=True))
 
 JOIN_JOBDEFINITIONS_COMPONENTS = sa.Table(
     'jobdefinition_components', metadata,
