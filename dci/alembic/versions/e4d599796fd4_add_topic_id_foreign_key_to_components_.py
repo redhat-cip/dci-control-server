@@ -29,21 +29,53 @@ depends_on = None
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import sql
+
+from dci.common import utils
+from dci.db import models
+
+import datetime
 
 
 def upgrade():
     op.add_column('components',
                   sa.Column('topic_id', sa.String(36),
                             sa.ForeignKey('topics.id', ondelete="CASCADE"),
-                            nullable=False))
+                            nullable=True))
     op.add_column('tests',
                   sa.Column('topic_id', sa.String(36),
                             sa.ForeignKey('topics.id', ondelete="CASCADE"),
-                            nullable=False))
+                            nullable=True))
     op.add_column('jobdefinitions',
                   sa.Column('topic_id', sa.String(36),
                             sa.ForeignKey('topics.id', ondelete="CASCADE"),
-                            nullable=False))
+                            nullable=True))
+    db_conn = op.get_bind()
+
+    # Create a default topic
+    topic_id = utils.gen_uuid()
+    topic_values = {
+        'id': topic_id,
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': utils.gen_etag(),
+        'name': 'default'
+    }
+    db_conn.execute(models.TOPICS.insert().values(**topic_values))
+
+    # Adds all components, jobdefinitions and tests to the default topics
+    values = {'topic_id': topic_id}
+    db_conn.execute(models.COMPONENTS.update().values(**values))
+    db_conn.execute(models.JOBDEFINITIONS.update().values(**values))
+    db_conn.execute(models.TESTS.update().values(**values))
+
+    # Adds all teams to the default topics
+    all_teams = db_conn.execute(models.TEAMS.select()).fetchall()
+
+    teams_topic = [{'topic_id': topic_id, 'team_id': team['id']}
+                   for team in all_teams]
+    if teams_topic:
+        db_conn.execute(models.JOINS_TOPICS_TEAMS.insert(), teams_topic)
 
 
 def downgrade():
