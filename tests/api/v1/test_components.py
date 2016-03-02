@@ -40,6 +40,29 @@ def test_create_components_already_exist(admin, topic_id):
     assert pstatus_code == 422
 
 
+def test_create_components_with_same_name_on_different_topics(admin, topic_id):
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
+    pstatus_code = admin.post('/api/v1/components', data=data).status_code
+    assert pstatus_code == 201
+
+    topic2 = admin.post('/api/v1/topics', data={'name': 'tname'}).data
+    topic_id2 = topic2['topic']['id']
+
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id2}
+    pstatus_code = admin.post('/api/v1/components', data=data).status_code
+    assert pstatus_code == 201
+
+
+def test_create_components_with_same_name_on_same_topics(admin, topic_id):
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
+    pstatus_code = admin.post('/api/v1/components', data=data).status_code
+    assert pstatus_code == 201
+
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
+    pstatus_code = admin.post('/api/v1/components', data=data).status_code
+    assert pstatus_code == 422
+
+
 def test_get_all_components(admin, topic_id):
     created_c_ids = []
     for i in range(5):

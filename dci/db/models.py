@@ -35,7 +35,7 @@ COMPONENTS = sa.Table(
               default=utils.gen_uuid),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('name', sa.String(255), unique=True, nullable=False),
+    sa.Column('name', sa.String(255), nullable=False),
     sa.Column('type', sa.String(255), nullable=False),
     sa.Column('canonical_project_name', sa.String),
     sa.Column('data', sa_utils.JSONType),
@@ -47,7 +47,9 @@ COMPONENTS = sa.Table(
     sa.Column('ref', sa.Text),
     sa.Column('topic_id', sa.String(36),
               sa.ForeignKey('topics.id', ondelete="CASCADE"),
-              nullable=True))
+              nullable=True),
+    sa.UniqueConstraint('name', 'topic_id',
+                        name='components_name_topic_id_key'))
 
 
 TOPICS = sa.Table(
