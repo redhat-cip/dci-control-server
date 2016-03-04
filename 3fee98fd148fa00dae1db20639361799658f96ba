@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a65312a_74e8e87c",
+        "filename": "dci/api/v1/jobdefinitions.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 161,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-03-04T10:57:56Z",
+      "side": 1,
+      "message": "Should something like this be applied also (it is on other resource)\n\n\n  try:\n    flask.g.db_conn.execute(query)\n  except sa_exc.IntegrityError as e:\n    raise dci_exc.DCIException(\"XXXXX.\", payload\u003dstr(e))",
+      "revId": "3fee98fd148fa00dae1db20639361799658f96ba",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
