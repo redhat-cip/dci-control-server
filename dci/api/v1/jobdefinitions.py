@@ -157,8 +157,13 @@ def add_component_to_jobdefinitions(user, jd_id):
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
     query = models.JOIN_JOBDEFINITIONS_COMPONENTS.insert().values(**values)
-    flask.g.db_conn.execute(query)
-    return flask.Response(None, 201, content_type='application/json')
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict(_TABLE.name,
+                                          'jobdefinition_id, component_id')
+    result = json.dumps(values)
+    return flask.Response(result, 201, content_type='application/json')
 
 
 @api.route('/jobdefinitions/<jd_id>/components', methods=['GET'])

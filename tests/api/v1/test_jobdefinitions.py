@@ -246,8 +246,9 @@ def test_add_component_to_jobdefinitions_and_get(admin, test_id, topic_id):
 
     url = '/api/v1/jobdefinitions/%s/components' % pjd_id
     # add component to jobdefinition
-    data = {'component_id': pc_id}
-    admin.post(url, data=data)
+    add_data = admin.post(url, data={'component_id': pc_id}).data
+    assert add_data['jobdefinition_id'] == pjd_id
+    assert add_data['component_id'] == pc_id
 
     # get component from jobdefinition
     component_from_jobdefinition = admin.get(url).data
