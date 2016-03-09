@@ -327,7 +327,12 @@ def lorem(size=len(LOREM_IPSUM), l=True):
 def init_db(db_conn):
     db_ins = functools.partial(db_insert, db_conn)
 
-    topic_id = db_ins(models.TOPICS, name="the_topic")
+    # Create the super admin user
+    admin_team = db_ins(models.TEAMS, name='admin')
+
+    topic_id = db_ins(models.TOPICS, name="the_topic",
+                      description='this is a description',
+                      comment='and this is a comment', team_id=admin_team)
 
     components = []
     for component in COMPONENTS:
@@ -360,9 +365,6 @@ def init_db(db_conn):
     for test in TESTS:
         tests[test] = db_ins(models.TESTS, name=test, data=DATA,
                              topic_id=topic_id)
-
-    # Create the super admin user
-    admin_team = db_ins(models.TEAMS, name='admin')
 
     db_ins(models.USERS, name='admin',
            role='admin',

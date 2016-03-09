@@ -280,7 +280,13 @@ file = schema_factory(file)
 #                                                                             #
 ###############################################################################
 
-topic = schema_factory(base)
+topic = utils.dict_merge(base, {
+    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    v.Optional('content', default=None): six.text_type,
+    v.Optional('desciption', default=None): six.text_type
+})
+
+topic = schema_factory(topic)
 
 ###############################################################################
 #                                                                             #
