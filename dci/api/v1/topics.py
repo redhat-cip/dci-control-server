@@ -42,7 +42,8 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 def create_topics(user):
     values = schemas.topic.post(flask.request.json)
 
-    if not(auth.is_admin(user)):
+    if not(auth.is_admin(user) or
+           auth.is_in_team(user, values.get('team_id'))):
         raise auth.UNAUTHORIZED
 
     etag = utils.gen_etag()

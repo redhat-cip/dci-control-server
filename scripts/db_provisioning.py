@@ -327,7 +327,9 @@ def lorem(size=len(LOREM_IPSUM), l=True):
 def init_db(db_conn):
     db_ins = functools.partial(db_insert, db_conn)
 
-    topic_id = db_ins(models.TOPICS, name="the_topic")
+    topic_id = db_ins(models.TOPICS, name="the_topic",
+                      description="This an original topic",
+                      comment=' '.join(LOREM_IPSUM[0:7]))
 
     components = []
     for component in COMPONENTS:

@@ -148,7 +148,7 @@ role = schema_factory(base)
 ###############################################################################
 
 test = schema_factory(utils.dict_merge(base, DATA_FIELD, {
-    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC)
+    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC),
 }))
 
 ###############################################################################
@@ -280,7 +280,13 @@ file = schema_factory(file)
 #                                                                             #
 ###############################################################################
 
-topic = schema_factory(base)
+topic = utils.dict_merge(base, DATA_FIELD, {
+    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    v.Optional('description', default=None): six.text_type,
+    v.Optional('comment', default=None): six.text_type
+})
+
+topic = schema_factory(topic)
 
 ###############################################################################
 #                                                                             #
