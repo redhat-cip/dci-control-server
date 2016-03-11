@@ -27,21 +27,6 @@ def test_create_files(admin, jobstate_id):
     assert file['file']['name'] == 'kikoolol'
 
 
-def test_put_files(admin, jobstate_id):
-    file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id, 'content': 'content',
-                            'name': 'kikoolol'})
-    file_id = file.data['file']['id']
-
-    pfile = admin.put('/api/v1/files/%s' % file_id,
-                      data={'name': 'ptdr', 'content': 'kijiji'})
-    assert pfile.status_code == 204
-
-    gfile = admin.get('/api/v1/files/%s' % file_id).data
-    assert gfile['file']['name'] == 'ptdr'
-    assert gfile['file']['content'] == 'kijiji'
-
-
 def test_get_all_files(admin, jobstate_id):
     file_1 = admin.post('/api/v1/files',
                         data={'jobstate_id': jobstate_id, 'content': 'content',
@@ -253,29 +238,6 @@ def test_get_file_as_user(user, file_id, jobstate_user_id):
     file_id = file['file']['id']
     file = user.get('/api/v1/files/%s' % file_id)
     assert file.status_code == 200
-
-
-def test_put_file_as_user(user, team_user_id, team_admin_id, file_id, admin,
-                          jobstate_user_id):
-    file_user = user.post('/api/v1/files',
-                          data={'jobstate_id': jobstate_user_id,
-                                'content': 'kikoolol', 'name': 'name'})
-    file_user_id = file_user.data['file']['id']
-    file_user = user.get('/api/v1/files/%s' % file_user_id)
-
-    file_put = user.put('/api/v1/files/%s' % file_user_id,
-                        data={'jobstate_id': jobstate_user_id,
-                              'content': 'kikoolol2', 'name': 'name2'})
-    assert file_put.status_code == 204
-
-    file_admin = admin.post('/api/v1/files',
-                            data={'jobstate_id': jobstate_user_id,
-                                  'content': 'kikoolol', 'name': 'name'})
-    file_admin_id = file_admin.data['file']['id']
-    file_admin_put = user.put('/api/v1/files/%s' % file_admin_id,
-                              data={'jobstate_id': jobstate_user_id,
-                                    'content': 'kikoolol2', 'name': 'name2'})
-    assert file_admin_put.status_code == 401
 
 
 def test_delete_file_as_user(user, admin, jobstate_user_id,

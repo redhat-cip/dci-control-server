@@ -65,29 +65,6 @@ def create_files(user, values=None):
     return flask.Response(result, 201, content_type='application/json')
 
 
-@api.route('/files/<file_id>', methods=['PUT'])
-@auth.requires_auth
-def put_file(user, file_id):
-    # get If-Match header
-    values = schemas.file.put(flask.request.json)
-
-    file = v1_utils.verify_existence_and_get(file_id, _TABLE)
-
-    # If it's an admin or belongs to the same team
-    if not(auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
-        raise auth.UNAUTHORIZED
-
-    where_clause = _TABLE.c.id == file_id
-    query = _TABLE.update().where(where_clause).values(**values)
-
-    result = flask.g.db_conn.execute(query)
-
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('File', file_id)
-
-    return flask.Response(None, 204, content_type='application/json')
-
-
 @api.route('/files', methods=['GET'])
 @auth.requires_auth
 def get_all_files(user, j_id=None):
