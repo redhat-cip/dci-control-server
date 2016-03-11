@@ -160,6 +160,24 @@ def test_get_jobdefinition_not_found(admin):
     assert result.status_code == 404
 
 
+def test_put_jobdefinitions(admin, test_id, topic_id):
+    jd = admin.post('/api/v1/jobdefinitions',
+                    data={'name': 'pname', 'test_id': test_id,
+                          'topic_id': topic_id}).data
+    jd_id = jd['jobdefinition']['id']
+    jd = admin.get('/api/v1/jobdefinitions/%s' % jd_id).data
+    jd_etag = jd['jobdefinition']['etag']
+    assert jd['jobdefinition']['name'] == 'pname'
+
+    ppt = admin.put('/api/v1/jobdefinitions/%s' % jd_id,
+                    data={'name': 'nname'},
+                    headers={'If-match': jd_etag})
+    assert ppt.status_code == 204
+
+    gt = admin.get('/api/v1/jobdefinitions/%s' % jd_id)
+    assert gt['jobdefinition']['name'] == 'nname'
+
+
 def test_delete_jobdefinition_by_id(admin, test_id, topic_id):
     data = {'name': 'pname', 'test_id': test_id, 'topic_id': topic_id}
     pjd = admin.post('/api/v1/jobdefinitions', data=data)
