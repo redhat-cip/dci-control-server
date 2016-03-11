@@ -123,6 +123,35 @@ def get_jobdefinition_by_id_or_name(user, jd_id):
     return res
 
 
+@api.route('/jobdefinitions/<jd_id>', methods=['PUT'])
+@auth.requires_auth
+def put_jobdefinition(user, jd_id):
+    # get If-Match header
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    values = schemas.team.put(flask.request.json)
+
+    if not(auth.is_admin(user) or auth.is_admin_user(user, jd_id)):
+        raise auth.UNAUTHORIZED
+
+    v1_utils.verify_existence_and_get(jd_id, _TABLE)
+
+    values['etag'] = utils.gen_etag()
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == jd_id, _TABLE.c.name == jd_id)
+    )
+    query = _TABLE.update().where(where_clause).values(**values)
+
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Jobdefinition', jd_id)
+
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
+                          content_type='application/json')
+
+
 @api.route('/jobdefinitions/<jd_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_jobdefinition_by_id_or_name(user, jd_id):
