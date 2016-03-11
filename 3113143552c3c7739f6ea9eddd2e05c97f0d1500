@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da01753e_f14888ce",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-03-11T15:51:43Z",
+      "side": 1,
+      "message": "Since creating a topic is an admin action, you should only verify that the user is a super admin.",
+      "revId": "3113143552c3c7739f6ea9eddd2e05c97f0d1500",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
