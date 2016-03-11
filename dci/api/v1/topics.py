@@ -115,6 +115,35 @@ def get_all_topics(user):
         return res
 
 
+@api.route('/topics/<t_id>', methods=['PUT'])
+@auth.requires_auth
+def put_topic(user, t_id):
+    # get If-Match header
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    values = schemas.topic.put(flask.request.json)
+
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+
+    v1_utils.verify_existence_and_get(t_id, _TABLE)
+
+    values['etag'] = utils.gen_etag()
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
+    )
+    query = _TABLE.update().where(where_clause).values(**values)
+
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Topic', t_id)
+
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
+                          content_type='application/json')
+
+
 @api.route('/topics/<t_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_topic_by_id_or_name(user, t_id):
