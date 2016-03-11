@@ -213,33 +213,6 @@ def test_get_all_jobs_with_embed_not_valid(admin):
     assert jds.status_code == 400
 
 
-def test_update_job(admin, jobdefinition_id, team_id, remoteci_id):
-    data = {
-        'jobdefinition_id': jobdefinition_id,
-        'team_id': team_id,
-        'remoteci_id': remoteci_id,
-        'comment': 'foo'
-    }
-    job = admin.post('/api/v1/jobs', data=data)
-    job = job.data['job']
-
-    assert job['comment'] == 'foo'
-
-    data_update = {'status': 'failure', 'comment': 'bar'}
-
-    res = admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
-                    headers={'If-match': job['etag']})
-
-    assert res.status_code == 204
-
-    res = admin.get('/api/v1/jobs/%s' % job['id'])
-    job = res.data['job']
-
-    assert res.status_code == 200
-    assert job['status'] == 'failure'
-    assert job['comment'] == 'bar'
-
-
 def test_get_all_jobs_with_where(admin, jobdefinition_id, team_id,
                                  remoteci_id):
     job = admin.post('/api/v1/jobs',
