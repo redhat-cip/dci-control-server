@@ -27,21 +27,6 @@ def test_create_files(admin, jobstate_id):
     assert file['file']['name'] == 'kikoolol'
 
 
-def test_put_files(admin, jobstate_id):
-    file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id, 'content': 'content',
-                            'name': 'kikoolol'})
-    file_id = file.data['file']['id']
-
-    pfile = admin.put('/api/v1/files/%s' % file_id,
-                      data={'name': 'ptdr', 'content': 'kijiji'})
-    assert pfile.status_code == 204
-
-    gfile = admin.get('/api/v1/files/%s' % file_id).data
-    assert gfile['file']['name'] == 'ptdr'
-    assert gfile['file']['content'] == 'kijiji'
-
-
 def test_get_all_files(admin, jobstate_id):
     file_1 = admin.post('/api/v1/files',
                         data={'jobstate_id': jobstate_id, 'content': 'content',
