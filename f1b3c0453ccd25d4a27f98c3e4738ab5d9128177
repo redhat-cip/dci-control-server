@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7af0899e_2e18e783",
+        "filename": "dci/settings.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 247
+      },
+      "writtenOn": "2016-03-16T14:38:56Z",
+      "side": 1,
+      "message": "Would it be worth it to add some documentation or a link to this review noting why this value is the way it is?",
+      "revId": "f1b3c0453ccd25d4a27f98c3e4738ab5d9128177",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
