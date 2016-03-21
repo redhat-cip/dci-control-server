@@ -369,6 +369,10 @@ def init_db(db_conn):
            password=auth.hash_password('admin'),
            team_id=admin_team)
 
+    # Attach the team admin to one topic
+    db_ins(models.JOINS_TOPICS_TEAMS, topic_id=topic_id,
+           team_id=admin_team)
+
     # For each constructor create an admin and a user, cis and jobs
     for company in COMPANIES:
         c = {}
