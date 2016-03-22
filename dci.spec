@@ -52,9 +52,10 @@ BuildRequires:  elasticsearch
 
 Requires:       python-alembic
 Requires:       python-elasticsearch
-Requires:       python-lxml
 Requires:       python-flask
 Requires:       python-flask-sqlalchemy
+Requires:       python-influxdb
+Requires:       python-lxml
 Requires:       python-passlib
 Requires:       python-psycopg2
 Requires:       python-requests
@@ -92,6 +93,7 @@ Requires:       python3-alembic
 Requires:       python3-elasticsearch
 Requires:       python3-flask
 Requires:       python3-flask-sqlalchemy
+Requires:       python3-influxdb
 Requires:       python3-lxml
 Requires:       python-passlib
 Requires:       python3-psycopg2

@@ -43,6 +43,10 @@ def gen_uuid():
     return str(uuid.uuid4())
 
 
+def gen_id():
+    return uuid.uuid4().hex
+
+
 def gen_etag():
     """Generate random etag based on MD5."""
 
