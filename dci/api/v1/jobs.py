@@ -15,8 +15,12 @@
 # under the License.
 
 import datetime
-
 import flask
+import influxdb
+import random
+import string
+
+
 from flask import json
 from sqlalchemy import sql
 
@@ -72,6 +76,33 @@ def create_jobs(user):
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
                           content_type='application/json')
+
+
+def get_influxdb_section(job_id):
+    random_pass = ''.join(random.choice(string.ascii_letters + string.digits)
+                          for _ in range(16))
+    user_name = 'user%s' % job_id.replace('-', '')
+    db_name = 'table%s' % job_id.replace('-', '')
+
+    try:
+        flask.g.influxdb_conn.create_database(db_name)
+        flask.g.influxdb_conn.create_user(user_name, random_pass)
+        flask.g.influxdb_conn.grant_privilege(user_name, db_name)
+
+        influxdb_section = {
+            'influxdb': {
+                'ip': flask.g.influxdb_conn.conn._host,
+                'port': flask.g.influxdb_conn.conn._port,
+                'user': user_name,
+                'pass': random_pass,
+                'database': db_name
+            }
+        }
+    except influxdb.InfluxDBServerError:
+        influxdb_section = {}
+        pass
+
+    return influxdb_section
 
 
 @api.route('/jobs/schedule', methods=['POST'])
@@ -164,6 +195,9 @@ def schedule_jobs(user):
     query = _TABLE.insert().values(**values)
 
     flask.g.db_conn.execute(query)
+
+    influxdb_section = get_influxdb_section(values.get('id'))
+    values.update(influxdb_section)
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
