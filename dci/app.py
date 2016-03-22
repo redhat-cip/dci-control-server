@@ -28,6 +28,11 @@ from sqlalchemy import exc as sa_exc
 from dci import dci_config
 
 
+TSDB_DRIVERS = {
+  'influxdb': 'dci.drivers.influxdb.InfluxDB'
+}
+
+
 class DciControlServer(flask.Flask):
 
     def __init__(self, conf):
@@ -36,6 +41,7 @@ class DciControlServer(flask.Flask):
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
         self.es_engine = es_engine.DCIESEngine(conf)
+        self.tsdb_engine = TSDB_DRIVERS[conf['tsdb_driver']](conf)
 
     def make_default_options_response(self):
         resp = super(DciControlServer, self).make_default_options_response()
@@ -93,6 +99,7 @@ def create_app(conf):
     def before_request():
         flask.g.db_conn = dci_app.engine.connect()
         flask.g.es_conn = dci_app.es_engine
+        flask.g.tsdb_conn = dci_app.tsdb_engine
 
     @dci_app.teardown_request
     def teardown_request(_):

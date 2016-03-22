@@ -68,3 +68,19 @@ class DCICreationConflict(DCIException):
         msg = 'conflict on %s' % resource_name
         payload = {'error': {field_name: 'already_exists'}}
         super(DCICreationConflict, self).__init__(msg, payload, 422)
+
+
+# TSDB related exceptions
+class DCITsdbException(Exception):
+    def __init__(self, tsdb_type,  message):
+        super(DCIException, self).__init__()
+        self.tsdb_type = tsdb_type
+        self.message = message
+
+    def __str__(self):
+        return '%s: %s' % (self.tsdb_type, self.message)
+
+
+class DCITsdbInfluxDBException(DCITsdbException):
+    def __init__(self, msg):
+        super(DCITsdbInfluxDBException, self).__init__('influxdb', msg)
