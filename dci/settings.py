@@ -52,6 +52,16 @@ DEBUG_LOG_FORMAT = (
 
 LOG_FILE = '/tmp/dci.log'
 
+# TSDB backend to use for storing metrics.
+#
+# Available backends are: influxdb
+# Set to None or comment if you do not wish to store metrics
+#
+# TSDB_DRIVER = influxdb
+TSDB_HOST = '127.0.0.1'
+TSDB_PORT = '8086'
+TSDB_USER = 'root'
+TSDB_PASS = 'root'
 
 LAST_UPDATED = 'updated_at'
 DATE_CREATED = 'created_at'
