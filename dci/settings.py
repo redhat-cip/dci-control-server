@@ -25,6 +25,13 @@ DEBUG = True
 ES_HOST = '127.0.0.1'
 ES_PORT = '9200'
 
+# InfluxDB Connection parameters
+#
+INFLUXDB_HOST = '127.0.0.1'
+INFLUXDB_PORT = '8086'
+INFLUXDB_USER = 'root'
+INFLUXDB_PASS = 'root'
+
 # Database (SQLAlchemy) related parameters
 #
 SQLALCHEMY_DATABASE_URI = 'postgresql://dci:dci@127.0.0.1:5432/dci'
@@ -51,6 +58,13 @@ DEBUG_LOG_FORMAT = (
 )
 
 LOG_FILE = '/tmp/dci.log'
+
+# TSDB backend to use for storing metrics.
+#
+# Available backends are: influxdb
+# Set to None or comment if you do not wish to store metrics
+#
+# TSDB_DRIVER = influxdb
 
 
 LAST_UPDATED = 'updated_at'
