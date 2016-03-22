@@ -15,8 +15,11 @@
 # under the License.
 
 import datetime
-
 import flask
+import random
+import string
+
+
 from flask import json
 from sqlalchemy import sql
 
@@ -164,6 +167,13 @@ def schedule_jobs(user):
     query = _TABLE.insert().values(**values)
 
     flask.g.db_conn.execute(query)
+
+    # InfluxDB
+    random_pass= ''.join(random.choice(string.ascii_letters + string.digits)
+                 for _ in range(16))
+    flask.g.influxdb_conn.create_database(values['id'])
+    flask.g.influxdb_conn.create_user('user', random_pass)
+    flask.g.influxdb_conn.grant_privilege('user', values['id'])
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
