@@ -20,6 +20,7 @@ from dci import auth
 from dci.db import models
 import dci.dci_config as config
 import functools
+import getopt
 import hashlib
 import random
 import sqlalchemy
@@ -401,8 +402,15 @@ if __name__ == '__main__':
     conf = config.generate_conf()
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
 
+
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "y")
+    except getopt.GetoptError:
+        print('you can force the deletion by adding -y as a parameter')
+
     if sqlalchemy_utils.functions.database_exists(db_uri):
-        while True:
+        flag = opts and '-y' in opts[0]
+        while not flag:
             print('Be carefull this script will override your database:')
             print(db_uri)
             print('')
