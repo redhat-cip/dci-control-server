@@ -15,8 +15,10 @@
 # under the License.
 
 import datetime
-
 import flask
+import logging
+
+
 from flask import json
 from sqlalchemy import sql
 
@@ -30,6 +32,8 @@ from dci.db import models
 
 from dci.api.v1 import files
 from dci.api.v1 import jobstates
+
+LOG = logging.getLogger(__name__)
 
 _TABLE = models.JOBS
 # associate column names with the corresponding SA Column object
@@ -72,6 +76,32 @@ def create_jobs(user):
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
                           content_type='application/json')
+
+
+def get_tsdb_section(job_id):
+    random_pass = utils.gen_id()
+    user_name = 'user%s' % job_id.replace('-', '')
+    db_name = 'table%s' % job_id.replace('-', '')
+
+    try:
+        flask.g.tsdb_conn.create_database(db_name)
+        flask.g.tsdb_conn.create_user(user_name, random_pass)
+        flask.g.tsdb_conn.grant_privilege(user_name, db_name)
+
+        tsdb_section = {
+            'tsdb': {
+                'ip': flask.g.tsdb_conn.host,
+                'port': flask.g.tsdb_conn.port,
+                'user': user_name,
+                'pass': random_pass,
+                'database': db_name
+            }
+        }
+    except dci_exc.DCITsdbException as e:
+        tsdb_section = {}
+        LOG.warn(str(e))
+
+    return tsdb_section
 
 
 @api.route('/jobs/schedule', methods=['POST'])
@@ -176,6 +206,10 @@ def schedule_jobs(user):
     with flask.g.db_conn.begin():
         flask.g.db_conn.execute(kill_query)
         flask.g.db_conn.execute(insert_query)
+
+    tsdb_section = get_tsdb_section(values.get('id'))
+    values.update(tsdb_section)
+
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
                           content_type='application/json')
