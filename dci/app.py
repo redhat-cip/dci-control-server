@@ -19,6 +19,7 @@ from dci.api import v1 as api_v1
 from dci.common import exceptions
 from dci.common import utils
 from dci.elasticsearch import engine as es_engine
+from dci.influxdb import engine as influxdb_engine
 
 import flask
 import logging
@@ -93,6 +94,7 @@ def create_app(conf):
     def before_request():
         flask.g.db_conn = dci_app.engine.connect()
         flask.g.es_conn = dci_app.es_engine
+        flask.g.influxdb_conn = dci_app.influxdb_engine
 
     @dci_app.teardown_request
     def teardown_request(_):
