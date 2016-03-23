@@ -20,6 +20,7 @@ from dci.common import exceptions
 from dci.common import utils
 from dci.elasticsearch import engine as es_engine
 from dci.tsdb.drivers import influxdb_driver
+from dci.grafana import engine as grafana_engine
 
 import flask
 import logging
@@ -41,6 +42,7 @@ class DciControlServer(flask.Flask):
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
         self.es_engine = es_engine.DCIESEngine(conf)
+        self.grafana_engine = grafana_engine.DCIGrafanaEngine(conf)
         try:
             driver = conf['TSDB_DRIVER']
             self.tsdb_engine = TSDB_DRIVERS[driver](conf)
@@ -104,6 +106,7 @@ def create_app(conf):
         flask.g.db_conn = dci_app.engine.connect()
         flask.g.es_conn = dci_app.es_engine
         flask.g.tsdb_conn = dci_app.tsdb_engine
+        flask.g.grafana_conn = dci_app.grafana_engine
 
     @dci_app.teardown_request
     def teardown_request(_):

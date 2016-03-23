@@ -1,0 +1,492 @@
+{
+    "dashboard": {
+        "annotations": {
+            "list": []
+        },
+        "editable": true,
+        "hideControls": false,
+        "id": null,
+        "links": [],
+        "originalTitle": "Testing DCI - table8e03ea16ff224cfb957768217f99ecd8",
+        "refresh": "5s",
+        "rows": [
+            {
+                "collapse": false,
+                "editable": true,
+                "height": "250px",
+                "panels": [
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "datasource": "table8e03ea16ff224cfb957768217f99ecd8",
+                        "editable": true,
+                        "error": false,
+                        "fill": 1,
+                        "grid": {
+                            "leftLogBase": 1,
+                            "leftMax": null,
+                            "leftMin": null,
+                            "rightLogBase": 1,
+                            "rightMax": null,
+                            "rightMin": null,
+                            "threshold1": null,
+                            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                            "threshold2": null,
+                            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+                        },
+                        "hideTimeOverride": false,
+                        "id": 1,
+                        "isNew": true,
+                        "leftYAxisLabel": "",
+                        "legend": {
+                            "alignAsTable": false,
+                            "avg": false,
+                            "current": true,
+                            "hideEmpty": false,
+                            "max": false,
+                            "min": false,
+                            "rightSide": false,
+                            "show": true,
+                            "total": false,
+                            "values": true
+                        },
+                        "lines": true,
+                        "linewidth": 2,
+                        "links": [],
+                        "nullPointMode": "connected",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "seriesOverrides": [],
+                        "span": 12,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "alias": "$tag_host",
+                                "dsType": "influxdb",
+                                "groupBy": [
+                                    {
+                                        "params": [
+                                            "$interval"
+                                        ],
+                                        "type": "time"
+                                    },
+                                    {
+                                        "params": [
+                                            "host"
+                                        ],
+                                        "type": "tag"
+                                    }
+                                ],
+                                "measurement": "memory_value",
+                                "query": "SELECT mean(\"value\") FROM \"memory_value\" WHERE \"type\" = 'memory' AND \"type_instance\" = 'used' AND $timeFilter GROUP BY time($interval), \"host\"",
+                                "refId": "A",
+                                "resultFormat": "time_series",
+                                "select": [
+                                    [
+                                        {
+                                            "params": [
+                                                "value"
+                                            ],
+                                            "type": "field"
+                                        },
+                                        {
+                                            "params": [],
+                                            "type": "mean"
+                                        }
+                                    ]
+                                ],
+                                "tags": [
+                                    {
+                                        "key": "type",
+                                        "operator": "=",
+                                        "value": "memory"
+                                    },
+                                    {
+                                        "condition": "AND",
+                                        "key": "type_instance",
+                                        "operator": "=",
+                                        "value": "used"
+                                    }
+                                ]
+                            }
+                        ],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "Used Memory",
+                        "tooltip": {
+                            "shared": true,
+                            "value_type": "individual"
+                        },
+                        "transparent": false,
+                        "type": "graph",
+                        "x-axis": true,
+                        "y-axis": true,
+                        "y_formats": [
+                            "bytes",
+                            "short"
+                        ]
+                    }
+                ],
+                "title": "Row"
+            },
+            {
+                "collapse": false,
+                "editable": true,
+                "height": "250px",
+                "panels": [
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "datasource": "table8e03ea16ff224cfb957768217f99ecd8",
+                        "editable": true,
+                        "error": false,
+                        "fill": 1,
+                        "grid": {
+                            "leftLogBase": 1,
+                            "leftMax": null,
+                            "leftMin": null,
+                            "rightLogBase": 1,
+                            "rightMax": null,
+                            "rightMin": null,
+                            "threshold1": null,
+                            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                            "threshold2": null,
+                            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+                        },
+                        "id": 2,
+                        "isNew": true,
+                        "legend": {
+                            "avg": false,
+                            "current": true,
+                            "max": false,
+                            "min": false,
+                            "show": true,
+                            "total": false,
+                            "values": true
+                        },
+                        "lines": true,
+                        "linewidth": 2,
+                        "links": [],
+                        "nullPointMode": "connected",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "seriesOverrides": [],
+                        "span": 4,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "alias": "$tag_host",
+                                "dsType": "influxdb",
+                                "groupBy": [
+                                    {
+                                        "params": [
+                                            "$interval"
+                                        ],
+                                        "type": "time"
+                                    },
+                                    {
+                                        "params": [
+                                            "host"
+                                        ],
+                                        "type": "tag"
+                                    }
+                                ],
+                                "measurement": "load_shortterm",
+                                "query": "SELECT mean(\"value\") FROM \"load_shortterm\" WHERE \"type\" = 'load' AND $timeFilter GROUP BY time($interval), \"host\"",
+                                "refId": "A",
+                                "resultFormat": "time_series",
+                                "select": [
+                                    [
+                                        {
+                                            "params": [
+                                                "value"
+                                            ],
+                                            "type": "field"
+                                        },
+                                        {
+                                            "params": [],
+                                            "type": "mean"
+                                        }
+                                    ]
+                                ],
+                                "tags": [
+                                    {
+                                        "key": "type",
+                                        "operator": "=",
+                                        "value": "load"
+                                    }
+                                ]
+                            }
+                        ],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "Short Term Load",
+                        "tooltip": {
+                            "shared": true,
+                            "value_type": "individual"
+                        },
+                        "type": "graph",
+                        "x-axis": true,
+                        "y-axis": true,
+                        "y_formats": [
+                            "short",
+                            "short"
+                        ]
+                    },
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "datasource": "table8e03ea16ff224cfb957768217f99ecd8",
+                        "editable": true,
+                        "error": false,
+                        "fill": 1,
+                        "grid": {
+                            "leftLogBase": 1,
+                            "leftMax": null,
+                            "leftMin": null,
+                            "rightLogBase": 1,
+                            "rightMax": null,
+                            "rightMin": null,
+                            "threshold1": null,
+                            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                            "threshold2": null,
+                            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+                        },
+                        "id": 4,
+                        "isNew": true,
+                        "legend": {
+                            "avg": false,
+                            "current": true,
+                            "max": false,
+                            "min": false,
+                            "show": true,
+                            "total": false,
+                            "values": true
+                        },
+                        "lines": true,
+                        "linewidth": 2,
+                        "links": [],
+                        "nullPointMode": "connected",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "seriesOverrides": [],
+                        "span": 4,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "alias": "$tag_host",
+                                "dsType": "influxdb",
+                                "groupBy": [
+                                    {
+                                        "params": [
+                                            "$interval"
+                                        ],
+                                        "type": "time"
+                                    },
+                                    {
+                                        "params": [
+                                            "host"
+                                        ],
+                                        "type": "tag"
+                                    }
+                                ],
+                                "measurement": "load_midterm",
+                                "query": "SELECT mean(\"value\") FROM \"load_midterm\" WHERE \"type\" = 'load' AND $timeFilter GROUP BY time($interval), \"host\"",
+                                "refId": "A",
+                                "resultFormat": "time_series",
+                                "select": [
+                                    [
+                                        {
+                                            "params": [
+                                                "value"
+                                            ],
+                                            "type": "field"
+                                        },
+                                        {
+                                            "params": [],
+                                            "type": "mean"
+                                        }
+                                    ]
+                                ],
+                                "tags": [
+                                    {
+                                        "key": "type",
+                                        "operator": "=",
+                                        "value": "load"
+                                    }
+                                ]
+                            }
+                        ],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "Mid Term Load",
+                        "tooltip": {
+                            "shared": true,
+                            "value_type": "individual"
+                        },
+                        "type": "graph",
+                        "x-axis": true,
+                        "y-axis": true,
+                        "y_formats": [
+                            "short",
+                            "short"
+                        ]
+                    },
+                    {
+                        "aliasColors": {},
+                        "bars": false,
+                        "datasource": "table8e03ea16ff224cfb957768217f99ecd8",
+                        "editable": true,
+                        "error": false,
+                        "fill": 1,
+                        "grid": {
+                            "leftLogBase": 1,
+                            "leftMax": null,
+                            "leftMin": null,
+                            "rightLogBase": 1,
+                            "rightMax": null,
+                            "rightMin": null,
+                            "threshold1": null,
+                            "threshold1Color": "rgba(216, 200, 27, 0.27)",
+                            "threshold2": null,
+                            "threshold2Color": "rgba(234, 112, 112, 0.22)"
+                        },
+                        "id": 5,
+                        "isNew": true,
+                        "legend": {
+                            "avg": false,
+                            "current": true,
+                            "max": false,
+                            "min": false,
+                            "show": true,
+                            "total": false,
+                            "values": true
+                        },
+                        "lines": true,
+                        "linewidth": 2,
+                        "links": [],
+                        "nullPointMode": "connected",
+                        "percentage": false,
+                        "pointradius": 5,
+                        "points": false,
+                        "renderer": "flot",
+                        "seriesOverrides": [],
+                        "span": 4,
+                        "stack": true,
+                        "steppedLine": false,
+                        "targets": [
+                            {
+                                "alias": "$tag_host",
+                                "dsType": "influxdb",
+                                "groupBy": [
+                                    {
+                                        "params": [
+                                            "$interval"
+                                        ],
+                                        "type": "time"
+                                    },
+                                    {
+                                        "params": [
+                                            "host"
+                                        ],
+                                        "type": "tag"
+                                    }
+                                ],
+                                "measurement": "load_longterm",
+                                "query": "SELECT mean(\"value\") FROM \"load_longterm\" WHERE \"type\" = 'load' AND $timeFilter GROUP BY time($interval), \"host\"",
+                                "refId": "A",
+                                "resultFormat": "time_series",
+                                "select": [
+                                    [
+                                        {
+                                            "params": [
+                                                "value"
+                                            ],
+                                            "type": "field"
+                                        },
+                                        {
+                                            "params": [],
+                                            "type": "mean"
+                                        }
+                                    ]
+                                ],
+                                "tags": [
+                                    {
+                                        "key": "type",
+                                        "operator": "=",
+                                        "value": "load"
+                                    }
+                                ]
+                            }
+                        ],
+                        "timeFrom": null,
+                        "timeShift": null,
+                        "title": "Long Term Load",
+                        "tooltip": {
+                            "shared": true,
+                            "value_type": "individual"
+                        },
+                        "type": "graph",
+                        "x-axis": true,
+                        "y-axis": true,
+                        "y_formats": [
+                            "short",
+                            "short"
+                        ]
+                    }
+                ],
+                "title": "New row"
+            }
+        ],
+        "schemaVersion": 8,
+        "sharedCrosshair": false,
+        "style": "light",
+        "tags": [],
+        "templating": {
+            "list": []
+        },
+        "time": {
+            "from": "2016-03-25T03:49:05.483Z",
+            "to": "2016-03-25T04:39:34.751Z"
+        },
+        "timepicker": {
+            "now": true,
+            "refresh_intervals": [
+                "5s",
+                "10s",
+                "30s",
+                "1m",
+                "5m",
+                "15m",
+                "30m",
+                "1h",
+                "2h",
+                "1d"
+            ],
+            "time_options": [
+                "5m",
+                "15m",
+                "1h",
+                "6h",
+                "12h",
+                "24h",
+                "2d",
+                "7d",
+                "30d"
+            ]
+        },
+        "timezone": "browser",
+        "title": "Testing DCI - table8e03ea16ff224cfb957768217f99ecd8",
+        "version": 2
+    },
+    "overwrite": false
+}
