@@ -48,7 +48,7 @@ setuptools.setup(
     install_requires=_get_requirements(),
     url='https://github.com/redhat-cip/dci-control-server',
     license='Apache v2.0',
-    package_data={'dci': ['alembic/alembic.ini']},
+    package_data={'dci': ['alembic/alembic.ini', 'data/*']},
     classifiers=[
         'Environment :: Console',
         'Intended Audience :: Developers',
