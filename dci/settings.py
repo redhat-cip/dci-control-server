@@ -32,6 +32,13 @@ INFLUXDB_PORT = '8086'
 INFLUXDB_USER = 'root'
 INFLUXDB_PASS = 'root'
 
+# Grafana Connection parameters
+#
+GRAFANA_HOST = '127.0.0.1'
+GRAFANA_PORT = '3000'
+GRAFANA_USER = 'admin'
+GRAFANA_PASS = 'admin'
+
 # Database (SQLAlchemy) related parameters
 #
 SQLALCHEMY_DATABASE_URI = 'postgresql://dci:dci@127.0.0.1:5432/dci'
