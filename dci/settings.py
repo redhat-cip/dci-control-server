@@ -63,6 +63,17 @@ TSDB_PORT = '8086'
 TSDB_USER = 'root'
 TSDB_PASS = 'root'
 
+# Metrics dasbhoard backend to use for exploring metrics.
+#
+# Available backends are: grafana
+# Set to None or comment if you do not wish to store metrics
+#
+# DASHBOARD_DRIVER = grafana
+DASHBOARD_HOST = '127.0.0.1'
+DASHBOARD_PORT = '3000'
+DASHBOARD_USER = 'admin'
+DASHBOARD_PASS = 'admin'
+
 LAST_UPDATED = 'updated_at'
 DATE_CREATED = 'created_at'
 ID_FIELD = 'id'
