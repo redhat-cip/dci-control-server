@@ -20,6 +20,7 @@ from dci.common import exceptions
 from dci.common import utils
 from dci.elasticsearch import engine as es_engine
 from dci.tsdb.drivers import influxdb_driver
+from dci.dashboard.drivers import grafana_driver
 
 import flask
 import logging
@@ -30,6 +31,10 @@ from dci import dci_config
 
 TSDB_DRIVERS = {
     'influxdb': influxdb_driver.InfluxDB
+}
+
+DASHBOARD_DRIVERS = {
+    'grafana': grafana_driver.Grafana
 }
 
 
@@ -46,6 +51,11 @@ class DciControlServer(flask.Flask):
             self.tsdb_engine = TSDB_DRIVERS[driver](conf)
         except KeyError:
             self.tsdb_engine = None
+        try:
+            driver = conf['DASHBOARD_DRIVER']
+            self.dashboard_engine = DASHBOARD_DRIVERS[driver](conf)
+        except KeyError:
+            self.dashboard_engine = None
 
     def make_default_options_response(self):
         resp = super(DciControlServer, self).make_default_options_response()
@@ -104,6 +114,7 @@ def create_app(conf):
         flask.g.db_conn = dci_app.engine.connect()
         flask.g.es_conn = dci_app.es_engine
         flask.g.tsdb_conn = dci_app.tsdb_engine
+        flask.g.dashboard_conn = dci_app.dashboard_engine
 
     @dci_app.teardown_request
     def teardown_request(_):
