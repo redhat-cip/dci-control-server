@@ -175,6 +175,8 @@ def schedule_jobs(user):
     flask.g.influxdb_conn.create_database(db_name)
     flask.g.influxdb_conn.create_user(user_name, random_pass)
     flask.g.influxdb_conn.grant_privilege(user_name, db_name)
+    flask.g.grafana_conn.create_datasource(db_name)
+    flask.g.grafana_conn.create_dashboard(db_name)
     values.update({
         'influxdb': {
              'ip': '127.0.0.1',
