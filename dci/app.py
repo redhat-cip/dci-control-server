@@ -19,6 +19,7 @@ from dci.api import v1 as api_v1
 from dci.common import exceptions
 from dci.common import utils
 from dci.elasticsearch import engine as es_engine
+from dci.grafana import engine as grafana_engine
 from dci.influxdb import engine as influxdb_engine
 
 import flask
@@ -38,6 +39,7 @@ class DciControlServer(flask.Flask):
         self.engine = dci_config.get_engine(conf)
         self.es_engine = es_engine.DCIESEngine(conf)
         self.influxdb_engine = influxdb_engine.DCIInfluxdbEngine(conf)
+        self.grafana_engine = grafana_engine.DCIGrafanaEngine(conf)
 
     def make_default_options_response(self):
         resp = super(DciControlServer, self).make_default_options_response()
@@ -96,6 +98,7 @@ def create_app(conf):
         flask.g.db_conn = dci_app.engine.connect()
         flask.g.es_conn = dci_app.es_engine
         flask.g.influxdb_conn = dci_app.influxdb_engine
+        flask.g.grafana_conn = dci_app.grafana_engine
 
     @dci_app.teardown_request
     def teardown_request(_):
