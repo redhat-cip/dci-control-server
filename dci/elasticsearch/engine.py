@@ -52,8 +52,7 @@ class DCIESEngine(object):
         else:
             query = {"query": {"match": {"content": pattern}}}
 
-        return self.conn.search(index=self.esindex, body=query,
-                                request_cache=False, size=100)
+        return self.conn.search(index=self.esindex, body=query)
 
     def cleanup(self):
         if self.conn.indices.exists(index=self.esindex):
