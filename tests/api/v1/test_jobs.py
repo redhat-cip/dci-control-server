@@ -122,6 +122,25 @@ def test_schedule_job_with_remoteci_deactivated(admin, remoteci_id, topic_id):
     assert job_scheduled.status_code == 412
 
 
+def test_schedule_jobs_not_active(admin, jobdefinition_id, team_id,
+                                  remoteci_id, topic_id):
+    """No active jobdefinition
+
+    Only one inactive jobdefinition, scheduler should return::
+
+        No jobs available for run (412).
+    """
+    jd = admin.get('/api/v1/jobdefinitions/%s' % jobdefinition_id).data
+    ppt = admin.put('/api/v1/jobdefinitions/%s' % jobdefinition_id,
+                    data={'active': False},
+                    headers={'If-match': jd['jobdefinition']['etag']})
+    assert ppt.status_code == 204
+    job = admin.post('/api/v1/jobs/schedule',
+                     data={'remoteci_id': remoteci_id,
+                           'topic_id': topic_id})
+    assert job.status_code == 412
+
+
 def test_get_all_jobs(admin, jobdefinition_id, team_id, remoteci_id):
     job_1 = admin.post('/api/v1/jobs',
                        data={'jobdefinition_id': jobdefinition_id,

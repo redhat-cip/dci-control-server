@@ -129,7 +129,7 @@ def put_jobdefinition(user, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    values = schemas.team.put(flask.request.json)
+    values = schemas.jobdefinition.put(flask.request.json)
 
     if not(auth.is_admin(user) or auth.is_admin_user(user, jd_id)):
         raise auth.UNAUTHORIZED

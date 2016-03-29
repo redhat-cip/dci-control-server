@@ -196,7 +196,9 @@ jobdefinition = utils.dict_merge(base, {
     v.Optional('priority', default=0): v.All(
         int, v.Range(min=0, max=1000), msg=INVALID_PRIORITY
     ),
-    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC)
+    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC),
+    v.Optional('active', default=True): bool,
+    v.Optional('comment', default=None): six.text_type,
 })
 
 jobdefinition = schema_factory(jobdefinition)
