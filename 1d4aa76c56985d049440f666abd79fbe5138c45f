@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7af0899e_55d33b38",
+        "filename": "scripts/db_provisioning.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 412,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-03-29T18:12:06Z",
+      "side": 1,
+      "message": "You can just initialize flag like that:\n\nflag \u003d \u0027-y\u0027 in opts",
+      "revId": "1d4aa76c56985d049440f666abd79fbe5138c45f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
