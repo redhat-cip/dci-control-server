@@ -141,7 +141,8 @@ def schedule_jobs(user):
     where_clause = sql.expression.and_(
         sql.expression.not_(
             models.JOBDEFINITIONS.c.id.in_(sub_query)),
-        models.JOBDEFINITIONS.c.topic_id == topic_id  # noqa
+        models.JOBDEFINITIONS.c.topic_id == topic_id,  # noqa,
+        models.JOBDEFINITIONS.c.active == True,  # noqa
     )
 
     query = (sql.select([models.JOBDEFINITIONS.c.id])
