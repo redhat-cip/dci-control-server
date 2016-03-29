@@ -135,13 +135,18 @@ def schedule_jobs(user):
     # Subquery, get all the jobdefinitions which have been run by this remoteci
     sub_query = (sql
                  .select([_TABLE.c.jobdefinition_id])
-                 .where(_TABLE.c.remoteci_id == rci_id))
+                 .where(
+                     sql.expression.and_(
+                         _TABLE.c.remoteci_id == rci_id,
+                         models.JOBDEFINITIONS.c.active == True,  # noqa
+                     )))
 
     # Get one jobdefinition which has not been run by this remoteci
     where_clause = sql.expression.and_(
         sql.expression.not_(
             models.JOBDEFINITIONS.c.id.in_(sub_query)),
-        models.JOBDEFINITIONS.c.topic_id == topic_id  # noqa
+        models.JOBDEFINITIONS.c.topic_id == topic_id,  # noqa,
+        models.JOBDEFINITIONS.c.active == True,  # noqa
     )
 
     query = (sql.select([models.JOBDEFINITIONS.c.id])

@@ -170,7 +170,7 @@ def test_put_jobdefinitions(admin, test_id, topic_id):
     assert jd['jobdefinition']['name'] == 'pname'
 
     ppt = admin.put('/api/v1/jobdefinitions/%s' % jd_id,
-                    data={'name': 'nname'},
+                    data={'name': 'nname', 'active': False},
                     headers={'If-match': jd_etag})
     assert ppt.status_code == 204
 

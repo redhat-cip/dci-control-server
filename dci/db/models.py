@@ -106,7 +106,10 @@ JOBDEFINITIONS = sa.Table(
               nullable=False),
     sa.Column('topic_id', sa.String(36),
               sa.ForeignKey('topics.id', ondelete="CASCADE"),
-              nullable=True))
+              nullable=True),
+    sa.Column('active', sa.BOOLEAN, default=True),
+    sa.Column('comment', sa.Text),
+)
 
 JOIN_JOBDEFINITIONS_COMPONENTS = sa.Table(
     'jobdefinition_components', metadata,
