@@ -26,7 +26,7 @@ metadata = sa.MetaData()
 USER_ROLES = ['user', 'admin']
 ROLES = sa.Enum(*USER_ROLES, name='roles')
 
-JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run', 'success', 'failure']
+JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run', 'success', 'failure', 'killed']
 STATUSES = sa.Enum(*JOB_STATUSES, name='statuses')
 
 COMPONENTS = sa.Table(

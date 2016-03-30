@@ -166,10 +166,16 @@ def schedule_jobs(user):
         'team_id': remoteci['team_id']
     })
 
-    query = _TABLE.insert().values(**values)
+    kill_query = _TABLE.update().where(
+        sql.expression.and_(
+            _TABLE.c.remoteci_id == rci_id,
+            _TABLE.c.status.in_(('new', 'pre-run', 'running', 'post-run'))
+        )).values(status='killed')
+    insert_query = _TABLE.insert().values(**values)
 
-    flask.g.db_conn.execute(query)
-
+    with flask.g.db_conn.begin():
+        flask.g.db_conn.execute(kill_query)
+        result = flask.g.db_conn.execute(insert_query)
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
                           content_type='application/json')

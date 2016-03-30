@@ -141,6 +141,29 @@ def test_schedule_jobs_not_active(admin, jobdefinition_id, team_id,
     assert job.status_code == 412
 
 
+def test_schedule_kill_old_jobs(admin, jobdefinition_factory, remoteci_id,
+                                topic_id):
+    """when a job is scheduled for a remoteci, the old ones should be killed. """
+    jobdefinition_factory.get('1st')
+    jobdefinition_factory.get('2nd')
+    jobdefinition_factory.get('3rd')
+
+    assert admin.post('/api/v1/jobs/schedule',
+                      data={'remoteci_id': remoteci_id,
+                            'topic_id': topic_id}).status_code == 201
+    assert admin.post('/api/v1/jobs/schedule',
+                      data={'remoteci_id': remoteci_id,
+                            'topic_id': topic_id}).status_code == 201
+    assert admin.post('/api/v1/jobs/schedule',
+                      data={'remoteci_id': remoteci_id,
+                            'topic_id': topic_id}).status_code == 201
+
+    jobs = admin.get('/api/v1/jobs?sort=created_at').data
+    assert jobs['jobs'][0]['status'] == 'killed'
+    assert jobs['jobs'][1]['status'] == 'killed'
+    assert jobs['jobs'][2]['status'] == 'new'
+
+
 def test_get_all_jobs(admin, jobdefinition_id, team_id, remoteci_id):
     job_1 = admin.post('/api/v1/jobs',
                        data={'jobdefinition_id': jobdefinition_id,
