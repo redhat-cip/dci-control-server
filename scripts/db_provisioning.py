@@ -145,7 +145,8 @@ def create_remote_cis(db_conn, company, tests, topic_id):
                 'name': job_definition_name,
                 'priority': random.randint(0, 10) * 100,
                 'test_id': tests[test_name],
-                'topic_id': topic_id
+                'topic_id': topic_id,
+                'type': "type_%s" % (random.randint(0, 10) * 100)
             }
             job_definition['id'] = db_insert(db_conn, models.JOBDEFINITIONS,
                                              **job_definition)

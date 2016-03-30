@@ -177,6 +177,13 @@ def get_all_jobdefinitions(user, topic_id):
     return jobdefinitions.get_all_jobdefinitions(user, topic_id=topic_id)
 
 
+@api.route('/topics/<topic_id>/jobdefinitions/types', methods=['GET'])
+@auth.requires_auth
+def get_all_jobdefinition_types(user, topic_id):
+    v1_utils.verify_team_in_topic(user, topic_id)
+    return jobdefinitions.get_jobdefinition_types(user, topic_id=topic_id)
+
+
 @api.route('/topics/<topic_id>/tests', methods=['GET'])
 @auth.requires_auth
 def get_all_tests(user, topic_id):

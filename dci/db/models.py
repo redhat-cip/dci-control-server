@@ -102,6 +102,7 @@ JOBDEFINITIONS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255)),
     sa.Column('priority', sa.Integer, default=0),
+    sa.Column('type', sa.String(255), default=""),
     sa.Column('test_id', sa.String(36),
               sa.ForeignKey('tests.id', ondelete="CASCADE"),
               nullable=False),
