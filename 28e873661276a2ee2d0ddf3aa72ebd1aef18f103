@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7af0899e_78bbce72",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-03-31T16:17:08Z",
+      "side": 1,
+      "message": "- pass is not required here.\n- you must log the error",
+      "revId": "28e873661276a2ee2d0ddf3aa72ebd1aef18f103",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
