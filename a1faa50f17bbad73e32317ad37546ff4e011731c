@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7af0899e_980f9ae1",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-03-31T09:26:36Z",
+      "side": 1,
+      "message": "retrieve it from dci instead of current file, i.e:\n\n    import dci # at top of file\n    \n    pkg_resources.resource_string(dci.__name__, os.path.join(\u0027data\u0027, \u0027junittojson.xsl\u0027))",
+      "revId": "a1faa50f17bbad73e32317ad37546ff4e011731c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7af0899e_380ae6d2",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-03-31T09:26:36Z",
+      "side": 1,
+      "message": "wrong indentation",
+      "revId": "a1faa50f17bbad73e32317ad37546ff4e011731c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7af0899e_78146ef5",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-03-31T09:26:36Z",
+      "side": 1,
+      "message": "no need to deserialize the data, we do not manipulate them and they will be serialized again by json.jsonify",
+      "revId": "a1faa50f17bbad73e32317ad37546ff4e011731c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
