@@ -51,6 +51,7 @@ BuildRequires:  elasticsearch
 
 Requires:       python-alembic
 Requires:       python-elasticsearch
+Requires:       python-lxml
 Requires:       python-flask
 Requires:       python-flask-sqlalchemy
 Requires:       python-passlib

@@ -76,6 +76,24 @@ LOREM_IPSUM = [
     'Mauris vitae nisi at sem facilisis semper ac in est.'
 ]
 
+JUNIT = """
+<testsuite errors="0" failures="0" name="pytest" skips="1"
+           tests="3" time="46.050">
+<properties>
+  <property name="x" value="y" />
+  <property name="a" value="b" />
+</properties>
+<testcase classname="" file="test-requirements.txt"
+          name="test-requirements.txt" time="0.0109479427338">
+    <skipped message="all tests skipped by +SKIP option"
+             type="pytest.skip">Skipped for whatever reasons</skipped>
+</testcase>
+<testcase classname="tests.test_app" file="tests/test_app.py" line="26"
+          name="test_cors_preflight" time="2.91562318802"/>
+<testcase classname="tests.test_app" file="tests/test_app.py" line="42"
+          name="test_cors_headers" time="0.574683904648"/>
+</testsuite>"""
+
 DATA = {
     "ksgen_args": {
         "installer-network-variant": "ml2-vxlan",
@@ -235,6 +253,18 @@ def attach_files_to_jobs(db_conn, job, company_id):
         'team_id': company_id
     }
 
+    db_insert(db_conn, models.FILES, **args)
+
+    # Insert a Junit file
+    name = '%s.xml' % filename_generator()
+    args = {
+        'name': name,
+        'content': JUNIT,
+        'mime': 'application/junit',
+        'md5': hashlib.md5(name.encode('utf8')).hexdigest(),
+        'job_id': id,
+        'team_id': company_id
+    }
     db_insert(db_conn, models.FILES, **args)
 
 
