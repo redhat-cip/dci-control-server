@@ -24,6 +24,7 @@ from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
+from dci.api.v1 import transformations
 from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
@@ -96,6 +97,8 @@ def get_all_files(user, j_id=None):
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
     result = [v1_utils.group_embedded_resources(embed, row) for row in rows]
+
+    result = transformations.transform(result)
 
     return json.jsonify({'files': result, '_meta': {'count': nb_row}})
 
