@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7af0899e_9835da48",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 104,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-03-31T14:58:40Z",
+      "side": 1,
+      "message": "I think this kind of transformation should be done in another function/method.\nWe will probably have some more in the future.",
+      "revId": "285a7845191f8950615f08ded3274c90cff31b28",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7af0899e_b83b7637",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-03-31T14:58:40Z",
+      "side": 1,
+      "message": "try/catch? What will happen if someone upload an empty/broken file with application/junit mime type?\n\nI think we should have a test coverage for this.",
+      "revId": "285a7845191f8950615f08ded3274c90cff31b28",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
