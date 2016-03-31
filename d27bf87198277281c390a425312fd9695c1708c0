@@ -51,6 +51,42 @@
       "revId": "d27bf87198277281c390a425312fd9695c1708c0",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7af0899e_3894a636",
+        "filename": "tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 179,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-03-31T13:24:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7af0899e_186c4a9c",
+      "revId": "d27bf87198277281c390a425312fd9695c1708c0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7af0899e_98995a71",
+        "filename": "tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 179,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-03-31T13:24:31Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7af0899e_d8cda288",
+      "revId": "d27bf87198277281c390a425312fd9695c1708c0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
