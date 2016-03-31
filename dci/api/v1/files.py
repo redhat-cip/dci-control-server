@@ -15,10 +15,14 @@
 # under the License.
 
 import datetime
+import dci
 
 import flask
 from flask import json
 
+import lxml.etree as ET
+import os
+import pkg_resources
 import six
 from sqlalchemy import sql
 
@@ -96,6 +100,16 @@ def get_all_files(user, j_id=None):
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
     result = [v1_utils.group_embedded_resources(embed, row) for row in rows]
+
+    for res in result:
+        if res['mime'] == 'application/junit':
+            xslt = ET.fromstring(
+                pkg_resources.resource_string(dci.__name__,
+                                              os.path.join('data',
+                                                           'junittojson.xsl')))
+            dom = ET.fromstring(res['content'])
+            transform = ET.XSLT(xslt)
+            res['content'] = str(transform(dom))
 
     return json.jsonify({'files': result, '_meta': {'count': nb_row}})
 
