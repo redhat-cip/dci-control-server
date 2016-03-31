@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "7af0899e_b8ca566c",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-03-31T11:20:46Z",
+      "side": 1,
+      "message": "This is not needed because a jobdefinition could be set to False after a run.\n\nSince the query is done against the JOBS table, this is sufficient to grab the jobdefinitions run by this remoteci.",
+      "revId": "d27bf87198277281c390a425312fd9695c1708c0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7af0899e_186c4a9c",
         "filename": "tests/api/v1/test_jobdefinitions.py",
         "patchSetId": 2
@@ -13,6 +30,24 @@
       "writtenOn": "2016-03-31T09:05:03Z",
       "side": 1,
       "message": "nit: Add assert gt[\u0027jobdefinition\u0027][\u0027acitve\u0027] \u003d\u003d False",
+      "revId": "d27bf87198277281c390a425312fd9695c1708c0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7af0899e_d8cda288",
+        "filename": "tests/api/v1/test_jobdefinitions.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 179,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-03-31T11:20:46Z",
+      "side": 1,
+      "message": "This is not a nit.\n\n@Goneri: please update the test",
+      "parentUuid": "7af0899e_186c4a9c",
       "revId": "d27bf87198277281c390a425312fd9695c1708c0",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
