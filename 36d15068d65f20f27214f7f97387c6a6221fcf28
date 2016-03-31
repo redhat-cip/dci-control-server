@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7af0899e_783aae37",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 165,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-03-31T14:54:45Z",
+      "side": 1,
+      "message": "can you add some precision in the docstring on the behavior ?",
+      "revId": "36d15068d65f20f27214f7f97387c6a6221fcf28",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7af0899e_38302656",
+        "filename": "tests/conftest.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-03-31T14:54:45Z",
+      "side": 1,
+      "message": "this can be done with a closure:\n\n    def get(name\u003d\u0027pname\u0027):\n        data \u003d {\u0027name\u0027: name, \u0027test_id\u0027: test_id, \u0027topic_id\u0027: topic_id}\n        jd \u003d admin.post(\u0027/api/v1/jobdefinitions\u0027, data\u003ddata).data\n        return jd\n \n     return get",
+      "revId": "36d15068d65f20f27214f7f97387c6a6221fcf28",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
