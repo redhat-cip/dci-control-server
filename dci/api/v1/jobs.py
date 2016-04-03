@@ -62,7 +62,8 @@ def create_jobs(user):
         'updated_at': datetime.datetime.utcnow().isoformat(),
         'etag': etag,
         'recheck': values.get('recheck', False),
-        'status': 'new'
+        'status': 'new',
+        'configuration': {}
     })
 
     query = _TABLE.insert().values(**values)

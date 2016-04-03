@@ -17,6 +17,7 @@
 import datetime
 
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgres as pg
 import sqlalchemy_utils as sa_utils
 
 from dci.common import utils
@@ -170,6 +171,7 @@ JOBS = sa.Table(
     sa.Column('comment', sa.Text),
     sa.Column('recheck', sa.Boolean, default=False),
     sa.Column('status', STATUSES, default='new'),
+    sa.Column('configuration', pg.JSON, default={}),
     sa.Column('jobdefinition_id', sa.String(36),
               sa.ForeignKey('jobdefinitions.id', ondelete="CASCADE"),
               nullable=False),
