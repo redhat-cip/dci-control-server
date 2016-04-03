@@ -266,8 +266,10 @@ def test_update_job(admin, jobdefinition_id, team_id, remoteci_id):
     job = job.data['job']
 
     assert job['comment'] == 'foo'
+    assert job['configuration'] == {}
 
-    data_update = {'status': 'failure', 'comment': 'bar'}
+    data_update = {'status': 'failure', 'comment': 'bar',
+                   'configuration': {'ha': 'enabled'}}
 
     res = admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
                     headers={'If-match': job['etag']})
@@ -280,6 +282,7 @@ def test_update_job(admin, jobdefinition_id, team_id, remoteci_id):
     assert res.status_code == 200
     assert job['status'] == 'failure'
     assert job['comment'] == 'bar'
+    assert job['configuration'] == {'ha': 'enabled'}
 
 
 def test_get_all_jobs_with_where(admin, jobdefinition_id, team_id,

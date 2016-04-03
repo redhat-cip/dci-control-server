@@ -227,13 +227,14 @@ job = {
     'jobdefinition_id': v.Any(UUID_FIELD, msg=INVALID_JOB_DEFINITION),
     'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
     'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
-    v.Optional('comment', default=None): six.text_type
+    v.Optional('comment', default=None): six.text_type,
 }
 
 job_put = {
     v.Optional('comment'): six.text_type,
     v.Optional('status'): v.Any(*VALID_STATUS_UPDATE,
-                                msg=INVALID_STATUS_UPDATE)
+                                msg=INVALID_STATUS_UPDATE),
+    v.Optional('configuration'): dict
 }
 
 job = DCISchema(schema_factory(job).post, Schema(job_put))

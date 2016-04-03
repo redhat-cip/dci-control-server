@@ -62,7 +62,8 @@ def create_jobs(user):
         'updated_at': datetime.datetime.utcnow().isoformat(),
         'etag': etag,
         'recheck': values.get('recheck', False),
-        'status': 'new'
+        'status': 'new',
+        'configuration': {}
     })
 
     query = _TABLE.insert().values(**values)
@@ -263,6 +264,7 @@ def update_job_by_id(user, job_id):
 
     # get the diverse parameters
     values = schemas.job.put(flask.request.json)
+    print("ça marche pas")
 
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
 
