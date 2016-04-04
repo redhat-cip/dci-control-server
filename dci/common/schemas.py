@@ -246,6 +246,14 @@ job_schedule = {
 
 job_schedule = schema_factory(job_schedule)
 
+job_search = {
+    'jobdefinition_id': v.Any(UUID_FIELD, msg=INVALID_JOB_DEFINITION),
+    # todo(yassine): validate configuration structure
+    'configuration': dict
+}
+
+job_search = schema_factory(job_search)
+
 ###############################################################################
 #                                                                             #
 #                             Job State schemas                               #
