@@ -95,8 +95,14 @@ def test_schedule_job_with_new_topic(admin, remoteci_id, team_admin_id):
     assert job_scheduled.status_code == 412
 
     # Create a jobdefinition for this topic
+    new_test = admin.post('/api/v1/tests',
+                          data={'name': 'pname',
+                                'topic_id': new_topic_id}).data
+    new_test_id = new_test['test']['id']
+
     jd = admin.post('/api/v1/jobdefinitions',
-                    data={'name': 'pname', 'topic_id': new_topic_id}).data
+                    data={'name': 'pname', 'test_id': new_test_id,
+                          'topic_id': new_topic_id}).data
     jd_id = jd['jobdefinition']['id']
 
     # now schedule a job on that new topic
@@ -142,13 +148,12 @@ def test_schedule_kill_old_jobs(admin, jobdefinition_factory, remoteci_id,
     jobdefinition_factory('2nd')
     jobdefinition_factory('3rd')
 
-    r = admin.post('/api/v1/jobs/schedule',
-                   data={'remoteci_id': remoteci_id,
-                         'topic_id': topic_id})
-    r.status_code == 201
-    r = admin.post('/api/v1/jobs/schedule',
-                   data={'remoteci_id': remoteci_id,
-                         'topic_id': topic_id})
+    assert admin.post('/api/v1/jobs/schedule',
+                      data={'remoteci_id': remoteci_id,
+                            'topic_id': topic_id}).status_code == 201
+    assert admin.post('/api/v1/jobs/schedule',
+                      data={'remoteci_id': remoteci_id,
+                            'topic_id': topic_id}).status_code == 201
 
     # Create a bunch of recheck jobs
     assert r.status_code == 201
@@ -218,7 +223,7 @@ def test_get_all_jobs_with_pagination(admin, jobdefinition_id, team_id,
 
 
 def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
-                                 remoteci_id):
+                                 remoteci_id, test_id):
     # create 2 jobs and check meta data count
     data = {'jobdefinition_id': jobdefinition_id,
             'team_id': team_id,
@@ -228,7 +233,7 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
 
     # verify embed with all embedded options
     query_embed = ('/api/v1/jobs?embed='
-                   'team,remoteci,jobdefinition')
+                   'team,remoteci,jobdefinition.test,jobdefinition')
     jobs = admin.get(query_embed).data
 
     for job in jobs['jobs']:
@@ -238,18 +243,21 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
         assert 'jobdefinition_id' not in job
         assert 'jobdefinition' in job
         assert job['jobdefinition']['id'] == jobdefinition_id
+        assert job['jobdefinition']['test']['id'] == test_id
         assert 'remoteci_id' not in job
         assert 'remoteci' in job
         assert job['remoteci']['id'] == remoteci_id
 
     # verify embed with jobdefinition.test nested
-    query_embed = ('/api/v1/jobs?embed=jobdefinition')
+    query_embed = ('/api/v1/jobs?embed='
+                   'jobdefinition.test,jobdefinition')
     jobs = admin.get(query_embed).data
 
     for job in jobs['jobs']:
         assert 'jobdefinition_id' not in job
         assert 'jobdefinition' in job
         assert job['jobdefinition']['id'] == jobdefinition_id
+        assert job['jobdefinition']['test']['id'] == test_id
 
 
 def test_get_all_jobs_with_embed_not_valid(admin):
@@ -499,3 +507,48 @@ def test_get_file_by_job_id(user, job_id):
     file_from_job = user.get(url)
     assert file_from_job.status_code == 200
     assert file_from_job.data['_meta']['count'] == 1
+
+
+def test_job_search(user, jobdefinition_id, team_user_id, remoteci_id):
+
+    # create a job
+    job = user.post('/api/v1/jobs',
+                    data={'jobdefinition_id': jobdefinition_id,
+                          'team_id': team_user_id,
+                          'remoteci_id': remoteci_id})
+    job_id = job.data['job']['id']
+    job_etag = job.data['job']['etag']
+
+    # update the configuration of a job
+    user.put('/api/v1/jobs/%s' % job_id,
+             data={'configuration': {'ha': 'enabled', 'type': 'baremetal'}},
+             headers={'If-match': job_etag})
+    job_search_url = '/api/v1/jobs/search'
+
+    # search with two values matching
+    jobs_filtered = user.post(job_search_url,
+                              data={'jobdefinition_id': jobdefinition_id,
+                                    'configuration': {
+                                        'op': 'and',
+                                        'ha': 'enabled',
+                                        'type': 'baremetal'}})
+    print(jobs_filtered.data)
+    assert jobs_filtered.data['_meta']['count'] == 1
+
+    # search with two values not matched
+    jobs_filtered = user.post(job_search_url,
+                              data={'jobdefinition_id': jobdefinition_id,
+                                    'configuration': {
+                                        'op': 'and',
+                                        'ha': 'enabledd',
+                                        'type': 'baremetal'}})
+    assert jobs_filtered.data['_meta']['count'] == 0
+
+    # search with at least one value matching
+    jobs_filtered = user.post(job_search_url,
+                              data={'jobdefinition_id': jobdefinition_id,
+                                    'configuration': {
+                                        'op': 'or',
+                                        'ha': 'enabledd',
+                                        'type': 'baremetal'}})
+    assert jobs_filtered.data['_meta']['count'] == 1
