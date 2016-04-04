@@ -18,7 +18,9 @@ import datetime
 
 import flask
 from flask import json
+import six
 from sqlalchemy import sql
+
 
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
@@ -73,6 +75,47 @@ def create_jobs(user):
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
                           content_type='application/json')
+
+
+@api.route('/jobs/search', methods=['POST'])
+@auth.requires_auth
+def search_jobs(user):
+    values = schemas.job_search.post(flask.request.json)
+    jobdefinition_id = values.get('jobdefinition_id')
+    configuration = values.get('configuration')
+    config_op = configuration.pop('op', None)
+
+    # todo(yassine): replace this checking by a voluptuous checking in
+    # schemas.job_search.post
+    if config_op is None:
+        raise dci_exc.DCIException("'op' key missing in the configuration",
+                                   status_code=412)
+
+    args = schemas.args(flask.request.args.to_dict())
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+    q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_COLUMNS)
+
+    # If it's not an admin then restrict the view to the team's file
+    if not auth.is_admin(user):
+        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+
+    if jobdefinition_id is not None:
+        q_bd.where.append(_TABLE.c.jobdefinition_id == jobdefinition_id)
+
+    sa_op = None
+    if config_op == 'and':
+        sa_op = sql.expression.and_
+    elif config_op == 'or':
+        sa_op = sql.expression.or_
+
+    filering_rules = []
+    for k, v in six.iteritems(configuration):
+        filering_rules.append(_TABLE.c.configuration[k].astext == v)
+    q_bd.where.append(sa_op(*filering_rules))
+
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+
+    return flask.jsonify({'jobs': rows, '_meta': {'count': len(rows)}})
 
 
 @api.route('/jobs/schedule', methods=['POST'])
