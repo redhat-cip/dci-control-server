@@ -1,0 +1,129 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3afa9182_8c1c8715",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-04-07T08:15:30Z",
+      "side": 1,
+      "message": "can you try \n\nLOG \u003d logging.getLogger(__name__\u0027)",
+      "range": {
+        "startLine": 37,
+        "startChar": 0,
+        "endLine": 38,
+        "endChar": 34
+      },
+      "revId": "38e40d3b634314cf63b8725c4b5a8a8ed460cdfa",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3afa9182_cc168ff1",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-04-07T08:15:30Z",
+      "side": 1,
+      "message": "can you create a util function in https://github.com/redhat-cip/dci-control-server/blob/master/dci/common/utils.py\n\nwhich basically do :\n\n    def gen_id():\n        return uuid.uuid4().hex[0:16]",
+      "revId": "38e40d3b634314cf63b8725c4b5a8a8ed460cdfa",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3afa9182_2c2c734a",
+        "filename": "dci/tsdb/driver.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-04-07T08:15:30Z",
+      "side": 1,
+      "message": "None does not have to be specified",
+      "revId": "38e40d3b634314cf63b8725c4b5a8a8ed460cdfa",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3afa9182_0c31b7a2",
+        "filename": "dci/tsdb/driver.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-04-07T08:15:30Z",
+      "side": 1,
+      "message": "same here and in the following lines",
+      "revId": "38e40d3b634314cf63b8725c4b5a8a8ed460cdfa",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3afa9182_6c267b6a",
+        "filename": "dci/tsdb/drivers/influxdb_driver.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-04-07T08:15:30Z",
+      "side": 1,
+      "message": "You can directly catch multiple exceptions with:\n\n    except (InfluxDBServerError, InfluxDBClientError) as e:\n        ...",
+      "revId": "38e40d3b634314cf63b8725c4b5a8a8ed460cdfa",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3afa9182_4c2bbf30",
+        "filename": "dci/tsdb/drivers/influxdb_driver.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-04-07T08:15:30Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "38e40d3b634314cf63b8725c4b5a8a8ed460cdfa",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3afa9182_ac1fc308",
+        "filename": "dci/tsdb/drivers/influxdb_driver.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-04-07T08:15:30Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "38e40d3b634314cf63b8725c4b5a8a8ed460cdfa",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
