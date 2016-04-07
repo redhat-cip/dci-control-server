@@ -169,6 +169,17 @@ def test_schedule_kill_old_jobs(admin, jobdefinition_factory, remoteci_id,
     assert jobs['jobs'][3]['status'] == 'new'
 
 
+def test_schedule_with_jobdef_type(admin, jobdefinition_factory, remoteci_id,
+                                   topic_id):
+    """when a job is scheduled for a remoteci, the old ones must be killed."""
+    jobdefinition_factory('my-jobdef', 'ospd')
+
+    assert admin.post('/api/v1/jobs/schedule',
+                      data={'remoteci_id': remoteci_id,
+                            'topic_id': topic_id,
+                            'type': 'ospd'}).status_code == 201
+
+
 def test_get_all_jobs(admin, jobdefinition_id, team_id, remoteci_id):
     job_1 = admin.post('/api/v1/jobs',
                        data={'jobdefinition_id': jobdefinition_id,
@@ -526,7 +537,6 @@ def test_job_search(user, jobdefinition_id, team_user_id, remoteci_id):
                                         'op': 'and',
                                         'ha': 'enabled',
                                         'type': 'baremetal'}})
-    print(jobs_filtered.data)
     assert jobs_filtered.data['_meta']['count'] == 1
 
     # search with two values not matched
