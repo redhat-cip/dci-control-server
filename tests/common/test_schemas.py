@@ -359,7 +359,7 @@ class TestJob(utils.SchemaTesting):
 
 class TestJobSchedule(utils.SchemaTesting):
     schema = schemas.job_schedule
-    data = dict([utils.REMOTE_CI, utils.TOPIC])
+    data = dict([utils.REMOTE_CI, utils.TOPIC, utils.TYPE])
 
     @staticmethod
     def generate_invalids_and_errors():

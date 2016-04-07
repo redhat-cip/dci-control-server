@@ -135,6 +135,8 @@ def schedule_jobs(user):
     """
     values = schemas.job_schedule.post(flask.request.json)
     topic_id = values.pop('topic_id')
+    # TODO(yassine): for now 'type' is optional, it will be mandatory later
+    job_type = values.pop('type')
     etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
@@ -185,18 +187,18 @@ def schedule_jobs(user):
                  .where(_TABLE.c.remoteci_id == rci_id))
 
     # Get one jobdefinition which has not been run by this remoteci
-    where_clause = sql.expression.and_(
-        sql.expression.not_(
-            models.JOBDEFINITIONS.c.id.in_(sub_query)),
+    where_clause = sql.expression.and_(sql.expression.not_(
+        models.JOBDEFINITIONS.c.id.in_(sub_query)),
         models.JOBDEFINITIONS.c.topic_id == topic_id,  # noqa,
-        models.JOBDEFINITIONS.c.active == True,  # noqa
-    )
+        models.JOBDEFINITIONS.c.active == True)
 
+    # Order by jobdefinition.priority and get the first one
     query = (sql.select([models.JOBDEFINITIONS.c.id])
              .where(where_clause)
              .order_by(sql.asc(models.JOBDEFINITIONS.c.priority))
              .limit(1))
-    # Order by jobdefinition.priority and get the first one
+    if job_type is not None:
+        query = query.where(models.JOBDEFINITIONS.c.type == job_type)
 
     jobdefinition_to_run = flask.g.db_conn.execute(query).fetchone()
 

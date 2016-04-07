@@ -150,8 +150,9 @@ def remoteci_user_id(user, team_user_id):
 
 @pytest.fixture
 def jobdefinition_factory(admin, test_id, topic_id):
-    def get(name='pname'):
-        data = {'name': name, 'test_id': test_id, 'topic_id': topic_id}
+    def get(name='pname', jd_type='ospd'):
+        data = {'name': name, 'test_id': test_id, 'topic_id': topic_id,
+                'type': 'ospd'}
         jd = admin.post('/api/v1/jobdefinitions', data=data).data
         return jd
     return get
