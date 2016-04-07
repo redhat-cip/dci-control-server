@@ -170,13 +170,23 @@ def test_put_jobdefinitions(admin, test_id, topic_id):
     assert jd['jobdefinition']['name'] == 'pname'
 
     ppt = admin.put('/api/v1/jobdefinitions/%s' % jd_id,
-                    data={'name': 'nname', 'active': False},
-                    headers={'If-match': jd_etag})
+                    data={'active': False}, headers={'If-match': jd_etag})
     assert ppt.status_code == 204
 
     gt = admin.get('/api/v1/jobdefinitions/%s' % jd_id).data
-    assert gt['jobdefinition']['name'] == 'nname'
+    gt_etag = gt['jobdefinition']['etag']
+    assert gt['jobdefinition']['name'] == 'pname'
     assert gt['jobdefinition']['active'] is False
+
+    ppt = admin.put('/api/v1/jobdefinitions/%s' % jd_id,
+                    data={'comment': 'A comment'},
+                    headers={'If-match': gt_etag})
+    assert ppt.status_code == 204
+
+    gt = admin.get('/api/v1/jobdefinitions/%s' % jd_id).data
+    assert gt['jobdefinition']['name'] == 'pname'
+    assert gt['jobdefinition']['active'] is False
+    assert gt['jobdefinition']['comment'] == 'A comment'
 
 
 def test_delete_jobdefinition_by_id(admin, test_id, topic_id):
