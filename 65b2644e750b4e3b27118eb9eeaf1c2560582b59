@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3afa9182_0c941736",
+        "filename": "dci/api/v1/transformations.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-04-07T09:00:08Z",
+      "side": 1,
+      "message": "get the application logger instead \n\n    LOG \u003d logging.getLogger(__name__)",
+      "revId": "65b2644e750b4e3b27118eb9eeaf1c2560582b59",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3afa9182_4c9e1f58",
+        "filename": "dci/api/v1/transformations.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-04-07T09:00:08Z",
+      "side": 1,
+      "message": "visual indent:\n\n    xslt \u003d ET.fromstring(\n        pkg_resources.resource_string(dci.__name__,\n                                      os.path.join(\u0027data\u0027, \u0027junittojson.xsl\u0027))\n   )",
+      "revId": "65b2644e750b4e3b27118eb9eeaf1c2560582b59",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3afa9182_8c9f6750",
+        "filename": "tests/api/v1/test_transformations.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-04-07T09:00:08Z",
+      "side": 1,
+      "message": "does it break if we indent this ? cause it does not look \"pretty\"",
+      "revId": "65b2644e750b4e3b27118eb9eeaf1c2560582b59",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
