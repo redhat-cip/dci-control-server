@@ -201,7 +201,13 @@ jobdefinition = utils.dict_merge(base, {
     v.Optional('comment', default=None): six.text_type,
 })
 
-jobdefinition = schema_factory(jobdefinition)
+jobdefinition_put = {
+    v.Optional('comment'): six.text_type,
+    v.Optional('active'): bool
+}
+
+jobdefinition = DCISchema(schema_factory(jobdefinition).post,
+                          Schema(jobdefinition_put))
 
 ###############################################################################
 #                                                                             #
