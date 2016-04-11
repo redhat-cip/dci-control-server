@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1af78d9a_0bd87d52",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-04-11T19:49:47Z",
+      "side": 1,
+      "message": "nitpicking but I would prefer to see just the two parameters (mime and content) instead of a dict data structure.\nThis is a bit more error prone and coverage is more complicated.",
+      "revId": "cd9826f03ac88fec935824147b0e6f32ae690cf0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1af78d9a_6bddc142",
+        "filename": "dci/api/v1/transformations.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-04-11T19:49:47Z",
+      "side": 1,
+      "message": "the same here.",
+      "revId": "cd9826f03ac88fec935824147b0e6f32ae690cf0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1af78d9a_4be28504",
+        "filename": "dci/api/v1/transformations.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-04-11T19:49:47Z",
+      "side": 1,
+      "message": "I would prefer we preserve the original fields and add a new key in the result OR that we make the transformation optional.",
+      "revId": "cd9826f03ac88fec935824147b0e6f32ae690cf0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
