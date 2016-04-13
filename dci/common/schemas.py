@@ -192,7 +192,6 @@ component = schema_factory(component)
 ###############################################################################
 
 jobdefinition = utils.dict_merge(base, {
-    'test_id': v.Any(UUID_FIELD, msg=INVALID_TEST),
     v.Optional('priority', default=0): v.All(
         int, v.Range(min=0, max=1000), msg=INVALID_PRIORITY
     ),

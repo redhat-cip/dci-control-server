@@ -34,11 +34,6 @@ _TABLE = models.JOBDEFINITIONS
 # associate column names with the corresponding SA Column object
 _JD_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _VALID_EMBED = {
-    'test': models.TESTS,
-    # TODO(spredzy) : Remove this when the join and multiple
-    # entities is supported
-    'jobdefinition_component':
-    models.JOIN_JOBDEFINITIONS_COMPONENTS
 }
 
 
@@ -245,5 +240,59 @@ def delete_component_from_jobdefinition(user, jd_id, c_id):
 
     if not result.rowcount:
         raise dci_exc.DCIConflict('Component', c_id)
+
+    return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/jobdefinitions/<jd_id>/tests', methods=['POST'])
+@auth.requires_auth
+def add_test_to_jobdefinitions(user, jd_id):
+    data_json = flask.request.json
+    values = {'jobdefinition_id': jd_id,
+              'test_id': data_json.get('test_id', None)}
+
+    v1_utils.verify_existence_and_get(jd_id, _TABLE)
+
+    query = models.JOIN_JOBDEFINITIONS_TESTS.insert().values(**values)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict(_TABLE.name,
+                                          'jobdefinition_id, test_id')
+    result = json.dumps(values)
+    return flask.Response(result, 201, content_type='application/json')
+
+
+@api.route('/jobdefinitions/<jd_id>/tests', methods=['GET'])
+@auth.requires_auth
+def get_all_tests_from_jobdefinitions(user, jd_id):
+    v1_utils.verify_existence_and_get(jd_id, _TABLE)
+
+    # Get all components which belongs to a given jobdefinition
+    JDC = models.JOIN_JOBDEFINITIONS_TESTS
+    query = (sql.select([models.TESTS])
+             .select_from(JDC.join(models.TESTS))
+             .where(JDC.c.jobdefinition_id == jd_id))
+    rows = flask.g.db_conn.execute(query)
+
+    res = flask.jsonify({'tests': rows,
+                         '_meta': {'count': rows.rowcount}})
+    res.status_code = 201
+    return res
+
+
+@api.route('/jobdefinitions/<jd_id>/tests/<t_id>', methods=['DELETE'])
+@auth.requires_auth
+def delete_test_from_jobdefinition(user, jd_id, t_id):
+    v1_utils.verify_existence_and_get(jd_id, _TABLE)
+
+    JDC = models.JOIN_JOBDEFINITIONS_TESTS
+    where_clause = sql.and_(JDC.c.jobdefinition_id == jd_id,
+                            JDC.c.test_id == t_id)
+    query = JDC.delete().where(where_clause)
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Test', t_id)
 
     return flask.Response(None, 204, content_type='application/json')

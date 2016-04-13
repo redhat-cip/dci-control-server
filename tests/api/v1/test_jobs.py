@@ -95,14 +95,8 @@ def test_schedule_job_with_new_topic(admin, remoteci_id, team_admin_id):
     assert job_scheduled.status_code == 412
 
     # Create a jobdefinition for this topic
-    new_test = admin.post('/api/v1/tests',
-                          data={'name': 'pname',
-                                'topic_id': new_topic_id}).data
-    new_test_id = new_test['test']['id']
-
     jd = admin.post('/api/v1/jobdefinitions',
-                    data={'name': 'pname', 'test_id': new_test_id,
-                          'topic_id': new_topic_id}).data
+                    data={'name': 'pname', 'topic_id': new_topic_id}).data
     jd_id = jd['jobdefinition']['id']
 
     # now schedule a job on that new topic
@@ -213,7 +207,7 @@ def test_get_all_jobs_with_pagination(admin, jobdefinition_id, team_id,
 
 
 def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
-                                 remoteci_id, test_id):
+                                 remoteci_id):
     # create 2 jobs and check meta data count
     data = {'jobdefinition_id': jobdefinition_id,
             'team_id': team_id,
@@ -223,7 +217,7 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
 
     # verify embed with all embedded options
     query_embed = ('/api/v1/jobs?embed='
-                   'team,remoteci,jobdefinition.test,jobdefinition')
+                   'team,remoteci,jobdefinition')
     jobs = admin.get(query_embed).data
 
     for job in jobs['jobs']:
@@ -233,21 +227,18 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
         assert 'jobdefinition_id' not in job
         assert 'jobdefinition' in job
         assert job['jobdefinition']['id'] == jobdefinition_id
-        assert job['jobdefinition']['test']['id'] == test_id
         assert 'remoteci_id' not in job
         assert 'remoteci' in job
         assert job['remoteci']['id'] == remoteci_id
 
     # verify embed with jobdefinition.test nested
-    query_embed = ('/api/v1/jobs?embed='
-                   'jobdefinition.test,jobdefinition')
+    query_embed = ('/api/v1/jobs?embed=jobdefinition')
     jobs = admin.get(query_embed).data
 
     for job in jobs['jobs']:
         assert 'jobdefinition_id' not in job
         assert 'jobdefinition' in job
         assert job['jobdefinition']['id'] == jobdefinition_id
-        assert job['jobdefinition']['test']['id'] == test_id
 
 
 def test_get_all_jobs_with_embed_not_valid(admin):
