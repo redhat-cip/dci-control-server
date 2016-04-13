@@ -144,7 +144,6 @@ def create_remote_cis(db_conn, company, tests, topic_id):
             job_definition = {
                 'name': job_definition_name,
                 'priority': random.randint(0, 10) * 100,
-                'test_id': tests[test_name],
                 'topic_id': topic_id,
                 'type': "type_%s" % (random.randint(0, 10) * 100)
             }
