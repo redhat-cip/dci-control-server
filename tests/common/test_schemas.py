@@ -221,14 +221,13 @@ class TestComponent(utils.SchemaTesting):
 
 class TestJobDefinition(utils.SchemaTesting):
     schema = schemas.jobdefinition
-    data = dict([utils.NAME, utils.TEST, utils.TOPIC])
+    data = dict([utils.NAME, utils.TOPIC])
 
     @staticmethod
     def generate_invalids_and_errors():
-        invalids = dict([utils.INVALID_NAME, utils.INVALID_TEST,
-                         ('priority', -1), utils.INVALID_TOPIC])
-        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_TEST_ERROR,
-                       utils.INVALID_PRIORITY_ERROR,
+        invalids = dict([utils.INVALID_NAME, ('priority', -1),
+                         utils.INVALID_TOPIC])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_PRIORITY_ERROR,
                        utils.INVALID_TOPIC_ERROR])
         return invalids, errors
 
@@ -237,7 +236,7 @@ class TestJobDefinition(utils.SchemaTesting):
         super(TestJobDefinition, self).test_post_extra_data(data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'test_id', 'topic_id')
+        errors = utils.generate_errors('name', 'topic_id')
         super(TestJobDefinition, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
