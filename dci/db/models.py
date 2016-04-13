@@ -102,9 +102,6 @@ JOBDEFINITIONS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255)),
     sa.Column('priority', sa.Integer, default=0),
-    sa.Column('test_id', sa.String(36),
-              sa.ForeignKey('tests.id', ondelete="CASCADE"),
-              nullable=False),
     sa.Column('topic_id', sa.String(36),
               sa.ForeignKey('topics.id', ondelete="CASCADE"),
               nullable=True),
@@ -119,6 +116,16 @@ JOIN_JOBDEFINITIONS_COMPONENTS = sa.Table(
               nullable=False, primary_key=True),
     sa.Column('jobdefinition_id', sa.String(36),
               sa.ForeignKey('jobdefinitions.id', ondelete="CASCADE"),
+              nullable=False, primary_key=True)
+)
+
+JOIN_JOBDEFINITIONS_TESTS = sa.Table(
+    'jobdefinition_tests', metadata,
+    sa.Column('jobdefinition_id', sa.String(36),
+              sa.ForeignKey('jobdefinitions.id', ondelete="CASCADE"),
+              nullable=False, primary_key=True),
+    sa.Column('test_id', sa.String(36),
+              sa.ForeignKey('tests.id', ondelete="CASCADE"),
               nullable=False, primary_key=True)
 )
 
