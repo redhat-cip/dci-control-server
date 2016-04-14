@@ -15,6 +15,7 @@
 # under the License.
 
 import datetime
+import os
 
 import flask
 from flask import json
@@ -31,6 +32,10 @@ from dci.common import schemas
 from dci.common import utils
 from dci.db import models
 
+from dci import dci_config
+
+_FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
+
 _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
 _FILES_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
@@ -43,19 +48,56 @@ _VALID_EMBED = {
 
 @api.route('/files', methods=['POST'])
 @auth.requires_auth
-def create_files(user, values=None):
-    if values is None:
-        values = schemas.file.post(flask.request.json)
+def create_files(user):
+    values = {}
+    headers = dict(flask.request.headers)
+    # replace each characters '-' from headers by '_' for sql backend
+    for header, value in six.iteritems(headers):
+        if header.lower().startswith('dci'):
+            header = header[4:].replace('-', '_').lower()
+            values[header] = value
 
-    if values.get('jobstate_id', None) is None and \
-       values.get('job_id', None) is None:
-        raise dci_exc.DCIException('jobstate_id or job_id must be specified',
+    # TODO(yassine): use voluptuous to validate headers
+    if values.get('md5', None) is None:
+        values['md5'] = None
+
+    if values.get('mime', None) is None:
+        values['mime'] = None
+
+    if values.get('jobstate_id', None) is None:
+        values['jobstate_id'] = None
+
+    if values.get('job_id', None) is None:
+        values['job_id'] = None
+
+    if values.get('jobstate_id', None) is None\
+            and values.get('job_id', None) is None:
+        raise dci_exc.DCIException('HTTP headers DCI-JOBSTATE-ID or DCI-JOB-ID'
+                                   ' must be specified', status_code=400)
+
+    if values.get('name', None) is None:
+        raise dci_exc.DCIException('HTTP header DCI-NAME must be specified',
                                    status_code=400)
 
+    file_id = utils.gen_uuid()
+    # ensure the team path exist in the FS
+    v1_utils.ensure_path_exists('%s/%s' % (_FILES_FOLDER, user['team_id']))
+    file_path = '%s/%s/%s' % (_FILES_FOLDER, user['team_id'], file_id)
+
+    with open(file_path, "wb") as f:
+        chunk_size = 4096
+        while True:
+            chunk = flask.request.stream.read(chunk_size)
+            if len(chunk) == 0:
+                break
+            f.write(chunk)
+
     values.update({
-        'id': utils.gen_uuid(),
+        'id': file_id,
         'created_at': datetime.datetime.utcnow().isoformat(),
-        'team_id': user['team_id']
+        'team_id': user['team_id'],
+        'content': None,
+        'md5': None
     })
 
     query = _TABLE.insert().values(**values)
@@ -136,17 +178,27 @@ def get_file_by_id_or_name(user, file_id):
 def get_file_content(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
+    if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
-    if v1_utils.request_wants_html():
-        return flask.send_file(
-            six.BytesIO(file['content'].encode('utf8')), add_etags=False,
-            attachment_filename=file['name'], mimetype=file['mime'],
-            as_attachment=True
-        )
+    file_path = '%s/%s/%s' % (_FILES_FOLDER, file['team_id'], file_id)
+    if not os.path.exists(file_path):
+        raise dci_exc.DCIException("Internal server file: not existing",
+                                   status_code=500)
+    file_size = os.path.getsize(file_path)
 
-    return json.jsonify({'content': file['content']})
+    def generate_chunk():
+        with open(file_path, "rb") as f:
+            chunk_size = 1024 ** 2  #  1MB
+            while True:
+                chunk = f.read(chunk_size)
+                if len(chunk) == 0:
+                    break
+                yield chunk
+
+    resp = flask.Response(generate_chunk(), content_type='text/plain')
+    resp.headers['Content-Length'] = file_size
+    return resp
 
 
 @api.route('/files/<file_id>', methods=['DELETE'])
@@ -154,7 +206,7 @@ def get_file_content(user, file_id):
 def delete_file_by_id(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
+    if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
     where_clause = sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
