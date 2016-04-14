@@ -472,10 +472,9 @@ def test_create_file_for_job_id(user, jobdefinition_id, team_user_id,
     assert job.status_code == 201
 
     # create a file
-    file = user.post('/api/v1/files',
-                     data={'content': 'content',
-                           'name': 'foobar',
-                           'job_id': job_id})
+    headers = {'DCI-JOB-ID': job_id,
+               'DCI-NAME': 'foobar'}
+    file = user.post('/api/v1/files', headers=headers)
     file_id = file.data['file']['id']
     file = user.get('/api/v1/files/%s' % file_id).data
     assert file['file']['name'] == 'foobar'
@@ -489,4 +488,3 @@ def test_get_file_by_job_id(user, job_id):
     file_from_job = user.get(url)
     assert file_from_job.status_code == 200
     assert file_from_job.data['_meta']['count'] == 1
-    assert file_from_job.data['files'][0]['content'] == 'foobar'

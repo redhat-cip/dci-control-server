@@ -15,11 +15,11 @@
 # under the License.
 
 import datetime
+import os
 
 import flask
 from flask import json
 
-import six
 from sqlalchemy import sql
 
 from dci.api.v1 import api
@@ -45,11 +45,10 @@ _VALID_EMBED = {
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
 
 
-@api.route('/files', methods=['POST'])
-@auth.requires_auth
-def create_files(user, values=None):
-    if values is None:
-        values = schemas.file.post(flask.request.json)
+# This is the old way to create a files, it assumes the content is provided
+# from the jsons POST's data. The content of the file is stored in the FS.
+def _old_create_files(user):
+    values = schemas.file.post(flask.request.json)
 
     if values.get('jobstate_id', None) is None and \
        values.get('job_id', None) is None:
@@ -75,6 +74,63 @@ def create_files(user, values=None):
     with open(file_path, "w") as f:
         f.write(values['content'])
 
+    result = json.dumps({'file': values})
+    return flask.Response(result, 201, content_type='application/json')
+
+
+@api.route('/files', methods=['POST'])
+@auth.requires_auth
+def create_files(user):
+    headers_values = v1_utils.flask_headers_to_dict(flask.request.headers)
+
+    values = {'md5': None,
+              'mime': None,
+              'jobstate_id': None,
+              'job_id': None,
+              'name': None}
+    values.update(headers_values)
+
+    if values.get('jobstate_id', None) is None \
+            and values.get('job_id', None) is None:
+        # if the headers are not provided, then we switch to the old way
+        # create a file.
+        return _old_create_files(user)
+        # todo(yassine): uncomment when we upgrade all the agents.
+        # raise dci_exc.DCIException('HTTP headers DCI-JOBSTATE-ID or '
+        #                            'DCI-JOB-ID'
+        #                            ' must be specified', status_code=400)
+
+    if values.get('name', None) is None:
+        raise dci_exc.DCIException('HTTP header DCI-NAME must be specified',
+                                   status_code=400)
+
+    file_id = utils.gen_uuid()
+    # ensure the directory which will contains the file actually exist
+    file_directory_path = v1_utils.build_file_directory_path(_FILES_FOLDER,
+                                                             user['team_id'],
+                                                             file_id)
+    v1_utils.ensure_path_exists(file_directory_path)
+    file_path = '%s/%s' % (file_directory_path, file_id)
+
+    with open(file_path, "wb") as f:
+        chunk_size = 4096
+        while True:
+            chunk = flask.request.stream.read(chunk_size)
+            if len(chunk) == 0:
+                break
+            f.write(chunk)
+
+    values.update({
+        'id': file_id,
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'team_id': user['team_id'],
+        'content': None,
+        'md5': None
+    })
+
+    query = _TABLE.insert().values(**values)
+
+    flask.g.db_conn.execute(query)
     result = json.dumps({'file': values})
     return flask.Response(result, 201, content_type='application/json')
 
@@ -150,17 +206,28 @@ def get_file_by_id_or_name(user, file_id):
 def get_file_content(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
+    if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
-    if v1_utils.request_wants_html():
-        return flask.send_file(
-            six.BytesIO(file['content'].encode('utf8')), add_etags=False,
-            attachment_filename=file['name'], mimetype=file['mime'],
-            as_attachment=True
-        )
+    file_directory_path = v1_utils.build_file_directory_path(_FILES_FOLDER,
+                                                             file['team_id'],
+                                                             file_id)
+    file_path = '%s/%s' % (file_directory_path, file_id)
 
-    return json.jsonify({'content': file['content']})
+    if not os.path.exists(file_path):
+        raise dci_exc.DCIException("Internal server file: not existing",
+                                   status_code=500)
+    file_size = os.path.getsize(file_path)
+
+    def generate_chunk():
+        chunk_size = 1024 ** 2  #  1MB
+        with open(file_path, "rb") as f:
+            for chunk in iter(lambda: f.read(chunk_size) or None, None):
+                yield chunk
+
+    resp = flask.Response(generate_chunk(), content_type='text/plain')
+    resp.headers['Content-Length'] = file_size
+    return resp
 
 
 @api.route('/files/<file_id>', methods=['DELETE'])
@@ -168,7 +235,7 @@ def get_file_content(user, file_id):
 def delete_file_by_id(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
+    if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
     where_clause = sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
