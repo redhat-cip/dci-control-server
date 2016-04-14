@@ -272,7 +272,7 @@ jobstate = schema_factory(jobstate)
 ###############################################################################
 
 file = utils.dict_merge(base, {
-    'content': six.text_type,
+    v.Optional('content', default=''): six.text_type,
     v.Optional('md5', default=None): six.text_type,
     v.Optional('mime', default=None): six.text_type,
     v.Optional('jobstate_id', default=None): v.Any(UUID_FIELD,

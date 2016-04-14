@@ -20,8 +20,8 @@ import pytest
 
 def test_create_files(admin, jobstate_id):
     file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id, 'content': 'content',
-                            'name': 'kikoolol'}).data
+                      headers={'DCI-JOBSTATE-ID': jobstate_id,
+                               'DCI-NAME': 'kikoolol'}).data
     file_id = file['file']['id']
     file = admin.get('/api/v1/files/%s' % file_id).data
     assert file['file']['name'] == 'kikoolol'
@@ -29,14 +29,13 @@ def test_create_files(admin, jobstate_id):
 
 def test_get_all_files(admin, jobstate_id):
     file_1 = admin.post('/api/v1/files',
-                        data={'jobstate_id': jobstate_id, 'content': 'content',
-                              'name': 'kikoolol1'}).data
+                        headers={'DCI-JOBSTATE-ID': jobstate_id,
+                                 'DCI-NAME': 'kikoolol1'}).data
     file_1_id = file_1['file']['id']
 
     file_2_2 = admin.post('/api/v1/files',
-                          data={'jobstate_id': jobstate_id,
-                                'content': 'content',
-                                'name': 'kikoolol2'}).data
+                          headers={'DCI-JOBSTATE-ID': jobstate_id,
+                                   'DCI-NAME': 'kikoolol2'}).data
     file_2_id = file_2_2['file']['id']
 
     db_all_files = admin.get('/api/v1/files?sort=created_at').data
@@ -48,18 +47,18 @@ def test_get_all_files(admin, jobstate_id):
 
 def test_get_all_files_with_pagination(admin, jobstate_id):
     # create 4 files types and check meta count
-    data = {'jobstate_id': jobstate_id,
-            'content': 'content', 'name': 'lol1'}
-    admin.post('/api/v1/files', data=data)
-    data = {'jobstate_id': jobstate_id,
-            'content': 'content', 'name': 'lol2'}
-    admin.post('/api/v1/files', data=data)
-    data = {'jobstate_id': jobstate_id,
-            'content': 'content', 'name': 'lol3'}
-    admin.post('/api/v1/files', data=data)
-    data = {'jobstate_id': jobstate_id,
-            'content': 'content', 'name': 'lol4'}
-    admin.post('/api/v1/files', data=data)
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'lol1'}
+    admin.post('/api/v1/files', headers=headers)
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'lol2'}
+    admin.post('/api/v1/files', headers=headers)
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'lol3'}
+    admin.post('/api/v1/files', headers=headers)
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'lol4'}
+    admin.post('/api/v1/files', headers=headers)
 
     # check meta count
     files = admin.get('/api/v1/files').data
@@ -79,12 +78,12 @@ def test_get_all_files_with_pagination(admin, jobstate_id):
 
 
 def test_get_all_files_with_embed(admin, jobstate_id, team_admin_id, job_id):
-    data = {'jobstate_id': jobstate_id,
-            'content': 'content', 'name': 'lol1'}
-    admin.post('/api/v1/files', data=data)
-    data = {'jobstate_id': jobstate_id,
-            'content': 'content', 'name': 'lol2'}
-    admin.post('/api/v1/files', data=data)
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'lol1'}
+    admin.post('/api/v1/files', headers=headers)
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'lol2'}
+    admin.post('/api/v1/files', headers=headers)
 
     # verify embed
     files = admin.get('/api/v1/files?embed=team,jobstate,jobstate.job').data
@@ -100,9 +99,9 @@ def test_get_all_files_with_embed(admin, jobstate_id, team_admin_id, job_id):
 
 
 def test_get_all_files_with_where(admin, jobstate_id):
-    file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id,
-                            'content': 'content', 'name': 'lol1'}).data
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'lol1'}
+    file = admin.post('/api/v1/files', headers=headers).data
     file_id = file['file']['id']
 
     db_job = admin.get('/api/v1/files?where=id:%s' % file_id).data
@@ -129,31 +128,38 @@ def test_where_invalid(admin):
 
 def test_get_all_files_with_sort(admin, jobstate_id):
     # create 4 files ordered by created time
-    data = {'jobstate_id': jobstate_id,
-            'content': 'content', 'name': 'a'}
-    file_1_1 = admin.post('/api/v1/files', data=data).data['file']
-    data = {'jobstate_id': jobstate_id,
-            'content': 'content', 'name': 'a'}
-    file_1_2 = admin.post('/api/v1/files', data=data).data['file']
-    data = {'jobstate_id': jobstate_id,
-            'content': 'content', 'name': 'b'}
-    file_2_1 = admin.post('/api/v1/files', data=data).data['file']
-    data = {'jobstate_id': jobstate_id,
-            'content': 'content', 'name': 'b'}
-    file_2_2 = admin.post('/api/v1/files', data=data).data['file']
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'a'}
+    file_1_1_id = admin.post('/api/v1/files',
+                             headers=headers).data['file']['id']
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'a'}
+    file_1_2_id = admin.post('/api/v1/files',
+                             headers=headers).data['file']['id']
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'b'}
+    file_2_1_id = admin.post('/api/v1/files',
+                             headers=headers).data['file']['id']
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'b'}
+    file_2_2_id = admin.post('/api/v1/files',
+                             headers=headers).data['file']['id']
 
     files = admin.get('/api/v1/files?sort=created_at').data
-    assert files['files'] == [file_1_1, file_1_2, file_2_1, file_2_2]
+    files_ids = [file['id'] for file in files['files']]
+    assert files_ids == [file_1_1_id, file_1_2_id, file_2_1_id, file_2_2_id]
 
-    # sort by content first and then reverse by created_at
+    # sort by name first and then reverse by created_at
     files = admin.get('/api/v1/files?sort=name,-created_at').data
-    assert files['files'] == [file_1_2, file_1_1, file_2_2, file_2_1]
+    files_ids = [file['id'] for file in files['files']]
+    assert files_ids == [file_1_2_id, file_1_1_id, file_2_2_id, file_2_1_id]
 
 
 def test_get_file_by_id_or_name(admin, jobstate_id):
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'kikoolol'}
     file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id,
-                            'content': 'content', 'name': 'kikoolol'}).data
+                      headers=headers).data
     file_id = file['file']['id']
 
     # get by uuid
@@ -174,9 +180,9 @@ def test_get_file_not_found(admin):
 
 def test_get_file_with_embed(admin, jobstate_id, team_admin_id):
     pt = admin.get('/api/v1/teams/%s' % team_admin_id).data
-    data = {'jobstate_id': jobstate_id,
-            'content': 'content', 'name': 'kikoolol'}
-    file = admin.post('/api/v1/files', data=data).data
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'kikoolol'}
+    file = admin.post('/api/v1/files', headers=headers).data
 
     file_id = file['file']['id']
     del file['file']['team_id']
@@ -193,9 +199,9 @@ def test_get_jobdefinition_with_embed_not_valid(admin):
 
 
 def test_delete_file_by_id(admin, jobstate_id):
-    file = admin.post('/api/v1/files',
-                      data={'jobstate_id': jobstate_id,
-                            'content': 'kikoolol', 'name': 'name'})
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'name'}
+    file = admin.post('/api/v1/files', headers=headers)
     file_id = file.data['file']['id']
 
     url = '/api/v1/files/%s' % file_id
@@ -213,9 +219,10 @@ def test_delete_file_by_id(admin, jobstate_id):
 
 
 def test_create_file_as_user(user, jobstate_user_id):
+    headers = {'DCI-JOBSTATE-ID': jobstate_user_id,
+               'DCI-NAME': 'name'}
     file = user.post('/api/v1/files',
-                     data={'jobstate_id': jobstate_user_id,
-                           'content': 'kikoolol', 'name': 'name'})
+                     headers=headers)
     assert file.status_code == 201
 
 
@@ -232,9 +239,9 @@ def test_get_file_as_user(user, file_id, jobstate_user_id):
     file = user.get('/api/v1/files/%s' % file_id)
     assert file.status_code == 404
 
-    file = user.post('/api/v1/files',
-                     data={'jobstate_id': jobstate_user_id,
-                           'content': 'kikoolol', 'name': 'name'}).data
+    headers = {'DCI-JOBSTATE-ID': jobstate_user_id,
+               'DCI-NAME': 'name'}
+    file = user.post('/api/v1/files', headers=headers).data
     file_id = file['file']['id']
     file = user.get('/api/v1/files/%s' % file_id)
     assert file.status_code == 200
@@ -242,9 +249,10 @@ def test_get_file_as_user(user, file_id, jobstate_user_id):
 
 def test_delete_file_as_user(user, admin, jobstate_user_id,
                              file_id):
+    headers = {'DCI-JOBSTATE-ID': jobstate_user_id,
+               'DCI-NAME': 'name2'}
     file_user = user.post('/api/v1/files',
-                          data={'jobstate_id': jobstate_user_id,
-                                'content': 'kikoolol2', 'name': 'name2'})
+                          headers=headers)
     file_user_id = file_user.data['file']['id']
     file_user = user.get('/api/v1/files/%s' % file_user_id)
 
@@ -256,7 +264,7 @@ def test_delete_file_as_user(user, admin, jobstate_user_id,
     assert file_delete.status_code == 401
 
 
-def test_get_file_content(admin, file_id):
+def loltest_get_file_content(admin, file_id):
     url = '/api/v1/files/%s/content' % file_id
     f = admin.get(url).data
 
@@ -269,6 +277,21 @@ def test_get_file_content(admin, file_id):
 
     assert headers['Content-Disposition'] == 'attachment; filename=name'
     assert data.decode('utf8') == 'kikoolol'
+
+
+def test_get_file_content(admin, jobstate_id):
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'test_name'}
+    data = "azertyuiop1234567890"
+    file = admin.post('/api/v1/files', headers=headers, data=data).data
+    file_id = file['file']['id']
+
+    url = '/api/v1/files/%s/content' % file_id
+
+    get_file = admin.get(url)
+
+    assert get_file.status_code == 200
+    assert get_file.data == data
 
 
 def test_get_file_content_as_user(user, file_id, file_user_id):
