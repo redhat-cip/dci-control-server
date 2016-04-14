@@ -224,7 +224,6 @@ def create_files(db_conn, jobstate, company_id):
         name = '%s.txt' % filename_generator()
         args = {
             'name': name,
-            'content': lorem(),
             'mime': 'text/plain',
             'md5': hashlib.md5(name.encode('utf8')).hexdigest(),
             'jobstate_id': jobstate,
@@ -247,7 +246,6 @@ def attach_files_to_jobs(db_conn, job, company_id):
     name = '%s.txt' % filename_generator()
     args = {
         'name': name,
-        'content': lorem(),
         'mime': 'text/plain',
         'md5': hashlib.md5(name.encode('utf8')).hexdigest(),
         'job_id': id,
