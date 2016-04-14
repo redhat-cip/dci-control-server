@@ -196,14 +196,14 @@ def jobstate_user_id(user, job_user_id):
 
 @pytest.fixture
 def file_id(admin, jobstate_id, team_admin_id):
-    data = {'jobstate_id': jobstate_id,
-            'content': 'kikoolol', 'name': 'name'}
-    file = admin.post('/api/v1/files', data=data).data
-    data['team_id'] = team_admin_id
-    data['id'] = file['file']['id']
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'name'}
+    file = admin.post('/api/v1/files', headers=headers).data
+    headers['team_id'] = team_admin_id
+    headers['id'] = file['file']['id']
     conf = dci_config.generate_conf()
     conn = es_engine.DCIESEngine(conf)
-    conn.index(data)
+    conn.index(headers)
     return file['file']['id']
 
 
