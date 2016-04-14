@@ -28,6 +28,9 @@ def generate_conf():
     conf.from_object('dci.settings')
     conf.from_object(os.environ.get('DCI_SETTINGS_MODULE'))
     conf.from_envvar('DCI_SETTINGS_FILE', silent=True)
+    import pprint
+    pprint.pprint(os.environ, width=1)
+    raise
     return conf
 
 
