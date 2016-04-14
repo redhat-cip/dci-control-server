@@ -276,3 +276,14 @@ class QueryBuilder(object):
 
 def ensure_path_exists(path):
     os.path.exists(path) or os.makedirs(path)
+
+
+def flask_headers_to_dict(headers):
+    values = {}
+    headers = dict(headers)
+    # replace each characters '-' from headers by '_' for sql backend
+    for header, value in six.iteritems(headers):
+        if header.lower().startswith('dci'):
+            header = header[4:].replace('-', '_').lower()
+            values[header] = value
+    return values
