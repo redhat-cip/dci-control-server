@@ -1,12 +1,11 @@
-# -*- encoding: utf-8 -*-
 #
-# Copyright 2015 Red Hat, Inc.
+# Copyright (C) 2016 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
-#    http://www.apache.org/licenses/LICENSE-2.0
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
@@ -14,15 +13,26 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
-import uuid
+"""Make files content nullable
 
-DEBUG = False
+Revision ID: 9ba5bcab9aef
+Revises: 89638be0fc0f
+Create Date: 2016-05-08 17:29:39.706742
 
-LOG_FILE = '/dev/null'
+"""
 
-SQLALCHEMY_DATABASE_URI = "postgresql:///%s?host=%s" % (
-    uuid.uuid4(), os.path.abspath(os.environ['DCI_DB_DIR'])
-)
+# revision identifiers, used by Alembic.
+revision = '9ba5bcab9aef'
+down_revision = '89638be0fc0f'
+branch_labels = None
+depends_on = None
 
-FILES_UPLOAD_FOLDER = '/tmp/dci-control-server'
+from alembic import op
+
+
+def upgrade():
+    op.alter_column("files", "content", nullable=True)
+
+
+def downgrade():
+    pass
