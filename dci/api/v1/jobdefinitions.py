@@ -18,6 +18,7 @@ import datetime
 
 import flask
 from flask import json
+import sqlalchemy
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
@@ -172,6 +173,24 @@ def delete_jobdefinition_by_id_or_name(user, jd_id):
         raise dci_exc.DCIDeleteConflict('Jobdefinition', jd_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+def get_jobdefinition_types(user, topic_id):
+    """Get all jobdefinitions types.
+    """
+
+    # get the diverse parameters
+    args = schemas.args(flask.request.args.to_dict())
+
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+    q_bd.select = [sqlalchemy.distinct(_TABLE.c.type)]
+    q_bd.where.append(_TABLE.c.topic_id == topic_id)
+
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = [r[0] for r in rows]
+
+    return flask.jsonify({'types': rows, '_meta': {'count': len(rows)}})
+
 
 # Controllers for jobdefinition and components management
 

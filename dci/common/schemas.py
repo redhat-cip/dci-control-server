@@ -199,6 +199,7 @@ jobdefinition = utils.dict_merge(base, {
     'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC),
     v.Optional('active', default=True): bool,
     v.Optional('comment', default=None): six.text_type,
+    v.Optional('type', default=""): six.text_type,
 })
 
 jobdefinition_put = {
