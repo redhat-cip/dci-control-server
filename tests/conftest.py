@@ -207,6 +207,10 @@ def file_user_id(user, jobstate_user_id):
     data = {'jobstate_id': jobstate_user_id,
             'content': 'kikoolol', 'name': 'name'}
     file = user.post('/api/v1/files', data=data).data
+    data['team_id'] = user.team_id
+    conf = dci_config.generate_conf()
+    conn = es_engine.DCIESEngine(conf)
+    conn.index(data)
     return file['file']['id']
 
 
@@ -215,6 +219,10 @@ def file_job_user_id(user, job_id):
     data = {'job_id': job_id,
             'content': 'foobar', 'name': 'name'}
     file = user.post('/api/v1/files', data=data).data
+    data['team_id'] = user.team_id
+    conf = dci_config.generate_conf()
+    conn = es_engine.DCIESEngine(conf)
+    conn.index(data)
     return file['file']['id']
 
 
