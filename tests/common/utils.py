@@ -91,6 +91,10 @@ INVALID_JOB_STATE_ERROR = 'jobstate_id', schemas.INVALID_JOB_STATE
 INVALID_COMMENT = 'comment', None
 INVALID_COMMENT_ERROR = 'comment', schemas.INVALID_STRING
 
+CONFIGURATION = 'configuration', {}
+INVALID_CONFIGURATION = 'configuration', six.text_type
+INVALID_CONFIGURATION_ERROR = 'configuration', schemas.INVALID_JSON
+
 
 def generate_errors(*fields):
     return dict([(field, schemas.INVALID_REQUIRED) for field in fields])
