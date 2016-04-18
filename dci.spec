@@ -38,6 +38,7 @@ BuildRequires:  python-setuptools
 BuildRequires:  postgresql
 BuildRequires:  postgresql-devel
 BuildRequires:  postgresql-server
+BuildRequires:  python-lxml
 BuildRequires:  python-psycopg2
 BuildRequires:  python-tox
 BuildRequires:  python-alembic
@@ -51,6 +52,7 @@ BuildRequires:  elasticsearch
 
 Requires:       python-alembic
 Requires:       python-elasticsearch
+Requires:       python-lxml
 Requires:       python-flask
 Requires:       python-flask-sqlalchemy
 Requires:       python-passlib
@@ -71,6 +73,7 @@ Summary:        DCI control server API
 BuildRequires:  net-tools
 BuildRequires:  python3-devel
 BuildRequires:  python3-setuptools
+BuildRequires:  python3-lxml
 BuildRequires:  postgresql
 BuildRequires:  postgresql-devel
 BuildRequires:  postgresql-server
@@ -89,6 +92,7 @@ Requires:       python3-alembic
 Requires:       python3-elasticsearch
 Requires:       python3-flask
 Requires:       python3-flask-sqlalchemy
+Requires:       python3-lxml
 Requires:       python-passlib
 Requires:       python3-psycopg2
 Requires:       python3-requests
