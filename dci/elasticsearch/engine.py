@@ -31,6 +31,23 @@ class DCIESEngine(object):
                     res = {}
         return res
 
+    def delete(self, id):
+        self.conn.delete(index=self.esindex, doc_type='log', id=id)
+        return True
+
+    def list(self):
+
+        query = {
+            "size": 10000,
+            "query": {
+                "match_all": {}
+            }
+        }
+        if self.conn.indices.exists(index=self.esindex):
+            return self.conn.search(index=self.esindex, body=query)
+        else:
+            return None
+
     def index(self, values):
         return self.conn.index(index=self.esindex, doc_type='log',
                                id=values['id'], body=values)
