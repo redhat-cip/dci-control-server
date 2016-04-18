@@ -61,7 +61,6 @@ def create_files(user, values=None):
     query = _TABLE.insert().values(**values)
 
     flask.g.db_conn.execute(query)
-    flask.g.es_conn.index(values)
     result = json.dumps({'file': values})
     return flask.Response(result, 201, content_type='application/json')
 
