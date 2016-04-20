@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9a245df4_f6198e23",
+        "filename": "dci/alembic/versions/1a8effae3deb_remove_content_column_from_files.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-04-20T18:28:51Z",
+      "side": 1,
+      "message": "We need to save the files content on the disk before this step.",
+      "revId": "e09bc705a48bda27a4f0333d982e4823eb753444",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a245df4_d6160af1",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 279,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-04-20T18:28:51Z",
+      "side": 1,
+      "message": "We can avoid the exception here:\nos.path.exists(path) or os.makedirs(path)",
+      "revId": "e09bc705a48bda27a4f0333d982e4823eb753444",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a245df4_36d3263a",
+        "filename": "dci/settings.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-04-20T18:28:51Z",
+      "side": 1,
+      "message": "It should be something like /var/lib/dci-control-server/files according to the FHS:\nhttps://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard",
+      "revId": "e09bc705a48bda27a4f0333d982e4823eb753444",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
