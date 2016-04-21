@@ -127,7 +127,7 @@ DATA = {
 }
 
 
-def create_remote_cis(db_conn, company, tests, topic_id):
+def create_remote_cis(db_conn, company, tests, topic_id, component_types):
     # create 3 remote CIS per company (one for each test)
     remote_cis = {}
 
@@ -163,7 +163,8 @@ def create_remote_cis(db_conn, company, tests, topic_id):
                 'name': job_definition_name,
                 'priority': random.randint(0, 10) * 100,
                 'topic_id': topic_id,
-                'type': "type_%s" % (random.randint(0, 10) * 100)
+                'type': "type_%s" % (random.randint(0, 10) * 100),
+                'component_types': component_types
             }
             job_definition['id'] = db_insert(db_conn, models.JOBDEFINITIONS,
                                              **job_definition)
@@ -360,8 +361,10 @@ def init_db(db_conn):
     topic_id = db_ins(models.TOPICS, name="the_topic")
 
     components = []
+    component_types = []
     for component in COMPONENTS:
         component_type = random.choice(COMPONENT_TYPES)
+        component_types.append(component_type)
 
         for i in range(0, 5):
             project = random.choice(PROJECT_NAMES)
@@ -417,7 +420,8 @@ def init_db(db_conn):
         c['user'] = db_ins(models.USERS, **user)
         c['admin'] = db_ins(models.USERS, **admin)
 
-        remote_cis = create_remote_cis(db_conn, c, tests, topic_id)
+        remote_cis = create_remote_cis(db_conn, c, tests, topic_id,
+                                       component_types)
         jobs = create_jobs(db_conn, c['id'], remote_cis)
         # flatten job_definitions
         job_definitions = [jd for jds in remote_cis.values() for jd in jds]

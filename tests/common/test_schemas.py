@@ -249,7 +249,8 @@ class TestJobDefinition(utils.SchemaTesting):
         # add default values to voluptuous output
         data_expected = utils.dict_merge(
             self.data,
-            {'priority': 0, 'active': True, 'comment': None})
+            {'priority': 0, 'active': True, 'comment': None,
+             'component_types': []})
         super(TestJobDefinition, self).test_post(self.data, data_expected)
 
     def test_put_extra_data(self):
