@@ -109,6 +109,7 @@ JOBDEFINITIONS = sa.Table(
               nullable=True),
     sa.Column('active', sa.BOOLEAN, default=True),
     sa.Column('comment', sa.Text),
+    sa.Column('component_types', pg.JSON, default=[]),
 )
 
 JOIN_JOBDEFINITIONS_COMPONENTS = sa.Table(
