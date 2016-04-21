@@ -189,20 +189,26 @@ def init_db(db_conn):
 
     # Create 2 jobdefinitions per topic
     jobdef_common_1 = db_ins(models.JOBDEFINITIONS, topic_id=topic_common,
-                             name='Common tox v0.8', type='git')
+                             name='Common tox v0.8', type='rhel-osp',
+                             component_types=['git'])
     jobdef_common_2 = db_ins(models.JOBDEFINITIONS, topic_id=topic_common,
-                             name='Common tox v2.1.1', type='image')
+                             name='Common tox v2.1.1', type='rdo-m',
+                             component_types=['git'])
 
     jobdef_hp_1 = db_ins(models.JOBDEFINITIONS, topic_id=topic_hp,
-                         name='HP tempest v0.4.2', type='package')
+                         name='HP tempest v0.4.2', type='rhel-osp-hp1',
+                         component_types=['OSP director'])
     jobdef_hp_2 = db_ins(models.JOBDEFINITIONS, topic_id=topic_hp,
-                         name='HP tempest v1.1', type='gerrit_review')
+                         name='HP tempest v1.1', type='rhel-osp-hp2',
+                         component_types=['OSP director', 'gerrit_review'])
 
     jobdef_dell_1 = db_ins(models.JOBDEFINITIONS, topic_id=topic_dell,
-                           name='Dell khaleesi-tempest v0.8', type='git')
+                           name='Dell khaleesi-tempest v0.8', type='ospd',
+                           component_types=['git'])
     jobdef_dell_2 = db_ins(models.JOBDEFINITIONS, topic_id=topic_dell,
                            name='Dell khaleesi-tempest v1.2.15',
-                           type='package')
+                           type='ospd-dell',
+                           component_types=['git', 'package'])
 
     # Attach jobdefinitions to components
     db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
