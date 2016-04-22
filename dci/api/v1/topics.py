@@ -170,6 +170,20 @@ def get_all_components(user, topic_id):
     return components.get_all_components(user, topic_id=topic_id)
 
 
+@api.route('/topics/<topic_id>/components/<component_id>/jobs', methods=['GET'])
+@auth.requires_auth
+def get_jobs_from_components(user, topic_id, component_id):
+    v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    v1_utils.verify_team_in_topic(user, topic_id)
+    v1_utils.verify_existence_and_get(component_id, models.COMPONENTS)
+
+    # if the user is not the admin then filter by team_id
+    team_id=None
+    if not auth.is_admin(user):
+        team_id = user['team_id']
+    return components.get_jobs(user, component_id, team_id=team_id)
+
+
 @api.route('/topics/<topic_id>/jobdefinitions', methods=['GET'])
 @auth.requires_auth
 def get_all_jobdefinitions(user, topic_id):

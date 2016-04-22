@@ -46,6 +46,8 @@ _VALID_EMBED = {
 }
 
 
+# todo(yassine): remove this endpoint, its the scheduler which actually
+# create a job
 @api.route('/jobs', methods=['POST'])
 @auth.requires_auth
 def create_jobs(user):
