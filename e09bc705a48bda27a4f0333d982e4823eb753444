@@ -19,6 +19,40 @@
     },
     {
       "key": {
+        "uuid": "7a1969be_09f36d74",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-04-22T21:36:37Z",
+      "side": 1,
+      "message": "You should first compute the size of the file for the content-length header.",
+      "revId": "e09bc705a48bda27a4f0333d982e4823eb753444",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a1969be_29ee298c",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-04-22T21:36:37Z",
+      "side": 1,
+      "message": "I think we should support the HEAD verb for when we just to get the metadata.",
+      "revId": "e09bc705a48bda27a4f0333d982e4823eb753444",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9a245df4_d6160af1",
         "filename": "dci/api/v1/utils.py",
         "patchSetId": 1
