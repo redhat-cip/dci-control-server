@@ -190,6 +190,16 @@ JOBS = sa.Table(
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
               nullable=False))
 
+JOINS_JOBS_COMPONENTS = sa.Table(
+    'jobs_components', metadata,
+    sa.Column('job_id', sa.String(36),
+              sa.ForeignKey('jobs.id', ondelete="CASCADE"),
+              nullable=False, primary_key=True),
+    sa.Column('component_id', sa.String(36),
+              sa.ForeignKey('components.id', ondelete="CASCADE"),
+              nullable=False, primary_key=True))
+
+
 JOBSTATES = sa.Table(
     'jobstates', metadata,
     sa.Column('id', sa.String(36), primary_key=True,
