@@ -275,7 +275,7 @@ class QueryBuilder(object):
 
 
 def flask_headers_to_dict(headers):
-    """ Parse headers for finding dci related ones
+    """Parse headers for finding dci related ones
 
     Replace each characters '-' from headers by '_' for sql backend
     """
