@@ -95,9 +95,15 @@ def test_schedule_job_with_new_topic(admin, remoteci_id, team_admin_id):
     assert job_scheduled.status_code == 412
 
     # Create a jobdefinition for this topic
+    cmpt = admin.post('/api/v1/components',
+                      data={'topic_id': new_topic_id, 'name': 'name-ct',
+                            'type': 'type_1'}).data
     jd = admin.post('/api/v1/jobdefinitions',
-                    data={'name': 'pname', 'topic_id': new_topic_id}).data
+                    data={'name': 'pname', 'topic_id': new_topic_id,
+                          'component_types': ['type_1']}).data
     jd_id = jd['jobdefinition']['id']
+    admin.post('/api/v1/jobdefinitions/%s/components' % jd_id,
+               data={'component_id': cmpt['component']['id']})
 
     # now schedule a job on that new topic
     job_scheduled = admin.post('/api/v1/jobs/schedule',
