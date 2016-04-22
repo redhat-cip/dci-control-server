@@ -217,6 +217,19 @@ def schedule_jobs(user):
     insert_query = _TABLE.insert().values(**values)
     with flask.g.db_conn.begin():
         flask.g.db_conn.execute(insert_query)
+
+    # for smooth migration to the new scheduler, feed jobs_component table
+    JDC = models.JOIN_JOBDEFINITIONS_COMPONENTS
+    query = (sql.select([models.COMPONENTS.c.id])
+             .select_from(JDC.join(models.COMPONENTS))
+             .where(JDC.c.jobdefinition_id == jobdefinition_to_run[0]))
+    components_from_jd = flask.g.db_conn.execute(query)
+    jobs_components_to_insert = [{'job_id': values['id'],
+                                  'component_id': cfjd[0]}
+                                 for cfjd in components_from_jd]
+    flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
+                            jobs_components_to_insert)
+
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
                           content_type='application/json')
@@ -256,6 +269,22 @@ def get_all_jobs(user, jd_id=None):
     rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
     return flask.jsonify({'jobs': rows, '_meta': {'count': nb_row}})
+
+
+@api.route('/jobs/<job_id>/components', methods=['GET'])
+@auth.requires_auth
+def get_components_from_job(user, job_id):
+    v1_utils.verify_existence_and_get(job_id, _TABLE)
+
+    # Get all components which are attached to a given job
+    JJC = models.JOIN_JOBS_COMPONENTS
+    query = (sql.select([models.COMPONENTS])
+             .select_from(JJC.join(models.COMPONENTS))
+             .where(JJC.c.job_id == job_id))
+    rows = flask.g.db_conn.execute(query)
+
+    return flask.jsonify({'components': rows,
+                          '_meta': {'count': rows.rowcount}})
 
 
 @api.route('/jobs/<j_id>/jobstates', methods=['GET'])
