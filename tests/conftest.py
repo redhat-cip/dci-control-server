@@ -25,6 +25,8 @@ import pytest
 import sqlalchemy
 import sqlalchemy_utils.functions
 
+import random
+
 
 @pytest.fixture(scope='session')
 def engine(request):
@@ -158,11 +160,31 @@ def remoteci_user_id(user, team_user_id):
     return remoteci['remoteci']['id']
 
 
+def create_components(user, topic_id, component_types):
+    component_ids = []
+    for ct in component_types:
+        cmpt = user.post('/api/v1/components', data={'topic_id': topic_id,
+                                                     'name': 'name-' + ct,
+                                                     'type': ct}).data
+        component_ids.append(cmpt['component']['id'])
+    return component_ids
+
+
 @pytest.fixture
 def jobdefinition_factory(admin, topic_id):
     def create(name='pname', topic_id=topic_id):
-        data = {'name': name, 'topic_id': topic_id}
+        component_types = ['type_1', 'type_2', 'type_3']
+        data = {'name': name, 'topic_id': topic_id,
+                'type': 'jd_type_%s' % random.randint(0, 1000),
+                'component_types': component_types}
+        cmpt_ids = create_components(admin, topic_id, component_types)
         jd = admin.post('/api/v1/jobdefinitions', data=data).data
+        # TODO(yassine): remove the following statements when we switch
+        # to the new scheduler
+        jd_id = jd['jobdefinition']['id']
+        for cmpt_id in cmpt_ids:
+            admin.post('/api/v1/jobdefinitions/%s/components' % jd_id,
+                       data={'component_id': cmpt_id})
         return jd
     return create
 
