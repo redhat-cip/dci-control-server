@@ -30,8 +30,8 @@ depends_on = None
 from dci.api.v1 import utils as v1_utils
 from dci import dci_config
 
-import sqlalchemy as sa
 from alembic import op
+import sqlalchemy as sa
 from sqlalchemy import sql
 
 

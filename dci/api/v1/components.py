@@ -32,6 +32,7 @@ from dci.db import models
 # associate column names with the corresponding SA Column object
 _TABLE = models.COMPONENTS
 _C_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_JOBS_C_COLUMS = v1_utils.get_columns_name_with_objects(models.JOBS)
 
 
 @api.route('/components', methods=['POST'])
@@ -69,6 +70,29 @@ def get_all_components(user, topic_id):
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
     return flask.jsonify({'components': rows, '_meta': {'count': nb_row}})
+
+
+def get_jobs(user, component_id, team_id=None):
+    """Get all the jobs associated to a specific component. If team_id is
+    provided then filter by the jobs by team_id otherwise returns all the
+    jobs.
+    """
+    args = schemas.args(flask.request.args.to_dict())
+
+    q_bd = v1_utils.QueryBuilder(models.JOBS, args['offset'], args['limit'])
+    q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_C_COLUMS)
+
+    JJC = models.JOIN_JOBS_COMPONENTS
+    q_bd.join = [JJC]
+    q_bd.where.append(JJC.c.component_id == component_id)
+    if team_id:
+        q_bd.where.append(models.JOBS.c.team_id == team_id)
+
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    res = flask.jsonify({'jobs': rows,
+                         '_meta': {'count': len(rows)}})
+    res.status_code = 200
+    return res
 
 
 @api.route('/components/<c_id>', methods=['GET'])
