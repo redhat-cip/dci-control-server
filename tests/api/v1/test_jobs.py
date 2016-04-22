@@ -95,9 +95,16 @@ def test_schedule_job_with_new_topic(admin, remoteci_id, team_admin_id):
     assert job_scheduled.status_code == 412
 
     # Create a jobdefinition for this topic
-    jd = admin.post('/api/v1/jobdefinitions',
-                    data={'name': 'pname', 'topic_id': new_topic_id}).data
+    data = {'topic_id': new_topic_id, 'name': 'name-ct', 'type': 'type_1'}
+    cmpt = admin.post('/api/v1/components', data=data).data
+
+    data = {'name': 'pname', 'topic_id': new_topic_id,
+            'component_types': ['type_1']}
+    jd = admin.post('/api/v1/jobdefinitions', data=data).data
     jd_id = jd['jobdefinition']['id']
+
+    data = {'component_id': cmpt['component']['id']}
+    admin.post('/api/v1/jobdefinitions/%s/components' % jd_id, data=data)
 
     # now schedule a job on that new topic
     job_scheduled = admin.post('/api/v1/jobs/schedule',
@@ -369,6 +376,22 @@ def test_get_jobstates_by_job_id(admin, job_id, team_id):
 def test_get_job_not_found(admin):
     result = admin.get('/api/v1/jobs/ptdr')
     assert result.status_code == 404
+
+
+def test_get_jobs_with_schedule(admin, topic_id, remoteci_id,
+                                jobdefinition_id):
+    # schedule a job
+    data = {'remoteci_id': remoteci_id, 'topic_id': topic_id}
+    job = admin.post('/api/v1/jobs/schedule', data=data)
+    assert job.status_code == 201
+    job_id = job.data['job']['id']
+
+    # get the components of the scheduled jobs
+    job_components = admin.get('/api/v1/jobs/%s/components' % job_id).data
+    for c in job_components['components']:
+        url = '/api/v1/topics/%s/components/%s/jobs' % (topic_id, c['id'])
+        job = admin.get(url).data
+        assert job['jobs'][0]['id'] == job_id
 
 
 def test_job_recheck(admin, job_id):
