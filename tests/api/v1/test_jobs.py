@@ -64,13 +64,6 @@ def test_schedule_job_recheck(admin, job_id, remoteci_id, topic_id):
     job_scheduled = job_scheduled.data['job']
     assert job_scheduled['id'] == job_rechecked['id']
 
-    # all jobstate are dispatched, a new schedule call should not return a new
-    # job but a err 412
-    job_scheduled = admin.post('/api/v1/jobs/schedule',
-                               data={'remoteci_id': remoteci_id,
-                                     'topic_id': topic_id})
-    assert job_scheduled.status_code == 412
-
 
 def test_schedule_job_with_new_topic(admin, remoteci_id, team_admin_id):
     # create a new topic and schedule a new job
@@ -472,17 +465,19 @@ def test_get_job_as_user(user, team_user_id, job_id, jobdefinition_id,
     assert job.status_code == 200
 
 
-def test_recheck_job_as_user(user, team_user_id, job_id, jobdefinition_id,
-                             remoteci_user_id):
+def test_job_recheck_as_user(user, job_id, remoteci_user_id, topic_user_id,
+                             jobdefinition_factory):
     job = user.get('/api/v1/jobs/%s' % job_id)
     assert job.status_code == 404
 
-    job = user.post('/api/v1/jobs',
-                    data={'team_id': team_user_id,
-                          'jobdefinition_id': jobdefinition_id,
-                          'remoteci_id': remoteci_user_id}).data
+    jobdefinition_factory(topic_id=topic_user_id)
+
+    data = {'remoteci_id': remoteci_user_id,
+            'topic_id': topic_user_id}
+    job = user.post('/api/v1/jobs/schedule', data=data).data
     job_id = job['job']['id']
     job = user.post('/api/v1/jobs/%s/recheck' % job_id)
+
     assert job.status_code == 201
 
 
