@@ -208,10 +208,11 @@ def jobdefinition_user_id(jobdefinition_factory, topic_user_id):
 
 
 @pytest.fixture
-def job_id(admin, jobdefinition_id, team_id, remoteci_id):
-    data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
-            'remoteci_id': remoteci_id}
-    job = admin.post('/api/v1/jobs', data=data).data
+def job_id(admin, topic_id, remoteci_id, jobdefinition_factory):
+    jobdefinition_factory(topic_id=topic_id)
+    data = {'remoteci_id': remoteci_id,
+            'topic_id': topic_id}
+    job = admin.post('/api/v1/jobs/schedule', data=data).data
     return job['job']['id']
 
 
