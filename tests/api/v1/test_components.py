@@ -169,6 +169,25 @@ def test_get_component_not_found(admin):
     assert result.status_code == 404
 
 
+def test_get_jobs(admin, topic_id, remoteci_id, jobdefinition_id):
+
+    # schedule a job
+    types = admin.get('api/v1/topics/%s/jobdefinitions/types' % topic_id).data
+    jobdef_type = types['types'][0]
+    job = admin.post('/api/v1/jobs/schedule2', data={'topic_id': topic_id,
+                     'remoteci_id': remoteci_id, 'type': jobdef_type})
+    assert job.status_code == 201
+    job_id = job.data['job']['id']
+
+    # get the components of the scheduled jobs
+    job_components = admin.get('api/v1/jobs/%s/components' % job_id).data
+    for c in job_components['components']:
+        job = admin.get('/api/v1/topics/%s/components/%s/jobs' %
+                        (topic_id, c['id'])).data
+        job = job['jobs'][0]
+        assert job['id'] == job_id
+
+
 def test_delete_component_by_id(admin, topic_id):
     data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
     pc = admin.post('/api/v1/components', data=data)
