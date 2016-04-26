@@ -158,6 +158,18 @@ def test_schedule_kill_old_jobs(admin, jobdefinition_factory, remoteci_id,
     assert jobs['jobs'][2]['status'] == 'new'
 
 
+def test_schedule_jobs2(admin, topic_id, remoteci_id, jobdefinition_id):
+
+    # schedule a job
+    types = admin.get('api/v1/topics/%s/jobdefinitions/types' % topic_id).data
+    jobdef_type = types['types'][0]
+    job = admin.post('/api/v1/jobs/schedule2',
+                     data={'topic_id': topic_id,
+                           'remoteci_id': remoteci_id,
+                           'type': jobdef_type})
+    assert job.status_code == 201
+
+
 def test_get_all_jobs(admin, jobdefinition_id, team_id, remoteci_id):
     job_1 = admin.post('/api/v1/jobs',
                        data={'jobdefinition_id': jobdefinition_id,
