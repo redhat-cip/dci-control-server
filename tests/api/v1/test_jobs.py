@@ -175,6 +175,18 @@ def test_schedule_kill_old_jobs(admin, jobdefinition_factory, remoteci_id,
     assert jobs['jobs'][3]['status'] == 'new'
 
 
+def test_schedule_jobs2(admin, topic_id, remoteci_id, jobdefinition_id):
+
+    # schedule a job
+    types = admin.get('api/v1/topics/%s/jobdefinitions/types' % topic_id).data
+    jobdef_type = types['types'][0]
+    job = admin.post('/api/v1/jobs/schedule2',
+                     data={'topic_id': topic_id,
+                           'remoteci_id': remoteci_id,
+                           'type': jobdef_type})
+    assert job.status_code == 201
+
+
 def test_get_all_jobs(admin, jobdefinition_id, team_id, remoteci_id):
     job_1 = admin.post('/api/v1/jobs',
                        data={'jobdefinition_id': jobdefinition_id,
@@ -390,6 +402,27 @@ def test_get_jobs_with_schedule(admin, topic_id, remoteci_id,
         assert job['id'] == job_id
 
 
+def test_get_jobs_with_schedule2(admin, topic_id, remoteci_id,
+                                 jobdefinition_id):
+
+    # schedule a job
+    types = admin.get('api/v1/topics/%s/jobdefinitions/types' % topic_id).data
+    jobdef_type = types['types'][0]
+    job = admin.post('/api/v1/jobs/schedule2',
+                     data={'topic_id': topic_id, 'remoteci_id': remoteci_id,
+                           'type': jobdef_type})
+    assert job.status_code == 201
+    job_id = job.data['job']['id']
+
+    # get the components of the scheduled jobs
+    job_components = admin.get('api/v1/jobs/%s/components' % job_id).data
+    for c in job_components['components']:
+        job = admin.get('/api/v1/topics/%s/components/%s/jobs' %
+                        (topic_id, c['id'])).data
+        job = job['jobs'][0]
+        assert job['id'] == job_id
+
+
 def test_job_recheck(admin, job_id):
     job_to_recheck = admin.get('/api/v1/jobs/%s' % job_id).data['job']
     job_rechecked = admin.post('/api/v1/jobs/%s/recheck' % job_id).data['job']
@@ -472,17 +505,19 @@ def test_get_job_as_user(user, team_user_id, job_id, jobdefinition_id,
     assert job.status_code == 200
 
 
-def test_recheck_job_as_user(user, team_user_id, job_id, jobdefinition_id,
-                             remoteci_user_id):
+def test_job_recheck_as_user(user, job_id, remoteci_user_id, topic_user_id,
+                             jobdefinition_factory):
     job = user.get('/api/v1/jobs/%s' % job_id)
     assert job.status_code == 404
 
-    job = user.post('/api/v1/jobs',
-                    data={'team_id': team_user_id,
-                          'jobdefinition_id': jobdefinition_id,
-                          'remoteci_id': remoteci_user_id}).data
+    jobdefinition_factory(topic_id=topic_user_id)
+
+    data = {'remoteci_id': remoteci_user_id,
+            'topic_id': topic_user_id}
+    job = user.post('/api/v1/jobs/schedule', data=data).data
     job_id = job['job']['id']
     job = user.post('/api/v1/jobs/%s/recheck' % job_id)
+
     assert job.status_code == 201
 
 

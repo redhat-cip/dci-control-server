@@ -252,6 +252,14 @@ job_schedule = {
 
 job_schedule = schema_factory(job_schedule)
 
+job_schedule2 = {
+    'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
+    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC),
+    'type': six.text_type
+}
+
+job_schedule2 = schema_factory(job_schedule2)
+
 job_search = {
     'jobdefinition_id': v.Any(UUID_FIELD, msg=INVALID_JOB_DEFINITION),
     # todo(yassine): validate configuration structure
