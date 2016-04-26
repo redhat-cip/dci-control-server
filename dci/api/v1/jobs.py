@@ -109,91 +109,49 @@ def search_jobs(user):
             path.append(sk)
         filering_rules.append(_TABLE.c.configuration[path].astext == v)
     q_bd.where.append(sa_op(*filering_rules))
+
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
     return flask.jsonify({'jobs': rows, '_meta': {'count': len(rows)}})
 
 
-@api.route('/jobs/schedule', methods=['POST'])
-@auth.requires_auth
-def schedule_jobs(user):
-    """Dispatch jobs to remotecis.
-
-    The remoteci can use this method to request a new job. The server will try
-    in the following order:
-    - to reuse an existing job associated to the remoteci if the recheck field
-      is True. In this case, the job is reinitialized has if it was a new job.
-    - or to search a jobdefinition that has not been proceeded yet and create
-      a fresh job associated to this jobdefinition and remoteci.
-    Before a job is dispatched, the server will flag as 'killed' all the
-    running jobs that were associated with the remoteci. This because they will
-    never by finished.
-    """
-
-    values = schemas.job_schedule.post(flask.request.json)
-    rci_id = values.get('remoteci_id')
-    topic_id = values.pop('topic_id')
-    etag = utils.gen_etag()
-    # first, let's kill existing running jobs for the remoteci
-    kill_query = _TABLE.update().where(
-        sql.expression.and_(
-            _TABLE.c.remoteci_id == rci_id,
-            _TABLE.c.status.in_(('new', 'pre-run', 'running', 'post-run'))
-        )).values(status='killed')
-    with flask.g.db_conn.begin():
-        flask.g.db_conn.execute(kill_query)
-
-    values.update({
-        'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
-        'etag': etag,
-        'recheck': values.get('recheck', False),
-        'status': 'new'
-    })
-    remoteci = v1_utils.verify_existence_and_get(rci_id, models.REMOTECIS)
-    v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
-
-    if remoteci['active'] is False:
-        message = 'RemoteCI "%s" is not activated.' % rci_id
-        raise dci_exc.DCIException(message, status_code=412)
-
+def _recheck_job(remoteci_id):
+    """Return a job to recheck if one exists."""
     # First try to get some job to recheck
     where_clause = sql.expression.and_(
         _TABLE.c.recheck == True,  # noqa
-        _TABLE.c.remoteci_id == rci_id
+        _TABLE.c.remoteci_id == remoteci_id
     )
-    get_recheck_job_query = (sql.select([_TABLE])
-                             .where(where_clause)
-                             .limit(1))
+    return sql.select([_TABLE]).where(where_clause).limit(1)
 
-    recheck_job = flask.g.db_conn.execute(get_recheck_job_query).fetchone()
-    if recheck_job:
-        # Reinit the pending job like if it was a new one
-        query = _TABLE.update().where(_TABLE.c.id == recheck_job.id).values({
-            'created_at': datetime.datetime.utcnow().isoformat(),
-            'updated_at': datetime.datetime.utcnow().isoformat(),
-            'etag': etag,
-            'recheck': False,
-            'status': 'new'
-        })
-        flask.g.db_conn.execute(query)
-        return flask.Response(json.dumps({'job': recheck_job}), 201,
-                              headers={'ETag': etag},
-                              content_type='application/json')
 
-    v1_utils.verify_team_in_topic(user, topic_id)
-    # The user belongs to the topic then we can start the scheduling
+def _build_recheck(recheck_job, values):
+    recheck_job = dict(recheck_job)
+
+    # Reinit the pending as if it were new.
+    values.update({'id': recheck_job['id'], 'recheck': False})
+    recheck_job.update(values)
+
+    flask.g.db_conn.execute(
+        _TABLE.update()
+        .where(_TABLE.c.id == recheck_job['id'])
+        .values(recheck_job)
+    )
+    return recheck_job
+
+
+def _build_new(topic_id, remoteci, values):
+    JDC = models.JOIN_JOBDEFINITIONS_COMPONENTS
+    JJC = models.JOIN_JOBS_COMPONENTS
 
     # Subquery, get all the jobdefinitions which have been run by this remoteci
     sub_query = (sql
                  .select([_TABLE.c.jobdefinition_id])
-                 .where(_TABLE.c.remoteci_id == rci_id))
+                 .where(_TABLE.c.remoteci_id == remoteci['id']))
 
     # Get one jobdefinition which has not been run by this remoteci
     where_clause = sql.expression.and_(
-        sql.expression.not_(
-            models.JOBDEFINITIONS.c.id.in_(sub_query)),
+        sql.expression.not_(models.JOBDEFINITIONS.c.id.in_(sub_query)),
         models.JOBDEFINITIONS.c.topic_id == topic_id,  # noqa,
         models.JOBDEFINITIONS.c.active == True,  # noqa
     )
@@ -218,20 +176,142 @@ def schedule_jobs(user):
     with flask.g.db_conn.begin():
         flask.g.db_conn.execute(insert_query)
 
-    # for smooth migration to the new scheduler, feed jobs_component table
-    JDC = models.JOIN_JOBDEFINITIONS_COMPONENTS
-    query = (sql.select([models.COMPONENTS.c.id])
-             .select_from(JDC.join(models.COMPONENTS))
-             .where(JDC.c.jobdefinition_id == jobdefinition_to_run[0]))
-    components_from_jd = flask.g.db_conn.execute(query)
-    jobs_components_to_insert = [{'job_id': values['id'],
-                                  'component_id': cfjd[0]}
-                                 for cfjd in components_from_jd]
-    flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
-                            jobs_components_to_insert)
+        # for smooth migration to the new scheduler, feed jobs_component table
+        query = (sql.select([models.COMPONENTS.c.id])
+                 .select_from(JDC.join(models.COMPONENTS))
+                 .where(JDC.c.jobdefinition_id == jobdefinition_to_run[0]))
+
+        components_from_jd = list(flask.g.db_conn.execute(query))
+
+        jjcs = [{'job_id': values['id'], 'component_id': cfjd[0]}
+                for cfjd in components_from_jd]
+        flask.g.db_conn.execute(JJC.insert(), jjcs)
+
+    return values
+
+
+def _build_new_template(topic_id, remoteci, values):
+    # Get a jobdefinition
+    q_jd = sql.select([models.JOBDEFINITIONS]).where(
+        models.JOBDEFINITIONS.c.topic_id == topic_id).order_by(
+        sql.asc(models.JOBDEFINITIONS.c.created_at))
+    jd_to_run = flask.g.db_conn.execute(q_jd).fetchone()
+
+    if jd_to_run is None:
+        msg = 'Jobdefinition not found.'
+        raise dci_exc.DCIException(msg, status_code=412)
+
+    # Get the latest components according to the component_types of the
+    # jobdefinition.
+    component_types = tuple(jd_to_run['component_types'])
+    if not component_types:
+        msg = ('Jobdefinition "%s" malformed: no component types provided.' %
+               jd_to_run['id'])
+        raise dci_exc.DCIException(msg, status_code=412)
+
+    # TODO(yassine): use a tricky join/group by to remove the for clause
+    schedule_components_ids = []
+    for ct in component_types:
+        where_clause = sql.and_(models.COMPONENTS.c.type == ct,
+                                models.COMPONENTS.c.topic_id == topic_id)
+        query = (sql.select([models.COMPONENTS.c.id])
+                 .where(where_clause)
+                 .order_by(sql.asc(models.COMPONENTS.c.created_at)))
+        cmpt_id = flask.g.db_conn.execute(query).fetchone()[0]
+
+        if cmpt_id is None:
+            msg = 'Component of type "%s" not found.' % ct
+            raise dci_exc.DCIException(msg, status_code=412)
+
+        if cmpt_id in schedule_components_ids:
+            msg = ('Jobdefinition "%s" malformed: type "%s" duplicated.' %
+                   (jd_to_run['id'], ct))
+            raise dci_exc.DCIException(msg, status_code=412)
+        schedule_components_ids.append(cmpt_id)
+
+    values.update({
+        'jobdefinition_id': jd_to_run['id'],
+        'team_id': remoteci['team_id']
+    })
+
+    with flask.g.db_conn.begin():
+        # create the job
+        flask.g.db_conn.execute(_TABLE.insert().values(**values))
+
+        # Adds the components to the jobs using join_jobs_components
+        job_components = [
+            {'job_id': values['id'], 'component_id': sci}
+            for sci in schedule_components_ids
+        ]
+        flask.g.db_conn.execute(
+            models.JOIN_JOBS_COMPONENTS.insert(), job_components
+        )
+
+    return values
+
+
+def _validate_input(values, user):
+    topic_id = values.pop('topic_id')
+    remoteci_id = values.get('remoteci_id')
+
+    values.update({
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': utils.gen_etag(),
+        'recheck': values.get('recheck', False),
+        'status': 'new'
+    })
+
+    remoteci = v1_utils.verify_existence_and_get(remoteci_id, models.REMOTECIS)
+    v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+
+    # let's kill existing running jobs for the remoteci
+    where_clause = sql.expression.and_(
+        _TABLE.c.remoteci_id == remoteci_id,
+        _TABLE.c.status.in_(('new', 'pre-run', 'running', 'post-run'))
+    )
+    kill_query = _TABLE .update().where(where_clause).values(status='killed')
+    flask.g.db_conn.execute(kill_query)
+
+    if remoteci['active'] is False:
+        message = 'RemoteCI "%s" is disabled.' % remoteci_id
+        raise dci_exc.DCIException(message, status_code=412)
+
+    # The user belongs to the topic then we can start the scheduling
+    v1_utils.verify_team_in_topic(user, topic_id)
+    return topic_id, remoteci
+
+
+@api.route('/jobs/schedule', methods=['POST'])
+@auth.requires_auth
+def schedule_jobs(user):
+    """Dispatch jobs to remotecis.
+
+    The remoteci can use this method to request a new job. The server will try
+    in the following order:
+    - to reuse an existing job associated to the remoteci if the recheck field
+      is True. In this case, the job is reinitialized as if it was a new job.
+    - or to search a jobdefinition that has not been proceeded yet and create
+      a fresh job associated to this jobdefinition and remoteci.
+    Before a job is dispatched, the server will flag as 'killed' all the
+    running jobs that were associated with the remoteci. This is because they
+    will never be finished.
+    """
+    values = schemas.job_schedule.post(flask.request.json)
+
+    topic_id, remoteci = _validate_input(values, user)
+
+    # test if there is some job to recheck
+    query = _recheck_job(remoteci['id'])
+    recheck_job = flask.g.db_conn.execute(query).fetchone()
+    if recheck_job:
+        values = _build_recheck(recheck_job, values)
+    else:
+        values = _build_new_template(topic_id, remoteci, values)
 
     return flask.Response(json.dumps({'job': values}), 201,
-                          headers={'ETag': etag},
+                          headers={'ETag': values['etag']},
                           content_type='application/json')
 
 
@@ -377,8 +457,19 @@ def job_recheck(user, j_id):
         'configuration': None,
     })
     query = _TABLE.insert().values(**values)
-
-    flask.g.db_conn.execute(query)
+    with flask.g.db_conn.begin():
+        flask.g.db_conn.execute(query)
+        # feed jobs_component table
+        JDC = models.JOIN_JOBS_COMPONENTS
+        query = (sql.select([models.COMPONENTS.c.id])
+                 .select_from(JDC.join(models.COMPONENTS))
+                 .where(JDC.c.job_id == j_id))
+        components_from_old_job = list(flask.g.db_conn.execute(query))
+        jobs_components_to_insert = [{'job_id': values['id'],
+                                      'component_id': cfjd[0]}
+                                     for cfjd in components_from_old_job]
+        flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
+                                jobs_components_to_insert)
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
