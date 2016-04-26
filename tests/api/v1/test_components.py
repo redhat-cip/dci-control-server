@@ -25,6 +25,7 @@ def test_create_components(admin, topic_id):
         'url': 'http://example.com/',
         'topic_id': topic_id}
     pc = admin.post('/api/v1/components', data=data).data
+    print(pc)
     pc_id = pc['component']['id']
     gc = admin.get('/api/v1/components/%s' % pc_id).data
     assert gc['component']['name'] == 'pname'

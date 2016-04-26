@@ -24,7 +24,6 @@ import pytest
 import sqlalchemy
 import sqlalchemy_utils.functions
 
-import random
 import uuid
 
 
@@ -182,7 +181,6 @@ def jobdefinition_factory(admin, topic_id):
     def create(name='pname', topic_id=topic_id):
         component_types = ['type_1', 'type_2', 'type_3']
         data = {'name': name, 'topic_id': topic_id,
-                'type': 'jd_type_%s' % random.randint(0, 1000),
                 'component_types': component_types}
         jd = admin.post('/api/v1/jobdefinitions', data=data).data
         # TODO(yassine): remove the following statements when we switch
@@ -208,10 +206,11 @@ def jobdefinition_user_id(jobdefinition_factory, topic_user_id):
 
 
 @pytest.fixture
-def job_id(admin, jobdefinition_id, team_id, remoteci_id):
-    data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
-            'remoteci_id': remoteci_id}
-    job = admin.post('/api/v1/jobs', data=data).data
+def job_id(admin, topic_id, remoteci_id, jobdefinition_factory):
+    jobdefinition_factory(topic_id=topic_id)
+    data = {'remoteci_id': remoteci_id,
+            'topic_id': topic_id}
+    job = admin.post('/api/v1/jobs/schedule', data=data).data
     return job['job']['id']
 
 

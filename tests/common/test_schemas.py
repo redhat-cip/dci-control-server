@@ -221,7 +221,7 @@ class TestComponent(utils.SchemaTesting):
 
 class TestJobDefinition(utils.SchemaTesting):
     schema = schemas.jobdefinition
-    data = dict([utils.NAME, utils.TOPIC, utils.TYPE])
+    data = dict([utils.NAME, utils.TOPIC])
 
     @staticmethod
     def generate_invalids_and_errors():
