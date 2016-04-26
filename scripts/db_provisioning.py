@@ -22,6 +22,7 @@ import dci.dci_config as config
 import functools
 import hashlib
 import random
+import six
 import sqlalchemy
 import sqlalchemy_utils.functions
 import sys
@@ -31,9 +32,10 @@ import time
 COMPANIES = ['IBM', 'HP', 'DELL', 'Rackspace', 'Brocade', 'Redhat', 'Huawei',
              'Juniper', 'Comcast']
 
-COMPONENT_TYPES = ['git', 'image', 'package', 'gerrit_review']
-
-COMPONENTS = ['Khaleesi', 'RDO manager', 'OSP director', 'DCI-control-server']
+COMPONENTS = {'Khaleesi': 'git_khaleesi',
+              'RDO manager': 'package_rdo',
+              'OSP director': 'package_osp',
+              'DCI-control-server': 'git_dcics'}
 
 TESTS = ['tempest', 'khaleesi-tempest', 'tox']
 
@@ -362,9 +364,8 @@ def init_db(db_conn):
 
     components = []
     component_types = []
-    for component in COMPONENTS:
-        component_type = random.choice(COMPONENT_TYPES)
-        component_types.append(component_type)
+    for component, ct in six.iteritems(COMPONENTS):
+        component_types.append(ct)
 
         for i in range(0, 5):
             project = random.choice(PROJECT_NAMES)
@@ -375,7 +376,7 @@ def init_db(db_conn):
             url = 'https://github.com/%s/commit/%s'
             attrs = {
                 'name': component + '-%s' % i,
-                'type': component_type,
+                'type': ct,
                 'canonical_project_name': '%s - %s' % (component, project),
                 # This entry is basically a copy of the other fields,
                 # this will may be removed in the future
