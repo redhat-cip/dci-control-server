@@ -450,8 +450,10 @@ class TestFile(utils.SchemaTesting):
 
         invalids = dict([utils.INVALID_NAME, utils.INVALID_JOB_STATE] +
                         invalids)
-        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_JOB_STATE_ERROR]
-                      + errors)
+        errors = dict(
+            [utils.INVALID_NAME_ERROR, utils.INVALID_JOB_STATE_ERROR] +
+            errors
+        )
         return invalids, errors
 
     def test_post_extra_data(self):
