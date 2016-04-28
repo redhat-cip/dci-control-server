@@ -25,7 +25,18 @@ def test_create_jobdefinitions(admin, topic_id):
     assert jd['jobdefinition']['name'] == 'pname'
 
 
-def test_get_all_jobdefinitions(admin, topic_id):
+def test_get_all_jobdefinitions(jobdefinition_id, jobdefinition_user_id,
+                                admin, user):
+    res = admin.get('/api/v1/jobdefinitions')
+    assert res.data['_meta']['count'] == 2
+    assert len(res.data['jobdefinitions']) == 2
+
+    res = user.get('/api/v1/jobdefinitions')
+    assert res.data['_meta']['count'] == 1
+    assert len(res.data['jobdefinitions']) == 1
+
+
+def test_get_all_jobdefinitions_with_id(admin, topic_id):
     data = {'name': 'pname1', 'topic_id': topic_id}
     jd_1 = admin.post('/api/v1/jobdefinitions', data=data).data
     jd_1_id = jd_1['jobdefinition']['id']

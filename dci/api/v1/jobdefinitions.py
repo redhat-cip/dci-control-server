@@ -61,7 +61,7 @@ def create_jobdefinitions(user):
                           content_type='application/json')
 
 
-def get_all_jobdefinitions(user, topic_id):
+def _get_all_jobdefinitions(user, topic_id=None):
     """Get all jobdefinitions.
 
     If t_id is not None, then return all the jobdefinitions with a test
@@ -81,7 +81,14 @@ def get_all_jobdefinitions(user, topic_id):
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _JD_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _JD_COLUMNS)
-    q_bd.where.append(_TABLE.c.topic_id == topic_id)
+
+    if topic_id is None and not auth.is_admin(user):
+        q_bd.join.extend([models.TOPICS, models.JOINS_TOPICS_TEAMS])
+        q_bd.where.append(
+            models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id']
+        )
+    elif topic_id is not None:
+        q_bd.where.append(_TABLE.c.topic_id == topic_id)
 
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
@@ -90,6 +97,12 @@ def get_all_jobdefinitions(user, topic_id):
     rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
     return flask.jsonify({'jobdefinitions': rows, '_meta': {'count': nb_row}})
+
+
+@api.route('/jobdefinitions')
+@auth.requires_auth
+def get_all_jobdefinitions(user):
+    return _get_all_jobdefinitions(user)
 
 
 @api.route('/jobdefinitions/<jd_id>', methods=['GET'])

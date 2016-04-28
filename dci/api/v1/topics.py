@@ -172,9 +172,9 @@ def get_all_components(user, topic_id):
 
 @api.route('/topics/<topic_id>/jobdefinitions', methods=['GET'])
 @auth.requires_auth
-def get_all_jobdefinitions(user, topic_id):
+def get_all_jobdefinitions_by_topic(user, topic_id):
     v1_utils.verify_team_in_topic(user, topic_id)
-    return jobdefinitions.get_all_jobdefinitions(user, topic_id=topic_id)
+    return jobdefinitions._get_all_jobdefinitions(user, topic_id=topic_id)
 
 
 @api.route('/topics/<topic_id>/jobdefinitions/types', methods=['GET'])

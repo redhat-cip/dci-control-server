@@ -135,6 +135,16 @@ def team_admin_id(admin):
 
 
 @pytest.fixture
+def topic_user_id(admin, user, team_user_id):
+    data = {'name': 'topic_user_name'}
+    topic = admin.post('/api/v1/topics', data=data).data
+    t_id = topic['topic']['id']
+    admin.post('/api/v1/topics/%s/teams' % t_id,
+               data={'team_id': team_user_id})
+    return t_id
+
+
+@pytest.fixture
 def remoteci_id(admin, team_id):
     data = {'name': 'pname', 'team_id': team_id}
     remoteci = admin.post('/api/v1/remotecis', data=data).data
@@ -150,17 +160,22 @@ def remoteci_user_id(user, team_user_id):
 
 @pytest.fixture
 def jobdefinition_factory(admin, topic_id):
-    def get(name='pname'):
+    def create(name='pname', topic_id=topic_id):
         data = {'name': name, 'topic_id': topic_id}
         jd = admin.post('/api/v1/jobdefinitions', data=data).data
         return jd
-    return get
+    return create
 
 
 @pytest.fixture
 def jobdefinition_id(jobdefinition_factory):
     jd = jobdefinition_factory()
     return jd['jobdefinition']['id']
+
+
+@pytest.fixture
+def jobdefinition_user_id(jobdefinition_factory, topic_user_id):
+    return jobdefinition_factory(topic_id=topic_user_id)
 
 
 @pytest.fixture
