@@ -15,6 +15,7 @@
 # under the License.
 
 import datetime
+import hashlib
 
 import flask
 from flask import json
@@ -66,7 +67,8 @@ def create_jobs(user):
         'etag': etag,
         'recheck': values.get('recheck', False),
         'status': 'new',
-        'configuration': {}
+        'configuration': {},
+        'components_hash': None
     })
 
     query = _TABLE.insert().values(**values)
@@ -232,14 +234,15 @@ def schedule_jobs2(user):
     recheck_job = flask.g.db_conn.execute(get_recheck_job_query).fetchone()
     if recheck_job:
         # Reinit the pending job like if it was a new one
-        query = _TABLE.update().where(_TABLE.c.id == recheck_job.id).values({
-            'created_at': datetime.datetime.utcnow().isoformat(),
-            'updated_at': datetime.datetime.utcnow().isoformat(),
-            'etag': etag,
-            'recheck': False,
-            'status': 'new'
-        })
-        flask.g.db_conn.execute(query)
+        search_job_whith_sci = _TABLE.update().where(
+            _TABLE.c.id == recheck_job.id).values({
+                'created_at': datetime.datetime.utcnow().isoformat(),
+                'updated_at': datetime.datetime.utcnow().isoformat(),
+                'etag': etag,
+                'recheck': False,
+                'status': 'new'
+            })
+        flask.g.db_conn.execute(search_job_whith_sci)
         return flask.Response(json.dumps({'job': recheck_job}), 201,
                               headers={'ETag': etag},
                               content_type='application/json')
@@ -267,11 +270,11 @@ def schedule_jobs2(user):
     # TODO(yassine): use a tricky join/group by to remove the for clause
     schedule_components_ids = []
     for ct in component_types:
-        query = sql.select([models.COMPONENTS.c.id]).where(
+        search_job_whith_sci = sql.select([models.COMPONENTS.c.id]).where(
             sql.and_(models.COMPONENTS.c.type == ct,
                      models.COMPONENTS.c.topic_id == topic_id)).\
             order_by(sql.asc(models.COMPONENTS.c.created_at))
-        cmpt_id = flask.g.db_conn.execute(query).fetchone()[0]
+        cmpt_id = flask.g.db_conn.execute(search_job_whith_sci).fetchone()[0]
 
         if cmpt_id is None:
             raise dci_exc.DCIException("Component of type '%s' not found."
@@ -282,6 +285,25 @@ def schedule_jobs2(user):
                                        "type '%s' duplicated." %
                                        (jd_to_run['id'], ct), status_code=412)
         schedule_components_ids.append(cmpt_id)
+
+    # Verify that the schedule_component_ids had not been already scheduled
+    # process the fingerprint of the set of components
+    schedule_components_ids.sort()
+    sci_joined = "".join(schedule_components_ids)
+    md5_sum = hashlib.md5()
+    md5_sum.update(sci_joined)
+    components_hash = md5_sum.hexdigest()
+
+    # search if a job with that fingerprint exist
+    search_job_whith_sci = sql.select([models.JOBS.c.id]).where(
+        models.JOBS.c.components_hash == components_hash)
+    job_with_sci = flask.g.db_conn.execute(search_job_whith_sci).fetchone()
+
+    # if not None then it means a jobs has already been scheduled with that
+    # set of components
+    if job_with_sci is not None:
+        raise dci_exc.DCIException("No available job to schedule.",
+                                   status_code=412)
 
     values.update({
         'jobdefinition_id': jd_to_run['id'],

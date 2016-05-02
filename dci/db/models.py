@@ -188,7 +188,11 @@ JOBS = sa.Table(
               nullable=False),
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete="CASCADE"),
-              nullable=False))
+              nullable=False),
+    # This is used to determine a specific set of components associated
+    # to a job.
+    sa.Column('components_hash', sa.String(32), nullable=True)
+)
 
 JOINS_JOBS_COMPONENTS = sa.Table(
     'jobs_components', metadata,
