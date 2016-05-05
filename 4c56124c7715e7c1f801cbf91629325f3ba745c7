@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a1969be_1446d6bf",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 203,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-05-05T17:41:50Z",
+      "side": 1,
+      "message": "please refresh the documentation.",
+      "revId": "4c56124c7715e7c1f801cbf91629325f3ba745c7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a1969be_941126af",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 290,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-05-05T17:41:50Z",
+      "side": 1,
+      "message": "I\u0027m not a big fan of this change, scheduler was already a bit tricky, this makes it even more complex. Maybe the documentation will help.\n\nWhy don\u0027t you use the job_components table instead?",
+      "revId": "4c56124c7715e7c1f801cbf91629325f3ba745c7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
