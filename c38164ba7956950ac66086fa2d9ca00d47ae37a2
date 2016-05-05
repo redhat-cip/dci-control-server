@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a1969be_141d36be",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-05-05T17:49:51Z",
+      "side": 1,
+      "message": "is this \\n on purpose?",
+      "revId": "c38164ba7956950ac66086fa2d9ca00d47ae37a2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a1969be_74790afc",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 190,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-05-05T17:49:51Z",
+      "side": 1,
+      "message": "I understand the logic behind the creation of this new backend. But can we avoid this huge cut\u0027n paste? schedule_jobs is already a bit complex, maybe it\u0027s the good moment to split it in a set of methods.",
+      "revId": "c38164ba7956950ac66086fa2d9ca00d47ae37a2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a1969be_547e8ee5",
+        "filename": "tests/api/v1/test_components.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 172,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-05-05T17:49:51Z",
+      "side": 1,
+      "message": "We already have similar scheduler tests in test_jobs.py. I believe you should just pass a job_id fixture a parameter and test it.",
+      "revId": "c38164ba7956950ac66086fa2d9ca00d47ae37a2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
