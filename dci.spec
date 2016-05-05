@@ -152,12 +152,14 @@ sed -i '12s/Werkzeug.*/Werkzeug/' requirements.txt
 %files -n dci-common
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
+%{_bindir}/dci-esindex
 %{_datarootdir}/dci-api/wsgi.py*
 
 %if 0%{?with_python3}
 %files -n dci-common-python3
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
+%{_bindir}/dci-esindex
 %{_datarootdir}/dci-api/wsgi.py*
 %endif
 
