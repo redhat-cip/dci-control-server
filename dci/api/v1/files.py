@@ -39,6 +39,7 @@ _VALID_EMBED = {
     'jobstate.job': models.JOBS,
     'team': models.TEAMS
 }
+_SKIP_COLUMNS = ['content']
 
 
 @api.route('/files', methods=['POST'])
@@ -61,6 +62,8 @@ def create_files(user, values=None):
     query = _TABLE.insert().values(**values)
 
     flask.g.db_conn.execute(query)
+    for c in _SKIP_COLUMNS:
+        del(values[c])
     result = json.dumps({'file': values})
     return flask.Response(result, 201, content_type='application/json')
 
@@ -75,7 +78,11 @@ def get_all_files(user, j_id=None):
     embed = args['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+    q_bd = v1_utils.QueryBuilder(
+        _TABLE,
+        args['offset'],
+        args['limit'],
+        skip_columns=_SKIP_COLUMNS)
 
     select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
 
@@ -109,7 +116,7 @@ def get_file_by_id_or_name(user, file_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE)
+    q_bd = v1_utils.QueryBuilder(_TABLE, skip_columns=_SKIP_COLUMNS)
 
     select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
     q_bd.select.extend(select)

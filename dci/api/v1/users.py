@@ -34,6 +34,7 @@ from dci.db import models
 _TABLE = models.USERS
 _USERS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _VALID_EMBED = {'team': models.TEAMS}
+_SKIP_COLUMNS = ['password']
 
 # select without the password column for security reasons
 _SELECT_WITHOUT_PASSWORD = [
@@ -42,15 +43,16 @@ _SELECT_WITHOUT_PASSWORD = [
 
 
 def _verify_existence_and_get_user(user_id):
+    q_bd = v1_utils.QueryBuilder(_TABLE, skip_columns=_SKIP_COLUMNS)
     where_clause = sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
-    query = sql.select(_SELECT_WITHOUT_PASSWORD).where(where_clause)
-    result = flask.g.db_conn.execute(query).fetchone()
+    q_bd.where.append(where_clause)
+    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
 
-    if result is None:
+    if row is None:
         raise dci_exc.DCIException('Resource "%s" not found.' % user_id,
                                    status_code=404)
 
-    return result
+    return row
 
 
 @api.route('/users', methods=['POST'])
@@ -80,8 +82,8 @@ def create_users(user):
         raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
 
     # remove the password in the result for security reasons
-    del values['password']
-
+    for c in _SKIP_COLUMNS:
+        del(values[c])
     return flask.Response(
         json.dumps({'user': values}), 201,
         headers={'ETag': etag}, content_type='application/json'
@@ -94,8 +96,11 @@ def get_all_users(user, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
-    q_bd.select = list(_SELECT_WITHOUT_PASSWORD)
+    q_bd = v1_utils.QueryBuilder(
+        _TABLE,
+        args['offset'],
+        args['limit'],
+        skip_columns=_SKIP_COLUMNS)
 
     select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
 
@@ -124,9 +129,7 @@ def get_user_by_id_or_name(user, user_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE)
-
-    q_bd.select = list(_SELECT_WITHOUT_PASSWORD)
+    q_bd = v1_utils.QueryBuilder(_TABLE, skip_columns=_SKIP_COLUMNS)
 
     select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
     q_bd.select.extend(select)

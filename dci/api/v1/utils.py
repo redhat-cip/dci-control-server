@@ -163,9 +163,11 @@ def group_embedded_resources(items_to_embed, row):
     return utils.dict_merge(res, row)
 
 
-def get_columns_name_with_objects(table):
+def get_columns_name_with_objects(table, skip_columns=[]):
     result = {}
     for column in table.columns:
+        if column.name in skip_columns:
+            continue
         result[column.name] = getattr(table.c, column.name)
     return result
 
@@ -225,13 +227,13 @@ def request_wants_html():
 
 class QueryBuilder(object):
 
-    def __init__(self, table, offset=None, limit=None):
+    def __init__(self, table, offset=None, limit=None, skip_columns=[]):
         self.table = table
         self.offset = offset
         self.limit = limit
         self.sort = []
         self.where = []
-        self.select = [table]
+        self.select = [c for c in table.c if c.name not in skip_columns]
         self.join = []
 
     def build(self):

@@ -44,6 +44,7 @@ def test_get_all_files(admin, jobstate_id):
     db_all_files_ids = [file['id'] for file in db_all_files]
 
     assert db_all_files_ids == [file_1_id, file_2_id]
+    assert 'content' not in db_all_files_ids[0]
 
 
 def test_get_all_files_with_pagination(admin, jobstate_id):
@@ -165,6 +166,7 @@ def test_get_file_by_id_or_name(admin, jobstate_id):
     created_file = admin.get('/api/v1/files/kikoolol')
     assert created_file.status_code == 200
     assert created_file.data['file']['name'] == 'kikoolol'
+    assert 'content' not in created_file.data['file']
 
 
 def test_get_file_not_found(admin):
