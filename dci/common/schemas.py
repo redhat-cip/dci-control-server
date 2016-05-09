@@ -114,16 +114,15 @@ def schema_factory(schema):
 #                                                                             #
 ###############################################################################
 
-split = lambda string: string.split(',')
-
+split_coerce = v.Coerce(lambda s: s.split(','))
 args = Schema({
     v.Optional('limit', default=None): v.All(v.Coerce(int), v.Range(0),
                                              msg=INVALID_LIMIT),
     v.Optional('offset', default=None): v.All(v.Coerce(int), v.Range(0),
                                               msg=INVALID_OFFSET),
-    v.Optional('sort', default=[]): v.Coerce(split),
-    v.Optional('where', default=[]): v.Coerce(split),
-    v.Optional('embed', default=[]): v.Coerce(split)
+    v.Optional('sort', default=[]): split_coerce,
+    v.Optional('where', default=[]): split_coerce,
+    v.Optional('embed', default=[]): split_coerce
 }, extra=v.REMOVE_EXTRA)
 
 ###############################################################################
