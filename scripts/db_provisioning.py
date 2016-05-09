@@ -409,6 +409,11 @@ def init_db(db_conn):
         c['name'] = company
         c['id'] = db_ins(models.TEAMS, name=company)
 
+        # create a topic for the team
+        topic_id = db_ins(models.TOPICS, name=company)
+        # Attach topic to team
+        db_ins(models.JOINS_TOPICS_TEAMS, topic_id=topic_id, team_id=c['id'])
+
         user = {'name': '%s_user' % (company.lower(),),
                 'password': auth.hash_password(company), 'team_id': c['id']}
         admin = {'name': '%s_admin' % (company.lower(),),
