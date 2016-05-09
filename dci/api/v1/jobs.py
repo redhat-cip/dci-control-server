@@ -90,6 +90,9 @@ def schedule_jobs(user):
     running jobs that were associated with the remoteci. This because they will
     never by finished.
     """
+    args = schemas.args(flask.request.args.to_dict())
+
+    auto_retry = args.get('retry_last')
     values = schemas.job_schedule.post(flask.request.json)
     topic_id = values.pop('topic_id')
     etag = utils.gen_etag()
@@ -136,26 +139,31 @@ def schedule_jobs(user):
     v1_utils.verify_team_in_topic(user, topic_id)
     # The user belongs to the topic then we can start the scheduling
 
-    # Subquery, get all the jobdefinitions which have been run by this remoteci
-    sub_query = (sql
-                 .select([_TABLE.c.jobdefinition_id])
-                 .where(_TABLE.c.remoteci_id == rci_id))
-
-    # Get one jobdefinition which has not been run by this remoteci
-    where_clause = sql.expression.and_(
-        sql.expression.not_(
-            models.JOBDEFINITIONS.c.id.in_(sub_query)),
+    q = sql.select([_TABLE.c.jobdefinition_id])
+    q.order_by(sql.asc(models.JOBDEFINITIONS.c.priority))
+    q.limit(1)
+    q_where = [
         models.JOBDEFINITIONS.c.topic_id == topic_id,  # noqa,
         models.JOBDEFINITIONS.c.active == True,  # noqa
-    )
+    ]
 
-    query = (sql.select([models.JOBDEFINITIONS.c.id])
-             .where(where_clause)
-             .order_by(sql.asc(models.JOBDEFINITIONS.c.priority))
-             .limit(1))
+    if not auto_retry:
+        # Subquery, get all the jobdefinitions which have been run by
+        # this remoteci
+        sub_query = (sql
+                     .select([_TABLE.c.jobdefinition_id])
+                     .where(_TABLE.c.remoteci_id == rci_id))
+
+        # Get one jobdefinition which has not been run by this remoteci
+        q_where.append(sql.expression.not_(
+            models.JOBDEFINITIONS.c.id.in_(sub_query)))
+        print("subquery")
+
     # Order by jobdefinition.priority and get the first one
-
-    jobdefinition_to_run = flask.g.db_conn.execute(query).fetchone()
+    from pprint import pprint
+    pprint(q_where)
+    q.where(sql.expression.and_(*q_where))
+    jobdefinition_to_run = flask.g.db_conn.execute(q).fetchone()
 
     if jobdefinition_to_run is None:
         raise dci_exc.DCIException('No jobs available for run.',
