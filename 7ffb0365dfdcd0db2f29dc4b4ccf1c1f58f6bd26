@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "7a1969be_4e9a7515",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-10T01:15:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7a1969be_eee6c115",
+      "revId": "7ffb0365dfdcd0db2f29dc4b4ccf1c1f58f6bd26",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a1969be_6ed3f138",
         "filename": "dci/api/v1/files.py",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2016-05-09T16:23:54Z",
       "side": 1,
       "message": "I think you should add a position parameter here and seek() on this position. This will make easier to just retrieve a piece of the file, of continue a download.",
+      "revId": "7ffb0365dfdcd0db2f29dc4b4ccf1c1f58f6bd26",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a1969be_0ef99d4d",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-10T01:15:37Z",
+      "side": 1,
+      "message": "Yeah, this will be done in another patch.",
+      "parentUuid": "7a1969be_6ed3f138",
       "revId": "7ffb0365dfdcd0db2f29dc4b4ccf1c1f58f6bd26",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "7a1969be_6e95b1e3",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 186,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-10T01:15:37Z",
+      "side": 1,
+      "message": "Could you show me where did you see a JSON structure ? :)",
+      "parentUuid": "7a1969be_aedde944",
+      "revId": "7ffb0365dfdcd0db2f29dc4b4ccf1c1f58f6bd26",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a1969be_cee30504",
         "filename": "dci/api/v1/utils.py",
         "patchSetId": 3
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "7a1969be_cefe6538",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 279,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-10T01:15:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7a1969be_cee30504",
+      "revId": "7ffb0365dfdcd0db2f29dc4b4ccf1c1f58f6bd26",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a1969be_8ee2ad01",
         "filename": "dci/settings.py",
         "patchSetId": 3
@@ -81,6 +153,24 @@
       "writtenOn": "2016-05-09T16:23:54Z",
       "side": 1,
       "message": "It should be /var/lib/dci-control-server/files or something similar.",
+      "revId": "7ffb0365dfdcd0db2f29dc4b4ccf1c1f58f6bd26",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a1969be_2efc593e",
+        "filename": "dci/settings.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-10T01:15:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7a1969be_8ee2ad01",
       "revId": "7ffb0365dfdcd0db2f29dc4b4ccf1c1f58f6bd26",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
