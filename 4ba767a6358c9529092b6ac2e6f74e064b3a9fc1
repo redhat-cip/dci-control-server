@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a1969be_69ddab14",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 192,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-05-10T14:08:54Z",
+      "side": 1,
+      "message": "suggestion, just: 1024**2",
+      "revId": "4ba767a6358c9529092b6ac2e6f74e064b3a9fc1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
