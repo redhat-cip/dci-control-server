@@ -90,9 +90,18 @@ def schedule_jobs(user):
     running jobs that were associated with the remoteci. This because they will
     never by finished.
     """
+
     values = schemas.job_schedule.post(flask.request.json)
+    rci_id = values.get('remoteci_id')
     topic_id = values.pop('topic_id')
     etag = utils.gen_etag()
+    # first, let's kill existing running jobs for the remoteci
+    kill_query = _TABLE.update().where(
+        sql.expression.and_(
+            _TABLE.c.remoteci_id == rci_id,
+            _TABLE.c.status.in_(('new', 'pre-run', 'running', 'post-run'))
+        )).values(status='killed')
+
     values.update({
         'id': utils.gen_uuid(),
         'created_at': datetime.datetime.utcnow().isoformat(),
@@ -101,7 +110,6 @@ def schedule_jobs(user):
         'recheck': values.get('recheck', False),
         'status': 'new'
     })
-    rci_id = values.get('remoteci_id')
     remoteci = v1_utils.verify_existence_and_get(rci_id, models.REMOTECIS)
     v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
 
@@ -165,15 +173,7 @@ def schedule_jobs(user):
         'jobdefinition_id': jobdefinition_to_run[0],
         'team_id': remoteci['team_id']
     })
-
-    # first, let's kill existing running jobs for the remoteci
-    kill_query = _TABLE.update().where(
-        sql.expression.and_(
-            _TABLE.c.remoteci_id == rci_id,
-            _TABLE.c.status.in_(('new', 'pre-run', 'running', 'post-run'))
-        )).values(status='killed')
     insert_query = _TABLE.insert().values(**values)
-
     with flask.g.db_conn.begin():
         flask.g.db_conn.execute(kill_query)
         flask.g.db_conn.execute(insert_query)
