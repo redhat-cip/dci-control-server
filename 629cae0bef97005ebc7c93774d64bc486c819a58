@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "7a1969be_5b06b621",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-11T11:04:29Z",
+      "side": 1,
+      "message": "Actually, if the user is the admin then this function will returns all the jobs of every teams. Otherwise, the function filter by teams so one could not browse the jobs of the others teams.\n\nYou can see how it\u0027s called in http://softwarefactory-project.io/r/#/c/3614/3/dci/api/v1/topics.py  L182",
+      "parentUuid": "7a1969be_948806e9",
+      "revId": "629cae0bef97005ebc7c93774d64bc486c819a58",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a1969be_147416fc",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 3
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "7a1969be_be0eb832",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-11T11:04:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7a1969be_147416fc",
+      "revId": "629cae0bef97005ebc7c93774d64bc486c819a58",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a1969be_5465ee43",
         "filename": "dci/api/v1/topics.py",
         "patchSetId": 3
@@ -47,6 +83,24 @@
       "writtenOn": "2016-05-05T17:56:31Z",
       "side": 1,
       "message": "I\u0027m not sure this endpoint is mandatory. IMO topic\u003dfoo should just be a filter. Something like: /components/\u003ccomponent_id\u003e/jobs?topic\u003dfoo",
+      "revId": "629cae0bef97005ebc7c93774d64bc486c819a58",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a1969be_db12a661",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-11T11:04:29Z",
+      "side": 1,
+      "message": "This is another way to make the route, we prefer to add the topic-id because it\u0027s more RESTful like the other resources, if i refer to the literature around REST :).\n\nWe can adjust this when needed, for now it will be abstracted by the dciclient.",
+      "parentUuid": "7a1969be_5465ee43",
       "revId": "629cae0bef97005ebc7c93774d64bc486c819a58",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
