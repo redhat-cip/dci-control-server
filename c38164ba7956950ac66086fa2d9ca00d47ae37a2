@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "7a1969be_9e265cb9",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-11T12:33:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7a1969be_141d36be",
+      "revId": "c38164ba7956950ac66086fa2d9ca00d47ae37a2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a1969be_74790afc",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 4
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "7a1969be_be5cf826",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 190,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-11T12:33:12Z",
+      "side": 1,
+      "message": "I cut\u0027n paste the code because when we will upgrade to /jobs/schedule2  we will safely remove /jobs/schedule. The result will not be a cut\u0027n paste :p.\n\nIt\u0027s a good point to split it, will do.",
+      "parentUuid": "7a1969be_74790afc",
+      "revId": "c38164ba7956950ac66086fa2d9ca00d47ae37a2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a1969be_547e8ee5",
         "filename": "tests/api/v1/test_components.py",
         "patchSetId": 4
@@ -47,6 +83,24 @@
       "writtenOn": "2016-05-05T17:49:51Z",
       "side": 1,
       "message": "We already have similar scheduler tests in test_jobs.py. I believe you should just pass a job_id fixture a parameter and test it.",
+      "revId": "c38164ba7956950ac66086fa2d9ca00d47ae37a2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a1969be_1e3a6ccd",
+        "filename": "tests/api/v1/test_components.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 172,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-11T12:33:12Z",
+      "side": 1,
+      "message": "Sorry, i don\u0027t understand what you mean by job_id fixture in this tests.",
+      "parentUuid": "7a1969be_547e8ee5",
       "revId": "c38164ba7956950ac66086fa2d9ca00d47ae37a2",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
