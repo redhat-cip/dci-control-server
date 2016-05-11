@@ -104,6 +104,24 @@
       "revId": "629cae0bef97005ebc7c93774d64bc486c819a58",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a1969be_be2b582f",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-05-11T13:26:22Z",
+      "side": 1,
+      "message": "I don\u0027t see the benefit here, this create just some more duplicated code.\n\n\"It\u0027s cleaner according to some dude on Hacker News who know a lot about RESTful.\" sounds like an poor argument to me :D",
+      "parentUuid": "7a1969be_db12a661",
+      "revId": "629cae0bef97005ebc7c93774d64bc486c819a58",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
