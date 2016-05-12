@@ -23,6 +23,9 @@ class DCIESEngine(object):
         self.conn = Elasticsearch(conf['ES_HOST'], port=conf['ES_PORT'],
                                   timeout=30)
 
+    def create_index(self):
+        self.conn.indices.create(index=self.esindex)
+
     def get(self, id, team_id=None):
         res = self.conn.get(index=self.esindex, doc_type='log', id=id)
         if team_id:

@@ -31,7 +31,7 @@ es_files = es_engine.list()
 
 if es_files is None:
     print("no index found")
-    sys.exit(1)
+    es_engine.create_index()
 else:
     es_files = es_files['hits']['hits']
 
