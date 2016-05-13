@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import copy
 import flask
 import six
 from sqlalchemy import sql, func
@@ -98,6 +99,43 @@ def get_query_with_join(embed_list, valid_embedded_resources):
     join = [item[1] for item in sorted(resources_to_embed.items())]
 
     return select, join
+
+
+def group_reduce(rows, items_to_embed):
+    """Gi ven a list of row, apply the equivalent of a SQL group by logic per
+       the specified key.
+
+       For instance:
+        - rows: [ {'id': 'uxieewrew', 'value': 42},
+                  {'id': 'uxieewrew', 'value': 43}]
+
+       reduce(rows, 'value') should ouput
+        - rows: [ {'id': 'uxieewrew', 'values': [42, 43]} ]
+    """
+
+    # 1. Make a deep copy of the rows object
+    rows_cpy = copy.deepcopy(rows)
+
+    # 2. Remove them embeded items from the object
+    [map(row.pop, items_to_embed) for row in rows]
+
+    # 3. Keep only the unique items
+    unique_rows = [dict(i) for i in set([frozenset(i.items()) for i in rows])]
+
+    # 4. Pre-fill the embed list with potential array
+    for unique_row in unique_rows:
+        for item in items_to_embed:
+            unique_row[item + 's'] = []
+
+    # 5. Fill the final object accordingly
+    for unique_row in unique_rows:
+        for row in rows_cpy:
+            if unique_row['id'] != row['id']:
+                continue
+            for item in items_to_embed:
+                unique_row[item + 's'].append(row[item])
+
+    return unique_rows
 
 
 def group_embedded_resources(items_to_embed, row):
