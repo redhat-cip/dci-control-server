@@ -35,6 +35,7 @@ _TABLE = models.JOBS
 # associate column names with the corresponding SA Column object
 _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _VALID_EMBED = {
+    'file': models.FILES,
     'jobdefinition': models.JOBDEFINITIONS,
     # TODO(spredzy) : Remove this when the join and multiple
     # entities is supported

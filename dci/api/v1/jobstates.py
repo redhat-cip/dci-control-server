@@ -30,9 +30,9 @@ from dci.db import models
 # associate column names with the corresponding SA Column object
 _TABLE = models.JOBSTATES
 _JS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_VALID_EMBED = {'job': models.JOBS,
+_VALID_EMBED = {'file': models.FILES,
+                'job': models.JOBS,
                 'team': models.TEAMS}
-
 
 def insert_jobstate(user, values):
     values.update({
@@ -101,6 +101,7 @@ def get_all_jobstates(user, j_id=None):
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
     rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
+    rows = v1_utils.group_reduce(rows, embed)
 
     return flask.jsonify({'jobstates': rows, '_meta': {'count': nb_row}})
 
