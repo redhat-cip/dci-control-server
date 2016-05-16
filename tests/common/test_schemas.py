@@ -461,7 +461,7 @@ class TestFile(utils.SchemaTesting):
         super(TestFile, self).test_post_extra_data(data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'content')
+        errors = utils.generate_errors('name')
         super(TestFile, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
