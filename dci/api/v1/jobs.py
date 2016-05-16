@@ -216,6 +216,38 @@ def get_all_jobs(user, jd_id=None):
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
+    if args.pop('merged', None) or True:
+        final_rows = []
+        ids = []
+        for row in rows:
+            if row['jobdefinition']['id'] not in ids:
+                final_rows.append(row)
+                ids.append(row['jobdefinition']['id'])
+
+        cnt_hash = {}
+        for row in rows:
+            if row['jobdefinition']['id'] in cnt_hash.keys():
+                cnt_hash[row['jobdefinition']['id']] += 1
+            else:
+                cnt_hash[row['jobdefinition']['id']] = 1
+
+        status_hash = {}
+        for row in rows:
+            if row['jobdefinition']['id'] in status_hash.keys():
+                if row['status'] in status_hash[row['jobdefinition']['id']].keys() :
+                  status_hash[row['jobdefinition']['id']][row['status']] += 1
+                else:
+                  status_hash[row['jobdefinition']['id']][row['status']] = 1
+            else:
+                status_hash[row['jobdefinition']['id']] = {}
+                status_hash[row['jobdefinition']['id']][row['status']] = 1
+
+        rows = final_rows
+        nb_row = len(final_rows)
+        for row in rows:
+            row['count'] = cnt_hash[row['jobdefinition']['id']]
+            row['statuses'] = status_hash[row['jobdefinition']['id']]
+
     return flask.jsonify({'jobs': rows, '_meta': {'count': nb_row}})
 
 
