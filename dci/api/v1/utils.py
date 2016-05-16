@@ -22,6 +22,8 @@ from dci.common import exceptions as dci_exc
 from dci.common import utils
 from dci.db import models
 
+import os
+
 
 def verify_existence_and_get(id, table):
     """Verify the existence of a resource in the database and then
@@ -270,3 +272,12 @@ class QueryBuilder(object):
             query = query.select_from(query_join)
 
         return query
+
+
+def ensure_path_exists(path):
+    os.path.exists(path) or os.makedirs(path)
+
+
+def build_file_directory_path(file_folder, team_id, file_id):
+    return '%s/%s/%s/%s/%s' % (file_folder, team_id, file_id[0:2],
+                               file_id[2:4], file_id[4:6])
