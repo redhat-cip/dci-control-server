@@ -132,6 +132,101 @@ def get_jobdefinition_by_id_or_name(user, jd_id):
     return res
 
 
+@api.route('/jobdefinitions/<jd_id>/jobs', methods=['GET'])
+@auth.requires_auth
+def get_job_by_jobdefintion(user, jd_id):
+    # get the diverse parameters
+    embed = schemas.args(flask.request.args.to_dict())['embed']
+    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
+    v1_utils.verify_existence_and_get(jd_id, _TABLE)
+
+    q_bd = v1_utils.QueryBuilder(models.JOBS)
+
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
+
+    where_clause = sql.or_(models.JOBS.c.jobdefinition_id == jd_id)
+    q_bd.where.append(where_clause)
+
+    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+
+    rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
+
+    if rows is None:
+        raise dci_exc.DCINotFound('Jobdefinition', jd_id)
+
+    return flask.jsonify({'jobs': rows, '_meta': {'count': nb_row}})
+
+
+@api.route('/jobdefinitions/<jd_id>/remoteci/<r_id>/jobs', methods=['GET'])
+@auth.requires_auth
+def get_last_job_by_jobdefinition_and_by_remoteci(user, jd_id, r_id):
+    return get_job_by_jobdefintion_and_by_remoteci(jd_id, r_id, 0)
+
+
+@api.route('/jobdefinitions/<jd_id>/remoteci/<r_id>/jobs/<i_id>', methods=['GET'])
+@auth.requires_auth
+def get_job_by_jobdefintion_and_by_remoteci(user, jd_id, r_id, i_id):
+    # get the diverse parameters
+    embed = schemas.args(flask.request.args.to_dict())['embed']
+    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
+    v1_utils.verify_existence_and_get(jd_id, _TABLE)
+
+    q_bd = v1_utils.QueryBuilder(models.JOBS)
+
+    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
+    q_bd.select.extend(select)
+    q_bd.join.extend(join)
+
+    where_clause = sql.and_(models.JOBS.c.jobdefinition_id == jd_id, models.JOBS.c.remoteci_id == r_id)
+    q_bd.where.append(where_clause)
+
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+
+    rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
+
+    if len(rows) != int(i_id):
+        rows = rows[:len(rows) - int(i_id)]
+
+    if rows is None:
+        raise dci_exc.DCINotFound('Jobdefinition', jd_id)
+
+
+    cnt_hash = {}
+    for row in rows:
+        if row['jobdefinition_id'] in cnt_hash.keys():
+            cnt_hash[row['jobdefinition_id']] += 1
+        else:
+            cnt_hash[row['jobdefinition_id']] = 1
+
+    status_hash = {}
+    for row in rows:
+        if row['jobdefinition_id'] in status_hash.keys():
+            if row['status'] in status_hash[row['jobdefinition_id']].keys():
+                status_hash[row['jobdefinition_id']][row['status']] += 1
+            else:
+                status_hash[row['jobdefinition_id']][row['status']] = 1
+        else:
+            status_hash[row['jobdefinition_id']] = {}
+            status_hash[row['jobdefinition_id']][row['status']] = 1
+
+    for row in rows:
+        row['count'] = cnt_hash[row['jobdefinition_id']]
+        row['statuses'] = status_hash[row['jobdefinition_id']]
+
+    if int(i_id) == 0:
+        row = rows[0]
+    else:
+        row = rows[int(i_id) - 1]
+    # TODO (spredzy): Catch index out of range exception.
+
+    res = flask.jsonify({'job': row})
+    res.headers.add_header('ETag', row['etag'])
+    return res
+
+
 @api.route('/jobdefinitions/<jd_id>', methods=['PUT'])
 @auth.requires_auth
 def put_jobdefinition(user, jd_id):
