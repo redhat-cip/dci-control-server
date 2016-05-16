@@ -17,8 +17,16 @@
 from __future__ import unicode_literals
 import pytest
 
+from dci.api.v1 import utils as v1_utils
+from dci import dci_config
 
-def test_create_files(admin, jobstate_id):
+import os
+
+
+_FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
+
+
+def test_create_files(admin, jobstate_id, team_admin_id):
     file = admin.post('/api/v1/files',
                       data={'jobstate_id': jobstate_id, 'content': 'content',
                             'name': 'kikoolol'}).data
@@ -26,6 +34,12 @@ def test_create_files(admin, jobstate_id):
     file = admin.get('/api/v1/files/%s' % file_id).data
     assert file['file']['name'] == 'kikoolol'
 
+    file_directory_path = v1_utils.build_file_directory_path(
+        _FILES_FOLDER, team_admin_id, file_id)
+    file_path = '%s/%s' % (file_directory_path, file_id)
+    assert os.path.exists(file_path)
+    with open(file_path, "r") as f:
+        assert f.read() == "content"
 
 def test_get_all_files(admin, jobstate_id):
     file_1 = admin.post('/api/v1/files',
