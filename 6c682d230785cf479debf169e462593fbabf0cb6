@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a166590_252c8e4a",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-05-18T11:39:49Z",
+      "side": 1,
+      "message": "please use voluptuous",
+      "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_053192a2",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-05-18T11:39:49Z",
+      "side": 1,
+      "message": "I think this is a 400 (and no need to specify it)",
+      "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_85f582cd",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-05-18T11:39:49Z",
+      "side": 1,
+      "message": "just to remain that it can be a security hole here. Are we sure that this will not allow us to bypass some checks ?",
+      "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_e50276b3",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-05-18T11:39:49Z",
+      "side": 1,
+      "message": "if sa_op is None this will fail, isn\u0027t it ?",
+      "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_c5ff7aa9",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-05-18T11:39:49Z",
+      "side": 1,
+      "message": "I do not think the _meta.count here will be an interesting metric",
+      "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_a5f87ec5",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 527,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-05-18T11:39:49Z",
+      "side": 1,
+      "message": "remove the print here",
+      "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
