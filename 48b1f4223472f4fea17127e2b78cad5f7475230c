@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a166590_455d4ae9",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-05-18T11:33:38Z",
+      "side": 1,
+      "message": "I am not sure that you need to request that like this, I think that the config can be retrieve directly from the api object",
+      "revId": "48b1f4223472f4fea17127e2b78cad5f7475230c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_a5719e79",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-05-18T11:33:38Z",
+      "side": 1,
+      "message": "move this in a util function which return a dict",
+      "revId": "48b1f4223472f4fea17127e2b78cad5f7475230c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_856e2295",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-05-18T11:33:38Z",
+      "side": 1,
+      "message": "do not do that, just use a dict with default value set then update it with the values dict:\n\n    values \u003d {\u0027md5\u0027: None, \u0027mime\u0027: None....}\n    values.update(extract_headers(headers))\n\nwhere extract headers is the util function described ahead",
+      "revId": "48b1f4223472f4fea17127e2b78cad5f7475230c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_650fa6e2",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-05-18T11:33:38Z",
+      "side": 1,
+      "message": "replace all following lines with \n\n    size \u003d 1024 ** 2\n    for chunk in iter(lambda: f.read(size) or None, None):\n        yield chunk",
+      "revId": "48b1f4223472f4fea17127e2b78cad5f7475230c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
