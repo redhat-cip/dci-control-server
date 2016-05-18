@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a166590_25880e22",
+        "filename": "dci/alembic/versions/9ba5bcab9aef_make_files_content_nullable.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-05-18T13:05:28Z",
+      "side": 1,
+      "message": "IMO, we should create on or two additional level of depth. Like for example:\n\na/a2/a23/a234frdgygfhygj\n\nThis is was Squid do for instance. The idea is to avoid directory with a huge amount of files.\n\nI also believe it could be a good idea to add the job_id in the patch, like instead of team. This will simplify a lot the purge of the old jobs IMO.",
+      "revId": "1ced5fd9147268bf9c01c827de3c3f234aff8aa8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_45870a10",
+        "filename": "tests/settings.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-05-18T13:05:28Z",
+      "side": 1,
+      "message": "Should be /var/tmp/dci-control-server",
+      "revId": "1ced5fd9147268bf9c01c827de3c3f234aff8aa8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
