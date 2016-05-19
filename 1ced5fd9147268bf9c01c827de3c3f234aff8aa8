@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "5a166590_ebb8852c",
+        "filename": "dci/alembic/versions/9ba5bcab9aef_make_files_content_nullable.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-19T13:52:07Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5a166590_0b040114",
+      "revId": "1ced5fd9147268bf9c01c827de3c3f234aff8aa8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a166590_45870a10",
         "filename": "tests/settings.py",
         "patchSetId": 3
