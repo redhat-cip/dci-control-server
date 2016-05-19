@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "5a166590_0b040114",
+        "filename": "dci/alembic/versions/9ba5bcab9aef_make_files_content_nullable.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-05-19T12:50:03Z",
+      "side": 1,
+      "message": "You should always have a job_id, but I agree with you. This may not be the best long term solution since we may reconsider it in the future.\n\nThen, let\u0027s just focus on:\na/a2/a23/a234frdgygfhygj",
+      "parentUuid": "5a166590_88fe3737",
+      "revId": "1ced5fd9147268bf9c01c827de3c3f234aff8aa8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a166590_45870a10",
         "filename": "tests/settings.py",
         "patchSetId": 3
