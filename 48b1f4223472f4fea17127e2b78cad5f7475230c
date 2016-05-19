@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "5a166590_48a43f57",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-19T12:16:46Z",
+      "side": 1,
+      "message": "what do you mean by api object ?",
+      "parentUuid": "5a166590_455d4ae9",
+      "revId": "48b1f4223472f4fea17127e2b78cad5f7475230c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a166590_a5719e79",
         "filename": "dci/api/v1/files.py",
         "patchSetId": 11
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "5a166590_a88853c7",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-19T12:16:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5a166590_a5719e79",
+      "revId": "48b1f4223472f4fea17127e2b78cad5f7475230c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a166590_856e2295",
         "filename": "dci/api/v1/files.py",
         "patchSetId": 11
@@ -47,6 +83,24 @@
       "writtenOn": "2016-05-18T11:33:38Z",
       "side": 1,
       "message": "do not do that, just use a dict with default value set then update it with the values dict:\n\n    values \u003d {\u0027md5\u0027: None, \u0027mime\u0027: None....}\n    values.update(extract_headers(headers))\n\nwhere extract headers is the util function described ahead",
+      "revId": "48b1f4223472f4fea17127e2b78cad5f7475230c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_e8924bf5",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-19T12:16:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5a166590_856e2295",
       "revId": "48b1f4223472f4fea17127e2b78cad5f7475230c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -81,6 +135,24 @@
       "writtenOn": "2016-05-18T17:59:55Z",
       "side": 1,
       "message": "nice",
+      "parentUuid": "5a166590_650fa6e2",
+      "revId": "48b1f4223472f4fea17127e2b78cad5f7475230c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a166590_c88f8fcb",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-19T12:16:46Z",
+      "side": 1,
+      "message": "Done\n\nNot sure it\u0027s easy to read :)",
       "parentUuid": "5a166590_650fa6e2",
       "revId": "48b1f4223472f4fea17127e2b78cad5f7475230c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
