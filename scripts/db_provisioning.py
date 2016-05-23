@@ -47,7 +47,6 @@ def write(file_path, content):
     with open(file_path, 'w') as f:
         f.write(content)
 
-
 JUNIT = """
 <testsuite errors="0" failures="0" name="pytest" skips="1"
            tests="3" time="46.050">
@@ -306,6 +305,16 @@ def init_db(db_conn):
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[3][20],
         updated_at=time[0][6]
     )
+    db_ins(
+        models.JOBS, status='killed', jobdefinition_id=jobdef_hp_2,
+        remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[1][8],
+        updated_at=time[0][1]
+    )
+    db_ins(
+        models.JOBS, status='killed', jobdefinition_id=jobdef_hp_2,
+        remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[2][12],
+        updated_at=time[1][6]
+    )
 
     db_ins(
         models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
@@ -366,6 +375,16 @@ def init_db(db_conn):
         models.JOBS, status='failure', jobdefinition_id=jobdef_dell_2,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[3][20],
         updated_at=time[0][6]
+    )
+    db_ins(
+        models.JOBS, status='killed', jobdefinition_id=jobdef_dell_2,
+        remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[1][4],
+        updated_at=time[0][3]
+    )
+    db_ins(
+        models.JOBS, status='killed', jobdefinition_id=jobdef_dell_2,
+        remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[2][8],
+        updated_at=time[1][2]
     )
 
     # Creates jobstates attached to jobs, just create a subset of them to
