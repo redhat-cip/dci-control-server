@@ -52,7 +52,8 @@ REMOTE_CIS_ATTRS = {
 
 NAMES = ['foobar', 'fubar', 'foo', 'bar', 'baz', 'qux', 'quux', 'norf']
 
-JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run', 'success', 'failure']
+JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run', 'success', 'failure',
+                'killed']
 
 LOREM_IPSUM = [
     'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
