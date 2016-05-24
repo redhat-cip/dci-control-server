@@ -367,7 +367,7 @@ def init_db(db_conn):
     job_dell_12 = db_ins(
         models.JOBS, status='success', jobdefinition_id=jobdef_dell_2,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[3][20],
-        updated_at=time[0][6], configuration=STACKDETAILS
+        updated_at=time[0][0]
     )
 
     # Creates jobstates attached to jobs, just create a subset of them to
@@ -391,7 +391,7 @@ def init_db(db_conn):
         created_at=time[1][5], job_id=job_dell_9
     )
     db_ins(
-        models.JOBSTATES, status='success', team_id=team_dell,
+        models.JOBSTATES, status='failure', team_id=team_dell,
         created_at=time[1][3], job_id=job_dell_9
     )
 
@@ -425,7 +425,7 @@ def init_db(db_conn):
         created_at=time[0][1], job_id=job_dell_10
     )
     db_ins(
-        models.JOBSTATES, status='success', team_id=team_dell,
+        models.JOBSTATES, status='failure', team_id=team_dell,
         created_at=time[0][0], job_id=job_dell_10
     )
 
@@ -451,7 +451,7 @@ def init_db(db_conn):
         created_at=time[2][22], job_id=job_dell_11
     )
     db_ins(
-        models.JOBSTATES, status='failure', team_id=team_dell,
+        models.JOBSTATES, status='success', team_id=team_dell,
         created_at=time[2][20], job_id=job_dell_11
     )
 
@@ -501,18 +501,31 @@ def init_db(db_conn):
         created_at=time[0][10], job_id=job_dell_12
     )
     job_dell_12_12 = db_ins(
-        models.JOBSTATES, status='failure', team_id=team_dell,
-        created_at=time[0][6], job_id=job_dell_12
+        models.JOBSTATES, status='success', team_id=team_dell,
+        created_at=time[0][0], job_id=job_dell_12
     )
 
     # create files only for the last job i.e: dell_12
     f_id = db_ins(
         models.FILES, name='res_junit.xml', mime='application/junit',
-        created_at=time[0][6], team_id=team_dell, jobstate_id=job_dell_12_12
+        created_at=time[0][0], team_id=team_dell, job_id=job_dell_12
     )
 
     path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
     write(path, JUNIT)
+
+    f_id = db_ins(
+        models.FILES, name='foo.txt', mime='text/play',
+        created_at=time[0][0], team_id=team_dell, jobstate_id=job_dell_12_12
+    )
+    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
+    write(path, 'some content')
+    f_id = db_ins(
+        models.FILES, name='bar.txt', mime='text/play',
+        created_at=time[0][0], team_id=team_dell, jobstate_id=job_dell_12_12
+    )
+    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
+    write(path, 'some other content')
 
 
 if __name__ == '__main__':

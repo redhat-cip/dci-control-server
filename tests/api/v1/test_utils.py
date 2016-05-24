@@ -18,21 +18,29 @@ from dci.api.v1 import utils
 from dci.common import exceptions as dci_exc
 
 import pytest
+import sqlalchemy as sa
+
+# Use a fake model for testing
+stub = utils.embed(sa.Table('stubs', sa.MetaData()))
 
 
 def test_verify_embed_list():
-    valid_embed_list = ['a', 'a.b', 'a.b.c']
+    valid_embed_list = {'a': stub, 'a.b': stub, 'a.b.c': stub}
     embed_list = ['a', 'a.b.c', 'a.b']
-    utils.verify_embed_list(embed_list, valid_embed_list)
+
+    qb = utils.QueryBuilder(None, embed=valid_embed_list)
+    qb.join(embed_list)
+
+    assert qb._join == [stub.model] * 3
 
 
 def test_verify_embed_list_not_valid():
-    valid_embed_list = ['a', 'a.b', 'a.b.c']
+    valid_embed_list = {'a': stub, 'a.b': stub, 'a.b.c': stub}
     embed_list = ['a', 'a.b', 'kikoolol']
 
-    assert pytest.raises(dci_exc.DCIException,
-                         utils.verify_embed_list,
-                         embed_list, valid_embed_list)
+    qb = utils.QueryBuilder(None, embed=valid_embed_list)
+
+    assert pytest.raises(dci_exc.DCIException, qb.join, embed_list)
 
 
 def test_group_embedded_resources():

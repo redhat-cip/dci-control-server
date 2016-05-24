@@ -63,7 +63,7 @@ ITEM_LOOKUP_FIELD = 'id'
 ETAG = 'etag'
 URL_PREFIX = 'api'
 X_DOMAINS = '*'
-X_HEADERS = 'Authorization, Content-Type, If-Match, ETag'
+X_HEADERS = 'Authorization, Content-Type, If-Match, ETag, X-Requested-With'
 MAX_CONTENT_LENGTH = 20 * 1024 * 1024
 
 FILES_UPLOAD_FOLDER = '/var/lib/dci-control-server/files'
