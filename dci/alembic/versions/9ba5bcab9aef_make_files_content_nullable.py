@@ -53,17 +53,14 @@ def upgrade():
         file = db_conn.execute(query_file.offset(index).limit(1))
         file = dict(file)
 
-        # ensure the team's path exist in the FS
-        file_directory_path = v1_utils.build_file_directory_path(
-            _FILES_FOLDER, file['team_id'], file['id'])
-        v1_utils.ensure_path_exists(file_directory_path)
-        file_path = '%s/%s' % (file_directory_path, file['id'])
-
-        with open(file_path, "w") as f:
+        file_path = v1_utils.build_file_path(
+            _FILES_FOLDER, file['team_id'], file['id']
+        )
+        with open(file_path, 'w') as f:
             f.write(file['content'])
 
     # make the file's content nullable
-    op.alter_column("files", "content", nullable=True)
+    op.alter_column('files', 'content', nullable=True)
 
 
 def downgrade():
