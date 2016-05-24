@@ -33,7 +33,7 @@ from dci.db import models
 # associate column names with the corresponding SA Column object
 _TABLE = models.REMOTECIS
 _R_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_VALID_EMBED = {'team': models.TEAMS}
+_VALID_EMBED = {'team': v1_utils.embed(models.TEAMS)}
 
 
 @api.route('/remotecis', methods=['POST'])
@@ -74,14 +74,9 @@ def get_all_remotecis(user, t_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
-
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
-
-    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
-
-    q_bd.select.extend(select)
-    q_bd.join.extend(join)
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
+                                 _VALID_EMBED)
+    q_bd.join(embed)
     q_bd.sort = v1_utils.sort_query(args['sort'], _R_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _R_COLUMNS)
 
@@ -103,13 +98,9 @@ def get_all_remotecis(user, t_id=None):
 @auth.requires_auth
 def get_remoteci_by_id_or_name(user, r_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE)
-
-    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
-    q_bd.select.extend(select)
-    q_bd.join.extend(join)
+    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
+    q_bd.join(embed)
 
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])

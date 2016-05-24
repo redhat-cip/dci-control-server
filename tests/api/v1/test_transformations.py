@@ -14,13 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from dci.api.v1 import transformations
+import dci.api.v1.transformations as transformations
 
 import json
 
-
-def test_junitojson_valid():
-    junit = """
+JUNIT = """
 <testsuite errors="0" failures="0" name="junittojson" skips="1"
            tests="3" time="46.050">
   <properties>
@@ -39,57 +37,87 @@ def test_junitojson_valid():
 </testsuite>
 """
 
-    result = {
-        'content': junit,
-        'mime': 'application/junit'
-    }
 
-    result = transformations.junittojson(result)
-    result = json.loads(result['content'])
+def test_junit2json_valid():
+    result = transformations.junit2json(JUNIT)
+    result = json.loads(result)
 
     assert result['name'] == 'junittojson'
     assert result['total'] == '3'
     assert len(result['properties']) == 2
 
 
-def test_junitojson_invalid():
-    junit = """
-<testsuite errors="0" failures="0" name="junittojson" skips="1"
-           tests="3" time="46.050">
-  <properties>
-    <property name="x" value="y" />
-    <property name="a" value="b" />
-  </properties>
-  <testcase classname="" file="test-requirements.txt"
-            name="test-requirements.txt" time="0.0109479427338">
-    <skipped message="all tests skipped by +SKIP option"
-             type="pytest.skip">Skipped for whatever reasons</skipped>
-  <testcase classname="tests.test_app" file="tests/test_app.py" line="26"
-            name="test_cors_preflight" time="2.91562318802"/>
-  <testcase classname="tests.test_app" file="tests/test_app.py" line="42"
-            name="test_cors_headers" time="0.574683904648"/>
-</testsuite>
-"""
+def test_retrieve_junit2json(admin, job_id):
+    headers = {'DCI-NAME': 'junit_file.xml', 'DCI-JOB-ID': job_id,
+               'DCI-MIME': 'application/junit',
+               'Content-Type': 'application/junit'}
 
-    result = {
-        'content': junit,
-        'mime': 'application/junit'
+    file = admin.post('/api/v1/files', headers=headers, data=JUNIT)
+    file = file.data['file']['id']
+
+    # First retrieve file
+    res = admin.get('/api/v1/files/%s/content' % file)
+
+    assert res.data == JUNIT
+    assert 'Content-Disposition' not in res.headers
+
+    # Now retrieve it through XHR
+    headers = {'X-Requested-With': 'XMLHttpRequest'}
+    res = admin.get('/api/v1/files/%s/content' % file, headers=headers)
+
+    assert (res.headers.get('Content-Disposition') ==
+            'attachment; filename=junit_file.xml')
+    assert json.loads(res.data) == {
+        'name': 'junittojson',
+        'failures': '0',
+        'errors': '0',
+        'skips': '1',
+        'total': '3',
+        'time': '46.050',
+        'properties': [
+            {'name': 'x', 'value': 'y'},
+            {'name': 'a', 'value': 'b'}
+        ],
+        'testscases': [
+            {
+                'name': 'test-requirements.txt',
+                'classname': '',
+                'file': 'test-requirements.txt',
+                'time': u'0.0109479427338',
+                'result': {
+                    'message': 'all tests skipped by +SKIP option',
+                    'value': 'Skipped for whatever reasons',
+                    'action': 'skipped',
+                    'type': 'pytest.skip'
+                }
+            }, {
+                'name': 'test_cors_preflight',
+                'classname': 'tests.test_app',
+                'file': 'tests/test_app.py',
+                'time': '2.91562318802',
+                'result': {'action': 'passed'}
+            }, {
+                'name': 'test_cors_headers',
+                'classname': 'tests.test_app',
+                'file': 'tests/test_app.py',
+                'time': u'0.574683904648',
+                'result': {'action': 'passed'},
+            }
+        ]
     }
 
-    result = transformations.junittojson(result)
-    result = json.loads(result['content'])
+
+def test_junit2json_invalid():
+    # remove the first closing testcase tag, in order to make the json invalid
+    invalid_junit = JUNIT.replace('</testcase>', '', 1)
+    result = transformations.junit2json(invalid_junit)
+    result = json.loads(result)
 
     assert 'XMLSyntaxError' in result['error']
 
 
-def test_junitojson_empty():
-
-    result = {
-        'content': '',
-        'mime': 'application/junit'
-    }
-
-    result = transformations.junittojson(result)
-    result = json.loads(result['content'])
+def test_junit2json_empty():
+    result = transformations.junit2json('')
+    result = json.loads(result)
 
     assert result == {}
