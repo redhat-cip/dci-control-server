@@ -16,66 +16,37 @@
 # under the License.
 
 import datetime
-from dci import auth
-from dci.db import models
-import dci.dci_config as config
+import dci.auth as auth
+import dci.db.models as models
+import dci.dci_config
+import dci.api.v1.utils as utils
 import functools
 import getopt
-import hashlib
-import random
 import sqlalchemy
 import sqlalchemy_utils.functions
 import sys
-import time
+import collections
+
+conf = dci.dci_config.generate_conf()
 
 
-COMPANIES = ['IBM', 'HP', 'DELL', 'Rackspace', 'Brocade', 'Redhat', 'Huawei',
-             'Juniper', 'Comcast']
+def time_helper():
+    dt = datetime.datetime
+    td = datetime.timedelta
 
-COMPONENT_TYPES = ['git', 'image', 'package', 'gerrit_review']
+    time = collections.defaultdict(dict)
 
-COMPONENTS = ['Khaleesi', 'RDO manager', 'OSP director', 'DCI-control-server']
+    for day in range(4):
+        for hour in range(24):
+            time[day][hour] = dt.now() - td(days=day, hours=hour)
 
-TESTS = ['tempest', 'khaleesi-tempest', 'tox']
+    return time
 
-VERSIONS = ['v0.8', 'v2.1.1', 'v1.2.15', 'v0.4.2', 'v1.1', 'v2.5']
 
-PROJECT_NAMES = ['Morbid Epsilon', 'Rocky Pluto', 'Timely Shower',
-                 'Brave Drill', 'Sad Scissors']
+def write(file_path, content):
+    with open(file_path, 'w') as f:
+        f.write(content)
 
-REMOTE_CIS_ATTRS = {
-    'storage': ['netapp', 'ceph', 'swift', 'AWS'],
-    'network': ['Cisco', 'Juniper', 'HP', 'Brocade'],
-    'hardware': ['Dell', 'Intel', 'HP', 'Huawei'],
-    'virtualization': ['KVM', 'VMWare', 'Xen', 'Hyper-V']
-}
-
-NAMES = ['foobar', 'fubar', 'foo', 'bar', 'baz', 'qux', 'quux', 'norf']
-
-JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run', 'success', 'failure']
-
-LOREM_IPSUM = [
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    'Donec a diam lectus. Sed sit amet ipsum mauris.',
-    'Maecenas congue ligula ac quam viverra nec consectetur ante hendrerit.',
-    'Donec et mollis dolor.',
-    'Praesent et diam eget libero egestas mattis sit amet vitae augue.',
-    'Nam tincidunt congue enim, ut porta lorem lacinia consectetur.',
-    'Donec ut libero sed arcu vehicula ultricies a non tortor.',
-    'Lorem ipsum dolor sit amet, consectetur adipiscing elit.',
-    'Aenean ut gravida lorem. Ut turpis felis, pulvinar a semper sed, '
-    'adipiscing id dolor.',
-    'Pellentesque auctor nisi id magna consequat sagittis.',
-    'Curabitur dapibus enim sit amet elit pharetra tincidunt feugiat '
-    'nisl imperdiet.',
-    'Ut convallis libero in urna ultrices accumsan.',
-    'Donec sed odio eros.',
-    'Donec viverra mi quis quam pulvinar at malesuada arcu rhoncus.',
-    'Cum sociis natoque penatibus et magnis dis parturient montes, '
-    'nascetur ridiculus mus.',
-    'In rutrum accumsan ultricies.',
-    'Mauris vitae nisi at sem facilisis semper ac in est.'
-]
 
 JUNIT = """
 <testsuite errors="0" failures="0" name="pytest" skips="1"
@@ -95,344 +66,454 @@ JUNIT = """
           name="test_cors_headers" time="0.574683904648"/>
 </testsuite>"""
 
-DATA = {
-    "ksgen_args": {
-        "installer-network-variant": "ml2-vxlan",
-        "installer-env": "virthost",
-        "installer-tempest": "minimal",
-        "installer-network": "neutron",
-        "installer-topology": "minimal",
-        "distro": "centos-7.0",
-        "product": "rdo",
-        "extra-vars": {
-            "installer": {
-                "nodes": {
-                    "node_cpu": 24
-                }
-            },
-            "provisioner": {
-                "type": "manual"
-            }
-        },
-        "installer-images": "build",
-        "installer-deploy": "templates",
-        "installer-network-isolation": "single_nic_vlans",
-        "product-version-build": "last_known_good_mgt",
-        "product-version": "liberty",
-        "installer": "rdo_manager",
-        "product-version-repo": "delorean_mgt",
-        "workarounds": "enabled",
-        "installer-post_action": "none",
-        "provisioner": "manual"
-    }
-}
-
-
-def create_remote_cis(db_conn, company, tests, topic_id):
-    # create 3 remote CIS per company (one for each test)
-    remote_cis = {}
-
-    def generate_jd_names(test_name, job_definition_names):
-        name = '%s %s %s' % (company['name'], test_name,
-                             random.choice(VERSIONS))
-        if len(job_definition_names) == 3:
-            return job_definition_names
-        if name not in job_definition_names:
-            job_definition_names.append(name)
-
-        return generate_jd_names(test_name, job_definition_names)
-
-    def generate_data_field():
-        data = {}
-        for _ in range(0, random.randint(0, 10)):
-            data_type = random.choice(list(REMOTE_CIS_ATTRS.keys()))
-            data[data_type] = random.choice(REMOTE_CIS_ATTRS[data_type])
-        return data
-
-    for i, test_name in enumerate(tests):
-        remote_ci = {
-            'data': DATA,
-            'team_id': company['id'],
-            'name': '%s - %d' % (company['name'], i)
-        }
-        remote_ci = db_insert(db_conn, models.REMOTECIS, **remote_ci)
-        job_definitions = []
-
-        # create 3 job definitions for each test
-        for job_definition_name in generate_jd_names(test_name, []):
-            job_definition = {
-                'name': job_definition_name,
-                'priority': random.randint(0, 10) * 100,
-                'topic_id': topic_id,
-                'type': "type_%s" % (random.randint(0, 10) * 100)
-            }
-            job_definition['id'] = db_insert(db_conn, models.JOBDEFINITIONS,
-                                             **job_definition)
-            job_definitions.append(job_definition)
-
-        remote_cis[remote_ci] = job_definitions
-
-    return remote_cis
-
-
-def create_jobs(db_conn, company_id, remote_cis):
-    jobs = []
-    for remote_ci, job_definitions in remote_cis.items():
-        for job_definition in job_definitions:
-            delta = datetime.timedelta(hours=random.randint(0, 10))
-            since = datetime.timedelta(days=random.randint(0, 3),
-                                       hours=random.randint(0, 10))
-            job = {
-                'remoteci_id': remote_ci,
-                'jobdefinition_id': job_definition['id'],
-                'created_at': datetime.datetime.now() - since - delta,
-                'updated_at': datetime.datetime.now() - since,
-                'status': random.choice(JOB_STATUSES),
-                'team_id': company_id
-            }
-
-            if not bool(random.randint(0, 4)):
-                c = lorem(1, bool(random.randint(0, 3)))
-                job['comment'] = c
-
-            job['id'] = db_insert(db_conn, models.JOBS, **job)
-            jobs.append(job)
-
-    return jobs
-
-
-def create_jobdefinition_components(db_conn, components, job_definitions):
-    for job_definition in job_definitions:
-
-        # add between 1 and 5 components on the jobdefinition
-        nb_components = random.randint(1, 5)
-        for i in range(0, nb_components):
-            db_insert(db_conn, models.JOIN_JOBDEFINITIONS_COMPONENTS,
-                      jobdefinition_id=job_definition['id'],
-                      component_id=components[i])
-
-
-def create_files(db_conn, jobstate, company_id):
-    def filename_generator():
-        words = []
-        for _ in range(0, random.randint(1, 4)):
-            words.append(random.choice(NAMES))
-        return '_'.join(words)
-
-    for _ in range(0, random.randint(1, 4)):
-
-        name = '%s.txt' % filename_generator()
-        args = {
-            'name': name,
-            'mime': 'text/plain',
-            'md5': hashlib.md5(name.encode('utf8')).hexdigest(),
-            'jobstate_id': jobstate,
-            'team_id': company_id
-        }
-
-        db_insert(db_conn, models.FILES, **args)
-
-
-def attach_files_to_jobs(db_conn, job, company_id):
-    job, job_def = job
-    id = job['id']
-
-    def filename_generator():
-        words = []
-        for _ in range(0, random.randint(1, 4)):
-            words.append(random.choice(NAMES))
-        return '_'.join(words)
-
-    name = '%s.txt' % filename_generator()
-    args = {
-        'name': name,
-        'mime': 'text/plain',
-        'md5': hashlib.md5(name.encode('utf8')).hexdigest(),
-        'job_id': id,
-        'team_id': company_id
-    }
-
-    db_insert(db_conn, models.FILES, **args)
-
-    # Insert a Junit file
-    name = '%s.xml' % filename_generator()
-    args = {
-        'name': name,
-        'content': JUNIT,
-        'mime': 'application/junit',
-        'md5': hashlib.md5(name.encode('utf8')).hexdigest(),
-        'job_id': id,
-        'team_id': company_id
-    }
-    db_insert(db_conn, models.FILES, **args)
-
-
-def create_jobstates_and_files(db_conn, job, company_id):
-    job, job_def = job
-
-    name = job_def['name']
-    step = job['status']
-    id = job['id']
-
-    # create "new" jobstate do not create files
-    db_insert(db_conn, models.JOBSTATES, status='new',
-              comment='Job "%s" created' % name,
-              job_id=id, team_id=company_id,
-              created_at=job['created_at'])
-
-    if step == 'new':
-        return
-
-    start, end = job['created_at'], job['updated_at']
-    start = time.mktime(start.timetuple())
-    end = time.mktime(end.timetuple())
-
-    step_number = JOB_STATUSES.index(step)
-
-    # calculate timedelta for job running
-    job_start = int(start + random.random() * (end - start))
-    job_duration = end - job_start
-
-    def compute_creation(current_step):
-        step_index = JOB_STATUSES.index(current_step)
-        creation = job_start + (job_duration * step_index / step_number)
-        return datetime.datetime.fromtimestamp(creation)
-
-    # create "pre-run" jobstate and new files associated
-    created_at = compute_creation('pre-run')
-    jobstate = db_insert(db_conn, models.JOBSTATES, status='pre-run',
-                         comment='initializing %s' % name,
-                         job_id=id, team_id=company_id, created_at=created_at)
-    create_files(db_conn, jobstate, company_id)
-
-    if step == 'pre-run':
-        return
-
-    # create "running" jobstate
-    created_at = compute_creation('running')
-    jobstate = db_insert(db_conn, models.JOBSTATES, status='running',
-                         comment='running %s...' % name,
-                         job_id=id, team_id=company_id, created_at=created_at)
-    create_files(db_conn, jobstate, company_id)
-
-    if step == 'running':
-        return
-
-    # create "post-run" jobstate sometimes
-    created_at = compute_creation('post-run')
-    if random.random() > 0.7 and step != 'post-run':
-        jobstate = db_insert(db_conn, models.JOBSTATES, status='post-run',
-                             comment='finalizing %s...' % name,
-                             job_id=id, team_id=company_id,
-                             created_at=created_at)
-
-        create_files(db_conn, jobstate, company_id)
-
-    if step == 'post-run':
-        return
-
-    # choose between "success", "failure" jobstate
-    created_at = compute_creation('success')
-    jobstate = db_insert(db_conn, models.JOBSTATES, status=job['status'],
-                         comment='%s %s' % (name, step),
-                         job_id=id, team_id=company_id,
-                         created_at=created_at)
-    # no file creation on last state
-
 
 def db_insert(db_conn, model_item, **kwargs):
     query = model_item.insert().values(**kwargs)
     return db_conn.execute(query).inserted_primary_key[0]
 
 
-def lorem(size=len(LOREM_IPSUM), l=True):
-    nb = random.randint(1, len(LOREM_IPSUM))
-
-    line = ' '.join(LOREM_IPSUM[0:7]) if l else ''
-
-    return line + '\n'.join(LOREM_IPSUM[0:nb])
-
-
 def init_db(db_conn):
+    """ Initialize the database with fake datas
+
+    Create an admin team and 2 other teams HP and DELL
+    Create 3 topics, 1 common and 2 scoped, 1 for each team
+
+    """
     db_ins = functools.partial(db_insert, db_conn)
+    time = time_helper()
 
-    topic_id = db_ins(models.TOPICS, name="the_topic")
+    # Create an admin team and 2 other teams
+    team_admin = db_ins(models.TEAMS, name='admin')
+    team_hp = db_ins(models.TEAMS, name='hp')
+    team_dell = db_ins(models.TEAMS, name='dell')
 
-    components = []
-    for component in COMPONENTS:
-        component_type = random.choice(COMPONENT_TYPES)
+    # Creates according users, 1 for admin and 1 admin 1 user for other teams
+    db_ins(models.USERS, name='admin', role='admin', team_id=team_admin,
+           password=auth.hash_password('admin'))
 
-        for i in range(0, 5):
-            project = random.choice(PROJECT_NAMES)
-            project_slug = '-'.join(project.lower().split())
-            commit = (hashlib.sha1(str(random.random()).encode('utf8'))
-                      .hexdigest())
+    db_ins(models.USERS, name='user_hp', role='user', team_id=team_hp,
+           password=auth.hash_password('password'))
 
-            url = 'https://github.com/%s/commit/%s'
-            attrs = {
-                'name': component + '-%s' % i,
-                'type': component_type,
-                'canonical_project_name': '%s - %s' % (component, project),
-                # This entry is basically a copy of the other fields,
-                # this will may be removed in the future
-                'data': DATA,
-                'sha': commit,
-                'title': project,
-                'message': lorem(),
-                'url': url % (project_slug, commit),
-                'ref': '',
-                'topic_id': topic_id
-            }
-            components.append(db_ins(models.COMPONENTS, **attrs))
+    db_ins(models.USERS, name='admin_hp', role='admin', team_id=team_hp,
+           password=auth.hash_password('password'))
 
-    tests = {}
-    for test in TESTS:
-        tests[test] = db_ins(models.TESTS, name=test, data=DATA,
-                             topic_id=topic_id)
+    db_ins(models.USERS, name='user_dell', role='user', team_id=team_dell,
+           password=auth.hash_password('password'))
 
-    # Create the super admin user
-    admin_team = db_ins(models.TEAMS, name='admin')
+    db_ins(models.USERS, name='admin_dell', role='admin', team_id=team_dell,
+           password=auth.hash_password('password'))
 
-    db_ins(models.USERS, name='admin',
-           role='admin',
-           password=auth.hash_password('admin'),
-           team_id=admin_team)
+    # Create 3 topics, 1 common and 2 scoped
+    topic_common = db_ins(models.TOPICS, name='topic_common')
 
-    # Attach the team admin to one topic
-    db_ins(models.JOINS_TOPICS_TEAMS, topic_id=topic_id,
-           team_id=admin_team)
+    topic_hp = db_ins(models.TOPICS, name='topic_HP')
+    topic_dell = db_ins(models.TOPICS, name='topic_DELL')
 
-    # For each constructor create an admin and a user, cis and jobs
-    for company in COMPANIES:
-        c = {}
-        c['name'] = company
-        c['id'] = db_ins(models.TEAMS, name=company)
+    # Attach teams to topics
+    db_ins(models.JOINS_TOPICS_TEAMS, topic_id=topic_common,
+           team_id=team_admin)
+    db_ins(models.JOINS_TOPICS_TEAMS, topic_id=topic_hp,
+           team_id=team_admin)
+    db_ins(models.JOINS_TOPICS_TEAMS, topic_id=topic_dell,
+           team_id=team_admin)
 
-        # create a topic for the team
-        topic_id = db_ins(models.TOPICS, name=company)
-        # Attach topic to team
-        db_ins(models.JOINS_TOPICS_TEAMS, topic_id=topic_id, team_id=c['id'])
+    db_ins(models.JOINS_TOPICS_TEAMS, topic_id=topic_common, team_id=team_hp)
+    db_ins(models.JOINS_TOPICS_TEAMS, topic_id=topic_hp, team_id=team_hp)
 
-        user = {'name': '%s_user' % (company.lower(),),
-                'password': auth.hash_password(company), 'team_id': c['id']}
-        admin = {'name': '%s_admin' % (company.lower(),),
-                 'password': auth.hash_password(company), 'team_id': c['id']}
+    db_ins(models.JOINS_TOPICS_TEAMS, topic_id=topic_common, team_id=team_dell)
+    db_ins(models.JOINS_TOPICS_TEAMS, topic_id=topic_dell, team_id=team_dell)
 
-        c['user'] = db_ins(models.USERS, **user)
-        c['admin'] = db_ins(models.USERS, **admin)
+    # Create 2 remotecis per team
+    remoteci_hp_1 = {
+        'name': 'HP_1', 'team_id': team_hp,
+        'data': {
+            'storage': 'netapp', 'network': 'HP', 'hardware': 'Intel',
+            'virtualization': 'KVM'
+        }
+    }
+    remoteci_hp_1 = db_ins(models.REMOTECIS, **remoteci_hp_1)
 
-        remote_cis = create_remote_cis(db_conn, c, tests, topic_id)
-        jobs = create_jobs(db_conn, c['id'], remote_cis)
-        # flatten job_definitions
-        job_definitions = [jd for jds in remote_cis.values() for jd in jds]
-        create_jobdefinition_components(db_conn, components, job_definitions)
-        for job in zip(jobs, job_definitions):
-            create_jobstates_and_files(db_conn, job, c['id'])
-            attach_files_to_jobs(db_conn, job, c['id'])
+    remoteci_hp_2 = {
+        'name': 'HP_2', 'team_id': team_hp,
+        'data': {
+            'storage': 'ceph', 'network': 'Cisco', 'hardware': 'HP',
+            'virtualization': 'VMWare'
+        }
+    }
+    remoteci_hp_2 = db_ins(models.REMOTECIS, **remoteci_hp_2)
+
+    remoteci_dell_1 = {
+        'name': 'Dell_1', 'team_id': team_dell,
+        'data': {
+            'storage': 'swift', 'network': 'Juniper', 'hardware': 'Dell',
+            'virtualization': 'Xen'
+        }
+    }
+    remoteci_dell_1 = db_ins(models.REMOTECIS, **remoteci_dell_1)
+
+    remoteci_dell_2 = {
+        'name': 'Dell_2', 'team_id': team_dell,
+        'data': {
+            'storage': 'AWS', 'network': 'Brocade', 'hardware': 'Huawei',
+            'virtualization': 'HyperV'
+        }
+    }
+    remoteci_dell_2 = db_ins(models.REMOTECIS, **remoteci_dell_2)
+
+    # Create 2 components per topic
+    component_common_1 = db_ins(
+        models.COMPONENTS, topic_id=topic_common, type='git', name='Khaleesi',
+        created_at=time[3][15]
+    )
+    component_common_2 = db_ins(
+        models.COMPONENTS, topic_id=topic_common, type='image',
+        name='RDO Manager', created_at=time[2][20]
+    )
+    component_hp_1 = db_ins(
+        models.COMPONENTS, topic_id=topic_hp, type='package',
+        name='OSP director', created_at=time[3][5]
+    )
+    component_hp_2 = db_ins(
+        models.COMPONENTS, topic_id=topic_hp, type='gerrit_review',
+        name='DCI-control-server', created_at=time[2][2]
+    )
+
+    component_dell_1 = db_ins(
+        models.COMPONENTS, topic_id=topic_dell, type='git', name='Khaleesi',
+        created_at=time[2][21]
+    )
+    component_dell_2 = db_ins(
+        models.COMPONENTS, topic_id=topic_dell,
+        type='package', name='OSP director', created_at=time[3][12]
+    )
+
+    # Create 2 jobdefinitions per topic
+    jobdef_common_1 = db_ins(models.JOBDEFINITIONS, topic_id=topic_common,
+                             name='Common tox v0.8', type='git')
+    jobdef_common_2 = db_ins(models.JOBDEFINITIONS, topic_id=topic_common,
+                             name='Common tox v2.1.1', type='image')
+
+    jobdef_hp_1 = db_ins(models.JOBDEFINITIONS, topic_id=topic_hp,
+                         name='HP tempest v0.4.2', type='package')
+    jobdef_hp_2 = db_ins(models.JOBDEFINITIONS, topic_id=topic_hp,
+                         name='HP tempest v1.1', type='gerrit_review')
+
+    jobdef_dell_1 = db_ins(models.JOBDEFINITIONS, topic_id=topic_dell,
+                           name='Dell khaleesi-tempest v0.8', type='git')
+    jobdef_dell_2 = db_ins(models.JOBDEFINITIONS, topic_id=topic_dell,
+                           name='Dell khaleesi-tempest v1.2.15',
+                           type='package')
+
+    # Attach jobdefinitions to components
+    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
+           component_id=component_common_1, jobdefinition_id=jobdef_common_1)
+    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
+           component_id=component_common_1, jobdefinition_id=jobdef_common_2)
+    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
+           component_id=component_common_2, jobdefinition_id=jobdef_common_2)
+
+    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
+           component_id=component_hp_1, jobdefinition_id=jobdef_hp_1)
+    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
+           component_id=component_hp_1, jobdefinition_id=jobdef_hp_2)
+    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
+           component_id=component_hp_2, jobdefinition_id=jobdef_hp_2)
+
+    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
+           component_id=component_dell_1, jobdefinition_id=jobdef_dell_1)
+    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
+           component_id=component_dell_1, jobdefinition_id=jobdef_dell_2)
+    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
+           component_id=component_dell_2, jobdefinition_id=jobdef_dell_2)
+
+    # Creates 3 tests type
+    test_common = db_ins(models.TESTS, name='tox', topic_id=topic_common)
+    test_hp = db_ins(models.TESTS, name='tempest', topic_id=topic_hp)
+    test_dell = db_ins(models.TESTS, name='khaleesi-tempest',
+                       topic_id=topic_dell)
+
+    db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_common_1,
+           test_id=test_common)
+    db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_common_2,
+           test_id=test_common)
+    db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_hp_1,
+           test_id=test_hp)
+    db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_hp_2,
+           test_id=test_hp)
+    db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_dell_1,
+           test_id=test_dell)
+    db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_dell_2,
+           test_id=test_dell)
+
+    # Creates 4 jobs for each jobdefinition (4*6=24 in total for pagination)
+    db_ins(
+        models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
+        remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][1],
+        updated_at=time[0][1]
+    )
+    db_ins(
+        models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
+        remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][2],
+        updated_at=time[0][2]
+    )
+    db_ins(
+        models.JOBS, status='pre-run', jobdefinition_id=jobdef_common_1,
+        remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][2],
+        updated_at=time[0][1]
+    )
+    db_ins(
+        models.JOBS, status='pre-run', jobdefinition_id=jobdef_common_2,
+        remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][3],
+        updated_at=time[0][1]
+    )
+    db_ins(
+        models.JOBS, status='running', jobdefinition_id=jobdef_common_2,
+        remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][10],
+        updated_at=time[0][3]
+    )
+    db_ins(
+        models.JOBS, status='running', jobdefinition_id=jobdef_common_2,
+        remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][14],
+        updated_at=time[0][7]
+    )
+    db_ins(
+        models.JOBS, status='post-run', jobdefinition_id=jobdef_hp_1,
+        remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[1][0],
+        updated_at=time[0][10]
+    )
+    db_ins(
+        models.JOBS, status='post-run', jobdefinition_id=jobdef_hp_1,
+        remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[0][20],
+        updated_at=time[0][2]
+    )
+    db_ins(
+        models.JOBS, status='success', jobdefinition_id=jobdef_hp_1,
+        remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[2][10],
+        updated_at=time[1][3]
+    )
+    db_ins(
+        models.JOBS, status='success', jobdefinition_id=jobdef_hp_2,
+        remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[1][1],
+        updated_at=time[0][0]
+    )
+    db_ins(
+        models.JOBS, status='failure', jobdefinition_id=jobdef_hp_2,
+        remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[3][12],
+        updated_at=time[2][20]
+    )
+    db_ins(
+        models.JOBS, status='failure', jobdefinition_id=jobdef_hp_2,
+        remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[3][20],
+        updated_at=time[0][6]
+    )
+
+    db_ins(
+        models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
+        remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][1],
+        updated_at=time[0][1]
+    )
+    db_ins(
+        models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
+        remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][2],
+        updated_at=time[0][2]
+    )
+    db_ins(
+        models.JOBS, status='pre-run', jobdefinition_id=jobdef_common_1,
+        remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][2],
+        updated_at=time[0][1]
+    )
+    db_ins(
+        models.JOBS, status='pre-run', jobdefinition_id=jobdef_common_2,
+        remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][3],
+        updated_at=time[0][1]
+    )
+    db_ins(
+        models.JOBS, status='running', jobdefinition_id=jobdef_common_2,
+        remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][10],
+        updated_at=time[0][3]
+    )
+    db_ins(
+        models.JOBS, status='running', jobdefinition_id=jobdef_common_2,
+        remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][14],
+        updated_at=time[0][7]
+    )
+    db_ins(
+        models.JOBS, status='post-run', jobdefinition_id=jobdef_dell_1,
+        remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[1][0],
+        updated_at=time[0][10]
+    )
+    db_ins(
+        models.JOBS, status='post-run', jobdefinition_id=jobdef_dell_1,
+        remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[0][20],
+        updated_at=time[0][2]
+    )
+    job_dell_9 = db_ins(
+        models.JOBS, status='success', jobdefinition_id=jobdef_dell_1,
+        remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[2][10],
+        updated_at=time[1][3]
+    )
+    job_dell_10 = db_ins(
+        models.JOBS, status='success', jobdefinition_id=jobdef_dell_2,
+        remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[1][1],
+        updated_at=time[0][0]
+    )
+    job_dell_11 = db_ins(
+        models.JOBS, status='failure', jobdefinition_id=jobdef_dell_2,
+        remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[3][12],
+        updated_at=time[2][20]
+    )
+    job_dell_12 = db_ins(
+        models.JOBS, status='failure', jobdefinition_id=jobdef_dell_2,
+        remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[3][20],
+        updated_at=time[0][6]
+    )
+
+    # Creates jobstates attached to jobs, just create a subset of them to
+    # avoid explosion of complexity
+
+    # DELL Job 9
+    db_ins(
+        models.JOBSTATES, status='new', team_id=team_dell,
+        created_at=time[2][10], job_id=job_dell_9
+    )
+    db_ins(
+        models.JOBSTATES, status='pre-run', team_id=team_dell,
+        created_at=time[2][1], job_id=job_dell_9
+    )
+    db_ins(
+        models.JOBSTATES, status='running', team_id=team_dell,
+        created_at=time[2][0], job_id=job_dell_9
+    )
+    db_ins(
+        models.JOBSTATES, status='post-run', team_id=team_dell,
+        created_at=time[1][5], job_id=job_dell_9
+    )
+    db_ins(
+        models.JOBSTATES, status='success', team_id=team_dell,
+        created_at=time[1][3], job_id=job_dell_9
+    )
+
+    # DELL Job 10
+    db_ins(
+        models.JOBSTATES, status='new', team_id=team_dell,
+        created_at=time[1][1], job_id=job_dell_10
+    )
+    db_ins(
+        models.JOBSTATES, status='pre-run', team_id=team_dell,
+        created_at=time[1][0], job_id=job_dell_10
+    )
+    db_ins(
+        models.JOBSTATES, status='running', team_id=team_dell,
+        created_at=time[0][23], job_id=job_dell_10
+    )
+    db_ins(
+        models.JOBSTATES, status='running', team_id=team_dell,
+        created_at=time[0][15], job_id=job_dell_10
+    )
+    db_ins(
+        models.JOBSTATES, status='running', team_id=team_dell,
+        created_at=time[0][11], job_id=job_dell_10
+    )
+    db_ins(
+        models.JOBSTATES, status='post-run', team_id=team_dell,
+        created_at=time[0][2], job_id=job_dell_10
+    )
+    db_ins(
+        models.JOBSTATES, status='post-run', team_id=team_dell,
+        created_at=time[0][1], job_id=job_dell_10
+    )
+    db_ins(
+        models.JOBSTATES, status='success', team_id=team_dell,
+        created_at=time[0][0], job_id=job_dell_10
+    )
+
+    # Dell Job 11
+    db_ins(
+        models.JOBSTATES, status='new', team_id=team_dell,
+        created_at=time[3][12], job_id=job_dell_11
+    )
+    db_ins(
+        models.JOBSTATES, status='pre-run', team_id=team_dell,
+        created_at=time[3][11], job_id=job_dell_11
+    )
+    db_ins(
+        models.JOBSTATES, status='pre-run', team_id=team_dell,
+        created_at=time[3][10], job_id=job_dell_11
+    )
+    db_ins(
+        models.JOBSTATES, status='running', team_id=team_dell,
+        created_at=time[3][1], job_id=job_dell_11
+    )
+    db_ins(
+        models.JOBSTATES, status='post-run', team_id=team_dell,
+        created_at=time[2][22], job_id=job_dell_11
+    )
+    db_ins(
+        models.JOBSTATES, status='failure', team_id=team_dell,
+        created_at=time[2][20], job_id=job_dell_11
+    )
+
+    # DELL Job 12
+    db_ins(
+        models.JOBSTATES, status='new', team_id=team_dell,
+        created_at=time[3][20], job_id=job_dell_12
+    )
+    db_ins(
+        models.JOBSTATES, status='pre-run', team_id=team_dell,
+        created_at=time[3][15], job_id=job_dell_12
+    )
+    db_ins(
+        models.JOBSTATES, status='running', team_id=team_dell,
+        created_at=time[3][14], job_id=job_dell_12
+    )
+    db_ins(
+        models.JOBSTATES, status='running', team_id=team_dell,
+        created_at=time[3][2], job_id=job_dell_12
+    )
+    db_ins(
+        models.JOBSTATES, status='running', team_id=team_dell,
+        created_at=time[2][18], job_id=job_dell_12
+    )
+    db_ins(
+        models.JOBSTATES, status='running', team_id=team_dell,
+        created_at=time[1][5], job_id=job_dell_12
+    )
+    db_ins(
+        models.JOBSTATES, status='running', team_id=team_dell,
+        created_at=time[1][0], job_id=job_dell_12
+    )
+    db_ins(
+        models.JOBSTATES, status='running', team_id=team_dell,
+        created_at=time[0][22], job_id=job_dell_12
+    )
+    db_ins(
+        models.JOBSTATES, status='running', team_id=team_dell,
+        created_at=time[0][13], job_id=job_dell_12
+    )
+    db_ins(
+        models.JOBSTATES, status='post-run', team_id=team_dell,
+        created_at=time[0][12], job_id=job_dell_12
+    )
+    db_ins(
+        models.JOBSTATES, status='post-run', team_id=team_dell,
+        created_at=time[0][10], job_id=job_dell_12
+    )
+    job_dell_12_12 = db_ins(
+        models.JOBSTATES, status='failure', team_id=team_dell,
+        created_at=time[0][6], job_id=job_dell_12
+    )
+
+    # create files only for the last job i.e: dell_12
+    f_id = db_ins(
+        models.FILES, name='res_junit.xml', mime='application/junit',
+        created_at=time[0][6], team_id=team_dell, jobstate_id=job_dell_12_12
+    )
+
+    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
+    write(path, JUNIT)
 
 
 if __name__ == '__main__':
-    conf = config.generate_conf()
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
 
     try:

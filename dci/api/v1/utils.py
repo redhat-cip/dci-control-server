@@ -274,21 +274,25 @@ class QueryBuilder(object):
         return query
 
 
-def ensure_path_exists(path):
-    os.path.exists(path) or os.makedirs(path)
-
-
 def flask_headers_to_dict(headers):
-    values = {}
-    headers = dict(headers)
-    # replace each characters '-' from headers by '_' for sql backend
-    for header, value in six.iteritems(headers):
-        if header.lower().startswith('dci'):
-            header = header[4:].replace('-', '_').lower()
-            values[header] = value
-    return values
+    """ Parse headers for finding dci related ones
+
+    Replace each characters '-' from headers by '_' for sql backend
+    """
+    rv = {}
+    for header, value in six.iteritems(dict(headers)):
+        header = header.replace('-', '_').lower()
+        if header.startswith('dci'):
+            rv[header[4:]] = value
+
+    return rv
 
 
-def build_file_directory_path(file_folder, team_id, file_id):
-    return '%s/%s/%s/%s/%s' % (file_folder, team_id, file_id[0:2],
-                               file_id[2:4], file_id[4:6])
+def build_file_path(file_folder, team_id, file_id, create=True):
+    directory = os.path.join(
+        file_folder, team_id, file_id[0:2], file_id[2:4], file_id[4:6]
+    )
+    if create and not os.path.exists(directory):
+        os.makedirs(directory)
+
+    return os.path.join(directory, file_id)
