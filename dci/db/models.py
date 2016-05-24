@@ -214,6 +214,7 @@ FILES = sa.Table(
     sa.Column('content', sa.Text, nullable=True),
     sa.Column('mime', sa.String),
     sa.Column('md5', sa.String(32)),
+    sa.Column('size', sa.BIGINT),
     sa.Column('jobstate_id', sa.String(36),
               sa.ForeignKey('jobstates.id', ondelete="CASCADE"),
               nullable=True),

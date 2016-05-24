@@ -30,18 +30,20 @@ _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
 def test_create_files(admin, jobstate_id, team_admin_id):
     file = admin.post('/api/v1/files',
                       headers={'DCI-JOBSTATE-ID': jobstate_id,
-                               'DCI-NAME': 'kikoolol'},
+                               'DCI-NAME': 'kikoolol',
+                               'Content-Type': 'text/plain'},
                       data="content").data
     file_id = file['file']['id']
     file = admin.get('/api/v1/files/%s' % file_id).data
     assert file['file']['name'] == 'kikoolol'
+    assert file['file']['size'] == 7
 
     file_directory_path = v1_utils.build_file_directory_path(
         _FILES_FOLDER, team_admin_id, file_id)
     file_path = '%s/%s' % (file_directory_path, file_id)
     assert os.path.exists(file_path)
     with open(file_path, "r") as f:
-        assert f.read()[1:-1] == 'content'
+        assert f.read() == 'content'
 
 
 def test_create_files_jobstate_id_and_job_id_missing(admin, team_admin_id):
@@ -302,22 +304,6 @@ def test_delete_file_as_user(user, admin, jobstate_user_id,
     file_user = admin.get('/api/v1/files/%s' % file_id)
     file_delete = user.delete('/api/v1/files/%s' % file_id)
     assert file_delete.status_code == 401
-
-
-# This is no more valid
-def loltest_get_file_content(admin, file_id):
-    url = '/api/v1/files/%s/content' % file_id
-    f = admin.get(url).data
-
-    assert f['content'] == 'kikoolol'
-
-    # retrieve the html form
-    f = admin.get(url, headers={'Accept': 'text/html'})
-    headers = f.headers
-    data = f.data
-
-    assert headers['Content-Disposition'] == 'attachment; filename=name'
-    assert data.decode('utf8') == 'kikoolol'
 
 
 def test_get_file_content(admin, jobstate_id):
