@@ -30,6 +30,8 @@ from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
 from dci.db import models
+from dci import dci_config
+
 
 _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
@@ -39,6 +41,8 @@ _VALID_EMBED = {
     'jobstate.job': models.JOBS,
     'team': models.TEAMS
 }
+
+_FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
 
 
 @api.route('/files', methods=['POST'])
@@ -52,15 +56,25 @@ def create_files(user, values=None):
         raise dci_exc.DCIException('jobstate_id or job_id must be specified',
                                    status_code=400)
 
+    file_id = utils.gen_uuid()
     values.update({
-        'id': utils.gen_uuid(),
+        'id': file_id,
         'created_at': datetime.datetime.utcnow().isoformat(),
         'team_id': user['team_id']
     })
 
     query = _TABLE.insert().values(**values)
-
     flask.g.db_conn.execute(query)
+
+    # ensure the team's path exist in the FS
+    file_directory_path = v1_utils.build_file_directory_path(
+        _FILES_FOLDER, user['team_id'], file_id)
+    v1_utils.ensure_path_exists(file_directory_path)
+    file_path = '%s/%s' % (file_directory_path, file_id)
+
+    with open(file_path, "w") as f:
+        f.write(values['content'])
+
     result = json.dumps({'file': values})
     return flask.Response(result, 201, content_type='application/json')
 
