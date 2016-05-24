@@ -39,13 +39,8 @@ def test_junitojson_valid():
 </testsuite>
 """
 
-    result = {
-        'content': junit,
-        'mime': 'application/junit'
-    }
-
-    result = transformations.junittojson(result)
-    result = json.loads(result['content'])
+    result = transformations.junit2json(junit)
+    result = json.loads(result)
 
     assert result['name'] == 'junittojson'
     assert result['total'] == '3'
@@ -71,25 +66,15 @@ def test_junitojson_invalid():
 </testsuite>
 """
 
-    result = {
-        'content': junit,
-        'mime': 'application/junit'
-    }
-
-    result = transformations.junittojson(result)
-    result = json.loads(result['content'])
+    result = transformations.junit2json(junit)
+    result = json.loads(result)
 
     assert 'XMLSyntaxError' in result['error']
 
 
 def test_junitojson_empty():
 
-    result = {
-        'content': '',
-        'mime': 'application/junit'
-    }
-
-    result = transformations.junittojson(result)
-    result = json.loads(result['content'])
+    result = transformations.junit2json('')
+    result = json.loads(result)
 
     assert result == {}
