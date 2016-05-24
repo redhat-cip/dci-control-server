@@ -104,6 +104,7 @@ def test_get_all_jobstates_with_embed(admin, job_id, team_admin_id):
     for jobstate in js['jobstates']:
         assert 'team_id' not in jobstate
         assert 'team' in jobstate
+        assert 'files' in jobstate
         assert jobstate['team']['id'] == team_admin_id
 
 
