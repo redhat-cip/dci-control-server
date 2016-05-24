@@ -81,13 +81,15 @@ def create_files(user):
             if len(chunk) == 0:
                 break
             f.write(chunk)
+    file_size = os.path.getsize(file_path)
 
     values.update({
         'id': file_id,
         'created_at': datetime.datetime.utcnow().isoformat(),
         'team_id': user['team_id'],
         'content': None,
-        'md5': None
+        'md5': None,
+        'size': str(file_size)
     })
 
     query = _TABLE.insert().values(**values)
@@ -179,7 +181,6 @@ def get_file_content(user, file_id):
     if not os.path.exists(file_path):
         raise dci_exc.DCIException("Internal server file: not existing",
                                    status_code=500)
-    file_size = os.path.getsize(file_path)
 
     def generate_chunk():
         chunk_size = 1024 ** 2  #  1MB
@@ -188,7 +189,7 @@ def get_file_content(user, file_id):
                 yield chunk
 
     resp = flask.Response(generate_chunk(), content_type='text/plain')
-    resp.headers['Content-Length'] = file_size
+    resp.headers['Content-Length'] = file['size']
     return resp
 
 
