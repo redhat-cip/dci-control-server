@@ -21,13 +21,13 @@ import pytest
 
 
 def test_verify_embed_list():
-    valid_embed_list = ['a', 'a.b', 'a.b.c']
+    valid_embed_list = dict.fromkeys(['a', 'a.b', 'a.b.c'])
     embed_list = ['a', 'a.b.c', 'a.b']
     utils.verify_embed_list(embed_list, valid_embed_list)
 
 
 def test_verify_embed_list_not_valid():
-    valid_embed_list = ['a', 'a.b', 'a.b.c']
+    valid_embed_list = dict.fromkeys(['a', 'a.b', 'a.b.c'])
     embed_list = ['a', 'a.b', 'kikoolol']
 
     assert pytest.raises(dci_exc.DCIException,
