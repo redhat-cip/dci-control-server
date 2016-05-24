@@ -82,6 +82,9 @@ def get_query_with_join(embed_list, valid_embedded_resources):
             if c_name != 'id':
                 column_name_with_prefix = '%s_%s' % (prefix, c_name)
                 result.append(table.c[c_name].label(column_name_with_prefix))
+            else:
+                column_name_with_prefix = '%s_%s%s' % (prefix, prefix, c_name)
+                result.append(table.c[c_name].label(column_name_with_prefix))
         return result
 
     verify_embed_list(embed_list, valid_embedded_resources.keys())
@@ -252,7 +255,7 @@ class QueryBuilder(object):
         if self.join:
             query_from = self.table
             for join in self.join:
-                query_from = query_from.join(join)
+                query_from = query_from.outerjoin(join)
             query = query.select_from(query_from)
 
         return query
@@ -265,7 +268,7 @@ class QueryBuilder(object):
         if self.join:
             query_join = self.table
             for join in self.join:
-                query_join = query_join.join(join)
+                query_join = query_join.outerjoin(join)
 
             query = query.select_from(query_join)
 

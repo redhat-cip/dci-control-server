@@ -30,7 +30,8 @@ from dci.db import models
 # associate column names with the corresponding SA Column object
 _TABLE = models.JOBSTATES
 _JS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_VALID_EMBED = {'job': models.JOBS,
+_VALID_EMBED = {'file': models.FILES,
+                'job': models.JOBS,
                 'team': models.TEAMS}
 
 
@@ -102,7 +103,27 @@ def get_all_jobstates(user, j_id=None):
 
     rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
-    return flask.jsonify({'jobstates': rows, '_meta': {'count': nb_row}})
+    def is_object_empty(obj):
+        """Verify if the element of the object are empty"""
+
+        non_empty_values = [field for field in obj.keys() if obj[field]]
+        return len(non_empty_values) == 0
+
+    final_rows = []
+    final_rows_ids = []
+    for row in rows:
+        if row['id'] in final_rows_ids:
+            if is_object_empty(row['file']) is False:
+                for f_row in final_rows:
+                    if f_row['id'] == row['id']:
+                        f_row['files'].append(row['file']['fileid'])
+        else:
+            row['files'] = [row['file']['fileid']] if is_object_empty(row['file']) is False else []
+            del(row['file'])
+            final_rows.append(row)
+            final_rows_ids.append(row['id'])
+
+    return flask.jsonify({'jobstates': final_rows, '_meta': {'count': nb_row}})
 
 
 @api.route('/jobstates/<js_id>', methods=['GET'])
