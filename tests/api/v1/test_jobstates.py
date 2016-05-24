@@ -15,6 +15,8 @@
 # under the License.
 
 from __future__ import unicode_literals
+
+import tests.api.v1.test_files as files
 import pytest
 
 
@@ -94,17 +96,29 @@ def test_get_all_jobstates_with_pagination(admin, job_id):
 def test_get_all_jobstates_with_embed(admin, job_id, team_admin_id):
     # create 2 jobstates and check meta data count
     data = {'job_id': job_id, 'status': 'running', 'comment': 'kikoolol1'}
-    admin.post('/api/v1/jobstates', data=data)
+    admin.post('/api/v1/jobstates', data=data).data
+    js = admin.post('/api/v1/jobstates', data=data).data
+
+    files.post_file(admin, js['jobstate']['id'], files.FileDesc('foo', 'bar'))
+
     data = {'job_id': job_id, 'status': 'running', 'comment': 'kikoolol2'}
     admin.post('/api/v1/jobstates', data=data)
 
     # verify embed
-    js = admin.get('/api/v1/jobstates?embed=team').data
+    js = admin.get('/api/v1/jobstates?embed=team,files').data
+    js_1 = js['jobstates'][0]
+    js_2 = js['jobstates'][1]
 
-    for jobstate in js['jobstates']:
-        assert 'team_id' not in jobstate
-        assert 'team' in jobstate
-        assert jobstate['team']['id'] == team_admin_id
+    assert 'team_id' not in js_1
+    assert 'team' in js_1
+    assert js_1['team']['id'] == team_admin_id
+    assert len(js_1['files']) == 0
+
+    assert 'team_id' not in js_2
+    assert 'team' in js_2
+    assert js_2['team']['id'] == team_admin_id
+    assert len(js_2['files']) == 1
+    assert js_2['files'][0]['name'] == 'foo'
 
 
 def test_get_all_jobstates_with_where(admin, job_id, team_id):
