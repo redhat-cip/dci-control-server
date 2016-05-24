@@ -50,36 +50,26 @@ _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
 def create_files(user):
     headers_values = v1_utils.flask_headers_to_dict(flask.request.headers)
 
-    values = {'md5': None,
-              'mime': None,
-              'jobstate_id': None,
-              'job_id': None,
-              'name': None}
+    values = dict.fromkeys(['md5', 'mime', 'jobstate_id', 'job_id', 'name'])
     values.update(headers_values)
 
-    if values.get('jobstate_id', None) is None \
-            and values.get('job_id', None) is None:
+    if values.get('jobstate_id') is None and values.get('job_id') is None:
         raise dci_exc.DCIException('HTTP headers DCI-JOBSTATE-ID or DCI-JOB-ID'
                                    ' must be specified', status_code=400)
 
-    if values.get('name', None) is None:
+    if values.get('name') is None:
         raise dci_exc.DCIException('HTTP header DCI-NAME must be specified',
                                    status_code=400)
 
     file_id = utils.gen_uuid()
     # ensure the directory which will contains the file actually exist
-    file_directory_path = v1_utils.build_file_directory_path(_FILES_FOLDER,
-                                                             user['team_id'],
-                                                             file_id)
-    v1_utils.ensure_path_exists(file_directory_path)
-    file_path = '%s/%s' % (file_directory_path, file_id)
+    file_path = v1_utils.build_file_path(_FILES_FOLDER, user['team_id'],
+                                         file_id)
 
-    with open(file_path, "wb") as f:
+    with open(file_path, 'wb') as f:
         chunk_size = 4096
-        while True:
-            chunk = flask.request.stream.read(chunk_size)
-            if len(chunk) == 0:
-                break
+        read = flask.request.stream.read
+        for chunk in iter(lambda: read(chunk_size) or None, None):
             f.write(chunk)
 
     values.update({
@@ -171,19 +161,17 @@ def get_file_content(user, file_id):
     if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
-    file_directory_path = v1_utils.build_file_directory_path(_FILES_FOLDER,
-                                                             file['team_id'],
-                                                             file_id)
-    file_path = '%s/%s' % (file_directory_path, file_id)
+    file_path = v1_utils.build_file_path(_FILES_FOLDER, file['team_id'],
+                                         file_id, create=False)
 
     if not os.path.exists(file_path):
-        raise dci_exc.DCIException("Internal server file: not existing",
-                                   status_code=500)
+        raise dci_exc.DCIException('Internal server file: not existing',
+                                   status_code=404)
     file_size = os.path.getsize(file_path)
 
     def generate_chunk():
         chunk_size = 1024 ** 2  #  1MB
-        with open(file_path, "rb") as f:
+        with open(file_path, 'rb') as f:
             for chunk in iter(lambda: f.read(chunk_size) or None, None):
                 yield chunk
 
