@@ -33,8 +33,6 @@ from dci.db import models
 _TABLE = models.JOBDEFINITIONS
 # associate column names with the corresponding SA Column object
 _JD_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_VALID_EMBED = {
-}
 
 
 @api.route('/jobdefinitions', methods=['POST'])
@@ -69,21 +67,14 @@ def _get_all_jobdefinitions(user, topic_id=None):
     """
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
-
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
     q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
-
-    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
-    q_bd.select.extend(select)
-    q_bd.join.extend(join)
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _JD_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _JD_COLUMNS)
 
     if topic_id is None and not auth.is_admin(user):
-        q_bd.join.extend([models.TOPICS, models.JOINS_TOPICS_TEAMS])
+        q_bd._join.extend([models.TOPICS, models.JOINS_TOPICS_TEAMS])
         q_bd.where.append(
             models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id']
         )
@@ -93,8 +84,6 @@ def _get_all_jobdefinitions(user, topic_id=None):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-
-    rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
     return flask.jsonify({'jobdefinitions': rows, '_meta': {'count': nb_row}})
 
@@ -110,13 +99,8 @@ def get_all_jobdefinitions(user):
 def get_jobdefinition_by_id_or_name(user, jd_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
     q_bd = v1_utils.QueryBuilder(_TABLE)
-
-    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
-    q_bd.select.extend(select)
-    q_bd.join.extend(join)
 
     where_clause = sql.or_(_TABLE.c.id == jd_id, _TABLE.c.name == jd_id)
     q_bd.where.append(where_clause)

@@ -28,6 +28,13 @@ from dci.common import exceptions
 from sqlalchemy.engine import result
 
 
+def read(file_path, chunk_size=None, mode='rb'):
+    chunk_size = chunk_size or 1024 ** 2  #  1MB
+    with open(file_path, mode) as f:
+        for chunk in iter(lambda: f.read(chunk_size) or None, None):
+            yield chunk
+
+
 class JSONEncoder(flask.json.JSONEncoder):
     """Default JSON encoder."""
     def default(self, o):

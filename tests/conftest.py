@@ -16,7 +16,6 @@
 
 import dci.app
 from dci.db import models
-from dci import dci_config
 from dci.elasticsearch import engine as es_engine
 import tests.utils as utils
 
@@ -28,8 +27,8 @@ import sqlalchemy_utils.functions
 
 @pytest.fixture(scope='session')
 def engine(request):
-    conf = dci_config.generate_conf()
-    db_uri = conf['SQLALCHEMY_DATABASE_URI']
+    utils.rm_upload_folder()
+    db_uri = utils.conf['SQLALCHEMY_DATABASE_URI']
 
     engine = sqlalchemy.create_engine(db_uri)
 
@@ -66,14 +65,20 @@ def db_clean(request, engine):
 
 
 @pytest.fixture
+def fs_clean(request):
+    """Clean test file upload directory"""
+    request.addfinalizer(utils.rm_upload_folder)
+
+
+@pytest.fixture
 def db_provisioning(db_clean, engine):
     with engine.begin() as conn:
         utils.provision(conn)
 
 
 @pytest.fixture
-def app(db_provisioning, engine, es_clean):
-    app = dci.app.create_app(dci_config.generate_conf())
+def app(db_provisioning, engine, es_clean, fs_clean):
+    app = dci.app.create_app(utils.conf)
     app.testing = True
     app.engine = engine
     return app
@@ -216,8 +221,7 @@ def file_id(admin, jobstate_id, team_admin_id):
     file = admin.post('/api/v1/files', headers=headers, data='kikoolol').data
     headers['team_id'] = team_admin_id
     headers['id'] = file['file']['id']
-    conf = dci_config.generate_conf()
-    conn = es_engine.DCIESEngine(conf)
+    conn = es_engine.DCIESEngine(utils.conf)
     conn.index(headers)
     return file['file']['id']
 
@@ -229,8 +233,7 @@ def file_user_id(user, jobstate_user_id, team_user_id):
     file = user.post('/api/v1/files', headers=headers, data='kikoolol').data
     headers['team_id'] = team_user_id
     headers['id'] = file['file']['id']
-    conf = dci_config.generate_conf()
-    conn = es_engine.DCIESEngine(conf)
+    conn = es_engine.DCIESEngine(utils.conf)
     conn.index(headers)
     return file['file']['id']
 
@@ -242,14 +245,12 @@ def file_job_user_id(user, job_id, team_user_id):
     file = user.post('/api/v1/files', headers=headers, data='foobar').data
     headers['team_id'] = team_user_id
     headers['id'] = file['file']['id']
-    conf = dci_config.generate_conf()
-    conn = es_engine.DCIESEngine(conf)
+    conn = es_engine.DCIESEngine(utils.conf)
     conn.index(headers)
     return file['file']['id']
 
 
 @pytest.fixture
 def es_clean(request):
-    conf = dci_config.generate_conf()
-    conn = es_engine.DCIESEngine(conf)
+    conn = es_engine.DCIESEngine(utils.conf)
     conn.cleanup()

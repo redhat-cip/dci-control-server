@@ -17,13 +17,22 @@
 import base64
 import collections
 import flask
+import shutil
 
-from dci import auth
-from dci.common import utils
-from dci.db import models
+import six
+
+import dci.auth as auth
+import dci.common.utils as utils
+import dci.db.models as models
+import dci.dci_config as config
 
 # convenient alias
 memoized = utils.memoized
+conf = config.generate_conf()
+
+
+def rm_upload_folder():
+    shutil.rmtree(conf['FILES_UPLOAD_FOLDER'], ignore_errors=True)
 
 
 def generate_client(app, credentials):
@@ -46,9 +55,13 @@ def generate_client(app, credentials):
             if data and content_type == 'application/json':
                 kwargs['data'] = flask.json.dumps(data, cls=utils.JSONEncoder)
             response = func(*args, **kwargs)
-            data = (flask.json.loads(response.data or '{}')
-                    if response.content_type == 'application/json'
-                    else response.data)
+
+            data = response.data
+            if response.content_type == 'application/json':
+                data = flask.json.loads(data or '{}')
+            if type(data) == six.binary_type:
+                data = data.decode('utf8')
+
             return Response(response.status_code, data, response.headers)
 
         return wrapper
