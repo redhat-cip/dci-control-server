@@ -99,11 +99,13 @@ def test_get_all_jobstates_with_embed(admin, job_id, team_admin_id):
     admin.post('/api/v1/jobstates', data=data)
 
     # verify embed
-    js = admin.get('/api/v1/jobstates?embed=team').data
+    js = admin.get('/api/v1/jobstates?embed=team,files').data
 
     for jobstate in js['jobstates']:
         assert 'team_id' not in jobstate
         assert 'team' in jobstate
+        assert 'files' in jobstate
+        assert jobstate['files'] == []
         assert jobstate['team']['id'] == team_admin_id
 
 

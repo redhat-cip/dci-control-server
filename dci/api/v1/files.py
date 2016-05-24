@@ -37,9 +37,9 @@ _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
 _FILES_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _VALID_EMBED = {
-    'jobstate': models.JOBSTATES,
-    'jobstate.job': models.JOBS,
-    'team': models.TEAMS
+    'jobstate': v1_utils.embed(models.JOBSTATES),
+    'jobstate.job': v1_utils.embed(models.JOBS),
+    'team': v1_utils.embed(models.TEAMS)
 }
 
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
@@ -95,14 +95,10 @@ def get_all_files(user, j_id=None):
     args = schemas.args(flask.request.args.to_dict())
 
     embed = args['embed']
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
+                                 embed=_VALID_EMBED)
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
-
-    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
-
-    q_bd.select.extend(select)
-    q_bd.join.extend(join)
+    q_bd.join(embed)
     q_bd.sort = v1_utils.sort_query(args['sort'], _FILES_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _FILES_COLUMNS)
 
@@ -129,13 +125,9 @@ def get_all_files(user, j_id=None):
 def get_file_by_id_or_name(user, file_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE)
-
-    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
-    q_bd.select.extend(select)
-    q_bd.join.extend(join)
+    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
+    q_bd.join(embed)
 
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])

@@ -509,6 +509,14 @@ def init_db(db_conn):
     path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
     write(path, JUNIT)
 
+    f_id = db_ins(
+        models.FILES, name='foobar.txt', mime='text/play',
+        created_at=time[0][6], team_id=team_dell, jobstate_id=job_dell_12_12
+    )
+
+    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
+    write(path, 'foo bar')
+
 
 if __name__ == '__main__':
     db_uri = conf['SQLALCHEMY_DATABASE_URI']

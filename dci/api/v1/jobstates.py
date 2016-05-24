@@ -30,8 +30,9 @@ from dci.db import models
 # associate column names with the corresponding SA Column object
 _TABLE = models.JOBSTATES
 _JS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_VALID_EMBED = {'job': models.JOBS,
-                'team': models.TEAMS}
+_VALID_EMBED = {'files': v1_utils.embed(models.FILES, many=True),
+                'job': v1_utils.embed(models.JOBS),
+                'team': v1_utils.embed(models.TEAMS)}
 
 
 def insert_jobstate(user, values):
@@ -77,14 +78,9 @@ def get_all_jobstates(user, j_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
-
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['limit'], args['offset'])
-
-    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
-
-    q_bd.select.extend(select)
-    q_bd.join.extend(join)
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['limit'], args['offset'],
+                                 _VALID_EMBED)
+    q_bd.join(embed)
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _JS_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _JS_COLUMNS)
@@ -100,8 +96,7 @@ def get_all_jobstates(user, j_id=None):
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
-    rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
-
+    rows = q_bd.parse_rows(embed, rows)
     return flask.jsonify({'jobstates': rows, '_meta': {'count': nb_row}})
 
 
@@ -109,14 +104,9 @@ def get_all_jobstates(user, j_id=None):
 @auth.requires_auth
 def get_jobstate_by_id(user, js_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE)
-
-    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
-
-    q_bd.select.extend(select)
-    q_bd.join.extend(join)
+    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
+    q_bd.join(embed)
 
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])

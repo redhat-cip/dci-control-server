@@ -22,7 +22,15 @@ from dci.common import exceptions as dci_exc
 from dci.common import utils
 from dci.db import models
 
+import collections
 import os
+
+
+Embed = collections.namedtuple('Embed', ['model', 'many'])
+
+
+def embed(model, many=False):
+    return Embed(model, many)
 
 
 def verify_existence_and_get(id, table):
@@ -58,48 +66,17 @@ def verify_team_in_topic(user, topic_id):
                                    % topic_id, status_code=412)
 
 
-def verify_embed_list(embed_list, valid_embedded_resources):
+def verify_embed_list(embed_list, valid_embed):
     """Verify the embed list according the supported valid list. If it's not
     valid then raise an exception.
     """
+    valid_embed = valid_embed.keys()
     for resource in embed_list:
-        if resource not in valid_embedded_resources:
+        if resource not in valid_embed:
             raise dci_exc.DCIException(
-                "Invalid embed list: '%s'" % embed_list,
-                payload={'Valid elements': list(valid_embedded_resources)})
-
-
-def get_query_with_join(embed_list, valid_embedded_resources):
-    """Given a select query on one table columns and a list of tables to_join
-    with, this unction construct the correct sqlalchemy query to make a join.
-    """
-
-    def _flatten_columns_with_prefix(prefix, table):
-        result = []
-        # remove the last 's' character from the table name
-        for c_name in table.c.keys():
-            # Condition to avoid conflict when fetching the data because by
-            # default there is the key 'prefix_id' when prefix is the table
-            # name to join.
-            if c_name != 'id':
-                column_name_with_prefix = '%s_%s' % (prefix, c_name)
-                result.append(table.c[c_name].label(column_name_with_prefix))
-        return result
-
-    verify_embed_list(embed_list, valid_embedded_resources.keys())
-
-    resources_to_embed = {elem: valid_embedded_resources[elem]
-                          for elem in embed_list}
-
-    # flatten all tables for the SQL select
-    select = []
-    for prefix, table in six.iteritems(resources_to_embed):
-        select.extend(_flatten_columns_with_prefix(prefix, table))
-
-    # order is important for the SQL join
-    join = [item[1] for item in sorted(resources_to_embed.items())]
-
-    return select, join
+                'Invalid embed list: "%s"' % embed_list,
+                payload={'Valid elements': list(valid_embed)}
+            )
 
 
 def group_embedded_resources(items_to_embed, row):
@@ -166,10 +143,10 @@ def group_embedded_resources(items_to_embed, row):
 
 
 def get_columns_name_with_objects(table):
-    result = {}
-    for column in table.columns:
-        result[column.name] = getattr(table.c, column.name)
-    return result
+    return {
+        column.name: getattr(table.c, column.name)
+        for column in table.columns
+    }
 
 
 def sort_query(sort, valid_columns):
@@ -227,14 +204,74 @@ def request_wants_html():
 
 class QueryBuilder(object):
 
-    def __init__(self, table, offset=None, limit=None):
+    def __init__(self, table, offset=None, limit=None, embed=None):
         self.table = table
         self.offset = offset
         self.limit = limit
         self.sort = []
         self.where = []
         self.select = [table]
-        self.join = []
+        self._join = []
+        self.valid_embed = embed or {}
+
+    def join(self, embed_list):
+        """Given a select query on one table columns and a list of tables to
+        join with, this function add to the query builder the needed selections
+        and joins
+        """
+
+        def _flatten_columns(prefix, table):
+            """This function provides different labels for column names
+            when doing joins.
+            i.e: we want to join table A to B but both have a name field,
+            when retrieving the data and casting them to a dict, the name
+            field from A will be erased by the one in B. To avoid that
+            we provide a custom label for B.name which will be b_name.
+            """
+            result = []
+            # remove the last 's' character from the table name
+            for c_name in table.c.keys():
+                # Condition to avoid conflict when fetching the data because by
+                # default there is the key 'prefix_id' when prefix is the table
+                # name to join.
+                if c_name != 'id':
+                    prefixed_column = '%s_%s' % (prefix, c_name)
+                    result.append(table.c[c_name].label(prefixed_column))
+            return result
+
+        verify_embed_list(embed_list, self.valid_embed)
+
+        for embed in sorted(embed_list):
+            model = self.valid_embed[embed].model
+            # flatten all tables for the SQL select
+            self.select.extend(_flatten_columns(embed, model))
+
+            # order is important for the SQL join
+            self._join.append(model)
+
+    def parse_rows(self, embed_list, rows):
+        aggregates = dict.fromkeys(
+            [e for e in embed_list if self.valid_embed[e].many],
+            collections.defaultdict(list)
+        )
+        parsed_rows = collections.OrderedDict()
+
+        for row in rows:
+            row = group_embedded_resources(embed_list, row)
+            for aggr, aggr_dict in six.iteritems(aggregates):
+                try:
+                    obj = row.pop(aggr)
+                    if any(v is not None for v in obj.values()):
+                        aggr_dict[row['id']].append(obj)
+                except KeyError:
+                    pass
+            parsed_rows[row['id']] = row
+
+        for row_id, row in six.iteritems(parsed_rows):
+            for aggr, aggr_dict in six.iteritems(aggregates):
+                row[aggr] = aggr_dict[row_id]
+
+        return list(parsed_rows.values())
 
     def build(self):
         query = sql.select(self.select)
@@ -251,10 +288,10 @@ class QueryBuilder(object):
         if self.offset:
             query = query.offset(self.offset)
 
-        if self.join:
+        if self._join:
             query_from = self.table
-            for join in self.join:
-                query_from = query_from.join(join)
+            for join in self._join:
+                query_from = query_from.outerjoin(join)
             query = query.select_from(query_from)
 
         return query
@@ -264,10 +301,10 @@ class QueryBuilder(object):
         for where in self.where:
             query = query.where(where)
 
-        if self.join:
+        if self._join:
             query_join = self.table
-            for join in self.join:
-                query_join = query_join.join(join)
+            for join in self._join:
+                query_join = query_join.outerjoin(join)
 
             query = query.select_from(query_join)
 
