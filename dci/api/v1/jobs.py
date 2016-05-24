@@ -35,14 +35,15 @@ _TABLE = models.JOBS
 # associate column names with the corresponding SA Column object
 _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _VALID_EMBED = {
-    'jobdefinition': models.JOBDEFINITIONS,
+    'file': v1_utils.embed(models.FILES),
+    'jobdefinition': v1_utils.embed(models.JOBDEFINITIONS),
     # TODO(spredzy) : Remove this when the join and multiple
     # entities is supported
     'jobdefinition.jobdefinition_component':
-        models.JOIN_JOBDEFINITIONS_COMPONENTS,
-    'jobdefinition.test': models.TESTS,
-    'team': models.TEAMS,
-    'remoteci': models.REMOTECIS
+        v1_utils.embed(models.JOIN_JOBDEFINITIONS_COMPONENTS),
+    'jobdefinition.test': v1_utils.embed(models.TESTS),
+    'team': v1_utils.embed(models.TEAMS),
+    'remoteci': v1_utils.embed(models.REMOTECIS)
 }
 
 
@@ -195,13 +196,10 @@ def get_all_jobs(user, jd_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
+                                 _VALID_EMBED)
 
-    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
-
-    q_bd.select.extend(select)
-    q_bd.join.extend(join)
+    q_bd.join(embed)
     q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _JOBS_COLUMNS)
 
@@ -232,13 +230,9 @@ def get_jobstates_by_job(user, j_id):
 def get_job_by_id(user, jd_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE)
-
-    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
-    q_bd.select.extend(select)
-    q_bd.join.extend(join)
+    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
+    q_bd.join(embed)
 
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])

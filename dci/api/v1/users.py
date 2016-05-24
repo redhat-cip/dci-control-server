@@ -33,7 +33,7 @@ from dci.db import models
 # associate column names with the corresponding SA Column object
 _TABLE = models.USERS
 _USERS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_VALID_EMBED = {'team': models.TEAMS}
+_VALID_EMBED = {'team': v1_utils.embed(models.TEAMS)}
 
 # select without the password column for security reasons
 _SELECT_WITHOUT_PASSWORD = [
@@ -94,13 +94,11 @@ def get_all_users(user, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
+                                 _VALID_EMBED)
     q_bd.select = list(_SELECT_WITHOUT_PASSWORD)
+    q_bd.join(embed)
 
-    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
-
-    q_bd.select.extend(select)
-    q_bd.join.extend(join)
     q_bd.sort = v1_utils.sort_query(args['sort'], _USERS_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _USERS_COLUMNS)
 
@@ -122,15 +120,10 @@ def get_all_users(user, team_id=None):
 @auth.requires_auth
 def get_user_by_id_or_name(user, user_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
-    v1_utils.verify_embed_list(embed, _VALID_EMBED.keys())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE)
-
+    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
     q_bd.select = list(_SELECT_WITHOUT_PASSWORD)
-
-    select, join = v1_utils.get_query_with_join(embed, _VALID_EMBED)
-    q_bd.select.extend(select)
-    q_bd.join.extend(join)
+    q_bd.join(embed)
 
     # If it's not an admin, then get only the users of the caller's team
     if not auth.is_admin(user):
