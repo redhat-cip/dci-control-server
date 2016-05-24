@@ -23,41 +23,31 @@ import pkg_resources
 LOG = logging.getLogger('__name__')
 
 
-def junittojson(result):
+def junit2json(string):
 
-    xslt = ET.fromstring(
-        pkg_resources.resource_string(dci.__name__,
-                                      os.path.join('data', 'junittojson.xsl'))
-    )
-    if not result['content']:
-        result['content'] = '{}'
-    else:
-        try:
-            dom = ET.fromstring(result['content'])
-            for tc in dom.xpath('//testcase'):
-                if len(tc.xpath('child::*')) > 0:
-                    to_clean_string = tc.xpath('child::*')[0].text or ''
+    if not string:
+        return '{}'
 
-                    # 1. Replace " by '
-                    to_clean_string = to_clean_string.replace('"', "'")
-                    # 2. Replace \n by \\n
-                    to_clean_string = to_clean_string.replace('\n', '\\n')
+    xslt = ET.fromstring(pkg_resources.resource_string(
+        dci.__name__, os.path.join('data', 'junittojson.xsl')
+    ))
+    try:
+        dom = ET.fromstring(string)
+        for tc in dom.xpath('//testcase'):
+            if len(tc.xpath('child::*')) > 0:
+                to_clean_string = tc.xpath('child::*')[0].text or ''
 
-                    tc.xpath('child::*')[0].text = to_clean_string
+                # 1. Replace " by '
+                to_clean_string = to_clean_string.replace('"', "'")
+                # 2. Replace \n by \\n
+                to_clean_string = to_clean_string.replace('\n', '\\n')
 
-            transform = ET.XSLT(xslt)
-            result['content'] = str(transform(dom))
-        except ET.XMLSyntaxError as e:
-            result['content'] = '{ "error": "XMLSyntaxError: %s " }' % str(e)
-            LOG.info('transformations.junittojson: XMLSyntaxError %s' % str(e))
+                tc.xpath('child::*')[0].text = to_clean_string
 
-    return result
+        transform = ET.XSLT(xslt)
+        string = str(transform(dom))
+    except ET.XMLSyntaxError as e:
+        string = '{ "error": "XMLSyntaxError: %s " }' % str(e)
+        LOG.info('transformations.junittojson: XMLSyntaxError %s' % str(e))
 
-
-def transform(results):
-
-    for result in results:
-        if result['mime'] == 'application/junit':
-            result = junittojson(result)
-
-    return results
+    return string
