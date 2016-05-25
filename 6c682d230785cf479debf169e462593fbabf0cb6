@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1a106d94_a376bad6",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-25T23:55:03Z",
+      "side": 1,
+      "message": "Actually we cannot use voluptuous because the configuration is schema-free. We only need to have the \u0027op\u0027 key.",
+      "parentUuid": "5a166590_252c8e4a",
+      "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a166590_053192a2",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 4
@@ -30,6 +48,24 @@
       "writtenOn": "2016-05-18T11:39:49Z",
       "side": 1,
       "message": "I think this is a 400 (and no need to specify it)",
+      "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_8373bee6",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-25T23:55:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5a166590_053192a2",
       "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "1a106d94_034fce93",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-25T23:55:03Z",
+      "side": 1,
+      "message": "I don\u0027t understand. Where do you see a security hole ?",
+      "parentUuid": "5a166590_85f582cd",
+      "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a166590_e50276b3",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 4
@@ -64,6 +118,24 @@
       "writtenOn": "2016-05-18T11:39:49Z",
       "side": 1,
       "message": "if sa_op is None this will fail, isn\u0027t it ?",
+      "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_e380b28d",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-25T23:55:03Z",
+      "side": 1,
+      "message": "yea, i added a check for that.",
+      "parentUuid": "5a166590_e50276b3",
       "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "1a106d94_c37db6b3",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-25T23:55:03Z",
+      "side": 1,
+      "message": "it\u0027s interesting to know the number of jobs which match a configuration.",
+      "parentUuid": "5a166590_c5ff7aa9",
+      "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a166590_a5f87ec5",
         "filename": "tests/api/v1/test_jobs.py",
         "patchSetId": 4
@@ -98,6 +188,24 @@
       "writtenOn": "2016-05-18T11:39:49Z",
       "side": 1,
       "message": "remove the print here",
+      "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_234aca83",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 527,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-05-25T23:55:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5a166590_a5f87ec5",
       "revId": "6c682d230785cf479debf169e462593fbabf0cb6",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
