@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a106d94_407ecfe5",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-01T15:37:14Z",
+      "side": 1,
+      "message": "can you create 2 new functions \n\n    use_headers \u003d check_headers()\n    if use_headers():\n        return _new_create_files(user)\n    else:\n        return _old_create_files(user)\n\nThis will allow us to see at first glance what is happening and where we go.\n\nAvoid to loop on all the headers too:\n\n    def check_headers():\n        for header, value in six.iteritems(headers):\n            if header.lower().startswith(\u0027dci\u0027):\n                return True\n        return False",
+      "revId": "14c48625a02fdcc3f46312add59706084954fcd6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_a08343cb",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-01T15:37:14Z",
+      "side": 1,
+      "message": "why breaking the string ?",
+      "revId": "14c48625a02fdcc3f46312add59706084954fcd6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
