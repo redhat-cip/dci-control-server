@@ -19,6 +19,40 @@
     },
     {
       "key": {
+        "uuid": "1a106d94_e06c1b39",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-06-01T15:37:22Z",
+      "side": 1,
+      "message": "break?",
+      "revId": "14c48625a02fdcc3f46312add59706084954fcd6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_60602b36",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 104,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-06-01T15:37:22Z",
+      "side": 1,
+      "message": "You can just use a \"else:\" and drop the use_old_controller variable.",
+      "revId": "14c48625a02fdcc3f46312add59706084954fcd6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a106d94_a08343cb",
         "filename": "dci/api/v1/files.py",
         "patchSetId": 2
