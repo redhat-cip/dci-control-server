@@ -44,6 +44,13 @@ def test_create_files(admin, jobstate_id, team_admin_id):
         assert f.read()[1:-1] == 'content'
 
 
+def test_create_files_jobstate_id_and_job_id_missing(admin, team_admin_id):
+    file = admin.post('/api/v1/files',
+                      headers={'DCI-NAME': 'kikoolol'},
+                      data="content")
+    assert file.status_code == 400
+
+
 def test_old_create_files(admin, jobstate_id, team_admin_id):
     file = admin.post('/api/v1/files',
                       data={'jobstate_id': jobstate_id, 'content': 'content',
