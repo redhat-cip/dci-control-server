@@ -19,6 +19,7 @@ import os
 
 import flask
 from flask import json
+import six
 
 from sqlalchemy import sql
 
@@ -78,9 +79,27 @@ def _old_create_files(user):
     return flask.Response(result, 201, content_type='application/json')
 
 
+# todo(yassine): delete this code when we upgrade the agents
+# check if some DCI-* headers are provided, if not call the old
+# controller
+def use_old_create_files(headers):
+    for header, value in six.iteritems(headers):
+        if header.lower().startswith('dci'):
+            return False
+    return True
+
+
 @api.route('/files', methods=['POST'])
 @auth.requires_auth
 def create_files(user):
+    if use_old_create_files(flask.request.headers):
+        return _old_create_files(user)
+    else:
+        return new_create_files(user)
+
+
+def new_create_files(user):
+    # todo(yassine): use voluptuous for headers validation
     headers_values = v1_utils.flask_headers_to_dict(flask.request.headers)
 
     values = {'md5': None,
@@ -92,17 +111,11 @@ def create_files(user):
 
     if values.get('jobstate_id', None) is None \
             and values.get('job_id', None) is None:
-        # if the headers are not provided, then we switch to the old way
-        # create a file.
-        return _old_create_files(user)
-        # todo(yassine): uncomment when we upgrade all the agents.
-        # raise dci_exc.DCIException('HTTP headers DCI-JOBSTATE-ID or '
-        #                            'DCI-JOB-ID'
-        #                            ' must be specified', status_code=400)
+        raise dci_exc.DCIException('HTTP headers DCI-JOBSTATE-ID or '
+                                   'DCI-JOB-ID must be specified')
 
     if values.get('name', None) is None:
-        raise dci_exc.DCIException('HTTP header DCI-NAME must be specified',
-                                   status_code=400)
+        raise dci_exc.DCIException('HTTP header DCI-NAME must be specified')
 
     file_id = utils.gen_uuid()
     # ensure the directory which will contains the file actually exist
