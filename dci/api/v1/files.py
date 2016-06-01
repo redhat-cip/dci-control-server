@@ -19,6 +19,7 @@ import os
 
 import flask
 from flask import json
+import six
 
 from sqlalchemy import sql
 
@@ -90,15 +91,23 @@ def create_files(user):
               'name': None}
     values.update(headers_values)
 
+    # todo(yassine): delete this code when we upgrade the agents
+    # check if some DCI-* headers are provided, if not call the old
+    # controller
+    use_old_controller = True
+    headers = dict(flask.request.headers)
+    for header, value in six.iteritems(headers):
+        if header.lower().startswith('dci'):
+            use_old_controller = False
+
+    if use_old_controller:
+        return _old_create_files(user)
+
     if values.get('jobstate_id', None) is None \
             and values.get('job_id', None) is None:
-        # if the headers are not provided, then we switch to the old way
-        # create a file.
-        return _old_create_files(user)
-        # todo(yassine): uncomment when we upgrade all the agents.
-        # raise dci_exc.DCIException('HTTP headers DCI-JOBSTATE-ID or '
-        #                            'DCI-JOB-ID'
-        #                            ' must be specified', status_code=400)
+        raise dci_exc.DCIException('HTTP headers DCI-JOBSTATE-ID or '
+                                   'DCI-JOB-ID'
+                                   ' must be specified', status_code=400)
 
     if values.get('name', None) is None:
         raise dci_exc.DCIException('HTTP header DCI-NAME must be specified',
