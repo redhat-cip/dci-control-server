@@ -22,6 +22,7 @@ import dci.dci_config as config
 import functools
 import getopt
 import hashlib
+import json
 import random
 import sqlalchemy
 import sqlalchemy_utils.functions
@@ -260,6 +261,18 @@ def attach_files_to_jobs(db_conn, job, company_id):
         'name': name,
         'content': JUNIT,
         'mime': 'application/junit',
+        'md5': hashlib.md5(name.encode('utf8')).hexdigest(),
+        'job_id': id,
+        'team_id': company_id
+    }
+    db_insert(db_conn, models.FILES, **args)
+
+    # Insert a stackdetails file
+    name = '%s.json' % filename_generator()
+    args = {
+        'name': name,
+        'content': json.dumps(DATA),
+        'mime': 'application/tripleostackdetails',
         'md5': hashlib.md5(name.encode('utf8')).hexdigest(),
         'job_id': id,
         'team_id': company_id
