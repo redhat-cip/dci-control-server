@@ -39,12 +39,12 @@ def generate_client(app, credentials):
 
     def client_open_decorator(func):
         def wrapper(*args, **kwargs):
-            data = kwargs.get('data')
-            if data:
-                kwargs['data'] = flask.json.dumps(data, cls=utils.JSONEncoder)
-
             headers.update(kwargs.get('headers', {}))
             kwargs['headers'] = headers
+            content_type = headers.get('Content-Type')
+            data = kwargs.get('data')
+            if data and content_type == 'application/json':
+                kwargs['data'] = flask.json.dumps(data, cls=utils.JSONEncoder)
             response = func(*args, **kwargs)
             data = (flask.json.loads(response.data or '{}')
                     if response.content_type == 'application/json'
