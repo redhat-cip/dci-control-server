@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a106d94_11ad4789",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-06-02T20:29:33Z",
+      "side": 1,
+      "message": "Just a thought but, maybe we should also loop on the jobdefinition_components tables to create the job_components records in this change.\nIf we do so, the components.get_jobs() will be function immediately.\nFor the same reason, I wonder if we shouldn\u0027t feed this table when the scheduler create a new job.\n\nOtherwise, the table will be empty and we will have to do a migration later.",
+      "revId": "686dc011cd45a726f180baf35983375a4baf2fe2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
