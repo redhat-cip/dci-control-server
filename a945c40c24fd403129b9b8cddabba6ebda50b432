@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1a106d94_16e53da8",
+        "filename": "dci/alembic/versions/481c43538042_adds_file_size.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-02T13:46:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a106d94_d6da85e8",
+      "revId": "a945c40c24fd403129b9b8cddabba6ebda50b432",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a106d94_d653a56a",
         "filename": "dci/db/models.py",
         "patchSetId": 4
