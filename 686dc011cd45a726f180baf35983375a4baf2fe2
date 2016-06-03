@@ -16,6 +16,24 @@
       "revId": "686dc011cd45a726f180baf35983375a4baf2fe2",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_55e20ad6",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-03T13:50:20Z",
+      "side": 1,
+      "message": "You are right !",
+      "parentUuid": "1a106d94_11ad4789",
+      "revId": "686dc011cd45a726f180baf35983375a4baf2fe2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
