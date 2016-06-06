@@ -27,12 +27,9 @@ down_revision = '9ba5bcab9aef'
 branch_labels = None
 depends_on = None
 
-from alembic import op
-import sqlalchemy as sa
-
 
 def upgrade():
-    op.add_column('files', sa.Column('size', sa.BIGINT, nullable=True))
+    pass
 
 
 def downgrade():

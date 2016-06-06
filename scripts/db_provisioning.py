@@ -74,7 +74,15 @@ LOREM_IPSUM = [
     'Cum sociis natoque penatibus et magnis dis parturient montes, '
     'nascetur ridiculus mus.',
     'In rutrum accumsan ultricies.',
-    'Mauris vitae nisi at sem facilisis semper ac in est.'
+    'Mauris vitae nisi at sem facilisis semper ac in est.',
+    '概要',
+    'モントリオール大都市圏の人口は約380万人であり、これは北米で15番目、',
+    '世界でも第77位の規模。面積は約4千km²。2015年、',
+    'アメリカのシンクタンクが公表したビジネス・人材・文化・',
+    '政治などを対象とした総合的な世界都市ランキングにおいて、',
+    '世界第24位の都市と評価されており[4]、',
+    'カナダの都市ではトロントに次ぐ第2位である。',
+    'పురావస్తు శాఖ వద్ద ఉన్న ఆధారాల ప్రకారం యూరోపియన్ వాసులు చేరడానికి ',
 ]
 
 JUNIT = """

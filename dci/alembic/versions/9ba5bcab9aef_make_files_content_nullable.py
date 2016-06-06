@@ -13,7 +13,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""Make files content nullable
+"""Make files content nullable and migrate data
 
 Revision ID: 9ba5bcab9aef
 Revises: 89638be0fc0f
@@ -31,7 +31,7 @@ from dci.api.v1 import utils as v1_utils
 from dci.db import models
 from dci import dci_config
 
-
+import sqlalchemy as sa
 from alembic import op
 from sqlalchemy import sql
 
@@ -41,6 +41,8 @@ _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
 
 # move the file's content from the database to the filesystem
 def upgrade():
+    op.alter_column("files", "content", nullable=True)
+    op.add_column('files', sa.Column('size', sa.BIGINT, nullable=True))
     db_conn = op.get_bind()
 
     # iterate over the files one by one so that to not explode the memory
@@ -60,10 +62,7 @@ def upgrade():
         file_path = '%s/%s' % (file_directory_path, file['id'])
 
         with open(file_path, "w") as f:
-            f.write(file['content'])
-
-    # make the file's content nullable
-    op.alter_column("files", "content", nullable=True)
+            f.write(file['content'].encode('utf8'))
 
 
 def downgrade():
