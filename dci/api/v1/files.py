@@ -109,12 +109,11 @@ def new_create_files(user):
               'name': None}
     values.update(headers_values)
 
-    if values.get('jobstate_id', None) is None \
-            and values.get('job_id', None) is None:
+    if not (values.get('jobstate_id') or values.get('job_id')):
         raise dci_exc.DCIException('HTTP headers DCI-JOBSTATE-ID or '
                                    'DCI-JOB-ID must be specified')
 
-    if values.get('name', None) is None:
+    if not values.get('name'):
         raise dci_exc.DCIException('HTTP header DCI-NAME must be specified')
 
     file_id = utils.gen_uuid()
