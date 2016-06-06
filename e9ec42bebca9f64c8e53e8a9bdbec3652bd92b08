@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a106d94_9b2b1130",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 286,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-06-06T13:19:10Z",
+      "side": 1,
+      "message": "Please break these 3 lines. http://softwarefactory-project.io/r/#/c/3845/4/dci/api/v1/utils.py@285",
+      "revId": "e9ec42bebca9f64c8e53e8a9bdbec3652bd92b08",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
