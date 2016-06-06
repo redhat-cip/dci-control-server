@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a106d94_9bcf91b0",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 285,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-06-06T12:50:36Z",
+      "side": 1,
+      "message": "Can you please simplify these 3 lines.",
+      "revId": "58b4d350e19ccb9a1c1eca871081a230f4655cfe",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
