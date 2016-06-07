@@ -28,21 +28,21 @@ _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
 
 
 def test_create_files(admin, jobstate_id, team_admin_id):
-    file = admin.post('/api/v1/files',
-                      headers={'DCI-JOBSTATE-ID': jobstate_id,
-                               'DCI-NAME': 'kikoolol',
-                               'Content-Type': 'text/plain'},
-                      data="content").data
-    file_id = file['file']['id']
-    file = admin.get('/api/v1/files/%s' % file_id).data
-    assert file['file']['name'] == 'kikoolol'
-    assert file['file']['size'] == 7
+    headers = {
+        'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': 'kikoolol',
+        'Content-Type': 'text/plain'
+    }
+    file = admin.post('/api/v1/files', headers=headers, data='content')
+    file = file.data['file']
 
-    file_directory_path = v1_utils.build_file_directory_path(
-        _FILES_FOLDER, team_admin_id, file_id)
-    file_path = '%s/%s' % (file_directory_path, file_id)
+    file_path = v1_utils.build_file_path(_FILES_FOLDER, team_admin_id,
+                                         file['id'])
+
+    assert file['name'] == 'kikoolol'
+    assert file['size'] == 7
     assert os.path.exists(file_path)
-    with open(file_path, "r") as f:
+
+    with open(file_path, 'r') as f:
         assert f.read() == 'content'
 
 
@@ -61,11 +61,9 @@ def test_old_create_files(admin, jobstate_id, team_admin_id):
     file = admin.get('/api/v1/files/%s' % file_id).data
     assert file['file']['name'] == 'kikoolol'
 
-    file_directory_path = v1_utils.build_file_directory_path(
-        _FILES_FOLDER, team_admin_id, file_id)
-    file_path = '%s/%s' % (file_directory_path, file_id)
+    file_path = v1_utils.build_file_path(_FILES_FOLDER, team_admin_id, file_id)
     assert os.path.exists(file_path)
-    with open(file_path, "r") as f:
+    with open(file_path, 'r') as f:
         assert f.read() == "content"
 
 
