@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a106d94_fe25d30a",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 218,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-06-07T15:16:11Z",
+      "side": 1,
+      "message": "we have now a files.size in the DB + this won\u0027t work if we use Swift for the object storage.",
+      "revId": "3e766f5761374de263864822c494c9eedee6be94",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
