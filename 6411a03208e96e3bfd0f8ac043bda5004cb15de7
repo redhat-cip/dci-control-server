@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a106d94_9eb01ff6",
+        "filename": "scripts/db_provisioning.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 352,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-07T12:47:17Z",
+      "side": 1,
+      "message": "can you move this to job_dell_12 this is the most complete job for testing and seeing the frontend features (this will avoid going to multiple jobs when trying to see multiple features, and avoid to forgive which one contains what)",
+      "revId": "6411a03208e96e3bfd0f8ac043bda5004cb15de7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
