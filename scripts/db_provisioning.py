@@ -66,6 +66,8 @@ JUNIT = """
           name="test_cors_headers" time="0.574683904648"/>
 </testsuite>"""
 
+STACKDETAILS = open('scripts/data/tripleo-stack-dump-sample.json', 'r').read()
+
 
 def db_insert(db_conn, model_item, **kwargs):
     query = model_item.insert().values(**kwargs)
@@ -347,10 +349,11 @@ def init_db(db_conn):
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[0][20],
         updated_at=time[0][2]
     )
+    # Dell_2 / Dell khaleesi-tempest v0.8  has stackdetails attached to it
     job_dell_9 = db_ins(
         models.JOBS, status='success', jobdefinition_id=jobdef_dell_1,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[2][10],
-        updated_at=time[1][3]
+        updated_at=time[1][3], configuration=STACKDETAILS
     )
     job_dell_10 = db_ins(
         models.JOBS, status='success', jobdefinition_id=jobdef_dell_2,
