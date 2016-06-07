@@ -66,6 +66,8 @@ JUNIT = """
           name="test_cors_headers" time="0.574683904648"/>
 </testsuite>"""
 
+STACKDETAILS = open('scripts/data/tripleo-stack-dump-sample.json', 'r').read()
+
 
 def db_insert(db_conn, model_item, **kwargs):
     query = model_item.insert().values(**kwargs)
@@ -287,22 +289,22 @@ def init_db(db_conn):
         updated_at=time[0][2]
     )
     db_ins(
-        models.JOBS, status='success', jobdefinition_id=jobdef_hp_1,
+        models.JOBS, status='failure', jobdefinition_id=jobdef_hp_1,
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[2][10],
         updated_at=time[1][3]
     )
     db_ins(
-        models.JOBS, status='success', jobdefinition_id=jobdef_hp_2,
+        models.JOBS, status='failure', jobdefinition_id=jobdef_hp_2,
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[1][1],
         updated_at=time[0][0]
     )
     db_ins(
-        models.JOBS, status='failure', jobdefinition_id=jobdef_hp_2,
+        models.JOBS, status='success', jobdefinition_id=jobdef_hp_2,
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[3][12],
         updated_at=time[2][20]
     )
     db_ins(
-        models.JOBS, status='failure', jobdefinition_id=jobdef_hp_2,
+        models.JOBS, status='success', jobdefinition_id=jobdef_hp_2,
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[3][20],
         updated_at=time[0][6]
     )
@@ -348,24 +350,24 @@ def init_db(db_conn):
         updated_at=time[0][2]
     )
     job_dell_9 = db_ins(
-        models.JOBS, status='success', jobdefinition_id=jobdef_dell_1,
+        models.JOBS, status='failure', jobdefinition_id=jobdef_dell_1,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[2][10],
         updated_at=time[1][3]
     )
     job_dell_10 = db_ins(
-        models.JOBS, status='success', jobdefinition_id=jobdef_dell_2,
+        models.JOBS, status='failure', jobdefinition_id=jobdef_dell_2,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[1][1],
         updated_at=time[0][0]
     )
     job_dell_11 = db_ins(
-        models.JOBS, status='failure', jobdefinition_id=jobdef_dell_2,
+        models.JOBS, status='success', jobdefinition_id=jobdef_dell_2,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[3][12],
         updated_at=time[2][20]
     )
     job_dell_12 = db_ins(
-        models.JOBS, status='failure', jobdefinition_id=jobdef_dell_2,
+        models.JOBS, status='success', jobdefinition_id=jobdef_dell_2,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[3][20],
-        updated_at=time[0][6]
+        updated_at=time[0][6], configuration=STACKDETAILS
     )
 
     # Creates jobstates attached to jobs, just create a subset of them to
