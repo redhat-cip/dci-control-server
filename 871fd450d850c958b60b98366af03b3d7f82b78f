@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1a106d94_c4f5aacc",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-08T17:33:14Z",
+      "side": 1,
+      "message": "Thanks now i understand your point.\n\nBut the purpose of migration script and how Alembic has been designed is to be run against a __running__ database. Once Alembic run a migration script, it stamps the revision ID inside de table alembic_version. This is the way Alembic knows what is the current state of the DB schema.\n\nSo in your case, if Alembic run script #a then it\u0027s because the current state of the database is #a-1.\n\nIn DCI, migration scripts are design to be run in a sequential way (because we don\u0027t handle downgrade), so if you run script #b you should not run script #a. It doesn\u0027t make sense...\n\nMigration scripts make sense only for __running__ database while models.py always refers to head in a specific commit. \n\nThen you cannot compare script #a with models.py of commit #b...",
+      "parentUuid": "1a106d94_045222dd",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a106d94_a9e8477d",
         "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
         "patchSetId": 7
