@@ -1,0 +1,259 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a106d94_a9e8477d",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "please no crappy line breaks\n\n    update_to_puddle_ospd \u003d (\n        _COMPONENTS.update()\n        .where(sql.and_(_COMPONENTS.c.url.contains(\u0027director\u0027),             \n                        _COMPONENTS.c.type \u003d\u003d \u0027puddle\u0027))\n        .values(type\u003d\u0027puddle_ospd\u0027)\n    )",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_89ed8b8e",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_e9535f6a",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 70,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "query \u003d sql.select([models.JOBDEFINITIONS])\n    all_jobdefinitions \u003d db_conn.execute(query).fetchall()",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_09e23b9f",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "no need for a cast the cast is only needed when we use six or flask dump",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_294e17c2",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "this is \u003c80 no need to break line",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_69ee4f8d",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "cast not needed here",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_c9d783be",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "please stop doing those crappy line breaks\n\nquery \u003d (models.JOINS_JOBS_COMPONENTS\n         .insert()\n         .values(job_id\u003djob[\u0027id\u0027], component_id\u003dcmpt[\u0027id\u0027]))\ndb_conn.execute(query)",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_49cc3336",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "(models.JOBDEFINITIONS\n .update()\n .where(models.JOBDEFINITIONS.c.id \u003d\u003d jd_id)\n .values(component_types\u003dcomponent_types))",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_094b5bb1",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 95,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "no need for a break",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_e9da3fe8",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "I do not understand the purpose of this loop",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_89d62bc4",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 98,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "does this variable be used later ?",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_0974fbfb",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "this is \u003c80 characters no need for a line break\n\nlen(rows) seems not good here, as there is an offset and a limit, the _meta number need to be retrieve with q_bd.build_nb_row",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_29773704",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "no need to setup status code 200 is the default for jsonify",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_2920d7f6",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "team_id \u003d None if auth.is_admin(user) else user[\u0027team_id\u0027]",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_c9694327",
+        "filename": "dci/db/models.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-08T12:53:40Z",
+      "side": 1,
+      "message": "why JOINS we used to have JOIN in the name of those tables (there is a mistake for TOPICS_TEAMS)",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
