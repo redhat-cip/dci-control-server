@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "1a106d94_045222dd",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-06-08T16:56:53Z",
+      "side": 1,
+      "message": "I think we must avoid the use of dci.db.models in our migration scripts because these files WILL evolve, like the DB schema does and this create issues.\n\nThe migration of files.content is a good example:\n\n- commit #a: content is in files.content, we use a migration script (script #a) that relies on modles.py to migration our content from DB to FS.\n\n- we wait a bit and do some unrelated changes\n\n- commit #b: files.content is not required anymore, we drop the column from the models.py and add a migration script.\n\nOops, script #a cannot use models.py to read the content column. commit #b has just broke script #a.\n\nThe migration script are designed to migration a DB version to another one. models.py is tightly linked to the DB version. I don\u0027t think it\u0027s a good idea to create and maintain this relationship.",
+      "revId": "871fd450d850c958b60b98366af03b3d7f82b78f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a106d94_a9e8477d",
         "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
         "patchSetId": 7
