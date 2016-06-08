@@ -198,11 +198,13 @@ jobdefinition = utils.dict_merge(base, {
     v.Optional('active', default=True): bool,
     v.Optional('comment', default=None): six.text_type,
     v.Optional('type', default=""): six.text_type,
+    v.Optional('component_types', default=[]): list
 })
 
 jobdefinition_put = {
     v.Optional('comment'): six.text_type,
-    v.Optional('active'): bool
+    v.Optional('active'): bool,
+    v.Optional('component_types', default=[]): list
 }
 
 jobdefinition = DCISchema(schema_factory(jobdefinition).post,
