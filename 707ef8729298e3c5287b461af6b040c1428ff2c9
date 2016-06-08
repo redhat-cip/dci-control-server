@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a106d94_e4aee6e6",
+        "filename": "scripts/test_upgrade.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 104,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-08T15:27:19Z",
+      "side": 1,
+      "message": "At this point you have the database mapped with a models.py from 11c31b8.",
+      "revId": "707ef8729298e3c5287b461af6b040c1428ff2c9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_04b6a23d",
+        "filename": "scripts/test_upgrade.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-08T15:27:19Z",
+      "side": 1,
+      "message": "And now models.py is mapped to cur_rev  while the database to 11c31b8.",
+      "revId": "707ef8729298e3c5287b461af6b040c1428ff2c9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_6482f653",
+        "filename": "scripts/test_upgrade.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-08T15:27:19Z",
+      "side": 1,
+      "message": "Now you are telling the database to migrate from 11c31b8 to cur_rev.\n\nBut all the migration scripts relies on models.py so you are running the migration scripts with an up to date models.py.\n\nThis is why when referencing models.FILES sqlalchemy is trying to retrieve FILES.size.\n\nSo it\u0027s not a bug, it\u0027s the way Alembic is working and the fact that we map models.py and alembic script in each commit.",
+      "revId": "707ef8729298e3c5287b461af6b040c1428ff2c9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
