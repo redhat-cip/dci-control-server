@@ -45,6 +45,10 @@ _VALID_EMBED = {
     'team': v1_utils.embed(models.TEAMS),
     'remoteci': v1_utils.embed(models.REMOTECIS)
 }
+# select without the password column for security reasons
+_SELECT_WITHOUT_CONFIGURATION = [
+    _TABLE.c[c_name] for c_name in _TABLE.c.keys() if c_name != 'configuration'
+]
 
 
 @api.route('/jobs', methods=['POST'])
@@ -198,7 +202,7 @@ def get_all_jobs(user, jd_id=None):
 
     q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
                                  _VALID_EMBED)
-
+    q_bd.select = list(_SELECT_WITHOUT_CONFIGURATION)
     q_bd.join(embed)
     q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _JOBS_COLUMNS)

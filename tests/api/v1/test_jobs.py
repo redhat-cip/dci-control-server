@@ -186,6 +186,7 @@ def test_get_all_jobs(admin, jobdefinition_id, team_id, remoteci_id):
     db_all_jobs = db_all_jobs['jobs']
     db_all_jobs_ids = [db_job['id'] for db_job in db_all_jobs]
 
+    assert 'configuration' not in db_all_jobs[0]
     assert db_all_jobs_ids == [job_1_id, job_2_id]
 
 
@@ -323,16 +324,18 @@ def test_get_all_jobs_with_sort(admin, jobdefinition_id, team_id, remoteci_id):
     data = {'jobdefinition_id': jobdefinition_id,
             'team_id': team_id,
             'remoteci_id': remoteci_id}
-    job_1 = admin.post('/api/v1/jobs', data=data).data['job']
-    job_2 = admin.post('/api/v1/jobs', data=data).data['job']
-    job_3 = admin.post('/api/v1/jobs', data=data).data['job']
 
+    def _new_job(x):
+        j = admin.post('/api/v1/jobs', data=data).data['job']
+        del(j['configuration'])
+        return j
+    expectation = map(_new_job, range(3))
     jobs = admin.get('/api/v1/jobs?sort=created_at').data
-    assert jobs['jobs'] == [job_1, job_2, job_3]
+    assert jobs['jobs'] == expectation
 
     # reverse order by created_at
     jobs = admin.get('/api/v1/jobs?sort=-created_at').data
-    assert jobs['jobs'] == [job_3, job_2, job_1]
+    assert jobs['jobs'] == list(reversed(expectation))
 
 
 def test_get_job_by_id(admin, jobdefinition_id, team_id, remoteci_id):
