@@ -201,6 +201,14 @@ class QueryBuilder(object):
         self._join = []
         self.valid_embed = embed or {}
 
+
+    def remove_columns(self, columns):
+        """Remove the specified set of columns from the SQL query."""
+
+        for column in columns:
+            #self.select[0]._columns.remove(self.select._columns[column])
+            self.select[0]._columns.remove(self.select._columns[column])
+
     def join(self, embed_list):
         """Given a select query on one table columns and a list of tables to
         join with, this function add to the query builder the needed selections
