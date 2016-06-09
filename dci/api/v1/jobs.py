@@ -215,6 +215,9 @@ def get_all_jobs(user, jd_id=None):
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
+    for row in rows:
+        del row['configuration']
+
     return flask.jsonify({'jobs': rows, '_meta': {'count': nb_row}})
 
 
