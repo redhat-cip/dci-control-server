@@ -196,6 +196,9 @@ def get_all_jobs(user, jd_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
+    # Its not necessary to retrieve job configuration on job list
+    _TABLE._columns.remove(_TABLE._columns['configuration'])
+
     q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
                                  _VALID_EMBED)
 
