@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "1a106d94_2a03a5b9",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 219,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-10T16:19:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a106d94_0ff99b4d",
+      "revId": "83c61d9fc2e5497988d5f9820d3d3f0a677d574e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a106d94_6f95afe3",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 5
@@ -30,6 +48,24 @@
       "writtenOn": "2016-06-09T22:56:00Z",
       "side": 1,
       "message": "I suggest instead: # Try first to get a job to recheck.",
+      "revId": "83c61d9fc2e5497988d5f9820d3d3f0a677d574e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_8ae29901",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 222,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-10T16:19:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a106d94_6f95afe3",
       "revId": "83c61d9fc2e5497988d5f9820d3d3f0a677d574e",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "1a106d94_8ab0d9f5",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 233,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-10T16:19:00Z",
+      "side": 1,
+      "message": "Yea, it\u0027s done in /jobs/recheck endpoint.",
+      "parentUuid": "1a106d94_ef887fc8",
+      "revId": "83c61d9fc2e5497988d5f9820d3d3f0a677d574e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a106d94_4f9a7315",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 5
@@ -64,6 +118,24 @@
       "writtenOn": "2016-06-09T22:56:00Z",
       "side": 1,
       "message": "Maybe we can also use a limit(1) like above.",
+      "revId": "83c61d9fc2e5497988d5f9820d3d3f0a677d574e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_cae3f103",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 251,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-10T16:19:00Z",
+      "side": 1,
+      "message": "?",
+      "parentUuid": "1a106d94_4f9a7315",
       "revId": "83c61d9fc2e5497988d5f9820d3d3f0a677d574e",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "1a106d94_2af1e5cd",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 292,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-10T16:19:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a106d94_af9fa702",
+      "revId": "83c61d9fc2e5497988d5f9820d3d3f0a677d574e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a106d94_8fa46b58",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 5
@@ -98,6 +188,24 @@
       "writtenOn": "2016-06-09T22:56:00Z",
       "side": 1,
       "message": "I think the insert query above and the component association should be done in a transaction, otherwise we may end up with a job with missing component. see line 299 above for an example.",
+      "revId": "83c61d9fc2e5497988d5f9820d3d3f0a677d574e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_0aeea9ec",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 303,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-10T16:19:00Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a106d94_8fa46b58",
       "revId": "83c61d9fc2e5497988d5f9820d3d3f0a677d574e",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
