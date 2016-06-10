@@ -376,6 +376,17 @@ def test_job_recheck(admin, job_id):
     assert job_rechecked['team_id'] == job_rechecked['team_id']
 
 
+def test_job_with_conf(admin, job_id):
+    data = {'configuration': {'foo': 'bar'}}
+    job = admin.get('/api/v1/jobs/%s' % job_id).data['job']
+    admin.put('/api/v1/jobs/%s' % job['id'], data=data,
+              headers={'If-match': job['etag']})
+    job_to_recheck = admin.get('/api/v1/jobs/%s' % job_id).data['job']
+    assert job_to_recheck['configuration']
+    job_rechecked = admin.post('/api/v1/jobs/%s/recheck' % job_id).data['job']
+    assert not job_rechecked['configuration']
+
+
 def test_delete_job_by_id(admin, jobdefinition_id, team_id, remoteci_id):
 
     job = admin.post('/api/v1/jobs',

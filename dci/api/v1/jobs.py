@@ -304,7 +304,8 @@ def job_recheck(user, j_id):
         'updated_at': datetime.datetime.utcnow().isoformat(),
         'etag': etag,
         'recheck': True,
-        'status': 'new'
+        'status': 'new',
+        'configuration': None,
     })
     query = _TABLE.insert().values(**values)
 
