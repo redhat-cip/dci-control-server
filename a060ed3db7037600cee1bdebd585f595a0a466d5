@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a106d94_aae795e3",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-06-10T18:09:36Z",
+      "side": 1,
+      "message": "Nitpicking: I think you can just keep the required columns.",
+      "revId": "a060ed3db7037600cee1bdebd585f595a0a466d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a106d94_8aec59c9",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-06-10T18:09:36Z",
+      "side": 1,
+      "message": "Can you please add a test-coverage for this new endpoint?",
+      "revId": "a060ed3db7037600cee1bdebd585f595a0a466d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
