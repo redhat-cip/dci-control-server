@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a106d94_2a4e05c2",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 466,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-06-11T03:14:10Z",
+      "side": 1,
+      "message": "the line above should also be in the transaction",
+      "revId": "2c62eb7ab5813e5e98b7386bf2c787b5a41e276a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
