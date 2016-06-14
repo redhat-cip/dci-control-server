@@ -523,8 +523,9 @@ def test_job_search(user, jobdefinition_id, team_user_id, remoteci_id):
     job_etag = job.data['job']['etag']
 
     # update the configuration of a job
+    data = {'configuration': {'ha': 'enabled', 'type': {'hw': 'baremetal'}}}
     user.put('/api/v1/jobs/%s' % job_id,
-             data={'configuration': {'ha': 'enabled', 'type': 'baremetal'}},
+             data=data,
              headers={'If-match': job_etag})
     job_search_url = '/api/v1/jobs/search'
 
@@ -532,9 +533,8 @@ def test_job_search(user, jobdefinition_id, team_user_id, remoteci_id):
     jobs_filtered = user.post(job_search_url,
                               data={'jobdefinition_id': jobdefinition_id,
                                     'configuration': {
-                                        '_op': 'and',
                                         'ha': 'enabled',
-                                        'type': 'baremetal'}})
+                                        'type.hw': 'baremetal'}})
     assert jobs_filtered.data['_meta']['count'] == 1
 
     # search with two values not matched
@@ -543,7 +543,7 @@ def test_job_search(user, jobdefinition_id, team_user_id, remoteci_id):
                                     'configuration': {
                                         '_op': 'and',
                                         'ha': 'enabledd',
-                                        'type': 'baremetal'}})
+                                        'type.hw': 'baremetal'}})
     assert jobs_filtered.data['_meta']['count'] == 0
 
     # search with at least one value matching
@@ -552,5 +552,5 @@ def test_job_search(user, jobdefinition_id, team_user_id, remoteci_id):
                                     'configuration': {
                                         '_op': 'or',
                                         'ha': 'enabledd',
-                                        'type': 'baremetal'}})
+                                        'type.hw': 'baremetal'}})
     assert jobs_filtered.data['_meta']['count'] == 1

@@ -84,7 +84,7 @@ def search_jobs(user):
     values = schemas.job_search.post(flask.request.json)
     jobdefinition_id = values.get('jobdefinition_id')
     configuration = values.get('configuration')
-    config_op = configuration.pop('_op', None)
+    config_op = configuration.pop('_op', 'and')
 
     args = schemas.args(flask.request.args.to_dict())
     q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
@@ -97,16 +97,18 @@ def search_jobs(user):
     if jobdefinition_id is not None:
         q_bd.where.append(_TABLE.c.jobdefinition_id == jobdefinition_id)
 
-    if config_op is None or config_op == 'and':
+    if config_op == 'and':
         sa_op = sql.expression.and_
     elif config_op == 'or':
         sa_op = sql.expression.or_
 
     filering_rules = []
     for k, v in six.iteritems(configuration):
-        filering_rules.append(_TABLE.c.configuration[k].astext == v)
+        path = []
+        for sk in k.split('.'):
+            path.append(sk)
+        filering_rules.append(_TABLE.c.configuration[path].astext == v)
     q_bd.where.append(sa_op(*filering_rules))
-
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
     return flask.jsonify({'jobs': rows, '_meta': {'count': len(rows)}})
