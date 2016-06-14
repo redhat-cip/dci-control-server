@@ -510,3 +510,47 @@ def test_get_file_by_job_id(user, job_id):
     file_from_job = user.get(url)
     assert file_from_job.status_code == 200
     assert file_from_job.data['_meta']['count'] == 1
+
+
+def test_job_search(user, jobdefinition_id, team_user_id, remoteci_id):
+
+    # create a job
+    job = user.post('/api/v1/jobs',
+                    data={'jobdefinition_id': jobdefinition_id,
+                          'team_id': team_user_id,
+                          'remoteci_id': remoteci_id})
+    job_id = job.data['job']['id']
+    job_etag = job.data['job']['etag']
+
+    # update the configuration of a job
+    user.put('/api/v1/jobs/%s' % job_id,
+             data={'configuration': {'ha': 'enabled', 'type': 'baremetal'}},
+             headers={'If-match': job_etag})
+    job_search_url = '/api/v1/jobs/search'
+
+    # search with two values matching
+    jobs_filtered = user.post(job_search_url,
+                              data={'jobdefinition_id': jobdefinition_id,
+                                    'configuration': {
+                                        '_op': 'and',
+                                        'ha': 'enabled',
+                                        'type': 'baremetal'}})
+    assert jobs_filtered.data['_meta']['count'] == 1
+
+    # search with two values not matched
+    jobs_filtered = user.post(job_search_url,
+                              data={'jobdefinition_id': jobdefinition_id,
+                                    'configuration': {
+                                        '_op': 'and',
+                                        'ha': 'enabledd',
+                                        'type': 'baremetal'}})
+    assert jobs_filtered.data['_meta']['count'] == 0
+
+    # search with at least one value matching
+    jobs_filtered = user.post(job_search_url,
+                              data={'jobdefinition_id': jobdefinition_id,
+                                    'configuration': {
+                                        '_op': 'or',
+                                        'ha': 'enabledd',
+                                        'type': 'baremetal'}})
+    assert jobs_filtered.data['_meta']['count'] == 1

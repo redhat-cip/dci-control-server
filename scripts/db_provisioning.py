@@ -15,17 +15,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import collections
 import datetime
+import dci.api.v1.utils as utils
 import dci.auth as auth
 import dci.db.models as models
 import dci.dci_config
-import dci.api.v1.utils as utils
 import functools
 import getopt
 import sqlalchemy
 import sqlalchemy_utils.functions
 import sys
-import collections
+
 
 conf = dci.dci_config.generate_conf()
 
@@ -74,12 +75,12 @@ def db_insert(db_conn, model_item, **kwargs):
 
 
 def init_db(db_conn):
-    """ Initialize the database with fake datas
+    """Initialize the database with fake datas
 
     Create an admin team and 2 other teams HP and DELL
     Create 3 topics, 1 common and 2 scoped, 1 for each team
-
     """
+
     db_ins = functools.partial(db_insert, db_conn)
     time = time_helper()
 
