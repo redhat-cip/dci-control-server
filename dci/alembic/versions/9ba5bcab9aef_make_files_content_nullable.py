@@ -28,15 +28,19 @@ branch_labels = None
 depends_on = None
 
 from dci.api.v1 import utils as v1_utils
-from dci.db import models
 from dci import dci_config
 
-
+import sqlalchemy as sa
 from alembic import op
 from sqlalchemy import sql
 
 
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
+FILES = sa.Table(
+    'files', sa.MetaData(),
+    sa.Column('id', sa.String(36)),
+    sa.Column('content', sa.Text),
+    sa.Column('team_id', sa.String(36)))
 
 
 # move the file's content from the database to the filesystem
@@ -45,12 +49,12 @@ def upgrade():
 
     # iterate over the files one by one so that to not explode the memory
     # count the number of files and then iterate
-    query_count_files = sql.select([sql.func.count(models.FILES.c.id)])
+    query_count_files = sql.select([sql.func.count(FILES.c.id)])
     nb_files = db_conn.execute(query_count_files).scalar()
 
-    query_file = sql.select([models.FILES])
+    query_file = sql.select([FILES])
     for index in range(0, nb_files):
-        file = db_conn.execute(query_file.offset(index).limit(1))
+        file = db_conn.execute(query_file.offset(index).limit(1)).fetchone()
         file = dict(file)
 
         file_path = v1_utils.build_file_path(
