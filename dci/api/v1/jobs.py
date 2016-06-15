@@ -53,6 +53,7 @@ _VALID_EMBED = {
 @auth.requires_auth
 def create_jobs(user):
     values = schemas.job.post(flask.request.json)
+    components_ids = values.pop('components')
 
     # If it's not a super admin nor belongs to the same team_id
     if not(auth.is_admin(user) or auth.is_in_team(user, values['team_id'])):
@@ -69,9 +70,19 @@ def create_jobs(user):
         'configuration': {}
     })
 
-    query = _TABLE.insert().values(**values)
+    # create the job and feed the jobs_components table
+    with flask.g.db_conn.begin():
+        query = _TABLE.insert().values(**values)
+        flask.g.db_conn.execute(query)
 
-    flask.g.db_conn.execute(query)
+        jobs_components_to_insert = []
+        for cmpt_id in components_ids:
+            v1_utils.verify_existence_and_get(cmpt_id, models.COMPONENTS)
+            jobs_components_to_insert.append({'job_id': values['id'],
+                                              'component_id': cmpt_id})
+        if jobs_components_to_insert:
+            flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
+                                    jobs_components_to_insert)
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
