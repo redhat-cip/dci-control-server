@@ -233,6 +233,7 @@ job = {
     'jobdefinition_id': v.Any(UUID_FIELD, msg=INVALID_JOB_DEFINITION),
     'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
     'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    'components': list,
     v.Optional('comment', default=None): six.text_type,
 }
 
