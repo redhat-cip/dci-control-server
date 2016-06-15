@@ -186,6 +186,7 @@ def test_get_all_jobs(admin, jobdefinition_id, team_id, remoteci_id):
     db_all_jobs = db_all_jobs['jobs']
     db_all_jobs_ids = [db_job['id'] for db_job in db_all_jobs]
 
+    assert 'configuration' not in db_all_jobs[0]
     assert db_all_jobs_ids == [job_1_id, job_2_id]
 
 
@@ -323,9 +324,9 @@ def test_get_all_jobs_with_sort(admin, jobdefinition_id, team_id, remoteci_id):
     data = {'jobdefinition_id': jobdefinition_id,
             'team_id': team_id,
             'remoteci_id': remoteci_id}
-    job_1 = admin.post('/api/v1/jobs', data=data).data['job']
-    job_2 = admin.post('/api/v1/jobs', data=data).data['job']
-    job_3 = admin.post('/api/v1/jobs', data=data).data['job']
+    job_1 = admin.post('/api/v1/jobs', data=data).data['job'].pop('configuration')
+    job_2 = admin.post('/api/v1/jobs', data=data).data['job'].pop('configuration')
+    job_3 = admin.post('/api/v1/jobs', data=data).data['job'].pop('configuration')
 
     jobs = admin.get('/api/v1/jobs?sort=created_at').data
     assert jobs['jobs'] == [job_1, job_2, job_3]
