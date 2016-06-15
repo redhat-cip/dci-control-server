@@ -195,6 +195,12 @@ def jobdefinition_factory(admin, topic_id):
 
 
 @pytest.fixture
+def components_ids(admin, topic_id):
+    component_types = ['type_1', 'type_2', 'type_3']
+    return create_components(admin, topic_id, component_types)
+
+
+@pytest.fixture
 def jobdefinition_id(jobdefinition_factory):
     jd = jobdefinition_factory()
     return jd['jobdefinition']['id']
@@ -215,9 +221,10 @@ def job_id(admin, topic_id, remoteci_id, jobdefinition_factory):
 
 
 @pytest.fixture
-def job_user_id(admin, jobdefinition_id, team_user_id, remoteci_user_id):
+def job_user_id(admin, jobdefinition_id, team_user_id, remoteci_user_id,
+                components_ids):
     data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_user_id,
-            'remoteci_id': remoteci_user_id}
+            'remoteci_id': remoteci_user_id, 'components': components_ids}
     job = admin.post('/api/v1/jobs', data=data).data
     return job['job']['id']
 
