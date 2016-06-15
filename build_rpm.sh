@@ -36,7 +36,7 @@ for arch in fedora-23-x86_64 epel-7-x86_64; do
         sed -i '$ienabled=1' ${HOME}/.mock/${arch}-with-extras.cfg
         sed -i '$i[dci-extras]' ${HOME}/.mock/${arch}-with-extras.cfg
         sed -i '$iname=Distributed CI - No upstream package - CentOS 7"' ${HOME}/.mock/${arch}-with-extras.cfg
-        sed -i '$ibaseurl=http://dci.enovance.com/repos/extras/el/7/x86_64/' ${HOME}/.mock/${arch}-with-extras.cfg
+        sed -i '$ibaseurl=http://packages.distributed-ci.io/repos/extras/el/7/x86_64/' ${HOME}/.mock/${arch}-with-extras.cfg
         sed -i '$igpgcheck=0' ${HOME}/.mock/${arch}-with-extras.cfg
         sed -i '$ienabled=1' ${HOME}/.mock/${arch}-with-extras.cfg
     fi
