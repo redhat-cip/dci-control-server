@@ -95,6 +95,10 @@ CONFIGURATION = 'configuration', {}
 INVALID_CONFIGURATION = 'configuration', six.text_type
 INVALID_CONFIGURATION_ERROR = 'configuration', schemas.INVALID_JSON
 
+COMPONENTS = 'components', []
+INVALID_COMPONENTS = 'components', list
+INVALID_COMPONENTS_ERROR = 'components', schemas.INVALID_LIST
+
 
 def generate_errors(*fields):
     return dict([(field, schemas.INVALID_REQUIRED) for field in fields])
