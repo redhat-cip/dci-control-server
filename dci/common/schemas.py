@@ -37,6 +37,7 @@ def Url(value):
 
 VALID_STATUS_UPDATE = ['success', 'failure']
 
+INVALID_LIST = 'not a valid list'
 INVALID_UUID = 'not a valid uuid'
 INVALID_JSON = 'not a valid json'
 INVALID_STRING = 'not a valid string'
@@ -233,6 +234,7 @@ job = {
     'jobdefinition_id': v.Any(UUID_FIELD, msg=INVALID_JOB_DEFINITION),
     'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
     'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    'components': list,
     v.Optional('comment', default=None): six.text_type,
 }
 
