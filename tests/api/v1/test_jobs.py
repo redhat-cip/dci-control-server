@@ -186,6 +186,7 @@ def test_get_all_jobs(admin, jobdefinition_id, team_id, remoteci_id):
     db_all_jobs = db_all_jobs['jobs']
     db_all_jobs_ids = [db_job['id'] for db_job in db_all_jobs]
 
+    assert 'configuration' not in db_all_jobs[0]
     assert db_all_jobs_ids == [job_1_id, job_2_id]
 
 
