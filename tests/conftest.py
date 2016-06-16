@@ -182,7 +182,6 @@ def jobdefinition_factory(admin, topic_id):
     def create(name='pname', topic_id=topic_id):
         component_types = ['type_1', 'type_2', 'type_3']
         data = {'name': name, 'topic_id': topic_id,
-                'type': 'jd_type_%s' % random.randint(0, 1000),
                 'component_types': component_types}
         jd = admin.post('/api/v1/jobdefinitions', data=data).data
         # TODO(yassine): remove the following statements when we switch
