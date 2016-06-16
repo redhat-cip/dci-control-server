@@ -17,6 +17,7 @@
 import flask
 import six
 from sqlalchemy import sql, func
+from sqlalchemy import Table as sa_Table
 
 from dci.common import exceptions as dci_exc
 from dci.common import utils
@@ -200,6 +201,20 @@ class QueryBuilder(object):
         self.select = [table]
         self._join = []
         self.valid_embed = embed or {}
+
+    def ignore_columns(self, columns):
+        """Remove the specified set of columns from the SQL query."""
+
+        select = []
+        for entity in self.select:
+            if isinstance(entity, sa_Table):
+                for column in entity._columns.values():
+                    if column.name not in columns:
+                        select.append(column)
+            else:
+                if entity.name not in columns:
+                    select.append(entity)
+        self.select = select
 
     def join(self, embed_list):
         """Given a select query on one table columns and a list of tables to
