@@ -197,7 +197,6 @@ jobdefinition = utils.dict_merge(base, {
     'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC),
     v.Optional('active', default=True): bool,
     v.Optional('comment', default=None): six.text_type,
-    v.Optional('type', default=""): six.text_type,
     v.Optional('component_types', default=[]): list
 })
 
@@ -254,8 +253,7 @@ job_schedule = schema_factory(job_schedule)
 
 job_schedule_template = {
     'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
-    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC),
-    'type': six.text_type
+    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC)
 }
 
 job_schedule_template = schema_factory(job_schedule_template)

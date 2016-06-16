@@ -258,7 +258,6 @@ def job_schedule_template(user):
     """
     values = schemas.job_schedule_template.post(flask.request.json)
     topic_id = values.pop('topic_id')
-    jd_type = values.pop("type")
     etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
@@ -294,12 +293,12 @@ def job_schedule_template(user):
 
     # Get the jobdefinition according to the type provided above
     q_jd = sql.select([models.JOBDEFINITIONS]).where(
-        models.JOBDEFINITIONS.c.type == jd_type)
+        models.JOBDEFINITIONS.c.topic_id == topic_id).order_by(
+            sql.asc(models.JOBDEFINITIONS.c.created_at))
     jd_to_run = flask.g.db_conn.execute(q_jd).fetchone()
 
     if jd_to_run is None:
-        raise dci_exc.DCIException("Job type '%s' not found." % jd_type,
-                                   status_code=412)
+        raise dci_exc.DCIException("Jobdefinition not found.", status_code=412)
     jd_to_run = dict(jd_to_run)
     # Get the latest components according to the component_types of the
     # jobdefinition.
@@ -313,8 +312,7 @@ def job_schedule_template(user):
     schedule_components_ids = []
     for ct in component_types:
         query = sql.select([models.COMPONENTS.c.id]).where(
-            sql.and_(models.COMPONENTS.c.type == ct,
-                     models.COMPONENTS.c.topic_id == topic_id)).\
+            sql.and_(models.COMPONENTS.c.type == ct)).\
             order_by(sql.asc(models.COMPONENTS.c.created_at))
         cmpt_id = flask.g.db_conn.execute(query).fetchone()[0]
 
