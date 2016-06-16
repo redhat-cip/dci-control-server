@@ -1,0 +1,208 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "facab960_5c797592",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-16T13:08:10Z",
+      "side": 1,
+      "message": "stop doing this, it is unreadable",
+      "revId": "c1bf93292ce3f5fc4ff7edd3bc3861a0c6be92d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_7c6e39cb",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-16T13:08:10Z",
+      "side": 1,
+      "message": "same...",
+      "revId": "c1bf93292ce3f5fc4ff7edd3bc3861a0c6be92d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_bc67e1e9",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-16T13:08:10Z",
+      "side": 1,
+      "message": "no need to cast (this line can be deleted)",
+      "revId": "c1bf93292ce3f5fc4ff7edd3bc3861a0c6be92d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_fc6169d4",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-16T13:08:10Z",
+      "side": 1,
+      "message": "this line no needed, we only need id once so we can directly call jd[\u0027id\u0027]",
+      "revId": "c1bf93292ce3f5fc4ff7edd3bc3861a0c6be92d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_dc64a5e7",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-16T13:08:10Z",
+      "side": 1,
+      "message": "please stop",
+      "revId": "c1bf93292ce3f5fc4ff7edd3bc3861a0c6be92d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_5ca095f4",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-16T13:08:10Z",
+      "side": 1,
+      "message": "delete 106",
+      "revId": "c1bf93292ce3f5fc4ff7edd3bc3861a0c6be92d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_3c9bd1ca",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-16T13:08:10Z",
+      "side": 1,
+      "message": "delete 110",
+      "revId": "c1bf93292ce3f5fc4ff7edd3bc3861a0c6be92d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_1c5fed0f",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-16T13:08:10Z",
+      "side": 1,
+      "message": "gosh...",
+      "revId": "c1bf93292ce3f5fc4ff7edd3bc3861a0c6be92d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_7ca55903",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-16T13:08:10Z",
+      "side": 1,
+      "message": "stop!",
+      "revId": "c1bf93292ce3f5fc4ff7edd3bc3861a0c6be92d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_9caa1dd3",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-16T13:08:10Z",
+      "side": 1,
+      "message": "this is not even 80 chars on one line...",
+      "revId": "c1bf93292ce3f5fc4ff7edd3bc3861a0c6be92d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_dcabc5d4",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-16T13:08:10Z",
+      "side": 1,
+      "message": "remove 123",
+      "revId": "c1bf93292ce3f5fc4ff7edd3bc3861a0c6be92d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_bcae01e6",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-16T13:08:10Z",
+      "side": 1,
+      "message": "I do not understand why we setup a variable here, it will not be used",
+      "revId": "c1bf93292ce3f5fc4ff7edd3bc3861a0c6be92d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
