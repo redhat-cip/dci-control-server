@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "facab960_9c813d4d",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 252,
+      "author": {
+        "id": 247
+      },
+      "writtenOn": "2016-06-16T13:13:01Z",
+      "side": 1,
+      "message": "as",
+      "range": {
+        "startLine": 252,
+        "startChar": 54,
+        "endLine": 252,
+        "endChar": 58
+      },
+      "revId": "38d752b67d244f3a4f04e27d7f822df87e6cb7ea",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_1c8d2d7c",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 257,
+      "author": {
+        "id": 247
+      },
+      "writtenOn": "2016-06-16T13:13:01Z",
+      "side": 1,
+      "message": "This is because they will never be finished",
+      "range": {
+        "startLine": 256,
+        "startChar": 57,
+        "endLine": 257,
+        "endChar": 21
+      },
+      "revId": "38d752b67d244f3a4f04e27d7f822df87e6cb7ea",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_3cd03153",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 178,
+      "author": {
+        "id": 247
+      },
+      "writtenOn": "2016-06-16T13:13:01Z",
+      "side": 1,
+      "message": "test_schedule_jobs_template ?",
+      "range": {
+        "startLine": 178,
+        "startChar": 4,
+        "endLine": 178,
+        "endChar": 23
+      },
+      "revId": "38d752b67d244f3a4f04e27d7f822df87e6cb7ea",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
