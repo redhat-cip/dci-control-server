@@ -17,7 +17,7 @@
 import datetime
 
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgres as pg
+from sqlalchemy.dialects import postgresql as pg
 import sqlalchemy_utils as sa_utils
 
 from dci.common import utils
