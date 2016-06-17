@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "facab960_f748a2ce",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-17T11:05:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_9c5f7d72",
+      "range": {
+        "startLine": 115,
+        "startChar": 7,
+        "endLine": 115,
+        "endChar": 53
+      },
+      "revId": "168e2eaf64d4c3c647fb1562269b9904b9d2aa65",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_bc53616b",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 11
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "facab960_1746e6bf",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-17T11:05:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_bc53616b",
+      "range": {
+        "startLine": 127,
+        "startChar": 6,
+        "endLine": 127,
+        "endChar": 53
+      },
+      "revId": "168e2eaf64d4c3c647fb1562269b9904b9d2aa65",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_1c4b6db1",
         "filename": "tests/api/v1/test_components.py",
         "patchSetId": 11
@@ -59,6 +107,30 @@
       "writtenOn": "2016-06-16T18:03:59Z",
       "side": 1,
       "message": "left over debug?",
+      "range": {
+        "startLine": 28,
+        "startChar": 4,
+        "endLine": 28,
+        "endChar": 13
+      },
+      "revId": "168e2eaf64d4c3c647fb1562269b9904b9d2aa65",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_37120ab5",
+        "filename": "tests/api/v1/test_components.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-17T11:05:04Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_1c4b6db1",
       "range": {
         "startLine": 28,
         "startChar": 4,
