@@ -2,7 +2,7 @@ alembic
 elasticsearch>=2.0.0,<3.0.0
 flask
 six>=1.9
-SQLAlchemy
+SQLAlchemy<1.1.0b1
 SQLAlchemy-Utils
 psycopg2
 requests
