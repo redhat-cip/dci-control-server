@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "facab960_a9f87ee6",
+        "filename": "dci/db/models.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-06-17T16:48:06Z",
+      "side": 1,
+      "message": "Won\u0027t we break the support of the old SQLAlchemy release by doing so?",
+      "revId": "9d65e5e898ab16d20a5226abed87df0637115de3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
