@@ -1,0 +1,378 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "facab960_9f0e8c33",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "quotes around CASCADE",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_ff1cf86c",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "same",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_5f2b2482",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "same",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_1f319cec",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "same",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_ff4a3854",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "same",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_7ff3880a",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "bad indent, see my previous comment on this",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_5f796492",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_7f6e28cb",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "same",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_1f5fdc0f",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": ". \n\n    import itertools\n\n    component_types \u003d [cmpt[\u0027type\u0027] for cmpt in all_components]\n \n    for cpmt, job in itertools.product(components, jobs):\n        query \u003d (_JOIN_JOBS_COMPONENTS\n                 .insert()\n                 .values(job_id\u003djob[\u0027id\u0027], component_id\u003dcmpt[\u0027id\u0027]))\n        db_conn.execute(query)",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_3f9bc0ca",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "sick indent, see old comments",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_5fa084f4",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": ".\n    \n    return flask.jsonify({\u0027jobs\u0027: rows,\n                          \u0027_meta\u0027: {\u0027count\u0027: len(rows)}})\n\nplus I am not sure that len(rows) is relevant here, I think you will have to use the query builder build_nb_row method",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_9f812c4d",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "components name is available, why complexify the name of the variable, moreover, no need to cast this as a list.\n\nsame remark for jobs_components_to_insert\n\nwan be wrote like this\n\n    jobs_components \u003d [{\u0027job_id\u0027: values[\u0027id\u0027], \u0027component_id\u0027: component.id},\n                       for component in flask.g.db_conn.execute(query)]",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_bf95108a",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": ".\n\n    return \u003d flask.jsonify({\u0027components\u0027: rows, \n                            \u0027_meta\u0027: {\u0027count\u0027: rows.rowcount})",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_6c1da473",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": ".\n    \n     team_id \u003d user[\u0027team_id\u0027] if not auth.is_admin(user) else None",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_0c06d820",
+        "filename": "dci/db/models.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 196,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "quotes around CASCADE",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_2c039c10",
+        "filename": "dci/db/models.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_df92d49e",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "create a separate variable for data",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_ff8f9873",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_1f8d1c7c",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_3fe9001b",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 379,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_5feec423",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 388,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": ".\n    url \u003d \u0027/api/v1/topics/%s/components/%s/jobs\u0027 % (topic_id, c[\u0027id\u0027])\n    job \u003d admin.get(url)\n    assert job[\u0027jobs\u0027][0][\u0027id\u0027] \u003d job_id",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_ac408c57",
+        "filename": "tests/conftest.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-06-20T14:47:59Z",
+      "side": 1,
+      "message": "please define data as a separate var",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
