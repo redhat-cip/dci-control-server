@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_c26757e9",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_9f0e8c33",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_ff1cf86c",
         "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
         "patchSetId": 13
@@ -30,6 +48,24 @@
       "writtenOn": "2016-06-20T14:47:59Z",
       "side": 1,
       "message": "same",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_e2645be7",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_ff1cf86c",
       "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_02621fd8",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_5f2b2482",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_1f319cec",
         "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
         "patchSetId": 13
@@ -64,6 +118,24 @@
       "writtenOn": "2016-06-20T14:47:59Z",
       "side": 1,
       "message": "same",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_225f2310",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_1f319cec",
       "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -87,6 +159,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_429b47c9",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_ff4a3854",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_7ff3880a",
         "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
         "patchSetId": 13
@@ -98,6 +188,24 @@
       "writtenOn": "2016-06-20T14:47:59Z",
       "side": 1,
       "message": "bad indent, see my previous comment on this",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_6263ebb1",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_7ff3880a",
       "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -121,6 +229,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_8258effb",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_5f796492",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_7f6e28cb",
         "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
         "patchSetId": 13
@@ -132,6 +258,24 @@
       "writtenOn": "2016-06-20T14:47:59Z",
       "side": 1,
       "message": "same",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_026cdf9b",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_7f6e28cb",
       "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -155,6 +299,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_0203ffb8",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_1f5fdc0f",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_3f9bc0ca",
         "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
         "patchSetId": 13
@@ -166,6 +328,24 @@
       "writtenOn": "2016-06-20T14:47:59Z",
       "side": 1,
       "message": "sick indent, see old comments",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_e26e1b96",
+        "filename": "dci/alembic/versions/e6c96dce3b95_add_join_table_join_jobs_components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_3f9bc0ca",
       "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -189,6 +369,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_220003aa",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "build_nb_row is a query which returns the number of rows. in this case i want the rows and the number of rows as well. i\u0027ll use rows.rowcount.",
+      "parentUuid": "facab960_5fa084f4",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_9f812c4d",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 13
@@ -200,6 +398,24 @@
       "writtenOn": "2016-06-20T14:47:59Z",
       "side": 1,
       "message": "components name is available, why complexify the name of the variable, moreover, no need to cast this as a list.\n\nsame remark for jobs_components_to_insert\n\nwan be wrote like this\n\n    jobs_components \u003d [{\u0027job_id\u0027: values[\u0027id\u0027], \u0027component_id\u0027: component.id},\n                       for component in flask.g.db_conn.execute(query)]",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_62312ba2",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "components is available but it does not complexify the name, it does the exact opposite because components is too generic in this case. The query is about retrieving the components which comes from a jobdefinition so components_from_jd is better than only components.\n\nsame from jobs_components_to_insert",
+      "parentUuid": "facab960_9f812c4d",
       "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -223,6 +439,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_82262f67",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "status_code must be set before returning",
+      "parentUuid": "facab960_bf95108a",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_6c1da473",
         "filename": "dci/api/v1/topics.py",
         "patchSetId": 13
@@ -234,6 +468,24 @@
       "writtenOn": "2016-06-20T14:47:59Z",
       "side": 1,
       "message": ".\n    \n     team_id \u003d user[\u0027team_id\u0027] if not auth.is_admin(user) else None",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_a22b332f",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 184,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_6c1da473",
       "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -257,6 +509,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_c21f5708",
+        "filename": "dci/db/models.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 196,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_0c06d820",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_2c039c10",
         "filename": "dci/db/models.py",
         "patchSetId": 13
@@ -268,6 +538,24 @@
       "writtenOn": "2016-06-20T14:47:59Z",
       "side": 1,
       "message": "same here",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_e21c5b16",
+        "filename": "dci/db/models.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 199,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_2c039c10",
       "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -291,6 +579,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_021a1f17",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_df92d49e",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_ff8f9873",
         "filename": "tests/api/v1/test_jobs.py",
         "patchSetId": 13
@@ -302,6 +608,24 @@
       "writtenOn": "2016-06-20T14:47:59Z",
       "side": 1,
       "message": "same here",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_221723ef",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_ff8f9873",
       "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -325,6 +649,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_42d34738",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_1f8d1c7c",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_3fe9001b",
         "filename": "tests/api/v1/test_jobs.py",
         "patchSetId": 13
@@ -336,6 +678,24 @@
       "writtenOn": "2016-06-20T14:47:59Z",
       "side": 1,
       "message": "same here",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_62d84b54",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 379,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_3fe9001b",
       "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -359,6 +719,24 @@
     },
     {
       "key": {
+        "uuid": "facab960_82dd4f45",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 388,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_5feec423",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "facab960_ac408c57",
         "filename": "tests/conftest.py",
         "patchSetId": 13
@@ -370,6 +748,24 @@
       "writtenOn": "2016-06-20T14:47:59Z",
       "side": 1,
       "message": "please define data as a separate var",
+      "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "facab960_a2e25301",
+        "filename": "tests/conftest.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-06-21T15:50:58Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "facab960_ac408c57",
       "revId": "a5b64c8fe51d964294f45ad3a9e3c3e6363746e5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
