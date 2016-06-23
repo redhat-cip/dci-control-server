@@ -62,6 +62,15 @@ _JOIN_JOBS_COMPONENTS = sa.Table(
               sa.ForeignKey('components.id', ondelete='CASCADE'),
               nullable=False, primary_key=True))
 
+_JOIN_JOBDEFINITIONS_COMPONENTS = sa.Table(
+    'jobdefinition_components', sa.metadata(),
+    sa.Column('component_id', sa.String(36),
+              sa.ForeignKey('components.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('jobdefinition_id', sa.String(36),
+              sa.ForeignKey('jobdefinitions.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True))
+
 
 def upgrade():
     op.create_table(
@@ -103,18 +112,32 @@ def upgrade():
         .fetchall()
     )
 
+    # Get all the jobs
+    all_jobs = db_conn.execute(sql.select([_JOBS])).fetchall()
+
     for jd in all_jobdefinitions:
-        all_components = db_conn.execute(sql.select([_COMPONENTS])).fetchall()
-        all_jobs = db_conn.execute(sql.select([_JOBS])).fetchall()
+        # Get all components which belongs to the current jobdefinition
+        JDC = _JOIN_JOBDEFINITIONS_COMPONENTS
+        query = (sql.select([_COMPONENTS])
+                 .select_from(JDC.join(_COMPONENTS))
+                 .where(JDC.c.jobdefinition_id == jd['id']))
+        components_from_jd = db_conn.execute(query).fetchall()
 
-        component_types = [cmpt['type'] for cmpt in all_components]
+        for cmpt, job in itertools.product(components_from_jd, all_jobs):
+            if job['jobdefinition_id'] == jd['id']:
+                try:
+                    query = (_JOIN_JOBS_COMPONENTS
+                             .insert()
+                             .values(job_id=job['id'],
+                                     component_id=cmpt['id']))
+                    db_conn.execute(query)
+                except sa.exc.IntegrityError:
+                    # In this case if we have an integrity error, it means the
+                    # row (job_id, component_id) already exists then we can
+                    # safely ignore this exception.
+                    pass
 
-        for cmpt, job in itertools.product(all_components, all_jobs):
-            query = (_JOIN_JOBS_COMPONENTS
-                     .insert()
-                     .values(job_id=job['id'], component_id=cmpt['id']))
-            db_conn.execute(query)
-
+        component_types = [cmpt['type'] for cmpt in components_from_jd]
         # update the component type list of the current jobdefinition
         (_JOBDEFINITIONS
             .update()
