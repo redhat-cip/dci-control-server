@@ -468,8 +468,8 @@ def job_recheck(user, j_id):
         'configuration': None,
     })
     query = _TABLE.insert().values(**values)
-    with flask.g.db_conn.begin():
-        flask.g.db_conn.execute(query)
+    with flask.g.db_conn.begin() as transaction:
+        transaction.execute(query)
         # feed jobs_component table
         JDC = models.JOIN_JOBS_COMPONENTS
         query = (sql.select([models.COMPONENTS.c.id])
@@ -479,8 +479,8 @@ def job_recheck(user, j_id):
         jobs_components_to_insert = [{'job_id': values['id'],
                                       'component_id': cfjd[0]}
                                      for cfjd in components_from_old_job]
-        flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
-                                jobs_components_to_insert)
+        transaction.execute(models.JOIN_JOBS_COMPONENTS.insert(),
+                            jobs_components_to_insert)
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
