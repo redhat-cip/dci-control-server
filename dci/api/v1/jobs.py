@@ -470,6 +470,7 @@ def job_recheck(user, j_id):
     query = _TABLE.insert().values(**values)
     with flask.g.db_conn.begin():
         flask.g.db_conn.execute(query)
+    with flask.g.db_conn.begin():
         # feed jobs_component table
         JDC = models.JOIN_JOBS_COMPONENTS
         query = (sql.select([models.COMPONENTS.c.id])
