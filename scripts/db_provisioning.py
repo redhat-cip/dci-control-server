@@ -251,131 +251,230 @@ def init_db(db_conn):
            test_id=test_dell)
 
     # Creates 4 jobs for each jobdefinition (4*6=24 in total for pagination)
-    db_ins(
+    job_id = db_ins(
         models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
         remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][1],
         updated_at=time[0][1]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_common_1
+    )
+    job_id = db_ins(
         models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
         remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][2],
         updated_at=time[0][2]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_common_1
+    )
+    job_id = db_ins(
         models.JOBS, status='pre-run', jobdefinition_id=jobdef_common_1,
         remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][2],
         updated_at=time[0][1]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_common_1
+    )
+    job_id = db_ins(
         models.JOBS, status='pre-run', jobdefinition_id=jobdef_common_2,
         remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][3],
         updated_at=time[0][1]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_common_2
+    )
+    job_id = db_ins(
         models.JOBS, status='running', jobdefinition_id=jobdef_common_2,
         remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][10],
         updated_at=time[0][3]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_common_2
+    )
+    job_id = db_ins(
         models.JOBS, status='running', jobdefinition_id=jobdef_common_2,
         remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][14],
         updated_at=time[0][7]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_common_2
+    )
+    job_id = db_ins(
         models.JOBS, status='post-run', jobdefinition_id=jobdef_hp_1,
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[1][0],
         updated_at=time[0][10]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_hp_1
+    )
+    job_id = db_ins(
         models.JOBS, status='post-run', jobdefinition_id=jobdef_hp_1,
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[0][20],
         updated_at=time[0][2]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_hp_1
+    )
+    job_id = db_ins(
         models.JOBS, status='failure', jobdefinition_id=jobdef_hp_1,
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[2][10],
         updated_at=time[1][3]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_hp_1
+    )
+    job_id = db_ins(
         models.JOBS, status='failure', jobdefinition_id=jobdef_hp_2,
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[1][1],
         updated_at=time[0][0]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_hp_2
+    )
+    job_id = db_ins(
         models.JOBS, status='success', jobdefinition_id=jobdef_hp_2,
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[3][12],
         updated_at=time[2][20]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_hp_2
+    )
+    job_id = db_ins(
         models.JOBS, status='success', jobdefinition_id=jobdef_hp_2,
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[3][20],
         updated_at=time[0][6]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_hp_2
+    )
+    job_id = db_ins(
         models.JOBS, status='killed', jobdefinition_id=jobdef_hp_2,
         remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[1][8],
         updated_at=time[0][1]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_hp_2
+    )
+    job_id = db_ins(
         models.JOBS, status='killed', jobdefinition_id=jobdef_hp_2,
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[2][12],
         updated_at=time[1][6]
     )
-
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_hp_2
+    )
+    job_id = db_ins(
         models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][1],
         updated_at=time[0][1]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_common_1
+    )
+    job_id = db_ins(
         models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][2],
         updated_at=time[0][2]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_common_1
+    )
+    job_id = db_ins(
         models.JOBS, status='pre-run', jobdefinition_id=jobdef_common_1,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][2],
         updated_at=time[0][1]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_common_1
+    )
+    job_id = db_ins(
         models.JOBS, status='pre-run', jobdefinition_id=jobdef_common_2,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][3],
         updated_at=time[0][1]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_common_2
+    )
+    job_id = db_ins(
         models.JOBS, status='running', jobdefinition_id=jobdef_common_2,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][10],
         updated_at=time[0][3]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_common_2
+    )
+    job_id = db_ins(
         models.JOBS, status='running', jobdefinition_id=jobdef_common_2,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][14],
         updated_at=time[0][7]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_common_2
+    )
+    job_id = db_ins(
         models.JOBS, status='post-run', jobdefinition_id=jobdef_dell_1,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[1][0],
         updated_at=time[0][10]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_dell_1
+    )
+    job_id = db_ins(
         models.JOBS, status='post-run', jobdefinition_id=jobdef_dell_1,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[0][20],
         updated_at=time[0][2]
+    )
+    db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_dell_1
     )
     job_dell_9 = db_ins(
         models.JOBS, status='failure', jobdefinition_id=jobdef_dell_1,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[2][10],
         updated_at=time[1][3]
     )
+    db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_dell_9,
+        component_id=component_dell_1
+    )
     job_dell_10 = db_ins(
         models.JOBS, status='failure', jobdefinition_id=jobdef_dell_2,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[1][1],
         updated_at=time[0][0]
     )
+    db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_dell_10,
+        component_id=component_dell_2
+    )
     job_dell_11 = db_ins(
         models.JOBS, status='success', jobdefinition_id=jobdef_dell_2,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[3][12],
         updated_at=time[2][20]
+    )
+    db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_dell_11,
+        component_id=component_dell_2
     )
     job_dell_12 = db_ins(
         models.JOBS, status='success', jobdefinition_id=jobdef_dell_2,
@@ -383,14 +482,26 @@ def init_db(db_conn):
         updated_at=time[0][0], configuration=STACKDETAILS
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_dell_12,
+        component_id=component_dell_2
+    )
+    job_id = db_ins(
         models.JOBS, status='killed', jobdefinition_id=jobdef_dell_2,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[1][4],
         updated_at=time[0][3]
     )
     db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_dell_2
+    )
+    job_id = db_ins(
         models.JOBS, status='killed', jobdefinition_id=jobdef_dell_2,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[2][8],
         updated_at=time[1][2]
+    )
+    db_ins(
+        models.JOIN_JOBS_COMPONENTS, job_id=job_id,
+        component_id=component_dell_2
     )
 
     # Creates jobstates attached to jobs, just create a subset of them to
