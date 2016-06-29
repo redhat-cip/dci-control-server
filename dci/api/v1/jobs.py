@@ -471,16 +471,16 @@ def job_recheck(user, j_id):
     with flask.g.db_conn.begin():
         flask.g.db_conn.execute(query)
         # feed jobs_component table
-        JDC = models.JOIN_JOBS_COMPONENTS
+        JJC = models.JOIN_JOBS_COMPONENTS
         query = (sql.select([models.COMPONENTS.c.id])
-                 .select_from(JDC.join(models.COMPONENTS))
-                 .where(JDC.c.job_id == j_id))
+                 .select_from(JJC.join(models.COMPONENTS))
+                 .where(JJC.c.job_id == j_id))
         components_from_old_job = list(flask.g.db_conn.execute(query))
-        jobs_components_to_insert = [{'job_id': values['id'],
-                                      'component_id': cfjd[0]}
-                                     for cfjd in components_from_old_job]
-        flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
-                                jobs_components_to_insert)
+        if components_from_old_job:
+            jobs_components_to_insert = [{'job_id': values['id'],
+                                          'component_id': cfjd[0]}
+                                         for cfjd in components_from_old_job]
+            flask.g.db_conn.execute(JJC.insert(), jobs_components_to_insert)
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': etag},
