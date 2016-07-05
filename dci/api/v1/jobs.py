@@ -169,7 +169,7 @@ def _build_new(topic_id, remoteci, values):
 
     query = (sql.select([models.JOBDEFINITIONS.c.id])
              .where(where_clause)
-             .order_by(sql.asc(models.JOBDEFINITIONS.c.priority))
+             .order_by(sql.desc(models.JOBDEFINITIONS.c.priority))
              .limit(1))
     # Order by jobdefinition.priority and get the first one
 
@@ -205,7 +205,7 @@ def _build_new_template(topic_id, remoteci, values):
     # Get a jobdefinition
     q_jd = sql.select([models.JOBDEFINITIONS]).where(
         models.JOBDEFINITIONS.c.topic_id == topic_id).order_by(
-        sql.asc(models.JOBDEFINITIONS.c.created_at))
+        sql.desc(models.JOBDEFINITIONS.c.created_at))
     jd_to_run = flask.g.db_conn.execute(q_jd).fetchone()
 
     if jd_to_run is None:
@@ -227,7 +227,7 @@ def _build_new_template(topic_id, remoteci, values):
                                 models.COMPONENTS.c.topic_id == topic_id)
         query = (sql.select([models.COMPONENTS.c.id])
                  .where(where_clause)
-                 .order_by(sql.asc(models.COMPONENTS.c.created_at)))
+                 .order_by(sql.desc(models.COMPONENTS.c.created_at)))
         cmpt_id = flask.g.db_conn.execute(query).fetchone()[0]
 
         if cmpt_id is None:
