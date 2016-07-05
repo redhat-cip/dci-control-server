@@ -171,6 +171,25 @@ def test_schedule_kill_old_jobs(admin, jobdefinition_factory, remoteci_id,
     assert jobs['jobs'][3]['status'] == 'new'
 
 
+def test_schedule_give_latest_components(admin, jobdefinition_factory,
+                                         remoteci_id, topic_id):
+    """The scheduled job should come with the last components."""
+    def components_from_job():
+        jobdefinition_factory('1st')
+        r = admin.post('/api/v1/jobs/schedule',
+                       data={'remoteci_id': remoteci_id,
+                             'topic_id': topic_id})
+        job_id = r.data['job']['id']
+        component_url = '/api/v1/jobs/{job_id}/components'
+        r = admin.get(component_url.format(job_id=job_id))
+        return r.data['components']
+
+    c1 = components_from_job()
+    c2 = components_from_job()
+    assert c1[0]['type'] == c2[0]['type']
+    assert c1[0]['id'] != c2[0]['id']
+
+
 def test_get_all_jobs(admin, jobdefinition_id, team_id, remoteci_id,
                       components_ids):
     job_1 = admin.post('/api/v1/jobs',
