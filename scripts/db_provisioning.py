@@ -74,7 +74,7 @@ def db_insert(db_conn, model_item, **kwargs):
     return db_conn.execute(query).inserted_primary_key[0]
 
 
-def init_db(db_conn):
+def init_db(db_conn, minimal):
     """Initialize the database with fake datas
 
     Create an admin team and 2 other teams HP and DELL
@@ -84,15 +84,19 @@ def init_db(db_conn):
     db_ins = functools.partial(db_insert, db_conn)
     time = time_helper()
 
-    # Create an admin team and 2 other teams
+    # Create a super admin
     team_admin = db_ins(models.TEAMS, name='admin')
-    team_hp = db_ins(models.TEAMS, name='hp')
-    team_dell = db_ins(models.TEAMS, name='dell')
-
-    # Creates according users, 1 for admin and 1 admin 1 user for other teams
     db_ins(models.USERS, name='admin', role='admin', team_id=team_admin,
            password=auth.hash_password('admin'))
 
+    if minimal:
+        return
+
+    # Create two other teams
+    team_hp = db_ins(models.TEAMS, name='hp')
+    team_dell = db_ins(models.TEAMS, name='dell')
+
+    # Creates according users, 1 admin 1 user for other teams
     db_ins(models.USERS, name='user_hp', role='user', team_id=team_hp,
            password=auth.hash_password('password'))
 
@@ -556,15 +560,20 @@ def init_db(db_conn):
 
 if __name__ == '__main__':
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
+    minimal, force = False, False
 
-    try:
-        opts, args = getopt.getopt(sys.argv[1:], "y")
-    except getopt.GetoptError:
+    opts, _ = getopt.getopt(sys.argv[1:], 'ym')
+    for opt in opts:
+        if opt == ('-y', ''):
+            force = True
+        if opt == ('-m', ''):
+            minimal = True
+
+    if not force:
         print('you can force the deletion by adding -y as a parameter')
 
     if sqlalchemy_utils.functions.database_exists(db_uri):
-        flag = opts and '-y' in opts[0]
-        while not flag:
+        while not force:
             print('Be carefull this script will override your database:')
             print(db_uri)
             print('')
@@ -581,4 +590,4 @@ if __name__ == '__main__':
     engine = sqlalchemy.create_engine(db_uri)
     models.metadata.create_all(engine)
     with engine.begin() as conn:
-        init_db(conn)
+        init_db(conn, minimal)
