@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9ad9bd40_084b2bb1",
+        "filename": "scripts/db_provisioning.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2016-07-06T14:09:20Z",
+      "side": 1,
+      "message": "minimal\u003dFalse shoud do the job for test",
+      "revId": "e37e484f92ee44582c14e1c7a9f1c73ccf993809",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
