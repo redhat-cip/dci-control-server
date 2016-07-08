@@ -209,28 +209,6 @@ def init_db(db_conn):
                            name='Dell khaleesi-tempest v1.2.15',
                            component_types=['git', 'package'])
 
-    # Attach jobdefinitions to components
-    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
-           component_id=component_common_1, jobdefinition_id=jobdef_common_1)
-    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
-           component_id=component_common_1, jobdefinition_id=jobdef_common_2)
-    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
-           component_id=component_common_2, jobdefinition_id=jobdef_common_2)
-
-    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
-           component_id=component_hp_1, jobdefinition_id=jobdef_hp_1)
-    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
-           component_id=component_hp_1, jobdefinition_id=jobdef_hp_2)
-    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
-           component_id=component_hp_2, jobdefinition_id=jobdef_hp_2)
-
-    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
-           component_id=component_dell_1, jobdefinition_id=jobdef_dell_1)
-    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
-           component_id=component_dell_1, jobdefinition_id=jobdef_dell_2)
-    db_ins(models.JOIN_JOBDEFINITIONS_COMPONENTS,
-           component_id=component_dell_2, jobdefinition_id=jobdef_dell_2)
-
     # Creates 3 tests type
     test_common = db_ins(models.TESTS, name='tox', topic_id=topic_common)
     test_hp = db_ins(models.TESTS, name='tempest', topic_id=topic_hp)

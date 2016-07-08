@@ -111,16 +111,6 @@ JOBDEFINITIONS = sa.Table(
     sa.Column('component_types', pg.JSON, default=[]),
 )
 
-JOIN_JOBDEFINITIONS_COMPONENTS = sa.Table(
-    'jobdefinition_components', metadata,
-    sa.Column('component_id', sa.String(36),
-              sa.ForeignKey('components.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True),
-    sa.Column('jobdefinition_id', sa.String(36),
-              sa.ForeignKey('jobdefinitions.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True)
-)
-
 JOIN_JOBDEFINITIONS_TESTS = sa.Table(
     'jobdefinition_tests', metadata,
     sa.Column('jobdefinition_id', sa.String(36),

@@ -169,60 +169,6 @@ def delete_jobdefinition_by_id_or_name(user, jd_id):
 # Controllers for jobdefinition and components management
 
 
-@api.route('/jobdefinitions/<jd_id>/components', methods=['POST'])
-@auth.requires_auth
-def add_component_to_jobdefinitions(user, jd_id):
-    data_json = flask.request.json
-    values = {'jobdefinition_id': jd_id,
-              'component_id': data_json.get('component_id', None)}
-
-    v1_utils.verify_existence_and_get(jd_id, _TABLE)
-
-    query = models.JOIN_JOBDEFINITIONS_COMPONENTS.insert().values(**values)
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name,
-                                          'jobdefinition_id, component_id')
-    result = json.dumps(values)
-    return flask.Response(result, 201, content_type='application/json')
-
-
-@api.route('/jobdefinitions/<jd_id>/components', methods=['GET'])
-@auth.requires_auth
-def get_all_components_from_jobdefinitions(user, jd_id):
-    v1_utils.verify_existence_and_get(jd_id, _TABLE)
-
-    # Get all components which belongs to a given jobdefinition
-    JDC = models.JOIN_JOBDEFINITIONS_COMPONENTS
-    query = (sql.select([models.COMPONENTS])
-             .select_from(JDC.join(models.COMPONENTS))
-             .where(JDC.c.jobdefinition_id == jd_id))
-    rows = flask.g.db_conn.execute(query)
-
-    res = flask.jsonify({'components': rows,
-                         '_meta': {'count': rows.rowcount}})
-    res.status_code = 201
-    return res
-
-
-@api.route('/jobdefinitions/<jd_id>/components/<c_id>', methods=['DELETE'])
-@auth.requires_auth
-def delete_component_from_jobdefinition(user, jd_id, c_id):
-    v1_utils.verify_existence_and_get(jd_id, _TABLE)
-
-    JDC = models.JOIN_JOBDEFINITIONS_COMPONENTS
-    where_clause = sql.and_(JDC.c.jobdefinition_id == jd_id,
-                            JDC.c.component_id == c_id)
-    query = JDC.delete().where(where_clause)
-    result = flask.g.db_conn.execute(query)
-
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('Component', c_id)
-
-    return flask.Response(None, 204, content_type='application/json')
-
-
 @api.route('/jobdefinitions/<jd_id>/tests', methods=['POST'])
 @auth.requires_auth
 def add_test_to_jobdefinitions(user, jd_id):
