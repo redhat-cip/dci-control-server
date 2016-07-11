@@ -23,6 +23,7 @@ from sqlalchemy import sql
 
 
 from dci.api.v1 import api
+from dci.api.v1 import transformations as tsfm
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci.common import exceptions as dci_exc
@@ -32,7 +33,10 @@ from dci.db import models
 
 from dci.api.v1 import files
 from dci.api.v1 import jobstates
+from dci import dci_config
 
+
+_FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
 _TABLE = models.JOBS
 # associate column names with the corresponding SA Column object
 _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
@@ -503,6 +507,39 @@ def get_all_files_from_jobs(user, j_id):
     """Get all files.
     """
     return files.get_all_files(j_id)
+
+
+@api.route('/jobs/<j_id>/results', methods=['GET'])
+@auth.requires_auth
+def get_all_results_from_jobs(user, j_id):
+    """Get all results from job.
+    """
+
+    job_files = json.loads(files.get_all_files(j_id).response[0])['files']
+    r_files = [file for file in job_files
+               if file['mime'] == 'application/junit']
+
+    results = []
+    for file in r_files:
+        file_path = v1_utils.build_file_path(_FILES_FOLDER, file['team_id'],
+                                             file['id'], create=False)
+        data = ''.join([s for s in utils.read(file_path, mode='r')])
+        data = json.loads(tsfm.junit2json(data))
+
+        success = (int(data['total']) - int(data['failures']) -
+                   int(data['errors']) - int(data['skips']))
+        results.append({'filename': file['name'],
+                        'name': data['name'],
+                        'total': data['total'],
+                        'failures': data['failures'],
+                        'errors': data['errors'],
+                        'skips': data['skips'],
+                        'time': data['time'],
+                        'success': success})
+
+    return flask.Response(json.dumps({'results': results, '_meta':
+                                     {'count': len(results)}}), 200,
+                          content_type='application/json')
 
 
 @api.route('/jobs/<j_id>', methods=['DELETE'])
