@@ -362,6 +362,9 @@ def test_get_all_jobs_with_sort(admin, jobdefinition_id, team_id, remoteci_id,
     del job_1['configuration']
     del job_2['configuration']
     del job_3['configuration']
+    del job_1['user_agent']
+    del job_2['user_agent']
+    del job_3['user_agent']
 
     jobs = admin.get('/api/v1/jobs?sort=created_at').data
     assert jobs['jobs'] == [job_1, job_2, job_3]
@@ -574,6 +577,17 @@ def test_get_file_by_job_id(user, job_id):
     file_from_job = user.get(url)
     assert file_from_job.status_code == 200
     assert file_from_job.data['_meta']['count'] == 1
+
+
+@pytest.mark.usefixtures('file_job_junit_user_id')
+def test_get_results_by_job_id(user, job_id):
+    url = '/api/v1/jobs/%s/results' % job_id
+
+    # get file from job
+    file_from_job = user.get(url)
+    assert file_from_job.status_code == 200
+    assert file_from_job.data['_meta']['count'] == 1
+    assert file_from_job.data['results'][0]['total'] == '3'
 
 
 def test_job_search(user, jobdefinition_id, team_user_id, remoteci_id,
