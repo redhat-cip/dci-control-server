@@ -275,6 +275,22 @@ def file_job_user_id(user, job_id, team_user_id):
 
 
 @pytest.fixture
+def file_job_junit_user_id(user, job_id, team_user_id):
+    JUNIT = """<testsuite errors="0" failures="0" name="pytest" skips="1"
+               tests="3" time="46.050"></testsuite>"""
+    headers = {'DCI-JOB-ID': job_id,
+               'Content-Type': 'application/junit',
+               'DCI-MIME': 'application/junit',
+               'DCI-NAME': 'res_junit.xml'}
+    file = user.post('/api/v1/files', headers=headers, data=JUNIT).data
+    headers['team_id'] = team_user_id
+    headers['id'] = file['file']['id']
+    conn = es_engine.DCIESEngine(utils.conf)
+    conn.index(headers)
+    return file['file']['id']
+
+
+@pytest.fixture
 def es_clean(request):
     conn = es_engine.DCIESEngine(utils.conf)
     conn.cleanup()
