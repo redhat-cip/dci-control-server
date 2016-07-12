@@ -226,58 +226,6 @@ def test_delete_jobdefinition_not_found(admin):
     assert result.status_code == 404
 
 
-# Tests for jobdefinition and components management
-def test_add_component_to_jobdefinitions_and_get(admin, topic_id):
-    # create a jobdefinition
-    data = {'name': 'pname', 'topic_id': topic_id}
-    pjd = admin.post('/api/v1/jobdefinitions', data=data).data
-    pjd_id = pjd['jobdefinition']['id']
-
-    # create a component
-    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
-    pc = admin.post('/api/v1/components', data=data).data
-    pc_id = pc['component']['id']
-
-    url = '/api/v1/jobdefinitions/%s/components' % pjd_id
-    # add component to jobdefinition
-    add_data = admin.post(url, data={'component_id': pc_id}).data
-    assert add_data['jobdefinition_id'] == pjd_id
-    assert add_data['component_id'] == pc_id
-
-    # get component from jobdefinition
-    component_from_jobdefinition = admin.get(url).data
-    assert component_from_jobdefinition['_meta']['count'] == 1
-    assert component_from_jobdefinition['components'][0] == pc['component']
-
-
-def test_delete_component_from_jobdefinition(admin, topic_id):
-    # create a jobdefinition
-    data = {'name': 'pname', 'topic_id': topic_id}
-    pjd = admin.post('/api/v1/jobdefinitions', data=data).data
-    pjd_id = pjd['jobdefinition']['id']
-
-    # create a component
-    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
-    pc = admin.post('/api/v1/components', data=data).data
-    pc_id = pc['component']['id']
-
-    # add component to jobdefinition
-    url = '/api/v1/jobdefinitions/%s/components' % pjd_id
-    admin.post(url, data={'component_id': pc_id})
-    component_from_jobdefinition = admin.get(
-        '/api/v1/jobdefinitions/%s/components' % pjd_id).data
-    assert component_from_jobdefinition['_meta']['count'] == 1
-
-    # delete component from jobdefinition
-    admin.delete('/api/v1/jobdefinitions/%s/components/%s' % (pjd_id, pc_id))
-    component_from_jobdefinition = admin.get(url).data
-    assert component_from_jobdefinition['_meta']['count'] == 0
-
-    # verify component still exist on /components
-    c = admin.get('/api/v1/components/%s' % pc_id)
-    assert c.status_code == 200
-
-
 # Tests for jobdefinition and tests management
 def test_add_test_to_jobdefinitions_and_get(admin, test_id, topic_id):
     # create a jobdefinition

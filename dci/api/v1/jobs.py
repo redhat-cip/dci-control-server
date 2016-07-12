@@ -39,10 +39,6 @@ _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _VALID_EMBED = {
     'file': v1_utils.embed(models.FILES),
     'jobdefinition': v1_utils.embed(models.JOBDEFINITIONS),
-    # TODO(spredzy) : Remove this when the join and multiple
-    # entities is supported
-    'jobdefinition.jobdefinition_component':
-        v1_utils.embed(models.JOIN_JOBDEFINITIONS_COMPONENTS),
     'jobdefinition.test': v1_utils.embed(models.TESTS),
     'team': v1_utils.embed(models.TEAMS),
     'remoteci': v1_utils.embed(models.REMOTECIS)
@@ -149,56 +145,6 @@ def _build_recheck(recheck_job, values):
         .values(recheck_job)
     )
     return recheck_job
-
-
-def _build_new(topic_id, remoteci, values):
-    JDC = models.JOIN_JOBDEFINITIONS_COMPONENTS
-    JJC = models.JOIN_JOBS_COMPONENTS
-
-    # Subquery, get all the jobdefinitions which have been run by this remoteci
-    sub_query = (sql
-                 .select([_TABLE.c.jobdefinition_id])
-                 .where(_TABLE.c.remoteci_id == remoteci['id']))
-
-    # Get one jobdefinition which has not been run by this remoteci
-    where_clause = sql.expression.and_(
-        sql.expression.not_(models.JOBDEFINITIONS.c.id.in_(sub_query)),
-        models.JOBDEFINITIONS.c.topic_id == topic_id,  # noqa,
-        models.JOBDEFINITIONS.c.active == True,  # noqa
-    )
-
-    query = (sql.select([models.JOBDEFINITIONS.c.id])
-             .where(where_clause)
-             .order_by(sql.desc(models.JOBDEFINITIONS.c.priority))
-             .limit(1))
-    # Order by jobdefinition.priority and get the first one
-
-    jobdefinition_to_run = flask.g.db_conn.execute(query).fetchone()
-
-    if jobdefinition_to_run is None:
-        raise dci_exc.DCIException('No jobs available for run.',
-                                   status_code=412)
-
-    values.update({
-        'jobdefinition_id': jobdefinition_to_run[0],
-        'team_id': remoteci['team_id']
-    })
-    insert_query = _TABLE.insert().values(**values)
-    with flask.g.db_conn.begin():
-        flask.g.db_conn.execute(insert_query)
-
-        # for smooth migration to the new scheduler, feed jobs_component table
-        query = (sql.select([models.COMPONENTS.c.id])
-                 .select_from(JDC.join(models.COMPONENTS))
-                 .where(JDC.c.jobdefinition_id == jobdefinition_to_run[0]))
-
-        components_from_jd = list(flask.g.db_conn.execute(query))
-
-        jjcs = [{'job_id': values['id'], 'component_id': cfjd[0]}
-                for cfjd in components_from_jd]
-        flask.g.db_conn.execute(JJC.insert(), jjcs)
-
-    return values
 
 
 def _build_new_template(topic_id, remoteci, values):

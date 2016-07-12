@@ -183,13 +183,7 @@ def jobdefinition_factory(admin, topic_id):
         data = {'name': name, 'topic_id': topic_id,
                 'component_types': component_types}
         jd = admin.post('/api/v1/jobdefinitions', data=data).data
-        # TODO(yassine): remove the following statements when we switch
-        # to the new scheduler
-        cmpt_ids = create_components(admin, topic_id, component_types)
-        jd_id = jd['jobdefinition']['id']
-        for cmpt_id in cmpt_ids:
-            admin.post('/api/v1/jobdefinitions/%s/components' % jd_id,
-                       data={'component_id': cmpt_id})
+        create_components(admin, topic_id, component_types)
         return jd
     return create
 
