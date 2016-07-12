@@ -47,7 +47,11 @@ def test_create_jobs_empty_comment(admin, jobdefinition_id, team_id,
 
 def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id,
                        topic_id):
-    job = admin.post('/api/v1/jobs/schedule',
+    headers = {
+        'User-Agent': 'thisismyuseragent',
+        'DCIClient-Version': 'python-dciclient_0.1.0'
+    }
+    job = admin.post('/api/v1/jobs/schedule', headers=headers,
                      data={'remoteci_id': remoteci_id,
                            'topic_id': topic_id})
     assert job.status_code == 201
@@ -55,6 +59,8 @@ def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id,
     assert job['jobdefinition_id'] == jobdefinition_id
     assert job['team_id'] == team_id
     assert job['remoteci_id'] == remoteci_id
+    assert job['user_agent'] == headers['User-Agent']
+    assert job['dciclient_version'] == headers['DCIClient-Version']
 
 
 def test_schedule_job_recheck(admin, job_id, remoteci_id, topic_id):
@@ -359,9 +365,10 @@ def test_get_all_jobs_with_sort(admin, jobdefinition_id, team_id, remoteci_id,
     job_2 = admin.post('/api/v1/jobs', data=data).data['job']
     job_3 = admin.post('/api/v1/jobs', data=data).data['job']
 
-    del job_1['configuration']
-    del job_2['configuration']
-    del job_3['configuration']
+    for field in ['configuration', 'user_agent', 'dciclient_version']:
+        del job_1[field]
+        del job_2[field]
+        del job_3[field]
 
     jobs = admin.get('/api/v1/jobs?sort=created_at').data
     assert jobs['jobs'] == [job_1, job_2, job_3]
