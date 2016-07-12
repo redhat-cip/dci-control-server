@@ -16,6 +16,24 @@
       "revId": "8cd892c40e92e33343cfb68f86a77051ab7f3053",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ad9bd40_39e91f1b",
+        "filename": "dci/db/models.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 191,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-07-12T13:45:25Z",
+      "side": 1,
+      "message": "As said on IRC, comment is pointless, NULL is already the default.",
+      "parentUuid": "9ad9bd40_f9b8972c",
+      "revId": "8cd892c40e92e33343cfb68f86a77051ab7f3053",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
