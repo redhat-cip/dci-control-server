@@ -67,7 +67,11 @@ def create_jobs(user):
         'etag': etag,
         'recheck': values.get('recheck', False),
         'status': 'new',
-        'configuration': {}
+        'configuration': {},
+        'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
+        'dciclient_version': flask.request.environ.get(
+            'HTTP_DCICLIENT_VERSION'
+        ),
     })
 
     # create the job and feed the jobs_components table
@@ -311,6 +315,12 @@ def schedule_jobs(user):
     """
     values = schemas.job_schedule.post(flask.request.json)
 
+    values.update({
+        'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
+        'dciclient_version': flask.request.environ.get(
+            'HTTP_DCICLIENT_VERSION'
+        ),
+    })
     topic_id, remoteci = _validate_input(values, user)
 
     # test if there is some job to recheck
