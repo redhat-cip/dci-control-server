@@ -47,7 +47,10 @@ def test_create_jobs_empty_comment(admin, jobdefinition_id, team_id,
 
 def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id,
                        topic_id):
-    job = admin.post('/api/v1/jobs/schedule',
+    headers = {
+        'User-Agent': 'thisismyuseragent'
+    }
+    job = admin.post('/api/v1/jobs/schedule', headers=headers,
                      data={'remoteci_id': remoteci_id,
                            'topic_id': topic_id})
     assert job.status_code == 201
@@ -55,6 +58,7 @@ def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id,
     assert job['jobdefinition_id'] == jobdefinition_id
     assert job['team_id'] == team_id
     assert job['remoteci_id'] == remoteci_id
+    assert job['user_agent'] == headers['User-Agent']
 
 
 def test_schedule_job_recheck(admin, job_id, remoteci_id, topic_id):
