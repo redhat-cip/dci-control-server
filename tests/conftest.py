@@ -178,7 +178,9 @@ def create_components(user, topic_id, component_types):
 
 @pytest.fixture
 def jobdefinition_factory(admin, topic_id):
-    def create(name='pname', topic_id=topic_id):
+    def create(name=None, topic_id=topic_id):
+        if name is None:
+            name = str(uuid.uuid4())
         component_types = ['type_1', 'type_2', 'type_3']
         data = {'name': name, 'topic_id': topic_id,
                 'component_types': component_types}

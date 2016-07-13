@@ -109,6 +109,8 @@ JOBDEFINITIONS = sa.Table(
     sa.Column('active', sa.BOOLEAN, default=True),
     sa.Column('comment', sa.Text),
     sa.Column('component_types', pg.JSON, default=[]),
+    sa.UniqueConstraint('name', 'topic_id',
+                        name='jobdefinitions_name_topic_id_key')
 )
 
 JOIN_JOBDEFINITIONS_TESTS = sa.Table(
