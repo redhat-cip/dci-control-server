@@ -34,6 +34,9 @@ _VALID_EMBED = {'files': v1_utils.embed(models.FILES, many=True),
                 'job': v1_utils.embed(models.JOBS),
                 'team': v1_utils.embed(models.TEAMS)}
 
+# explictely allow to sort by files creation date
+_JS_COLUMNS['files.created_at'] = models.FILES.c.created_at
+
 
 def insert_jobstate(user, values):
     values.update({

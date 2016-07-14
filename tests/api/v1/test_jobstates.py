@@ -176,6 +176,9 @@ def test_get_all_jobstates_with_sort(admin, job_id):
     jds = admin.get('/api/v1/jobstates?sort=comment,-created_at').data
     assert jds['jobstates'] == [jd_1_2, jd_1_1, jd_2_2, jd_2_1]
 
+    jds = admin.get('/api/v1/jobstates?sort=comment,-files.created_at').data
+    assert jds['jobstates'] == [jd_1_2, jd_1_1, jd_2_2, jd_2_1]
+
 
 def test_get_jobstate_by_id(admin, job_id):
     js = admin.post('/api/v1/jobstates',
