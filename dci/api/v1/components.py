@@ -84,6 +84,7 @@ def get_jobs(user, component_id, team_id=None):
 
     JJC = models.JOIN_JOBS_COMPONENTS
     q_bd.join = [JJC]
+    q_bd.ignore_columns(['configuration'])
     q_bd.where.append(JJC.c.component_id == component_id)
     if team_id:
         q_bd.where.append(models.JOBS.c.team_id == team_id)
