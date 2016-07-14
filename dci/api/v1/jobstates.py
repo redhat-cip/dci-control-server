@@ -29,10 +29,10 @@ from dci.db import models
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.JOBSTATES
-_JS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _VALID_EMBED = {'files': v1_utils.embed(models.FILES, many=True),
                 'job': v1_utils.embed(models.JOBS),
                 'team': v1_utils.embed(models.TEAMS)}
+_JS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE, _VALID_EMBED)
 
 
 def insert_jobstate(user, values):

@@ -130,11 +130,17 @@ def group_embedded_resources(items_to_embed, row):
     return utils.dict_merge(res, row)
 
 
-def get_columns_name_with_objects(table):
-    return {
+def get_columns_name_with_objects(table, embed={}):
+    columns = {
         column.name: getattr(table.c, column.name)
         for column in table.columns
     }
+    for e, v in embed.items():
+        new_columns = {
+            '.'.join([e, column.name]): getattr(v.model.c, column.name)
+            for column in v.model.columns}
+        columns.update(new_columns)
+    return columns
 
 
 def sort_query(sort, valid_columns):

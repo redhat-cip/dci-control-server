@@ -177,6 +177,31 @@ def test_get_all_jobstates_with_sort(admin, job_id):
     assert jds['jobstates'] == [jd_1_2, jd_1_1, jd_2_2, jd_2_1]
 
 
+def test_get_all_jobstates_with_sub_sort(admin, job_id):
+    # create 4 jobstates ordered by created time
+    jd_1_1 = admin.post('/api/v1/jobstates',
+                        data={'job_id': job_id,
+                              'status': 'running',
+                              'comment': 'b'}).data['jobstate']
+    jd_1_2 = admin.post('/api/v1/jobstates',
+                        data={'job_id': job_id,
+                              'status': 'running',
+                              'comment': 'a'}).data['jobstate']
+    files.post_file(admin, jd_1_1['id'], files.FileDesc('foo', 'bar'))
+    files.post_file(admin, jd_1_2['id'], files.FileDesc('older', 'bar'))
+    files.post_file(admin, jd_1_2['id'], files.FileDesc('something', 'bar'))
+    files.post_file(admin, jd_1_2['id'], files.FileDesc('latest', 'bar'))
+
+    jds = admin.get('/api/v1/jobstates?sort=comment,' +
+                    '-files.created_at&embed=files').data
+    # check the sort by comment
+    commands = [j['comment'] for j in jds['jobstates']]
+    assert ['a', 'b'] == commands
+    # check the order by file creation date
+    names = [f['name'] for f in jds['jobstates'][0]['files']]
+    assert ['latest', 'something', 'older'] == names
+
+
 def test_get_jobstate_by_id(admin, job_id):
     js = admin.post('/api/v1/jobstates',
                     data={'job_id': job_id,
