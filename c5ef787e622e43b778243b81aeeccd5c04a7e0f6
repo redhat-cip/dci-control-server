@@ -16,6 +16,40 @@
       "revId": "c5ef787e622e43b778243b81aeeccd5c04a7e0f6",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7adec928_5e825501",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-07-15T14:28:10Z",
+      "side": 1,
+      "message": "move this to the top of the file",
+      "revId": "c5ef787e622e43b778243b81aeeccd5c04a7e0f6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7adec928_7e871110",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-07-15T14:28:10Z",
+      "side": 1,
+      "message": "no need for a line break",
+      "revId": "c5ef787e622e43b778243b81aeeccd5c04a7e0f6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
