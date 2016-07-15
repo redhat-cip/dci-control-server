@@ -31,8 +31,13 @@ from dci.db import models
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.COMPONENTS
+_JJC = models.JOIN_JOBS_COMPONENTS
 _C_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_JOBS_C_COLUMS = v1_utils.get_columns_name_with_objects(models.JOBS)
+_JOBS_C_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBS)
+
+EMBED = {
+    'jobs_components': v1_utils.embed(_JJC)
+}
 
 
 @api.route('/components', methods=['POST'])
@@ -77,14 +82,16 @@ def get_jobs(user, component_id, team_id=None):
     provided then filter by the jobs by team_id otherwise returns all the
     jobs.
     """
+
     args = schemas.args(flask.request.args.to_dict())
 
-    q_bd = v1_utils.QueryBuilder(models.JOBS, args['offset'], args['limit'])
-    q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_C_COLUMS)
+    q_bd = v1_utils.QueryBuilder(models.JOBS, args['offset'], args['limit'],
+                                 EMBED)
+    q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_C_COLUMNS)
 
-    JJC = models.JOIN_JOBS_COMPONENTS
-    q_bd.join = [JJC]
-    q_bd.where.append(JJC.c.component_id == component_id)
+    q_bd.join(['jobs_components'])
+    q_bd.ignore_columns(['configuration'])
+    q_bd.where.append(_JJC.c.component_id == component_id)
     if team_id:
         q_bd.where.append(models.JOBS.c.team_id == team_id)
 
