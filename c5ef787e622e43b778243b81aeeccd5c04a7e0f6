@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7adec928_de9e6563",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 3
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-07-15T14:16:21Z",
+      "side": 1,
+      "message": "As far as I understand the patch aslo add the ability to embed the components when requesting jobs. Can you update the message? Or maybe I wrong?",
+      "revId": "c5ef787e622e43b778243b81aeeccd5c04a7e0f6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
