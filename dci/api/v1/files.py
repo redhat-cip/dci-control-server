@@ -62,6 +62,7 @@ def _old_create_files(user):
         'team_id': user['team_id']
     })
 
+    content = values.pop('content')
     query = _TABLE.insert().values(**values)
     flask.g.db_conn.execute(query)
 
@@ -69,7 +70,7 @@ def _old_create_files(user):
     file_path = v1_utils.build_file_path(_FILES_FOLDER, user['team_id'],
                                          file_id)
     with open(file_path, 'w') as f:
-        f.write(values['content'])
+        f.write(content)
 
     result = json.dumps({'file': values})
     return flask.Response(result, 201, content_type='application/json')
@@ -123,7 +124,6 @@ def new_create_files(user):
         'id': file_id,
         'created_at': datetime.datetime.utcnow().isoformat(),
         'team_id': user['team_id'],
-        'content': None,
         'md5': None,
         'size': file_size
     })
