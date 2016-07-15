@@ -123,7 +123,6 @@ def new_create_files(user):
         'id': file_id,
         'created_at': datetime.datetime.utcnow().isoformat(),
         'team_id': user['team_id'],
-        'content': None,
         'md5': None,
         'size': file_size
     })
