@@ -32,6 +32,7 @@ es_files = es_engine.list()
 if es_files is None:
     print("no index found")
     es_engine.create_index()
+    es_files = []
 else:
     es_files = es_files['hits']['hits']
 
