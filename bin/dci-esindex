@@ -32,38 +32,40 @@ es_files = es_engine.list()
 if es_files is None:
     print("no index found")
     es_engine.create_index()
+    es_files = []
 else:
     es_files = es_files['hits']['hits']
 
 print("- Documents In DB: %s" % len(db_files['files']))
 print("- Documents In ES: %s" % len(es_files))
 
-# Preare the to delete list
+# Prepare the to delete list
 to_del = []
 for es_file in es_files:
-    flag = True
     for db_file in db_files['files']:
         if es_file['_id'] == db_file['id']:
-            flag = False
             break
-    if flag:
+    else:
         to_del.append(es_file)
 
 # Prepare the to add list
 to_add = []
 for db_file in db_files['files']:
-    flag = True
     for es_file in es_files:
         if es_file['_id'] == db_file['id']:
-            flag = False
-            break
-    if flag:
+          break
+    else:
         to_add.append(db_file)
 
 print("- To Add: %s" % len(to_add))
 print("- To Delete: %s" % len(to_del))
 
 for add in to_add:
+    # if there is no content it might be an API update, so we retrieve the
+    # information from the API
+    if add['content'] is None:
+        add['content'] = file.content(dci_context, add['id']).content
+
     es_engine.index(add)
 
 for delete in to_del:
