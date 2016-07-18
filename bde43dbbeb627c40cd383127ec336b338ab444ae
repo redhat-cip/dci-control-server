@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7adec928_01694c8b",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 540,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-07-18T07:27:04Z",
+      "side": 1,
+      "message": "return flask.jsonify({\u0027results\u0027: results, \u0027_meta\u0027: {\u0027count\u0027: len(results)}})",
+      "revId": "bde43dbbeb627c40cd383127ec336b338ab444ae",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
