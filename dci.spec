@@ -167,14 +167,14 @@ sed -i '12s/Werkzeug.*/Werkzeug/' requirements.txt
 %doc
 %{python2_sitelib}/dci
 %{python2_sitelib}/*.egg-info
-%{_sysconfdir}/dci-api/settings.py
+%config(noreplace) %{_sysconfdir}/dci-api/settings.py
 
 %if 0%{?with_python3}
 %files -n dci-api-python3
 %doc
 %{python3_sitelib}/dci
 %{python3_sitelib}/*.egg-info
-%{_sysconfdir}/dci-api/settings.py
+%config(noreplace) %{_sysconfdir}/dci-api/settings.py
 %endif
 
 %changelog
