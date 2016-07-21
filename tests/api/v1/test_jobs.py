@@ -593,6 +593,17 @@ def test_get_results_by_job_id(user, job_id):
     assert file_from_job.data['results'][0]['total'] == '3'
 
 
+@pytest.mark.usefixtures('file_job_junit_empty_user_id')
+def test_get_results_by_job_id(user, job_id):
+    url = '/api/v1/jobs/%s/results' % job_id
+
+    # get file from job
+    file_from_job = user.get(url)
+    assert file_from_job.status_code == 200
+    assert file_from_job.data['_meta']['count'] == 1
+    assert file_from_job.data['results'][0]['total'] == '0'
+
+
 def test_job_search(user, jobdefinition_id, team_user_id, remoteci_id,
                     components_ids):
 
