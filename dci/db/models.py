@@ -213,7 +213,6 @@ FILES = sa.Table(
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('name', sa.String(255), nullable=False),
-    sa.Column('content', sa.Text, nullable=True),
     sa.Column('mime', sa.String),
     sa.Column('md5', sa.String(32)),
     sa.Column('size', sa.BIGINT, nullable=True),
