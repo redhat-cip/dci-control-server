@@ -58,16 +58,6 @@ def test_create_files_jobstate_id_and_job_id_missing(admin, team_admin_id):
     assert file.status_code == 400
 
 
-def test_old_create_files(admin, jobstate_id, team_admin_id):
-    data = {'jobstate_id': jobstate_id, 'content': 'content',
-            'name': 'kikoolol'}
-
-    file = admin.post('/api/v1/files', data=data).data
-    file_id = file['file']['id']
-    file = admin.get('/api/v1/files/%s' % file_id).data
-    assert file['file']['name'] == 'kikoolol'
-
-
 def test_get_all_files(admin, jobstate_id):
     file_1 = post_file(admin, jobstate_id, FileDesc('kikoolol1', ''))
     file_2 = post_file(admin, jobstate_id, FileDesc('kikoolol2', ''))
