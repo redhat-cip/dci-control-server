@@ -482,6 +482,9 @@ def get_all_results_from_jobs(user, j_id):
         data = ''.join([s for s in utils.read(file_path, mode='r')])
         data = json.loads(tsfm.junit2json(data))
 
+        if not isinstance(data['skips'], int):
+            data['skips'] = 0
+
         success = (int(data['total']) - int(data['failures']) -
                    int(data['errors']) - int(data['skips']))
         results.append({'filename': file['name'],

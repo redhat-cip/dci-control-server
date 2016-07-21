@@ -48,6 +48,11 @@ def write(file_path, content):
     with open(file_path, 'w') as f:
         f.write(content)
 
+JUNIT_EMPTY = """
+<testsuite errors="0" failures="0" name="" tests="0" time="0.307">
+</testsuite>
+"""
+
 JUNIT = """
 <testsuite errors="0" failures="0" name="pytest" skips="1"
            tests="3" time="46.050">
@@ -630,6 +635,14 @@ def init_db(db_conn, minimal):
 
     path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
     write(path, JUNIT)
+
+    f_id2 = db_ins(
+        models.FILES, name='res_junit2.xml', mime='application/junit',
+        created_at=time[0][0], team_id=team_dell, job_id=job_dell_12
+    )
+
+    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id2)
+    write(path, JUNIT_EMPTY)
 
     f_id = db_ins(
         models.FILES, name='foo.txt', mime='text/play',
