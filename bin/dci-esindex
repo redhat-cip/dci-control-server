@@ -27,7 +27,7 @@ conf = dci_config.generate_conf()
 
 es_engine = es_engine.DCIESEngine(conf)
 db_files = json.loads(file.list(dci_context).text)
-es_files = es_engine.list()
+es_files = es_engine.list(exclude=['content'])
 
 if es_files is None:
     print("no index found")
@@ -63,10 +63,9 @@ print("- To Delete: %s" % len(to_del))
 for add in to_add:
     # if there is no content it might be an API update, so we retrieve the
     # information from the API
-    if add['content'] is None:
-        add['content'] = file.content(dci_context, add['id']).content
-
+    add['content'] = file.content(dci_context, add['id']).content
     es_engine.index(add)
+    add['content'] = ""
 
 for delete in to_del:
     es_engine.delete(delete['_id'])

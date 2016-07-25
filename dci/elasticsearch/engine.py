@@ -38,7 +38,7 @@ class DCIESEngine(object):
         self.conn.delete(index=self.esindex, doc_type='log', id=id)
         return True
 
-    def list(self):
+    def list(self, exclude=None):
 
         query = {
             "size": 10000,
@@ -46,6 +46,10 @@ class DCIESEngine(object):
                 "match_all": {}
             }
         }
+        if exclude:
+            query['_source'] = {
+                'exclude': exclude 
+            }
         if self.conn.indices.exists(index=self.esindex):
             return self.conn.search(index=self.esindex, body=query)
         else:
