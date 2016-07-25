@@ -18,10 +18,10 @@ from elasticsearch import Elasticsearch
 
 
 class DCIESEngine(object):
-    def __init__(self, conf, index="global"):
+    def __init__(self, conf, index="global", timeout=30):
         self.esindex = index
         self.conn = Elasticsearch(conf['ES_HOST'], port=conf['ES_PORT'],
-                                  timeout=30)
+                                  timeout=timeout)
 
     def create_index(self):
         self.conn.indices.create(index=self.esindex)
@@ -38,7 +38,7 @@ class DCIESEngine(object):
         self.conn.delete(index=self.esindex, doc_type='log', id=id)
         return True
 
-    def list(self):
+    def list(self, include=None, exclude=None):
 
         query = {
             "size": 10000,
@@ -46,6 +46,14 @@ class DCIESEngine(object):
                 "match_all": {}
             }
         }
+        if include:
+            query['_source'] = {
+                'include': include
+            }
+        if exclude:
+            query['_source'] = {
+                'exclude': exclude
+            }
         if self.conn.indices.exists(index=self.esindex):
             return self.conn.search(index=self.esindex, body=query)
         else:
