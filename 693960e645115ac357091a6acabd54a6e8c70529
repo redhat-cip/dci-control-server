@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5adbc538_0046a8bf",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 200,
+      "author": {
+        "id": 33
+      },
+      "writtenOn": "2016-07-25T12:46:02Z",
+      "side": 1,
+      "message": "if file[\u0027size\u0027] is wrong, should we not correct it? or remove the column?",
+      "revId": "693960e645115ac357091a6acabd54a6e8c70529",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
