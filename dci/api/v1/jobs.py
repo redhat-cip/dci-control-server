@@ -26,6 +26,7 @@ from dci.api.v1 import api
 from dci.api.v1 import transformations as tsfm
 from dci.api.v1 import utils as v1_utils
 from dci import auth
+from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
@@ -371,6 +372,7 @@ def get_job_by_id(user, jd_id):
 
 @api.route('/jobs/<job_id>', methods=['PUT'])
 @auth.requires_auth
+@audits.log
 def update_job_by_id(user, job_id):
     """Update a job
     """
