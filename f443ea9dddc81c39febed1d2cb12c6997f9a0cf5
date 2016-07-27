@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5adbc538_e61f14b6",
+        "filename": "dci/alembic/versions/48c9af8ba5c3_add_osp_failure_deployment_failure_and_.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-07-27T09:07:46Z",
+      "side": 1,
+      "message": "could we use product-failure to avoid an unnecessary dependency with OSP.\nWhat integration stand for?",
+      "revId": "f443ea9dddc81c39febed1d2cb12c6997f9a0cf5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
