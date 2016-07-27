@@ -19,6 +19,7 @@ import six
 from sqlalchemy import sql, func
 from sqlalchemy import Table as sa_Table
 
+from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import utils
 from dci.db import models
@@ -54,6 +55,12 @@ def verify_existence_and_get(id, table):
 
 
 def verify_team_in_topic(user, topic_id):
+    """Verify that the user's team does belongs to the given topic. If
+    the user is an admin then it belongs to all topics.
+    """
+
+    if auth.is_admin(user):
+        return
     team_id = user['team_id']
     belongs_to_topic_q = (
         sql.select([models.JOINS_TOPICS_TEAMS.c.team_id]).where(
