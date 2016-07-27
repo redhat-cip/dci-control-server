@@ -28,7 +28,8 @@ USER_ROLES = ['user', 'admin']
 ROLES = sa.Enum(*USER_ROLES, name='roles')
 
 JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run',
-                'success', 'failure', 'killed']
+                'success', 'failure', 'killed', 'osp-failure',
+                'deployment-failure', 'integration']
 STATUSES = sa.Enum(*JOB_STATUSES, name='statuses')
 
 COMPONENTS = sa.Table(

@@ -35,7 +35,8 @@ def Url(value):
     except Exception:
         raise ValueError
 
-VALID_STATUS_UPDATE = ['failure', 'success', 'killed']
+VALID_STATUS_UPDATE = ['failure', 'success', 'killed', 'osp-failure',
+                       'deployment-failure', 'integration']
 
 INVALID_LIST = 'not a valid list'
 INVALID_UUID = 'not a valid uuid'
