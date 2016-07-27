@@ -19,6 +19,7 @@ import six
 from sqlalchemy import sql, func
 from sqlalchemy import Table as sa_Table
 
+from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import utils
 from dci.db import models
@@ -34,7 +35,7 @@ def embed(model, many=False):
     return Embed(model, many)
 
 
-def verify_existence_and_get(id, table):
+def verify_existence_and_get(id, table, get_id=False):
     """Verify the existence of a resource in the database and then
     return it if it exists, according to the condition, or raise an
     exception.
@@ -50,10 +51,18 @@ def verify_existence_and_get(id, table):
     if result is None:
         raise dci_exc.DCIException('Resource "%s" not found.' % id,
                                    status_code=404)
+    if get_id:
+        return result.id
     return result
 
 
 def verify_team_in_topic(user, topic_id):
+    """Verify that the user's team does belongs to the given topic. If
+    the user is an admin then it belongs to all topics.
+    """
+
+    if auth.is_admin(user):
+        return
     team_id = user['team_id']
     belongs_to_topic_q = (
         sql.select([models.JOINS_TOPICS_TEAMS.c.team_id]).where(
