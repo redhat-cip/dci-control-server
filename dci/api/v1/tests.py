@@ -88,6 +88,13 @@ def get_jobdefinitions_by_test(user, test_id):
     return jobdefinitions.get_all_jobdefinitions(test['id'])
 
 
+@api.route('/tests/<t_id>/remotecis', methods=['GET'])
+@auth.requires_auth
+def get_remotecis_by_test(user, test_id):
+    test = v1_utils.verify_existence_and_get(test_id, _TABLE)
+    return remotecis.get_all_remotecis(test['id'])
+
+
 @api.route('/tests/<t_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_test_by_id_or_name(user, t_id):

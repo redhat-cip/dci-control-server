@@ -174,3 +174,21 @@ def delete_remoteci_by_id_or_name(user, r_id):
         raise dci_exc.DCIDeleteConflict('RemoteCI', r_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+@api.route('/remotecis/<r_id>/tests', methods=['POST'])
+@auth.requires_auth
+def add_test_to_remoteci(user, r_id):
+    data_json = flask.request.json
+    values = {'remoteci_id': rci_id,
+              'test_id': data_json.get('test_id', None)}
+
+    v1_utils.verify_existence_and_get(jd_id, _TABLE)
+
+    query = models.JOIN_REMOTECI_TESTS.insert().values(**values)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict(_TABLE.name,
+                                          'remoteci_id, test_id')
+    result = json.dumps(values)
+    return flask.Response(result, 201, content_type='application/json')
