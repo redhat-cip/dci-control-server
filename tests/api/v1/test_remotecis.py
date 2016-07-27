@@ -300,3 +300,44 @@ def test_delete_remoteci_as_user(user, team_user_id, admin, remoteci_id):
     remoteci_delete = user.delete('/api/v1/remotecis/%s' % remoteci_id,
                                   headers={'If-match': remoteci_etag})
     assert remoteci_delete.status_code == 401
+
+
+# Tests for remoteci and tests management
+def test_add_test_to_remoteci_and_get(admin, test_id, team_user_id):
+    # create a remoteci
+    data = {'name': 'rname', 'team_id': team_user_id}
+    pr = admin.post('/api/v1/remotecis', data=data).data
+    pr_id = pr['remoteci']['id']
+
+    # attach a test to remoteci
+    url = '/api/v1/remotecis/%s/tests' % pr_id
+    add_data = admin.post(url, data={'test_id': test_id}).data
+    assert add_data['remoteci_id'] == pr_id
+    assert add_data['test_id'] == test_id
+
+    # get test from remoteci
+    test_from_remoteci = admin.get(url).data
+    assert test_from_remoteci['_meta']['count'] == 1
+    assert test_from_remoteci['tests'][0]['id'] == test_id
+
+def test_delete_test_from_remoteci(admin, test_id, team_user_id):
+    # create a jobdefinition
+    data = {'name': 'pname', 'team_id': team_user_id}
+    pr = admin.post('/api/v1/remotecis', data=data).data
+    pr_id = pr['remoteci']['id']
+
+    # check that the jobdefinition a as test attached
+    url = '/api/v1/remotecis/%s/tests' % pr_id
+    admin.post(url, data={'test_id': test_id})
+    test_from_remoteci = admin.get(
+        '/api/v1/remotecis/%s/tests' % pr_id).data
+    assert test_from_remoteci['_meta']['count'] == 1
+
+    # unattach test from jobdefinition
+    admin.delete('/api/v1/remotecis/%s/tests/%s' % (pr_id, test_id))
+    test_from_remoteci = admin.get(url).data
+    assert test_from_remoteci['_meta']['count'] == 0
+
+    # verify test still exist on /tests
+    c = admin.get('/api/v1/tests/%s' % test_id)
+    assert c.status_code == 200

@@ -174,3 +174,57 @@ def delete_remoteci_by_id_or_name(user, r_id):
         raise dci_exc.DCIDeleteConflict('RemoteCI', r_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/remotecis/<r_id>/tests', methods=['POST'])
+@auth.requires_auth
+def add_test_to_remoteci(user, r_id):
+    data_json = flask.request.json
+    values = {'remoteci_id': r_id,
+              'test_id': data_json.get('test_id', None)}
+
+    v1_utils.verify_existence_and_get(r_id, _TABLE)
+
+    query = models.JOIN_REMOTECI_TESTS.insert().values(**values)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict(_TABLE.name,
+                                          'remoteci_id, test_id')
+    result = json.dumps(values)
+    return flask.Response(result, 201, content_type='application/json')
+
+
+@api.route('/remotecis/<r_id>/tests', methods=['GET'])
+@auth.requires_auth
+def get_all_tests_from_remotecis(user, r_id):
+    v1_utils.verify_existence_and_get(r_id, _TABLE)
+
+    # Get all components which belongs to a given remoteci
+    JDC = models.JOIN_REMOTECIS_TESTS
+    query = (sql.select([models.TESTS])
+             .select_from(JDC.join(models.TESTS))
+             .where(JDC.c.remoteci_id == jd_id))
+    rows = flask.g.db_conn.execute(query)
+
+    res = flask.jsonify({'tests': rows,
+                         '_meta': {'count': rows.rowcount}})
+    res.status_code = 201
+    return res
+
+
+@api.route('/remotecis/<r_id>/tests/<t_id>', methods=['DELETE'])
+@auth.requires_auth
+def delete_test_from_remoteci(user, r_id, t_id):
+    v1_utils.verify_existence_and_get(r_id, _TABLE)
+
+    JDC = models.JOIN_REMOTECIS_TESTS
+    where_clause = sql.and_(JDC.c.remoteci_id == jd_id,
+                            JDC.c.test_id == t_id)
+    query = JDC.delete().where(where_clause)
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Test', t_id)
+
+    return flask.Response(None, 204, content_type='application/json')
