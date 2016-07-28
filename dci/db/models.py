@@ -32,6 +32,9 @@ JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run',
                 'deployment-failure']
 STATUSES = sa.Enum(*JOB_STATUSES, name='statuses')
 
+ISSUE_TRACKERS = ['github', 'bugzilla']
+TRACKERS = sa.Enum(*ISSUE_TRACKERS, name='trackers')
+
 COMPONENTS = sa.Table(
     'components', metadata,
     sa.Column('id', sa.String(36), primary_key=True,
@@ -191,6 +194,14 @@ JOIN_JOBS_COMPONENTS = sa.Table(
               sa.ForeignKey('components.id', ondelete='CASCADE'),
               nullable=False, primary_key=True))
 
+JOIN_JOBS_ISSUES = sa.Table(
+    'jobs_issues', metadata,
+    sa.Column('job_id', sa.String(36),
+              sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('issue_id', sa.String(36),
+              sa.ForeignKey('issues.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True))
 
 JOBSTATES = sa.Table(
     'jobstates', metadata,
@@ -268,3 +279,16 @@ LOGS = sa.Table(
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
     sa.Column('action', sa.Text, nullable=False))
+
+ISSUES = sa.Table(
+    'issues', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('url', sa.Text, unique=True),
+    sa.Column('tracker', TRACKERS, nullable=False),
+    sa.Column('status', sa.String(255)))
