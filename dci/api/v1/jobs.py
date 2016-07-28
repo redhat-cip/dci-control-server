@@ -32,6 +32,7 @@ from dci.common import utils
 from dci.db import models
 
 from dci.api.v1 import files
+from dci.api.v1 import issues
 from dci.api.v1 import jobstates
 from dci import dci_config
 
@@ -364,6 +365,8 @@ def get_job_by_id(user, jd_id):
         raise dci_exc.DCINotFound('Job', jd_id)
 
     job = v1_utils.group_embedded_resources(embed, row)
+    # TODO(spredzy): Implement in a better way
+    job['issues'] = json.loads(issues.get_all_issues(jd_id).response[0])['issues']
     res = flask.jsonify({'job': job})
     res.headers.add_header('ETag', job['etag'])
     return res
@@ -456,6 +459,16 @@ def add_file_to_jobs(user, j_id):
 
     return files.create_files(user, values)
 
+
+@api.route('/jobs/<j_id>/issues', methods=['GET'])
+@auth.requires_auth
+def retrieve_issues_from_job(user, j_id):
+    return issues.get_all_issues(j_id)
+
+@api.route('/jobs/<j_id>/issues', methods=['POST'])
+@auth.requires_auth
+def attach_issue_to_jobs(user, j_id):
+    return issues.create_issue(j_id)
 
 @api.route('/jobs/<j_id>/files', methods=['GET'])
 @auth.requires_auth
