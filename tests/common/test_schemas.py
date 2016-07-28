@@ -431,6 +431,43 @@ class TestJobSearch(utils.SchemaTesting):
         pass
 
 
+class TestIssue(utils.SchemaTesting):
+    schema = schemas.issue
+    data = dict([utils.URL])
+
+    @staticmethod
+    def generate_invalids_and_errors():
+        status_invalid, status_error = utils.generate_invalid_string('url')
+
+        invalids = dict([utils.INVALID_URL, status_invalid])
+        errors = dict([utils.INVALID_URL_ERROR, status_error])
+        return invalids, errors
+
+    def test_post_extra_data(self):
+        data = utils.dict_merge(self.data, {'extra': 'some comment'})
+        super(TestIssue, self).test_post_extra_data(data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('url')
+        super(TestIssue, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids, errors = TestIssue.generate_invalids_and_errors()
+        super(TestIssue, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestIssue, self).test_post(self.data, self.data)
+
+    def test_put_extra_data(self):
+        pass
+
+    def test_put_invalid_data(self):
+        pass
+
+    def test_put(self):
+        pass
+
+
 class TestJobState(utils.SchemaTesting):
     schema = schemas.jobstate
     data = dict([utils.STATUS, utils.JOB])
