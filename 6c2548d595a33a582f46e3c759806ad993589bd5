@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "5adbc538_6cfe836d",
+        "filename": "dci/trackers/__init__.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-07-29T13:45:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5adbc538_ec9e1363",
+      "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5adbc538_0c9c1f69",
         "filename": "dci/trackers/__init__.py",
         "patchSetId": 14
@@ -30,6 +48,24 @@
       "writtenOn": "2016-07-29T10:59:43Z",
       "side": 1,
       "message": "All of these attributes should be initialized in __init__ to avoid runtime errors.",
+      "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5adbc538_8c03cf72",
+        "filename": "dci/trackers/__init__.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-07-29T13:45:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5adbc538_0c9c1f69",
       "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -70,6 +106,24 @@
     },
     {
       "key": {
+        "uuid": "5adbc538_acf7ab8b",
+        "filename": "dci/trackers/bugzilla.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-07-29T13:45:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5adbc538_2c8f1b25",
+      "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5adbc538_4c946737",
         "filename": "dci/trackers/github.py",
         "patchSetId": 14
@@ -81,6 +135,24 @@
       "writtenOn": "2016-07-29T10:59:43Z",
       "side": 1,
       "message": "what if you got a http error call ?",
+      "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5adbc538_ccf4f789",
+        "filename": "dci/trackers/github.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-07-29T13:45:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5adbc538_4c946737",
       "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
