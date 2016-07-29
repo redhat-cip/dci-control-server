@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5adbc538_ec9e1363",
+        "filename": "dci/trackers/__init__.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-07-29T10:59:43Z",
+      "side": 1,
+      "message": "raise Exception(\u0027Not implemented\u0027)  could be better than pass",
+      "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5adbc538_0c9c1f69",
+        "filename": "dci/trackers/__init__.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-07-29T10:59:43Z",
+      "side": 1,
+      "message": "All of these attributes should be initialized in __init__ to avoid runtime errors.",
+      "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5adbc538_2c88fb21",
+        "filename": "dci/trackers/bugzilla.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-07-29T10:59:43Z",
+      "side": 1,
+      "message": "I\u0027m chocked a sysadmin does not use regex :D",
+      "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5adbc538_2c8f1b25",
+        "filename": "dci/trackers/bugzilla.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-07-29T10:59:43Z",
+      "side": 1,
+      "message": "what if you got a http error call ?",
+      "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5adbc538_4c946737",
+        "filename": "dci/trackers/github.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-07-29T10:59:43Z",
+      "side": 1,
+      "message": "what if you got a http error call ?",
+      "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5adbc538_cc78772e",
+        "filename": "tests/api/v1/test_issues.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-07-29T10:59:43Z",
+      "side": 1,
+      "message": "you should mock requests in order to not make a real http call",
+      "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5adbc538_0c733f4e",
+        "filename": "tests/api/v1/test_issues.py",
+        "patchSetId": 14
+      },
+      "lineNbr": 79,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-07-29T10:59:43Z",
+      "side": 1,
+      "message": "ditto",
+      "revId": "6c2548d595a33a582f46e3c759806ad993589bd5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
