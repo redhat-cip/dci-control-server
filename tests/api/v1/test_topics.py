@@ -280,3 +280,45 @@ def test_delete_team_from_topic_as_user(admin, user):
     status_code = user.delete(
         '/api/v1/topics/%s/teams/%s' % (pt_id, team_id)).status_code
     assert status_code == 401
+
+
+# Tests for topic and tests management
+def test_add_test_to_topic_and_get(admin, test_id):
+    # create a topic
+    data = {'name': 'tname'}
+    t = admin.post('/api/v1/topics', data=data).data
+    t_id = t['topic']['id']
+
+    # attach a test to topic
+    url = '/api/v1/topics/%s/tests' % t_id
+    add_data = admin.post(url, data={'test_id': test_id}).data
+    assert add_data['topic_id'] == t_id
+    assert add_data['test_id'] == test_id
+
+    # get test from topic
+    test_from_topic = admin.get(url).data
+    assert test_from_topic['_meta']['count'] == 1
+    assert test_from_topic['tests'][0]['id'] == test_id
+
+
+def test_delete_test_from_topic(admin, test_id):
+    # create a topic
+    data = {'name': 'tname'}
+    t = admin.post('/api/v1/topics', data=data).data
+    t_id = t['topic']['id']
+
+    # check that the topic got a test attached
+    url = '/api/v1/topics/%s/tests' % t_id
+    admin.post(url, data={'test_id': test_id})
+    test_from_topic = admin.get(
+        '/api/v1/topics/%s/tests' % t_id).data
+    assert test_from_topic['_meta']['count'] == 1
+
+    # unattach test from topic
+    admin.delete('/api/v1/topics/%s/tests/%s' % (t_id, test_id))
+    test_from_topic = admin.get(url).data
+    assert test_from_topic['_meta']['count'] == 0
+
+    # verify test still exist on /tests
+    c = admin.get('/api/v1/tests/%s' % test_id)
+    assert c.status_code == 200
