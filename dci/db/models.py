@@ -132,6 +132,16 @@ JOIN_REMOTECIS_TESTS = sa.Table(
               nullable=False, primary_key=True)
 )
 
+JOIN_TOPICS_TESTS = sa.Table(
+    'topic_tests', metadata,
+    sa.Column('topic_id', sa.String(36),
+              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('test_id', sa.String(36),
+              sa.ForeignKey('tests.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True)
+)
+
 TEAMS = sa.Table(
     'teams', metadata,
     sa.Column('id', sa.String(36), primary_key=True,
