@@ -89,10 +89,13 @@ def test_get_topics_of_user(admin, user, team_user_id):
     assert topic == topics_user
 
 
-def test_get_topic_by_id_or_name(admin, user):
+def test_get_topic_by_id_or_name(admin, user, team_user_id):
     data = {'name': 'tname'}
     pt = admin.post('/api/v1/topics', data=data).data
     pt_id = pt['topic']['id']
+
+    admin.post('/api/v1/topics/%s/teams' % pt_id,
+               data={'team_id': team_user_id})
 
     # get by uuid
     created_ct = user.get('/api/v1/topics/%s' % pt_id)
@@ -253,6 +256,7 @@ def test_delete_team_from_topic(admin):
     # delete team from topic
     admin.delete('/api/v1/topics/%s/teams/%s' % (pt_id, team_id))
     team_from_topic = admin.get(url).data
+    print(team_from_topic)
     assert team_from_topic['_meta']['count'] == 0
 
     # verify team still exists on /teams

@@ -51,10 +51,10 @@ def test_get_all_tests(admin, topic_id):
     assert db_all_tests_ids == [test_1['test']['id'], test_2['test']['id']]
 
 
-def test_get_all_tests_not_in_topic(admin):
+def test_get_all_tests_not_in_topic(admin, user):
     topic = admin.post('/api/v1/topics', data={'name': 'topic_test'}).data
     topic_id = topic['topic']['id']
-    status_code = admin.get(
+    status_code = user.get(
         '/api/v1/topics/%s/tests' % topic_id).status_code
     assert status_code == 412
 

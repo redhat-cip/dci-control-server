@@ -81,10 +81,10 @@ def test_get_all_components(admin, topic_id):
     assert db_all_cs_ids == created_c_ids
 
 
-def test_get_all_components_not_in_topic(admin):
+def test_get_all_components_not_in_topic(admin, user):
     topic = admin.post('/api/v1/topics', data={'name': 'topic_test'}).data
     topic_id = topic['topic']['id']
-    status_code = admin.get(
+    status_code = user.get(
         '/api/v1/topics/%s/components' % topic_id).status_code
     assert status_code == 412
 
