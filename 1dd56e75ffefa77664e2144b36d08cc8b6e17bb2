@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5adbc538_571794a3",
+        "filename": "dci/alembic/versions/f1940287976b_add_issue_table.py",
+        "patchSetId": 21
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-08-02T09:14:45Z",
+      "side": 1,
+      "message": "There is Launchpad too. I don\u0027t think we need to use something strict like an ENUM here because we will have to update the DB schema as soon as we discover a new kind of issue.",
+      "revId": "1dd56e75ffefa77664e2144b36d08cc8b6e17bb2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5adbc538_97111caf",
+        "filename": "dci/alembic/versions/f1940287976b_add_issue_table.py",
+        "patchSetId": 21
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-08-02T09:14:45Z",
+      "side": 1,
+      "message": "What about using an external ID (e.g: issue_id)? This would make the search/comparison more accurate.",
+      "revId": "1dd56e75ffefa77664e2144b36d08cc8b6e17bb2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5adbc538_7783b0cc",
+        "filename": "dci/trackers/bugzilla.py",
+        "patchSetId": 21
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-08-02T09:14:45Z",
+      "side": 1,
+      "message": "This is something we can simplify if we just store the issue id in the DB.",
+      "revId": "1dd56e75ffefa77664e2144b36d08cc8b6e17bb2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
