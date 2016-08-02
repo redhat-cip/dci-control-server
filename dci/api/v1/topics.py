@@ -261,3 +261,60 @@ def get_all_teams_from_topic(user, t_id):
                          '_meta': {'count': rows.rowcount}})
     res.status_code = 201
     return res
+
+
+@api.route('/topics/<t_id>/tests', methods=['POST'])
+@auth.requires_auth
+def add_test_to_topic(user, t_id):
+    data_json = flask.request.json
+    values = {'topic_id': t_id,
+              'test_id': data_json.get('test_id', None)}
+
+    v1_utils.verify_team_in_topic(user, t_id)
+    v1_utils.verify_existence_and_get(t_id, _TABLE)
+
+    query = models.JOIN_TOPICS_TESTS.insert().values(**values)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict(_TABLE.name,
+                                          'topic_id, test_id')
+    result = json.dumps(values)
+    return flask.Response(result, 201, content_type='application/json')
+
+
+@api.route('/topics/<t_id>/tests', methods=['GET'])
+@auth.requires_auth
+def get_all_tests_from_topics(user, t_id):
+    v1_utils.verify_team_in_topic(user, t_id)
+    v1_utils.verify_existence_and_get(t_id, _TABLE)
+
+    # Get all components which belongs to a given remoteci
+    JDC = models.JOIN_TOPICS_TESTS
+    query = (sql.select([models.TESTS])
+             .select_from(JDC.join(models.TESTS))
+             .where(JDC.c.topic_id == t_id))
+    rows = flask.g.db_conn.execute(query)
+
+    res = flask.jsonify({'tests': rows,
+                         '_meta': {'count': rows.rowcount}})
+    res.status_code = 201
+    return res
+
+
+@api.route('/topics/<t_id>/tests/<test_id>', methods=['DELETE'])
+@auth.requires_auth
+def delete_test_from_topic(user, t_id, test_id):
+    v1_utils.verify_team_in_topic(user, t_id)
+    v1_utils.verify_existence_and_get(test_id, _TABLE)
+
+    JDC = models.JOIN_REMOTECIS_TESTS
+    where_clause = sql.and_(JDC.c.topic_id == t_id,
+                            JDC.c.test_id == test_id)
+    query = JDC.delete().where(where_clause)
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Test', test_id)
+
+    return flask.Response(None, 204, content_type='application/json')
