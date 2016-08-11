@@ -74,8 +74,40 @@ class TestComponentType(BaseSchemaTesting):
     schema = schemas.componenttype
 
 
-class TestTeam(BaseSchemaTesting):
+class TestTeam(utils.SchemaTesting):
     schema = schemas.team
+    data = dict([utils.NAME, utils.COUNTRY])
+
+    @staticmethod
+    def generate_invalids_and_errors():
+        invalids = dict([utils.INVALID_NAME])
+        errors = dict([utils.INVALID_NAME_ERROR])
+        return invalids, errors
+
+    def test_post_extra_data(self):
+        super(TestTeam, self).test_post_extra_data(self.data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name')
+        super(TestTeam, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids, errors = TestTeam.generate_invalids_and_errors()
+        super(TestTeam, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestTeam, self).test_post(self.data, self.data)
+
+    def test_put_extra_data(self):
+        invalids, errors = TestTeam.generate_invalids_and_errors()
+        super(TestTeam, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        invalids, errors = TestTeam.generate_invalids_and_errors()
+        super(TestTeam, self).test_put_invalid_data(invalids, errors)
+
+    def test_put(self):
+        super(TestTeam, self).test_put(self.data, self.data)
 
 
 class TestRole(BaseSchemaTesting):
@@ -172,7 +204,8 @@ class TestComponent(utils.SchemaTesting):
     def generate_optionals():
         return dict([('sha', None), ('title', None), ('message', None),
                      ('git', None), ('ref', None), ('url', None),
-                     ('data', {}), ('canonical_project_name', None)])
+                     ('data', {}), ('canonical_project_name', None),
+                     ('export_control', False)])
 
     @staticmethod
     def generate_invalids_and_errors():

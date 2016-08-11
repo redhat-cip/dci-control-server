@@ -46,6 +46,7 @@ BuildRequires:  python-flask
 BuildRequires:  python-requests
 BuildRequires:  python-six
 BuildRequires:  python-passlib
+BuildRequires:	python-babel
 BuildRequires:  gcc
 BuildRequires:  java-1.8.0-openjdk
 BuildRequires:  elasticsearch
@@ -84,6 +85,7 @@ BuildRequires:  python3-flask
 BuildRequires:  python3-requests
 BuildRequires:  python3-six
 BuildRequires:  python-passlib
+BuildRequires:	python3-babel
 BuildRequires:  gcc
 BuildRequires:  java-1.8.0-openjdk
 BuildRequires:  elasticsearch
