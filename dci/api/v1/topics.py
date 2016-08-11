@@ -65,19 +65,20 @@ def create_topics(user):
                           content_type='application/json')
 
 
-@api.route('/topics/<t_id>', methods=['GET'])
+@api.route('/topics/<topic_id>', methods=['GET'])
 @auth.requires_auth
-def get_topic_by_id_or_name(user, t_id):
-    where_clause = sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
+def get_topic_by_id_or_name(user, topic_id):
 
-    query = sql.select([_TABLE]).where(where_clause)
+    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
+    v1_utils.verify_team_in_topic(user, topic_id)
+
+    query = sql.select([_TABLE]).where(_TABLE.c.id == topic_id)
     topic = flask.g.db_conn.execute(query).fetchone()
 
     if topic is None:
-        raise dci_exc.DCINotFound('Topic', t_id)
+        raise dci_exc.DCINotFound('Topic', topic_id)
 
-    res = flask.jsonify({'topic': topic})
-    return res
+    return flask.jsonify({'topic': topic})
 
 
 @api.route('/topics', methods=['GET'])
@@ -115,9 +116,9 @@ def get_all_topics(user):
         return res
 
 
-@api.route('/topics/<t_id>', methods=['PUT'])
+@api.route('/topics/<topic_id>', methods=['PUT'])
 @auth.requires_auth
-def put_topic(user, t_id):
+def put_topic(user, topic_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -126,37 +127,36 @@ def put_topic(user, t_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
 
-    v1_utils.verify_existence_and_get(t_id, _TABLE)
+    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
+        _TABLE.c.id == topic_id
     )
     query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
-        raise dci_exc.DCIConflict('Topic', t_id)
+        raise dci_exc.DCIConflict('Topic', topic_id)
 
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
 
 
-@api.route('/topics/<t_id>', methods=['DELETE'])
+@api.route('/topics/<topic_id>', methods=['DELETE'])
 @auth.requires_auth
-def delete_topic_by_id_or_name(user, t_id):
+def delete_topic_by_id_or_name(user, topic_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
 
-    v1_utils.verify_existence_and_get(t_id, _TABLE)
-    where_clause = sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
-    query = _TABLE.delete().where(where_clause)
+    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
+    query = _TABLE.delete().where(_TABLE.c.id == topic_id)
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
-        raise dci_exc.DCIDeleteConflict('Topic', t_id)
+        raise dci_exc.DCIDeleteConflict('Topic', topic_id)
 
     return flask.Response(None, 204, content_type='application/json')
 
@@ -165,7 +165,7 @@ def delete_topic_by_id_or_name(user, t_id):
 @api.route('/topics/<topic_id>/components', methods=['GET'])
 @auth.requires_auth
 def get_all_components(user, topic_id):
-    v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
     return components.get_all_components(user, topic_id=topic_id)
 
@@ -174,7 +174,7 @@ def get_all_components(user, topic_id):
            methods=['GET'])
 @auth.requires_auth
 def get_jobs_from_components(user, topic_id, component_id):
-    v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
     v1_utils.verify_existence_and_get(component_id, models.COMPONENTS)
 
@@ -187,6 +187,7 @@ def get_jobs_from_components(user, topic_id, component_id):
 @api.route('/topics/<topic_id>/jobdefinitions', methods=['GET'])
 @auth.requires_auth
 def get_all_jobdefinitions_by_topic(user, topic_id):
+    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
     return jobdefinitions._get_all_jobdefinitions(user, topic_id=topic_id)
 
@@ -194,24 +195,28 @@ def get_all_jobdefinitions_by_topic(user, topic_id):
 @api.route('/topics/<topic_id>/tests', methods=['GET'])
 @auth.requires_auth
 def get_all_tests(user, topic_id):
+    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
     return tests.get_all_tests(user, topic_id=topic_id)
 
 
 # teams set apis
-@api.route('/topics/<t_id>/teams', methods=['POST'])
+@api.route('/topics/<topic_id>/teams', methods=['POST'])
 @auth.requires_auth
-def add_team_to_topic(user, t_id):
+def add_team_to_topic(user, topic_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
 
     # TODO(yassine): use voluptuous schema
     data_json = flask.request.json
-    values = {'topic_id': t_id,
-              'team_id': data_json.get('team_id')}
+    team_id = data_json.get('team_id')
 
-    v1_utils.verify_existence_and_get(t_id, _TABLE)
+    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
+    team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
+                                                get_id=True)
 
+    values = {'topic_id': topic_id,
+              'team_id': team_id}
     query = models.JOINS_TOPICS_TEAMS.insert().values(**values)
     try:
         flask.g.db_conn.execute(query)
@@ -223,15 +228,18 @@ def add_team_to_topic(user, t_id):
     return flask.Response(result, 201, content_type='application/json')
 
 
-@api.route('/topics/<t_id>/teams/<team_id>', methods=['DELETE'])
+@api.route('/topics/<topic_id>/teams/<team_id>', methods=['DELETE'])
 @auth.requires_auth
-def delete_team_from_topic(user, t_id, team_id):
+def delete_team_from_topic(user, topic_id, team_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
 
-    v1_utils.verify_existence_and_get(t_id, _TABLE)
+    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
+    team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
+                                                get_id=True)
+
     JTT = models.JOINS_TOPICS_TEAMS
-    where_clause = sql.and_(JTT.c.topic_id == t_id,
+    where_clause = sql.and_(JTT.c.topic_id == topic_id,
                             JTT.c.team_id == team_id)
     query = JTT.delete().where(where_clause)
     result = flask.g.db_conn.execute(query)
@@ -242,19 +250,19 @@ def delete_team_from_topic(user, t_id, team_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
-@api.route('/topics/<t_id>/teams', methods=['GET'])
+@api.route('/topics/<topic_id>/teams', methods=['GET'])
 @auth.requires_auth
-def get_all_teams_from_topic(user, t_id):
+def get_all_teams_from_topic(user, topic_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
 
-    v1_utils.verify_existence_and_get(t_id, _TABLE)
+    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
 
     # Get all teams which belongs to a given topic
     JTT = models.JOINS_TOPICS_TEAMS
     query = (sql.select([models.TEAMS])
              .select_from(JTT.join(models.TEAMS))
-             .where(JTT.c.topic_id == t_id))
+             .where(JTT.c.topic_id == topic_id))
     rows = flask.g.db_conn.execute(query)
 
     res = flask.jsonify({'teams': rows,
