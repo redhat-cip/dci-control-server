@@ -38,6 +38,7 @@ BuildRequires:  python-setuptools
 BuildRequires:  postgresql
 BuildRequires:  postgresql-devel
 BuildRequires:  postgresql-server
+BuildRequires:  python-swiftclient
 BuildRequires:  python-lxml
 BuildRequires:  python-psycopg2
 BuildRequires:  python-tox
@@ -46,6 +47,7 @@ BuildRequires:  python-flask
 BuildRequires:  python-requests
 BuildRequires:  python-six
 BuildRequires:  python-passlib
+BuildRequires:  python-swiftclient
 BuildRequires:  gcc
 BuildRequires:  java-1.8.0-openjdk
 BuildRequires:  elasticsearch
@@ -55,12 +57,14 @@ Requires:       python-elasticsearch
 Requires:       python-lxml
 Requires:       python-flask
 Requires:       python-flask-sqlalchemy
+Requires:       python-swiftclient
 Requires:       python-passlib
 Requires:       python-psycopg2
 Requires:       python-requests
 Requires:       python-six
 Requires:       python-sqlalchemy
 Requires:       python-sqlalchemy-utils
+Requires:       python-swiftclient
 Requires:       python-voluptuous
 Requires:       python-werkzeug
 
@@ -77,6 +81,7 @@ BuildRequires:  python3-lxml
 BuildRequires:  postgresql
 BuildRequires:  postgresql-devel
 BuildRequires:  postgresql-server
+BuildRequires:  python-swiftclient
 BuildRequires:  python3-psycopg2
 BuildRequires:  python-tox
 BuildRequires:  python3-alembic
@@ -94,11 +99,13 @@ Requires:       python3-flask
 Requires:       python3-flask-sqlalchemy
 Requires:       python3-lxml
 Requires:       python-passlib
+Requires:       python-swiftclient
 Requires:       python3-psycopg2
 Requires:       python3-requests
 Requires:       python3-six
 Requires:       python3-sqlalchemy
 Requires:       python3-sqlalchemy-utils
+Requires:       python-swiftclient
 Requires:       python3-voluptuous
 Requires:       python3-werkzeug
 

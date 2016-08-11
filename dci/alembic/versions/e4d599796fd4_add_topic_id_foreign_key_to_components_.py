@@ -36,6 +36,44 @@ from dci.db import models
 
 import datetime
 
+COMPONENTS = sa.Table(
+    'components', sa.MetaData(),
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('name', sa.String(255), nullable=False),
+    sa.Column('type', sa.String(255), nullable=False),
+    sa.Column('canonical_project_name', sa.String),
+    sa.Column('data', sa_utils.JSONType),
+    sa.Column('sha', sa.Text),
+    sa.Column('title', sa.Text),
+    sa.Column('message', sa.Text),
+    sa.Column('url', sa.Text),
+    sa.Column('git', sa.Text),
+    sa.Column('ref', sa.Text),
+    sa.Column('topic_id', sa.String(36),
+              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              nullable=True),
+    sa.UniqueConstraint('name', 'topic_id',
+                        name='components_name_topic_id_key'))
+
+TEAMS = sa.Table(
+    'teams', sa.MetaData(),
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), unique=True, nullable=False),
+)
+
 
 TESTS = sa.Table(
     'tests', sa.MetaData(),
@@ -78,12 +116,12 @@ def upgrade():
 
     # Adds all components, jobdefinitions and tests to the default topics
     values = {'topic_id': topic_id}
-    db_conn.execute(models.COMPONENTS.update().values(**values))
+    db_conn.execute(COMPONENTS.update().values(**values))
     db_conn.execute(models.JOBDEFINITIONS.update().values(**values))
     db_conn.execute(TESTS.update().values(**values))
 
     # Adds all teams to the default topics
-    all_teams = db_conn.execute(models.TEAMS.select()).fetchall()
+    all_teams = db_conn.execute(TEAMS.select()).fetchall()
 
     teams_topic = [{'topic_id': topic_id, 'team_id': team['id']}
                    for team in all_teams]
