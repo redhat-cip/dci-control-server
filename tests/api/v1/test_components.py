@@ -15,7 +15,12 @@
 # under the License.
 
 from __future__ import unicode_literals
+import mock
 import uuid
+from dci.stores.swift import Swift
+from dci.common import utils
+
+SWIFT = 'dci.stores.swift.Swift'
 
 
 def test_create_components(admin, topic_id):
@@ -23,7 +28,8 @@ def test_create_components(admin, topic_id):
         'name': 'pname',
         'type': 'gerrit_review',
         'url': 'http://example.com/',
-        'topic_id': topic_id}
+        'topic_id': topic_id,
+        'export_control': True}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
     gc = admin.get('/api/v1/components/%s' % pc_id).data
@@ -145,7 +151,11 @@ def test_where_invalid(admin, topic_id):
 
 
 def test_get_component_by_id_or_name(admin, topic_id):
-    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
+    data = {'name': 'pname',
+            'type': 'gerrit_review',
+            'topic_id': topic_id,
+            'export_control': True
+            }
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
 
@@ -170,7 +180,10 @@ def test_get_component_not_found(admin):
 
 
 def test_delete_component_by_id(admin, topic_id):
-    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
+    data = {'name': 'pname',
+            'type': 'gerrit_review',
+            'topic_id': topic_id,
+            'export_control': True}
     pc = admin.post('/api/v1/components', data=data)
     pc_id = pc.data['component']['id']
     assert pc.status_code == 201
@@ -206,15 +219,93 @@ def test_get_all_components_with_sort(admin, topic_id):
 
     cts = admin.get(
         '/api/v1/topics/%s/components?sort=created_at' % topic_id).data
-    assert cts['components'] == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
+    cts_id = [db_cts['id'] for db_cts in cts['components']]
+    assert cts_id == [ct_1_1['id'], ct_1_2['id'], ct_2_1['id'], ct_2_2['id']]
 
     # sort by title first and then reverse by created_at
     cts = admin.get(
         '/api/v1/topics/%s/components?sort=title,-created_at' % topic_id).data
-    assert cts['components'] == [ct_1_2, ct_1_1, ct_2_2, ct_2_1]
+    cts_id = [db_cts['id'] for db_cts in cts['components']]
+    assert cts_id == [ct_1_2['id'], ct_1_1['id'], ct_2_2['id'], ct_2_1['id']]
 
 
 def test_delete_component_not_found(admin):
     result = admin.delete('/api/v1/components/ptdr',
                           headers={'If-match': 'mdr'})
     assert result.status_code == 404
+
+
+def test_put_component(admin, user, topic_id):
+    data = {'name': "pname1", 'title': 'aaa',
+            'type': 'gerrit_review',
+            'topic_id': topic_id}
+
+    ct_1 = admin.post('/api/v1/components', data=data).data['component']
+
+    # Active component
+    url = '/api/v1/components/%s' % ct_1['id']
+    data = {'export_control': True}
+    headers = {'If-match': ct_1['etag']}
+    admin.put(url, data=data, headers=headers)
+
+    ct_2 = admin.get('/api/v1/components/%s' % ct_1['id']).data['component']
+
+    assert ct_1['etag'] != ct_2['etag']
+    assert ct_1['export_control'] == False
+    assert ct_2['export_control'] == True
+
+
+def test_export_control(admin, user, team_user_id, topic_id):
+    # Subscribe user to topic
+    url = '/api/v1/topics/%s/teams' % topic_id
+    data = {'team_id': team_user_id}
+    admin.post(url, data=data)
+
+    # Create two component in the topic
+    data = {'name': "pname1", 'title': 'aaa',
+            'type': 'gerrit_review',
+            'topic_id': topic_id,
+            'export_control': True}
+    ct_1 = admin.post('/api/v1/components', data=data).data['component']
+    data = {'name': "pname2", 'title': 'bbb',
+            'type': 'gerrit_review',
+            'topic_id': topic_id}
+    ct_2 = admin.post('/api/v1/components', data=data).data['component']
+
+    # Test if user can access or not component
+    req = user.get('/api/v1/components/%s' % ct_1['id'])
+    assert req.status_code == 200
+    req = user.get('/api/v1/components/%s' % ct_2['id'])
+    assert req.status_code == 401
+
+
+def test_add_file_to_component(admin, topic_id):
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 1
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        
+        data = {'name': "pname1", 'title': 'aaa',
+                'type': 'gerrit_review',
+                'topic_id': topic_id,
+                'export_control': True}
+        ct_1 = admin.post('/api/v1/components', data=data).data['component']
+
+        url = '/api/v1/components/%s/files' % ct_1['id']
+        data = "lol"
+        c_file = admin.post(url, data=data)
+
+        assert c_file.status_code == 201
+        l_file = admin.get(url)
+        assert l_file.status_code == 200
+        assert l_file.data['_meta']['count'] == 1
+        assert l_file.data['component_files'][0]['component_id'] == ct_1['id']
+
