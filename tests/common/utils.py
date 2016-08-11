@@ -38,6 +38,7 @@ STATUS = 'status', text_type
 COMMENT = 'comment', text_type
 CONTENT = 'content', text_type
 LABEL = 'label', text_type
+COUNTRY = 'country', text_type
 
 INVALID_NAME = 'name', None
 INVALID_NAME_ERROR = 'name', schemas.INVALID_STRING

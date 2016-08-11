@@ -140,8 +140,19 @@ base = {
 
 
 componenttype = schema_factory(base)
-team = schema_factory(base)
 role = schema_factory(base)
+
+###############################################################################
+#                                                                             #
+#                                 Team schemas                                #
+#                                                                             #
+###############################################################################
+
+team = utils.dict_merge(base, {
+    v.Optional('country', default=None): six.text_type,
+})
+
+team = schema_factory(team)
 
 ###############################################################################
 #                                                                             #
@@ -182,12 +193,18 @@ component = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('git', default=None): six.text_type,
     v.Optional('ref', default=None): six.text_type,
     v.Optional('canonical_project_name', default=None): six.text_type,
+    v.Optional('export_control', default=False): bool,
     v.Optional('url', default=None): Url(),
     'type': six.text_type,
     'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC)
 })
 
-component = schema_factory(component)
+component_put = {
+    v.Optional('export_control'): bool,
+}
+
+component = DCISchema(schema_factory(component).post,
+                      Schema(component_put))
 
 ###############################################################################
 #                                                                             #
