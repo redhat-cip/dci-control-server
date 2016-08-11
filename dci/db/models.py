@@ -41,6 +41,8 @@ COMPONENTS = sa.Table(
               default=utils.gen_uuid),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
     sa.Column('name', sa.String(255), nullable=False),
     sa.Column('type', sa.String(255), nullable=False),
     sa.Column('canonical_project_name', sa.String),
@@ -51,12 +53,12 @@ COMPONENTS = sa.Table(
     sa.Column('url', sa.Text),
     sa.Column('git', sa.Text),
     sa.Column('ref', sa.Text),
+    sa.Column('export_control', sa.BOOLEAN, nullable=False, default=False),
     sa.Column('topic_id', sa.String(36),
               sa.ForeignKey('topics.id', ondelete='CASCADE'),
               nullable=True),
     sa.UniqueConstraint('name', 'topic_id',
                         name='components_name_topic_id_key'))
-
 
 TOPICS = sa.Table(
     'topics', metadata,
@@ -137,7 +139,10 @@ TEAMS = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
-    sa.Column('name', sa.String(255), unique=True, nullable=False))
+    sa.Column('name', sa.String(255), unique=True, nullable=False),
+    sa.Column('country', sa.String(255), nullable=False, default='Foreign')
+)
+
 
 REMOTECIS = sa.Table(
     'remotecis', metadata,
