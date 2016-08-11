@@ -21,6 +21,7 @@ from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
+from dci import dci_config
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
 from dci import auth
@@ -43,6 +44,9 @@ EMBED = {
 @api.route('/components', methods=['POST'])
 @auth.requires_auth
 def create_components(user):
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+
     values = schemas.component.post(flask.request.json)
     values.update({
         'id': utils.gen_uuid(),
@@ -58,6 +62,33 @@ def create_components(user):
 
     result = json.dumps({'component': values})
     return flask.Response(result, 201, content_type='application/json')
+
+
+@api.route('/components/<c_id>', methods=['PUT'])
+@auth.requires_auth
+def update_components(user, c_id):
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+
+    v1_utils.verify_existence_and_get(c_id, _TABLE)
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    values = schemas.component.put(flask.request.json)
+    values['etag'] = utils.gen_etag()
+
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        _TABLE.c.id == c_id
+    )
+
+    query = _TABLE.update().where(where_clause).values(**values)
+
+    result = flask.g.db_conn.execute(query)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Component', c_id)
+
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
+                          content_type='application/json')
 
 
 def get_all_components(user, topic_id):
@@ -104,12 +135,14 @@ def get_jobs(user, component_id, team_id=None):
 def get_component_by_id_or_name(user, c_id):
     where_clause = sql.or_(_TABLE.c.id == c_id,
                            _TABLE.c.name == c_id)
-
     query = sql.select([_TABLE]).where(where_clause)
 
     component = flask.g.db_conn.execute(query).fetchone()
+
     if component is None:
         raise dci_exc.DCINotFound('Component', c_id)
+
+    v1_utils.verify_team_in_topic(user, component['topic_id'])
 
     res = flask.jsonify({'component': component})
     return res
@@ -119,16 +152,146 @@ def get_component_by_id_or_name(user, c_id):
 @auth.requires_auth
 def delete_component_by_id_or_name(user, c_id):
     # get If-Match header
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(c_id, _TABLE)
 
-    where_clause = sql.or_(_TABLE.c.id == c_id, _TABLE.c.name == c_id)
-
-    query = _TABLE.delete().where(where_clause)
+    query = _TABLE.delete().where(_TABLE.c.id == c_id)
 
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
         raise dci_exc.DCIDeleteConflict('Component', c_id)
+
+    return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/components/<c_id>/files', methods=['GET'])
+@auth.requires_auth
+def list_components_files(user, c_id):
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    v1_utils.verify_team_in_topic(user, component['topic_id'])
+
+    args = schemas.args(flask.request.args.to_dict())
+
+    COMPONENT_FILES = models.COMPONENT_FILES
+    COLUMN_CF = v1_utils.get_columns_name_with_objects(COMPONENT_FILES)
+
+    q_bd = v1_utils.QueryBuilder(COMPONENT_FILES,
+                                 args['offset'], args['limit'])
+
+    q_bd.sort = v1_utils.sort_query(args['sort'], COLUMN_CF)
+    q_bd.where = v1_utils.where_query(args['where'], COMPONENT_FILES,
+                                      COLUMN_CF)
+    q_bd.where.append(COMPONENT_FILES.c.component_id == c_id)
+
+    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+
+    return flask.jsonify({'component_files': rows, '_meta': {'count': nb_row}})
+
+
+@api.route('/components/<c_id>/files/<f_id>', methods=['GET'])
+@auth.requires_auth
+def list_component_file(user, c_id, f_id):
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    if not(component['export_control']):
+        raise auth.UNAUTHORIZED
+    v1_utils.verify_team_in_topic(user, component['topic_id'])
+
+    COMPONENT_FILES = models.COMPONENT_FILES
+    where_clause = sql.and_(COMPONENT_FILES.c.id == f_id,
+                            COMPONENT_FILES.c.component_id == c_id)
+
+    query = sql.select([COMPONENT_FILES]).where(where_clause)
+
+    component_f = flask.g.db_conn.execute(query).fetchone()
+
+    if component_f is None:
+        raise dci_exc.DCINotFound('Component File', f_id)
+
+    res = flask.jsonify({'component_file': component_f})
+    return res
+
+
+@api.route('/components/<c_id>/files/<f_id>/content', methods=['GET'])
+@auth.requires_auth
+def download_component_file(user, c_id, f_id):
+    swift = dci_config.get_store()
+
+    def get_object(swift_object):
+        for block in swift.get(swift_object)[1]:
+            yield block
+
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    v1_utils.verify_team_in_topic(user, component['topic_id'])
+    COMPONENT_FILES = models.COMPONENT_FILES
+    v1_utils.verify_existence_and_get(f_id, COMPONENT_FILES)
+    if not(component['export_control']):
+        raise auth.UNAUTHORIZED
+    file_path = "%s/%s/%s" % (component['topic_id'], c_id, f_id)
+    return flask.Response(get_object(file_path))
+
+
+@api.route('/components/<c_id>/files', methods=['POST'])
+@auth.requires_auth
+def upload_component_file(user, c_id):
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+
+    COMPONENT_FILES = models.COMPONENT_FILES
+
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+
+    file_id = utils.gen_uuid()
+    file_path = "%s/%s/%s" % (component['topic_id'], c_id, file_id)
+
+    swift = dci_config.get_store()
+    swift.upload(file_path, flask.request.stream.read())
+    s_file = swift.head(file_path)
+
+    values = dict.fromkeys(['md5', 'mime', 'component_id', 'name'])
+
+    values.update({
+        'id': file_id,
+        'component_id': c_id,
+        'name': file_id,
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'md5': s_file['etag'],
+        'mime': s_file['content-type'],
+        'size': s_file['content-length']
+    })
+
+    query = COMPONENT_FILES.insert().values(**values)
+
+    flask.g.db_conn.execute(query)
+    result = json.dumps({'component_file': values})
+    return flask.Response(result, 201, content_type='application/json')
+
+
+@api.route('/components/<c_id>/files/<f_id>', methods=['DELETE'])
+@auth.requires_auth
+def delete_component_file(user, c_id, f_id):
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+
+    COMPONENT_FILES = models.COMPONENT_FILES
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    v1_utils.verify_existence_and_get(f_id, COMPONENT_FILES)
+
+    where_clause = sql.or_(COMPONENT_FILES.c.id == f_id,
+                           COMPONENT_FILES.c.name == f_id)
+
+    query = COMPONENT_FILES.delete().where(where_clause)
+
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIDeleteConflict('Component File', f_id)
+
+    file_path = "%s/%s/%s" % (component['topic_id'], c_id, f_id)
+    swift = dci_config.get_store()
+    swift.delete(file_path)
 
     return flask.Response(None, 204, content_type='application/json')
