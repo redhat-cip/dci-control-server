@@ -39,6 +39,11 @@ for arch in fedora-23-x86_64 epel-7-x86_64; do
         sed -i '$ibaseurl=http://packages.distributed-ci.io/repos/extras/el/7/x86_64/' ${HOME}/.mock/${arch}-with-extras.cfg
         sed -i '$igpgcheck=0' ${HOME}/.mock/${arch}-with-extras.cfg
         sed -i '$ienabled=1' ${HOME}/.mock/${arch}-with-extras.cfg
+	sed -i '$i[centos-openstack-liberty]' ${HOME}/.mock/${arch}-with-extras.cfg
+	sed -i '$iname=CentOS-7 - OpenStack liberty' ${HOME}/.mock/${arch}-with-extras.cfg
+	sed -i '$ibaseurl=http://mirror.centos.org/centos/7/cloud/$basearch/openstack-liberty/' ${HOME}/.mock/${arch}-with-extras.cfg
+	sed -i '$igpgcheck=0' ${HOME}/.mock/${arch}-with-extras.cfg
+	sed -i '$ienabled=1' ${HOME}/.mock/${arch}-with-extras.cfg
     fi
 
     # NOTE(spredzy) Add signing options
