@@ -18,6 +18,7 @@ import os
 import sys
 
 from dci.db import models
+from dci.stores import swift
 
 import flask
 import sqlalchemy
@@ -40,6 +41,18 @@ def get_engine(conf):
         convert_unicode=conf['SQLALCHEMY_NATIVE_UNICODE'],
         echo=conf['SQLALCHEMY_ECHO'])
     return sa_engine
+
+def get_store():
+    conf = generate_conf()
+    configuration = {
+        'os_username': conf['STORE_USERNAME'],
+        'os_password': conf['STORE_PASSWORD'],
+        'os_tenant_name':  conf['STORE_TENANT_NAME'],
+        'os_auth_url': conf['STORE_AUTH_URL'],
+        'container': conf['STORE_CONTAINER']
+    }
+    stores_engine = swift.Swift(configuration)
+    return stores_engine
 
 
 def get_team_admin_id():

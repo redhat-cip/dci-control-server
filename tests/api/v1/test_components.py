@@ -206,12 +206,14 @@ def test_get_all_components_with_sort(admin, topic_id):
 
     cts = admin.get(
         '/api/v1/topics/%s/components?sort=created_at' % topic_id).data
-    assert cts['components'] == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
+    cts_id = [db_cts['id'] for db_cts in cts['components']]
+    assert cts_id == [ct_1_1['id'], ct_1_2['id'], ct_2_1['id'], ct_2_2['id']]
 
     # sort by title first and then reverse by created_at
     cts = admin.get(
         '/api/v1/topics/%s/components?sort=title,-created_at' % topic_id).data
-    assert cts['components'] == [ct_1_2, ct_1_1, ct_2_2, ct_2_1]
+    cts_id = [db_cts['id'] for db_cts in cts['components']]
+    assert cts_id == [ct_1_2['id'], ct_1_1['id'], ct_2_2['id'], ct_2_1['id']]
 
 
 def test_delete_component_not_found(admin):

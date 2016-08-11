@@ -21,6 +21,7 @@ from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
+from dci import dci_config
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
 from dci import auth
@@ -43,6 +44,9 @@ EMBED = {
 @api.route('/components', methods=['POST'])
 @auth.requires_auth
 def create_components(user):
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+
     values = schemas.component.post(flask.request.json)
     values.update({
         'id': utils.gen_uuid(),
@@ -50,6 +54,29 @@ def create_components(user):
     })
 
     query = _TABLE.insert().values(**values)
+
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
+
+    result = json.dumps({'component': values})
+    return flask.Response(result, 201, content_type='application/json')
+
+
+@api.route('/components/<c_id>', methods=['PUT'])
+@auth.requires_auth
+def update_components(user, c_id):
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+
+    values = schemas.component.post(flask.request.json)
+    values.update({
+        'id': c_id,
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+    })
+
+    query = _TABLE.update().values(**values)
 
     try:
         flask.g.db_conn.execute(query)
@@ -108,8 +135,11 @@ def get_component_by_id_or_name(user, c_id):
     query = sql.select([_TABLE]).where(where_clause)
 
     component = flask.g.db_conn.execute(query).fetchone()
+
     if component is None:
         raise dci_exc.DCINotFound('Component', c_id)
+
+    v1_utils.verify_team_in_topic(user, component['topic_id'])
 
     res = flask.jsonify({'component': component})
     return res
@@ -119,6 +149,8 @@ def get_component_by_id_or_name(user, c_id):
 @auth.requires_auth
 def delete_component_by_id_or_name(user, c_id):
     # get If-Match header
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(c_id, _TABLE)
 
@@ -132,3 +164,52 @@ def delete_component_by_id_or_name(user, c_id):
         raise dci_exc.DCIDeleteConflict('Component', c_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/components/<c_id>/files', methods=['GET'])
+@auth.requires_auth
+def list_components_files(user, c_id):
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    v1_utils.verify_team_in_topic(user, component['topic_id'])
+
+    # Todo SQL list
+
+    res = flask.jsonify({'component': 'todo'})
+    return res
+
+
+@api.route('/components/<c_id>/files/<f_id>', methods=['GET'])
+@auth.requires_auth
+def download_component_file(user, c_id, f_id):
+    # Todo SQL Select
+
+    # Todo Swift get
+    store = dci_config.get_store()
+    store.get('GET FILE %s' % c_id)
+    
+    res = flask.jsonify({'component': 'todo'})
+    return res
+
+
+@api.route('/components/<c_id>/files', methods=['POST'])
+@auth.requires_auth
+def upload_component_file(user, c_id):
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+    # Todo Swift upload
+
+    # Todo SQL Insert
+
+    res = flask.jsonify({'component': 'todo'})
+    return res
+
+
+@api.route('/components/<c_id>/files/<f_id>', methods=['DELETE'])
+@auth.requires_auth
+def delete_component_file(user, c_id, f_id):
+    # TODO Swift Delete
+
+    # Todo SQL Delete
+
+    res = flask.jsonify({'component': 'todo'})
+    return res
