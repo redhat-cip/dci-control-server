@@ -10,4 +10,7 @@ voluptuous
 passlib>=1.6.2
 setuptools<=18.5
 Werkzeug==0.10.4
+Babel>=2.3.4
 lxml
+python-swiftclient
+python-keystoneclient
