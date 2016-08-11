@@ -40,6 +40,14 @@ SQLALCHEMY_POOL_SIZE = 20
 SQLALCHEMY_MAX_OVERFLOW = 0
 SQLALCHEMY_NATIVE_UNICODE = True
 
+# Stores configuration, to store files and components
+# STORE
+STORE_ENGINE = 'Swift'
+STORE_USERNAME = 'dci_components'
+STORE_PASSWORD = 'test'
+STORE_TENANT_NAME = 'DCI-Prod'
+STORE_AUTH_URL = 'http://46.231.132.68:5000/v2.0'
+STORE_CONTAINER = 'dci_components'
 
 # Logging related parameters
 PROD_LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
