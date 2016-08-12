@@ -309,7 +309,11 @@ file = schema_factory(file)
 #                                                                             #
 ###############################################################################
 
-topic = schema_factory(base)
+topic = utils.dict_merge(base, {
+    v.Optional('label', default=None): six.text_type,
+})
+
+topic = schema_factory(topic)
 
 ###############################################################################
 #                                                                             #

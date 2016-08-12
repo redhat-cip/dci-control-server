@@ -569,7 +569,7 @@ class LolTestFile(utils.SchemaTesting):
 
 class TestTopic(utils.SchemaTesting):
     schema = schemas.topic
-    data = dict([utils.NAME])
+    data = dict([utils.NAME, utils.LABEL])
 
     @staticmethod
     def generate_invalids_and_errors():
