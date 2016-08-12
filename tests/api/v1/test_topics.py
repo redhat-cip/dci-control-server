@@ -32,6 +32,17 @@ def test_create_topics_as_user(user):
     assert status_code == 401
 
 
+def test_update_topics_as_admin(admin, topic_id):
+    t = admin.get('/api/v1/topics/' + topic_id).data['topic']
+    data = {'label': 'my comment'}
+    r = admin.put('/api/v1/topics/' + topic_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 204
+    current_label = admin.get('/api/v1/topics/' + topic_id).data['topic']['label']
+    assert current_label == 'my comment'
+
+
 def test_create_topics_already_exist(admin):
     data = {'name': 'tname'}
     pstatus_code = admin.post('/api/v1/topics', data=data).status_code

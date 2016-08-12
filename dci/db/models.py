@@ -69,7 +69,8 @@ TOPICS = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
-    sa.Column('name', sa.String(255), unique=True, nullable=False)
+    sa.Column('name', sa.String(255), unique=True, nullable=False),
+    sa.Column('label', sa.Text),
 )
 
 JOINS_TOPICS_TEAMS = sa.Table(
