@@ -219,10 +219,10 @@ def init_db(db_conn, minimal):
                            component_types=['git', 'package'])
 
     # Creates 3 tests type
-    test_common = db_ins(models.TESTS, name='tox', topic_id=topic_common)
-    test_hp = db_ins(models.TESTS, name='tempest', topic_id=topic_hp)
+    test_common = db_ins(models.TESTS, name='tox', team_id=team_admin)
+    test_hp = db_ins(models.TESTS, name='tempest', team_id=team_hp)
     test_dell = db_ins(models.TESTS, name='khaleesi-tempest',
-                       topic_id=topic_dell)
+                       team_id=team_dell)
 
     db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_common_1,
            test_id=test_common)
