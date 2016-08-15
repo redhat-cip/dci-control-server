@@ -90,9 +90,9 @@ TESTS = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('name', sa.String(255), nullable=False, unique=True),
     sa.Column('data', sa_utils.JSONType),
-    sa.Column('topic_id', sa.String(36),
-              sa.ForeignKey('topics.id', ondelete='CASCADE'),
-              nullable=True))
+    sa.Column('team_id', sa.String(36),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=False))
 
 JOBDEFINITIONS = sa.Table(
     'jobdefinitions', metadata,
@@ -129,6 +129,16 @@ JOIN_REMOTECIS_TESTS = sa.Table(
     'remoteci_tests', metadata,
     sa.Column('remoteci_id', sa.String(36),
               sa.ForeignKey('remotecis.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('test_id', sa.String(36),
+              sa.ForeignKey('tests.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True)
+)
+
+JOIN_TOPICS_TESTS = sa.Table(
+    'topic_tests', metadata,
+    sa.Column('topic_id', sa.String(36),
+              sa.ForeignKey('topics.id', ondelete='CASCADE'),
               nullable=False, primary_key=True),
     sa.Column('test_id', sa.String(36),
               sa.ForeignKey('tests.id', ondelete='CASCADE'),

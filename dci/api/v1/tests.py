@@ -58,14 +58,17 @@ def create_tests(user):
     )
 
 
-def get_all_tests(user, topic_id):
+def get_all_tests(user, team_id):
     args = schemas.args(flask.request.args.to_dict())
+
+    if not(auth.is_admin(user) or auth.is_in_team(user, team_id)):
+        raise auth.UNAUTHORIZED
 
     q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
-    q_bd.where.append(_TABLE.c.topic_id == topic_id)
+    q_bd.where.append(_TABLE.c.team_id == team_id)
 
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
@@ -78,6 +81,8 @@ def get_all_tests(user, topic_id):
 @auth.requires_auth
 def get_test_by_id_or_name(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
+    if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
+        raise auth.UNAUTHORIZED
     res = flask.jsonify({'test': test})
     return res
 
@@ -86,6 +91,8 @@ def get_test_by_id_or_name(user, t_id):
 @auth.requires_auth
 def get_jobdefinitions_by_test(user, test_id):
     test = v1_utils.verify_existence_and_get(test_id, _TABLE)
+    if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
+        raise auth.UNAUTHORIZED
     return jobdefinitions.get_all_jobdefinitions(test['id'])
 
 
@@ -100,7 +107,10 @@ def get_remotecis_by_test(user, test_id):
 @auth.requires_auth
 def delete_test_by_id_or_name(user, t_id):
 
-    v1_utils.verify_existence_and_get(t_id, _TABLE)
+    test = v1_utils.verify_existence_and_get(t_id, _TABLE)
+
+    if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
+        raise auth.UNAUTHORIZED
 
     where_clause = sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
     query = _TABLE.delete().where(where_clause)
