@@ -27,7 +27,7 @@ ES_PORT = '9200'
 
 # Database (SQLAlchemy) related parameters
 #
-SQLALCHEMY_DATABASE_URI = 'postgresql://dci:dci@127.0.0.1:5432/dci'
+SQLALCHEMY_DATABASE_URI = 'postgresql://dci:password@127.0.0.1:5432/dci'
 
 # The following two lines will output the SQL statements
 # executed by SQLAlchemy. Useful while debugging and in

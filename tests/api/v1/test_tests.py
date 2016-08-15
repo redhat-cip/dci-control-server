@@ -17,31 +17,36 @@
 from __future__ import unicode_literals
 
 
-def test_create_tests(admin, topic_id):
+def test_create_tests(admin, team_id):
     pt = admin.post('/api/v1/tests',
-                    data={'name': 'pname', 'topic_id': topic_id}).data
+                    data={'name': 'pname', 'team_id': team_id}).data
     pt_id = pt['test']['id']
     gt = admin.get('/api/v1/tests/%s' % pt_id).data
     assert gt['test']['name'] == 'pname'
 
 
-def test_create_tests_already_exist(admin, topic_id):
+def test_create_tests_already_exist(admin, team_id):
     pstatus_code = admin.post('/api/v1/tests',
                               data={'name': 'pname',
-                                    'topic_id': topic_id}).status_code
+                                    'team_id': team_id}).status_code
     assert pstatus_code == 201
 
     pstatus_code = admin.post('/api/v1/tests',
                               data={'name': 'pname',
-                                    'topic_id': topic_id}).status_code
+                                    'team_id': team_id}).status_code
     assert pstatus_code == 422
 
 
-def test_get_all_tests(admin, topic_id):
+def test_get_all_tests(admin, team_id, topic_id):
     test_1 = admin.post('/api/v1/tests', data={'name': 'pname1',
-                                               'topic_id': topic_id}).data
+                                               'team_id': team_id}).data
     test_2 = admin.post('/api/v1/tests', data={'name': 'pname2',
-                                               'topic_id': topic_id}).data
+                                               'team_id': team_id}).data
+
+    admin.post('/api/v1/topics/%s/tests' % topic_id,
+               data={'test_id': test_1['test']['id']})
+    admin.post('/api/v1/topics/%s/tests' % topic_id,
+               data={'test_id': test_2['test']['id']})
 
     db_all_tests = admin.get(
         '/api/v1/topics/%s/tests?sort=created_at' % topic_id).data
@@ -59,42 +64,27 @@ def test_get_all_tests_not_in_topic(admin, user):
     assert status_code == 412
 
 
-def test_get_all_tests_with_where(admin, topic_id):
-    pt = admin.post('/api/v1/tests', data={'name': 'pname1',
-                                           'topic_id': topic_id}).data
-    pt_id = pt['test']['id']
-
-    db_t = admin.get('/api/v1/topics/%s/tests?where=id:%s' %
-                     (topic_id, pt_id)).data
-    db_t_id = db_t['tests'][0]['id']
-    assert db_t_id == pt_id
-
-    db_t = admin.get(
-        '/api/v1/topics/%s/tests?where=name:pname1' % topic_id).data
-    db_t_id = db_t['tests'][0]['id']
-    assert db_t_id == pt_id
-
-
-def test_where_invalid(admin, topic_id):
-    err = admin.get('/api/v1/topics/%s/tests?where=id' % topic_id)
-
-    assert err.status_code == 400
-    assert err.data == {
-        'status_code': 400,
-        'message': 'Invalid where key: "id"',
-        'payload': {
-            'error': 'where key must have the following form "key:value"'
-        }
-    }
-
-
-def test_get_all_tests_with_pagination(admin, topic_id):
+def test_get_all_tests_with_pagination(admin, team_id, topic_id):
     # create 4 components types and check meta data count
-    admin.post('/api/v1/tests', data={'name': 'pname1', 'topic_id': topic_id})
-    admin.post('/api/v1/tests', data={'name': 'pname2', 'topic_id': topic_id})
-    admin.post('/api/v1/tests', data={'name': 'pname3', 'topic_id': topic_id})
-    admin.post('/api/v1/tests', data={'name': 'pname4', 'topic_id': topic_id})
+    test1 = admin.post('/api/v1/tests',
+                       data={'name': 'pname1', 'team_id': team_id}).data
+    test2 = admin.post('/api/v1/tests',
+                       data={'name': 'pname2', 'team_id': team_id}).data
+    test3 = admin.post('/api/v1/tests',
+                       data={'name': 'pname3', 'team_id': team_id}).data
+    test4 = admin.post('/api/v1/tests',
+                       data={'name': 'pname4', 'team_id': team_id}).data
+
+    admin.post('/api/v1/topics/%s/tests' % topic_id,
+               data={'test_id': test1['test']['id']})
+    admin.post('/api/v1/topics/%s/tests' % topic_id,
+               data={'test_id': test2['test']['id']})
+    admin.post('/api/v1/topics/%s/tests' % topic_id,
+               data={'test_id': test3['test']['id']})
+    admin.post('/api/v1/topics/%s/tests' % topic_id,
+               data={'test_id': test4['test']['id']})
     ts = admin.get('/api/v1/topics/%s/tests' % topic_id).data
+
     assert ts['_meta']['count'] == 4
 
     # verify limit and offset are working well
@@ -112,24 +102,31 @@ def test_get_all_tests_with_pagination(admin, topic_id):
     assert ts.data['tests'] == []
 
 
-def test_get_all_tests_with_sort(admin, topic_id):
+def test_get_all_tests_with_sort(admin, team_id, topic_id):
     # create 2 tests ordered by created time
     t_1 = admin.post('/api/v1/tests', data={'name': 'pname1',
-                                            'topic_id': topic_id}).data['test']
+                                            'team_id': team_id}).data['test']
     t_2 = admin.post('/api/v1/tests', data={'name': 'pname2',
-                                            'topic_id': topic_id}).data['test']
+                                            'team_id': team_id}).data['test']
+
+    admin.post('/api/v1/topics/%s/tests' % topic_id,
+               data={'test_id': t_1['id']})
+    admin.post('/api/v1/topics/%s/tests' % topic_id,
+               data={'test_id': t_2['id']})
 
     gts = admin.get('/api/v1/topics/%s/tests?sort=created_at' % topic_id).data
-    assert gts['tests'] == [t_1, t_2]
+    assert gts['tests'][0]['id'] == t_1['id']
+    assert gts['tests'][1]['id'] == t_2['id']
 
     # test in reverse order
     gts = admin.get('/api/v1/topics/%s/tests?sort=-created_at' % topic_id).data
-    assert gts['tests'] == [t_2, t_1]
+    assert gts['tests'][0]['id'] == t_2['id']
+    assert gts['tests'][1]['id'] == t_1['id']
 
 
-def test_get_test_by_id_or_name(admin, topic_id):
+def test_get_test_by_id_or_name(admin, team_id):
     pt = admin.post('/api/v1/tests', data={'name': 'pname',
-                                           'topic_id': topic_id}).data
+                                           'team_id': team_id}).data
     pt_id = pt['test']['id']
 
     # get by uuid
@@ -152,9 +149,104 @@ def test_get_test_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_test_by_id(admin, topic_id):
+def test_get_tests_from_teams(admin, user, team_user_id, team_id):
+    # Create two test 1 for each team
+    test_1 = admin.post('/api/v1/tests',
+                        data={'name': 'pname1',
+                              'team_id': team_user_id}).data['test']
+    test_id_1 = test_1['id']
+    test_2 = admin.post('/api/v1/tests',
+                        data={'name': 'pname2',
+                              'team_id': team_id}).data['test']
+    test_id_2 = test_2['id']
+
+    # Verify user can get tests in his team
+    t_tests = user.get('/api/v1/tests/%s' % test_id_1)
+    assert t_tests.status_code == 200
+    assert t_tests.data['test']['id'] == test_id_1
+
+    # Verify user can't get tests from other teams
+    t_tests = user.get('/api/v1/tests/%s' % test_id_2)
+    assert t_tests.status_code == 401
+
+
+def test_get_tests_from_remotecis(admin, user, team_user_id, team_id):
+    # Create 2 remoteCI
+    rci_1 = user.post('/api/v1/remotecis',
+                      data={'name': 'foo', 'team_id': team_user_id})
+    rci_id_1 = rci_1.data['remoteci']['id']
+    rci_2 = admin.post('/api/v1/remotecis',
+                       data={'name': 'foo2', 'team_id': team_id})
+    rci_id_2 = rci_2.data['remoteci']['id']
+
+    # Create two tests
+    test_1 = admin.post('/api/v1/tests',
+                        data={'name': 'pname1',
+                              'team_id': team_user_id}).data['test']
+    test_id_1 = test_1['id']
+    test_2 = admin.post('/api/v1/tests',
+                        data={'name': 'pname2',
+                              'team_id': team_id}).data['test']
+    test_id_2 = test_2['id']
+
+    # Attach tests to remote CI
+    admin.post('/api/v1/remotecis/%s/tests' % rci_id_1,
+               data={'test_id': test_id_1})
+    admin.post('/api/v1/remotecis/%s/tests' % rci_id_2,
+               data={'test_id': test_id_2})
+
+    # Verify user can access his remoteci test
+    t_tests = user.get('/api/v1/remotecis/%s/tests' % rci_id_1)
+    assert t_tests.status_code == 200
+    # Verify user can access the test linked to remoteci
+    assert t_tests.data['tests'][0]['id'] == test_id_1
+
+    # Verify user can't access to other remoteci tests
+    t_tests = user.get('/api/v1/remoteci/%s/tests' % rci_id_2)
+    assert t_tests.status_code == 404
+
+
+def test_get_tests_from_topics(admin, user, team_user_id, team_id):
+    # Create two test 1 for each team
+    test_1 = admin.post('/api/v1/tests',
+                        data={'name': 'pname1',
+                              'team_id': team_user_id}).data['test']
+    test_id_1 = test_1['id']
+    test_2 = admin.post('/api/v1/tests',
+                        data={'name': 'pname2',
+                              'team_id': team_id}).data['test']
+    test_id_2 = test_2['id']
+
+    # Create two different topic
+    topic_1 = admin.post('/api/v1/topics', data={'name': 'topic_test_1'}).data
+    topic_id_1 = topic_1['topic']['id']
+    topic_2 = admin.post('/api/v1/topics', data={'name': 'topic_test_2'}).data
+    topic_id_2 = topic_2['topic']['id']
+
+    # Attach the user's team to topic 1
+    admin.post('/api/v1/topics/%s/teams' % topic_id_1,
+               data={'team_id': team_user_id})
+
+    # Attach tests to topics
+    admin.post('/api/v1/topics/%s/tests' % topic_id_1,
+               data={'test_id': test_id_1})
+    admin.post('/api/v1/topics/%s/tests' % topic_id_2,
+               data={'test_id': test_id_2})
+
+    # Verify user can access his topic test
+    t_tests = user.get('/api/v1/topics/%s/tests' % topic_id_1)
+    assert t_tests.status_code == 200
+    # Verify user can access the test linked in the topic
+    assert t_tests.data['tests'][0]['id'] == test_id_1
+
+    # Verify user can't access to other topic tests
+    t_tests = user.get('/api/v1/topics/%s/tests' % topic_id_2)
+    assert t_tests.status_code == 412
+
+
+def test_delete_test_by_id(admin, team_id):
     pt = admin.post('/api/v1/tests', data={'name': 'pname',
-                                           'topic_id': topic_id})
+                                           'team_id': team_id})
     pt_id = pt.data['test']['id']
     assert pt.status_code == 201
 

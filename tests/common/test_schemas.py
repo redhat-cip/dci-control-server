@@ -84,14 +84,14 @@ class TestRole(BaseSchemaTesting):
 
 class TestTest(utils.SchemaTesting):
     schema = schemas.test
-    data = dict([utils.NAME, utils.TOPIC])
+    data = dict([utils.NAME, utils.TEAM])
 
     @staticmethod
     def generate_invalids_and_errors():
         invalids = dict([utils.INVALID_NAME, utils.INVALID_DATA,
-                         utils.INVALID_TOPIC])
+                         utils.INVALID_TEAM])
         errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_DATA_ERROR,
-                       utils.INVALID_TOPIC_ERROR])
+                       utils.INVALID_TEAM_ERROR])
         return invalids, errors
 
     def test_post_extra_data(self):
@@ -101,7 +101,7 @@ class TestTest(utils.SchemaTesting):
         super(TestTest, self).test_post(data, data_expected)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'topic_id')
+        errors = utils.generate_errors('name', 'team_id')
         super(TestTest, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
