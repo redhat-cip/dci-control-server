@@ -117,8 +117,8 @@ def topic_id(admin, team_admin_id):
 
 
 @pytest.fixture
-def test_id(admin, topic_id):
-    data = {'name': 'pname', 'topic_id': topic_id}
+def test_id(admin, team_id):
+    data = {'name': 'pname', 'team_id': team_id}
     test = admin.post('/api/v1/tests', data=data).data
     return test['test']['id']
 
