@@ -149,9 +149,11 @@ role = schema_factory(base)
 #                                                                             #
 ###############################################################################
 
-test = schema_factory(utils.dict_merge(base, DATA_FIELD, {
-    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC)
-}))
+test = utils.dict_merge(base, DATA_FIELD, {
+    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM)
+})
+
+test = schema_factory(test)
 
 ###############################################################################
 #                                                                             #
