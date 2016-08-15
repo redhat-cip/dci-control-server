@@ -29,11 +29,25 @@ depends_on = None
 
 from alembic import op
 import sqlalchemy as sa
+import sqlalchemy_utils as sa_utils
 
 from dci.common import utils
 from dci.db import models
 
 import datetime
+
+
+TESTS = sa.Table(
+    'tests', sa.MetaData(),
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('name', sa.String(255), nullable=False, unique=True),
+    sa.Column('data', sa_utils.JSONType),
+    sa.Column('topic_id', sa.String(36),
+              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              nullable=True))
 
 
 def upgrade():
@@ -66,7 +80,7 @@ def upgrade():
     values = {'topic_id': topic_id}
     db_conn.execute(models.COMPONENTS.update().values(**values))
     db_conn.execute(models.JOBDEFINITIONS.update().values(**values))
-    db_conn.execute(models.TESTS.update().values(**values))
+    db_conn.execute(TESTS.update().values(**values))
 
     # Adds all teams to the default topics
     all_teams = db_conn.execute(models.TEAMS.select()).fetchall()
