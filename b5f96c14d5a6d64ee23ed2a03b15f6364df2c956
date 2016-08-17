@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dab895d6_5f99636d",
+        "filename": "dci/alembic/versions/e4d599796fd4_add_topic_id_foreign_key_to_components_.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 33
+      },
+      "writtenOn": "2016-08-17T14:19:10Z",
+      "side": 1,
+      "message": "Why did you copy this table class from the models.py?",
+      "revId": "b5f96c14d5a6d64ee23ed2a03b15f6364df2c956",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_7f9e2758",
+        "filename": "dci/api/v1/tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 33
+      },
+      "writtenOn": "2016-08-17T14:19:10Z",
+      "side": 1,
+      "message": "This is a utility function, I don\u0027t think you need to test for authorization.",
+      "revId": "b5f96c14d5a6d64ee23ed2a03b15f6364df2c956",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
