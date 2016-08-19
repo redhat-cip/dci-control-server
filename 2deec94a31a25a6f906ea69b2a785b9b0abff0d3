@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dab895d6_cdf5c9cc",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 9
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-08-19T13:10:38Z",
+      "side": 1,
+      "message": "s/element/component/",
+      "revId": "2deec94a31a25a6f906ea69b2a785b9b0abff0d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_4d31b9a1",
+        "filename": "dci/alembic/versions/9c639866e1b4_alter_test_to_belong_to_team.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-08-19T13:10:38Z",
+      "side": 1,
+      "message": "nullable should be True, for the case the test is not associated to a team.",
+      "revId": "2deec94a31a25a6f906ea69b2a785b9b0abff0d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
