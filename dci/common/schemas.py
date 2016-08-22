@@ -223,7 +223,14 @@ remoteci = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('active', default=True): bool,
 })
 
-remoteci = schema_factory(remoteci)
+remoteci_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('data'): dict,
+    v.Optional('team_id'): v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    v.Optional('active'): bool
+}
+
+remoteci = DCISchema(schema_factory(remoteci).post, Schema(remoteci_put))
 
 ###############################################################################
 #                                                                             #
