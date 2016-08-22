@@ -301,8 +301,7 @@ class TestRemoteCI(utils.SchemaTesting):
 
     def test_put(self):
         # add default values to voluptuous output
-        data_expected = utils.dict_merge(self.data, {'data': {}})
-        super(TestRemoteCI, self).test_put(self.data, data_expected)
+        super(TestRemoteCI, self).test_put(self.data, self.data)
 
 
 class TestJob(utils.SchemaTesting):

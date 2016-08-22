@@ -128,6 +128,11 @@ def put_remoteci(user, r_id):
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
+    if 'data' in values:
+        remoteci_data = get_remoteci_data_json(user, r_id)
+        remoteci_data.update(values['data'])
+        values['data'] = {k: v for k, v in remoteci_data.items() if v}
+
     if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
         raise auth.UNAUTHORIZED
 
@@ -174,3 +179,32 @@ def delete_remoteci_by_id_or_name(user, r_id):
         raise dci_exc.DCIDeleteConflict('RemoteCI', r_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/remotecis/<r_id>/data', methods=['GET'])
+@auth.requires_auth
+def get_remoteci_data(user, r_id):
+    remoteci_data = get_remoteci_data_json(user, r_id)
+
+    if 'keys' in 'keys' in flask.request.args:
+        keys = flask.request.args.get('keys').split(',')
+        remoteci_data = {k: remoteci_data[k] for k in keys
+                         if k in remoteci_data}
+
+    return flask.jsonify(remoteci_data)
+
+
+def get_remoteci_data_json(user, r_id):
+    q_bd = v1_utils.QueryBuilder(_TABLE)
+
+    if not auth.is_admin(user):
+        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+
+    q_bd.where.append(sql.or_(_TABLE.c.id == r_id, _TABLE.c.name == r_id))
+    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
+
+    if row is None:
+        raise dci_exc.DCINotFound('RemoteCI', r_id)
+
+    remoteci = v1_utils.group_embedded_resources([], row)
+    return remoteci['data']

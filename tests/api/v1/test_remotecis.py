@@ -189,6 +189,52 @@ def test_get_remoteci_not_found(admin):
     assert result.status_code == 404
 
 
+def test_get_remoteci_data(admin, team_id):
+    data_data = {'key': 'value'}
+    data = {
+        'name': 'pname1',
+        'team_id': team_id,
+        'data': data_data
+    }
+
+    premoteci = admin.post('/api/v1/remotecis', data=data).data
+
+    r_id = premoteci['remoteci']['id']
+
+    r_data = admin.get('/api/v1/remotecis/%s/data' % r_id).data
+    assert r_data == data_data
+
+
+def test_get_remoteci_data_specific_keys(admin, team_id):
+    data_key = {'key': 'value'}
+    data_key1 = {'key1': 'value1'}
+
+    final_data = {}
+    final_data.update(data_key)
+    final_data.update(data_key1)
+    data = {
+        'name': 'pname1',
+        'team_id': team_id,
+        'data': final_data
+    }
+
+    premoteci = admin.post('/api/v1/remotecis', data=data).data
+
+    r_id = premoteci['remoteci']['id']
+
+    r_data = admin.get('/api/v1/remotecis/%s/data' % r_id).data
+    assert r_data == final_data
+
+    r_data = admin.get('/api/v1/remotecis/%s/data?keys=key' % r_id).data
+    assert r_data == data_key
+
+    r_data = admin.get('/api/v1/remotecis/%s/data?keys=key1' % r_id).data
+    assert r_data == data_key1
+
+    r_data = admin.get('/api/v1/remotecis/%s/data?keys=key,key1' % r_id).data
+    assert r_data == final_data
+
+
 def test_put_remotecis(admin, team_id):
     pr = admin.post('/api/v1/remotecis', data={'name': 'pname',
                                                'team_id': team_id})
@@ -209,6 +255,35 @@ def test_put_remotecis(admin, team_id):
 
     gr = admin.get('/api/v1/remotecis/nname')
     assert gr.status_code == 200
+
+
+def test_put_remoteci_data(admin, team_id):
+    data_data = {'key': 'value'}
+    data = {
+        'name': 'pname1',
+        'team_id': team_id,
+        'data': data_data
+    }
+
+    pr = admin.post('/api/v1/remotecis', data=data)
+
+    pr_etag = pr.headers.get("ETag")
+
+    # Check that data is what it is supposed to be
+    r_id = pr.data['remoteci']['id']
+
+    r_data = admin.get('/api/v1/remotecis/%s/data' % r_id).data
+    assert r_data == data_data
+
+    # Update the data that belong to this remoteci
+    new_data = {'key': 'new_value', 'new_key': 'another_value'}
+    ppr = admin.put('/api/v1/remotecis/%s' % r_id,
+                    data={'data': new_data},
+                    headers={'If-match': pr_etag})
+    assert ppr.status_code == 204
+
+    r_data = admin.get('/api/v1/remotecis/%s/data' % r_id).data
+    assert r_data == new_data
 
 
 def test_delete_remoteci_by_id(admin, team_id):
@@ -233,6 +308,35 @@ def test_delete_remoteci_not_found(admin):
     result = admin.delete('/api/v1/remotecis/ptdr',
                           headers={'If-match': 'mdr'})
     assert result.status_code == 404
+
+
+def test_delete_remoteci_data(admin, team_id):
+    data_data = {'key': 'value'}
+    data = {
+        'name': 'pname1',
+        'team_id': team_id,
+        'data': data_data
+    }
+
+    pr = admin.post('/api/v1/remotecis', data=data)
+
+    pr_etag = pr.headers.get("ETag")
+
+    # Check that data is what it is supposed to be
+    r_id = pr.data['remoteci']['id']
+
+    r_data = admin.get('/api/v1/remotecis/%s/data' % r_id).data
+    assert r_data == data_data
+
+    # Remove the data that belongs to this remoteci
+    new_data = {'key': ''}
+    ppr = admin.put('/api/v1/remotecis/%s' % r_id,
+                    data={'data': new_data},
+                    headers={'If-match': pr_etag})
+    assert ppr.status_code == 204
+
+    r_data = admin.get('/api/v1/remotecis/%s/data' % r_id).data
+    assert r_data == {}
 
 
 # Tests for the isolation
