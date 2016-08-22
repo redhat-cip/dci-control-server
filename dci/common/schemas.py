@@ -223,7 +223,11 @@ remoteci = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('active', default=True): bool,
 })
 
-remoteci = schema_factory(remoteci)
+remoteci_put = {
+    v.Optional('data'): dict
+}
+
+remoteci = DCISchema(schema_factory(remoteci).post, Schema(remoteci_put))
 
 ###############################################################################
 #                                                                             #
