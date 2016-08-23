@@ -1,0 +1,123 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dab895d6_28a1d3a9",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-08-23T12:50:15Z",
+      "side": 1,
+      "message": ".\n    \n    values[\u0027data\u0027] \u003d {k: v for k, v in remoteci_data.items() if v}",
+      "revId": "9d7cd993d583b939d4efd1f5aa2a24ac9474ee9c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_48a607c3",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-08-23T12:50:15Z",
+      "side": 1,
+      "message": "\u0027keys\u0027 in flask.request.args does not work ?",
+      "revId": "9d7cd993d583b939d4efd1f5aa2a24ac9474ee9c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_68b4abf2",
+        "filename": "tests/api/v1/test_remotecis.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 196,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-08-23T12:50:15Z",
+      "side": 1,
+      "message": "can you output data in a remoteci object ?\n\n    remoteci \u003d {\u0027name\u0027: \u0027pname1\u0027, ....}\n    premoteci \u003d admin.post(..., data\u003dremoteci).data",
+      "revId": "9d7cd993d583b939d4efd1f5aa2a24ac9474ee9c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_88b9ffeb",
+        "filename": "tests/api/v1/test_remotecis.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 215,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-08-23T12:50:15Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "9d7cd993d583b939d4efd1f5aa2a24ac9474ee9c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_a8cde388",
+        "filename": "tests/api/v1/test_remotecis.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-08-23T12:50:15Z",
+      "side": 1,
+      "message": "same",
+      "revId": "9d7cd993d583b939d4efd1f5aa2a24ac9474ee9c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_c8ca176e",
+        "filename": "tests/api/v1/test_remotecis.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 309,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-08-23T12:50:15Z",
+      "side": 1,
+      "message": "same",
+      "revId": "9d7cd993d583b939d4efd1f5aa2a24ac9474ee9c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_08c5ef5a",
+        "filename": "tests/api/v1/test_remotecis.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 320,
+      "author": {
+        "id": 186
+      },
+      "writtenOn": "2016-08-23T12:50:15Z",
+      "side": 1,
+      "message": ".\n\n    kwargs \u003d {\u0027data\u0027: {\u0027data\u0027: {\u0027key\u0027: \u0027\u0027}}, headers\u003d{\u0027If-match\u0027: pr_etag}\n    admin.put(\u0027api/...\u0027, **kwargs)",
+      "revId": "9d7cd993d583b939d4efd1f5aa2a24ac9474ee9c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
