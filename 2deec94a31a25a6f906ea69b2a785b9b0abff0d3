@@ -33,6 +33,24 @@
       "revId": "2deec94a31a25a6f906ea69b2a785b9b0abff0d3",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_737ca073",
+        "filename": "dci/alembic/versions/9c639866e1b4_alter_test_to_belong_to_team.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2016-08-24T13:17:17Z",
+      "side": 1,
+      "message": "That\u0027s not the meaning here, a test should be associated to the team who created it. That\u0027s the way to list all tests with ACL. there is no dependencies between this column and the executed tests.",
+      "parentUuid": "dab895d6_4d31b9a1",
+      "revId": "2deec94a31a25a6f906ea69b2a785b9b0abff0d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
