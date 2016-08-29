@@ -30,11 +30,37 @@ depends_on = None
 from alembic import op
 import sqlalchemy as sa
 
+_TEAMS = sa.Table(
+    'teams', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), unique=True, nullable=False))
+
+_TESTS = sa.Table(
+    'tests', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('name', sa.String(255), nullable=False, unique=True),
+    sa.Column('data', sa_utils.JSONType),
+    sa.Column('team_id', sa.String(36),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=True))
+
 
 def upgrade():
+    admin_team_id = _TEAMS.select().where(name='admin').fetchone()['id']
     op.add_column('tests', sa.Column('team_id', sa.String(36),
                   sa.ForeignKey('teams.id', ondelete="CASCADE"),
-                  nullable=False))
+                  nullable=True))
     op.drop_column('tests', 'topic_id')
     op.create_table(
         'topic_tests',
@@ -45,6 +71,10 @@ def upgrade():
                   sa.ForeignKey('tests.id', ondelete='CASCADE'),
                   nullable=False, primary_key=True)
     )
+
+    op.execute(_TESTS.update().values(team_id=admin))
+
+    op.alter_column('tests', 'team_id', nullable=False)
 
 
 def downgrade():
