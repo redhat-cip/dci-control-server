@@ -28,13 +28,50 @@ branch_labels = None
 depends_on = None
 
 from alembic import op
+import datetime
 import sqlalchemy as sa
+import sqlalchemy_utils as sa_utils
+from sqlalchemy import sql
+
+from dci.common import utils
+
+_TEAMS = sa.Table(
+    'teams', sa.MetaData(),
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), unique=True, nullable=False))
+
+_TESTS = sa.Table(
+    'tests', sa.MetaData(),
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('name', sa.String(255), nullable=False, unique=True),
+    sa.Column('data', sa_utils.JSONType),
+    sa.Column('team_id', sa.String(36),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=True))
 
 
 def upgrade():
+
+    db_conn = op.get_bind()
+    admin_team = (
+        db_conn.execute(sql.select([_TEAMS])
+                        .where(_TEAMS.c.name == 'admin'))
+        .first()
+    )
     op.add_column('tests', sa.Column('team_id', sa.String(36),
                   sa.ForeignKey('teams.id', ondelete="CASCADE"),
-                  nullable=False))
+                  nullable=True))
     op.drop_column('tests', 'topic_id')
     op.create_table(
         'topic_tests',
@@ -45,6 +82,10 @@ def upgrade():
                   sa.ForeignKey('tests.id', ondelete='CASCADE'),
                   nullable=False, primary_key=True)
     )
+    if admin_team:
+        op.execute(_TESTS.update().values(team_id=admin_team['id']))
+
+    op.alter_column('tests', 'team_id', nullable=False)
 
 
 def downgrade():
