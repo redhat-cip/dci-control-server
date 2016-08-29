@@ -248,3 +248,11 @@ def test_delete_as_user_admin(user, user_admin):
     team_delete = user_admin.delete('/api/v1/teams/user',
                                     headers={'If-match': team_etag})
     assert team_delete.status_code == 401
+
+
+def test_get_tests_by_team(user, admin, team_user_id, team_admin_id):
+    tests = user.get('/api/v1/teams/' + team_admin_id + '/tests/')
+    assert tests.status_code == 401
+    tests = user.get('/api/v1/teams/' + team_user_id + '/tests/')
+    assert tests.status_code == 200
+    assert tests.data['_meta']['count'] == 0

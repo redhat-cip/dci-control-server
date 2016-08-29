@@ -23,6 +23,7 @@ from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import remotecis
+from dci.api.v1 import tests
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci.common import audits
@@ -108,6 +109,13 @@ def get_team_by_id_or_name(user, t_id):
 def get_remotecis_by_team(user, team_id):
     team = v1_utils.verify_existence_and_get(team_id, _TABLE)
     return remotecis.get_all_remotecis(team['id'])
+
+
+@api.route('/teams/<team_id>/tests', methods=['GET'])
+@auth.requires_auth
+def get_tests_by_team(user, team_id):
+    team = v1_utils.verify_existence_and_get(team_id, _TABLE)
+    return tests.get_all_tests(user, team['id'])
 
 
 @api.route('/teams/<t_id>', methods=['PUT'])
