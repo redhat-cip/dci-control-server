@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dab895d6_25d8191d",
+        "filename": "dci/alembic/versions/9c639866e1b4_alter_test_to_belong_to_team.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-08-30T17:38:58Z",
+      "side": 1,
+      "message": "This is a list of full record of team. This variable should be named admin_teams instead.\n\nBy using first() you can just fetch the first record.",
+      "revId": "4afddf6162e78d824352174dae24c25bc947dc36",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_45042d7e",
+        "filename": "dci/alembic/versions/9c639866e1b4_alter_test_to_belong_to_team.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-08-30T17:38:58Z",
+      "side": 1,
+      "message": "If you do what I suggest in the comment above, this should be:\nadmin_team[\u0027id\u0027]",
+      "revId": "4afddf6162e78d824352174dae24c25bc947dc36",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
