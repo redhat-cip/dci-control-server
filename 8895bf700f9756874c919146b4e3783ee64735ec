@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dab895d6_1bbb760f",
+        "filename": "dci/alembic/versions/c6b58b245108_add_columns_for_components_acl.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-09-01T14:14:43Z",
+      "side": 1,
+      "message": "I would prefer we reuse the file table here.",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_5b3c0e94",
+        "filename": "dci/alembic/versions/e4d599796fd4_add_topic_id_foreign_key_to_components_.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-09-01T14:14:43Z",
+      "side": 1,
+      "message": "nitpicking: you only need to declare the mandatory keys.",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_7b41d20a",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-09-01T14:14:43Z",
+      "side": 1,
+      "message": "I think we should use this key to store an ISO country code instead. Then we will be able to test if It\u0027s USA or not.\n\nThis because we may later want to store the country for real, not just a USA yes/no boolean.",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_9b46a622",
+        "filename": "requirements.txt",
+        "patchSetId": 24
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-09-01T14:14:43Z",
+      "side": 1,
+      "message": "curious, is the \u003c\u003d2.4.0 mandatory?",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
