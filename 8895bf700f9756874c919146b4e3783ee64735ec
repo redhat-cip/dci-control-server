@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "dab895d6_fb5402cc",
+        "filename": "dci/alembic/versions/c6b58b245108_add_columns_for_components_acl.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2016-09-01T14:27:48Z",
+      "side": 1,
+      "message": "That will be too complicated because file table is linked to a job, that will be a full refact of the file.",
+      "parentUuid": "dab895d6_1bbb760f",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dab895d6_5b3c0e94",
         "filename": "dci/alembic/versions/e4d599796fd4_add_topic_id_foreign_key_to_components_.py",
         "patchSetId": 24
@@ -30,6 +48,24 @@
       "writtenOn": "2016-09-01T14:14:43Z",
       "side": 1,
       "message": "nitpicking: you only need to declare the mandatory keys.",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_1b5296dd",
+        "filename": "dci/alembic/versions/e4d599796fd4_add_topic_id_foreign_key_to_components_.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2016-09-01T14:27:48Z",
+      "side": 1,
+      "message": "MaxV told me to declare the whole table as is in current state before the upgrade script to avoid any mistake in the upgrade.",
+      "parentUuid": "dab895d6_5b3c0e94",
       "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "dab895d6_3b5e7aea",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2016-09-01T14:27:48Z",
+      "side": 1,
+      "message": "Yes but that just a start to be prepared with release management team rules. that\u0027s a text_type so we can put everything until we get the right rules.",
+      "parentUuid": "dab895d6_7b41d20a",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dab895d6_9b46a622",
         "filename": "requirements.txt",
         "patchSetId": 24
@@ -64,6 +118,24 @@
       "writtenOn": "2016-09-01T14:14:43Z",
       "side": 1,
       "message": "curious, is the \u003c\u003d2.4.0 mandatory?",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_5b632eb1",
+        "filename": "requirements.txt",
+        "patchSetId": 24
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2016-09-01T14:27:48Z",
+      "side": 1,
+      "message": "I would love to get the last one (3.0.0 I think) but there was too many dependencies to get it without breaking everything.",
+      "parentUuid": "dab895d6_9b46a622",
       "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
