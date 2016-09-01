@@ -55,6 +55,24 @@
     },
     {
       "key": {
+        "uuid": "dab895d6_5b316ea1",
+        "filename": "dci/alembic/versions/c6b58b245108_add_columns_for_components_acl.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2016-09-01T16:43:14Z",
+      "side": 1,
+      "message": "There\u0027s a lot more, all the log file are stored in the FS, so we have to manage to migrate them, the build of the directory tree is different. We can\u0027t post all puddles on the FS without a 5TB hard drive :-p. So Yes that should be a perfect solution but let\u0027s do this in an another dedicated patch to merge the store engine and the DB. it will be easier.",
+      "parentUuid": "dab895d6_7b0f12e2",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dab895d6_5b3c0e94",
         "filename": "dci/alembic/versions/e4d599796fd4_add_topic_id_foreign_key_to_components_.py",
         "patchSetId": 24
