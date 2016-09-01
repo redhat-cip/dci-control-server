@@ -73,6 +73,24 @@
     },
     {
       "key": {
+        "uuid": "dab895d6_9b2b0630",
+        "filename": "dci/alembic/versions/c6b58b245108_add_columns_for_components_acl.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-09-01T16:54:33Z",
+      "side": 1,
+      "message": "I agree to postpone this.",
+      "parentUuid": "dab895d6_5b316ea1",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dab895d6_5b3c0e94",
         "filename": "dci/alembic/versions/e4d599796fd4_add_topic_id_foreign_key_to_components_.py",
         "patchSetId": 24
