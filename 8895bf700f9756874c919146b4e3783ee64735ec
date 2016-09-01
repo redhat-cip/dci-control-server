@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "dab895d6_7b0f12e2",
+        "filename": "dci/alembic/versions/c6b58b245108_add_columns_for_components_acl.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-09-01T14:45:08Z",
+      "side": 1,
+      "message": "Can\u0027t we just make the job_id key optional?",
+      "parentUuid": "dab895d6_fb5402cc",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dab895d6_5b3c0e94",
         "filename": "dci/alembic/versions/e4d599796fd4_add_topic_id_foreign_key_to_components_.py",
         "patchSetId": 24
@@ -66,6 +84,24 @@
       "side": 1,
       "message": "MaxV told me to declare the whole table as is in current state before the upgrade script to avoid any mistake in the upgrade.",
       "parentUuid": "dab895d6_5b3c0e94",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_db6e5e96",
+        "filename": "dci/alembic/versions/e4d599796fd4_add_topic_id_foreign_key_to_components_.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-09-01T14:45:08Z",
+      "side": 1,
+      "message": "Ok, I\u0027ve no problem with that.",
+      "parentUuid": "dab895d6_1b5296dd",
       "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -107,6 +143,24 @@
     },
     {
       "key": {
+        "uuid": "dab895d6_1b69b68b",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-09-01T14:45:08Z",
+      "side": 1,
+      "message": "Ok then, let\u0027s use default \u003d\u003d NULL as the default value in this case.",
+      "parentUuid": "dab895d6_3b5e7aea",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dab895d6_9b46a622",
         "filename": "requirements.txt",
         "patchSetId": 24
@@ -136,6 +190,24 @@
       "side": 1,
       "message": "I would love to get the last one (3.0.0 I think) but there was too many dependencies to get it without breaking everything.",
       "parentUuid": "dab895d6_9b46a622",
+      "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dab895d6_fb6b2283",
+        "filename": "requirements.txt",
+        "patchSetId": 24
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-09-01T14:45:08Z",
+      "side": 1,
+      "message": "Ok, so this is just to reduce the number of dependencies. Could you just add a little comment about that.\n\nI ask you that because because it\u0027s quiet are to know why a versionnized dep is here some months after.",
+      "parentUuid": "dab895d6_5b632eb1",
       "revId": "8895bf700f9756874c919146b4e3783ee64735ec",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
