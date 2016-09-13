@@ -40,7 +40,8 @@ def upgrade():
                   sa.Column('country', sa.String(255), nullable=True))
     op.add_column('components',
                   sa.Column('updated_at', sa.DateTime(),
-                            default=datetime.datetime.utcnow, nullable=False))
+                            default=datetime.datetime.utcnow, nullable=False,
+                            server_default=datetime.datetime.utcnow))
     op.add_column('components',
                   sa.Column('export_control', sa.BOOLEAN,
                             nullable=False, default=False))
