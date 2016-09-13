@@ -31,6 +31,7 @@ import datetime
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.sql import func
 
 from dci.common import utils
 
@@ -40,7 +41,8 @@ def upgrade():
                   sa.Column('country', sa.String(255), nullable=True))
     op.add_column('components',
                   sa.Column('updated_at', sa.DateTime(),
-                            default=datetime.datetime.utcnow, nullable=False))
+                            default=datetime.datetime.utcnow, nullable=False,
+                            server_default=func.now()))
     op.add_column('components',
                   sa.Column('export_control', sa.BOOLEAN,
                             nullable=False, default=False))
