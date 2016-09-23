@@ -15,9 +15,7 @@
 # under the License.
 
 import os
-import sys
 
-from dci.db import models
 from dci.stores import swift
 
 import flask
@@ -54,23 +52,3 @@ def get_store():
     }
     stores_engine = swift.Swift(configuration)
     return stores_engine
-
-
-def get_team_admin_id():
-    query_team_admin_id = sqlalchemy.sql.select([models.TEAMS]).where(
-        models.TEAMS.c.name == 'admin')
-
-    conf = generate_conf()
-    db_conn = get_engine(conf).connect()
-    row = db_conn.execute(query_team_admin_id).fetchone()
-    db_conn.close()
-
-    if row is None:
-        print("Admin team not found. Please init the database"
-              " with the 'admin' team and 'admin' user.")
-        sys.exit(1)
-
-    return dict(row)['id']
-
-# This will be set by the app with the use of get_team_admin_id above.
-TEAM_ADMIN_ID = None

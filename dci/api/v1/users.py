@@ -158,7 +158,7 @@ def put_user(user, user_id):
             raise auth.UNAUTHORIZED
 
     # TODO(yassine): if the user wants to change the team, then check its done
-    # by a super admin. ie. team=dci_config.TEAM_ADMIN_ID.
+    # by a super admin. ie. team_name='admin'
 
     values['etag'] = utils.gen_etag()
 

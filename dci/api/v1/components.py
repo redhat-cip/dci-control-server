@@ -137,9 +137,7 @@ def get_jobs(user, component_id, team_id=None):
 @auth.requires_auth
 def get_component_by_id_or_name(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-
-    if not(component['export_control']):
-        raise auth.UNAUTHORIZED
+    auth.check_export_control(user, component)
 
     where_clause = sql.or_(_TABLE.c.id == c_id,
                            _TABLE.c.name == c_id)
@@ -204,8 +202,7 @@ def list_components_files(user, c_id):
 @auth.requires_auth
 def list_component_file(user, c_id, f_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    if not(component['export_control']):
-        raise auth.UNAUTHORIZED
+    auth.check_export_control(user, component)
     v1_utils.verify_team_in_topic(user, component['topic_id'])
 
     COMPONENT_FILES = models.COMPONENT_FILES
@@ -236,8 +233,7 @@ def download_component_file(user, c_id, f_id):
     v1_utils.verify_team_in_topic(user, component['topic_id'])
     COMPONENT_FILES = models.COMPONENT_FILES
     v1_utils.verify_existence_and_get(f_id, COMPONENT_FILES)
-    if not(component['export_control']):
-        raise auth.UNAUTHORIZED
+    auth.check_export_control(user, component)
     file_path = "%s/%s/%s" % (component['topic_id'], c_id, f_id)
     return flask.Response(get_object(file_path))
 

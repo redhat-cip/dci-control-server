@@ -22,8 +22,6 @@ import sqlalchemy.sql
 
 from dci.common import exceptions as exc
 from dci.db import models
-from dci import dci_config
-
 
 UNAUTHORIZED = exc.DCIException('Operation not authorized.', status_code=401)
 
@@ -36,8 +34,16 @@ def build_auth(username, password):
     """Check the combination username/password that is valid on the
     database.
     """
+    t_j = sqlalchemy.join(
+        models.USERS, models.TEAMS,
+        models.USERS.c.team_id == models.TEAMS.c.id)
     query_get_user = (sqlalchemy.sql
-                      .select([models.USERS])
+                      .select([
+                          models.USERS,
+                          models.TEAMS.c.name.label('team_name'),
+                          models.TEAMS.c.country.label('team_country'),
+                      ])
+                      .select_from(t_j)
                       .where(models.USERS.c.name == username))
 
     user = flask.g.db_conn.execute(query_get_user).fetchone()
@@ -64,7 +70,7 @@ def reject():
 def is_admin(user, super=False):
     if super and user['role'] != 'admin':
         return False
-    return user['team_id'] == dci_config.TEAM_ADMIN_ID
+    return user['team_name'] == 'admin'
 
 
 def is_admin_user(user, team_id):
@@ -73,6 +79,13 @@ def is_admin_user(user, team_id):
 
 def is_in_team(user, team_id):
     return user['team_id'] == team_id
+
+
+def check_export_control(user, component):
+    if not is_admin(user):
+        if user['team_country'] != 'US':
+            if not component['export_control']:
+                raise UNAUTHORIZED
 
 
 def requires_auth(f):

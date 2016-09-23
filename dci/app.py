@@ -71,8 +71,6 @@ def handle_dbapi_exception(dbapi_exception):
 
 
 def create_app(conf):
-    dci_config.TEAM_ADMIN_ID = dci_config.get_team_admin_id()
-
     dci_app = DciControlServer(conf)
 
     # Logging support
