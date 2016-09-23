@@ -29,11 +29,13 @@ def test_create_components(admin, topic_id):
         'type': 'gerrit_review',
         'url': 'http://example.com/',
         'topic_id': topic_id,
-        'export_control': True}
+        'export_control': True,
+        'active': False}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
     gc = admin.get('/api/v1/components/%s' % pc_id).data
     assert gc['component']['name'] == 'pname'
+    assert gc['component']['active'] is False
 
 
 def test_create_components_already_exist(admin, topic_id):

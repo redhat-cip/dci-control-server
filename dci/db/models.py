@@ -57,7 +57,8 @@ COMPONENTS = sa.Table(
               sa.ForeignKey('topics.id', ondelete='CASCADE'),
               nullable=True),
     sa.UniqueConstraint('name', 'topic_id',
-                        name='components_name_topic_id_key'))
+                        name='components_name_topic_id_key'),
+    sa.Column('active', sa.BOOLEAN, default=True))
 
 TOPICS = sa.Table(
     'topics', metadata,
