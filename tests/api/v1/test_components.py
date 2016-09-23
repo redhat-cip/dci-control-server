@@ -174,6 +174,19 @@ def test_get_component_by_id_or_name(admin, topic_id):
     assert created_ct['component']['id'] == pc_id
 
 
+def test_get_component_export_control(admin, user, topic_id):
+    data = {'name': 'pname',
+            'type': 'gerrit_review',
+            'topic_id': topic_id,
+            'export_control': False
+            }
+    admin.post('/api/v1/components', data=data).data
+    created_ct = admin.get('/api/v1/components/pname')
+    assert created_ct.status_code == 200
+    created_ct = user.get('/api/v1/components/pname')
+    assert created_ct.status_code == 401
+
+
 def test_get_component_not_found(admin):
     result = admin.get('/api/v1/components/ptdr')
     assert result.status_code == 404
