@@ -163,6 +163,7 @@ TEAMS = sa.Table(
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), unique=True, nullable=False),
+    # https://en.wikipedia.org/wiki/ISO_3166-1 Alpha-2 code
     sa.Column('country', sa.String(255), nullable=True)
 )
 
