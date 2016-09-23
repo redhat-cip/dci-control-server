@@ -205,7 +205,7 @@ class TestComponent(utils.SchemaTesting):
         return dict([('sha', None), ('title', None), ('message', None),
                      ('git', None), ('ref', None), ('url', None),
                      ('data', {}), ('canonical_project_name', None),
-                     ('export_control', False)])
+                     ('export_control', False), ('active', True)])
 
     @staticmethod
     def generate_invalids_and_errors():

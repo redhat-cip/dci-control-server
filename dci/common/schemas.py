@@ -193,10 +193,12 @@ component = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('git', default=None): six.text_type,
     v.Optional('ref', default=None): six.text_type,
     v.Optional('canonical_project_name', default=None): six.text_type,
+    # True if the component can be exported to non US countries.
     v.Optional('export_control', default=False): bool,
     v.Optional('url', default=None): Url(),
     'type': six.text_type,
-    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC)
+    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC),
+    v.Optional('active', default=True): bool,
 })
 
 component_put = {

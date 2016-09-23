@@ -180,7 +180,8 @@ def _build_new_template(topic_id, remoteci, values):
     schedule_components_ids = []
     for ct in component_types:
         where_clause = sql.and_(models.COMPONENTS.c.type == ct,
-                                models.COMPONENTS.c.topic_id == topic_id)
+                                models.COMPONENTS.c.topic_id == topic_id,
+                                models.COMPONENTS.c.active == True)  # noqa
         query = (sql.select([models.COMPONENTS.c.id])
                  .where(where_clause)
                  .order_by(sql.desc(models.COMPONENTS.c.created_at)))
