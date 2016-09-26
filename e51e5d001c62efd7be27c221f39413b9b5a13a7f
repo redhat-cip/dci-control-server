@@ -16,6 +16,24 @@
       "revId": "e51e5d001c62efd7be27c221f39413b9b5a13a7f",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ab29df4_31886022",
+        "filename": "dci/app.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-09-26T17:36:44Z",
+      "side": 0,
+      "message": "I agree with this \"should\". However I\u0027m not sure this is the fine place to do that. There is different things we should check in a \"check_sanity()\" function, like for example:\n\n- ensure there is super admin users\n- ensure there is an admin team\n- ensure we can create files in Swift and on the file system\n- ensure ES is up to date and running\n- etc\n\nI would prefer we handle these cases and create a story for that.",
+      "parentUuid": "9ab29df4_b1cd5089",
+      "revId": "e51e5d001c62efd7be27c221f39413b9b5a13a7f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
