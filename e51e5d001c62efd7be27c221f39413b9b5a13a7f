@@ -16,6 +16,24 @@
       "revId": "e51e5d001c62efd7be27c221f39413b9b5a13a7f",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ac1b152_57586efa",
+        "filename": "dci/db/models.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-09-28T14:11:01Z",
+      "side": 1,
+      "message": "This is to avoid breakage with the current feeds and tests. I plan to change that later.",
+      "parentUuid": "3ac1b152_f7517ad9",
+      "revId": "e51e5d001c62efd7be27c221f39413b9b5a13a7f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
