@@ -187,11 +187,8 @@ user = schema_factory(user)
 ###############################################################################
 
 component = utils.dict_merge(base, DATA_FIELD, {
-    v.Optional('sha', default=None): six.text_type,
     v.Optional('title', default=None): six.text_type,
     v.Optional('message', default=None): six.text_type,
-    v.Optional('git', default=None): six.text_type,
-    v.Optional('ref', default=None): six.text_type,
     v.Optional('canonical_project_name', default=None): six.text_type,
     v.Optional('export_control', default=False): bool,
     v.Optional('url', default=None): Url(),
