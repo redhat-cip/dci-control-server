@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3ac1b152_8eb02ff6",
+        "filename": "dci/auth.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2016-10-05T13:16:50Z",
+      "side": 1,
+      "message": "Can you just avoid this line until we finalize the full workflow ?",
+      "revId": "7801f3cd1a503e9df5501a88f3c446b92b9d9e59",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
