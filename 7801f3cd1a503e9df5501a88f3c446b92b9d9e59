@@ -52,6 +52,24 @@
       "revId": "7801f3cd1a503e9df5501a88f3c446b92b9d9e59",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ac1b152_1b8d3c7c",
+        "filename": "dci/auth.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 86,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-10-06T13:13:37Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "3ac1b152_4ef37773",
+      "revId": "7801f3cd1a503e9df5501a88f3c446b92b9d9e59",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
