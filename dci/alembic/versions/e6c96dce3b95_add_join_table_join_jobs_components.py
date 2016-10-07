@@ -30,7 +30,7 @@ depends_on = None
 from alembic import op
 import itertools
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgres as pg
+from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy import sql
 
 

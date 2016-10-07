@@ -29,7 +29,7 @@ depends_on = None
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgres as pg
+from sqlalchemy.dialects import postgresql as pg
 
 
 def upgrade():
