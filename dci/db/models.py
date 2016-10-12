@@ -58,7 +58,7 @@ COMPONENTS = sa.Table(
               nullable=True),
     sa.UniqueConstraint('name', 'topic_id',
                         name='components_name_topic_id_key'),
-    sa.Column('active', sa.BOOLEAN, default=True))
+    sa.Column('active', sa.BOOLEAN, default=True, server_default=True))
 
 TOPICS = sa.Table(
     'topics', metadata,
