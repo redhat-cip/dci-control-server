@@ -46,6 +46,7 @@ setuptools.setup(
     description='Server which manage products deployments',
     long_description=_get_readme(),
     install_requires=_get_requirements(),
+    setup_requires=['SQLAlchemy'],
     url='https://github.com/redhat-cip/dci-control-server',
     license='Apache v2.0',
     package_data={'dci': ['alembic/alembic.ini', 'data/*']},
