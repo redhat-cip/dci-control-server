@@ -25,8 +25,8 @@ def _get_requirements():
     requirements_path = '%s/%s' % (os.path.dirname(os.path.abspath(__file__)),
                                    'requirements.txt')
     with open(requirements_path, 'r') as f:
-        requirements = f.read()
-        return requirements.split('\n')
+        requirements = reversed(f.read().splitlines())
+        return requirements
 
 
 def _get_readme():
