@@ -24,9 +24,14 @@ from dci import version
 def _get_requirements():
     requirements_path = '%s/%s' % (os.path.dirname(os.path.abspath(__file__)),
                                    'requirements.txt')
+    l = []
     with open(requirements_path, 'r') as f:
-        requirements = f.read()
-        return requirements.split('\n')
+        for i in f.readlines():
+            if i.startswith('#'):
+                continue
+            l.append(i.rstrip())
+        l.reverse()
+        return l
 
 
 def _get_readme():
