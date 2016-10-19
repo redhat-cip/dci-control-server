@@ -8,6 +8,7 @@ Name:           dci
 Version:        0.0.VERS
 Release:        1%{?dist}
 Summary:        DCI control server
+
 License:        ASL 2.0
 URL:            https://github.com/redhat-cip/dci-control-server
 Source0:        dci-%{version}.tar.gz
@@ -37,11 +38,13 @@ BuildRequires:  python-rpm-macros
 BuildRequires:  python-setuptools
 BuildRequires:  python-six
 BuildRequires:  python-sqlalchemy-utils
+BuildRequires:  python-tornado
 BuildRequires:  python-voluptuous
 BuildRequires:  python-werkzeug
 BuildRequires:  python2-pytest
 BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
+BuildRequires:  python-zmq
 Requires:       python-alembic
 Requires:       python-elasticsearch
 Requires:       python-flask
@@ -52,9 +55,11 @@ Requires:       python-psycopg2
 Requires:       python-requests
 Requires:       python-six
 Requires:       python-sqlalchemy-utils
+Requires:       python-tornado
 Requires:       python-voluptuous
 Requires:       python-werkzeug
 Requires:       python2-swiftclient
+Requires:       python-zmq
 
 %description -n dci-api
 The implementation of the DCI control server API.

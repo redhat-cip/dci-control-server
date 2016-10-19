@@ -10,5 +10,7 @@ voluptuous
 passlib>=1.6.2
 setuptools
 Werkzeug
+pyzmq
+tornado
 lxml
 python-swiftclient
