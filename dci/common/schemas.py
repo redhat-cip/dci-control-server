@@ -150,6 +150,8 @@ role = schema_factory(base)
 
 team = utils.dict_merge(base, {
     v.Optional('country', default=None): six.text_type,
+    v.Optional('email', default=None): six.text_type,
+    v.Optional('notification', default=False): bool
 })
 
 team = schema_factory(team)

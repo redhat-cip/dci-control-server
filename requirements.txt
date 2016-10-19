@@ -10,6 +10,7 @@ voluptuous
 passlib>=1.6.2
 setuptools<=18.5
 Werkzeug==0.10.4
+pyzmq
 lxml
 # Limit to swiftclient 2.4.0 to avoid lot of dependencies problems
 python-swiftclient<=2.4.0
