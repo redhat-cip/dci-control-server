@@ -46,8 +46,10 @@ BuildRequires:  python-alembic
 BuildRequires:  python-flask
 BuildRequires:  python-requests
 BuildRequires:  python-six
+BuildRequires:  python-tornado
 BuildRequires:  python-passlib
 BuildRequires:  python-swiftclient
+BuildRequires:  python-zmq
 BuildRequires:  gcc
 BuildRequires:  java-1.8.0-openjdk
 BuildRequires:  elasticsearch
@@ -65,8 +67,10 @@ Requires:       python-six
 Requires:       python-sqlalchemy
 Requires:       python-sqlalchemy-utils
 Requires:       python-swiftclient
+Requires:       python-tornado
 Requires:       python-voluptuous
 Requires:       python-werkzeug
+Requires:       python-zmq
 
 %description -n dci-api
 The implementation of the DCI control server API.
