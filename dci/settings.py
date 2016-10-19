@@ -49,6 +49,9 @@ STORE_TENANT_NAME = 'DCI-Prod'
 STORE_AUTH_URL = 'http://46.231.132.68:5000/v2.0'
 STORE_CONTAINER = 'dci_components'
 
+# ZMQ Connection
+ZMQ_CONN = "tcp://0.0.0.0:5557"
+
 # Logging related parameters
 PROD_LOG_FORMAT = '[%(asctime)s] %(levelname)s in %(module)s: %(message)s'
 DEBUG_LOG_FORMAT = (

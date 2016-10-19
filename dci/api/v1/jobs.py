@@ -388,6 +388,7 @@ def update_job_by_id(user, job_id):
     values = schemas.job.put(flask.request.json)
 
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
+    print flask.jsonify(job).response
 
     # If it's an admin or belongs to the same team
     if not(auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
@@ -411,7 +412,20 @@ def update_job_by_id(user, job_id):
 
     if not result.rowcount:
         raise dci_exc.DCIConflict('Job', job_id)
-
+    if values['status']=="failure":
+        _TEAMS = models.TEAMS
+        where_clause = sql.expression.and_(
+            _TEAMS.c.id == job['team_id']
+        )
+        query = (sql.select([_TEAMS]).where(where_clause))
+        team_info = flask.g.db_conn.execute(query).fetchone()
+        print team_info
+        if team_info['notification'] == True:
+            if team_info['email'] is not None:
+                msg = flask.jsonify({'event': 'notification',
+                                     'email': team_info['email'],
+                                     'job_id': job['id']}).response
+                flask.g.sender.send_json(msg)
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
 
