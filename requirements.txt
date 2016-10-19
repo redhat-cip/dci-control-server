@@ -1,14 +1,15 @@
 alembic
 elasticsearch
 flask
-six>=1.9
+six
 SQLAlchemy
 SQLAlchemy-Utils
 psycopg2
 requests
 voluptuous
-passlib>=1.6.2
+passlib
 setuptools
 Werkzeug
+pyzmq
 lxml
 python-swiftclient
