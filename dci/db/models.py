@@ -161,7 +161,9 @@ TEAMS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), unique=True, nullable=False),
     # https://en.wikipedia.org/wiki/ISO_3166-1 Alpha-2 code
-    sa.Column('country', sa.String(255), nullable=True)
+    sa.Column('country', sa.String(255), nullable=True),
+    sa.Column('email', sa.String(255), nullable=True),
+    sa.Column('notification', sa.BOOLEAN, default=False)
 )
 
 
