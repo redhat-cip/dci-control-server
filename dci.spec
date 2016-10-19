@@ -42,6 +42,10 @@ BuildRequires:  python-werkzeug
 BuildRequires:  python2-pytest
 BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
+BuildRequires:  python-tornado
+BuildRequires:  python-passlib
+BuildRequires:  python22-swiftclient
+BuildRequires:  python-zmq
 Requires:       python-alembic
 Requires:       python-elasticsearch
 Requires:       python-flask
@@ -55,6 +59,8 @@ Requires:       python-sqlalchemy-utils
 Requires:       python-voluptuous
 Requires:       python-werkzeug
 Requires:       python2-swiftclient
+Requires:       python-tornado
+Requires:       python-zmq
 
 %description -n dci-api
 The implementation of the DCI control server API.
@@ -86,6 +92,7 @@ BuildRequires:  python3-sqlalchemy-utils
 BuildRequires:  python3-swiftclient
 BuildRequires:  python3-voluptuous
 BuildRequires:  python3-werkzeug
+BuildRequires:  python3-zmq
 Requires:       python3-alembic
 Requires:       python3-elasticsearch
 Requires:       python3-flask
@@ -99,6 +106,7 @@ Requires:       python3-sqlalchemy-utils
 Requires:       python3-swiftclient
 Requires:       python3-voluptuous
 Requires:       python3-werkzeug
+Requires:	python3-zmq
 
 %description -n dci-api-python3
 The implementation of the DCI control server API.
