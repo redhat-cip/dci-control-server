@@ -411,7 +411,21 @@ def update_job_by_id(user, job_id):
 
     if not result.rowcount:
         raise dci_exc.DCIConflict('Job', job_id)
-
+    print values
+    print type(values)
+    if values.get('status') == "failure":
+        _TEAMS = models.TEAMS
+        where_clause = sql.expression.and_(
+            _TEAMS.c.id == job['team_id']
+        )
+        query = (sql.select([_TEAMS]).where(where_clause))
+        team_info = flask.g.db_conn.execute(query).fetchone()
+        if team_info['notification'] is True:
+            if team_info['email'] is not None:
+                msg = {'event': 'notification',
+                       'email': team_info['email'],
+                       'job_id': job['id']}
+                flask.g.sender.send_json(msg)
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
 
