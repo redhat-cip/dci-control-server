@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9df570_3a6845f5",
+        "filename": "dci.spec",
+        "patchSetId": 3
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 311
+      },
+      "writtenOn": "2016-10-27T12:46:17Z",
+      "side": 1,
+      "message": "Shouldn\u0027t be needed anymore now you have set noarch.",
+      "revId": "e9ccfa8c2f5c7342f23ed18191c9f2b4404e3c61",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_5ab6e98b",
+        "filename": "dci.spec",
+        "patchSetId": 3
+      },
+      "lineNbr": 18,
+      "author": {
+        "id": 311
+      },
+      "writtenOn": "2016-10-27T12:46:17Z",
+      "side": 1,
+      "message": "Why is it disabled ?",
+      "revId": "e9ccfa8c2f5c7342f23ed18191c9f2b4404e3c61",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_7abbad72",
+        "filename": "dci.spec",
+        "patchSetId": 3
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 311
+      },
+      "writtenOn": "2016-10-27T12:46:17Z",
+      "side": 1,
+      "message": "I would recommend to put a comment to remind that\u0027s for test suite",
+      "revId": "e9ccfa8c2f5c7342f23ed18191c9f2b4404e3c61",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_9aaf712b",
+        "filename": "dci.spec",
+        "patchSetId": 3
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 311
+      },
+      "writtenOn": "2016-10-27T12:46:17Z",
+      "side": 1,
+      "message": "Duplicate line",
+      "revId": "e9ccfa8c2f5c7342f23ed18191c9f2b4404e3c61",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_faa6bd52",
+        "filename": "dci.spec",
+        "patchSetId": 3
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 311
+      },
+      "writtenOn": "2016-10-27T12:46:17Z",
+      "side": 1,
+      "message": "Shouldn\u0027t it be a python3-passlib package ?",
+      "revId": "e9ccfa8c2f5c7342f23ed18191c9f2b4404e3c61",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_1a63811b",
+        "filename": "dci.spec",
+        "patchSetId": 3
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 311
+      },
+      "writtenOn": "2016-10-27T12:46:17Z",
+      "side": 1,
+      "message": "This would likely requires a conflict with dci-common.",
+      "revId": "e9ccfa8c2f5c7342f23ed18191c9f2b4404e3c61",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
