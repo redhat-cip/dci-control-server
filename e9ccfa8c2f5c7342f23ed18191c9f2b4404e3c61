@@ -36,6 +36,23 @@
     },
     {
       "key": {
+        "uuid": "da9df570_3a4f6594",
+        "filename": "dci.spec",
+        "patchSetId": 3
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 311
+      },
+      "writtenOn": "2016-10-27T12:53:39Z",
+      "side": 1,
+      "message": "I suspect this need to be complemented with a Obsoletes tag, for upgrade related purpose (ie, obsoletes package \u003c someversion)",
+      "revId": "e9ccfa8c2f5c7342f23ed18191c9f2b4404e3c61",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9df570_7abbad72",
         "filename": "dci.spec",
         "patchSetId": 3
@@ -81,6 +98,57 @@
       "writtenOn": "2016-10-27T12:46:17Z",
       "side": 1,
       "message": "Shouldn\u0027t it be a python3-passlib package ?",
+      "revId": "e9ccfa8c2f5c7342f23ed18191c9f2b4404e3c61",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_7a72cde6",
+        "filename": "dci.spec",
+        "patchSetId": 3
+      },
+      "lineNbr": 144,
+      "author": {
+        "id": 311
+      },
+      "writtenOn": "2016-10-27T12:53:39Z",
+      "side": 1,
+      "message": "You should ship the license as well",
+      "revId": "e9ccfa8c2f5c7342f23ed18191c9f2b4404e3c61",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_9a7691d7",
+        "filename": "dci.spec",
+        "patchSetId": 3
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 311
+      },
+      "writtenOn": "2016-10-27T12:53:39Z",
+      "side": 1,
+      "message": "The directory %{_sysconfdir}/dci-api/ would be unowned and unremoved when packag eis removed.",
+      "revId": "e9ccfa8c2f5c7342f23ed18191c9f2b4404e3c61",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_da80198e",
+        "filename": "dci.spec",
+        "patchSetId": 3
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 311
+      },
+      "writtenOn": "2016-10-27T12:53:39Z",
+      "side": 1,
+      "message": "Same, %{_datarootdir}/dci-api is not owned by the package, so it would not be removed.",
       "revId": "e9ccfa8c2f5c7342f23ed18191c9f2b4404e3c61",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
