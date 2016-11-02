@@ -1,0 +1,157 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9df570_2663cc1b",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 391,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-11-02T21:22:02Z",
+      "side": 1,
+      "message": "busted !",
+      "revId": "8f382872903df3673812435bac55c02431a74e21",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_4668d0f5",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 417,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-11-02T21:22:02Z",
+      "side": 1,
+      "message": "I think we can check if the update change the status field to \u0027success\u0027, \u0027failure\u0027 or \u0027killed\u0027, if so we send a message to the worker.\nSo that the worker can be very straightforward: only send a mail when receiving a message.",
+      "revId": "8f382872903df3673812435bac55c02431a74e21",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_c65a0050",
+        "filename": "dci/app.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-11-02T21:22:02Z",
+      "side": 1,
+      "message": "As commented in worker.py, i think the dci-cs PUSH socker should bind and the PULL should connect. Btw, we can remove ZMQ_CONN variable.",
+      "revId": "8f382872903df3673812435bac55c02431a74e21",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_067ec8ae",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-11-02T21:22:02Z",
+      "side": 1,
+      "message": "We don\u0027t need to connect to the database, we can do all that work with messages from the dci-cs.",
+      "revId": "8f382872903df3673812435bac55c02431a74e21",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_8649d88d",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-11-02T21:22:02Z",
+      "side": 1,
+      "message": "In PUSH/PULL pattern there is no rules on which socket bind/connect but in our case I think it makes more sense that the PULL socket connect to the PUSH socket of the dci-cs.",
+      "revId": "8f382872903df3673812435bac55c02431a74e21",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_a65dfc4a",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-11-02T21:22:02Z",
+      "side": 1,
+      "message": "C c0d3rz busted !\n\nI think we should avoid these loop, we can easily use the ZeroMQ event loop, here is an example i used before https://github.com/ylamgarchal/chillaxd/blob/master/chillaxd/raft/server.py#L143",
+      "revId": "8f382872903df3673812435bac55c02431a74e21",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_264aec83",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-11-02T21:22:02Z",
+      "side": 1,
+      "message": "The dci-cs should send a message only when the status job is updated to \u0027success\u0027 or \u0027failure\u0027 so that we don\u0027t need such access.",
+      "revId": "8f382872903df3673812435bac55c02431a74e21",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_464ff092",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-11-02T21:22:02Z",
+      "side": 1,
+      "message": "The dci-cs should send a message only if the notification field is set to True.",
+      "revId": "8f382872903df3673812435bac55c02431a74e21",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_6644f474",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-11-02T21:22:02Z",
+      "side": 1,
+      "message": "The message should contains the email, so we can use it directly.",
+      "revId": "8f382872903df3673812435bac55c02431a74e21",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
