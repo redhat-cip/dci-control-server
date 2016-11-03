@@ -53,6 +53,23 @@
     },
     {
       "key": {
+        "uuid": "da9df570_5a098494",
+        "filename": "dci/worker/plugins/email.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-11-03T10:42:20Z",
+      "side": 1,
+      "message": "I think this /plugins package is not relevant, we can inject the mail mechanism in the worker code for now.\n\nWhen integrated to the worker, you can turn this function to a class Mail which instantiate the SMTP() class in its __init__ function. Then you add a method like:\n\ndef sendmail(self, FROM, TO, message):\n    self.server.sendmail(FROM, TO, message)\n\n\nYou can add this to the ZeroMQ eventloop in order to never quit().",
+      "revId": "8f382872903df3673812435bac55c02431a74e21",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9df570_067ec8ae",
         "filename": "dci/worker/worker.py",
         "patchSetId": 5
