@@ -70,6 +70,23 @@
     },
     {
       "key": {
+        "uuid": "da9df570_fd76b205",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 1,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-11-04T13:42:57Z",
+      "side": 1,
+      "message": "Imo, it\u0027s more relevant to rename \u0027worker\u0027 to \u0027notifier\u0027",
+      "revId": "8f382872903df3673812435bac55c02431a74e21",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9df570_067ec8ae",
         "filename": "dci/worker/worker.py",
         "patchSetId": 5
