@@ -19,6 +19,23 @@
     },
     {
       "key": {
+        "uuid": "da9df570_b30b7b2a",
+        "filename": "build_rpm.sh",
+        "patchSetId": 12
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-11-08T11:22:40Z",
+      "side": 1,
+      "message": "As in the current review for pythond-dciclient we could add fedora-24-x86_64 here. repo_conf is already populated now.",
+      "revId": "27525895ea9faa2df6e51a1e8c11133245c01033",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9df570_7312f363",
         "filename": "dci.spec",
         "patchSetId": 12
