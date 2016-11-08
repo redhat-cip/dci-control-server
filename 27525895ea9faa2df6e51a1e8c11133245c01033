@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9df570_9349178e",
+        "filename": "MANIFEST.in",
+        "patchSetId": 12
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-11-08T11:20:41Z",
+      "side": 1,
+      "message": "typo: Extra space here",
+      "revId": "27525895ea9faa2df6e51a1e8c11133245c01033",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_7312f363",
+        "filename": "dci.spec",
+        "patchSetId": 12
+      },
+      "lineNbr": 163,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2016-11-08T11:20:41Z",
+      "side": 1,
+      "message": "I don\u0027t get the need for those two excludes. What is it suppose to do?\n\nIf this is to not replace the configuration file %config(noreplace) is already taking care of that above",
+      "revId": "27525895ea9faa2df6e51a1e8c11133245c01033",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
