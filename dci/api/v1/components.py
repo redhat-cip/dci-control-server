@@ -105,10 +105,14 @@ def get_all_components(user, topic_id):
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _C_COLUMNS)
     q_bd.where.append(_TABLE.c.topic_id == topic_id)
 
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
-    return flask.jsonify({'components': rows, '_meta': {'count': nb_row}})
+    # Return only the component which have the export_control flag set to true
+    #
+    if not (auth.is_admin(user)):
+        rows = [row for row in rows if row.export_control]
+
+    return flask.jsonify({'components': rows, '_meta': {'count': len(rows)}})
 
 
 def get_jobs(user, component_id, team_id=None):

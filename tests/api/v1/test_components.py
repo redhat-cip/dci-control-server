@@ -294,6 +294,35 @@ def test_export_control(admin, user, team_user_id, topic_id):
     assert req.status_code == 401
 
 
+def test_export_control_filter(admin, user, team_user_id, topic_id):
+    # Subscribe user to topic
+    url = '/api/v1/topics/%s/teams' % topic_id
+    data = {'team_id': team_user_id}
+    admin.post(url, data=data)
+
+    # Create two component in the topic
+    data = {'name': "pname1", 'title': 'aaa',
+            'type': 'gerrit_review',
+            'topic_id': topic_id,
+            'export_control': True}
+    ct_1 = admin.post('/api/v1/components', data=data).data['component']
+    data = {'name': "pname2", 'title': 'bbb',
+            'type': 'gerrit_review',
+            'topic_id': topic_id}
+    ct_2 = admin.post('/api/v1/components', data=data).data['component']
+    data = {'name': "pname3", 'title': 'ccc',
+            'type': 'gerrit_review',
+            'topic_id': topic_id,
+            'export_control': True}
+    ct_3 = admin.post('/api/v1/components', data=data).data['component']
+
+    req = user.get('/api/v1/topics/%s/components' % topic_id)
+    assert len(req.data['components']) == 2
+
+    req = admin.get('/api/v1/topics/%s/components' % topic_id)
+    assert len(req.data['components']) == 3
+
+
 def test_add_file_to_component(admin, topic_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
