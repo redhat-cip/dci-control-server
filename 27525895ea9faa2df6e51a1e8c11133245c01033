@@ -54,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "da9df570_a45c0f27",
+        "filename": "build_rpm.sh",
+        "patchSetId": 12
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-11-09T18:57:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da9df570_b30b7b2a",
+      "revId": "27525895ea9faa2df6e51a1e8c11133245c01033",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9df570_7312f363",
         "filename": "dci.spec",
         "patchSetId": 12
