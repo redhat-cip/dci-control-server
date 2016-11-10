@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9df570_04587b55",
+        "filename": "dci/alembic/versions/7fee4eb7510b_add_email_notification_field_for_teams.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-11-10T15:23:19Z",
+      "side": 1,
+      "message": "Since a mail address is a person information, why don\u0027t we store the information in the user table?",
+      "revId": "a354bd3eb00af299052087d1a9be17af1a10260d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9df570_644f8793",
+        "filename": "dci/alembic/versions/7fee4eb7510b_add_email_notification_field_for_teams.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-11-10T15:23:19Z",
+      "side": 1,
+      "message": "Since we are about to integrate different notification system, I would prefer notification to be a list. For the moment the list would be empty (no notification) or just \"email\" for email notification.",
+      "revId": "a354bd3eb00af299052087d1a9be17af1a10260d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
