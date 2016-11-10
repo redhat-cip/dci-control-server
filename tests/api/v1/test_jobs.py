@@ -62,6 +62,9 @@ def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id,
     assert job['user_agent'] == headers['User-Agent']
     assert job['client_version'] == headers['Client-Version']
 
+    component = admin.get('/api/v1/jobs/%s/components' % job['id']).data
+    assert 'non-exported' not in component['component']['name']
+
 
 def test_schedule_job_recheck(admin, job_id, remoteci_id, topic_id):
     job_rechecked = admin.post('/api/v1/jobs/%s/recheck' % job_id).data['job']
