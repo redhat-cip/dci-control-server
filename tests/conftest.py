@@ -125,7 +125,9 @@ def test_id(admin, team_id):
 
 @pytest.fixture
 def team_id(admin):
-    team = admin.post('/api/v1/teams', data={'name': 'pname'}).data
+    team = admin.post('/api/v1/teams', data={'name': 'pname',
+                                             'notification': True,
+                                             'email': 'dci@example.com'}).data
     return team['team']['id']
 
 
