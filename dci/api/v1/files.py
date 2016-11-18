@@ -193,11 +193,16 @@ def get_file_content(user, file_id):
         data = tsfm.junit2json(data)
         headers = {
             'Content-Length': len(data),
-            'Content-Disposition': 'attachment; filename=%s' % file['name']
+            'Content-Disposition': 'attachment; filename=%s' %
+                                   file['name'].replace(' ', '_')
         }
     else:
         data = utils.read(file_path)
-        headers = {'Content-Length': file['size']}
+        headers = {
+            'Content-Length': file['size'],
+            'Content-Disposition': 'attachment; filename=%s' %
+                                   file['name'].replace(' ', '_')
+        }
 
     return flask.Response(
         data, content_type=file['mime'] or 'text/plain', headers=headers
