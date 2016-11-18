@@ -197,7 +197,10 @@ def get_file_content(user, file_id):
         }
     else:
         data = utils.read(file_path)
-        headers = {'Content-Length': file['size']}
+        headers = {
+          'Content-Length': file['size'],
+          'Content-Disposition': 'attachment; filename=%s' % file['name']
+        }
 
     return flask.Response(
         data, content_type=file['mime'] or 'text/plain', headers=headers
