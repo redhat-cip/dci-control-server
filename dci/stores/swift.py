@@ -46,7 +46,7 @@ class Swift(stores.Store):
             self.connection.delete_object(self.container, filename)
         except swiftclient.exceptions.ClientException:
             raise exceptions.StoreExceptions('An error occured while '
-                                             'deleting %s' % filename)
+                                             'deleting object %s' % filename)
 
     def get(self, filename):
         return self.connection.get_object(self.container, filename,
