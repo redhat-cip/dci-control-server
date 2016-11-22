@@ -498,6 +498,43 @@ class TestIssue(utils.SchemaTesting):
         pass
 
 
+class TestMeta(utils.SchemaTesting):
+    schema = schemas.meta
+    data = dict([utils.NAME, utils.VALUE])
+
+    @staticmethod
+    def generate_invalids_and_errors():
+        invalids = dict([utils.INVALID_NAME,
+                         utils.INVALID_VALUE])
+        errors = dict([utils.INVALID_NAME_ERROR,
+                       utils.INVALID_VALUE_ERROR])
+        return invalids, errors
+
+    def test_post_extra_data(self):
+        data = utils.dict_merge(self.data, {'extra': 'some comment'})
+        super(TestMeta, self).test_post_extra_data(data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name', 'value')
+        super(TestMeta, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids, errors = TestMeta.generate_invalids_and_errors()
+        super(TestMeta, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestMeta, self).test_post(self.data, self.data)
+
+    def test_put_extra_data(self):
+        pass
+
+    def test_put_invalid_data(self):
+        pass
+
+    def test_put(self):
+        pass
+
+
 class TestJobState(utils.SchemaTesting):
     schema = schemas.jobstate
     data = dict([utils.STATUS, utils.JOB])

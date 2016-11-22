@@ -35,6 +35,7 @@ from dci.db import models
 from dci.api.v1 import files
 from dci.api.v1 import issues
 from dci.api.v1 import jobstates
+from dci.api.v1 import metas
 from dci import dci_config
 
 
@@ -47,7 +48,8 @@ _VALID_EMBED = {
     'jobdefinition': v1_utils.embed(models.JOBDEFINITIONS),
     'jobdefinition.test': v1_utils.embed(models.TESTS),
     'team': v1_utils.embed(models.TEAMS),
-    'remoteci': v1_utils.embed(models.REMOTECIS)
+    'remoteci': v1_utils.embed(models.REMOTECIS),
+    'metas': v1_utils.embed(models.METAS)
 }
 
 
@@ -561,3 +563,41 @@ def delete_job_by_id(user, j_id):
         raise dci_exc.DCIDeleteConflict('Job', j_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+# jobs metas controllers
+
+@api.route('/jobs/<j_id>/metas', methods=['POST'])
+@auth.requires_auth
+def associate_meta(user, j_id):
+    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
+    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+        raise auth.UNAUTHORIZED
+    return metas.create_meta(j_id)
+
+
+@api.route('/jobs/<j_id>/metas/<m_id>', methods=['GET'])
+@auth.requires_auth
+def get_meta_by_id(user, j_id, m_id):
+    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
+    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+        raise auth.UNAUTHORIZED
+    return metas.get_meta_by_id(m_id)
+
+
+@api.route('/jobs/<j_id>/metas', methods=['GET'])
+@auth.requires_auth
+def get_all_metas(user, j_id):
+    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
+    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+        raise auth.UNAUTHORIZED
+    return metas.get_all_metas_from_job(j_id)
+
+
+@api.route('/jobs/<j_id>/metas/<m_id>', methods=['DELETE'])
+@auth.requires_auth
+def delete_meta(user, j_id, m_id):
+    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
+    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+        raise auth.UNAUTHORIZED
+    return metas.delete_meta(j_id, m_id)
