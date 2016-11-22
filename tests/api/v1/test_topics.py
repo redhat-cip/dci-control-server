@@ -295,3 +295,32 @@ def test_delete_team_from_topic_as_user(admin, user):
     status_code = user.delete(
         '/api/v1/topics/%s/teams/%s' % (pt_id, team_id)).status_code
     assert status_code == 401
+
+
+def test_status_from_component_type(admin, topic_id, components_ids,
+                                    remoteci_id, job_id):
+    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
+
+    assert len(status['jobs']) == 1
+    assert status['jobs'][0]['job_status'] == 'new'
+    assert status['jobs'][0]['component_type'] == 'type_1'
+    assert 'name-' in status['jobs'][0]['component_name']
+
+    # Adding a new version of the component
+    # so the query to topics/<t_id>/type/<type_id>/status
+    # changes and retrieve a job not run (None) yet
+    data = {
+        'name': 'newversion',
+        'type': 'type_1',
+        'url': 'http://example.com/',
+        'topic_id': topic_id,
+        'export_control': True,
+        'active': True}
+    admin.post('/api/v1/components', data=data).data
+
+    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
+
+    assert len(status['jobs']) == 1
+    assert status['jobs'][0]['job_status'] is None
+    assert status['jobs'][0]['component_type'] == 'type_1'
+    assert status['jobs'][0]['component_name'] == 'newversion'

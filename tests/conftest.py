@@ -107,12 +107,12 @@ def user_admin(app, db_provisioning):
 
 
 @pytest.fixture
-def topic_id(admin, team_admin_id):
+def topic_id(admin, team_id):
     data = {'name': 'topic_name'}
     topic = admin.post('/api/v1/topics', data=data).data
     t_id = topic['topic']['id']
     admin.post('/api/v1/topics/%s/teams' % t_id,
-               data={'team_id': team_admin_id})
+               data={'team_id': team_id})
     return t_id
 
 
