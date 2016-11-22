@@ -50,6 +50,7 @@ def test_junit2json_valid():
 def test_retrieve_junit2json(admin, job_id):
     headers = {'DCI-NAME': 'junit_file.xml', 'DCI-JOB-ID': job_id,
                'DCI-MIME': 'application/junit',
+               'Content-Disposition': 'attachment; filename=junit_file.xml',
                'Content-Type': 'application/junit'}
 
     file = admin.post('/api/v1/files', headers=headers, data=JUNIT)
@@ -59,7 +60,6 @@ def test_retrieve_junit2json(admin, job_id):
     res = admin.get('/api/v1/files/%s/content' % file)
 
     assert res.data == JUNIT
-    assert 'Content-Disposition' not in res.headers
 
     # Now retrieve it through XHR
     headers = {'X-Requested-With': 'XMLHttpRequest'}
