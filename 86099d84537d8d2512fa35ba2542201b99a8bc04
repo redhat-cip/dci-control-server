@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a890539_4d9f1904",
+        "filename": "dci.spec",
+        "patchSetId": 22
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-11-22T18:38:09Z",
+      "side": 1,
+      "message": "please preserver the alphabetical order",
+      "revId": "86099d84537d8d2512fa35ba2542201b99a8bc04",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a890539_0d9511e4",
+        "filename": "dci.spec",
+        "patchSetId": 22
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-11-22T18:38:09Z",
+      "side": 1,
+      "message": "already in the list",
+      "revId": "86099d84537d8d2512fa35ba2542201b99a8bc04",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a890539_2d9acd14",
+        "filename": "dci.spec",
+        "patchSetId": 22
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-11-22T18:38:09Z",
+      "side": 1,
+      "message": "already in the list",
+      "revId": "86099d84537d8d2512fa35ba2542201b99a8bc04",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a890539_6da4d557",
+        "filename": "dci.spec",
+        "patchSetId": 22
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-11-22T18:38:09Z",
+      "side": 1,
+      "message": "the same",
+      "revId": "86099d84537d8d2512fa35ba2542201b99a8bc04",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a890539_8d8821c8",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 22
+      },
+      "lineNbr": 414,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-11-22T18:38:09Z",
+      "side": 1,
+      "message": "if \u0027failure\u0027in values.get(\u0027status\u0027):\n\nThis because there is actually 3 failure statuses. It would be nice if we could compare with the previous status. For example if we jump from \u0027failure\u0027 to \u0027product-failure\u0027, there is no need to resend a notification.",
+      "revId": "86099d84537d8d2512fa35ba2542201b99a8bc04",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
