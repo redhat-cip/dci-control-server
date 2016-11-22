@@ -37,10 +37,13 @@ def create_meta(job_id):
 
     values = schemas.meta.post(flask.request.json)
 
+    etag = utils.gen_etag()
     meta_id = utils.gen_uuid()
     values.update({
         'id': meta_id,
         'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': etag,
         'job_id': job_id
     })
 
@@ -49,7 +52,9 @@ def create_meta(job_id):
         query = _TABLE.insert().values(**values)
         flask.g.db_conn.execute(query)
         result = json.dumps(values)
-        return flask.Response(result, 201, content_type='application/json')
+        return flask.Response(result, 201,
+                              headers={'ETag': etag},
+                              content_type='application/json')
 
 
 def get_all_metas_from_job(job_id):
@@ -64,6 +69,36 @@ def get_all_metas_from_job(job_id):
                          '_meta': {'count': rows.rowcount}})
     res.status_code = 200
     return res
+
+
+def put_meta(job_id, meta_id):
+    """Modify a meta."""
+
+    # get If-Match header
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    values = schemas.meta.put(flask.request.json)
+
+    meta_retrieved = v1_utils.verify_existence_and_get(meta_id, _TABLE)
+
+    if meta_retrieved['job_id'] != job_id:
+        raise dci_exc.DCIException(
+            "Meta '%s' is not associated to job '%s'." % (meta_id, job_id))
+
+    values['etag'] = utils.gen_etag()
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        _TABLE.c.id == meta_id
+    )
+    query = _TABLE.update().where(where_clause).values(**values)
+
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Meta', meta_id)
+
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
+                          content_type='application/json')
 
 
 def delete_meta(job_id, meta_id):

@@ -390,4 +390,9 @@ meta = {
     'value': six.text_type
 }
 
-meta = schema_factory(meta)
+meta_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('value'): six.text_type
+}
+
+meta = DCISchema(schema_factory(meta).post, Schema(meta_put))
