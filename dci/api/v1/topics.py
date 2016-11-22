@@ -183,6 +183,97 @@ def get_jobs_from_components(user, topic_id, component_id):
     return components.get_jobs(user, component_id, team_id=team_id)
 
 
+@api.route('/topics/<topic_id>/type/<type_id>/status',
+           methods=['GET'])
+@auth.requires_auth
+def get_jobs_status_from_components(user, topic_id, type_id):
+    embed = schemas.args(flask.request.args.to_dict())['embed']
+    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
+    v1_utils.verify_team_in_topic(user, topic_id)
+    args = schemas.args(flask.request.args.to_dict())
+
+    # if the user is not the admin then filter by team_id
+    team_id = user['team_id'] if not auth.is_admin(user) else None
+
+    EMBED = {
+        'teams': v1_utils.embed(models.TEAMS),
+        'teams_topics': v1_utils.embed(models.JOINS_TOPICS_TEAMS),
+        'topics': v1_utils.embed(models.TOPICS),
+    }
+
+    # Get the last (by created_at field) component id of <type_id> type
+    # within <topic_id> topic
+    where_clause = sql.and_(models.COMPONENTS.c.type == type_id,
+                            models.COMPONENTS.c.topic_id == topic_id,
+                            models.COMPONENTS.c.active == True)
+    q_bd = sql.select([models.COMPONENTS]).where(where_clause).order_by(
+        sql.desc(models.COMPONENTS.c.created_at)).limit(1)
+    cpt = flask.g.db_conn.execute(q_bd).fetchone()
+    cpt_id = cpt['id']
+    cpt_name = cpt['name']
+
+
+    # Get list of all remotecis that are attached to a topic this type belongs
+    # to
+    q_bd = v1_utils.QueryBuilder(models.REMOTECIS, args['offset'], args['limit'],
+                                 EMBED)
+    q_bd.join(['teams', 'teams_topics', 'topics'])
+    if team_id:
+        q_bd.where.append(models.TEAMS.c.id == team_id)
+    q_bd.where.append(models.TOPICS.c.id == topic_id)
+    q_bd.where.append(models.REMOTECIS.c.active == True)
+    rcs = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rcs = [v1_utils.group_embedded_resources(embed, rc) for rc in rcs]
+    
+    to_return = []
+    for rc in rcs:
+        to_return.append(
+            { 'team_id': rc['team_id'],
+              'team_name': rc['teams_name'],
+              'topic_id': topic_id,
+              'topic_name': rc['topics_name'],
+              'remoteci_id': rc['id'],
+              'remoteci_name': rc['name'],
+              'component_id': cpt_id,
+              'component_name': cpt_name,
+              'component_type': type_id,
+              'job_status': None,
+              'job_id': None,
+              'job_created_at': None}
+        )
+
+    # Get status of last job with last component for all remotecis that
+    # belongs to the topic
+    jjc = (
+        models.JOBS
+        .join(
+            models.JOIN_JOBS_COMPONENTS,
+            models.JOBS.c.id == models.JOIN_JOBS_COMPONENTS.c.job_id
+        )
+        .join(
+            models.REMOTECIS,
+            models.JOBS.c.remoteci_id == models.REMOTECIS.c.id
+        )
+    )
+    q_bd = (
+        sql.select([models.JOBS])
+        .select_from(jjc)
+        .distinct(models.REMOTECIS.c.id)
+        .where(models.JOIN_JOBS_COMPONENTS.c.component_id == cpt_id)
+    )
+    rows = flask.g.db_conn.execute(q_bd).fetchall()
+    results = [v1_utils.group_embedded_resources(embed, row) for row in rows]
+    
+    for rc in to_return:
+        for result in results:
+            if result['remoteci_id'] == rc['remoteci_id']:
+                rc['job_status'] = result['status']
+                rc['job_id'] = result['id']
+                rc['job_created_at'] = result['created_at']
+
+    return flask.jsonify({'jobs': to_return, '_meta': {'count': len(to_return)}})
+
+
 @api.route('/topics/<topic_id>/jobdefinitions', methods=['GET'])
 @auth.requires_auth
 def get_all_jobdefinitions_by_topic(user, topic_id):
