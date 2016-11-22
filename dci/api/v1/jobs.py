@@ -594,6 +594,15 @@ def get_all_metas(user, j_id):
     return metas.get_all_metas_from_job(j_id)
 
 
+@api.route('/jobs/<j_id>/metas/<m_id>', methods=['PUT'])
+@auth.requires_auth
+def put_meta(user, j_id, m_id):
+    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
+    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+        raise auth.UNAUTHORIZED
+    return metas.put_meta(j_id, m_id)
+
+
 @api.route('/jobs/<j_id>/metas/<m_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_meta(user, j_id, m_id):

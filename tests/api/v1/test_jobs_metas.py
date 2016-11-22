@@ -46,3 +46,21 @@ def test_get_all_metas_from_job(user, job_user_id):
 
     all_metas = user.get('/api/v1/jobs/%s/metas' % job_user_id).data
     assert len(all_metas['metas']) == 2
+
+
+def test_put_meta(user, job_user_id):
+    meta = user.post('/api/v1/jobs/%s/metas' % job_user_id,
+                     data={'name': 'kikoo', 'value': 'lol'})
+    meta_id = meta.data['id']
+    assert meta.status_code == 201
+    meta_etag = meta.headers.get("ETag")
+
+    meta_put = user.put('/api/v1/jobs/%s/metas/%s' % (job_user_id, meta_id),
+                        data={'name': 'kikoo2', 'value': 'lol2'},
+                        headers={'If-match': meta_etag})
+    assert meta_put.status_code == 204
+
+    all_metas = user.get('/api/v1/jobs/%s/metas' % job_user_id).data
+    assert all_metas['metas']
+    assert all_metas['metas'][0]['name'] == 'kikoo2'
+    assert all_metas['metas'][0]['value'] == 'lol2'
