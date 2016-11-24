@@ -9,5 +9,5 @@ include scripts/data/tripleo-stack-dump-sample.json
 include scripts/db_provisioning.py
 include scripts/runtestserver.py
 include scripts/start_es.sh
-include dci/data
+include dci/data/junittojson.xsl
 include dci/alembic/alembic.ini
