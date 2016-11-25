@@ -32,6 +32,9 @@ from dci.db import models
 _TABLE = models.JOBDEFINITIONS
 # associate column names with the corresponding SA Column object
 _JD_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_VALID_EMBED = {
+    'topic': v1_utils.embed(models.TOPICS)
+}
 
 
 @api.route('/jobdefinitions', methods=['POST'])
@@ -66,9 +69,11 @@ def _get_all_jobdefinitions(user, topic_id=None):
     """
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
+    embed = args['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
-
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
+                                 embed=_VALID_EMBED)
+    q_bd.join(embed)
     q_bd.sort = v1_utils.sort_query(args['sort'], _JD_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _JD_COLUMNS)
 
@@ -83,6 +88,7 @@ def _get_all_jobdefinitions(user, topic_id=None):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
 
     return flask.jsonify({'jobdefinitions': rows, '_meta': {'count': nb_row}})
 
@@ -99,7 +105,8 @@ def get_jobdefinition_by_id_or_name(user, jd_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE)
+    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
+    q_bd.join(embed)
 
     where_clause = sql.or_(_TABLE.c.id == jd_id, _TABLE.c.name == jd_id)
     q_bd.where.append(where_clause)
