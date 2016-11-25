@@ -109,6 +109,12 @@ def test_get_all_jobdefinitions_with_where(admin, topic_id):
     assert db_jd_id == pjd_id
 
 
+def test_get_all_jobdefinitions_with_embed(jobdefinition_id,
+                                           admin):
+    res = admin.get('/api/v1/jobdefinitions?embed=topic')
+    assert res.data['jobdefinitions'][0]['topic']['name'] == 'topic_name'
+
+
 def test_where_invalid(admin, topic_id):
     err = admin.get('/api/v1/topics/%s/jobdefinitions?where=id' % topic_id)
 
@@ -140,6 +146,12 @@ def test_get_jobdefinition_by_id_or_name(admin, topic_id):
 
     created_ct = created_ct.data
     assert created_ct['jobdefinition']['id'] == pjd_id
+
+
+def test_get_all_jobdefinition_by_id_with_embed(jobdefinition_id,
+                                                admin):
+    res = admin.get('/api/v1/jobdefinitions/%s?embed=topic' % jobdefinition_id)
+    assert res.data['jobdefinition']['topic']['name'] == 'topic_name'
 
 
 def test_get_jobdefinition_not_found(admin):
