@@ -69,7 +69,8 @@ def create_users(user):
         'created_at': datetime.datetime.utcnow().isoformat(),
         'updated_at': datetime.datetime.utcnow().isoformat(),
         'etag': etag,
-        'password': password_hash
+        'password': password_hash,
+        'role': values.get('role', 'user')
     })
 
     query = _TABLE.insert().values(**values)

@@ -23,6 +23,7 @@ def test_create_users(admin, team_id):
                           'team_id': team_id}).data
 
     pu_id = pu['user']['id']
+    assert pu['user']['role'] == 'user'
     gu = admin.get('/api/v1/users/%s' % pu_id).data
     assert gu['user']['name'] == 'pname'
 
