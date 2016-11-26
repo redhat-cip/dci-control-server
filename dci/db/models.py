@@ -214,6 +214,18 @@ JOBS = sa.Table(
     sa.Column('user_agent', sa.String(255)),
     sa.Column('client_version', sa.String(255)))
 
+METAS = sa.Table(
+    'metas', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('name', sa.Text),
+    sa.Column('value', sa.Text),
+    sa.Column('job_id', sa.String(36),
+              sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+              nullable=False))
+
 JOIN_JOBS_COMPONENTS = sa.Table(
     'jobs_components', metadata,
     sa.Column('job_id', sa.String(36),

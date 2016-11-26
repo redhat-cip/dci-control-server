@@ -41,6 +41,7 @@ LABEL = 'label', text_type
 COUNTRY = 'country', text_type
 EMAIL = 'email', text_type
 NOTIF = 'notification', True
+VALUE = 'value', text_type
 
 INVALID_NAME = 'name', None
 INVALID_NAME_ERROR = 'name', schemas.INVALID_STRING
@@ -102,6 +103,9 @@ INVALID_CONFIGURATION_ERROR = 'configuration', schemas.INVALID_JSON
 COMPONENTS = 'components', []
 INVALID_COMPONENTS = 'components', list
 INVALID_COMPONENTS_ERROR = 'components', schemas.INVALID_LIST
+
+INVALID_VALUE = 'value', None
+INVALID_VALUE_ERROR = 'value', schemas.INVALID_STRING
 
 
 def generate_errors(*fields):

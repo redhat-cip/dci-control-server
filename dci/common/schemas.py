@@ -378,3 +378,16 @@ issue = {
 }
 
 issue = schema_factory(issue)
+
+###############################################################################
+#                                                                             #
+#                                Metas schemas                                #
+#                                                                             #
+###############################################################################
+
+meta = {
+    'name': six.text_type,
+    'value': six.text_type
+}
+
+meta = schema_factory(meta)
