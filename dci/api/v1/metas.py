@@ -51,7 +51,7 @@ def create_meta(job_id):
         # create the label/value row
         query = _TABLE.insert().values(**values)
         flask.g.db_conn.execute(query)
-        result = json.dumps(values)
+        result = json.dumps({'meta': values})
         return flask.Response(result, 201,
                               headers={'ETag': etag},
                               content_type='application/json')
