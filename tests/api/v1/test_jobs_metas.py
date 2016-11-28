@@ -24,7 +24,7 @@ def test_create_meta(user, job_user_id):
 def test_delete_meta(user, job_user_id):
     meta = user.post('/api/v1/jobs/%s/metas' % job_user_id,
                      data={'name': 'kikoo', 'value': 'lol'})
-    meta_id = meta.data['id']
+    meta_id = meta.data['meta']['id']
     assert meta.status_code == 201
 
     meta_deleted = user.delete('/api/v1/jobs/%s/metas/%s' % (job_user_id,
