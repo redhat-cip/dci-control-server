@@ -54,7 +54,7 @@ def _verify_existence_and_get_user(user_id):
 
 
 @api.route('/users', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def create_users(user):
     values = schemas.user.post(flask.request.json)
 
@@ -89,7 +89,7 @@ def create_users(user):
 
 
 @api.route('/users', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_all_users(user, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
@@ -117,7 +117,7 @@ def get_all_users(user, team_id=None):
 
 
 @api.route('/users/<user_id>', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_user_by_id_or_name(user, user_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
 
@@ -144,7 +144,7 @@ def get_user_by_id_or_name(user, user_id):
 
 
 @api.route('/users/<user_id>', methods=['PUT'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def put_user(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -181,7 +181,7 @@ def put_user(user, user_id):
 
 
 @api.route('/users/<user_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def delete_user_by_id_or_name(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)

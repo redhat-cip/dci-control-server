@@ -37,7 +37,7 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
 @api.route('/topics', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def create_topics(user):
     values = schemas.topic.post(flask.request.json)
 
@@ -65,7 +65,7 @@ def create_topics(user):
 
 
 @api.route('/topics/<topic_id>', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_topic_by_id_or_name(user, topic_id):
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
@@ -81,7 +81,7 @@ def get_topic_by_id_or_name(user, topic_id):
 
 
 @api.route('/topics', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_all_topics(user):
     args = schemas.args(flask.request.args.to_dict())
     # if the user is an admin then he can get all the topics
@@ -116,7 +116,7 @@ def get_all_topics(user):
 
 
 @api.route('/topics/<topic_id>', methods=['PUT'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def put_topic(user, topic_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -145,7 +145,7 @@ def put_topic(user, topic_id):
 
 
 @api.route('/topics/<topic_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def delete_topic_by_id_or_name(user, topic_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
@@ -162,7 +162,7 @@ def delete_topic_by_id_or_name(user, topic_id):
 
 # components, jobdefinitions, tests GET
 @api.route('/topics/<topic_id>/components', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_all_components(user, topic_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
@@ -171,7 +171,7 @@ def get_all_components(user, topic_id):
 
 @api.route('/topics/<topic_id>/components/<component_id>/jobs',
            methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_jobs_from_components(user, topic_id, component_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
@@ -184,7 +184,7 @@ def get_jobs_from_components(user, topic_id, component_id):
 
 
 @api.route('/topics/<topic_id>/jobdefinitions', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_all_jobdefinitions_by_topic(user, topic_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
@@ -192,7 +192,7 @@ def get_all_jobdefinitions_by_topic(user, topic_id):
 
 
 @api.route('/topics/<topic_id>/tests', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_all_tests(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
     if not(auth.is_admin(user)):
@@ -221,7 +221,7 @@ def get_all_tests(user, topic_id):
 
 
 @api.route('/topics/<topic_id>/tests', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def add_test_to_topic(user, topic_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
@@ -242,7 +242,7 @@ def add_test_to_topic(user, topic_id):
 
 
 @api.route('/topics/<t_id>/tests/<test_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def delete_test_from_topic(user, t_id, test_id):
     if not(auth.is_admin(user)):
         v1_utils.verify_team_in_topic(user, t_id)
@@ -262,7 +262,7 @@ def delete_test_from_topic(user, t_id, test_id):
 
 # teams set apis
 @api.route('/topics/<topic_id>/teams', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def add_team_to_topic(user, topic_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
@@ -289,7 +289,7 @@ def add_team_to_topic(user, topic_id):
 
 
 @api.route('/topics/<topic_id>/teams/<team_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def delete_team_from_topic(user, topic_id, team_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
@@ -311,7 +311,7 @@ def delete_team_from_topic(user, topic_id, team_id):
 
 
 @api.route('/topics/<topic_id>/teams', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_all_teams_from_topic(user, topic_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED

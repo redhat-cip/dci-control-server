@@ -179,6 +179,7 @@ REMOTECIS = sa.Table(
     sa.Column('name', sa.String(255)),
     sa.Column('data', sa_utils.JSONType),
     sa.Column('active', sa.BOOLEAN, default=True),
+    sa.Column('api_secret', sa.String(64)),
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
@@ -210,7 +211,8 @@ JOBS = sa.Table(
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
     sa.Column('user_agent', sa.String(255)),
-    sa.Column('client_version', sa.String(255)))
+    sa.Column('client_version', sa.String(255)),
+    sa.Column('api_secret', sa.String(64)))
 
 JOIN_JOBS_COMPONENTS = sa.Table(
     'jobs_components', metadata,

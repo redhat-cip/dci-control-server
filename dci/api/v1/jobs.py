@@ -51,8 +51,19 @@ _VALID_EMBED = {
 }
 
 
+@api.route('/jobs/test_token', methods=['GET', 'POST', 'PUT'])
+@auth.requires_auth(allow={auth.AUTH_TOKEN})
+def test_token(remoteci):
+    return flask.Response(
+        json.dumps(
+            {'remoteci_id': remoteci,
+             'signature': flask.request.headers.get('X-Auth-Signature'),
+             }), 201,
+        content_type='application/json')
+
+
 @api.route('/jobs', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def create_jobs(user):
     values = schemas.job.post(flask.request.json)
     components_ids = values.pop('components')
@@ -74,6 +85,7 @@ def create_jobs(user):
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'
         ),
+        'api_secret': utils.gen_secret(),
     })
 
     # create the job and feed the jobs_components table
@@ -96,7 +108,7 @@ def create_jobs(user):
 
 
 @api.route('/jobs/search', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def search_jobs(user):
     values = schemas.job_search.post(flask.request.json)
     jobdefinition_id = values.get('jobdefinition_id')
@@ -146,7 +158,10 @@ def _build_recheck(recheck_job, values):
     recheck_job = dict(recheck_job)
 
     # Reinit the pending as if it were new.
-    values.update({'id': recheck_job['id'], 'recheck': False})
+    values.update({
+        'id': recheck_job['id'],
+        'recheck': False,
+    })
     recheck_job.update(values)
 
     flask.g.db_conn.execute(
@@ -199,7 +214,8 @@ def _build_new_template(topic_id, remoteci, values):
 
     values.update({
         'jobdefinition_id': jd_to_run['id'],
-        'team_id': remoteci['team_id']
+        'team_id': remoteci['team_id'],
+        'api_secret': utils.gen_secret()
     })
 
     with flask.g.db_conn.begin():
@@ -252,7 +268,7 @@ def _validate_input(values, user):
 
 
 @api.route('/jobs/schedule', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def schedule_jobs(user):
     """Dispatch jobs to remotecis.
 
@@ -290,7 +306,7 @@ def schedule_jobs(user):
 
 
 @api.route('/jobs', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_all_jobs(user, jd_id=None):
     """Get all jobs.
 
@@ -326,7 +342,7 @@ def get_all_jobs(user, jd_id=None):
 
 
 @api.route('/jobs/<job_id>/components', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_components_from_job(user, job_id):
     v1_utils.verify_existence_and_get(job_id, _TABLE)
 
@@ -342,14 +358,14 @@ def get_components_from_job(user, job_id):
 
 
 @api.route('/jobs/<j_id>/jobstates', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_jobstates_by_job(user, j_id):
     v1_utils.verify_existence_and_get(j_id, _TABLE)
     return jobstates.get_all_jobstates(j_id=j_id)
 
 
 @api.route('/jobs/<jd_id>', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_job_by_id(user, jd_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
@@ -376,7 +392,7 @@ def get_job_by_id(user, jd_id):
 
 
 @api.route('/jobs/<job_id>', methods=['PUT'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 @audits.log
 def update_job_by_id(user, job_id):
     """Update a job
@@ -417,7 +433,7 @@ def update_job_by_id(user, job_id):
 
 
 @api.route('/jobs/<j_id>/recheck', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def job_recheck(user, j_id):
 
     job_to_recheck = v1_utils.verify_existence_and_get(j_id, _TABLE)
@@ -455,7 +471,7 @@ def job_recheck(user, j_id):
 
 
 @api.route('/jobs/<j_id>/files', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def add_file_to_jobs(user, j_id):
     values = schemas.job.post(flask.request.json)
 
@@ -465,28 +481,28 @@ def add_file_to_jobs(user, j_id):
 
 
 @api.route('/jobs/<j_id>/issues', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def retrieve_issues_from_job(user, j_id):
     """Retrieve all issues attached to a job."""
     return issues.get_all_issues(j_id)
 
 
 @api.route('/jobs/<j_id>/issues', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def attach_issue_to_jobs(user, j_id):
     """Attach an issue to a job."""
     return issues.attach_issue(j_id)
 
 
 @api.route('/jobs/<j_id>/issues/<i_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def unattach_issue_from_job(user, j_id, i_id):
     """Unattach an issue to a job."""
     return issues.unattach_issue(j_id, i_id)
 
 
 @api.route('/jobs/<j_id>/files', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_all_files_from_jobs(user, j_id):
     """Get all files.
     """
@@ -494,7 +510,7 @@ def get_all_files_from_jobs(user, j_id):
 
 
 @api.route('/jobs/<j_id>/results', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_all_results_from_jobs(user, j_id):
     """Get all results from job.
     """
@@ -529,7 +545,7 @@ def get_all_results_from_jobs(user, j_id):
 
 
 @api.route('/jobs/<j_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def delete_job_by_id(user, j_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)

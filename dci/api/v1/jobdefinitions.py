@@ -35,7 +35,7 @@ _JD_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
 @api.route('/jobdefinitions', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def create_jobdefinitions(user):
     etag = utils.gen_etag()
     data_json = schemas.jobdefinition.post(flask.request.json)
@@ -88,13 +88,13 @@ def _get_all_jobdefinitions(user, topic_id=None):
 
 
 @api.route('/jobdefinitions')
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_all_jobdefinitions(user):
     return _get_all_jobdefinitions(user)
 
 
 @api.route('/jobdefinitions/<jd_id>', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_jobdefinition_by_id_or_name(user, jd_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
@@ -116,7 +116,7 @@ def get_jobdefinition_by_id_or_name(user, jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>', methods=['PUT'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def put_jobdefinition(user, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -145,7 +145,7 @@ def put_jobdefinition(user, jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def delete_jobdefinition_by_id_or_name(user, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -170,7 +170,7 @@ def delete_jobdefinition_by_id_or_name(user, jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>/tests', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def add_test_to_jobdefinitions(user, jd_id):
     data_json = flask.request.json
     values = {'jobdefinition_id': jd_id,
@@ -189,7 +189,7 @@ def add_test_to_jobdefinitions(user, jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>/tests', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_all_tests_from_jobdefinitions(user, jd_id):
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
@@ -207,7 +207,7 @@ def get_all_tests_from_jobdefinitions(user, jd_id):
 
 
 @api.route('/jobdefinitions/<jd_id>/tests/<t_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def delete_test_from_jobdefinition(user, jd_id, t_id):
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
