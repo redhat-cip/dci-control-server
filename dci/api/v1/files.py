@@ -44,7 +44,7 @@ _FILES_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
 @api.route('/files', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def create_files(user):
     # todo(yassine): use voluptuous for headers validation
     headers_values = v1_utils.flask_headers_to_dict(flask.request.headers)
@@ -107,7 +107,7 @@ def create_files(user):
 
 
 @api.route('/files', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_all_files(user, j_id=None):
     """Get all files.
     """
@@ -139,7 +139,7 @@ def get_all_files(user, j_id=None):
 
 
 @api.route('/files/<file_id>', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_file_by_id_or_name(user, file_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
@@ -177,7 +177,7 @@ def get_file_by_id_or_name(user, file_id):
 
 
 @api.route('/files/<file_id>/content', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_file_content(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
@@ -213,7 +213,7 @@ def get_file_content(user, file_id):
 
 
 @api.route('/files/<file_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def delete_file_by_id(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
@@ -234,12 +234,12 @@ def delete_file_by_id(user, file_id):
 
 
 @api.route('/files/purge', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def get_to_purge_archived_files(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/files/purge', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth({auth.AUTH_BASIC})
 def purge_archived_files(user):
     return base.purge_archived_resources(user, _TABLE)
