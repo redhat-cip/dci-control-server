@@ -40,6 +40,7 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 @api.route('/tests', methods=['POST'])
 @auth.login_required
 def create_tests(user):
+    # FIXME(fc): can users create arbitrarylly ?
     created_at, _ = utils.get_dates(user)
     data_json = schemas.test.post(flask.request.json)
     data_json.update({
@@ -133,6 +134,7 @@ def get_jobdefinitions_by_test(user, test_id):
 @api.route('/tests/<uuid:t_id>/remotecis', methods=['GET'])
 @auth.login_required
 def get_remotecis_by_test(user, test_id):
+    # FIXME(fc): any user can get the remotecis related to this test ?
     test = v1_utils.verify_existence_and_get(test_id, _TABLE)
     return remotecis.get_all_remotecis(test['id'])
 

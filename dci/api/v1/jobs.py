@@ -57,6 +57,19 @@ _EMBED_MANY = {
     'team': False}
 
 
+@api.route('/jobs/test_token', methods=['GET', 'POST', 'PUT'])
+@auth.requires_remoteci_signature
+def test_token(user):
+    return flask.Response(
+        json.dumps(
+            {'remoteci_id': 'remoteci',
+             'signature': flask.request.headers.get('DCI-Auth-Signature'),
+             'query_string': flask.request.query_string,
+             'path': flask.request.path,
+             }), 201,
+        content_type='application/json')
+
+
 @api.route('/jobs', methods=['POST'])
 @auth.login_required
 def create_jobs(user):
@@ -424,6 +437,7 @@ def get_components_from_job(user, job_id):
 @api.route('/jobs/<uuid:j_id>/jobstates', methods=['GET'])
 @auth.login_required
 def get_jobstates_by_job(user, j_id):
+    # FIXME(fc): any user can read jobstates from any team ?
     v1_utils.verify_existence_and_get(j_id, _TABLE)
     return jobstates.get_all_jobstates(j_id=j_id)
 
@@ -547,6 +561,7 @@ def add_file_to_jobs(user, j_id):
 @auth.login_required
 def retrieve_issues_from_job(user, j_id):
     """Retrieve all issues attached to a job."""
+    # FIXME(fc): can any user get all issues from any job ?
     return issues.get_all_issues(j_id)
 
 
@@ -554,6 +569,7 @@ def retrieve_issues_from_job(user, j_id):
 @auth.login_required
 def attach_issue_to_jobs(user, j_id):
     """Attach an issue to a job."""
+    # FIXME(fc): can any user attach issues to any job ?
     return issues.attach_issue(j_id)
 
 
@@ -561,6 +577,7 @@ def attach_issue_to_jobs(user, j_id):
 @auth.login_required
 def unattach_issue_from_job(user, j_id, i_id):
     """Unattach an issue to a job."""
+    # FIXME(fc): can any user unattach issues to any job ?
     return issues.unattach_issue(j_id, i_id)
 
 
@@ -569,6 +586,7 @@ def unattach_issue_from_job(user, j_id, i_id):
 def get_all_files_from_jobs(user, j_id):
     """Get all files.
     """
+    # FIXME(fc): can any user get all files from any job ?
     return files.get_all_files(j_id)
 
 
@@ -577,6 +595,7 @@ def get_all_files_from_jobs(user, j_id):
 def get_all_results_from_jobs(user, j_id):
     """Get all results from job.
     """
+    # FIXME(fc): can any user get all results from any job ?
 
     swift = dci_config.get_store('files')
     job_files = json.loads(files.get_all_files(j_id).response[0])['files']

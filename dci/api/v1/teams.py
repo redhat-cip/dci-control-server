@@ -115,6 +115,7 @@ def get_team_by_id(user, t_id):
 @api.route('/teams/<uuid:team_id>/remotecis', methods=['GET'])
 @auth.login_required
 def get_remotecis_by_team(user, team_id):
+    # FIXME(fc): any user can list the remotecis for any team ?
     team = v1_utils.verify_existence_and_get(team_id, _TABLE)
     return remotecis.get_all_remotecis(team['id'])
 
@@ -122,6 +123,7 @@ def get_remotecis_by_team(user, team_id):
 @api.route('/teams/<uuid:team_id>/tests', methods=['GET'])
 @auth.login_required
 def get_tests_by_team(user, team_id):
+    # FIXME(fc): any user can list the remotecis for any team ?
     team = v1_utils.verify_existence_and_get(team_id, _TABLE)
     return tests.get_all_tests(user, team['id'])
 

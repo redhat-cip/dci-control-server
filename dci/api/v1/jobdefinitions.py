@@ -91,6 +91,7 @@ def get_all_jobdefinitions(user):
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['GET'])
 @auth.login_required
 def get_jobdefinition_by_id(user, jd_id):
+    # FIXME(fc): anyone can list a jobdef even his team shouldn't ?
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
 
@@ -146,6 +147,7 @@ def put_jobdefinition(user, jd_id):
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['DELETE'])
 @auth.login_required
 def delete_jobdefinition_by_id(user, jd_id):
+    # FIXME(fc): can anyone delete a jobdefinition ?
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -178,6 +180,7 @@ def delete_jobdefinition_by_id(user, jd_id):
 @api.route('/jobdefinitions/<uuid:jd_id>/tests', methods=['POST'])
 @auth.login_required
 def add_test_to_jobdefinitions(user, jd_id):
+    # FIXME(fc): is there any access control required here ?
     data_json = flask.request.json
     values = {'jobdefinition_id': jd_id,
               'test_id': data_json.get('test_id', None)}
@@ -197,6 +200,7 @@ def add_test_to_jobdefinitions(user, jd_id):
 @api.route('/jobdefinitions/<uuid:jd_id>/tests', methods=['GET'])
 @auth.login_required
 def get_all_tests_from_jobdefinitions(user, jd_id):
+    # FIXME(fc): is there any access control required here ?
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
     # Get all components which belongs to a given jobdefinition
@@ -216,6 +220,7 @@ def get_all_tests_from_jobdefinitions(user, jd_id):
            methods=['DELETE'])
 @auth.login_required
 def delete_test_from_jobdefinition(user, jd_id, t_id):
+    # FIXME(fc): is there any access control required here ?
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
     JDC = models.JOIN_JOBDEFINITIONS_TESTS
