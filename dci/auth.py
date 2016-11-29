@@ -16,6 +16,7 @@
 
 import flask
 from functools import wraps
+import hmac
 import json
 from passlib.apps import custom_app_context as pwd_context
 import sqlalchemy.sql
@@ -97,4 +98,43 @@ def requires_auth(f):
         if not is_authenticated:
             return reject()
         return f(user, *args, **kwargs)
+    return decorated
+
+
+def _get_ci_api_secret(ci_id):
+    """Get the CI API secret
+    """
+    query = sqlalchemy\
+        .select([models.REMOTECI])\
+        .select_from(models)\
+        .where(models.REMOTECI.id == ci_id)
+    remoteci = flask.g.db_conn.execute(query).fetchone()
+    return remoteci
+
+
+def _digest_request(secret, request):
+    h = hmac.new(secret.encode(), digestmod='sha1')
+    h.update(request.url.encode(request.charset or 'utf-8'))
+    h.update(request.data.encode(request.charset or 'utf-8'))
+    return h
+
+
+def requires_ci_hmac(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        request_digest = flask.request.headers.get('X-Auth-Signature')
+        if request_digest is None:
+            return reject()
+        remoteci_id = flask.request.values.get('remoteci_id')
+        if remoteci_id is None:
+            return reject()
+        remoteci = _get_ci_api_secret(remoteci_id)
+        if remoteci is None or remoteci.api_secret is None:
+            return reject()
+        local_digest = _digest_request(
+            remoteci.api_secret,
+            flask.request).hexdigest()
+        if request_digest != local_digest:
+            return reject()
+        return f(remoteci, *args, **args)
     return decorated

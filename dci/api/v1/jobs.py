@@ -74,6 +74,7 @@ def create_jobs(user):
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'
         ),
+        'api_secret': utils.gen_secret(),
     })
 
     # create the job and feed the jobs_components table
@@ -146,7 +147,10 @@ def _build_recheck(recheck_job, values):
     recheck_job = dict(recheck_job)
 
     # Reinit the pending as if it were new.
-    values.update({'id': recheck_job['id'], 'recheck': False})
+    values.update({
+        'id': recheck_job['id'],
+        'recheck': False,
+    })
     recheck_job.update(values)
 
     flask.g.db_conn.execute(
@@ -199,7 +203,8 @@ def _build_new_template(topic_id, remoteci, values):
 
     values.update({
         'jobdefinition_id': jd_to_run['id'],
-        'team_id': remoteci['team_id']
+        'team_id': remoteci['team_id'],
+        'api_secret': utils.gen_secret()
     })
 
     with flask.g.db_conn.begin():

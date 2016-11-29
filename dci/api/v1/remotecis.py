@@ -261,3 +261,39 @@ def delete_test_from_remoteci(user, r_id, t_id):
         raise dci_exc.DCIConflict('Test', t_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/remotecis/<r_id>/api_secret', methods=['PUT'])
+@auth.requires_auth
+def post_api_secret(user, r_id):
+    # get If-Match header
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+
+    if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+        raise auth.UNAUTHORIZED
+
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == r_id, _TABLE.c.name == r_id)
+    )
+    values = {
+        'api_secret': utils.gen_secret(),
+        'etag': utils.gen_etag()
+    }
+
+    query = (_TABLE
+             .update()
+             .where(where_clause)
+             .values(**values))
+
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('RemoteCI', r_id)
+
+    res = flask.jsonify(({'id': r_id, 'etag': values['etag'],
+                          'api_secret': values['api_secret']}))
+    res.headers.add_header('ETag', values['etag'])
+    return res
