@@ -91,6 +91,7 @@ def get_all_jobdefinitions(user):
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['GET'])
 @auth.login_required
 def get_jobdefinition_by_id(user, jd_id):
+    # get the diverse parameters
     jobdefinition = v1_utils.verify_existence_and_get(jd_id, _TABLE)
     return base.get_resource_by_id(user, jobdefinition, _TABLE, _EMBED_MANY)
 
