@@ -51,6 +51,17 @@ _VALID_EMBED = {
 }
 
 
+@api.route('/jobs/test_token', methods=['GET', 'POST', 'PUT'])
+@auth.requires_auth(allow={auth.AUTH_TOKEN})
+def test_token(remoteci):
+    return flask.Response(
+        json.dumps(
+            {'remoteci_id': remoteci,
+             'signature': flask.request.headers.get('X-Auth-Signature'),
+             }), 201,
+        content_type='application/json')
+
+
 @api.route('/jobs', methods=['POST'])
 @auth.requires_auth
 def create_jobs(user):
@@ -74,6 +85,7 @@ def create_jobs(user):
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'
         ),
+        'api_secret': utils.gen_secret(),
     })
 
     # create the job and feed the jobs_components table
@@ -146,7 +158,10 @@ def _build_recheck(recheck_job, values):
     recheck_job = dict(recheck_job)
 
     # Reinit the pending as if it were new.
-    values.update({'id': recheck_job['id'], 'recheck': False})
+    values.update({
+        'id': recheck_job['id'],
+        'recheck': False,
+    })
     recheck_job.update(values)
 
     flask.g.db_conn.execute(
@@ -199,7 +214,8 @@ def _build_new_template(topic_id, remoteci, values):
 
     values.update({
         'jobdefinition_id': jd_to_run['id'],
-        'team_id': remoteci['team_id']
+        'team_id': remoteci['team_id'],
+        'api_secret': utils.gen_secret()
     })
 
     with flask.g.db_conn.begin():
