@@ -55,6 +55,7 @@ def create_remotecis(user):
     etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
+        'api_secret': utils.gen_secret(),
         'created_at': created_at,
         'updated_at': updated_at,
         'data': values.get('data', {}),
@@ -220,6 +221,7 @@ def get_remoteci_data_json(user, r_id):
 @api.route('/remotecis/<uuid:r_id>/tests', methods=['POST'])
 @auth.requires_auth
 def add_test_to_remoteci(user, r_id):
+    # FIXME(fc): can any authenticated user add tests to *any* remoteci ?
     data_json = flask.request.json
     values = {'remoteci_id': r_id,
               'test_id': data_json.get('test_id', None)}
@@ -239,6 +241,7 @@ def add_test_to_remoteci(user, r_id):
 @api.route('/remotecis/<uuid:r_id>/tests', methods=['GET'])
 @auth.requires_auth
 def get_all_tests_from_remotecis(user, r_id):
+    # FIXME(fc): can any authenticated user list tests from *any* remoteci ?
     v1_utils.verify_existence_and_get(r_id, _TABLE)
 
     # Get all components which belongs to a given remoteci
@@ -280,3 +283,39 @@ def get_to_purge_archived_remotecis(user):
 @auth.requires_auth
 def purge_archived_remotecis(user):
     return base.purge_archived_resources(user, _TABLE)
+
+
+@api.route('/remotecis/<r_id>/api_secret', methods=['PUT'])
+@auth.requires_auth
+def put_api_secret(user, r_id):
+    # get If-Match header
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+
+    if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+        raise auth.UNAUTHORIZED
+
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == r_id, _TABLE.c.name == r_id)
+    )
+    values = {
+        'api_secret': utils.gen_secret(),
+        'etag': utils.gen_etag()
+    }
+
+    query = (_TABLE
+             .update()
+             .where(where_clause)
+             .values(**values))
+
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('RemoteCI', r_id)
+
+    res = flask.jsonify(({'id': r_id, 'etag': values['etag'],
+                          'api_secret': values['api_secret']}))
+    res.headers.add_header('ETag', values['etag'])
+    return res
