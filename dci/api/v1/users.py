@@ -53,7 +53,7 @@ def _verify_existence_and_get_user(user_id):
 
 
 @api.route('/users', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth()
 def create_users(user):
     created_at, updated_at = utils.get_dates(user)
     values = schemas.user.post(flask.request.json)
@@ -90,7 +90,7 @@ def create_users(user):
 
 
 @api.route('/users', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth()
 def get_all_users(user, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
@@ -122,7 +122,7 @@ def get_all_users(user, team_id=None):
 
 
 @api.route('/users/<uuid:user_id>', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth()
 def get_user_by_id(user, user_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
 
@@ -153,7 +153,7 @@ def get_user_by_id(user, user_id):
 
 
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
-@auth.requires_auth
+@auth.requires_auth()
 def put_user(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -190,7 +190,7 @@ def put_user(user, user_id):
 
 
 @api.route('/users/<uuid:user_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.requires_auth()
 def delete_user_by_id_or_name(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -217,12 +217,12 @@ def delete_user_by_id_or_name(user, user_id):
 
 
 @api.route('/users/purge', methods=['GET'])
-@auth.requires_auth
+@auth.requires_auth()
 def get_to_purge_archived_users(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/users/purge', methods=['POST'])
-@auth.requires_auth
+@auth.requires_auth()
 def purge_archived_users(user):
     return base.purge_archived_resources(user, _TABLE)
