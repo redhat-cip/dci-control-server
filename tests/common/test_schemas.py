@@ -526,13 +526,15 @@ class TestMeta(utils.SchemaTesting):
         super(TestMeta, self).test_post(self.data, self.data)
 
     def test_put_extra_data(self):
-        pass
+        super(TestMeta, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
-        pass
+        invalids, errors = TestMeta.generate_invalids_and_errors()
+        super(TestMeta, self).test_put_invalid_data(invalids, errors)
 
     def test_put(self):
-        pass
+        # add default values to voluptuous output
+        super(TestMeta, self).test_put(self.data, self.data)
 
 
 class TestJobState(utils.SchemaTesting):
