@@ -14,7 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from datetime import datetime
+import pytest
+
 from dci.auth_mechanism import BasicAuthMechanism
+from dci.auth_mechanism import SignatureAuthMechanism
 
 
 class MockRequest(object):
@@ -49,3 +53,101 @@ def test_bam_is_valid():
     basic_auth_mecanism = BasicAuthMechanism(MockRequest(AuthMock()))
     basic_auth_mecanism.build_auth = return_is_authenticated
     assert basic_auth_mecanism.is_valid()
+
+
+class MockSignedRequest(object):
+    def __init__(self, headers={}):
+        self.headers = headers
+
+
+class RemoteCiMock(object):
+    def __init__(self, id, api_secret='dummy'):
+        self.id = id
+        self.api_secret = api_secret
+
+    def __iter__(self):
+        yield '', ''
+
+
+sam_headers = {
+    'DCI-Client-Info': '2016-12-12 03:03:03Z/remoteci/Morbo',
+    'DCI-Auth-Signature': 'DOOOOOOOM!!!',
+}
+
+
+def return_get_remoteci(*args):
+    return RemoteCiMock(args[0])
+
+
+def _test_client_info_value(client_info_value):
+    mech = SignatureAuthMechanism(
+        MockSignedRequest({
+            'DCI-Client-Info': client_info_value,
+            'DCI-Auth-Signature': None,
+        }))
+    return mech.get_client_info()
+
+
+def test_get_client_info_bad():
+    bad_format_message = \
+        'DCI-Client-Info should match the following format: ' + \
+        '"YYYY-MM-DD HH:MI:SSZ/<client_type>/<id>"'
+
+    with pytest.raises(ValueError) as e_info:
+        _test_client_info_value('pif!paf!pouf!')
+    assert e_info.value.args[0] == bad_format_message
+
+    with pytest.raises(ValueError) as e_info:
+        _test_client_info_value('pif/paf')
+    assert e_info.value.args[0] == bad_format_message
+
+    with pytest.raises(ValueError) as e_info:
+        _test_client_info_value('pif/paf/pouf/.')
+    assert e_info.value.args[0] == bad_format_message
+
+    with pytest.raises(ValueError) as e_info:
+        _test_client_info_value('p/p/')
+    assert e_info.value.args[0] == bad_format_message
+
+    with pytest.raises(ValueError) as e_info:
+        _test_client_info_value('p//p')
+    assert e_info.value.args[0] == bad_format_message
+
+    with pytest.raises(ValueError) as e_info:
+        _test_client_info_value('pif/paf/pouf')
+
+
+def test_get_client_info_good():
+    expected = {
+        'timestamp': datetime(2016, 3, 21, 15, 37, 59),
+        'type': 'foo',
+        'id': '12890-abcdef',
+    }
+    client_info_value = '2016-03-21 15:37:59Z/foo/12890-abcdef'
+
+    assert _test_client_info_value(client_info_value) == expected
+
+
+def test_sam_is_valid_false_if_no_signature():
+    mech = SignatureAuthMechanism(MockSignedRequest())
+    assert not mech.is_valid()
+
+
+def test_sam_is_valid_false_if_not_authenticated():
+    def return_is_authenticated(*args):
+        return False
+
+    mech = SignatureAuthMechanism(MockSignedRequest(sam_headers))
+    mech.verify_remoteci_auth_signature = return_is_authenticated
+    mech.get_remoteci = return_get_remoteci
+    assert not mech.is_valid()
+
+
+def test_sam_is_valid():
+    def return_is_authenticated(*args):
+        return True
+
+    mech = SignatureAuthMechanism(MockSignedRequest(sam_headers))
+    mech.verify_remoteci_auth_signature = return_is_authenticated
+    mech.get_remoteci = return_get_remoteci
+    assert mech.is_valid()
