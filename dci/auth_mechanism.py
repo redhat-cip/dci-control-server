@@ -18,6 +18,7 @@ import sqlalchemy.sql
 from passlib.apps import custom_app_context as pwd_context
 
 from dci.db import models
+from dci.common import token
 
 
 class BaseMechanism(object):
@@ -66,3 +67,68 @@ class BasicAuthMechanism(BaseMechanism):
         user = dict(user)
 
         return user, pwd_context.verify(password, user.get('password'))
+
+
+class SignatureAuthMechanism(BaseMechanism):
+    def is_valid(self):
+        try:
+            client_id = token.parse_client_id(
+                self.request.headers.get('DCI-Client-ID', ''))
+        except ValueError:
+            return False
+
+        request_digest = self.request.headers.get('DCI-Auth-Signature')
+
+        remoteci, auth_ok = self._verify_remoteci_auth_signature(
+            client_id,
+            request_digest)
+        if not auth_ok:
+            return False
+
+        remoteci = dict(remoteci)
+        # NOTE(fc): this should be moved in another abstraction layer
+        remoteci['role'] = 'remoteci'
+        self.identity = remoteci
+        return True
+
+    @staticmethod
+    def _get_remoteci(ci_id):
+        """Get the remoteci including its API secret
+        """
+        where_clause = sqlalchemy.sql.expression.and_(
+            models.REMOTECIS.c.id == ci_id,
+            models.REMOTECIS.c.active is True,
+            models.REMOTECIS.c.state == 'active',
+            models.TEAMS.c.state == 'active'
+        )
+        join_clause = sqlalchemy.join(
+            models.REMOTECIS, models.TEAMS,
+            models.REMOTECIS.c.team_id == models.TEAMS.c.id
+        )
+        query = (sqlalchemy
+                 .select([
+                     models.REMOTECIS,
+                     models.TEAMS.c.name.label('team_name'),
+                     models.TEAMS.c.country.label('team_country'),
+                 ])
+                 .select_from(join_clause)
+                 .where(where_clause))
+        remoteci = flask.g.db_conn.execute(query).fetchone()
+        return remoteci
+
+    def _verify_remoteci_auth_signature(self, client_id, auth_signature):
+        remoteci = self._get_remoteci(client_id['id'])
+        if remoteci is None:
+            return None, False
+
+        if remoteci.api_secret is None:
+            return remoteci, False
+
+        url = self.request.path.encode('utf-8')
+        query_string = self.request.query_string.encode('utf-8')
+
+        return remoteci, token.is_signature_valid(
+            auth_signature,
+            remoteci.api_secret, self.request.method,
+            self.request.headers.get['Content-Type'], client_id['timestamp'],
+            url, query_string, self.request.data)
