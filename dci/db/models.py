@@ -20,7 +20,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as pg
 import sqlalchemy_utils as sa_utils
 
-from dci.common import utils
+from dci.common import signature, utils
 
 metadata = sa.MetaData()
 
@@ -223,6 +223,7 @@ REMOTECIS = sa.Table(
     sa.Column('name', sa.String(255)),
     sa.Column('data', sa_utils.JSONType),
     sa.Column('active', sa.BOOLEAN, default=True),
+    sa.Column('api_secret', sa.String(64), default=signature.gen_secret),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
