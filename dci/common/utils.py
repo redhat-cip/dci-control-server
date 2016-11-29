@@ -19,6 +19,8 @@ import datetime
 import functools
 import hashlib
 import itertools
+import random
+import string
 import uuid
 
 import flask
@@ -147,3 +149,11 @@ class memoized(object):
     def __get__(self, obj, objtype):
         '''Support instance methods.'''
         return functools.partial(self.__call__, obj)
+
+
+def gen_secret(length=64):
+    """ Generates a secret token of given length
+    """
+    charset = string.ascii_letters + string.digits + string.punctuation
+    return ''.join(random.SystemRandom().choice(charset)
+                   for _ in range(length))
