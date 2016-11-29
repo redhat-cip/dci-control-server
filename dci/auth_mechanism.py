@@ -13,11 +13,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+from datetime import datetime
 import flask
 import sqlalchemy.sql
 from passlib.apps import custom_app_context as pwd_context
 
 from dci.db import models
+from dci.common import signature
 
 
 class BaseMechanism(object):
@@ -66,3 +68,97 @@ class BasicAuthMechanism(BaseMechanism):
         user = dict(user)
 
         return user, pwd_context.verify(password, user.get('password'))
+
+
+class SignatureAuthMechanism(BaseMechanism):
+    def is_valid(self):
+        """Tries to authenticate a request using a signature as authentication
+        mechanism.
+        Returns True or False.
+        Sets self.identity to the authenticated entity for later use.
+        """
+        # Get headers and extract information
+        try:
+            client_info = self.get_client_info()
+        except ValueError:
+            return False
+
+        try:
+            request_digest = self.request.headers.get('DCI-Auth-Signature')
+        except ValueError:
+            return False
+
+        # Get remoteci
+        remoteci = self.get_remoteci(client_info['id'])
+        if remoteci is None:
+            return False
+        self.identity = dict(remoteci)
+        # NOTE(fc): role assignment should be done in another place
+        #           but this should do the job for now.
+        self.identity['role'] = 'remoteci'
+
+        # Actually verify signature
+        return self.verify_remoteci_auth_signature(
+            remoteci, client_info['timestamp'], request_digest)
+
+    def get_client_info(self):
+        """Extracts timestamp, client type and client id from a
+        DCI-Client-Info header.
+        Returns a hash with the three values.
+        Throws an exception if the format is bad or if strptime fails."""
+        bad_format_exception = \
+            ValueError('DCI-Client-Info should match the following format: ' +
+                       '"YYYY-MM-DD HH:MI:SSZ/<client_type>/<id>"')
+
+        client_info = self.request.headers.get('DCI-Client-Info', '')
+        client_info = client_info.split('/')
+        if len(client_info) != 3 or not all(client_info):
+            raise bad_format_exception
+
+        dateformat = '%Y-%m-%d %H:%M:%SZ'
+        return {
+            'timestamp': datetime.strptime(client_info[0], dateformat),
+            'type': client_info[1],
+            'id': client_info[2],
+        }
+
+    @staticmethod
+    def get_remoteci(ci_id):
+        """Get the remoteci including its API secret
+        """
+        where_clause = sqlalchemy.sql.expression.and_(
+            models.REMOTECIS.c.id == ci_id,
+            models.REMOTECIS.c.active is True,
+            models.REMOTECIS.c.state == 'active',
+            models.TEAMS.c.state == 'active'
+        )
+        join_clause = sqlalchemy.join(
+            models.REMOTECIS, models.TEAMS,
+            models.REMOTECIS.c.team_id == models.TEAMS.c.id
+        )
+        query = (sqlalchemy
+                 .select([
+                     models.REMOTECIS,
+                     models.TEAMS.c.name.label('team_name'),
+                     models.TEAMS.c.country.label('team_country'),
+                 ])
+                 .select_from(join_clause)
+                 .where(where_clause))
+        remoteci = flask.g.db_conn.execute(query).fetchone()
+        return remoteci
+
+    def verify_remoteci_auth_signature(self, remoteci, timestamp,
+                                       their_signature):
+        """Extract the values from the request, and pass them to the signature
+        verification method."""
+        if remoteci.api_secret is None:
+            return False
+
+        url = self.request.path.encode('utf-8')
+        query_string = self.request.query_string.encode('utf-8')
+
+        return signature.is_signature_valid(
+            their_signature,
+            remoteci.api_secret, self.request.method,
+            self.request.headers.get['Content-Type'], timestamp,
+            url, query_string, self.request.data)
