@@ -20,7 +20,7 @@ from functools import wraps
 import flask
 from passlib.apps import custom_app_context as pwd_context
 
-from dci.auth_mechanism import BasicAuthMechanism
+from dci.auth_mechanism import BasicAuthMechanism, SignatureAuthMechanism
 from dci.common import exceptions as exc
 
 UNAUTHORIZED = exc.DCIException('Operation not authorized.', status_code=401)
@@ -66,7 +66,8 @@ def check_export_control(user, component):
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        for mechanism in [BasicAuthMechanism(flask.request)]:
+        for mechanism in [BasicAuthMechanism(flask.request),
+                          SignatureAuthMechanism(flask.request)]:
             if mechanism.is_valid():
                 return f(mechanism.identity, *args, **kwargs)
         return reject()
