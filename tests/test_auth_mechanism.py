@@ -15,6 +15,7 @@
 # under the License.
 
 from dci.auth_mechanism import BasicAuthMechanism
+from dci.auth_mechanism import SignatureAuthMechanism
 
 
 class MockRequest(object):
@@ -49,3 +50,42 @@ def test_bam_is_valid():
     basic_auth_mecanism = BasicAuthMechanism(MockRequest(AuthMock()))
     basic_auth_mecanism.build_auth = return_is_authenticated
     assert basic_auth_mecanism.is_valid()
+
+
+class MockSignedRequest(object):
+    def __init__(self, headers={}):
+        self.headers = headers
+
+
+sam_headers = {
+    'DCI-Client-ID': '2016-12-12 03:03:03Z/remoteci/Morbo',
+    'DCI-Auth-Signature': 'DOOOOOOOM!!!',
+}
+
+
+def test_sam_is_valid_false_if_no_signature():
+    signature_auth_mechanism = SignatureAuthMechanism(MockSignedRequest())
+    assert not signature_auth_mechanism.is_valid()
+
+
+def test_sam_is_valid_false_if_not_authenticated():
+    def return_is_authenticated(*args):
+        return {}, False
+
+    signature_auth_mechanism = SignatureAuthMechanism(
+        MockSignedRequest(sam_headers))
+    signature_auth_mechanism._verify_remoteci_auth_signature = \
+        return_is_authenticated
+    assert not signature_auth_mechanism.is_valid()
+
+
+def test_sam_is_valid():
+    def return_is_authenticated(*args):
+        return {}, True
+
+    signature_auth_mechanism = SignatureAuthMechanism(
+        MockSignedRequest(sam_headers))
+    signature_auth_mechanism._verify_remoteci_auth_signature = \
+        return_is_authenticated
+    signature_auth_mechanism._get_remoteci
+    assert signature_auth_mechanism.is_valid()

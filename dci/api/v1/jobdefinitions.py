@@ -63,7 +63,6 @@ def list_jobdefinitions(user, topic_ids, by_topic):
     If topic_id is not None, then return all the jobdefinitions with a topic
     pointed by topic_id.
     """
-    # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder(_TABLE, args, _JD_COLUMNS)
@@ -91,6 +90,7 @@ def get_all_jobdefinitions(user):
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['GET'])
 @auth.login_required
 def get_jobdefinition_by_id(user, jd_id):
+    # get the diverse parameters
     jobdefinition = v1_utils.verify_existence_and_get(jd_id, _TABLE)
     return base.get_resource_by_id(user, jobdefinition, _TABLE, _EMBED_MANY)
 
