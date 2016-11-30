@@ -352,9 +352,9 @@ def get_jobstates_by_job(user, j_id):
     return jobstates.get_all_jobstates(j_id=j_id)
 
 
-@api.route('/jobs/<jd_id>', methods=['GET'])
+@api.route('/jobs/<job_id>', methods=['GET'])
 @auth.requires_auth
-def get_job_by_id(user, jd_id):
+def get_job_by_id(user, job_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
 
@@ -364,15 +364,15 @@ def get_job_by_id(user, jd_id):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    q_bd.where.append(_TABLE.c.id == jd_id)
+    q_bd.where.append(_TABLE.c.id == job_id)
 
     row = flask.g.db_conn.execute(q_bd.build()).fetchone()
     if row is None:
-        raise dci_exc.DCINotFound('Job', jd_id)
+        raise dci_exc.DCINotFound('Job', job_id)
 
     job = v1_utils.group_embedded_resources(embed, row)
     job['issues'] = (
-        json.loads(issues.get_all_issues(jd_id).response[0])['issues']
+        json.loads(issues.get_all_issues(job_id).response[0])['issues']
     )
     res = flask.jsonify({'job': job})
     res.headers.add_header('ETag', job['etag'])
