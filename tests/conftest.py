@@ -274,8 +274,8 @@ def file_user_id(user, jobstate_user_id, team_user_id):
 
 
 @pytest.fixture
-def file_job_user_id(user, job_id, team_user_id):
-    headers = {'DCI-JOB-ID': job_id,
+def file_job_user_id(user, job_user_id, team_user_id):
+    headers = {'DCI-JOB-ID': job_user_id,
                'DCI-NAME': 'name'}
     file = user.post('/api/v1/files', headers=headers, data='foobar').data
     headers['team_id'] = team_user_id
@@ -286,10 +286,10 @@ def file_job_user_id(user, job_id, team_user_id):
 
 
 @pytest.fixture
-def file_job_junit_user_id(user, job_id, team_user_id):
+def file_job_junit_user_id(user, job_user_id, team_user_id):
     JUNIT = """<testsuite errors="0" failures="0" name="pytest" skips="1"
                tests="3" time="46.050"></testsuite>"""
-    headers = {'DCI-JOB-ID': job_id,
+    headers = {'DCI-JOB-ID': job_user_id,
                'Content-Type': 'application/junit',
                'DCI-MIME': 'application/junit',
                'DCI-NAME': 'res_junit.xml'}
@@ -302,10 +302,10 @@ def file_job_junit_user_id(user, job_id, team_user_id):
 
 
 @pytest.fixture
-def file_job_junit_empty_user_id(user, job_id, team_user_id):
+def file_job_junit_empty_user_id(user, job_user_id, team_user_id):
     JUNIT = """<testsuite errors="0" failures="0" name="" tests="0"
                time="0.307"> </testsuite>"""
-    headers = {'DCI-JOB-ID': job_id,
+    headers = {'DCI-JOB-ID': job_user_id,
                'Content-Type': 'application/junit',
                'DCI-MIME': 'application/junit',
                'DCI-NAME': 'res_junit.xml'}
