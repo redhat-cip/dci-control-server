@@ -6,6 +6,4 @@ expect "Enter pass phrase: "
 send -- "\r"
 expect "Enter pass phrase: "
 send -- "\r"
-expect "Enter pass phrase: "
-send -- "\r"
 expect eof
