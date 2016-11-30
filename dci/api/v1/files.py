@@ -45,36 +45,6 @@ _VALID_EMBED = {
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
 
 
-# This is the old way to create a files, it assumes the content is provided
-# from the jsons POST's data. The content of the file is stored in the FS.
-def _old_create_files(user):
-    values = schemas.file.post(flask.request.json)
-
-    if values.get('jobstate_id') is None and values.get('job_id') is None:
-        raise dci_exc.DCIException('jobstate_id or job_id must be specified',
-                                   status_code=400)
-
-    file_id = utils.gen_uuid()
-    values.update({
-        'id': file_id,
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'team_id': user['team_id']
-    })
-
-    content = values.pop('content')
-    query = _TABLE.insert().values(**values)
-    flask.g.db_conn.execute(query)
-
-    # ensure the team's path exist in the FS
-    file_path = v1_utils.build_file_path(_FILES_FOLDER, user['team_id'],
-                                         file_id)
-    with open(file_path, 'w') as f:
-        f.write(content)
-
-    result = json.dumps({'file': values})
-    return flask.Response(result, 201, content_type='application/json')
-
-
 @api.route('/files', methods=['POST'])
 @auth.requires_auth
 def create_files(user):
