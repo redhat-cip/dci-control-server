@@ -90,6 +90,22 @@ def create_files(user):
     if values.get('name') is None:
         raise dci_exc.DCIException('HTTP header DCI-NAME must be specified')
 
+    if not values['job_id']:
+        q_bd = v1_utils.QueryBuilder(models.JOBSTATES)
+        q_bd.where.append(models.JOBSTATES.c.id == values['jobstate_id'])
+        row = flask.g.db_conn.execute(q_bd.build()).fetchone()
+        if row is None:
+            raise dci_exc.DCINotFound('Jobstate', values['jobstate_id'])
+        values['job_id'] = row['job_id']
+
+    q_bd = v1_utils.QueryBuilder(models.JOBS)
+    if not auth.is_admin(user):
+        q_bd.where.append(models.JOBS.c.team_id == user['team_id'])
+    q_bd.where.append(models.JOBS.c.id == values['job_id'])
+    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
+    if row is None:
+        raise dci_exc.DCINotFound('Job', values['job_id'])
+
     file_id = utils.gen_uuid()
     # ensure the directory which will contains the file actually exist
     file_path = v1_utils.build_file_path(_FILES_FOLDER, user['team_id'],
