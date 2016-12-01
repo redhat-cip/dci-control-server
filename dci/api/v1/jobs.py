@@ -183,7 +183,7 @@ def _build_new_template(topic_id, remoteci, values):
     for ct in component_types:
         where_clause = sql.and_(models.COMPONENTS.c.type == ct,
                                 models.COMPONENTS.c.topic_id == topic_id,
-                                models.COMPONENTS.c.active == True)  # noqa
+                                models.COMPONENTS.c.status == 'active')
         query = (sql.select([models.COMPONENTS.c.id])
                  .where(where_clause)
                  .order_by(sql.desc(models.COMPONENTS.c.created_at)))
@@ -244,7 +244,7 @@ def _validate_input(values, user):
     kill_query = _TABLE .update().where(where_clause).values(status='killed')
     flask.g.db_conn.execute(kill_query)
 
-    if remoteci['active'] is False:
+    if remoteci['status'] != 'active':
         message = 'RemoteCI "%s" is disabled.' % remoteci_id
         raise dci_exc.DCIException(message, status_code=412)
 

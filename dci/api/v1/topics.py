@@ -205,7 +205,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
     # within <topic_id> topic
     where_clause = sql.and_(models.COMPONENTS.c.type == type_id,
                             models.COMPONENTS.c.topic_id == topic_id,
-                            models.COMPONENTS.c.active == True)  # noqa
+                            models.COMPONENTS.c.status == 'active')
     q_bd = sql.select([models.COMPONENTS]).where(where_clause).order_by(
         sql.desc(models.COMPONENTS.c.created_at)).limit(1)
     cpt = flask.g.db_conn.execute(q_bd).fetchone()
@@ -220,7 +220,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
     if team_id:
         q_bd.where.append(models.TEAMS.c.id == team_id)
     q_bd.where.append(models.TOPICS.c.id == topic_id)
-    q_bd.where.append(models.REMOTECIS.c.active == True)  # noqa
+    q_bd.where.append(models.REMOTECIS.c.status == 'active')
     rcs = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rcs = [v1_utils.group_embedded_resources(embed, rc) for rc in rcs]
 

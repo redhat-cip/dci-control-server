@@ -197,11 +197,13 @@ def delete_user_by_id_or_name(user, user_id):
         _TABLE.c.etag == if_match_etag,
         sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
     )
-    query = _TABLE.delete().where(where_clause)
+
+    values['status'] = 'archived'
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
-        raise dci_exc.DCIDeleteConflict('User', user_id)
+        raise dci_exc.DCIConflict('User', user_id)
 
     return flask.Response(None, 204, content_type='application/json')
