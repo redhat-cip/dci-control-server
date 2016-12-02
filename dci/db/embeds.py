@@ -26,7 +26,10 @@ def components():
     return {
         'files': v1_utils.embed(
             select=[files],
-            where=files.c.component_id == models.COMPONENTS.c.id,
+            where=and_(
+                files.c.component_id == models.COMPONENTS.c.id,
+                files.c.state != 'archived'
+            ),
             many=True),
     }
 
@@ -62,10 +65,15 @@ def files():
                 job,
                 sql.expression.or_(
                     job.c.id == f1.c.job_id,
-                    job.c.id == None))),
+                    job.c.id == None)
+                ),
+            where=job.c.state != 'archived'),
         'team': v1_utils.embed(
             select=[team],
-            where=models.FILES.c.team_id == team.c.id
+            where=and_(
+                models.FILES.c.team_id == team.c.id,
+                team.c.state != 'archived'
+            )
         )
     }
 
@@ -75,7 +83,10 @@ def jobdefinitions():
     return {
         'topic': v1_utils.embed(
             select=[topic],
-            where=models.JOBDEFINITIONS.c.topic_id == topic.c.id)}
+            where=and_(
+                models.JOBDEFINITIONS.c.topic_id == topic.c.id,
+                topic.c.state != 'archived'
+            ))}
 
 
 def jobs():
@@ -96,7 +107,10 @@ def jobs():
             select=[models.FILES],
             join=j0.join(
                 models.FILES,
-                j0.c.id == models.FILES.c.job_id,
+                and_(
+                    j0.c.id == models.FILES.c.job_id,
+                    models.FILES.c.state != 'archived'
+                ),
                 isouter=True),
             where=j0.c.id == models.JOBS.c.id,
             many=True),
@@ -104,7 +118,11 @@ def jobs():
             select=[jobdefinition],
             join=j1.join(
                 jobdefinition,
-                j1.c.jobdefinition_id == jobdefinition.c.id),
+                and_(
+                    j1.c.jobdefinition_id == jobdefinition.c.id,
+                    jobdefinition.c.state != 'archived'
+                )
+            ),
             where=j1.c.id == models.JOBS.c.id),
         'jobdefinition.tests': v1_utils.embed(
             select=[jobdefinition_tests],
@@ -121,11 +139,17 @@ def jobs():
             many=True),
         'team': v1_utils.embed(
             select=[team],
-            where=models.JOBS.c.team_id == team.c.id,
+            where=and_(
+                models.JOBS.c.team_id == team.c.id,
+                team.c.state != 'archived'
+            ),
         ),
         'remoteci': v1_utils.embed(
             select=[remoteci],
-            where=models.JOBS.c.remoteci_id == remoteci.c.id,
+            where=and_(
+                models.JOBS.c.remoteci_id == remoteci.c.id,
+                remoteci.c.state != 'archived'
+            ),
         ),
         'remoteci.tests': v1_utils.embed(
             select=[remoteci_tests],
@@ -153,8 +177,11 @@ def jobs():
             join=j5.join(
                 models.JOIN_JOBS_COMPONENTS.join(
                     models.COMPONENTS,
-                    models.COMPONENTS.c.id ==
-                    models.JOIN_JOBS_COMPONENTS.c.component_id,
+                    and_(
+                        models.COMPONENTS.c.id ==
+                        models.JOIN_JOBS_COMPONENTS.c.component_id,
+                        models.COMPONENTS.c.state != 'archived'
+                    ),
                     isouter=True),
                 models.JOIN_JOBS_COMPONENTS.c.job_id == j5.c.id,
                 isouter=True),
@@ -172,7 +199,10 @@ def jobstates():
             select=[models.FILES],
             join=js0.join(
                 models.FILES,
-                js0.c.id == models.FILES.c.jobstate_id,
+                and_(
+                    js0.c.id == models.FILES.c.jobstate_id,
+                    models.FILES.c.state != 'archived'
+                ),
                 isouter=True),
             where=js0.c.id == models.JOBSTATES.c.id,
             many=True),
@@ -180,15 +210,22 @@ def jobstates():
             select=[job],
             join=js1.join(
                 job,
-                sql.expression.or_(
-                    js1.c.job_id == job.c.id,
-                    job.c.id == None),  # noqa
+                and_(
+                    sql.expression.or_(
+                        js1.c.job_id == job.c.id,
+                        job.c.id == None  # noqa
+                    ),
+                    job.c.state != 'archived',
+                ),
                 isouter=True),
             where=js1.c.id == models.JOBSTATES.c.id,
             sort=job.c.created_at),
         'team': v1_utils.embed(
             select=[team],
-            where=models.JOBSTATES.c.team_id == team.c.id,
+            where=and_(
+                models.JOBSTATES.c.team_id == team.c.id,
+                team.c.state != 'archived'
+            )
         )}
 
 
@@ -211,13 +248,15 @@ def remotecis():
     return {
         'team': v1_utils.embed(
             select=[team],
-            join=rci0.join(team, team.c.id == rci0.c.team_id),
+            join=rci0.join(team, and_(team.c.id == rci0.c.team_id,
+                                      team.c.state != 'archived')),
             where=rci0.c.id == models.REMOTECIS.c.id),
         'last_job': v1_utils.embed(
             select=[lj],
             join=rci1.join(
                 lj,
                 and_(
+                    lj.c.state != 'archived',
                     lj.c.remoteci_id == rci1.c.id,
                     lj.c.status.in_([
                         'success',
@@ -234,9 +273,15 @@ def remotecis():
                 lj_t.join(
                     ljc.join(
                         lj_components,
-                        ljc.c.component_id == lj_components.c.id,
+                        and_(
+                            ljc.c.component_id == lj_components.c.id,
+                            lj_components.c.state != 'archived'
+                        ),
                         isouter=True),
-                    ljc.c.job_id == lj_t.c.id,
+                    and_(
+                        ljc.c.job_id == lj_t.c.id,
+                        lj_t.c.state != 'archived'
+                    ),
                     isouter=True),
                 lj_t.c.remoteci_id == rci2.c.id,
                 isouter=True),
@@ -251,6 +296,7 @@ def remotecis():
             join=rci3.join(
                 cj,
                 and_(
+                    cj.c.state != 'archived',
                     cj.c.remoteci_id == rci3.c.id,
                     cj.c.status.in_([
                         'new',
@@ -265,9 +311,15 @@ def remotecis():
                 cj_t.join(
                     cjc.join(
                         cj_components,
-                        cjc.c.component_id == cj_components.c.id,
+                        and_(
+                            cjc.c.component_id == cj_components.c.id,
+                            cj_components.c.state != 'archived'
+                        ),
                         isouter=True),
-                    cjc.c.job_id == cj_t.c.id,
+                    and_(
+                        cjc.c.job_id == cj_t.c.id,
+                        cj_t.c.state != 'archived'
+                    ),
                     isouter=True),
                 cj_t.c.remoteci_id == rci4.c.id,
                 isouter=True),
@@ -288,7 +340,11 @@ def teams():
             join=t0.join(
                 models.JOINS_TOPICS_TEAMS.join(
                     models.TOPICS,
-                    models.JOINS_TOPICS_TEAMS.c.topic_id == models.TOPICS.c.id,
+                    and_(
+                        models.JOINS_TOPICS_TEAMS.c.topic_id ==
+                        models.TOPICS.c.id,
+                        models.TOPICS.c.state != 'archived',
+                    ),
                     isouter=True),
                 models.JOINS_TOPICS_TEAMS.c.team_id == models.TEAMS.c.id,
                 isouter=True
@@ -299,7 +355,10 @@ def teams():
             select=[models.REMOTECIS],
             join=t1.join(
                 models.REMOTECIS,
-                models.REMOTECIS.c.team_id == models.TEAMS.c.id,
+                and_(
+                    models.REMOTECIS.c.state != 'archived',
+                    models.REMOTECIS.c.team_id == models.TEAMS.c.id,
+                ),
                 isouter=True),
             where=t1.c.id == models.TEAMS.c.id,
             many=True)}
@@ -313,7 +372,10 @@ def tests():
             join=models.TESTS.join(
                 models.JOIN_TOPICS_TESTS.join(
                     topics,
-                    topics.c.id == models.JOIN_TOPICS_TESTS.c.topic_id),
+                    and_(
+                        topics.c.state != 'archived',
+                        topics.c.id == models.JOIN_TOPICS_TESTS.c.topic_id
+                    )),
                 models.TESTS.c.id == models.JOIN_TOPICS_TESTS.c.test_id
             ))}
 
@@ -324,7 +386,11 @@ def topics():
             join=models.TOPICS.join(
                 models.JOINS_TOPICS_TEAMS.join(
                     models.TEAMS,
-                    models.JOINS_TOPICS_TEAMS.c.team_id == models.TEAMS.c.id,
+                    and_(
+                        models.TEAMS.c.state != 'archived',
+                        models.JOINS_TOPICS_TEAMS.c.team_id ==
+                        models.TEAMS.c.id,
+                    ),
                     isouter=True
                 ),
                 models.JOINS_TOPICS_TEAMS.c.topic_id == models.TOPICS.c.id,
@@ -337,4 +403,7 @@ def users():
     return {
         'team': v1_utils.embed(
             select=[team],
-            where=team.c.id == models.USERS.c.team_id)}
+            where=and_(
+                team.c.id == models.USERS.c.team_id,
+                team.c.state != 'archived'
+            ))}

@@ -55,6 +55,9 @@ def verify_existence_and_get(id, table, get_id=False):
     else:
         where_clause = table.c.id == id
 
+    if 'state' in table.columns:
+        where_clause = sql.and_(table.c.state != 'archived', where_clause)
+
     query = sql.select([table]).where(where_clause)
     result = flask.g.db_conn.execute(query).fetchone()
 

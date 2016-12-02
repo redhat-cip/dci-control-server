@@ -106,7 +106,11 @@ def get_all_components(user, topic_id):
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _C_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _C_COLUMNS)
-    q_bd.where.append(_TABLE.c.topic_id == topic_id)
+    where_clause = sql.and_(
+        _TABLE.c.topic_id == topic_id,
+        _TABLE.c.state != 'archived'
+    )
+    q_bd.where.append(where_clause)
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(embed, rows)
@@ -136,6 +140,8 @@ def get_jobs(user, component_id, team_id=None):
     if team_id:
         q_bd.where.append(models.JOBS.c.team_id == team_id)
 
+    q_bd.where.append(models.JOBS.c.state != 'archived')
+
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(embed, rows)
     return flask.jsonify({'jobs': rows, '_meta': {'count': len(rows)}})
@@ -149,8 +155,12 @@ def get_component_by_id_or_name(user, c_id):
     q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
     q_bd.join(embed)
 
-    q_bd.where.append(sql.or_(_TABLE.c.id == c_id,
-                              _TABLE.c.name == c_id))
+    q_bd.where.append(
+        sql.and_(
+            _TABLE.c.state != 'archived',
+            sql.or_(_TABLE.c.id == c_id, _TABLE.c.name == c_id)
+        )
+    )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(embed, rows)
@@ -172,7 +182,11 @@ def delete_component_by_id_or_name(user, c_id):
 
     v1_utils.verify_existence_and_get(c_id, _TABLE)
 
-    query = _TABLE.delete().where(_TABLE.c.id == c_id)
+    values = {'state': 'archived'}
+    where_clause = sql.and_(
+        _TABLE.c.id == c_id
+    )
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 

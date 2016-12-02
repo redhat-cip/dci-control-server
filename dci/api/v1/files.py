@@ -84,12 +84,16 @@ def create_files(user):
             f.write(chunk)
     file_size = os.path.getsize(file_path)
 
+    etag = utils.gen_etag()
     values.update({
         'id': file_id,
         'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
         'team_id': user['team_id'],
         'md5': None,
-        'size': file_size
+        'size': file_size,
+        'state': 'active',
+        'etag': etag,
     })
 
     query = _TABLE.insert().values(**values)
@@ -121,6 +125,8 @@ def get_all_files(user, j_id=None):
     if j_id is not None:
         q_bd.where.append(_TABLE.c.job_id == j_id)
 
+    q_bd.where.append(_TABLE.c.state != 'archived')
+
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
@@ -141,7 +147,10 @@ def get_file_by_id_or_name(user, file_id):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    where_clause = sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
+    where_clause = sql.and_(
+        _TABLE.c.state != 'archived',
+        sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
+    )
     q_bd.where.append(where_clause)
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
@@ -198,8 +207,10 @@ def delete_file_by_id(user, file_id):
     if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
+    values = {'state': 'archived'}
     where_clause = sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
-    query = _TABLE.delete().where(where_clause)
+
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 

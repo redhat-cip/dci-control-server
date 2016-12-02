@@ -110,6 +110,8 @@ def get_all_users(user, team_id=None):
     if team_id is not None:
         q_bd.where.append(_TABLE.c.team_id == team_id)
 
+    q_bd.where.append(_TABLE.c.state != 'archived')
+
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
@@ -131,7 +133,10 @@ def get_user_by_id_or_name(user, user_id):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    where_clause = sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
+    where_clause = sql.and_(
+        _TABLE.c.state != 'archived',
+        sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
+    )
     q_bd.where.append(where_clause)
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
@@ -194,11 +199,12 @@ def delete_user_by_id_or_name(user, user_id):
            auth.is_admin_user(user, duser['team_id'])):
         raise auth.UNAUTHORIZED
 
+    values = {'state': 'archived'}
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
         sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
     )
-    query = _TABLE.delete().where(where_clause)
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 

@@ -252,8 +252,10 @@ def test_delete_test_by_id(admin, team_id):
 
     created_t = admin.get('/api/v1/tests/%s' % pt_id)
     assert created_t.status_code == 200
+    pt_etag = created_t.data['test']['etag']
 
-    deleted_t = admin.delete('/api/v1/tests/%s' % pt_id)
+    deleted_t = admin.delete('/api/v1/tests/%s' % pt_id,
+                             headers={'If-match': pt_etag})
     assert deleted_t.status_code == 204
 
     gt = admin.get('/api/v1/tests/%s' % pt_id)
@@ -261,5 +263,29 @@ def test_delete_test_by_id(admin, team_id):
 
 
 def test_delete_test_not_found(admin):
-    result = admin.delete('/api/v1/tests/ptdr')
+    result = admin.delete('/api/v1/tests/ptdr',
+                          headers={'If-match': 'eefrwqafeqawfqafeq'})
     assert result.status_code == 404
+
+
+def test_change_test(admin, test_id):
+    t = admin.get('/api/v1/tests/' + test_id).data['test']
+    data = {'state': 'inactive'}
+    r = admin.put('/api/v1/tests/' + test_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 204
+    current_test = admin.get('/api/v1/tests/' + test_id).data['test']
+    assert current_test['state'] == 'inactive'
+
+
+def test_change_test_to_invalid_state(admin, test_id):
+    t = admin.get('/api/v1/tests/' + test_id).data['test']
+    data = {'state': 'kikoolol'}
+    r = admin.put('/api/v1/tests/' + test_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 400
+    current_test = admin.get('/api/v1/tests/' + test_id)
+    assert current_test.status_code == 200
+    assert current_test.data['test']['state'] == 'active'
