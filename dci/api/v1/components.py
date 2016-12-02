@@ -103,7 +103,11 @@ def get_all_components(user, topic_id):
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _C_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _C_COLUMNS)
-    q_bd.where.append(_TABLE.c.topic_id == topic_id)
+    where_clause = sql.and_(
+        _TABLE.c.topic_id == topic_id,
+        _TABLE.c.state != 'archived'
+    )
+    q_bd.where.append(where_clause)
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
@@ -128,6 +132,7 @@ def get_jobs(user, component_id, team_id=None):
     q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_C_COLUMNS)
 
     q_bd.join(['jobs_components'])
+    # TODO (spredzy): JOIN on components, limit on components.status == 'active'
     q_bd.ignore_columns(['configuration'])
     q_bd.where.append(_JJC.c.component_id == component_id)
     if team_id:
@@ -167,7 +172,11 @@ def delete_component_by_id_or_name(user, c_id):
 
     v1_utils.verify_existence_and_get(c_id, _TABLE)
 
-    query = _TABLE.delete().where(_TABLE.c.id == c_id)
+    values = {'state': 'archived'}
+    where_clause = sql.and_(
+        _TABLE.c.id == c_id
+    )
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 

@@ -139,6 +139,8 @@ def get_all_files(user, j_id=None):
     if j_id is not None:
         q_bd.where.append(_TABLE.c.job_id == j_id)
 
+    q_bd.where.append(_TABLE.c.state != 'archived')
+
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
@@ -217,8 +219,10 @@ def delete_file_by_id(user, file_id):
     if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
+    values = {'state': 'archived'}
     where_clause = sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
-    query = _TABLE.delete().where(where_clause)
+
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 

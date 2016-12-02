@@ -80,6 +80,8 @@ def get_all_teams(user):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.id == user['team_id'])
 
+    q_bd.where.append(_TABLE.c.state != 'archived')
+
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
 
@@ -158,11 +160,12 @@ def delete_team_by_id_or_name(user, t_id):
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
 
+    values = {'state': 'archived'}
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
         sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
     )
-    query = _TABLE.delete().where(where_clause)
+    query = _TABLE.update().where(where_clause).values(**values)
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:

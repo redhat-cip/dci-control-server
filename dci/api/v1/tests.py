@@ -70,6 +70,8 @@ def get_all_tests(user, team_id):
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
     q_bd.where.append(_TABLE.c.team_id == team_id)
 
+    q_Bd.where.append(_TABLE.c.state != 'archived')
+
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
@@ -112,8 +114,9 @@ def delete_test_by_id_or_name(user, t_id):
     if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
         raise auth.UNAUTHORIZED
 
+    values = {'state': 'archived'}
     where_clause = sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
-    query = _TABLE.delete().where(where_clause)
+    query = _TABLE.update().where(where_clause).values(**values)
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:

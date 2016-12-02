@@ -87,6 +87,8 @@ def get_all_remotecis(user, t_id=None):
     if t_id is not None:
         q_bd.where.append(_TABLE.c.team_id == t_id)
 
+    q_bd.where.append(_TABLE.c.state != 'archived')
+
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
@@ -167,11 +169,12 @@ def delete_remoteci_by_id_or_name(user, r_id):
     if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
         raise auth.UNAUTHORIZED
 
+    values = {'state': 'archived'}
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
         sql.or_(_TABLE.c.id == r_id, _TABLE.c.name == r_id)
     )
-    query = _TABLE.delete().where(where_clause)
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 

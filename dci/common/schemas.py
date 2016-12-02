@@ -38,6 +38,8 @@ def Url(value):
 VALID_STATUS_UPDATE = ['failure', 'success', 'killed', 'product-failure',
                        'deployment-failure']
 
+VALID_RESOURCE_STATE = ['active', 'inactive', 'archived']
+
 INVALID_LIST = 'not a valid list'
 INVALID_UUID = 'not a valid uuid'
 INVALID_JSON = 'not a valid json'
@@ -61,6 +63,8 @@ INVALID_REQUIRED = 'required key not provided'
 INVALID_OBJECT = 'not a valid object'
 INVALID_STATUS_UPDATE = ('not a valid status update (must be %s)' %
                          ' or '.join(VALID_STATUS_UPDATE))
+INVALID_RESOURCE_STATE = ('not a valid resource state (must be %s)' %
+                         ' or '.join(VALID_RESOURCE_STATE))
 
 UUID_FIELD = v.All(six.text_type, msg=INVALID_UUID)
 DATA_FIELD = {v.Optional('data', default={}): dict}
@@ -151,7 +155,9 @@ role = schema_factory(base)
 team = utils.dict_merge(base, {
     v.Optional('country', default=None): six.text_type,
     v.Optional('email', default=None): six.text_type,
-    v.Optional('notification', default=False): bool
+    v.Optional('notification', default=False): bool,
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
 })
 
 team = schema_factory(team)
@@ -163,7 +169,9 @@ team = schema_factory(team)
 ###############################################################################
 
 test = utils.dict_merge(base, DATA_FIELD, {
-    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM)
+    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
 })
 
 test = schema_factory(test)
@@ -177,7 +185,9 @@ test = schema_factory(test)
 user = utils.dict_merge(base, {
     'password': six.text_type,
     v.Optional('role'): v.Any(*models.USER_ROLES, msg=INVALID_ROLE),
-    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM)
+    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
 })
 
 user = schema_factory(user)
@@ -202,6 +212,8 @@ component = utils.dict_merge(base, DATA_FIELD, {
 
 component_put = {
     v.Optional('export_control'): bool,
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
 }
 
 component = DCISchema(schema_factory(component).post,
@@ -226,7 +238,9 @@ jobdefinition = utils.dict_merge(base, {
 jobdefinition_put = {
     v.Optional('comment'): six.text_type,
     v.Optional('active'): bool,
-    v.Optional('component_types', default=[]): list
+    v.Optional('component_types', default=[]): list,
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
 }
 
 jobdefinition = DCISchema(schema_factory(jobdefinition).post,
@@ -247,7 +261,8 @@ remoteci_put = {
     v.Optional('name'): six.text_type,
     v.Optional('data'): dict,
     v.Optional('team_id'): v.Any(UUID_FIELD, msg=INVALID_TEAM),
-    v.Optional('active'): bool
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
 }
 
 remoteci = DCISchema(schema_factory(remoteci).post, Schema(remoteci_put))
@@ -270,7 +285,9 @@ job_put = {
     v.Optional('comment'): six.text_type,
     v.Optional('status'): v.Any(*VALID_STATUS_UPDATE,
                                 msg=INVALID_STATUS_UPDATE),
-    v.Optional('configuration'): dict
+    v.Optional('configuration'): dict,
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
 }
 
 job = DCISchema(schema_factory(job).post, Schema(job_put))
@@ -326,6 +343,8 @@ file = utils.dict_merge(base, {
                                                    msg=INVALID_JOB_STATE),
     v.Optional('job_id', default=None): v.Any(UUID_FIELD,
                                               msg=INVALID_JOB),
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
 })
 
 file = schema_factory(file)
@@ -338,6 +357,8 @@ file = schema_factory(file)
 
 topic = utils.dict_merge(base, {
     v.Optional('label', default=None): six.text_type,
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
 })
 
 topic = schema_factory(topic)
