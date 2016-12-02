@@ -137,7 +137,7 @@ def test_schedule_jobs_not_active(admin, jobdefinition_id, team_id,
     """
     jd = admin.get('/api/v1/jobdefinitions/%s' % jobdefinition_id).data
     ppt = admin.put('/api/v1/jobdefinitions/%s' % jobdefinition_id,
-                    data={'active': False},
+                    data={'state': 'inactive'},
                     headers={'If-match': jd['jobdefinition']['etag']})
     assert ppt.status_code == 204
     job = admin.post('/api/v1/jobs/schedule',
@@ -652,7 +652,8 @@ def test_delete_job_by_id(admin, jobdefinition_id, team_id, remoteci_id,
     assert deleted_job.status_code == 204
 
     job = admin.get('/api/v1/jobs/%s' % job_id)
-    assert job.status_code == 404
+    assert job.status_code == 200
+    assert job.data['job']['state'] == 'archived'
 
 # Tests for the isolation
 

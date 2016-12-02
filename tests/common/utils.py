@@ -35,6 +35,7 @@ PASSWORD = 'password', text_type
 ROLE = 'role', 'admin'
 URL = 'url', 'http://valid.url'
 STATUS = 'status', text_type
+STATE = 'state', 'active'
 COMMENT = 'comment', text_type
 CONTENT = 'content', text_type
 LABEL = 'label', text_type
