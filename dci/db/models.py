@@ -32,6 +32,9 @@ JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run',
                 'deployment-failure']
 STATUSES = sa.Enum(*JOB_STATUSES, name='statuses')
 
+RESOURCE_STATES = ['active', 'inactive', 'archived']
+STATES = sa.Enum(*RESOURCE_STATES, name='states')
+
 ISSUE_TRACKERS = ['github', 'bugzilla']
 TRACKERS = sa.Enum(*ISSUE_TRACKERS, name='trackers')
 
@@ -42,6 +45,7 @@ COMPONENTS = sa.Table(
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
@@ -58,7 +62,8 @@ COMPONENTS = sa.Table(
               nullable=True),
     sa.UniqueConstraint('name', 'topic_id',
                         name='components_name_topic_id_key'),
-    sa.Column('active', sa.BOOLEAN, default=True))
+    sa.Column('state', STATES, default='active')
+)
 
 TOPICS = sa.Table(
     'topics', metadata,
@@ -75,7 +80,8 @@ TOPICS = sa.Table(
     sa.Column('label', sa.Text),
     sa.Column('next_topic', sa.String(36),
               sa.ForeignKey('topics.id'),
-              nullable=True, default=None)
+              nullable=True, default=None),
+    sa.Column('state', STATES, default='active')
 )
 
 JOINS_TOPICS_TEAMS = sa.Table(
@@ -94,11 +100,18 @@ TESTS = sa.Table(
               default=utils.gen_uuid),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
     sa.Column('name', sa.String(255), nullable=False, unique=True),
     sa.Column('data', sa_utils.JSONType),
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
-              nullable=False))
+              nullable=False),
+    sa.Column('state', STATES, default='active'),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+)
 
 JOBDEFINITIONS = sa.Table(
     'jobdefinitions', metadata,
@@ -116,9 +129,9 @@ JOBDEFINITIONS = sa.Table(
     sa.Column('topic_id', sa.String(36),
               sa.ForeignKey('topics.id', ondelete='CASCADE'),
               nullable=True),
-    sa.Column('active', sa.BOOLEAN, default=True),
     sa.Column('comment', sa.Text),
     sa.Column('component_types', pg.JSON, default=[]),
+    sa.Column('state', STATES, default='active')
 )
 
 JOIN_JOBDEFINITIONS_TESTS = sa.Table(
@@ -166,7 +179,8 @@ TEAMS = sa.Table(
     # https://en.wikipedia.org/wiki/ISO_3166-1 Alpha-2 code
     sa.Column('country', sa.String(255), nullable=True),
     sa.Column('email', sa.String(255), nullable=True),
-    sa.Column('notification', sa.BOOLEAN, default=False)
+    sa.Column('notification', sa.BOOLEAN, default=False),
+    sa.Column('state', STATES, default='active')
 )
 
 
@@ -183,12 +197,12 @@ REMOTECIS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255)),
     sa.Column('data', sa_utils.JSONType),
-    sa.Column('active', sa.BOOLEAN, default=True),
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
     sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key'),
-    sa.Column('allow_upgrade_job', sa.BOOLEAN, default=False)
+    sa.Column('allow_upgrade_job', sa.BOOLEAN, default=False),
+    sa.Column('state', STATES, default='active'),
 )
 
 JOBS = sa.Table(
@@ -219,7 +233,9 @@ JOBS = sa.Table(
     sa.Column('client_version', sa.String(255)),
     sa.Column('previous_job_id', sa.String(36),
               sa.ForeignKey('jobs.id'),
-              nullable=True, default=None))
+              nullable=True, default=None),
+    sa.Column('state', STATES, default='active')
+)
 
 METAS = sa.Table(
     'metas', metadata,
@@ -277,6 +293,9 @@ FILES = sa.Table(
               default=utils.gen_uuid),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
     sa.Column('name', sa.String(255), nullable=False),
     sa.Column('mime', sa.String),
     sa.Column('md5', sa.String(32)),
@@ -289,7 +308,11 @@ FILES = sa.Table(
               nullable=False),
     sa.Column('job_id', sa.String(36),
               sa.ForeignKey('jobs.id', ondelete='CASCADE'),
-              nullable=True))
+              nullable=True),
+    sa.Column('state', STATES, default='active'),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+)
 
 COMPONENT_FILES = sa.Table(
     'component_files', metadata,
@@ -321,7 +344,9 @@ USERS = sa.Table(
     sa.Column('role', ROLES, default=USER_ROLES[0], nullable=False),
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
-              nullable=False))
+              nullable=False),
+    sa.Column('state', STATES, default='active')
+)
 
 JOIN_USER_REMOTECIS = sa.Table(
     'user_remotecis', metadata,
