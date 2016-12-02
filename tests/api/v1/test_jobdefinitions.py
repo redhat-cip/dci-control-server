@@ -203,7 +203,8 @@ def test_delete_jobdefinition_by_id(admin, topic_id):
     assert deleted_jd.status_code == 204
 
     gjd = admin.get('/api/v1/jobdefinitions/%s' % pjd_id)
-    assert gjd.status_code == 404
+    assert gjd.status_code == 200
+    assert gjd['jobdefinition']['state'] == 'archived'
 
 
 def test_get_all_jobdefinitions_with_sort(admin, topic_id):
@@ -278,3 +279,29 @@ def test_delete_test_from_jobdefinition(admin, test_id, topic_id):
     # verify test still exist on /tests
     c = admin.get('/api/v1/tests/%s' % test_id)
     assert c.status_code == 200
+
+
+def test_change_jobdefinition_state(admin, jobdefinition_id):
+    t = admin.get('/api/v1/jobdefinitions/' + jobdefinition_id)
+    t = t.data['jobdefinition']
+    data = {'state': 'inactive'}
+    r = admin.put('/api/v1/jobdefinitions/' + jobdefinition_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 204
+    jd = admin.get('/api/v1/jobdefinitions/' + jobdefinition_id)
+    jd = jd.data['jobdefinition']
+    assert jd['state'] == 'inactive'
+
+
+def test_change_jobdefinition_to_invalid_state(admin, jobdefinition_id):
+    t = admin.get('/api/v1/jobdefinitions/' + jobdefinition_id)
+    t = t.data['jobdefinition']
+    data = {'state': 'kikoolol'}
+    r = admin.put('/api/v1/jobdefinitions/' + jobdefinition_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 405
+    jd = admin.get('/api/v1/jobdefinitions/' + jobdefinition_id)
+    assert jd.status_code == 200
+    assert jd['jobdefinition']['state'] == 'active'

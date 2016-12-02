@@ -155,7 +155,11 @@ def delete_topic_by_id_or_name(user, topic_id):
         raise auth.UNAUTHORIZED
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
-    query = _TABLE.delete().where(_TABLE.c.id == topic_id)
+
+    values = {'state': 'archived'}
+    where_clause = sql.and_(_TABLE.c.id == topic_id)
+    query = _TABLE.update().where(where_clause).values(**values)
+
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:

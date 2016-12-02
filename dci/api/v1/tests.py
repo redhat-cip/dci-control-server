@@ -58,6 +58,33 @@ def create_tests(user):
     )
 
 
+@api.route('/tests/<t_id>', methods=['PUT'])
+@auth.requires_auth
+def update_tests(user, t_id):
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+
+    v1_utils.verify_existence_and_get(t_id, _TABLE)
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    values = schemas.component.put(flask.request.json)
+    values['etag'] = utils.gen_etag()
+
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        _TABLE.c.id == t_id
+    )
+
+    query = _TABLE.update().where(where_clause).values(**values)
+
+    result = flask.g.db_conn.execute(query)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Test', t_id)
+
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
+                          content_type='application/json')
+
+
 def get_all_tests(user, team_id):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
@@ -72,6 +99,8 @@ def get_all_tests(user, team_id):
     q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
     q_bd.where.append(_TABLE.c.team_id == team_id)
+
+    q_bd.where.append(_TABLE.c.state != 'archived')
 
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
@@ -110,14 +139,18 @@ def get_remotecis_by_test(user, test_id):
 @api.route('/tests/<t_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_test_by_id_or_name(user, t_id):
-
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
 
     if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
         raise auth.UNAUTHORIZED
 
-    where_clause = sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
-    query = _TABLE.delete().where(where_clause)
+    values = {'state': 'archived'}
+    where_clause = (
+        _TABLE.c.etag == if_match_etag,
+        sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
+    )
+    query = _TABLE.update().where(where_clause).values(**values)
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
