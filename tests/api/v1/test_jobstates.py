@@ -106,7 +106,7 @@ def test_get_all_jobstates_with_embed(admin, job_id, team_admin_id):
     admin.post('/api/v1/jobstates', data=data)
 
     # verify embed
-    js = admin.get('/api/v1/jobstates?embed=team,files').data
+    js = admin.get('/api/v1/jobstates?embed=team,files&sort=created_at').data
     js_1 = js['jobstates'][0]
     js_2 = js['jobstates'][1]
 

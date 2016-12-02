@@ -222,7 +222,7 @@ def test_get_all_jobs(admin, jobdefinition_id, team_id, remoteci_id,
 
 
 def test_get_all_jobs_with_pagination(admin, jobdefinition_id, team_id,
-                                      remoteci_id, components_ids):
+                                      remoteci_id, components_ids, test_id):
     # create 4 jobs and check meta count
     data = {'jobdefinition_id': jobdefinition_id,
             'team_id': team_id,
@@ -251,7 +251,7 @@ def test_get_all_jobs_with_pagination(admin, jobdefinition_id, team_id,
 
 
 def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
-                                 remoteci_id, components_ids):
+                                 remoteci_id, components_ids, test_id):
     # create 2 jobs and check meta data count
     data = {'jobdefinition_id': jobdefinition_id,
             'team_id': team_id,
@@ -277,13 +277,27 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
         assert job['remoteci']['id'] == remoteci_id
 
     # verify embed with jobdefinition.test nested
-    query_embed = ('/api/v1/jobs?embed=jobdefinition')
+    query_embed = ('/api/v1/jobs?embed=jobdefinition.tests')
     jobs = admin.get(query_embed).data
+    assert len(jobs['jobs'][0]['jobdefinition']['tests']) == 0
+
+    admin.post('/api/v1/jobdefinitions/%s/tests' % jobdefinition_id,
+               data={'test_id': test_id})
+    jobs = admin.get(query_embed).data
+    assert jobs['jobs'][0]['jobdefinition']['tests'][0]['id']
 
     for job in jobs['jobs']:
         assert 'jobdefinition_id' not in job
         assert 'jobdefinition' in job
         assert job['jobdefinition']['id'] == jobdefinition_id
+
+    query_embed = ('/api/v1/jobs?embed=components')
+    jobs = admin.get(query_embed).data
+    assert jobs['_meta']['count'] == 2
+    assert len(jobs['jobs']) == 2
+    for job in jobs['jobs']:
+        cur_set = set(i['id'] for i in job['components'])
+        assert cur_set == set(components_ids)
 
 
 def test_get_all_jobs_with_embed_not_valid(admin):
@@ -426,14 +440,15 @@ def test_get_job_by_id(admin, jobdefinition_id, team_id, remoteci_id,
 
 def test_get_jobstates_by_job_id(admin, job_id, team_id):
     data = {'status': 'new', 'job_id': job_id}
-    jobstate_1 = admin.post('/api/v1/jobstates', data=data).data['jobstate']
-    jobstate_2 = admin.post('/api/v1/jobstates', data=data).data['jobstate']
+    jobstate_ids = set([
+        admin.post('/api/v1/jobstates', data=data).data['jobstate']['id'],
+        admin.post('/api/v1/jobstates', data=data).data['jobstate']['id']])
 
     jobstates = admin.get('/api/v1/jobs/%s/jobstates' % job_id)
     jobstates = jobstates.data['jobstates']
 
-    assert jobstates[0]['id'] == jobstate_1['id']
-    assert jobstates[1]['id'] == jobstate_2['id']
+    found_jobstate_ids = set(i['id'] for i in jobstates)
+    assert jobstate_ids == found_jobstate_ids
 
 
 def test_get_job_not_found(admin):
