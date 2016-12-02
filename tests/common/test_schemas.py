@@ -76,7 +76,7 @@ class TestComponentType(BaseSchemaTesting):
 
 class TestTeam(utils.SchemaTesting):
     schema = schemas.team
-    data = dict([utils.NAME, utils.COUNTRY, utils.EMAIL, utils.NOTIF])
+    data = dict([utils.NAME, utils.COUNTRY, utils.EMAIL, utils.NOTIF, utils.STATE])
 
     @staticmethod
     def generate_invalids_and_errors():
@@ -116,7 +116,7 @@ class TestRole(BaseSchemaTesting):
 
 class TestTest(utils.SchemaTesting):
     schema = schemas.test
-    data = dict([utils.NAME, utils.TEAM])
+    data = dict([utils.NAME, utils.TEAM, utils.STATE])
 
     @staticmethod
     def generate_invalids_and_errors():
@@ -161,7 +161,7 @@ class TestTest(utils.SchemaTesting):
 
 class TestUser(utils.SchemaTesting):
     schema = schemas.user
-    data = dict([utils.NAME, utils.PASSWORD, utils.TEAM, utils.ROLE])
+    data = dict([utils.NAME, utils.PASSWORD, utils.TEAM, utils.ROLE, utils.STATE])
 
     @staticmethod
     def generate_invalids_and_errors():
@@ -198,13 +198,13 @@ class TestUser(utils.SchemaTesting):
 
 class TestComponent(utils.SchemaTesting):
     schema = schemas.component
-    data = dict([utils.NAME, utils.TYPE, utils.TOPIC])
+    data = dict([utils.NAME, utils.TYPE, utils.TOPIC, utils.STATE])
 
     @staticmethod
     def generate_optionals():
         return dict([('title', None), ('message', None), ('url', None),
                      ('data', {}), ('canonical_project_name', None),
-                     ('export_control', False), ('active', True)])
+                     ('export_control', False), ('state', 'active')])
 
     @staticmethod
     def generate_invalids_and_errors():
@@ -252,7 +252,7 @@ class TestComponent(utils.SchemaTesting):
 
 class TestJobDefinition(utils.SchemaTesting):
     schema = schemas.jobdefinition
-    data = dict([utils.NAME, utils.TOPIC])
+    data = dict([utils.NAME, utils.TOPIC, utils.STATE])
 
     @staticmethod
     def generate_invalids_and_errors():
@@ -280,7 +280,7 @@ class TestJobDefinition(utils.SchemaTesting):
         # add default values to voluptuous output
         data_expected = utils.dict_merge(
             self.data,
-            {'priority': 0, 'active': True, 'comment': None,
+            {'priority': 0, 'comment': None,
              'component_types': []})
         super(TestJobDefinition, self).test_post(self.data, data_expected)
 
@@ -296,8 +296,8 @@ class TestJobDefinition(utils.SchemaTesting):
 
 class TestRemoteCI(utils.SchemaTesting):
     schema = schemas.remoteci
-    data = dict([utils.NAME, utils.TEAM, utils.ACTIVE,
-                 utils.ALLOW_UPGRADE_JOB])
+    data = dict([utils.NAME, utils.TEAM, utils.ALLOW_UPGRADE_JOB,
+                 utils.STATE])
 
     @staticmethod
     def generate_invalids_and_errors():
@@ -339,7 +339,7 @@ class TestRemoteCI(utils.SchemaTesting):
 class TestJob(utils.SchemaTesting):
     schema = schemas.job
     data = dict([utils.JOB_DEFINITION, utils.REMOTE_CI, utils.TEAM,
-                 utils.COMPONENTS, utils.PREVIOUS_JOB_ID])
+                 utils.COMPONENTS, utils.PREVIOUS_JOB_ID, utils.STATE])
     data_put = dict([('status', 'success'), utils.COMMENT,
                      utils.CONFIGURATION])
 
@@ -639,7 +639,7 @@ class LolTestFile(utils.SchemaTesting):
 
 class TestTopic(utils.SchemaTesting):
     schema = schemas.topic
-    data = dict([utils.NAME, utils.LABEL, utils.NEXT_TOPIC])
+    data = dict([utils.NAME, utils.LABEL, utils.NEXT_TOPIC, utils.STATE])
 
     @staticmethod
     def generate_invalids_and_errors():
