@@ -88,6 +88,21 @@ TESTS = sa.Table(
               nullable=True))
 
 
+TOPICS = sa.Table(
+    'topics', metadata,
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), unique=True, nullable=False)
+)
+
+
 def upgrade():
     op.add_column('components',
                   sa.Column('topic_id', sa.String(36),

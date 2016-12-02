@@ -84,6 +84,8 @@ def _get_all_jobdefinitions(user, topic_id=None):
     elif topic_id is not None:
         q_bd.where.append(_TABLE.c.topic_id == topic_id)
 
+    q_bd.where.append(_TABLE.c.state != 'archived')
+
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
@@ -158,11 +160,12 @@ def delete_jobdefinition_by_id_or_name(user, jd_id):
 
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
+    values = {'state': 'archived'}
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
         sql.or_(_TABLE.c.id == jd_id, _TABLE.c.name == jd_id)
     )
-    query = _TABLE.delete().where(where_clause)
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
