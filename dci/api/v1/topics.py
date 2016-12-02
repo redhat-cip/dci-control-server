@@ -101,6 +101,7 @@ def get_all_topics(user):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))
 
+    q_bd.where.append(_TABLE.c.state != 'archived')
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
@@ -155,7 +156,11 @@ def delete_topic_by_id_or_name(user, topic_id):
         raise auth.UNAUTHORIZED
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
-    query = _TABLE.delete().where(_TABLE.c.id == topic_id)
+
+    values = {'state': 'archived'}
+    where_clause = sql.and_(_TABLE.c.id == topic_id)
+    query = _TABLE.update().where(where_clause).values(**values)
+
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
@@ -202,7 +207,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
     # within <topic_id> topic
     where_clause = sql.and_(models.COMPONENTS.c.type == type_id,
                             models.COMPONENTS.c.topic_id == topic_id,
-                            models.COMPONENTS.c.active == True)  # noqa
+                            models.COMPONENTS.c.state == 'active')
     q_bd = sql.select([models.COMPONENTS]).where(where_clause).order_by(
         sql.desc(models.COMPONENTS.c.created_at)).limit(1)
     cpt_id = flask.g.db_conn.execute(q_bd).fetchone()['id']
@@ -239,7 +244,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
         models.REMOTECIS.c.team_id == models.TEAMS.c.id,
         models.TOPICS.c.id == topic_id,
         models.COMPONENTS.c.id == cpt_id,
-        models.REMOTECIS.c.active == True]  # noqa
+        models.REMOTECIS.c.state == 'active']
     q_bd.sort = [models.REMOTECIS.c.name]
     if team_id:
         q_bd.extra_where.append(models.TEAMS.c.id == team_id)
