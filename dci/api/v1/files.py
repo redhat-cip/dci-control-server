@@ -142,10 +142,9 @@ def get_all_files(user, j_id=None):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
 
-    result = [v1_utils.group_embedded_resources(embed, row) for row in rows]
-
-    return json.jsonify({'files': result, '_meta': {'count': nb_row}})
+    return json.jsonify({'files': rows, '_meta': {'count': nb_row}})
 
 
 @api.route('/files/<file_id>', methods=['GET'])
@@ -163,13 +162,13 @@ def get_file_by_id_or_name(user, file_id):
     where_clause = sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
     q_bd.where.append(where_clause)
 
-    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
-    if row is None:
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
+    if len(rows) != 1:
         raise dci_exc.DCINotFound('File', file_id)
+    file_ = rows[0]
 
-    dfile = v1_utils.group_embedded_resources(embed, row)
-
-    result = json.jsonify({'file': dfile})
+    result = json.jsonify({'file': file_})
     return result
 
 

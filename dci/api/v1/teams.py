@@ -35,6 +35,9 @@ from dci.db import models
 # associate column names with the corresponding SA Column object
 _TABLE = models.TEAMS
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_VALID_EMBED = {
+    'topics': v1_utils.embed(models.TOPICS, many=True),
+}
 
 
 @api.route('/teams', methods=['POST'])
@@ -89,13 +92,20 @@ def get_all_teams(user):
 @api.route('/teams/<t_id>', methods=['GET'])
 @auth.requires_auth
 def get_team_by_id_or_name(user, t_id):
+    embed = schemas.args(flask.request.args.to_dict())['embed']
+
+    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
+    q_bd.join(embed)
+
     where_clause = sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
+    q_bd.where.append(where_clause)
 
-    query = sql.select([_TABLE]).where(where_clause)
-    team = flask.g.db_conn.execute(query).fetchone()
-
-    if team is None:
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
+    if len(rows) != 1:
         raise dci_exc.DCINotFound('Team', t_id)
+    team = rows[0]
+
     if not(auth.is_admin(user) or auth.is_in_team(user, team['id'])):
         raise auth.UNAUTHORIZED
 

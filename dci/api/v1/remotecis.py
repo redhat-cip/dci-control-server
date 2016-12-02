@@ -89,7 +89,7 @@ def get_all_remotecis(user, t_id=None):
 
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
+    rows = q_bd.dedup_rows(embed, rows)
 
     return flask.jsonify({'remotecis': rows, '_meta': {'count': nb_row}})
 
@@ -107,12 +107,12 @@ def get_remoteci_by_id_or_name(user, r_id):
 
     q_bd.where.append(sql.or_(_TABLE.c.id == r_id, _TABLE.c.name == r_id))
 
-    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
-
-    if row is None:
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
+    if len(rows) != 1:
         raise dci_exc.DCINotFound('RemoteCI', r_id)
+    remoteci = rows[0]
 
-    remoteci = v1_utils.group_embedded_resources(embed, row)
     res = flask.jsonify({'remoteci': remoteci})
     res.headers.add_header('ETag', remoteci['etag'])
     return res
@@ -206,8 +206,7 @@ def get_remoteci_data_json(user, r_id):
     if row is None:
         raise dci_exc.DCINotFound('RemoteCI', r_id)
 
-    remoteci = v1_utils.group_embedded_resources([], row)
-    return remoteci['data']
+    return row['data']
 
 
 @api.route('/remotecis/<r_id>/tests', methods=['POST'])

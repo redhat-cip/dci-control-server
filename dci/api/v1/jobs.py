@@ -46,10 +46,21 @@ _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _VALID_EMBED = {
     'file': v1_utils.embed(models.FILES),
     'jobdefinition': v1_utils.embed(models.JOBDEFINITIONS),
-    'jobdefinition.test': v1_utils.embed(models.TESTS),
+    'jobdefinition.tests': v1_utils.embed(
+        models.TESTS.join(
+            models.JOIN_JOBDEFINITIONS_TESTS,
+            models.TESTS.c.id == models.JOIN_JOBDEFINITIONS_TESTS.c.test_id
+        ), many=True),
     'team': v1_utils.embed(models.TEAMS),
     'remoteci': v1_utils.embed(models.REMOTECIS),
-    'metas': v1_utils.embed(models.METAS)
+    'remoteci.tests': v1_utils.embed(models.REMOTECIS, many=True),
+    'metas': v1_utils.embed(models.METAS, many=True),
+    'components': v1_utils.embed(
+        models.COMPONENTS.join(
+            models.JOIN_JOBS_COMPONENTS,
+            models.COMPONENTS.c.id ==
+            models.JOIN_JOBS_COMPONENTS.c.component_id),
+        many=True),
 }
 
 
@@ -322,7 +333,7 @@ def get_all_jobs(user, jd_id=None):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = [v1_utils.group_embedded_resources(embed, row) for row in rows]
+    rows = q_bd.dedup_rows(embed, rows)
 
     return flask.jsonify({'jobs': rows, '_meta': {'count': nb_row}})
 
@@ -364,11 +375,12 @@ def get_job_by_id(user, jd_id):
 
     q_bd.where.append(_TABLE.c.id == jd_id)
 
-    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
-    if row is None:
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
+    if len(rows) != 1:
         raise dci_exc.DCINotFound('Job', jd_id)
+    job = rows[0]
 
-    job = v1_utils.group_embedded_resources(embed, row)
     job['issues'] = (
         json.loads(issues.get_all_issues(jd_id).response[0])['issues']
     )
