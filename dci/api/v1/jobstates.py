@@ -95,8 +95,8 @@ def get_all_jobstates(user, j_id=None):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
 
-    rows = q_bd.parse_rows(embed, rows)
     return flask.jsonify({'jobstates': rows, '_meta': {'count': nb_row}})
 
 
@@ -113,12 +113,12 @@ def get_jobstate_by_id(user, js_id):
 
     q_bd.where.append(_TABLE.c.id == js_id)
 
-    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
-
-    if row is None:
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
+    if len(rows) != 1:
         raise dci_exc.DCINotFound('Jobstate', js_id)
+    jobstate = rows[0]
 
-    jobstate = v1_utils.group_embedded_resources(embed, row)
     res = flask.jsonify({'jobstate': jobstate})
     return res
 

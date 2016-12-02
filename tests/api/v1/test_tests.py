@@ -234,7 +234,7 @@ def test_get_tests_from_topics(admin, user, team_user_id, team_id):
                data={'test_id': test_id_2})
 
     # Verify user can access his topic test
-    t_tests = user.get('/api/v1/topics/%s/tests' % topic_id_1)
+    t_tests = user.get('/api/v1/topics/%s/tests?sort=created_at' % topic_id_1)
     assert t_tests.status_code == 200
     # Verify user can access the test linked in the topic
     assert t_tests.data['tests'][0]['id'] == test_id_1
