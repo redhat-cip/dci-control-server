@@ -199,7 +199,9 @@ def test_delete_file_by_id(admin, jobstate_id):
     assert deleted_file.status_code == 204
 
     gfile = admin.get(url)
-    assert gfile.status_code == 404
+    assert gfile.status_code == 200
+    assert gfile.data['file']['state'] == 'archived'
+
 
 # Tests for the isolation
 
@@ -261,3 +263,15 @@ def test_get_file_content_as_user(user, file_id, file_user_id):
 
     assert user.get(url % file_id).status_code == 401
     assert user.get(url % file_user_id).status_code == 200
+
+
+def test_change_file_to_invalid_state(admin, file_id):
+    t = admin.get('/api/v1/files/' + file_id).data['file']
+    data = {'state': 'kikoolol'}
+    r = admin.put('/api/v1/files/' + file_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 405
+    current_file = admin.get('/api/v1/files/' + file_id)
+    assert current_file.status_code == 200
+    assert current_file.data['file']['state'] == 'active'
