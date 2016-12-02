@@ -88,6 +88,21 @@ TESTS = sa.Table(
               nullable=True))
 
 
+TOPICS = sa.Table(
+    'topics', sa.MetaData(),
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), unique=True, nullable=False)
+)
+
+
 def upgrade():
     op.add_column('components',
                   sa.Column('topic_id', sa.String(36),
@@ -112,7 +127,7 @@ def upgrade():
         'etag': utils.gen_etag(),
         'name': 'default'
     }
-    db_conn.execute(models.TOPICS.insert().values(**topic_values))
+    db_conn.execute(TOPICS.insert().values(**topic_values))
 
     # Adds all components, jobdefinitions and tests to the default topics
     values = {'topic_id': topic_id}
