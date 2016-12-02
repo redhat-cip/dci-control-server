@@ -34,6 +34,12 @@ def build_auth(username, password):
     """Check the combination username/password that is valid on the
     database.
     """
+
+    where_clause = sqlalchemy.sql.expression.and_(
+        models.USERS.c.name == username,
+        models.USERS.c.state == 'active',
+        models.TEAMS.c.state == 'active'
+    )
     t_j = sqlalchemy.join(
         models.USERS, models.TEAMS,
         models.USERS.c.team_id == models.TEAMS.c.id)
@@ -44,7 +50,7 @@ def build_auth(username, password):
                           models.TEAMS.c.country.label('team_country'),
                       ])
                       .select_from(t_j)
-                      .where(models.USERS.c.name == username))
+                      .where(where_clause))
 
     user = flask.g.db_conn.execute(query_get_user).fetchone()
     if user is None:

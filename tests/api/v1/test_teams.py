@@ -236,6 +236,29 @@ def test_put_team_as_user_admin(user, user_admin):
     assert team_put.status_code == 204
 
 
+def test_change_team_state(admin, team_id):
+    t = admin.get('/api/v1/teams/' + team_id).data['team']
+    data = {'state': 'inactive'}
+    r = admin.put('/api/v1/teams/' + team_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 204
+    current_team = admin.get('/api/v1/teams/' + team_id).data['team']
+    assert current_team['state'] == 'inactive'
+
+
+def test_change_team_to_invalid_state(admin, team_id):
+    t = admin.get('/api/v1/teams/' + team_id).data['team']
+    data = {'state': 'kikoolol'}
+    r = admin.put('/api/v1/teams/' + team_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 400
+    current_team = admin.get('/api/v1/teams/' + team_id)
+    assert current_team.status_code == 200
+    assert current_team.data['team']['state'] == 'active'
+
+
 # Only super admin can delete a team
 def test_delete_as_user_admin(user, user_admin):
     team = user.get('/api/v1/teams/user')
