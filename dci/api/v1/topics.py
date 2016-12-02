@@ -98,6 +98,8 @@ def get_all_topics(user):
 
         q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
 
+        q_bd.where.append(_TABLE.c.state != 'archived')
+
         # get the number of rows for the '_meta' section
         nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
         rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
@@ -108,12 +110,15 @@ def get_all_topics(user):
     else:
         team_id = user['team_id']
         JTT = models.JOINS_TOPICS_TEAMS
-        # TODO(yassine): use QueryBuilder and sort
+        where_clause = sql.and_(
+            JTT.c.team_id == team_id,
+            models.TOPICS.c.state != 'archived'
+        )
         query = (sql.select([models.TOPICS])
-                 .select_from(JTT.join(models.TOPICS))
-                 .where(JTT.c.team_id == team_id))
+                 .select_from(JTT.join(models.TOPICS)))
         query = query.limit(args['limit'])
         query = query.offset(args['offset'])
+        query = query.where(where_clause)
 
         rows = flask.g.db_conn.execute(query)
 
@@ -159,7 +164,11 @@ def delete_topic_by_id_or_name(user, topic_id):
         raise auth.UNAUTHORIZED
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
-    query = _TABLE.delete().where(_TABLE.c.id == topic_id)
+
+    values = {'state': 'archived'}
+    where_clause = sql.and_(_TABLE.c.id == topic_id)
+    query = _TABLE.update().where(where_clause).values(**values)
+
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:

@@ -139,6 +139,8 @@ def get_all_files(user, j_id=None):
     if j_id is not None:
         q_bd.where.append(_TABLE.c.job_id == j_id)
 
+    q_bd.where.append(_TABLE.c.state != 'archived')
+
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
@@ -208,6 +210,33 @@ def get_file_content(user, file_id):
     )
 
 
+@api.route('/files/<file_id>', methods=['PUT'])
+@auth.requires_auth
+def update_tests(user, file_id):
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+
+    v1_utils.verify_existence_and_get(file_id, _TABLE)
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    values = schemas.component.put(flask.request.json)
+    values['etag'] = utils.gen_etag()
+
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        _TABLE.c.id == file_id
+    )
+
+    query = _TABLE.update().where(where_clause).values(**values)
+
+    result = flask.g.db_conn.execute(query)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('File', file_id)
+
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
+                          content_type='application/json')
+
+
 @api.route('/files/<file_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_file_by_id(user, file_id):
@@ -216,8 +245,10 @@ def delete_file_by_id(user, file_id):
     if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
+    values = {'state': 'archived'}
     where_clause = sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
-    query = _TABLE.delete().where(where_clause)
+
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 

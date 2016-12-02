@@ -43,6 +43,29 @@ def test_update_topics_as_admin(admin, topic_id):
     assert current_topic['label'] == 'my comment'
 
 
+def test_change_topic_state(admin, topic_id):
+    t = admin.get('/api/v1/topics/' + topic_id).data['topic']
+    data = {'state': 'inactive'}
+    r = admin.put('/api/v1/topics/' + topic_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 204
+    current_topic = admin.get('/api/v1/topics/' + topic_id).data['topic']
+    assert current_topic['state'] == 'inactive'
+
+
+def test_change_topic_to_invalid_state(admin, topic_id):
+    t = admin.get('/api/v1/topics/' + topic_id).data['topic']
+    data = {'state': 'kikoolol'}
+    r = admin.put('/api/v1/topics/' + topic_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 405
+    current_topic = admin.get('/api/v1/topics/' + topic_id)
+    assert current_topic.status_code == 200
+    assert current_topic['topic']['state'] == 'active'
+
+
 def test_create_topics_already_exist(admin):
     data = {'name': 'tname'}
     pstatus_code = admin.post('/api/v1/topics', data=data).status_code
@@ -141,7 +164,8 @@ def test_delete_topic_by_id(admin):
     assert deleted_ct.status_code == 204
 
     gct = admin.get('/api/v1/topics/%s' % pt_id)
-    assert gct.status_code == 404
+    assert gct.status_code == 200
+    assert gct['topic']['state'] == 'archived'
 
 
 def test_delete_topic_by_id_as_user(admin, user):

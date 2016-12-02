@@ -301,7 +301,8 @@ def test_delete_remoteci_by_id(admin, team_id):
     assert deleted_r.status_code == 204
 
     gr = admin.get('/api/v1/remotecis/%s' % pr_id)
-    assert gr.status_code == 404
+    assert gr.status_code == 200
+    assert gr['remoteci']['state'] == 'archived'
 
 
 def test_delete_remoteci_not_found(admin):
@@ -446,3 +447,26 @@ def test_delete_test_from_remoteci(admin, test_id, team_user_id):
     # verify test still exist on /tests
     c = admin.get('/api/v1/tests/%s' % test_id)
     assert c.status_code == 200
+
+
+def test_change_remoteci_state(admin, remoteci_id):
+    t = admin.get('/api/v1/remotecis/' + remoteci_id).data['remoteci']
+    data = {'state': 'inactive'}
+    r = admin.put('/api/v1/remotecis/' + remoteci_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 204
+    rci = admin.get('/api/v1/remotecis/' + remoteci_id).data['remoteci']
+    assert rci['state'] == 'inactive'
+
+
+def test_change_remoteci_to_invalid_state(admin, remoteci_id):
+    t = admin.get('/api/v1/remotecis/' + remoteci_id).data['remoteci']
+    data = {'state': 'kikoolol'}
+    r = admin.put('/api/v1/remotecis/' + remoteci_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 405
+    current_remoteci = admin.get('/api/v1/remotecis/' + remoteci_id)
+    assert current_remoteci.status_code == 200
+    assert current_remoteci['remoteci']['state'] == 'active'

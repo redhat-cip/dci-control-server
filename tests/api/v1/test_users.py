@@ -213,6 +213,48 @@ def test_put_users(admin, team_id):
     assert gu.status_code == 200
 
 
+def test_change_user_state(admin, team_id):
+    pu = admin.post('/api/v1/users', data={'name': 'pname',
+                                           'password': 'ppass',
+                                           'team_id': team_id})
+    assert pu.status_code == 201
+
+    pu_etag = pu.headers.get("ETag")
+
+    gu = admin.get('/api/v1/users/pname')
+    assert gu.status_code == 200
+
+    ppu = admin.put('/api/v1/users/pname',
+                    data={'state': 'inactive'},
+                    headers={'If-match': pu_etag})
+    assert ppu.status_code == 204
+
+    gu = admin.get('/api/v1/users/pname')
+    assert gu.status_code == 200
+    assert gu['user']['state'] == 'inactive'
+
+
+def test_change_user_to_invalid_state(admin, team_id):
+    pu = admin.post('/api/v1/users', data={'name': 'pname',
+                                           'password': 'ppass',
+                                           'team_id': team_id})
+    assert pu.status_code == 201
+
+    pu_etag = pu.headers.get("ETag")
+
+    gu = admin.get('/api/v1/users/pname')
+    assert gu.status_code == 200
+
+    ppu = admin.put('/api/v1/users/pname',
+                    data={'state': 'kikoolol'},
+                    headers={'If-match': pu_etag})
+    assert ppu.status_code == 405
+
+    gu = admin.get('/api/v1/users/pname')
+    assert gu.status_code == 200
+    assert gu['user']['state'] == 'active'
+
+
 def test_delete_user_by_id(admin, team_id):
     pu = admin.post('/api/v1/users',
                     data={'name': 'pname',
@@ -230,7 +272,8 @@ def test_delete_user_by_id(admin, team_id):
     assert deleted_user.status_code == 204
 
     gu = admin.get('/api/v1/users/%s' % pu_id)
-    assert gu.status_code == 404
+    assert gu.status_code == 200
+    assert gu['user']['state'] == 'archived'
 
 
 def test_delete_user_not_found(admin):

@@ -194,8 +194,8 @@ def _build_new_template(topic_id, remoteci, values):
     for ct in component_types:
         where_clause = sql.and_(models.COMPONENTS.c.type == ct,
                                 models.COMPONENTS.c.topic_id == topic_id,
-                                models.COMPONENTS.c.active == True,
-                                models.COMPONENTS.c.export_control == True)  # noqa
+                                models.COMPONENTS.c.export_control == True,
+                                models.COMPONENTS.c.state == 'active')  # noqa
         query = (sql.select([models.COMPONENTS.c.id])
                  .where(where_clause)
                  .order_by(sql.desc(models.COMPONENTS.c.created_at)))
@@ -257,7 +257,7 @@ def _validate_input(values, user):
     kill_query = _TABLE .update().where(where_clause).values(status='killed')
     flask.g.db_conn.execute(kill_query)
 
-    if remoteci['active'] is False:
+    if remoteci['state'] != 'active':
         message = 'RemoteCI "%s" is disabled.' % remoteci_id
         raise dci_exc.DCIException(message, status_code=412)
 
@@ -331,6 +331,8 @@ def get_all_jobs(user, jd_id=None):
 
     if jd_id is not None:
         q_bd.where.append(_TABLE.c.jobdefinition_id == jd_id)
+
+    q_bd.where.append(_TABLE.c.state != 'archived')
 
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
@@ -567,9 +569,10 @@ def delete_job_by_id(user, j_id):
     if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
         raise auth.UNAUTHORIZED
 
+    values = {'state': 'archived'}
     where_clause = sql.and_(_TABLE.c.id == j_id,
                             _TABLE.c.etag == if_match_etag)
-    query = _TABLE.delete().where(where_clause)
+    query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
