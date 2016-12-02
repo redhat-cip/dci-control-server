@@ -30,12 +30,12 @@ def test_create_components(admin, topic_id):
         'url': 'http://example.com/',
         'topic_id': topic_id,
         'export_control': True,
-        'active': False}
+        'state': 'active'}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
     gc = admin.get('/api/v1/components/%s' % pc_id).data
     assert gc['component']['name'] == 'pname'
-    assert gc['component']['active'] is False
+    assert gc['component']['state'] == 'active'
 
 
 def test_create_components_already_exist(admin, topic_id):
@@ -210,7 +210,8 @@ def test_delete_component_by_id(admin, topic_id):
     assert deleted_ct.status_code == 204
 
     gct = admin.get('/api/v1/components/%s' % pc_id)
-    assert gct.status_code == 404
+    assert gct.status_code == 200
+    assert gct.data['component']['state'] == 'archived'
 
 
 def test_get_all_components_with_sort(admin, topic_id):
@@ -421,3 +422,46 @@ def test_delete_file_from_component(admin, topic_id):
         url = '/api/v1/components/%s/files' % ct_1['id']
         g_file = admin.get(url)
         assert g_file.data['_meta']['count'] == 0
+
+
+def test_change_component_state(admin, topic_id):
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'topic_id': topic_id,
+        'export_control': True,
+        'state': 'active'}
+    pc = admin.post('/api/v1/components', data=data).data
+    pc_id = pc['component']['id']
+
+    t = admin.get('/api/v1/components/' + pc_id).data['component']
+    data = {'state': 'inactive'}
+    r = admin.put('/api/v1/components/' + pc_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 204
+    cpt = admin.get('/api/v1/components/' + pc_id).data['component']
+    assert cpt['state'] == 'inactive'
+
+
+def test_change_component_to_invalid_state(admin, topic_id):
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'topic_id': topic_id,
+        'export_control': True,
+        'state': 'active'}
+    pc = admin.post('/api/v1/components', data=data).data
+    pc_id = pc['component']['id']
+
+    t = admin.get('/api/v1/components/' + pc_id).data['component']
+    data = {'state': 'kikoolol'}
+    r = admin.put('/api/v1/components/' + pc_id,
+                  data=data,
+                  headers={'If-match': t['etag']})
+    assert r.status_code == 400
+    current_component = admin.get('/api/v1/components/' + pc_id)
+    assert current_component.status_code == 200
+    assert current_component.data['component']['state'] == 'active'
