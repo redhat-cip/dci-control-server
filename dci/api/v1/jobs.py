@@ -183,15 +183,18 @@ def _build_new_template(topic_id, remoteci, values):
     for ct in component_types:
         where_clause = sql.and_(models.COMPONENTS.c.type == ct,
                                 models.COMPONENTS.c.topic_id == topic_id,
-                                models.COMPONENTS.c.active == True)  # noqa
+                                models.COMPONENTS.c.active == True,
+                                models.COMPONENTS.c.export_control == True)  # noqa
         query = (sql.select([models.COMPONENTS.c.id])
                  .where(where_clause)
                  .order_by(sql.desc(models.COMPONENTS.c.created_at)))
-        cmpt_id = flask.g.db_conn.execute(query).fetchone()[0]
+        cmpt_id = flask.g.db_conn.execute(query).fetchone()
 
         if cmpt_id is None:
-            msg = 'Component of type "%s" not found.' % ct
+            msg = 'Component of type "%s" not found or not exported.' % ct
             raise dci_exc.DCIException(msg, status_code=412)
+
+        cmpt_id = cmpt_id[0]
 
         if cmpt_id in schedule_components_ids:
             msg = ('Jobdefinition "%s" malformed: type "%s" duplicated.' %
