@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a890539_01230c06",
+        "filename": "dci.spec",
+        "patchSetId": 2
+      },
+      "lineNbr": 139,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2016-12-05T16:02:36Z",
+      "side": 1,
+      "message": "I guess we need to hardcode the name of the service here (dci-worker) because the %{name} macro is related to dci-api (not 100% sure)",
+      "range": {
+        "startLine": 139,
+        "startChar": 76,
+        "endLine": 139,
+        "endChar": 83
+      },
+      "revId": "33203301d9c9f5d064798d27a1cb76f5496a4bc5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
