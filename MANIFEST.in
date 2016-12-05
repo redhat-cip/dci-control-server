@@ -11,3 +11,4 @@ include scripts/runtestserver.py
 include scripts/start_es.sh
 include dci/data/junittojson.xsl
 include dci/alembic/alembic.ini
+include dci/systemd/dci-worker.service
