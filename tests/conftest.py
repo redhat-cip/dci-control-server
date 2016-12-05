@@ -180,7 +180,8 @@ def create_components(user, topic_id, component_types):
     for ct in component_types:
         data = {'topic_id': topic_id,
                 'name': 'name-' + str(uuid.uuid4()),
-                'type': ct}
+                'type': ct,
+                'export_control': True}
         cmpt = user.post('/api/v1/components', data=data).data
         component_ids.append(cmpt['component']['id'])
     return component_ids
