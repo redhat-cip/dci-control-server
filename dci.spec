@@ -44,6 +44,8 @@ BuildRequires:  python-zmq
 BuildRequires:  python2-pytest
 BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
+BuildRequires:  systemd
+BuildRequires:  systemd-units
 Requires:       python-alembic
 Requires:       python-elasticsearch
 Requires:       python-flask
@@ -91,6 +93,8 @@ BuildRequires:  python3-swiftclient
 BuildRequires:  python3-voluptuous
 BuildRequires:  python3-werkzeug
 BuildRequires:  python3-zmq
+BuildRequires:  systemd
+BuildRequires:  systemd-units
 Requires:       python3-alembic
 Requires:       python3-elasticsearch
 Requires:       python3-flask
@@ -132,6 +136,7 @@ install -d %{buildroot}%{_sysconfdir}/dci-api
 mv %{buildroot}/%{python2_sitelib}/dci/settings.py %{buildroot}/%{_sysconfdir}/dci-api
 %{__ln_s} %{_sysconfdir}/dci-api/settings.py %{buildroot}/%{python2_sitelib}/dci/settings.py
 rm -rf %{buildroot}/%{python2_sitelib}/sample
+install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/%{name}.service
 %if 0%{?with_python3}
 %py3_install
 %endif
