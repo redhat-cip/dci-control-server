@@ -238,25 +238,6 @@ def test_delete_jobdefinition_not_found(admin):
     assert result.status_code == 404
 
 
-# Tests for jobdefinition and tests management
-def test_add_test_to_jobdefinitions_and_get(admin, test_id, topic_id):
-    # create a jobdefinition
-    data = {'name': 'pname', 'topic_id': topic_id}
-    pjd = admin.post('/api/v1/jobdefinitions', data=data).data
-    pjd_id = pjd['jobdefinition']['id']
-
-    # attach a test to jobdefinition
-    url = '/api/v1/jobdefinitions/%s/tests' % pjd_id
-    add_data = admin.post(url, data={'test_id': test_id}).data
-    assert add_data['jobdefinition_id'] == pjd_id
-    assert add_data['test_id'] == test_id
-
-    # get test from jobdefinition
-    test_from_jobdefinition = admin.get(url).data
-    assert test_from_jobdefinition['_meta']['count'] == 1
-    assert test_from_jobdefinition['tests'][0]['id'] == test_id
-
-
 def test_delete_test_from_jobdefinition(admin, test_id, topic_id):
     # create a jobdefinition
     data = {'name': 'pname', 'topic_id': topic_id}
@@ -278,3 +259,22 @@ def test_delete_test_from_jobdefinition(admin, test_id, topic_id):
     # verify test still exist on /tests
     c = admin.get('/api/v1/tests/%s' % test_id)
     assert c.status_code == 200
+
+
+# Tests for jobdefinition and tests management
+def test_add_test_to_jobdefinitions_and_get(admin, test_id, topic_id):
+    # create a jobdefinition
+    data = {'name': 'pname', 'topic_id': topic_id}
+    pjd = admin.post('/api/v1/jobdefinitions', data=data).data
+    pjd_id = pjd['jobdefinition']['id']
+
+    # attach a test to jobdefinition
+    url = '/api/v1/jobdefinitions/%s/tests' % pjd_id
+    add_data = admin.post(url, data={'test_id': test_id}).data
+    assert add_data['jobdefinition_id'] == pjd_id
+    assert add_data['test_id'] == test_id
+
+    # get test from jobdefinition
+    test_from_jobdefinition = admin.get(url).data
+    assert test_from_jobdefinition['_meta']['count'] == 1
+    assert test_from_jobdefinition['tests'][0]['id'] == test_id
