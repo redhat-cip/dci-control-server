@@ -16,6 +16,24 @@
       "revId": "822a6a9b6bf6cd710bb5cef7e42ba20da67b5d31",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a890539_61a130a9",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2016-12-05T14:55:49Z",
+      "side": 1,
+      "message": "For now we only have this binary flag to handle export control, the feeders set this flag to True.\n\nI agree with you but the way to handle export control is still under reflexion.",
+      "parentUuid": "5a890539_01f6acd7",
+      "revId": "822a6a9b6bf6cd710bb5cef7e42ba20da67b5d31",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
