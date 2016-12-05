@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a890539_01f6acd7",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2016-12-05T14:03:23Z",
+      "side": 1,
+      "message": "some partners are not subject to export control (U.S. based ones IIUC), I\u0027m not sure this test is sufficient to handle this case. Unless it\u0027s still subject to discussion ?",
+      "revId": "822a6a9b6bf6cd710bb5cef7e42ba20da67b5d31",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
