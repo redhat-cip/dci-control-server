@@ -302,7 +302,7 @@ def test_status_from_component_type(admin, topic_id, components_ids,
     status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
 
     assert len(status['jobs']) == 1
-    assert status['jobs'][0]['job_status'] == 'new'
+    assert status['jobs'][0]['job_status'] is None
     assert status['jobs'][0]['component_type'] == 'type_1'
     assert 'name-' in status['jobs'][0]['component_name']
 
