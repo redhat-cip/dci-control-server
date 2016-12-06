@@ -36,8 +36,9 @@ _JJC = models.JOIN_JOBS_COMPONENTS
 _C_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _JOBS_C_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBS)
 
-EMBED = {
-    'jobs_components': v1_utils.embed(_JJC)
+_VALID_EMBED = {
+    'jobs_components': v1_utils.embed(_JJC),
+    'files': v1_utils.embed(models.COMPONENT_FILES, many=True),
 }
 
 
@@ -98,19 +99,23 @@ def get_all_components(user, topic_id):
     """Get all components of a topic."""
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
+    embed = args['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
+                                 _VALID_EMBED)
+    q_bd.join(embed)
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _C_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _C_COLUMNS)
     q_bd.where.append(_TABLE.c.topic_id == topic_id)
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
 
     # Return only the component which have the export_control flag set to true
     #
     if not (auth.is_admin(user)):
-        rows = [row for row in rows if row.export_control]
+        rows = [row for row in rows if row['export_control']]
 
     return flask.jsonify({'components': rows, '_meta': {'count': len(rows)}})
 
@@ -124,7 +129,7 @@ def get_jobs(user, component_id, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
 
     q_bd = v1_utils.QueryBuilder(models.JOBS, args['offset'], args['limit'],
-                                 EMBED)
+                                 _VALID_EMBED)
     q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_C_COLUMNS)
 
     q_bd.join(['jobs_components'])
@@ -140,19 +145,20 @@ def get_jobs(user, component_id, team_id=None):
 @api.route('/components/<c_id>', methods=['GET'])
 @auth.requires_auth
 def get_component_by_id_or_name(user, c_id):
-    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    auth.check_export_control(user, component)
+    embed = schemas.args(flask.request.args.to_dict())['embed']
 
-    where_clause = sql.or_(_TABLE.c.id == c_id,
-                           _TABLE.c.name == c_id)
-    query = sql.select([_TABLE]).where(where_clause)
+    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
+    q_bd.join(embed)
 
-    component = flask.g.db_conn.execute(query).fetchone()
+    q_bd.where.append(sql.or_(_TABLE.c.id == c_id,
+                              _TABLE.c.name == c_id))
 
-    if component is None:
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
+    if len(rows) != 1:
         raise dci_exc.DCINotFound('Component', c_id)
-
-    v1_utils.verify_team_in_topic(user, component['topic_id'])
+    component = rows[0]
+    auth.check_export_control(user, component)
 
     res = flask.jsonify({'component': component})
     return res

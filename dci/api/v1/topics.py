@@ -34,6 +34,9 @@ from dci.db import models
 # associate column names with the corresponding SA Column object
 _TABLE = models.TOPICS
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_VALID_EMBED = {
+    'teams': v1_utils.embed(models.TEAMS, many=True),
+}
 
 
 @api.route('/topics', methods=['POST'])
@@ -68,15 +71,20 @@ def create_topics(user):
 @auth.requires_auth
 def get_topic_by_id_or_name(user, topic_id):
 
-    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
-    v1_utils.verify_team_in_topic(user, topic_id)
+    embed = schemas.args(flask.request.args.to_dict())['embed']
 
-    query = sql.select([_TABLE]).where(_TABLE.c.id == topic_id)
-    topic = flask.g.db_conn.execute(query).fetchone()
+    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
+    q_bd.join(embed)
 
-    if topic is None:
+    where_clause = sql.or_(_TABLE.c.id == topic_id, _TABLE.c.name == topic_id)
+    q_bd.where.append(where_clause)
+
+    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
+    if len(rows) != 1:
         raise dci_exc.DCINotFound('Topic', topic_id)
-
+    topic = rows[0]
+    v1_utils.verify_team_in_topic(user, topic['id'])
     return flask.jsonify({'topic': topic})
 
 
@@ -222,7 +230,6 @@ def get_jobs_status_from_components(user, topic_id, type_id):
     q_bd.where.append(models.TOPICS.c.id == topic_id)
     q_bd.where.append(models.REMOTECIS.c.active == True)  # noqa
     rcs = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rcs = [v1_utils.group_embedded_resources(embed, rc) for rc in rcs]
 
     to_return = []
     for rc in rcs:

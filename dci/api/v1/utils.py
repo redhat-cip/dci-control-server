@@ -226,9 +226,8 @@ class QueryBuilder(object):
                 for column in entity._columns.values():
                     if column.name not in columns:
                         select.append(column)
-            else:
-                if entity.name not in columns:
-                    select.append(entity)
+            elif entity.name not in columns:
+                select.append(entity)
         self.select = select
 
     def join(self, embed_list):
@@ -247,15 +246,25 @@ class QueryBuilder(object):
             """
             result = []
             columns = embed.model.c
+            if not isinstance(embed.model, sa_Table):
+                columns = embed.model.left.c
             for c_name in columns.keys():
                 # Condition to avoid conflict when fetching the data because by
                 # default there is the key 'prefix_id' when prefix is the table
                 # name to join. This is also avoided in the case of a many join
                 # as the id is not in
                 if c_name != 'id' or embed.many:
-                    prefixed_column = '%s_%s' % (prefix, c_name)
+                    # join() already to the transformation
+                    prefixed_column = c_name
+                    if not c_name.startswith(prefix):
+                        prefixed_column = '%s_%s' % (prefix, c_name)
                     result.append(columns[c_name].label(prefixed_column))
             return result
+
+        for i in embed_list:
+            root = i.split('.')[0]
+            if root not in embed_list:
+                embed_list.append(root)
 
         for embed in sorted(embed_list):
             if embed not in self.valid_embed:
@@ -270,18 +279,22 @@ class QueryBuilder(object):
             # order is important for the SQL join
             self._join.append(e.model)
 
-    def parse_rows(self, embed_list, rows):
-        aggregates = dict.fromkeys(
-            [e for e in embed_list if self.valid_embed[e].many],
-            collections.defaultdict(list)
-        )
+    def dedup_rows(self, embed_list, rows):
+        embed_list.sort()
+        aggregates = [
+            (e, collections.defaultdict(list), e.split('.'))
+            for e in embed_list
+            if self.valid_embed[e].many]
         parsed_rows = collections.OrderedDict()
 
         for row in rows:
             row = group_embedded_resources(embed_list, row)
-            for aggr, aggr_dict in six.iteritems(aggregates):
+            for aggr, aggr_dict, aggr_splitted in aggregates:
                 try:
-                    obj = row.pop(aggr)
+                    base_element = row
+                    for i in aggr_splitted[:-1]:
+                        base_element = base_element[i]
+                    obj = base_element.pop(aggr_splitted[-1])
                     if any(v is not None for v in obj.values()):
                         aggr_dict[row['id']].append(obj)
                 except KeyError:
@@ -289,19 +302,54 @@ class QueryBuilder(object):
             parsed_rows[row['id']] = row
 
         for row_id, row in six.iteritems(parsed_rows):
-            for aggr, aggr_dict in six.iteritems(aggregates):
-                row[aggr] = aggr_dict[row_id]
+            for aggr, aggr_dict, aggr_splitted in aggregates:
+                base_element = row
+                for i in aggr_splitted[:-1]:
+                    base_element = base_element[i]
+                base_element[aggr_splitted[-1]] = aggr_dict[row_id]
 
         return list(parsed_rows.values())
+
+    def _get_ids(self):
+        rows = flask.g.db_conn.execute(self.build_list_ids()).fetchall()
+        return [i['id'] for i in rows]
 
     def build(self):
         query = sql.select(self.select)
 
-        for where in self.where:
-            query = query.where(where)
+        # One record information may be splitted on more than just one SQL
+        # row. These rows will be ultimately merged in one line by
+        # dedup_rows().
+        #
+        # E.g:
+        #
+        #  | id   | embeded_field
+        #  | id_1 |         data1
+        #  | id_1 |         data2
+        #
+        # If we use a limit operator here, we may end up with a truncated
+        # record. This is the reason why we do a first iteration to only
+        # identify the IDs. The second iterations is used to actually collect
+        # the full record data.
+        ids = self._get_ids()
+        query = query.where(self.table.c.id.in_(ids))
 
         for sort in self.sort:
             query = query.order_by(sort)
+
+        if self._join:
+            query_from = self.table
+            for join in self._join:
+                query_from = query_from.outerjoin(join)
+            query = query.select_from(query_from)
+
+        return query
+
+    def build_list_ids(self):
+        query = sql.select([self.table.c.id])
+
+        for where in self.where:
+            query = query.where(where)
 
         if self.limit:
             query = query.limit(self.limit)
@@ -318,7 +366,7 @@ class QueryBuilder(object):
         return query
 
     def build_nb_row(self):
-        query = sql.select([func.count(self.table.c.id)])
+        query = sql.select([func.count(func.distinct(self.table.c.id))])
         for where in self.where:
             query = query.where(where)
 
