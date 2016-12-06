@@ -297,12 +297,13 @@ def test_delete_team_from_topic_as_user(admin, user):
     assert status_code == 401
 
 
-def test_status_from_component_type(admin, topic_id, components_ids,
-                                    remoteci_id, job_id):
+def test_status_from_component_type_last_component(admin, topic_id,
+                                                   components_ids,
+                                                   remoteci_id, job_id):
     status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
 
     assert len(status['jobs']) == 1
-    assert status['jobs'][0]['job_status'] == 'new'
+    assert status['jobs'][0]['job_status'] is None
     assert status['jobs'][0]['component_type'] == 'type_1'
     assert 'name-' in status['jobs'][0]['component_name']
 
@@ -324,3 +325,24 @@ def test_status_from_component_type(admin, topic_id, components_ids,
     assert status['jobs'][0]['job_status'] is None
     assert status['jobs'][0]['component_type'] == 'type_1'
     assert status['jobs'][0]['component_name'] == 'newversion'
+
+def test_status_from_component_type_get_status(admin, topic_id, components_ids,
+                                               remoteci_id, job_id):
+    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
+
+    assert len(status['jobs']) == 1
+    assert status['jobs'][0]['job_status'] is None
+    assert status['jobs'][0]['component_type'] == 'type_1'
+    assert 'name-' in status['jobs'][0]['component_name']
+
+    data = {'job_id': job_id, 'status': 'running', 'comment': 'kikoolol'}
+    js = admin.post('/api/v1/jobstates', data=data).data
+
+    assert len(status['jobs']) == 1
+    assert status['jobs'][0]['job_status'] is None
+
+    data = {'job_id': job_id, 'status': 'success', 'comment': 'kikoolol'}
+    js = admin.post('/api/v1/jobstates', data=data).data
+
+    assert len(status['jobs']) == 1
+    assert status['jobs'][0]['job_status'] == 'success'
