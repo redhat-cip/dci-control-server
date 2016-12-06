@@ -201,6 +201,14 @@ def get_jobs_from_components(user, topic_id, component_id):
            methods=['GET'])
 @auth.requires_auth
 def get_jobs_status_from_components(user, topic_id, type_id):
+
+    # List of job meaningfull job status for global overview
+    #
+    # ie. If current job status is running, we should retrieve status
+    # from prior job.
+    valid_status = ['failure', 'product-failure', 'deployment-failure',
+                    'success']
+
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
     args = schemas.args(flask.request.args.to_dict())
@@ -227,7 +235,8 @@ def get_jobs_status_from_components(user, topic_id, type_id):
             models.JOIN_JOBS_COMPONENTS.c.job_id == models.JOBS.c.id,
             models.JOIN_JOBS_COMPONENTS.c.component_id == cpt_id,
         ))]).where(
-        models.JOBS.c.remoteci_id == models.REMOTECIS.c.id).order_by(
+        models.JOBS.c.remoteci_id == models.REMOTECIS.c.id,
+        models.JOBS.c.status.in_(valid_status)).order_by(
             models.JOBS.c.created_at.desc()).limit(1).alias('job')
     q_bd.select = [
         models.REMOTECIS.c.id.label('remoteci_id'),
