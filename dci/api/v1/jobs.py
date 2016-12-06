@@ -43,17 +43,24 @@ _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
 _TABLE = models.JOBS
 # associate column names with the corresponding SA Column object
 _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+jobdefinition_tests = models.TESTS.alias('jobdefinition.tests')
+remoteci_tests = models.TESTS.alias('remoteci.tests')
 _VALID_EMBED = {
-    'file': v1_utils.embed(models.FILES),
+    'files': v1_utils.embed(models.FILES, many=True),
     'jobdefinition': v1_utils.embed(models.JOBDEFINITIONS),
     'jobdefinition.tests': v1_utils.embed(
-        models.TESTS.join(
+        jobdefinition_tests.join(
             models.JOIN_JOBDEFINITIONS_TESTS,
-            models.TESTS.c.id == models.JOIN_JOBDEFINITIONS_TESTS.c.test_id
+            jobdefinition_tests.c.id ==
+            models.JOIN_JOBDEFINITIONS_TESTS.c.test_id
         ), many=True),
     'team': v1_utils.embed(models.TEAMS),
     'remoteci': v1_utils.embed(models.REMOTECIS),
-    'remoteci.tests': v1_utils.embed(models.REMOTECIS, many=True),
+    'remoteci.tests': v1_utils.embed(
+        remoteci_tests.join(
+            models.JOIN_REMOTECIS_TESTS,
+            remoteci_tests.c.id == models.JOIN_REMOTECIS_TESTS.c.test_id
+        ), many=True),
     'metas': v1_utils.embed(models.METAS, many=True),
     'components': v1_utils.embed(
         models.COMPONENTS.join(

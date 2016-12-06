@@ -362,6 +362,38 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
         assert cur_set == set(components_ids)
 
 
+def test_get_all_jobs_with_dup_embed(admin, jobdefinition_id, team_id,
+                                     remoteci_id, components_ids):
+    test_jd = admin.post('/api/v1/tests',
+                         data={'name': 'test_jobdefinition',
+                               'team_id': team_id}).data
+    test_jd_id = test_jd['test']['id']
+    test_rci = admin.post('/api/v1/tests',
+                          data={'name': 'test_remoteci',
+                                'team_id': team_id}).data
+    test_rci_id = test_rci['test']['id']
+    admin.post('/api/v1/jobdefinitions/%s/tests' % jobdefinition_id,
+               data={'test_id': test_jd_id})
+    admin.post('/api/v1/remotecis/%s/tests' % remoteci_id,
+               data={'test_id': test_rci_id})
+    # create 2 jobs and check meta data count
+    data = {'jobdefinition_id': jobdefinition_id,
+            'team_id': team_id,
+            'remoteci_id': remoteci_id,
+            'components': components_ids}
+
+    admin.post('/api/v1/jobs', data=data)
+    query_embed = (('/api/v1/jobs?embed='
+                    'metas,jobdefinition,jobdefinition.tests,components,'
+                    'files,jobdefinition,team,remoteci,remoteci.tests'))
+    jobs = admin.get(query_embed).data
+    assert len(jobs['jobs']) == 1
+    assert len(jobs['jobs'][0]['components']) == 3
+    assert len(jobs['jobs'][0]['jobdefinition']['tests']) == 1
+    assert jobs['jobs'][0]['jobdefinition']['tests'][0]['id'] == test_jd_id
+    assert jobs['jobs'][0]['remoteci']['tests'][0]['id'] == test_rci_id
+
+
 def test_get_all_jobs_with_embed_and_limit(admin, jobdefinition_id, team_id,
                                            remoteci_id, components_ids):
     # create 2 jobs and check meta data count

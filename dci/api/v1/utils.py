@@ -119,10 +119,9 @@ def group_embedded_resources(items_to_embed, row):
 
     # output of the function
     res = {}
-    items_to_embed.sort()
-    for item_to_embed in items_to_embed:
+    for item_to_embed in sorted(set(items_to_embed)):
         if '.' in item_to_embed:
-            # if a nested element appears i.e: jobdefinition.test
+            # if a nested element appears i.e: jobdefinition.tests
             container, nested = item_to_embed.split('.')
             # run nestify on the container element with the nested key
             nested_values, container_values = nestify(nested, res[container])
@@ -266,7 +265,7 @@ class QueryBuilder(object):
             if root not in embed_list:
                 embed_list.append(root)
 
-        for embed in sorted(embed_list):
+        for embed in sorted(set(embed_list)):
             if embed not in self.valid_embed:
                 raise dci_exc.DCIException(
                     'Invalid embed list: "%s"' % embed_list,
@@ -290,15 +289,16 @@ class QueryBuilder(object):
         for row in rows:
             row = group_embedded_resources(embed_list, row)
             for aggr, aggr_dict, aggr_splitted in aggregates:
-                try:
-                    base_element = row
-                    for i in aggr_splitted[:-1]:
-                        base_element = base_element[i]
-                    obj = base_element.pop(aggr_splitted[-1])
-                    if any(v is not None for v in obj.values()):
-                        aggr_dict[row['id']].append(obj)
-                except KeyError:
-                    pass
+                base_element = row
+                for i in aggr_splitted[:-1]:
+                    base_element = base_element[i]
+                obj = base_element.pop(aggr_splitted[-1])
+                if not obj.get('id'):
+                    # skip the the object if ID is NULL
+                    continue
+                cur_ids = [i['id'] for i in aggr_dict[row['id']]]
+                if obj['id'] not in cur_ids:
+                    aggr_dict[row['id']].append(obj)
             parsed_rows[row['id']] = row
 
         for row_id, row in six.iteritems(parsed_rows):
@@ -313,6 +313,19 @@ class QueryBuilder(object):
     def _get_ids(self):
         rows = flask.g.db_conn.execute(self.build_list_ids()).fetchall()
         return [i['id'] for i in rows]
+
+    def prepare_join(self, query):
+        if self._join:
+            query_from = self.table
+            seen = []
+            for join in self._join:
+                name = join.left.name if hasattr(join, 'left') else join
+                if name in seen:
+                    continue
+                query_from = query_from.outerjoin(join)
+                seen.append(name)
+            query = query.select_from(query_from)
+        return query
 
     def build(self):
         query = sql.select(self.select)
@@ -337,11 +350,7 @@ class QueryBuilder(object):
         for sort in self.sort:
             query = query.order_by(sort)
 
-        if self._join:
-            query_from = self.table
-            for join in self._join:
-                query_from = query_from.outerjoin(join)
-            query = query.select_from(query_from)
+        query = self.prepare_join(query)
 
         return query
 
@@ -357,11 +366,7 @@ class QueryBuilder(object):
         if self.offset:
             query = query.offset(self.offset)
 
-        if self._join:
-            query_from = self.table
-            for join in self._join:
-                query_from = query_from.outerjoin(join)
-            query = query.select_from(query_from)
+        query = self.prepare_join(query)
 
         return query
 
@@ -370,12 +375,7 @@ class QueryBuilder(object):
         for where in self.where:
             query = query.where(where)
 
-        if self._join:
-            query_join = self.table
-            for join in self._join:
-                query_join = query_join.outerjoin(join)
-
-            query = query.select_from(query_join)
+        query = self.prepare_join(query)
 
         return query
 
