@@ -34,6 +34,16 @@ from dci.db import models
 
 _TABLE = models.TESTS
 # associate column names with the corresponding SA Column object
+topics = models.TOPICS
+_VALID_EMBED = {
+    'topics': v1_utils.embed(
+        select=[topics],
+        join=_TABLE.join(
+            models.JOIN_TOPICS_TESTS.join(topics,
+                                          topics.c.id == models.JOIN_TOPICS_TESTS.c.topic_id),
+            _TABLE.c.id == models.JOIN_TOPICS_TESTS.c.test_id
+        ))
+}
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 

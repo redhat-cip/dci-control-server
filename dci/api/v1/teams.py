@@ -74,8 +74,11 @@ def create_teams(user):
 @auth.requires_auth
 def get_all_teams(user):
     args = schemas.args(flask.request.args.to_dict())
+    embed = schemas.args(flask.request.args.to_dict())['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
+                                 embed=_VALID_EMBED)
+    q_bd.join(embed)
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
@@ -85,6 +88,7 @@ def get_all_teams(user):
 
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
 
     return flask.jsonify({'teams': rows, '_meta': {'count': nb_row}})
 

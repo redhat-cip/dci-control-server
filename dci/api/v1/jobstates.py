@@ -18,6 +18,7 @@ import datetime
 
 import flask
 from flask import json
+from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
@@ -29,9 +30,34 @@ from dci.db import models
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.JOBSTATES
-_VALID_EMBED = {'files': v1_utils.embed(models.FILES, many=True),
-                'job': v1_utils.embed(models.JOBS),
-                'team': v1_utils.embed(models.TEAMS)}
+
+team = models.TEAMS.alias('team')
+js0 = models.JOBSTATES.alias('js0')
+js1 = models.JOBSTATES.alias('js1')
+job = models.JOBS.alias('job')
+_VALID_EMBED = {
+    'files': v1_utils.embed(
+        select=[models.FILES],
+        join=js0.join(
+            models.FILES,
+            js0.c.id == models.FILES.c.jobstate_id,
+            isouter=True),
+        where=js0.c.id == _TABLE.c.id,
+        many=True),
+    'job': v1_utils.embed(
+        select=[job],
+        join=js1.join(
+            job,
+            sql.expression.or_(
+                js1.c.job_id == job.c.id,
+                job.c.id == None),
+            isouter=True),
+        where=js1.c.id == _TABLE.c.id,
+        sort=job.c.created_at),
+    'team': v1_utils.embed(
+        select=[team],
+        where=_TABLE.c.team_id == team.c.id,
+    )}
 _JS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE, _VALID_EMBED)
 
 

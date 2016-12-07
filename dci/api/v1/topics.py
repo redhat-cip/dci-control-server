@@ -24,6 +24,7 @@ from sqlalchemy import sql
 from dci.api.v1 import api
 from dci.api.v1 import components
 from dci.api.v1 import jobdefinitions
+from dci.api.v1 import tests
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci.common import exceptions as dci_exc
@@ -230,6 +231,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
     q_bd.where.append(models.TOPICS.c.id == topic_id)
     q_bd.where.append(models.REMOTECIS.c.active == True)  # noqa
     rcs = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rcs = q_bd.dedup_rows(embed, rcs)
 
     to_return = []
     for rc in rcs:
@@ -295,24 +297,25 @@ def get_all_jobdefinitions_by_topic(user, topic_id):
 @auth.requires_auth
 def get_all_tests(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
+    embed = args['embed']
     if not(auth.is_admin(user)):
         v1_utils.verify_team_in_topic(user, topic_id)
     v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
     TABLE = models.TESTS
     T_COLUMNS = v1_utils.get_columns_name_with_objects(TABLE)
-    EMBED = {
-        'topic_tests': v1_utils.embed(models.JOIN_TOPICS_TESTS)
-    }
 
-    q_bd = v1_utils.QueryBuilder(TABLE, args['offset'], args['limit'], EMBED)
-    q_bd.join(['topic_tests'])
+    q_bd = v1_utils.QueryBuilder(TABLE, args['offset'], args['limit'],
+                                 tests._VALID_EMBED)
+    q_bd.join(embed)
+    q_bd.join(['tests'])
     q_bd.sort = v1_utils.sort_query(args['sort'], T_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], TABLE, T_COLUMNS)
 
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
 
     res = flask.jsonify({'tests': rows,
                          '_meta': {'count': nb_row}})
