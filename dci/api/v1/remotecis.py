@@ -24,13 +24,13 @@ from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
+import dci.db.embeds
 from dci.db import models
-
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.REMOTECIS
+_VALID_EMBED = dci.db.embeds.remotecis()
 _R_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_VALID_EMBED = {'team': v1_utils.embed(models.TEAMS)}
 
 
 @api.route('/remotecis', methods=['POST'])
@@ -204,7 +204,7 @@ def get_remoteci_data_json(user, r_id):
     if row is None:
         raise dci_exc.DCINotFound('RemoteCI', r_id)
 
-    return row['data']
+    return row['remotecis_data']
 
 
 @api.route('/remotecis/<r_id>/tests', methods=['POST'])

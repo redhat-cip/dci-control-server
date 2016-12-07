@@ -28,11 +28,13 @@ import collections
 import os
 
 
-Embed = collections.namedtuple('Embed', ['model', 'many'])
+Embed = collections.namedtuple('Embed', [
+    'many', 'select', 'where', 'sort', 'join'])
 
 
-def embed(model, many=False):
-    return Embed(model, many)
+def embed(many=False, select=None, where=None,
+          sort=None, join=None):
+    return Embed(many, select, where, sort, join)
 
 
 def verify_existence_and_get(id, table, get_id=False):
@@ -56,22 +58,24 @@ def verify_existence_and_get(id, table, get_id=False):
     return result
 
 
+def user_topic_ids(user):
+    query = (
+        sql.select([
+            models.JOINS_TOPICS_TEAMS.c.topic_id,
+        ]).select_from(models.JOINS_TOPICS_TEAMS)
+        .where(models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id']))
+
+    rows = flask.g.db_conn.execute(query).fetchall()
+    return [row[0] for row in rows]
+
+
 def verify_team_in_topic(user, topic_id):
     """Verify that the user's team does belongs to the given topic. If
     the user is an admin then it belongs to all topics.
     """
-
     if auth.is_admin(user):
         return
-    team_id = user['team_id']
-    belongs_to_topic_q = (
-        sql.select([models.JOINS_TOPICS_TEAMS.c.team_id]).where(
-            sql.expression.and_(
-                models.JOINS_TOPICS_TEAMS.c.team_id == team_id,  # noqa
-                models.JOINS_TOPICS_TEAMS.c.topic_id == topic_id)  # noqa
-        ))
-    belongs_to_topic = flask.g.db_conn.execute(belongs_to_topic_q).fetchone()
-    if not belongs_to_topic:
+    if topic_id not in user_topic_ids(user):
         raise dci_exc.DCIException('User team does not belongs to topic %s.'
                                    % topic_id, status_code=412)
 
@@ -102,14 +106,14 @@ def group_embedded_resources(items_to_embed, row):
 
         for key, value in row.items():
             if key.startswith(underscore_key) or key.startswith(point_key):
-                # if the element is a nested one, add it to result_tmp with
-                # the truncated key
                 key = key[len(item_to_embed) + 1:]
                 result_tmp[key] = value
             else:
                 # if not, store the value to replace the row in order to
                 # avoid processing duplicate values
                 row_tmp[key] = value
+        if not result_tmp.get('id'):
+            result_tmp = {}
         return result_tmp, row_tmp
 
     if row is None:
@@ -119,6 +123,9 @@ def group_embedded_resources(items_to_embed, row):
 
     # output of the function
     res = {}
+    # items_to_embed = list(set(items_to_embed))
+    # items_to_embed.sort(key=lambda x: len(x.split('.')))
+    # for item_to_embed in items_to_embed:
     for item_to_embed in sorted(set(items_to_embed)):
         if '.' in item_to_embed:
             # if a nested element appears i.e: jobdefinition.tests
@@ -143,11 +150,10 @@ def get_columns_name_with_objects(table, embed={}):
         column.name: getattr(table.c, column.name)
         for column in table.columns
     }
-    for e, v in embed.items():
-        new_columns = {
-            '.'.join([e, column.name]): getattr(v.model.c, column.name)
-            for column in v.model.columns}
-        columns.update(new_columns)
+    for v in embed.values():
+        for t in v.select:
+            for i in t.c:
+                columns[str(i)] = i
     return columns
 
 
@@ -212,9 +218,12 @@ class QueryBuilder(object):
         self.table = table
         self.offset = offset
         self.limit = limit
+        self._sort = []
         self.sort = []
         self.where = []
         self.select = [table]
+        self.extra_tables = []
+        self.extra_where = []
         self._join = []
         self.valid_embed = embed or {}
 
@@ -237,31 +246,6 @@ class QueryBuilder(object):
         and joins
         """
 
-        def flatten_columns(prefix, embed):
-            """This function provides different labels for column names
-            when doing joins.
-            i.e: we want to join table A to B but both have a name field,
-            when retrieving the data and casting them to a dict, the name
-            field from A will be erased by the one in B. To avoid that
-            we provide a custom label for B.name which will be b_name.
-            """
-            result = []
-            columns = embed.model.c
-            if not isinstance(embed.model, sa_Table):
-                columns = embed.model.left.c
-            for c_name in columns.keys():
-                # Condition to avoid conflict when fetching the data because by
-                # default there is the key 'prefix_id' when prefix is the table
-                # name to join. This is also avoided in the case of a many join
-                # as the id is not in
-                if c_name != 'id' or embed.many:
-                    # join() already to the transformation
-                    prefixed_column = c_name
-                    if not c_name.startswith(prefix):
-                        prefixed_column = '%s_%s' % (prefix, c_name)
-                    result.append(columns[c_name].label(prefixed_column))
-            return result
-
         for i in embed_list:
             root = i.split('.')[0]
             if root not in embed_list:
@@ -274,21 +258,39 @@ class QueryBuilder(object):
                     payload={'Valid elements': list(self.valid_embed)}
                 )
             e = self.valid_embed[embed]
-            # flatten all tables for the SQL select
-            self.select.extend(flatten_columns(embed, e))
-
+            if not e:
+                continue
             # order is important for the SQL join
-            self._join.append(e.model)
+            if e.join is not None:
+                self._join.append(e.join)
+            if e.where is not None:
+                self.extra_where.append(e.where)
+            if e.sort is not None:
+                self._sort.append(e.sort)
+            if e.select is not None:
+                self.select += e.select
 
     def dedup_rows(self, embed_list, rows):
+        # the DB returns a list of rows with all the information,
+        # sometime, we will get several raws for on item. e.g: a
+        # component has 3 associated jobs
+        # This function, will loop over all the rows and generate
+        # a Python structure.
         embed_list.sort()
         aggregates = [
             (e, collections.defaultdict(list), e.split('.'))
             for e in embed_list
-            if self.valid_embed[e].many]
+            if self.valid_embed[e] and self.valid_embed[e].many]
         parsed_rows = collections.OrderedDict()
 
         for row in rows:
+            t_row = collections.OrderedDict()
+            t_prefix = self.table.name + '_'
+            for i, v in row.items():
+                if i.startswith(t_prefix):
+                    i = i[len(t_prefix):]
+                t_row[i] = v
+            row = t_row
             row = group_embedded_resources(embed_list, row)
             for aggr, aggr_dict, aggr_splitted in aggregates:
                 base_element = row
@@ -301,37 +303,34 @@ class QueryBuilder(object):
                 cur_ids = [i['id'] for i in aggr_dict[row['id']]]
                 if obj['id'] not in cur_ids:
                     aggr_dict[row['id']].append(obj)
-            parsed_rows[row['id']] = row
+            if row['id'] not in parsed_rows:
+                parsed_rows[row['id']] = row
 
         for row_id, row in six.iteritems(parsed_rows):
             for aggr, aggr_dict, aggr_splitted in aggregates:
                 base_element = row
                 for i in aggr_splitted[:-1]:
                     base_element = base_element[i]
-                base_element[aggr_splitted[-1]] = aggr_dict[row_id]
+                if base_element:
+                    base_element[aggr_splitted[-1]] = aggr_dict[row_id]
 
         return list(parsed_rows.values())
 
     def _get_ids(self):
         rows = flask.g.db_conn.execute(self.build_list_ids()).fetchall()
-        return [i['id'] for i in rows]
+        return [i[0] for i in rows]
 
     def prepare_join(self, query):
-        if self._join:
-            query_from = self.table
-            seen = []
-            for join in self._join:
-                name = join.left.name if hasattr(join, 'left') else join
-                if name in seen:
-                    continue
-                query_from = query_from.outerjoin(join)
-                seen.append(name)
-            query = query.select_from(query_from)
+        for join in self._join:
+            query = query.select_from(join)
+        for i in self.extra_tables:
+            query.append_from(i)
+        if self.extra_where:
+            query = query.where(sql.and_(*self.extra_where))
         return query
 
     def build(self):
-        query = sql.select(self.select)
-
+        query = sql.select(self.select, use_labels=True)
         # One record information may be splitted on more than just one SQL
         # row. These rows will be ultimately merged in one line by
         # dedup_rows().
@@ -347,17 +346,19 @@ class QueryBuilder(object):
         # identify the IDs. The second iterations is used to actually collect
         # the full record data.
         ids = self._get_ids()
-        query = query.where(self.table.c.id.in_(ids))
+        self.extra_where.append(self.table.c.id.in_(ids))
 
-        for sort in self.sort:
+        for sort in self._sort + self.sort:
             query = query.order_by(sort)
 
         query = self.prepare_join(query)
-
         return query
 
     def build_list_ids(self):
-        query = sql.select([self.table.c.id])
+        # If we want the WHERE to work, we need to have its columns in the SELECT
+        search_columns = [s.element if hasattr(s, 'element') else s
+                          for s in self.sort]
+        query = sql.select([func.distinct(self.table.c.id)] + search_columns)
 
         for where in self.where:
             query = query.where(where)
@@ -372,16 +373,17 @@ class QueryBuilder(object):
             query = query.order_by(sort)
 
         query = self.prepare_join(query)
-
         return query
 
     def build_nb_row(self):
-        query = sql.select([func.count(func.distinct(self.table.c.id))])
+        query = sql.select([
+            func.count(
+                func.distinct(self.table.c.id))]).select_from(self.table)
+
         for where in self.where:
             query = query.where(where)
 
         query = self.prepare_join(query)
-
         return query
 
 
