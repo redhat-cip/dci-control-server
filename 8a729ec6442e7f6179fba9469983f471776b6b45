@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a890539_8ae8f17d",
+        "filename": "tests/api/v1/test_topics.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 302,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-12-07T16:21:50Z",
+      "side": 1,
+      "message": "Could you please add a test where the job_status is one from the accepted list.",
+      "revId": "8a729ec6442e7f6179fba9469983f471776b6b45",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
