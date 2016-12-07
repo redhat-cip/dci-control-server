@@ -80,6 +80,96 @@ def test_get_all_remotecis_with_where(admin, team_id):
     assert db_r_id == pr_id
 
 
+def test_get_all_remotecis_with_last_job(admin, team_id, remoteci_id,
+                                         components_ids, topic_id):
+
+    data = {'name': 'idle', 'team_id': team_id}
+    idle_remoteci = admin.post('/api/v1/remotecis', data=data).data
+    admin.post('/api/v1/topics/%s/teams' % topic_id,
+               data={'team_id': team_id})
+    data = {'name': 'foo', 'topic_id': topic_id,
+            'component_types': ['type_1', 'type_2', 'type_3']}
+    admin.post('/api/v1/jobdefinitions', data=data).data
+    remotecis = admin.get((
+        '/api/v1/remotecis?embed='
+        'team,'
+        'last_job,'
+        'last_job.components,'
+        'current_job,'
+        'current_job.components')).data
+    assert len(remotecis['remotecis']) == 2
+    assert 'id' not in remotecis['remotecis'][0]['current_job']
+    assert 'id' not in remotecis['remotecis'][0]['last_job']
+    assert 'id' not in remotecis['remotecis'][1]['current_job']
+    assert 'id' not in remotecis['remotecis'][1]['last_job']
+
+    admin.post('/api/v1/jobs/schedule',
+               data={'remoteci_id': remoteci_id,
+                     'topic_id': topic_id})
+    remotecis = admin.get((
+        '/api/v1/remotecis?embed='
+        'team,'
+        'last_job,'
+        'last_job.components,'
+        'current_job,'
+        'current_job.components')).data
+    assert len(remotecis['remotecis']) == 2
+    assert 'id' in remotecis['remotecis'][0]['current_job']
+    assert len(remotecis['remotecis'][0]['current_job']['components']) == 3
+    assert 'id' not in remotecis['remotecis'][0]['last_job']
+    assert 'id' not in remotecis['remotecis'][1]['current_job']
+    assert 'id' not in remotecis['remotecis'][1]['last_job']
+
+    admin.post('/api/v1/jobs/schedule',
+               data={'remoteci_id': remoteci_id,
+                     'topic_id': topic_id})
+    remotecis = admin.get((
+        '/api/v1/remotecis?embed='
+        'team,'
+        'last_job,'
+        'last_job.components,'
+        'current_job,'
+        'current_job.components')).data
+    assert 'id' in remotecis['remotecis'][0]['current_job']
+    assert 'id' in remotecis['remotecis'][0]['last_job']
+    assert 'id' not in remotecis['remotecis'][1]['current_job']
+    assert 'id' not in remotecis['remotecis'][1]['last_job']
+
+    admin.post('/api/v1/jobs/schedule',
+               data={'remoteci_id': idle_remoteci['remoteci']['id'],
+                     'topic_id': topic_id})
+    remotecis = admin.get((
+        '/api/v1/remotecis?embed='
+        'team,'
+        'last_job,'
+        'last_job.components,'
+        'current_job,'
+        'current_job.components')).data
+    assert 'id' in remotecis['remotecis'][0]['current_job']
+    assert 'id' in remotecis['remotecis'][0]['last_job']
+    assert 'id' in remotecis['remotecis'][1]['current_job']
+    assert 'id' not in remotecis['remotecis'][1]['last_job']
+
+    admin.post('/api/v1/jobs/schedule',
+               data={'remoteci_id': idle_remoteci['remoteci']['id'],
+                     'topic_id': topic_id})
+    remotecis = admin.get((
+        '/api/v1/remotecis?embed='
+        'team,'
+        'last_job,'
+        'last_job.components,'
+        'current_job,'
+        'current_job.components')).data
+    assert 'id' in remotecis['remotecis'][0]['current_job']
+    assert 'id' in remotecis['remotecis'][0]['last_job']
+    assert 'id' in remotecis['remotecis'][1]['current_job']
+    assert 'id' in remotecis['remotecis'][1]['last_job']
+
+    assert len(remotecis['remotecis'][0]['last_job']['components']) == 3
+    assert len(remotecis['remotecis'][1]['current_job']['components']) == 3
+    assert len(remotecis['remotecis'][1]['last_job']['components']) == 3
+
+
 def test_where_invalid(admin):
     err = admin.get('/api/v1/remotecis?where=id')
 
