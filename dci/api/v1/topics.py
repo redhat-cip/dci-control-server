@@ -230,6 +230,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
     q_bd.where.append(models.TOPICS.c.id == topic_id)
     q_bd.where.append(models.REMOTECIS.c.active == True)  # noqa
     rcs = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rcs = q_bd.dedup_rows(embed, rcs)
 
     to_return = []
     for rc in rcs:

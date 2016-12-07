@@ -34,12 +34,38 @@ from dci import dci_config
 
 
 _TABLE = models.FILES
+team = models.TEAMS.alias('team')
+
 # associate column names with the corresponding SA Column object
 _FILES_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+jobstate = models.JOBSTATES.alias('jobstate')
+jobstate_t = models.JOBSTATES.alias('jobstate_t')
+jobstate_job = models.JOBS.alias('jobstate.job')
+job = models.JOBS.alias('job')
+f0 = models.FILES.alias('f0')
+f1 = models.FILES.alias('f1')
+f2 = models.FILES.alias('f2')
 _VALID_EMBED = {
-    'jobstate': v1_utils.embed(models.JOBSTATES),
-    'jobstate.job': v1_utils.embed(models.JOBS),
-    'team': v1_utils.embed(models.TEAMS)
+    'jobstate': v1_utils.embed(
+        select=[jobstate],
+        join=f0.join(
+            jobstate,
+            sql.expression.or_(f0.c.jobstate_id == jobstate.c.id, f0.c.jobstate_id == None))),
+    'jobstate.job': v1_utils.embed(
+        select=[jobstate_job],
+        join=jobstate_t.join(
+            jobstate_job,
+            sql.expression.or_(jobstate_t.c.job_id == jobstate_job.c.id, jobstate_job.c.id == None)),
+        where=jobstate.c.id == jobstate_t.c.id),
+    'job': v1_utils.embed(
+        select=[job],
+        join=f1.join(
+            job,
+            sql.expression.or_(job.c.id == f1.c.job_id, job.c.id == None))),
+    'team': v1_utils.embed(
+        select=[team],
+        where=_TABLE.c.team_id == team.c.id
+    )
 }
 
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
