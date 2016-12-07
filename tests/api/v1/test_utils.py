@@ -21,7 +21,7 @@ import pytest
 import sqlalchemy as sa
 
 # Use a fake model for testing
-stub = utils.embed(sa.Table('stubs', sa.MetaData()))
+stub = utils.embed(join=sa.Table('stubs', sa.MetaData()))
 
 
 def test_verify_embed_list():
@@ -31,7 +31,7 @@ def test_verify_embed_list():
     qb = utils.QueryBuilder(None, embed=valid_embed_list)
     qb.join(embed_list)
 
-    assert qb._join == [stub.model] * 3
+    assert len(qb._join) == 3
 
 
 def test_verify_embed_list_not_valid():

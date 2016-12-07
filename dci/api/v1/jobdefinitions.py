@@ -26,13 +26,12 @@ from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
 from dci.db import models
+import dci.db.embeds
 
 _TABLE = models.JOBDEFINITIONS
 # associate column names with the corresponding SA Column object
+_VALID_EMBED = dci.db.embeds.jobdefinitions()
 _JD_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_VALID_EMBED = {
-    'topic': v1_utils.embed(models.TOPICS)
-}
 
 
 @api.route('/jobdefinitions', methods=['POST'])
@@ -78,9 +77,10 @@ def _get_all_jobdefinitions(user, topic_id=None):
 
     if topic_id is None and not auth.is_admin(user):
         q_bd._join.extend([models.TOPICS, models.JOINS_TOPICS_TEAMS])
-        q_bd.where.append(
-            models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id']
-        )
+        q_bd.where += [
+            models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id'],
+            models.JOINS_TOPICS_TEAMS.c.topic_id == models.TOPICS.c.id,
+            _TABLE.c.topic_id == models.TOPICS.c.id]
     elif topic_id is not None:
         q_bd.where.append(_TABLE.c.topic_id == topic_id)
 

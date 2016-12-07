@@ -26,10 +26,12 @@ from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
+import dci.db.embeds
 from dci.db import models
 
 
 _TABLE = models.TESTS
+_VALID_EMBED = dci.db.embeds.tests()
 # associate column names with the corresponding SA Column object
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
