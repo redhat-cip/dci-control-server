@@ -35,8 +35,29 @@ from dci.db import models
 # associate column names with the corresponding SA Column object
 _TABLE = models.TEAMS
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+t0 = models.TOPICS.alias('t0')
+t1 = models.TOPICS.alias('t1')
 _VALID_EMBED = {
-    'topics': v1_utils.embed(models.TOPICS, many=True),
+    'topics': v1_utils.embed(
+        select=[models.TOPICS],
+        join=t0.join(
+            models.JOINS_TOPICS_TEAMS.join(
+                models.TOPICS,
+                models.JOINS_TOPICS_TEAMS.c.topic_id == models.TOPICS.c.id,
+                isouter=True),
+            models.JOINS_TOPICS_TEAMS.c.team_id == _TABLE.c.id,
+            isouter=True
+        ),
+        where=t0.c.id == _TABLE.c.id,
+        many=True),
+    'remotecis': v1_utils.embed(
+        select=[models.REMOTECIS],
+        join=t1.join(
+            models.REMOTECIS,
+            models.REMOTECIS.c.team_id == _TABLE.c.id,
+            isouter=True),
+        where=t1.c.id == _TABLE.c.id,
+        many=True)
 }
 
 
@@ -74,8 +95,11 @@ def create_teams(user):
 @auth.requires_auth
 def get_all_teams(user):
     args = schemas.args(flask.request.args.to_dict())
+    embed = schemas.args(flask.request.args.to_dict())['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
+                                 embed=_VALID_EMBED)
+    q_bd.join(embed)
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
@@ -85,6 +109,7 @@ def get_all_teams(user):
 
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
 
     return flask.jsonify({'teams': rows, '_meta': {'count': nb_row}})
 

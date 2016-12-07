@@ -408,8 +408,6 @@ def test_get_all_jobs_with_embed_and_limit(admin, jobdefinition_id, team_id,
     query_embed = ('/api/v1/jobs?embed=components&limit=1')
     jobs = admin.get(query_embed).data
 
-    from pprint import pprint
-    pprint(jobs)
     assert len(jobs['jobs']) == 1
     assert len(jobs['jobs'][0]['components']) == 3
 
