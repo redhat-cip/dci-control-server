@@ -29,11 +29,96 @@ from dci.common import schemas
 from dci.common import utils
 from dci.db import models
 
+from sqlalchemy.sql import and_
+from sqlalchemy.sql import or_
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.REMOTECIS
 _R_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_VALID_EMBED = {'team': v1_utils.embed(models.TEAMS)}
+lj = models.JOBS.alias('last_job')
+cj = models.JOBS.alias('current_job')
+lj_components = models.COMPONENTS.alias('last_job.components')
+cj_components = models.COMPONENTS.alias('current_job.components')
+cjc = models.JOIN_JOBS_COMPONENTS.alias('cjc')
+ljc = models.JOIN_JOBS_COMPONENTS.alias('ljc')
+rci0 = models.REMOTECIS.alias('remoteci_0')
+rci1 = models.REMOTECIS.alias('remoteci_1')
+rci2 = models.REMOTECIS.alias('remoteci_2')
+rci3 = models.REMOTECIS.alias('remoteci_3')
+rci4 = models.REMOTECIS.alias('remoteci_4')
+lj_t = models.JOBS.alias('last_job_t')
+cj_t = models.JOBS.alias('current_job_t')
+team = models.TEAMS.alias('team')
+
+_VALID_EMBED = {
+    'team': v1_utils.embed(
+        select=[team],
+        join=rci0.join(team, team.c.id == rci0.c.team_id),
+        where=rci0.c.id == _TABLE.c.id),
+    'last_job': v1_utils.embed(
+        select=[lj],
+        join=rci1.join(
+            lj,
+            and_(
+                lj.c.remoteci_id == rci1.c.id,
+                lj.c.status.in_([
+                    'success',
+                    'failure',
+                    'killed',
+                    'product-failure',
+                    'deployment-failure'])),
+            isouter=True),
+        where=rci1.c.id == _TABLE.c.id,
+        sort=lj.c.created_at),
+    'last_job.components': v1_utils.embed(
+        select=[lj_components],
+        join=rci2.join(
+            lj_t.join(
+                ljc.join(
+                    lj_components,
+                    ljc.c.component_id == lj_components.c.id,
+                    isouter=True),
+                ljc.c.job_id == lj_t.c.id,
+                isouter=True),
+            lj_t.c.remoteci_id == rci2.c.id,
+            isouter=True),
+        where=and_(
+            rci2.c.id == _TABLE.c.id,
+            or_(
+                lj.c.id == lj_t.c.id,
+                lj.c.id == None)),
+        many=True),
+    'current_job': v1_utils.embed(
+        select=[cj],
+        join=rci3.join(
+            cj,
+            and_(
+                cj.c.remoteci_id == rci3.c.id,
+                cj.c.status.in_([
+                    'new',
+                    'pre-run',
+                    'running'])),
+            isouter=True),
+        where=rci3.c.id == _TABLE.c.id,
+        sort=cj.c.created_at),
+    'current_job.components': v1_utils.embed(
+        select=[cj_components],
+        join=rci4.join(
+            cj_t.join(
+                cjc.join(
+                    cj_components,
+                    cjc.c.component_id == cj_components.c.id,
+                    isouter=True),
+                cjc.c.job_id == cj_t.c.id,
+                isouter=True),
+            cj_t.c.remoteci_id == rci4.c.id,
+            isouter=True),
+        where=and_(
+            rci4.c.id == _TABLE.c.id,
+            or_(
+                cj.c.id == cj_t.c.id,
+                cj.c.id == None)),  # noqa
+        many=True)}
 
 
 @api.route('/remotecis', methods=['POST'])
@@ -206,7 +291,7 @@ def get_remoteci_data_json(user, r_id):
     if row is None:
         raise dci_exc.DCINotFound('RemoteCI', r_id)
 
-    return row['data']
+    return row['remotecis_data']
 
 
 @api.route('/remotecis/<r_id>/tests', methods=['POST'])
