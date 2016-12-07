@@ -256,3 +256,11 @@ def test_get_tests_by_team(user, admin, team_user_id, team_admin_id):
     tests = user.get('/api/v1/teams/' + team_user_id + '/tests/')
     assert tests.status_code == 200
     assert tests.data['_meta']['count'] == 0
+
+
+def test_list_tests_by_team(admin, team_id, test_id):
+    tests = admin.get('/api/v1/teams/' + team_id + '/tests/')
+    assert tests.status_code == 200
+    assert tests.data['_meta']['count'] == 1
+    assert tests.data['tests'][0]['team_id'] == team_id
+    assert tests.data['tests'][0]['id'] == test_id

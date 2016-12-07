@@ -29,17 +29,14 @@ from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
 from dci.db import models
+import dci.db.embeds
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.COMPONENTS
 _JJC = models.JOIN_JOBS_COMPONENTS
+_VALID_EMBED = dci.db.embeds.components()
 _C_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _JOBS_C_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBS)
-
-_VALID_EMBED = {
-    'jobs_components': v1_utils.embed(_JJC),
-    'files': v1_utils.embed(models.COMPONENT_FILES, many=True),
-}
 
 
 @api.route('/components', methods=['POST'])
@@ -101,6 +98,7 @@ def get_all_components(user, topic_id):
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
+    v1_utils.verify_team_in_topic(user, topic_id)
 
     q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
                                  _VALID_EMBED)
@@ -126,20 +124,20 @@ def get_jobs(user, component_id, team_id=None):
     provided then filter by the jobs by team_id otherwise returns all the
     jobs.
     """
-
     args = schemas.args(flask.request.args.to_dict())
+    embed = args['embed']
 
     q_bd = v1_utils.QueryBuilder(models.JOBS, args['offset'], args['limit'],
                                  _VALID_EMBED)
     q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_C_COLUMNS)
 
-    q_bd.join(['jobs_components'])
     q_bd.ignore_columns(['configuration'])
     q_bd.where.append(_JJC.c.component_id == component_id)
     if team_id:
         q_bd.where.append(models.JOBS.c.team_id == team_id)
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
     return flask.jsonify({'jobs': rows, '_meta': {'count': len(rows)}})
 
 
@@ -196,7 +194,8 @@ def list_components_files(user, c_id):
     COLUMN_CF = v1_utils.get_columns_name_with_objects(COMPONENT_FILES)
 
     q_bd = v1_utils.QueryBuilder(COMPONENT_FILES,
-                                 args['offset'], args['limit'])
+                                 args['offset'], args['limit'],
+                                 embed=_VALID_EMBED)
 
     q_bd.sort = v1_utils.sort_query(args['sort'], COLUMN_CF)
     q_bd.where = v1_utils.where_query(args['where'], COMPONENT_FILES,
@@ -205,6 +204,7 @@ def list_components_files(user, c_id):
 
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(['files'], rows)
 
     return flask.jsonify({'component_files': rows, '_meta': {'count': nb_row}})
 

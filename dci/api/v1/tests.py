@@ -26,10 +26,12 @@ from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
+import dci.db.embeds
 from dci.db import models
 
 
 _TABLE = models.TESTS
+_VALID_EMBED = dci.db.embeds.tests()
 # associate column names with the corresponding SA Column object
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
@@ -58,11 +60,14 @@ def create_tests(user):
 
 def get_all_tests(user, team_id):
     args = schemas.args(flask.request.args.to_dict())
+    embed = args['embed']
 
     if not(auth.is_admin(user) or auth.is_in_team(user, team_id)):
         raise auth.UNAUTHORIZED
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
+                                 _VALID_EMBED)
+    q_bd.join(embed)
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
@@ -71,6 +76,7 @@ def get_all_tests(user, team_id):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
 
     return flask.jsonify({'tests': rows, '_meta': {'count': nb_row}})
 
