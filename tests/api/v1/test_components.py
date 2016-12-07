@@ -352,9 +352,9 @@ def test_add_file_to_component(admin, topic_id):
         assert l_file.status_code == 200
         assert l_file.data['_meta']['count'] == 1
         assert l_file.data['component_files'][0]['component_id'] == ct_1['id']
-        cts = admin.get('/api/v1/components/%s?embed=files' % ct_1['id']).data
-        assert len(cts['component']['files']) == 1
-        assert cts['component']['files'][0]['size'] == 1
+        cts = admin.get('/api/v1/components/%s?embed=component_files' % ct_1['id']).data
+        assert len(cts['component']['component_files']) == 1
+        assert cts['component']['component_files'][0]['size'] == 1
 
 
 def test_download_file_from_component(admin, topic_id):

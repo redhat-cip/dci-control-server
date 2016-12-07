@@ -113,6 +113,7 @@ def get_all_users(user, team_id=None):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
 
     return flask.jsonify({'users': rows, '_meta': {'count': nb_row}})
 
@@ -133,12 +134,12 @@ def get_user_by_id_or_name(user, user_id):
     where_clause = sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
     q_bd.where.append(where_clause)
 
-    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
-
-    if row is None:
+    rows = flask.g.db_conn.execute(q_bd.build()).all()
+    rows = q_bd.dedup_rows(embed, rows)
+    if len(rows) != 1:
         raise dci_exc.DCINotFound('User', user_id)
+    guser = rows[0]
 
-    guser = v1_utils.group_embedded_resources(embed, row)
     res = flask.jsonify({'user': guser})
     res.headers.add_header('ETag', guser['etag'])
     return res

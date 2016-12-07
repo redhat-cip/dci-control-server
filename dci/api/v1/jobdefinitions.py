@@ -32,8 +32,11 @@ from dci.db import models
 _TABLE = models.JOBDEFINITIONS
 # associate column names with the corresponding SA Column object
 _JD_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+topic = models.TOPICS.alias('topic')
 _VALID_EMBED = {
-    'topic': v1_utils.embed(models.TOPICS)
+    'topic': v1_utils.embed(
+        select=[topic],
+        where=_TABLE.c.topic_id == topic.c.id),
 }
 
 
@@ -79,9 +82,10 @@ def _get_all_jobdefinitions(user, topic_id=None):
 
     if topic_id is None and not auth.is_admin(user):
         q_bd._join.extend([models.TOPICS, models.JOINS_TOPICS_TEAMS])
-        q_bd.where.append(
-            models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id']
-        )
+        q_bd.where += [
+                models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id'],
+                models.JOINS_TOPICS_TEAMS.c.topic_id == models.TOPICS.c.id,
+                _TABLE.c.topic_id == models.TOPICS.c.id]
     elif topic_id is not None:
         q_bd.where.append(_TABLE.c.topic_id == topic_id)
 
