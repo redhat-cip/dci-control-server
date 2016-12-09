@@ -241,13 +241,15 @@ jobdefinition = DCISchema(schema_factory(jobdefinition).post,
 remoteci = utils.dict_merge(base, DATA_FIELD, {
     'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
     v.Optional('active', default=True): bool,
+    v.Optional('enable_upgrade', default=False): bool
 })
 
 remoteci_put = {
     v.Optional('name'): six.text_type,
     v.Optional('data'): dict,
     v.Optional('team_id'): v.Any(UUID_FIELD, msg=INVALID_TEAM),
-    v.Optional('active'): bool
+    v.Optional('active'): bool,
+    v.Optional('enable_upgrade'): bool
 }
 
 remoteci = DCISchema(schema_factory(remoteci).post, Schema(remoteci_put))
@@ -264,6 +266,9 @@ job = {
     'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
     'components': list,
     v.Optional('comment', default=None): six.text_type,
+    v.Optional('previous_job_id', default=None): v.Any(UUID_FIELD,
+                                                       msg=INVALID_JOB),
+    v.Optional('upgrade_job', default=False): bool
 }
 
 job_put = {
@@ -338,6 +343,7 @@ file = schema_factory(file)
 
 topic = utils.dict_merge(base, {
     v.Optional('label', default=None): six.text_type,
+    v.Optional('next_topic', default=None): six.text_type
 })
 
 topic = schema_factory(topic)
