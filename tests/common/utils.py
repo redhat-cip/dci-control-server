@@ -38,10 +38,14 @@ STATUS = 'status', text_type
 COMMENT = 'comment', text_type
 CONTENT = 'content', text_type
 LABEL = 'label', text_type
+NEXT_TOPIC = 'next_topic', text_type
 COUNTRY = 'country', text_type
 EMAIL = 'email', text_type
 NOTIF = 'notification', True
 VALUE = 'value', text_type
+ALLOW_UPGRADE_JOB = 'allow_upgrade_job', False
+IS_UPGRADE = 'is_upgrade', False
+PREVIOUS_JOB_ID = 'previous_job_id', text_type
 
 INVALID_NAME = 'name', None
 INVALID_NAME_ERROR = 'name', schemas.INVALID_STRING
