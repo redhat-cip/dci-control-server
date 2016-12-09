@@ -73,6 +73,9 @@ TOPICS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), unique=True, nullable=False),
     sa.Column('label', sa.Text),
+    sa.Column('next_topic', sa.String(36),
+              sa.ForeignKey('topics.id'),
+              nullable=True, default=None)
 )
 
 JOINS_TOPICS_TEAMS = sa.Table(
@@ -184,7 +187,8 @@ REMOTECIS = sa.Table(
     sa.Column('team_id', sa.String(36),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
-    sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key')
+    sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key'),
+    sa.Column('allow_upgrade_job', sa.BOOLEAN, default=False)
 )
 
 JOBS = sa.Table(
@@ -212,7 +216,10 @@ JOBS = sa.Table(
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
     sa.Column('user_agent', sa.String(255)),
-    sa.Column('client_version', sa.String(255)))
+    sa.Column('client_version', sa.String(255)),
+    sa.Column('previous_job_id', sa.String(36),
+              sa.ForeignKey('jobs.id'),
+              nullable=True, default=None))
 
 METAS = sa.Table(
     'metas', metadata,
