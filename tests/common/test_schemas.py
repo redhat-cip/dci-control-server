@@ -296,7 +296,7 @@ class TestJobDefinition(utils.SchemaTesting):
 
 class TestRemoteCI(utils.SchemaTesting):
     schema = schemas.remoteci
-    data = dict([utils.NAME, utils.TEAM, utils.ACTIVE])
+    data = dict([utils.NAME, utils.TEAM, utils.ACTIVE, utils.ENABLE_UPGRADE])
 
     @staticmethod
     def generate_invalids_and_errors():
@@ -638,7 +638,7 @@ class LolTestFile(utils.SchemaTesting):
 
 class TestTopic(utils.SchemaTesting):
     schema = schemas.topic
-    data = dict([utils.NAME, utils.LABEL])
+    data = dict([utils.NAME, utils.LABEL, utils.NEXT_TOPIC])
 
     @staticmethod
     def generate_invalids_and_errors():

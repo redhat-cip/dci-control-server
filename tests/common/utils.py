@@ -38,10 +38,12 @@ STATUS = 'status', text_type
 COMMENT = 'comment', text_type
 CONTENT = 'content', text_type
 LABEL = 'label', text_type
+NEXT_TOPIC = 'next_topic', text_type
 COUNTRY = 'country', text_type
 EMAIL = 'email', text_type
 NOTIF = 'notification', True
 VALUE = 'value', text_type
+ENABLE_UPGRADE = 'enable_upgrade', False
 
 INVALID_NAME = 'name', None
 INVALID_NAME_ERROR = 'name', schemas.INVALID_STRING

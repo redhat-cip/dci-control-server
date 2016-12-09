@@ -90,6 +90,7 @@ def create_jobs(user):
         'recheck': values.get('recheck', False),
         'status': 'new',
         'configuration': {},
+        'upgraded_job_id': None,
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'
