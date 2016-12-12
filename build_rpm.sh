@@ -5,7 +5,7 @@ DATE=$(date +%Y%m%d%H%M)
 SHA=$(git rev-parse HEAD | cut -c1-8)
 
 declare -A repo_conf
-repo_conf["fedora-23-x86_64"]='
+repo_conf["fedora-25-x86_64"]='
 [openstack-mitaka]
 name=OpenStack Mitaka Repository
 baseurl=http://mirror.centos.org/centos/7/cloud/$basearch/openstack-mitaka/
@@ -13,7 +13,6 @@ gpgcheck=1
 enabled=1
 gpgkey=https://raw.githubusercontent.com/openstack/puppet-openstack_extras/91fac8eab81d0ad071130887d72338a82c06a7f4/files/RPM-GPG-KEY-CentOS-SIG-Cloud
 '
-repo_conf["fedora-24-x86_64"]=${repo_conf["fedora-23-x86_64"]}
 repo_conf["epel-7-x86_64"]='
 [elasticsearch-2.x]
 name="Elasticsearch repository for 2.x packages"
@@ -61,7 +60,7 @@ cp -v dist/* ${HOME}/rpmbuild/SOURCES/
 sed -i "s/VERS/${DATE}git${SHA}/g" ${HOME}/rpmbuild/SPECS/${PROJ_NAME}.spec
 rpmbuild -bs ${HOME}/rpmbuild/SPECS/${PROJ_NAME}.spec
 
-for arch in fedora-24-x86_64 epel-7-x86_64; do
+for arch in fedora-25-x86_64 epel-7-x86_64; do
     rpath=$(echo ${arch}|sed s,-,/,g|sed 's,epel,el,')
 
     mkdir -p ${HOME}/.mock
