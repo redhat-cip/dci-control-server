@@ -167,6 +167,8 @@ def test_put_jobdefinitions(admin, topic_id):
     jd_etag = jd['jobdefinition']['etag']
     assert jd['jobdefinition']['name'] == 'pname'
 
+    # Update the 'active' field
+    #
     ppt = admin.put('/api/v1/jobdefinitions/%s' % jd_id,
                     data={'state': 'inactive'}, headers={'If-match': jd_etag})
     assert ppt.status_code == 204
@@ -176,15 +178,41 @@ def test_put_jobdefinitions(admin, topic_id):
     assert gt['jobdefinition']['name'] == 'pname'
     assert gt['jobdefinition']['state'] == 'inactive'
 
+    # Update the 'comment' field
+    #
     ppt = admin.put('/api/v1/jobdefinitions/%s' % jd_id,
                     data={'comment': 'A comment'},
                     headers={'If-match': gt_etag})
     assert ppt.status_code == 204
 
     gt = admin.get('/api/v1/jobdefinitions/%s' % jd_id).data
+    gt_etag = gt['jobdefinition']['etag']
     assert gt['jobdefinition']['name'] == 'pname'
     assert gt['jobdefinition']['state'] == 'inactive'
     assert gt['jobdefinition']['comment'] == 'A comment'
+
+    # Update the 'priority' field
+    #
+    ppt = admin.put('/api/v1/jobdefinitions/%s' % jd_id,
+                    data={'priority': 10}, headers={'If-match': gt_etag})
+    assert ppt.status_code == 204
+    gt = admin.get('/api/v1/jobdefinitions/%s' % jd_id).data
+    gt_etag = gt['jobdefinition']['etag']
+    assert gt['jobdefinition']['name'] == 'pname'
+    assert gt['jobdefinition']['priority'] == 10
+    assert gt['jobdefinition']['comment'] == 'A comment'
+    assert gt['jobdefinition']['state'] == 'inactive'
+
+    # Update the 'name' field
+    #
+    ppt = admin.put('/api/v1/jobdefinitions/%s' % jd_id,
+                    data={'name': 'newname'}, headers={'If-match': gt_etag})
+    assert ppt.status_code == 204
+    gt = admin.get('/api/v1/jobdefinitions/%s' % jd_id).data
+    assert gt['jobdefinition']['name'] == 'newname'
+    assert gt['jobdefinition']['priority'] == 10
+    assert gt['jobdefinition']['comment'] == 'A comment'
+    assert gt['jobdefinition']['state'] == 'inactive'
 
 
 def test_delete_jobdefinition_by_id(admin, topic_id):

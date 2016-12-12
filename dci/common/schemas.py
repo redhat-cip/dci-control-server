@@ -240,6 +240,10 @@ jobdefinition = utils.dict_merge(base, {
 })
 
 jobdefinition_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('priority'): v.All(
+        v.Coerce(int), v.Range(min=0, max=1000), msg=INVALID_PRIORITY
+    ),
     v.Optional('comment'): six.text_type,
     v.Optional('active'): bool,
     v.Optional('component_types', default=[]): list,
