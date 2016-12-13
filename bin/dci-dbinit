@@ -17,7 +17,7 @@
 
 """
 This module will initialize the database with the admin user and group based
-on openshift environment variable.
+on DCI environment variable.
 """
 
 import os

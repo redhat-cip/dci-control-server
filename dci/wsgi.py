@@ -15,7 +15,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-# This file is OpenShift entry point
+# This file is DCI entry point
 
 import dci.app
 import dci.dci_config
