@@ -62,6 +62,7 @@ def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id,
     assert job['remoteci_id'] == remoteci_id
     assert job['user_agent'] == headers['User-Agent']
     assert job['client_version'] == headers['Client-Version']
+    assert job['enable_upgrade'] is True
 
 
 def test_schedule_job_recheck(admin, job_id, remoteci_id, topic_id):
