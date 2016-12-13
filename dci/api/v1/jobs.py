@@ -177,7 +177,7 @@ def _build_recheck(recheck_job, values):
     return recheck_job
 
 
-def _build_new_template(topic_id, remoteci, values):
+def _build_new_template(topic_id, remoteci, values, upgrade_job=False):
     # Get a jobdefinition
     q_jd = sql.select([models.JOBDEFINITIONS]).where(
         models.JOBDEFINITIONS.c.topic_id == topic_id).order_by(
@@ -221,7 +221,8 @@ def _build_new_template(topic_id, remoteci, values):
 
     values.update({
         'jobdefinition_id': jd_to_run['id'],
-        'team_id': remoteci['team_id']
+        'team_id': remoteci['team_id'],
+        'upgrade_job': upgrade_job
     })
 
     with flask.g.db_conn.begin():
@@ -305,6 +306,61 @@ def schedule_jobs(user):
         values = _build_recheck(recheck_job, values)
     else:
         values = _build_new_template(topic_id, remoteci, values)
+
+    # add upgrade flag to the job result
+    values.update({'enable_upgrade': remoteci['enable_upgrade']})
+
+    return flask.Response(json.dumps({'job': values}), 201,
+                          headers={'ETag': values['etag']},
+                          content_type='application/json')
+
+
+@api.route('/jobs/upgrade', methods=['POST'])
+@auth.requires_auth
+def upgrade_jobs(user):
+    values = schemas.job_upgrade.post(flask.request.json)
+
+    values.update({
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': utils.gen_etag(),
+        'recheck': False,
+        'status': 'new'
+    })
+
+    original_job_id = values.pop('job_id')
+    v1_utils.verify_existence_and_get(original_job_id, models.JOBS)
+
+    topic_id, remoteci = _validate_input(values, user)
+    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+
+    values.update({
+        'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
+        'client_version': flask.request.environ.get(
+            'HTTP_CLIENT_VERSION'
+        ),
+    })
+
+    next_topic_id = topic['next_topic']
+
+    if not next_topic_id:
+        raise dci_exc.DCIException(
+            "topic %s does not contains a next topic" % topic_id)
+
+    with flask.g.db_conn.begin():
+        # instantiate a new job in the next_topic_id
+        values = _build_new_template(next_topic_id, remoteci, values,
+                                     upgrade_job=True)
+
+        # update the upgrade_job_id field of the original job
+        query = _TABLE.update().\
+            where(_TABLE.c.id == original_job_id).\
+            values(upgraded_job_id=values['id'])
+        result = flask.g.db_conn.execute(query)
+
+        if not result.rowcount:
+            raise dci_exc.DCIConflict('Job', original_job_id)
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': values['etag']},
