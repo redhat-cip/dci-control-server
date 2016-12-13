@@ -377,9 +377,14 @@ def test_put_remoteci_as_user(user, team_user_id, remoteci_id, admin):
     remoteci_etag = remoteci.headers.get("ETag")
 
     remoteci_put = user.put('/api/v1/remotecis/rname',
-                            data={'name': 'nname'},
+                            data={'name': 'nname',
+                                  'enable_upgrade': True},
                             headers={'If-match': remoteci_etag})
     assert remoteci_put.status_code == 204
+
+    remoteci = user.get('/api/v1/remotecis/nname').data['remoteci']
+    assert remoteci['name'] == 'nname'
+    assert remoteci['enable_upgrade'] is True
 
     remoteci = admin.get('/api/v1/remotecis/%s' % remoteci_id)
     remoteci_etag = remoteci.headers.get("ETag")

@@ -135,6 +135,7 @@ def put_topic(user, topic_id):
         raise auth.UNAUTHORIZED
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
+    next_topic = values['next_topic']
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
@@ -143,7 +144,10 @@ def put_topic(user, topic_id):
     )
     query = _TABLE.update().where(where_clause).values(**values)
 
-    result = flask.g.db_conn.execute(query)
+    try:
+        result = flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCINotFound('topic', next_topic)
 
     if not result.rowcount:
         raise dci_exc.DCIConflict('Topic', topic_id)
