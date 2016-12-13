@@ -188,7 +188,7 @@ def test_delete_topic_not_found(admin):
     assert result.status_code == 404
 
 
-def test_put_topics(admin):
+def test_put_topics(admin, topic_id):
     pt = admin.post('/api/v1/topics', data={'name': 'pname'})
     assert pt.status_code == 201
 
@@ -198,7 +198,8 @@ def test_put_topics(admin):
     assert gt.status_code == 200
 
     ppt = admin.put('/api/v1/topics/pname',
-                    data={'name': 'nname'},
+                    data={'name': 'nname',
+                          'next_topic': topic_id},
                     headers={'If-match': pt_etag})
     assert ppt.status_code == 204
 
@@ -207,6 +208,7 @@ def test_put_topics(admin):
 
     gt = admin.get('/api/v1/topics/nname')
     assert gt.status_code == 200
+    assert gt.data['topic']['next_topic'] == topic_id
 
 
 # Tests for topics and teams management

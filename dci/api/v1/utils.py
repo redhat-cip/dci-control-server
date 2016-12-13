@@ -76,6 +76,17 @@ def verify_team_in_topic(user, topic_id):
                                    % topic_id, status_code=412)
 
 
+def verify_user_in_team(user, team_id):
+    """Verify that the user belongs to a given team. If the user is an
+    admin then it belongs to all teams."""
+
+    if auth.is_admin(user):
+        return
+    if not auth.is_in_team(user, team_id):
+        raise dci_exc.DCIException('User\'s team does not belongs to '
+                                   'team %s.' % team_id, status_code=412)
+
+
 def group_embedded_resources(items_to_embed, row):
     """Given the embed list and a row this function group the items by embedded
     element. Handle dot notation for nested fields.

@@ -133,7 +133,18 @@ def put_topic(user, topic_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
 
-    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
+    def _verify_team_in_topic(user, topic_id):
+        topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE,
+                                                     get_id=True)
+        # verify user's team in the topic
+        v1_utils.verify_team_in_topic(user, topic_id)
+        return topic_id
+
+    topic_id = _verify_team_in_topic(user, topic_id)
+
+    next_topic = values['next_topic']
+    if next_topic:
+        _verify_team_in_topic(user, next_topic)
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
@@ -143,7 +154,6 @@ def put_topic(user, topic_id):
     query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
-
     if not result.rowcount:
         raise dci_exc.DCIConflict('Topic', topic_id)
 
