@@ -178,7 +178,7 @@ def _build_recheck(recheck_job, values):
     return recheck_job
 
 
-def _build_new_template(topic_id, remoteci, values):
+def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
     # Get a jobdefinition
     q_jd = sql.select([models.JOBDEFINITIONS]).where(
         models.JOBDEFINITIONS.c.topic_id == topic_id).order_by(
@@ -186,7 +186,7 @@ def _build_new_template(topic_id, remoteci, values):
     jd_to_run = flask.g.db_conn.execute(q_jd).fetchone()
 
     if jd_to_run is None:
-        msg = 'Jobdefinition not found.'
+        msg = 'No jobdefinition found in topic %s.' % topic_id
         raise dci_exc.DCIException(msg, status_code=412)
 
     # Get the latest components according to the component_types of the
@@ -222,7 +222,8 @@ def _build_new_template(topic_id, remoteci, values):
 
     values.update({
         'jobdefinition_id': jd_to_run['id'],
-        'team_id': remoteci['team_id']
+        'team_id': remoteci['team_id'],
+        'previous_job_id': previous_job_id
     })
 
     with flask.g.db_conn.begin():
@@ -306,6 +307,65 @@ def schedule_jobs(user):
         values = _build_recheck(recheck_job, values)
     else:
         values = _build_new_template(topic_id, remoteci, values)
+
+    # add upgrade flag to the job result
+    values.update({'allow_upgrade_job': remoteci['allow_upgrade_job']})
+
+    return flask.Response(json.dumps({'job': values}), 201,
+                          headers={'ETag': values['etag']},
+                          content_type='application/json')
+
+
+@api.route('/jobs/upgrade', methods=['POST'])
+@auth.requires_auth
+def upgrade_jobs(user):
+    values = schemas.job_upgrade.post(flask.request.json)
+
+    values.update({
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': utils.gen_etag(),
+        'recheck': False,
+        'status': 'new'
+    })
+
+    original_job_id = values.pop('job_id')
+    original_job = v1_utils.verify_existence_and_get(original_job_id,
+                                                     models.JOBS)
+    v1_utils.verify_user_in_team(user, original_job['team_id'])
+
+    # get the remoteci
+    remoteci_id = original_job['remoteci_id']
+    remoteci = v1_utils.verify_existence_and_get(remoteci_id,
+                                                 models.REMOTECIS)
+    values.update({'remoteci_id': remoteci_id})
+
+    # get the jobdefinition
+    jobdefinition_id = original_job['jobdefinition_id']
+    jobdefinition = v1_utils.verify_existence_and_get(jobdefinition_id,
+                                                      models.JOBDEFINITIONS)
+
+    # get the associated topic
+    topic_id = jobdefinition['topic_id']
+    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+
+    values.update({
+        'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
+        'client_version': flask.request.environ.get(
+            'HTTP_CLIENT_VERSION'
+        ),
+    })
+
+    next_topic_id = topic['next_topic']
+
+    if not next_topic_id:
+        raise dci_exc.DCIException(
+            "topic %s does not contains a next topic" % topic_id)
+
+    # instantiate a new job in the next_topic_id
+    values = _build_new_template(next_topic_id, remoteci, values,
+                                 previous_job_id=original_job_id)
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': values['etag']},
