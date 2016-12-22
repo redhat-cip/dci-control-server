@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1a930d6b_14d0ba52",
+        "filename": "dci/alembic/versions/82f4f4d14775_add_upgrade_fields.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-12-22T02:31:24Z",
+      "side": 1,
+      "message": "I don\u0027t like the _job suffix here because job is already the table name and it vaguely looks like a ID field. Since this is a boolean field, what about is_upgrade?",
+      "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a930d6b_34d5b643",
+        "filename": "dci/alembic/versions/82f4f4d14775_add_upgrade_fields.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-12-22T02:31:24Z",
+      "side": 1,
+      "message": "enable_upgrade is a bit confusing. e.g: Does it enable the remoteci upgrade?\nI suggest using allow_upgrade_job instead. I\u0027m not a big fan of the _job suffix as explain below but I think, in this context, it clarifies the field purpose.",
+      "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a930d6b_54ca42a2",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-12-22T02:31:24Z",
+      "side": 1,
+      "message": "I believe it should be a UUID_FIELD like above.",
+      "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a930d6b_74cf3eb1",
+        "filename": "dci/db/models.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-12-22T02:31:24Z",
+      "side": 1,
+      "message": "If I understand correctly, with ondelete\u003d\u0027SET NULL\u0027 we can delete a topic and all the children will lose the relationship silently. I\u0027m not sure this is a good idea. IMO, you should just drop the ondelete argument. Pg will just raise an error if we try to delete the father.",
+      "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1a930d6b_94c3ca89",
+        "filename": "dci/db/models.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2016-12-22T02:31:24Z",
+      "side": 1,
+      "message": "The same for \u0027ondelete\u0027.",
+      "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
