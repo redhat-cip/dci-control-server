@@ -13,9 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import datetime
-
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
@@ -40,10 +37,11 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 @api.route('/tests', methods=['POST'])
 @auth.requires_auth
 def create_tests(user):
+    created_at, _ = utils.get_dates(user)
     data_json = schemas.test.post(flask.request.json)
     data_json.update({
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': created_at,
     })
 
     query = _TABLE.insert().values(**data_json)

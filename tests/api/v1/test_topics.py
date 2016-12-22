@@ -159,21 +159,28 @@ def test_delete_topic_by_id_as_user(admin, user):
 
 def test_get_all_topics_with_sort(admin):
     # create 4 topics ordered by created time
-    data = {'name': "tname1"}
-    ct_1_1 = admin.post('/api/v1/topics', data=data).data['topic']
-    data = {'name': "tname2"}
-    ct_1_2 = admin.post('/api/v1/topics', data=data).data['topic']
-    data = {'name': "tname3"}
-    ct_2_1 = admin.post('/api/v1/topics', data=data).data['topic']
-    data = {'name': "tname4"}
-    ct_2_2 = admin.post('/api/v1/topics', data=data).data['topic']
+    data = {'name': "tname3", 'created_at': '2015-01-01'}
+    ct_2_1 = admin.post('/api/v1/topics', data=data).data['topic']['id']
+    data = {'name': "tname4", 'created_at': '2016-01-01'}
+    ct_2_2 = admin.post('/api/v1/topics', data=data).data['topic']['id']
+    data = {'name': "tname1", 'created_at': '2010-01-01'}
+    ct_1_1 = admin.post('/api/v1/topics', data=data).data['topic']['id']
+    data = {'name': "tname2", 'created_at': '2011-01-01'}
+    ct_1_2 = admin.post('/api/v1/topics', data=data).data['topic']['id']
 
-    cts = admin.get('/api/v1/topics?sort=created_at').data
-    assert cts['topics'] == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
+    def get_ids(path):
+        return [i['id'] for i in admin.get(path).data['topics']]
+
+    # default is to sort by name
+    cts_ids = get_ids('/api/v1/topics')
+    assert cts_ids == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
+
+    cts_ids = get_ids('/api/v1/topics?sort=created_at')
+    assert cts_ids == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
 
     # sort by title first and then reverse by created_at
-    cts = admin.get('/api/v1/topics?sort=-name').data
-    assert cts['topics'] == [ct_2_2, ct_2_1, ct_1_2, ct_1_1]
+    cts_ids = get_ids('/api/v1/topics?sort=-name')
+    assert cts_ids == [ct_2_2, ct_2_1, ct_1_2, ct_1_1]
 
 
 def test_delete_topic_not_found(admin):

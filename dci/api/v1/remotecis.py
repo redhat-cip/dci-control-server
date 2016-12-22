@@ -13,9 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import datetime
-
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
@@ -39,6 +36,7 @@ _VALID_EMBED = {'team': v1_utils.embed(models.TEAMS)}
 @api.route('/remotecis', methods=['POST'])
 @auth.requires_auth
 def create_remotecis(user):
+    created_at, updated_at = utils.get_dates(user)
     values = schemas.remoteci.post(flask.request.json)
 
     # If it's not a super admin nor belongs to the same team_id
@@ -49,8 +47,8 @@ def create_remotecis(user):
     etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': created_at,
+        'updated_at': updated_at,
         'data': values.get('data', {}),
         'etag': etag
     })
@@ -77,7 +75,7 @@ def get_all_remotecis(user, t_id=None):
     q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
                                  _VALID_EMBED)
     q_bd.join(embed)
-    q_bd.sort = v1_utils.sort_query(args['sort'], _R_COLUMNS)
+    q_bd.sort = v1_utils.sort_query(args['sort'], _R_COLUMNS, default='name')
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _R_COLUMNS)
 
     # If it's not an admin then restrict the view to the team's file

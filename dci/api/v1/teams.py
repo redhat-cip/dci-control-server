@@ -13,9 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import datetime
-
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
@@ -44,6 +41,7 @@ _VALID_EMBED = {
 @auth.requires_auth
 @audits.log
 def create_teams(user):
+    created_at, updated_at = utils.get_dates(user)
     values = schemas.team.post(flask.request.json)
 
     if not auth.is_admin(user):
@@ -52,8 +50,8 @@ def create_teams(user):
     etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': created_at,
+        'updated_at': updated_at,
         'etag': etag
     })
 
@@ -77,7 +75,7 @@ def get_all_teams(user):
 
     q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
 
-    q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
+    q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS, default='name')
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
 
     if not auth.is_admin(user):

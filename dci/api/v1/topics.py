@@ -13,9 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import datetime
-
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
@@ -42,6 +39,7 @@ _VALID_EMBED = {
 @api.route('/topics', methods=['POST'])
 @auth.requires_auth
 def create_topics(user):
+    created_at, updated_at = utils.get_dates(user)
     values = schemas.topic.post(flask.request.json)
 
     if not(auth.is_admin(user)):
@@ -50,8 +48,8 @@ def create_topics(user):
     etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': created_at,
+        'updated_at': updated_at,
         'etag': etag
     })
 
@@ -96,7 +94,8 @@ def get_all_topics(user):
     if auth.is_admin(user):
         q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
 
-        q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
+        q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS,
+                                        default='name')
 
         # get the number of rows for the '_meta' section
         nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()

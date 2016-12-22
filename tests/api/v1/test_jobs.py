@@ -283,6 +283,32 @@ def test_get_all_jobs(admin, jobdefinition_id, team_id, remoteci_id,
     assert db_all_jobs_ids == [job_1_id, job_2_id]
 
 
+def test_get_all_jobs_order(admin, jobdefinition_id, team_id, remoteci_id,
+                            components_ids):
+    def job_with_custom_date(date):
+        j = admin.post('/api/v1/jobs',
+                       data={'jobdefinition_id': jobdefinition_id,
+                             'team_id': team_id,
+                             'remoteci_id': remoteci_id,
+                             'components': components_ids,
+                             'created_at': date}).data
+        return j['job']['id']
+
+    def ids(path):
+        return [i['id'] for i in admin.get(path).data['jobs']]
+
+    job_ids = {
+        '2': job_with_custom_date('1991-06-15'),
+        '3': job_with_custom_date('2001-03-15'),
+        '1': job_with_custom_date('1981-01-11'),
+        '4': job_with_custom_date('2003-06-15'),
+        '5': job_with_custom_date('2013-12-15')}
+    expected_ids = [job_ids[i] for i in sorted(job_ids.keys())]
+    assert expected_ids == list(reversed(ids('/api/v1/jobs')))
+    assert expected_ids == ids('/api/v1/jobs?sort=created_at')
+    assert expected_ids == list(reversed(ids('/api/v1/jobs?sort=-created_at')))
+
+
 def test_get_all_jobs_with_pagination(admin, jobdefinition_id, team_id,
                                       remoteci_id, components_ids, test_id):
     # create 4 jobs and check meta count

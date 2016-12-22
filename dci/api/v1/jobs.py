@@ -74,6 +74,7 @@ _VALID_EMBED = {
 @api.route('/jobs', methods=['POST'])
 @auth.requires_auth
 def create_jobs(user):
+    created_at, updated_at = utils.get_dates(user)
     values = schemas.job.post(flask.request.json)
     components_ids = values.pop('components')
 
@@ -84,8 +85,8 @@ def create_jobs(user):
     etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': created_at,
+        'updated_at': updated_at,
         'etag': etag,
         'recheck': values.get('recheck', False),
         'status': 'new',
@@ -594,7 +595,7 @@ def associate_meta(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
         raise auth.UNAUTHORIZED
-    return metas.create_meta(j_id)
+    return metas.create_meta(user, j_id)
 
 
 @api.route('/jobs/<j_id>/metas/<m_id>', methods=['GET'])

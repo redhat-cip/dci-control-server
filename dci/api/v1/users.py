@@ -13,9 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import datetime
-
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
@@ -56,6 +53,7 @@ def _verify_existence_and_get_user(user_id):
 @api.route('/users', methods=['POST'])
 @auth.requires_auth
 def create_users(user):
+    created_at, updated_at = utils.get_dates(user)
     values = schemas.user.post(flask.request.json)
 
     if not(auth.is_admin(user) or auth.is_admin_user(user, values['team_id'])):
@@ -66,8 +64,8 @@ def create_users(user):
 
     values.update({
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': created_at,
+        'updated_at': updated_at,
         'etag': etag,
         'password': password_hash,
         'role': values.get('role', 'user')
@@ -100,7 +98,8 @@ def get_all_users(user, team_id=None):
     q_bd.select = list(_SELECT_WITHOUT_PASSWORD)
     q_bd.join(embed)
 
-    q_bd.sort = v1_utils.sort_query(args['sort'], _USERS_COLUMNS)
+    q_bd.sort = v1_utils.sort_query(args['sort'], _USERS_COLUMNS,
+                                    default='name')
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _USERS_COLUMNS)
 
     # If it's not an admin, then get only the users of the caller's team

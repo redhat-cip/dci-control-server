@@ -14,8 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import datetime
-
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
@@ -40,12 +38,13 @@ _VALID_EMBED = {
 @api.route('/jobdefinitions', methods=['POST'])
 @auth.requires_auth
 def create_jobdefinitions(user):
+    created_at, updated_at = utils.get_dates(user)
     etag = utils.gen_etag()
     data_json = schemas.jobdefinition.post(flask.request.json)
     data_json.update({
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': created_at,
+        'updated_at': updated_at,
         'etag': etag
     })
 

@@ -35,10 +35,10 @@ _VALID_EMBED = {'files': v1_utils.embed(models.FILES, many=True),
 _JS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE, _VALID_EMBED)
 
 
-def insert_jobstate(user, values):
+def insert_jobstate(user, values, created_at=None):
     values.update({
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': created_at or datetime.datetime.utcnow().isoformat(),
         'team_id': user['team_id']
     })
 
@@ -50,9 +50,10 @@ def insert_jobstate(user, values):
 @api.route('/jobstates', methods=['POST'])
 @auth.requires_auth
 def create_jobstates(user):
+    created_at, _ = utils.get_dates(user)
     values = schemas.jobstate.post(flask.request.json)
 
-    insert_jobstate(user, values)
+    insert_jobstate(user, values, created_at)
 
     # Update job status
     job_id = values.get('job_id')

@@ -151,8 +151,10 @@ def get_columns_name_with_objects(table, embed={}):
     return columns
 
 
-def sort_query(sort, valid_columns):
+def sort_query(sort, valid_columns, default='-created_at'):
     order_by = []
+    if not sort:
+        sort = [default]
     for sort_elem in sort:
         sort_order = (sql.desc
                       if sort_elem.startswith('-') else sql.asc)
@@ -365,6 +367,9 @@ class QueryBuilder(object):
 
         if self.offset:
             query = query.offset(self.offset)
+
+        for sort in self.sort:
+            query = query.order_by(sort)
 
         query = self.prepare_join(query)
 

@@ -13,9 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-
-import datetime
 import flask
 
 from flask import json
@@ -30,19 +27,19 @@ from dci.db import models
 _TABLE = models.METAS
 
 
-def create_meta(job_id):
+def create_meta(user, job_id):
     """Create a meta information associated to a specific job."""
-
     v1_utils.verify_existence_and_get(job_id, models.JOBS)
 
+    created_at, updated_at = utils.get_dates(user)
     values = schemas.meta.post(flask.request.json)
 
     etag = utils.gen_etag()
     meta_id = utils.gen_uuid()
     values.update({
         'id': meta_id,
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': created_at,
+        'updated_at': updated_at,
         'etag': etag,
         'job_id': job_id
     })

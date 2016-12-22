@@ -45,6 +45,7 @@ _VALID_EMBED = {
 @api.route('/components', methods=['POST'])
 @auth.requires_auth
 def create_components(user):
+    created_at, updated_at = utils.get_dates(user)
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
 
@@ -52,8 +53,8 @@ def create_components(user):
     etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': created_at,
+        'updated_at': updated_at,
         'etag': etag
     })
 
