@@ -23,10 +23,10 @@ import dci.db.models as models
 import dci.dci_config
 import functools
 import getopt
+import six
 import sqlalchemy
 import sqlalchemy_utils.functions
 import sys
-
 
 conf = dci.dci_config.generate_conf()
 
@@ -677,7 +677,7 @@ if __name__ == '__main__':
             print('Be carefull this script will override your database:')
             print(db_uri)
             print('')
-            i = raw_input('Continue ? [y/N] ').lower()
+            i = six.input('Continue ? [y/N] ').lower()
             if not i or i == 'n':
                 sys.exit(0)
             if i == 'y':
