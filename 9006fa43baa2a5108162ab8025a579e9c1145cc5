@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa81d914_f0b5f831",
+        "filename": "scripts/db_provisioning.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 680,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-01-04T23:13:13Z",
+      "side": 1,
+      "message": "Traceback (most recent call last):\n  File \"\u003cstdin\u003e\", line 1, in \u003cmodule\u003e\nAttributeError: module \u0027six\u0027 has no attribute \u0027input\u0027\n\nWe have 2 solutions :\n\n1) from six.moves import input + i\u003dinput()\n2) import six + i\u003dsix.moves.input()\n\nWDYT ?",
+      "revId": "9006fa43baa2a5108162ab8025a579e9c1145cc5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
