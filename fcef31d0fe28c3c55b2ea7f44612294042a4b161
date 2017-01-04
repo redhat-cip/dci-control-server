@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa81d914_2dc1f9e4",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 268,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-01-04T16:12:21Z",
+      "side": 1,
+      "message": "s/post/put/ : A cosmetic change to reflect the HTTP method used",
+      "range": {
+        "startLine": 268,
+        "startChar": 4,
+        "endLine": 268,
+        "endChar": 8
+      },
+      "revId": "fcef31d0fe28c3c55b2ea7f44612294042a4b161",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa81d914_4db62d8c",
+        "filename": "dci/auth.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 116,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-01-04T16:12:21Z",
+      "side": 1,
+      "message": "Same comment as #5639",
+      "range": {
+        "startLine": 116,
+        "startChar": 45,
+        "endLine": 116,
+        "endChar": 49
+      },
+      "revId": "fcef31d0fe28c3c55b2ea7f44612294042a4b161",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
