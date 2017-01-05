@@ -759,8 +759,8 @@ def test_create_file_for_job_id(user, jobdefinition_id, team_user_id,
 
 
 @pytest.mark.usefixtures('file_job_user_id')
-def test_get_file_by_job_id(user, job_id):
-    url = '/api/v1/jobs/%s/files' % job_id
+def test_get_file_by_job_id(user, job_user_id):
+    url = '/api/v1/jobs/%s/files' % job_user_id
 
     # get file from job
     file_from_job = user.get(url)
@@ -769,8 +769,8 @@ def test_get_file_by_job_id(user, job_id):
 
 
 @pytest.mark.usefixtures('file_job_junit_user_id')
-def test_get_results_by_job_id(user, job_id):
-    url = '/api/v1/jobs/%s/results' % job_id
+def test_get_results_by_job_id(user, job_user_id):
+    url = '/api/v1/jobs/%s/results' % job_user_id
 
     # get file from job
     file_from_job = user.get(url)
@@ -780,8 +780,8 @@ def test_get_results_by_job_id(user, job_id):
 
 
 @pytest.mark.usefixtures('file_job_junit_empty_user_id')
-def test_get_empty_results_by_job_id(user, job_id):
-    url = '/api/v1/jobs/%s/results' % job_id
+def test_get_empty_results_by_job_id(user, job_user_id):
+    url = '/api/v1/jobs/%s/results' % job_user_id
 
     # get file from job
     file_from_job = user.get(url)
