@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "fa81d914_7e2b9930",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 337,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-08T21:55:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a930d6b_1437dab1",
+      "revId": "f60bec6ab432a65960b4041410354f4474aa0727",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a930d6b_f4ba4e09",
         "filename": "dci/api/v1/topics.py",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2016-12-22T02:40:28Z",
       "side": 1,
       "message": "We should ensure the user can use this topic.",
+      "revId": "f60bec6ab432a65960b4041410354f4474aa0727",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa81d914_1e2c5d4a",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 138,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-08T21:55:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a930d6b_f4ba4e09",
       "revId": "f60bec6ab432a65960b4041410354f4474aa0727",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "fa81d914_3e3121a3",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 294,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-08T21:55:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a930d6b_343cd693",
+      "revId": "f60bec6ab432a65960b4041410354f4474aa0727",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a930d6b_5441620a",
         "filename": "tests/api/v1/test_jobs_upgrade.py",
         "patchSetId": 3
@@ -64,6 +118,24 @@
       "writtenOn": "2016-12-22T02:40:28Z",
       "side": 1,
       "message": "The same here.",
+      "revId": "f60bec6ab432a65960b4041410354f4474aa0727",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa81d914_5e26d569",
+        "filename": "tests/api/v1/test_jobs_upgrade.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-08T21:55:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a930d6b_5441620a",
       "revId": "f60bec6ab432a65960b4041410354f4474aa0727",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
