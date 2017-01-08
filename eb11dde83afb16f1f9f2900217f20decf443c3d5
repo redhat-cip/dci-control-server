@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "fa81d914_7e1479f5",
+        "filename": "dci/alembic/versions/82f4f4d14775_add_upgrade_fields.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-08T21:54:57Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a930d6b_14d0ba52",
+      "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a930d6b_34d5b643",
         "filename": "dci/alembic/versions/82f4f4d14775_add_upgrade_fields.py",
         "patchSetId": 3
@@ -30,6 +48,24 @@
       "writtenOn": "2016-12-22T02:31:24Z",
       "side": 1,
       "message": "enable_upgrade is a bit confusing. e.g: Does it enable the remoteci upgrade?\nI suggest using allow_upgrade_job instead. I\u0027m not a big fan of the _job suffix as explain below but I think, in this context, it clarifies the field purpose.",
+      "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa81d914_9ef84dc6",
+        "filename": "dci/alembic/versions/82f4f4d14775_add_upgrade_fields.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-08T21:54:57Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a930d6b_34d5b643",
       "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "fa81d914_5e0fb5e1",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 346,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-08T21:54:57Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "1a930d6b_54ca42a2",
+      "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a930d6b_74cf3eb1",
         "filename": "dci/db/models.py",
         "patchSetId": 3
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "fa81d914_1e053dc2",
+        "filename": "dci/db/models.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-08T21:54:57Z",
+      "side": 1,
+      "message": "I don\u0027t think there is a need to have a strong relationship between two topics. Topics are independent between each others, it doesn\u0027t make sense to enforce the non-deletion of a topic if it\u0027s the \u0027next version\u0027 of another. The previous one will just have no next version to upgrade on.",
+      "parentUuid": "1a930d6b_74cf3eb1",
+      "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a930d6b_94c3ca89",
         "filename": "dci/db/models.py",
         "patchSetId": 3
@@ -81,6 +153,24 @@
       "writtenOn": "2016-12-22T02:31:24Z",
       "side": 1,
       "message": "The same for \u0027ondelete\u0027.",
+      "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa81d914_3e0a01d3",
+        "filename": "dci/db/models.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-08T21:54:57Z",
+      "side": 1,
+      "message": "Same response.",
+      "parentUuid": "1a930d6b_94c3ca89",
       "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
