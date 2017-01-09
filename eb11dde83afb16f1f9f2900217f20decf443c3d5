@@ -142,6 +142,24 @@
     },
     {
       "key": {
+        "uuid": "da86d52c_69d685c7",
+        "filename": "dci/db/models.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-01-09T15:56:08Z",
+      "side": 1,
+      "message": "This will break the consistency of all the existing jobs with is really a bad idea. IMO we should never delete a topic, but use a topics.is_deleted flag instead, like the patch Yanis is working on.",
+      "parentUuid": "fa81d914_1e053dc2",
+      "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "1a930d6b_94c3ca89",
         "filename": "dci/db/models.py",
         "patchSetId": 3
@@ -171,6 +189,24 @@
       "side": 1,
       "message": "Same response.",
       "parentUuid": "1a930d6b_94c3ca89",
+      "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da86d52c_89dad9e7",
+        "filename": "dci/db/models.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 221,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-01-09T15:56:08Z",
+      "side": 1,
+      "message": "Same answer :D",
+      "parentUuid": "fa81d914_3e0a01d3",
       "revId": "eb11dde83afb16f1f9f2900217f20decf443c3d5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
