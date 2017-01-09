@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da86d52c_e9e1959b",
+        "filename": "dci/alembic/versions/82f4f4d14775_add_upgrade_fields.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-01-09T15:59:43Z",
+      "side": 1,
+      "message": "previous_job_id content is enough to know if the job is in a chain.",
+      "revId": "dc90191b9cc2e6eac1400da42ccafa7303daf7da",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
