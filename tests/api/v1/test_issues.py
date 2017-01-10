@@ -51,6 +51,14 @@ def test_attach_issue_to_job(admin, job_id):
         assert result['issues'][0]['url'] == data['url']
 
 
+def test_attach_invalid_issue(admin, job_id):
+    data = {
+        'url': '<script>alert("booo")</script>'
+    }
+    r = admin.post('/api/v1/jobs/%s/issues' % job_id, data=data)
+    assert r.status_code == 400
+
+
 def test_unattach_issue_from_job(admin, job_id):
     with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
         mock_github_result = mock.Mock()
@@ -124,12 +132,12 @@ def test_github_tracker(admin, job_id):
         assert result['assignee'] is None
 
 
-def test_github_tracker_with_non_existent_issue(admin, job_id):
+def test_github_tracker_with_private_issue(admin, job_id):
     with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
         mock_github_result = mock.Mock()
         mock_github_request.get.return_value = mock_github_result
 
-        mock_github_result.status_code = 400
+        mock_github_result.status_code = 404
 
         data = {
             'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
@@ -139,13 +147,13 @@ def test_github_tracker_with_non_existent_issue(admin, job_id):
             admin.get('/api/v1/jobs/%s/issues' % job_id).data['issues'][0]
         )
 
-        assert result['status_code'] == 400
-        assert result['issue_id'] is None
-        assert result['title'] is None
+        assert result['status_code'] == 404
+        assert result['issue_id'] == 1
+        assert result['title'] == 'private issue'
         assert result['reporter'] is None
         assert result['status'] is None
-        assert result['product'] is None
-        assert result['component'] is None
+        assert result['product'] == 'redhat-cip'
+        assert result['component'] == 'dci-control-server'
         assert result['created_at'] is None
         assert result['updated_at'] is None
         assert result['closed_at'] is None

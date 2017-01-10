@@ -388,7 +388,7 @@ audit = schema_factory(audit)
 ###############################################################################
 
 issue = {
-    'url': six.text_type,
+    'url': Url(),
 }
 
 issue = schema_factory(issue)
