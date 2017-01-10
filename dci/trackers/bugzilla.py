@@ -36,10 +36,15 @@ class Bugzilla(trackers.Tracker):
         netloc = urlparse(self.url).netloc
         query = urlparse(self.url).query
 
+        if scheme not in ('http', 'https'):
+            return
+
         for item in query.split('&'):
             if 'id=' in item:
                 ticket_id = item.split('=')[1]
                 break
+        else:
+            return
 
         bugzilla_url = '%s://%s/%s%s' % (scheme, netloc, _URI_BASE, ticket_id)
 
