@@ -467,7 +467,7 @@ class TestIssue(utils.SchemaTesting):
 
     @staticmethod
     def generate_invalids_and_errors():
-        status_invalid, status_error = utils.generate_invalid_string('url')
+        status_invalid, status_error = utils.generate_invalid_url('url')
 
         invalids = dict([utils.INVALID_URL, status_invalid])
         errors = dict([utils.INVALID_URL_ERROR, status_error])
