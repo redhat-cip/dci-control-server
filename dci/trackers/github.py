@@ -33,9 +33,14 @@ class Github(trackers.Tracker):
 
         path = urlparse(self.url).path
         path = path.split('/')[1:]
+        self.product = path[0]
+        self.component = path[1]
+        self.issue_id = path[3]
 
-        github_url = '%s/%s/%s/issues/%s' % (_URL_BASE, path[0],
-                                             path[1], path[3])
+        github_url = '%s/%s/%s/issues/%s' % (_URL_BASE,
+                                             self.product,
+                                             self.component,
+                                             self.issue_id)
 
         result = requests.get(github_url)
         self.status_code = result.status_code
@@ -43,13 +48,12 @@ class Github(trackers.Tracker):
         if result.status_code == 200:
             result = result.json()
             self.title = result['title']
-            self.issue_id = result['number']
             self.reporter = result['user']['login']
             if result['assignee'] is not None:
                 self.assignee = result['assignee']['login']
             self.status = result['state']
-            self.product = path[0]
-            self.component = path[1]
             self.created_at = result['created_at']
             self.updated_at = result['updated_at']
             self.closed_at = result['closed_at']
+        elif result.status_code == 404:
+            self.title = 'private issue'
