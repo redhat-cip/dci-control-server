@@ -347,7 +347,11 @@ class QueryBuilder(object):
         # identify the IDs. The second iterations is used to actually collect
         # the full record data.
         ids = self._get_ids()
-        query = query.where(self.table.c.id.in_(ids))
+        if ids:
+            _where = self.table.c.id.in_(ids)
+        else:
+            _where = self.table.c.id == None  # noqa
+        query = query.where(_where)
 
         for sort in self.sort:
             query = query.order_by(sort)
