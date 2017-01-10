@@ -116,6 +116,10 @@ def generate_invalid_string(field):
     return (field, None), (field, schemas.INVALID_STRING)
 
 
+def generate_invalid_url(field):
+    return (field, None), (field, schemas.INVALID_URL)
+
+
 def invalid_args(data, errors):
     with pytest.raises(exceptions.DCIException) as exc:
         schemas.args(data)
