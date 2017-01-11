@@ -16,56 +16,31 @@
 # under the License.
 
 from dci import dci_config
-from dci.elasticsearch import engine as es_engine
+import dci.elasticsearch.engine
 from dciclient.v1.api import context
-from dciclient.v1.api import file
+import dciclient.v1.api.file as dci_file
 import json
 import sys
 
-dci_context = context.build_dci_context()
-conf = dci_config.generate_conf()
+def main():
+    dci_context = context.build_dci_context()
+    conf = dci_config.generate_conf()
 
-es_engine = es_engine.DCIESEngine(conf,timeout=60)
-db_files = json.loads(file.list(dci_context).text)
-es_files = es_engine.list(include=['id'])
+    es_engine = dci.elasticsearch.engine.DCIESEngine(conf,timeout=60)
+    for es_file in es_engine.iter():
+         print('S')
+         if dci_file.get(dci_context, es_file['_id']).status_code == 404:
+             print('d')
+             es_engine.delete(es_file['_id'])
 
-if es_files is None:
-    print("no index found")
-    es_engine.create_index()
-    es_files = []
-else:
-    es_files = es_files['hits']['hits']
+    # Prepare the to add list
+    for db_file in dci_file.iter(dci_context):
+        print('D')
+        if not es_engine.get(db_file['id'], _source_include=['_id']):
+            db_file['content'] = dci_file.content(dci_context, db_file['id']).content.decode('UTF-8')
+            print('A')
+            es_engine.index(db_file)
 
-print("- Documents In DB: %s" % len(db_files['files']))
-print("- Documents In ES: %s" % len(es_files))
 
-# Prepare the to delete list
-to_del = []
-for es_file in es_files:
-    for db_file in db_files['files']:
-        if es_file['_id'] == db_file['id']:
-            break
-    else:
-        to_del.append(es_file)
-
-# Prepare the to add list
-to_add = []
-for db_file in db_files['files']:
-    for es_file in es_files:
-        if es_file['_id'] == db_file['id']:
-          break
-    else:
-        to_add.append(db_file)
-
-print("- To Add: %s" % len(to_add))
-print("- To Delete: %s" % len(to_del))
-
-for add in to_add:
-    # if there is no content it might be an API update, so we retrieve the
-    # information from the API
-    add['content'] = file.content(dci_context, add['id']).content
-    es_engine.index(add)
-    add['content'] = ""
-
-for delete in to_del:
-    es_engine.delete(delete['_id'])
+if __name__ == '__main__':
+    main()

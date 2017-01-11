@@ -15,6 +15,8 @@
 # under the License.
 
 from elasticsearch import Elasticsearch
+import elasticsearch.exceptions
+import elasticsearch.helpers
 
 
 class DCIESEngine(object):
@@ -22,12 +24,14 @@ class DCIESEngine(object):
         self.esindex = index
         self.conn = Elasticsearch(conf['ES_HOST'], port=conf['ES_PORT'],
                                   timeout=timeout)
+        if not self.conn.indices.exists(index=self.esindex):
+            self.conn.indices.create(index=self.esindex)
 
-    def create_index(self):
-        self.conn.indices.create(index=self.esindex)
-
-    def get(self, id, team_id=None):
-        res = self.conn.get(index=self.esindex, doc_type='log', id=id)
+    def get(self, id, team_id=None, **kargs):
+        try:
+            res = self.conn.get(index=self.esindex, doc_type='log', id=id, **kargs)
+        except elasticsearch.exceptions.NotFoundError:
+            res = {}
         if team_id:
             if res:
                 if res['_source']['team_id'] != team_id:
@@ -38,26 +42,37 @@ class DCIESEngine(object):
         self.conn.delete(index=self.esindex, doc_type='log', id=id)
         return True
 
-    def list(self, include=None, exclude=None):
-
+    def _build_query(self, size=None, includes=None, excludes=None):
         query = {
-            "size": 10000,
             "query": {
                 "match_all": {}
             }
         }
-        if include:
+        if size:
+            query['query']['size'] = size
+        if includes:
             query['_source'] = {
-                'include': include
+                'includes': includes
             }
-        if exclude:
+        if excludes:
             query['_source'] = {
-                'exclude': exclude
+                'excludes': excludes
             }
+
+
+    def list(self, includes=None, excludes=None):
+        query = self._build_query(size=1000, includes=includes,
+                                  excludes=excludes)
         if self.conn.indices.exists(index=self.esindex):
             return self.conn.search(index=self.esindex, body=query)
         else:
             return None
+
+    def iter(self, includes=None, excludes=None):
+        query = self._build_query(includes, excludes)
+        return elasticsearch.helpers.scan(self.conn,
+                                          query=query,
+                                          index=self.esindex)
 
     def index(self, values):
         return self.conn.index(index=self.esindex, doc_type='log',
