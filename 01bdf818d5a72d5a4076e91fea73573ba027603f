@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da86d52c_128ff224",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 353,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-01-12T20:52:38Z",
+      "side": 1,
+      "message": "Wondering if \u0027id is NULL\u0027 could be a bette solution there instead of \u0027id \u003d\u003d None\u0027.\n\nWDYT ?",
+      "revId": "01bdf818d5a72d5a4076e91fea73573ba027603f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
