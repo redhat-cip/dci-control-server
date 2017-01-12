@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da86d52c_f2c41e61",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 9
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-01-12T20:46:00Z",
+      "side": 1,
+      "message": "typo: we can now do things",
+      "range": {
+        "startLine": 14,
+        "startChar": 33,
+        "endLine": 14,
+        "endChar": 55
+      },
+      "revId": "4e65ff9c79686c228ce98bf1e19d54a0ec89f724",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da86d52c_f2edfef0",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-01-12T20:46:00Z",
+      "side": 1,
+      "message": "Could you use the same format of import than for dci.db.models ?\n\nfrom dbi.db import embeds",
+      "revId": "4e65ff9c79686c228ce98bf1e19d54a0ec89f724",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
