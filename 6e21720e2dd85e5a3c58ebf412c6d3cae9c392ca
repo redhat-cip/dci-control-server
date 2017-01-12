@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da86d52c_6f404557",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-12T15:01:21Z",
+      "side": 1,
+      "message": "add docstring to explain the fields",
+      "revId": "6e21720e2dd85e5a3c58ebf412c6d3cae9c392ca",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da86d52c_ef2b5592",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 278,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-12T15:01:21Z",
+      "side": 1,
+      "message": "r1, job1\nr1, job2\nr1, job3\n\n\u003d\u003e {\"r1\": [\u0027job1\u0027, \u0027job2\u0027, \u0027job3\u0027]}",
+      "revId": "6e21720e2dd85e5a3c58ebf412c6d3cae9c392ca",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
