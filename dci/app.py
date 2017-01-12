@@ -28,18 +28,24 @@ from sqlalchemy import exc as sa_exc
 
 from dci import dci_config
 
+zmq_sender = None
+
 
 class DciControlServer(flask.Flask):
-
     def __init__(self, conf):
         super(DciControlServer, self).__init__(__name__)
         self.config.update(conf)
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
         self.es_engine = es_engine.DCIESEngine(conf)
-        context = zmq.Context()
-        self.sender = context.socket(zmq.PUSH)
-        self.sender.connect(conf['ZMQ_CONN'])
+        self.sender = self._get_zmq_sender()
+
+    def _get_zmq_sender(self):
+        global zmq_sender
+        if not zmq_sender:
+            zmq_sender = zmq.Context().socket(zmq.PUSH)
+            zmq_sender.connect(conf['ZMQ_CONN'])
+        return zmq_sender
 
     def make_default_options_response(self):
         resp = super(DciControlServer, self).make_default_options_response()
