@@ -24,25 +24,32 @@ import pytest
 import sqlalchemy
 import sqlalchemy_utils.functions
 
+import os
 import uuid
 
 
 @pytest.fixture(scope='session')
-def engine(request):
+def prepare_template():
+    template_uri = "postgresql:///template_dci?host=%s" % os.path.abspath(os.environ['DCI_DB_DIR'])
+    engine = sqlalchemy.create_engine(template_uri)
+    sqlalchemy_utils.functions.create_database(template_uri)
+    models.metadata.create_all(engine)
+    with engine.begin() as conn:
+        utils.provision(conn)
+    engine.dispose()
+
+
+@pytest.fixture
+def engine():
     utils.rm_upload_folder()
     db_uri = utils.conf['SQLALCHEMY_DATABASE_URI']
 
+    if sqlalchemy_utils.functions.database_exists(db_uri):
+        sqlalchemy_utils.functions.drop_database(db_uri)
+
     engine = sqlalchemy.create_engine(db_uri)
+    sqlalchemy_utils.functions.create_database(db_uri, template='template_dci')
 
-    def del_db():
-        if sqlalchemy_utils.functions.database_exists(db_uri):
-            sqlalchemy_utils.functions.drop_database(db_uri)
-
-    del_db()
-    request.addfinalizer(del_db)
-    sqlalchemy_utils.functions.create_database(db_uri)
-
-    models.metadata.create_all(engine)
     return engine
 
 
@@ -60,10 +67,10 @@ def memoize_password_hash():
 
 @pytest.fixture
 def db_clean(request, engine):
-    def fin():
-        for table in reversed(models.metadata.sorted_tables):
-            engine.execute(table.delete())
-    request.addfinalizer(fin)
+    db_uri = utils.conf['SQLALCHEMY_DATABASE_URI']
+    engine.dispose()
+    if sqlalchemy_utils.functions.database_exists(db_uri):
+        sqlalchemy_utils.functions.drop_database(db_uri)
 
 
 @pytest.fixture
@@ -74,9 +81,9 @@ def fs_clean(request):
 
 @pytest.fixture
 def db_provisioning(db_clean, engine):
-    with engine.begin() as conn:
-        utils.provision(conn)
-
+    db_uri = utils.conf['SQLALCHEMY_DATABASE_URI']
+    sqlalchemy_utils.functions.create_database(db_uri, template='template_dci')
+    engine = sqlalchemy.create_engine(db_uri)
 
 @pytest.fixture
 def app(db_provisioning, engine, es_clean, fs_clean):
