@@ -53,6 +53,24 @@
     },
     {
       "key": {
+        "uuid": "da86d52c_383cd593",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-17T11:12:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da86d52c_29656d45",
+      "revId": "680800dc0da906ffbde24359af6f0beb4ee8adf8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da86d52c_495aa184",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 4
@@ -64,6 +82,24 @@
       "writtenOn": "2017-01-09T15:52:49Z",
       "side": 1,
       "message": "The same, we can just have one new variable here.",
+      "revId": "680800dc0da906ffbde24359af6f0beb4ee8adf8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da86d52c_5841890a",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 226,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-17T11:12:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da86d52c_495aa184",
       "revId": "680800dc0da906ffbde24359af6f0beb4ee8adf8",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -87,6 +123,24 @@
     },
     {
       "key": {
+        "uuid": "da86d52c_98c3018a",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 313,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-17T11:12:34Z",
+      "side": 1,
+      "message": "It\u0027s not a duplication because it\u0027s the same source of information. It\u0027s more a commodity info for the client/agent to know at the job schedule time if it should process an upgrade or not without calling another api.",
+      "parentUuid": "da86d52c_695f6573",
+      "revId": "680800dc0da906ffbde24359af6f0beb4ee8adf8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da86d52c_e94a75ab",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 4
@@ -98,6 +152,24 @@
       "writtenOn": "2017-01-09T15:52:49Z",
       "side": 1,
       "message": "We must validate the job ownership.",
+      "revId": "680800dc0da906ffbde24359af6f0beb4ee8adf8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da86d52c_b86e0595",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 334,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-17T11:12:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da86d52c_e94a75ab",
       "revId": "680800dc0da906ffbde24359af6f0beb4ee8adf8",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -121,6 +193,24 @@
     },
     {
       "key": {
+        "uuid": "da86d52c_d86bb983",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 366,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-17T11:12:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da86d52c_c94db1c6",
+      "revId": "680800dc0da906ffbde24359af6f0beb4ee8adf8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da86d52c_29cc8d35",
         "filename": "dci/api/v1/topics.py",
         "patchSetId": 4
@@ -132,6 +222,24 @@
       "writtenOn": "2017-01-09T15:52:49Z",
       "side": 1,
       "message": "Could you please create a inner-function with the two lines below and reused it for topic_id and next_topic.",
+      "revId": "680800dc0da906ffbde24359af6f0beb4ee8adf8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da86d52c_f8687d89",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-01-17T11:12:34Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da86d52c_29cc8d35",
       "revId": "680800dc0da906ffbde24359af6f0beb4ee8adf8",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
