@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da86d52c_387e95e5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 5
+      },
+      "lineNbr": 14,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-01-17T15:23:17Z",
+      "side": 1,
+      "message": "this field is no more.",
+      "revId": "9ea8c0376d42de93bf9c09075a3d4704c9e50924",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da86d52c_588349cc",
+        "filename": "tests/common/utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-01-17T15:23:17Z",
+      "side": 1,
+      "message": "IS_UPGRADE is not necessary.",
+      "revId": "9ea8c0376d42de93bf9c09075a3d4704c9e50924",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
