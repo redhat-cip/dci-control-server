@@ -27,14 +27,13 @@ from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
+from dci.db import embeds
 from dci.db import models
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.TEAMS
+_VALID_EMBED = embeds.teams()
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_VALID_EMBED = {
-    'topics': v1_utils.embed(models.TOPICS, many=True),
-}
 
 
 @api.route('/teams', methods=['POST'])
@@ -72,8 +71,11 @@ def create_teams(user):
 @auth.requires_auth
 def get_all_teams(user):
     args = schemas.args(flask.request.args.to_dict())
+    embed = schemas.args(flask.request.args.to_dict())['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
+                                 embed=_VALID_EMBED)
+    q_bd.join(embed)
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS, default='name')
     q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
@@ -83,6 +85,7 @@ def get_all_teams(user):
 
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    rows = q_bd.dedup_rows(embed, rows)
 
     return flask.jsonify({'teams': rows, '_meta': {'count': nb_row}})
 

@@ -29,20 +29,16 @@ from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
+from dci.db import embeds
 from dci.db import models
 from dci import dci_config
 
 
 _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
-_FILES_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_VALID_EMBED = {
-    'jobstate': v1_utils.embed(models.JOBSTATES),
-    'jobstate.job': v1_utils.embed(models.JOBS),
-    'team': v1_utils.embed(models.TEAMS)
-}
-
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
+_VALID_EMBED = embeds.files()
+_FILES_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
 @api.route('/files', methods=['POST'])
@@ -66,7 +62,7 @@ def create_files(user):
         row = flask.g.db_conn.execute(q_bd.build()).fetchone()
         if row is None:
             raise dci_exc.DCINotFound('Jobstate', values['jobstate_id'])
-        values['job_id'] = row['job_id']
+        values['job_id'] = row['jobstates_job_id']
 
     q_bd = v1_utils.QueryBuilder(models.JOBS)
     if not auth.is_admin(user):
