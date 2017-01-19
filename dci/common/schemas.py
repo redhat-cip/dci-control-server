@@ -338,6 +338,8 @@ file = utils.dict_merge(base, {
                                                    msg=INVALID_JOB_STATE),
     v.Optional('job_id', default=None): v.Any(UUID_FIELD,
                                               msg=INVALID_JOB),
+    v.Optional('test_id', default=None): v.Any(UUID_FIELD,
+                                               msg=INVALID_TEST),
 })
 
 file = schema_factory(file)
