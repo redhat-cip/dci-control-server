@@ -47,7 +47,8 @@ def create_files(user):
     # todo(yassine): use voluptuous for headers validation
     headers_values = v1_utils.flask_headers_to_dict(flask.request.headers)
 
-    values = dict.fromkeys(['md5', 'mime', 'jobstate_id', 'job_id', 'name'])
+    values = dict.fromkeys(['md5', 'mime', 'jobstate_id',
+                            'job_id', 'name', 'test_id'])
     values.update(headers_values)
 
     if values.get('jobstate_id') is None and values.get('job_id') is None:
