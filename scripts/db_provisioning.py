@@ -209,7 +209,7 @@ def init_db(db_conn, minimal):
                          component_types=['OSP director'])
     jobdef_hp_2 = db_ins(models.JOBDEFINITIONS, topic_id=topic_hp,
                          name='HP tempest v1.1',
-                         component_types=['OSP director', 'gerrit_review'])
+                         component_types=['package', 'gerrit_review'])
 
     jobdef_dell_1 = db_ins(models.JOBDEFINITIONS, topic_id=topic_dell,
                            name='Dell khaleesi-tempest v0.8',
