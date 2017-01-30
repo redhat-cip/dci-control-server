@@ -19,6 +19,23 @@
     },
     {
       "key": {
+        "uuid": "ba7be1f8_f2e6d543",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 227,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-01-30T15:29:47Z",
+      "side": 1,
+      "message": "Most of the code here is duplicated in the other modules. Could you try to factorize that?",
+      "revId": "ac101dc04f2c324b5e627d405a7324c4095a7c61",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba7be1f8_b2dc5d76",
         "filename": "dci/api/v1/users.py",
         "patchSetId": 1
