@@ -230,3 +230,31 @@ def delete_test_from_jobdefinition(user, jd_id, t_id):
         raise dci_exc.DCIConflict('Test', t_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/jobdefinitions/purge', methods=['POST'])
+@auth.requires_auth
+def purge_archived_jobdefinitions(user):
+    noop = flask.request.json.get('noop', False)
+
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+
+    where_clause = sql.and_(
+        _TABLE.c.state == 'archived'
+    )
+    if noop:
+        query = sql.select([_TABLE]).where(where_clause)
+    else:
+        query = _TABLE.delete().where(where_clause)
+
+    result = flask.g.db_conn.execute(query).fetchall()
+
+    if not isinstance(result, list) and not result.rowcount:
+        raise dci_exc.DCIDeleteConflict('Jobdefinition', 'X')
+
+    if noop:
+        return flask.jsonify({'jobdefinitions': result,
+                              '_meta': {'count': len(result)}})
+    else:
+        return flask.Response(None, 204, content_type='application/json')

@@ -669,3 +669,31 @@ def delete_meta(user, j_id, m_id):
     if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
         raise auth.UNAUTHORIZED
     return metas.delete_meta(j_id, m_id)
+
+
+@api.route('/jobs/purge', methods=['POST'])
+@auth.requires_auth
+def purge_archived_jobs(user):
+    noop = flask.request.json.get('noop', False)
+
+    if not(auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+
+    where_clause = sql.and_(
+        _TABLE.c.state == 'archived'
+    )
+    if noop:
+        query = sql.select([_TABLE]).where(where_clause)
+    else:
+        query = _TABLE.delete().where(where_clause)
+
+    result = flask.g.db_conn.execute(query).fetchall()
+
+    if not isinstance(result, list) and not result.rowcount:
+        raise dci_exc.DCIDeleteConflict('Job', 'X')
+
+    if noop:
+        return flask.jsonify({'jobs': result,
+                              '_meta': {'count': len(result)}})
+    else:
+        return flask.Response(None, 204, content_type='application/json')
