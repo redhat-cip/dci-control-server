@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba7be1f8_b2e61d15",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 17
+      },
+      "lineNbr": 617,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-01-30T17:15:58Z",
+      "side": 1,
+      "message": "Ideally, We should also set the archived state to all the associated resources. But I cannot find a case where this would really be mandatory.",
+      "revId": "ecc7601865a1d54a7fc19fd35b8c53f1927a9805",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
