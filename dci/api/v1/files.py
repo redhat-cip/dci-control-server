@@ -23,6 +23,7 @@ from flask import json
 from sqlalchemy import sql
 
 from dci.api.v1 import api
+from dci.api.v1 import base
 from dci.api.v1 import transformations as tsfm
 from dci.api.v1 import utils as v1_utils
 from dci import auth
@@ -218,3 +219,15 @@ def delete_file_by_id(user, file_id):
         raise dci_exc.DCIDeleteConflict('File', file_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/files/purge', methods=['GET'])
+@auth.requires_auth
+def get_to_purge_archived_files(user):
+    return base.get_to_purge_archived_resources(user, _TABLE)
+
+
+@api.route('/files/purge', methods=['POST'])
+@auth.requires_auth
+def purge_archived_files(user):
+    return base.purge_archived_resources(user, _TABLE)
