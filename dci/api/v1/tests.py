@@ -19,6 +19,7 @@ from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
 from dci.api.v1 import api
+from dci.api.v1 import base
 from dci.api.v1 import jobdefinitions
 from dci.api.v1 import remotecis
 from dci.api.v1 import utils as v1_utils
@@ -153,3 +154,15 @@ def delete_test_by_id_or_name(user, t_id):
         raise dci_exc.DCIDeleteConflict('Test', t_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/tests/purge', methods=['GET'])
+@auth.requires_auth
+def get_to_purge_archived_tests(user):
+    return base.get_to_purge_archived_resources(user, _TABLE)
+
+
+@api.route('/tests/purge', methods=['POST'])
+@auth.requires_auth
+def purge_archived_tests(user):
+    return base.purge_archived_resources(user, _TABLE)
