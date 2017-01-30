@@ -23,6 +23,7 @@ from sqlalchemy import sql
 
 from dci import dci_config
 from dci.api.v1 import api
+from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci.common import exceptions as dci_exc
@@ -194,6 +195,18 @@ def delete_component_by_id_or_name(user, c_id):
         raise dci_exc.DCIDeleteConflict('Component', c_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/components/purge', methods=['GET'])
+@auth.requires_auth
+def get_to_purge_archived_components(user):
+    return base.get_to_purge_archived_resources(user, _TABLE)
+
+
+@api.route('/components/purge', methods=['POST'])
+@auth.requires_auth
+def purge_archived_components(user):
+    return base.purge_archived_resources(user, _TABLE)
 
 
 @api.route('/components/<c_id>/files', methods=['GET'])

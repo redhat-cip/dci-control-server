@@ -19,6 +19,7 @@ from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
 from dci.api.v1 import api
+from dci.api.v1 import base
 from dci.api.v1 import remotecis
 from dci.api.v1 import tests
 from dci.api.v1 import utils as v1_utils
@@ -186,3 +187,15 @@ def delete_team_by_id_or_name(user, t_id):
         raise dci_exc.DCIDeleteConflict('Team', t_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/teams/purge', methods=['GET'])
+@auth.requires_auth
+def get_to_purge_archived_teams(user):
+    return base.get_to_purge_archived_resources(user, _TABLE)
+
+
+@api.route('/teams/purge', methods=['POST'])
+@auth.requires_auth
+def purge_archived_teams(user):
+    return base.purge_archived_resources(user, _TABLE)

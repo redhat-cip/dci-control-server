@@ -183,6 +183,16 @@ def test_delete_topic_by_id_as_user(admin, user):
     assert deleted_ct.status_code == 401
 
 
+def test_purge_topic(admin):
+    data = {'name': 'tname'}
+    pt = admin.post('/api/v1/topics', data=data)
+    pt_id = pt.data['topic']['id']
+    assert pt.status_code == 201
+
+    ppt = admin.delete('/api/v1/topics/%s' % pt_id)
+    assert ppt.status_code == 204
+
+
 def test_get_all_topics_with_sort(admin):
     # create 4 topics ordered by created time
     data = {'name': "tname3", 'created_at': '2015-01-01'}
