@@ -31,6 +31,7 @@ import datetime
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import text
 
 import dci.common.utils as utils
 
@@ -40,78 +41,76 @@ def upgrade():
     states.create(op.get_bind(), checkfirst=False)
 
     op.add_column('components',
-                  sa.Column('state', sa.String(255), default='active'))
-
-    op.execute('ALTER TABLE components ALTER COLUMN state TYPE states '
-               'USING state::states')
+                  sa.Column('state', states, default='active',
+                            server_default='active'))
 
     op.add_column('files',
-                  sa.Column('state', sa.String(255), default='active'))
-    op.execute('ALTER TABLE files ALTER COLUMN state TYPE states '
-               'USING state::states')
+                  sa.Column('state', states, default='active',
+                            server_default='active'))
+
     op.add_column('files',
                   sa.Column('updated_at', sa.DateTime(),
                             onupdate=datetime.datetime.utcnow,
+                            server_default=text('now()'),
                             default=datetime.datetime.utcnow, nullable=False))
     op.add_column('files',
                   sa.Column('etag', sa.String(40), nullable=False,
+                            server_default=text('md5(random()::text)'),
                             default=utils.gen_etag,
                             onupdate=utils.gen_etag))
 
     op.add_column('jobdefinitions',
-                  sa.Column('state', sa.String(255), default='active'))
-    op.execute('ALTER TABLE jobdefinitions ALTER COLUMN state TYPE states '
-               'USING state::states')
+                  sa.Column('state', states, default='active',
+                            server_default='active'))
 
     op.add_column('jobs',
-                  sa.Column('state', sa.String(255), default='active'))
-    op.execute('ALTER TABLE jobs ALTER COLUMN state TYPE states '
-               'USING state::states')
+                  sa.Column('state', states, default='active',
+                            server_default='active'))
 
     op.add_column('remotecis',
-                  sa.Column('state', sa.String(255), default='active'))
-    op.execute('ALTER TABLE remotecis ALTER COLUMN state TYPE states '
-               'USING state::states')
+                  sa.Column('state', states, default='active',
+                            server_default='active'))
 
     op.add_column('teams',
-                  sa.Column('state', sa.String(255), default='active'))
-    op.execute('ALTER TABLE teams ALTER COLUMN state TYPE states '
-               'USING state::states')
+                  sa.Column('state', states, default='active',
+                            server_default='active'))
 
     op.add_column('tests',
-                  sa.Column('state', sa.String(255), default='active'))
-    op.execute('ALTER TABLE tests ALTER COLUMN state TYPE states '
-               'USING state::states')
+                  sa.Column('state', states, default='active',
+                            server_default='active'))
+
     op.add_column('tests',
                   sa.Column('updated_at', sa.DateTime(),
+                            server_default=text('now()'),
                             onupdate=datetime.datetime.utcnow,
                             default=datetime.datetime.utcnow, nullable=False))
     op.add_column('tests',
                   sa.Column('etag', sa.String(40), nullable=False,
                             default=utils.gen_etag,
+                            server_default=text('md5(random()::text)'),
                             onupdate=utils.gen_etag))
 
     op.add_column('topics',
-                  sa.Column('state', sa.String(255), default='active'))
-    op.execute('ALTER TABLE topics ALTER COLUMN state TYPE states '
-               'USING state::states')
+                  sa.Column('state', states, default='active',
+                            server_default='active'))
 
     op.add_column('users',
-                  sa.Column('state', sa.String(255), default='active'))
-    op.execute('ALTER TABLE users ALTER COLUMN state TYPE states '
-               'USING state::states')
+                  sa.Column('state', states, default='active',
+                            server_default='active'))
 
     op.add_column('component_files',
-                  sa.Column('state', sa.String(255), default='active'))
-    op.execute('ALTER TABLE component_files ALTER COLUMN state TYPE states '
-               'USING state::states')
+                  sa.Column('state', states, default='active',
+                            server_default='active'))
+
     op.add_column('component_files',
                   sa.Column('updated_at', sa.DateTime(),
+                            server_default=text('now()'),
                             onupdate=datetime.datetime.utcnow,
                             default=datetime.datetime.utcnow, nullable=False))
     op.add_column('component_files',
                   sa.Column('etag', sa.String(40), nullable=False,
                             default=utils.gen_etag,
+                            server_default=text('md5(random()::text)'),
                             onupdate=utils.gen_etag))
 
 
