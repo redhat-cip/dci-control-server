@@ -31,6 +31,7 @@ import datetime
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy import text
 
 import dci.common.utils as utils
 
@@ -52,9 +53,11 @@ def upgrade():
     op.add_column('files',
                   sa.Column('updated_at', sa.DateTime(),
                             onupdate=datetime.datetime.utcnow,
+                            server_default=text('now()'),
                             default=datetime.datetime.utcnow, nullable=False))
     op.add_column('files',
                   sa.Column('etag', sa.String(40), nullable=False,
+                            server_default=text('md5(random()::text)'),
                             default=utils.gen_etag,
                             onupdate=utils.gen_etag))
 
@@ -84,11 +87,13 @@ def upgrade():
                'USING state::states')
     op.add_column('tests',
                   sa.Column('updated_at', sa.DateTime(),
+                            server_default=text('now()'),
                             onupdate=datetime.datetime.utcnow,
                             default=datetime.datetime.utcnow, nullable=False))
     op.add_column('tests',
                   sa.Column('etag', sa.String(40), nullable=False,
                             default=utils.gen_etag,
+                            server_default=text('md5(random()::text)'),
                             onupdate=utils.gen_etag))
 
     op.add_column('topics',
@@ -107,11 +112,13 @@ def upgrade():
                'USING state::states')
     op.add_column('component_files',
                   sa.Column('updated_at', sa.DateTime(),
+                            server_default=text('now()'),
                             onupdate=datetime.datetime.utcnow,
                             default=datetime.datetime.utcnow, nullable=False))
     op.add_column('component_files',
                   sa.Column('etag', sa.String(40), nullable=False,
                             default=utils.gen_etag,
+                            server_default=text('md5(random()::text)'),
                             onupdate=utils.gen_etag))
 
 
