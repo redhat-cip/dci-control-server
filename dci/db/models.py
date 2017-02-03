@@ -58,7 +58,7 @@ COMPONENTS = sa.Table(
     sa.Column('url', sa.Text),
     sa.Column('export_control', sa.BOOLEAN, nullable=False, default=False),
     sa.Column('topic_id', sa.String(36),
-              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              sa.ForeignKey('topics.id'),
               nullable=True),
     sa.UniqueConstraint('name', 'topic_id',
                         name='components_name_topic_id_key'),
@@ -88,10 +88,10 @@ TOPICS = sa.Table(
 JOINS_TOPICS_TEAMS = sa.Table(
     'topics_teams', metadata,
     sa.Column('topic_id', sa.String(36),
-              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              sa.ForeignKey('topics.id'),
               nullable=False, primary_key=True),
     sa.Column('team_id', sa.String(36),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              sa.ForeignKey('teams.id'),
               nullable=False, primary_key=True)
 )
 
@@ -107,7 +107,7 @@ TESTS = sa.Table(
     sa.Column('name', sa.String(255), nullable=False, unique=True),
     sa.Column('data', sa_utils.JSONType),
     sa.Column('team_id', sa.String(36),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              sa.ForeignKey('teams.id'),
               nullable=False),
     sa.Column('state', STATES, default='active'),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
@@ -128,7 +128,7 @@ JOBDEFINITIONS = sa.Table(
     sa.Column('name', sa.String(255)),
     sa.Column('priority', sa.Integer, default=0),
     sa.Column('topic_id', sa.String(36),
-              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              sa.ForeignKey('topics.id'),
               nullable=True),
     sa.Column('active', sa.BOOLEAN, default=True),
     sa.Column('comment', sa.Text),
@@ -139,30 +139,30 @@ JOBDEFINITIONS = sa.Table(
 JOIN_JOBDEFINITIONS_TESTS = sa.Table(
     'jobdefinition_tests', metadata,
     sa.Column('jobdefinition_id', sa.String(36),
-              sa.ForeignKey('jobdefinitions.id', ondelete='CASCADE'),
+              sa.ForeignKey('jobdefinitions.id'),
               nullable=False, primary_key=True),
     sa.Column('test_id', sa.String(36),
-              sa.ForeignKey('tests.id', ondelete='CASCADE'),
+              sa.ForeignKey('tests.id'),
               nullable=False, primary_key=True)
 )
 
 JOIN_REMOTECIS_TESTS = sa.Table(
     'remoteci_tests', metadata,
     sa.Column('remoteci_id', sa.String(36),
-              sa.ForeignKey('remotecis.id', ondelete='CASCADE'),
+              sa.ForeignKey('remotecis.id'),
               nullable=False, primary_key=True),
     sa.Column('test_id', sa.String(36),
-              sa.ForeignKey('tests.id', ondelete='CASCADE'),
+              sa.ForeignKey('tests.id'),
               nullable=False, primary_key=True)
 )
 
 JOIN_TOPICS_TESTS = sa.Table(
     'topic_tests', metadata,
     sa.Column('topic_id', sa.String(36),
-              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              sa.ForeignKey('topics.id'),
               nullable=False, primary_key=True),
     sa.Column('test_id', sa.String(36),
-              sa.ForeignKey('tests.id', ondelete='CASCADE'),
+              sa.ForeignKey('tests.id'),
               nullable=False, primary_key=True)
 )
 
@@ -201,7 +201,7 @@ REMOTECIS = sa.Table(
     sa.Column('data', sa_utils.JSONType),
     sa.Column('active', sa.BOOLEAN, default=True),
     sa.Column('team_id', sa.String(36),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              sa.ForeignKey('teams.id'),
               nullable=False),
     sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key'),
     sa.Column('allow_upgrade_job', sa.BOOLEAN, default=False),
@@ -224,13 +224,13 @@ JOBS = sa.Table(
     sa.Column('status', STATUSES, default='new'),
     sa.Column('configuration', pg.JSON, default={}),
     sa.Column('jobdefinition_id', sa.String(36),
-              sa.ForeignKey('jobdefinitions.id', ondelete='CASCADE'),
+              sa.ForeignKey('jobdefinitions.id'),
               nullable=False),
     sa.Column('remoteci_id', sa.String(36),
-              sa.ForeignKey('remotecis.id', ondelete='CASCADE'),
+              sa.ForeignKey('remotecis.id'),
               nullable=False),
     sa.Column('team_id', sa.String(36),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              sa.ForeignKey('teams.id'),
               nullable=False),
     sa.Column('user_agent', sa.String(255)),
     sa.Column('client_version', sa.String(255)),
@@ -254,25 +254,25 @@ METAS = sa.Table(
     sa.Column('name', sa.Text),
     sa.Column('value', sa.Text),
     sa.Column('job_id', sa.String(36),
-              sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+              sa.ForeignKey('jobs.id'),
               nullable=False))
 
 JOIN_JOBS_COMPONENTS = sa.Table(
     'jobs_components', metadata,
     sa.Column('job_id', sa.String(36),
-              sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+              sa.ForeignKey('jobs.id'),
               nullable=False, primary_key=True),
     sa.Column('component_id', sa.String(36),
-              sa.ForeignKey('components.id', ondelete='CASCADE'),
+              sa.ForeignKey('components.id'),
               nullable=False, primary_key=True))
 
 JOIN_JOBS_ISSUES = sa.Table(
     'jobs_issues', metadata,
     sa.Column('job_id', sa.String(36),
-              sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+              sa.ForeignKey('jobs.id'),
               nullable=False, primary_key=True),
     sa.Column('issue_id', sa.String(36),
-              sa.ForeignKey('issues.id', ondelete='CASCADE'),
+              sa.ForeignKey('issues.id'),
               nullable=False, primary_key=True))
 
 JOBSTATES = sa.Table(
@@ -284,10 +284,10 @@ JOBSTATES = sa.Table(
     sa.Column('status', STATUSES, nullable=False),
     sa.Column('comment', sa.Text),
     sa.Column('job_id', sa.String(36),
-              sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+              sa.ForeignKey('jobs.id'),
               nullable=False),
     sa.Column('team_id', sa.String(36),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              sa.ForeignKey('teams.id'),
               nullable=False))
 
 FILES = sa.Table(
@@ -304,13 +304,13 @@ FILES = sa.Table(
     sa.Column('md5', sa.String(32)),
     sa.Column('size', sa.BIGINT, nullable=True),
     sa.Column('jobstate_id', sa.String(36),
-              sa.ForeignKey('jobstates.id', ondelete='CASCADE'),
+              sa.ForeignKey('jobstates.id'),
               nullable=True),
     sa.Column('team_id', sa.String(36),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              sa.ForeignKey('teams.id'),
               nullable=False),
     sa.Column('job_id', sa.String(36),
-              sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+              sa.ForeignKey('jobs.id'),
               nullable=True),
     sa.Column('state', STATES, default='active'),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
@@ -331,7 +331,7 @@ COMPONENT_FILES = sa.Table(
     sa.Column('md5', sa.String(32)),
     sa.Column('size', sa.BIGINT, nullable=True),
     sa.Column('component_id', sa.String(36),
-              sa.ForeignKey('components.id', ondelete='CASCADE'),
+              sa.ForeignKey('components.id'),
               nullable=True),
     sa.Column('state', STATES, default='active'),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
@@ -353,7 +353,7 @@ USERS = sa.Table(
     sa.Column('password', sa.Text, nullable=False),
     sa.Column('role', ROLES, default=USER_ROLES[0], nullable=False),
     sa.Column('team_id', sa.String(36),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              sa.ForeignKey('teams.id'),
               nullable=False),
     sa.Column('state', STATES, default='active')
 )
@@ -361,10 +361,10 @@ USERS = sa.Table(
 JOIN_USER_REMOTECIS = sa.Table(
     'user_remotecis', metadata,
     sa.Column('user_id', sa.String(36),
-              sa.ForeignKey('users.id', ondelete='CASCADE'),
+              sa.ForeignKey('users.id'),
               nullable=False, primary_key=True),
     sa.Column('remoteci_id', sa.String(36),
-              sa.ForeignKey('remotecis.id', ondelete='CASCADE'),
+              sa.ForeignKey('remotecis.id'),
               nullable=False, primary_key=True)
 )
 
@@ -375,10 +375,10 @@ LOGS = sa.Table(
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('user_id', sa.String(36),
-              sa.ForeignKey('users.id', ondelete='CASCADE'),
+              sa.ForeignKey('users.id'),
               nullable=False),
     sa.Column('team_id', sa.String(36),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              sa.ForeignKey('teams.id'),
               nullable=False),
     sa.Column('action', sa.Text, nullable=False))
 
