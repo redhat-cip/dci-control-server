@@ -268,6 +268,9 @@ class QueryBuilder(object):
         and joins
         """
 
+        if isinstance(embed_list, str):
+            embed_list = tuple([embed_list])
+
         for i in embed_list:
             root = i.split('.')[0]
             if root not in embed_list:
@@ -276,7 +279,7 @@ class QueryBuilder(object):
         for embed in sorted(set(embed_list)):
             if embed not in self.valid_embed:
                 raise dci_exc.DCIException(
-                    'Invalid embed list: "%s"' % embed_list,
+                    'Invalid embed list: "%s"' % embed,
                     payload={'Valid elements': list(self.valid_embed)}
                 )
             e = self.valid_embed[embed]
