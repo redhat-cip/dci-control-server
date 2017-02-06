@@ -588,6 +588,9 @@ class QueryBuilder(object):
         and joins
         """
 
+        if isinstance(embed_list, str):
+            embed_list = tuple([embed_list])
+
         for i in embed_list:
             root = i.split('.')[0]
             if root not in embed_list:
