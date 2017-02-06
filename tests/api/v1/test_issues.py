@@ -52,6 +52,46 @@ def test_attach_issue_to_job(admin, job_id):
         assert result['issues'][0]['url'] == data['url']
 
 
+def test_attach_issue_to_component(admin, topic_id):
+    with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
+        data = {
+            'name': 'pname',
+            'type': 'gerrit_review',
+            'url': 'http://example.com/',
+            'topic_id': topic_id,
+            'export_control': True,
+            'state': 'active'}
+        pc = admin.post('/api/v1/components', data=data).data
+        component_id = pc['component']['id']
+        gc = admin.get('/api/v1/components/%s' % component_id).data
+        assert gc['component']['name'] == 'pname'
+        assert gc['component']['state'] == 'active'
+
+        mock_github_result = mock.Mock()
+        mock_github_request.get.return_value = mock_github_result
+
+        mock_github_result.status_code = 200
+        mock_github_result.json.return_value = {
+            'number': 1,  # issue_id
+            'title': 'Create a GET handler for /componenttype/<ct_name>',
+            'user': {'login': 'Spredzy'},  # reporter
+            'assignee': None,
+            'state': 'closed',  # status
+            'product': 'redhat-cip',
+            'component': 'dci-control-server',
+            'created_at': '2015-12-09T09:29:26Z',
+            'updated_at': '2015-12-18T15:19:41Z',
+            'closed_at': '2015-12-18T15:19:41Z',
+        }
+
+        data = {
+            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
+        }
+        admin.post('/api/v1/components/%s/issues' % component_id, data=data)
+        result = admin.get('/api/v1/components/%s/issues' % component_id).data
+        assert result['issues'][0]['url'] == data['url']
+
+
 def test_attach_invalid_issue(admin, job_id):
     data = {
         'url': '<script>alert("booo")</script>'
@@ -88,6 +128,52 @@ def test_unattach_issue_from_job(admin, job_id):
         assert result['_meta']['count'] == 1
         admin.delete('/api/v1/jobs/%s/issues/%s' % (job_id, issue_id))
         result = admin.get('/api/v1/jobs/%s/issues' % job_id).data
+        assert result['_meta']['count'] == 0
+
+
+def test_unattach_issue_from_component(admin, topic_id):
+    with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
+        data = {
+            'name': 'pname',
+            'type': 'gerrit_review',
+            'url': 'http://example.com/',
+            'topic_id': topic_id,
+            'export_control': True,
+            'state': 'active'}
+        pc = admin.post('/api/v1/components', data=data).data
+        component_id = pc['component']['id']
+        gc = admin.get('/api/v1/components/%s' % component_id).data
+        assert gc['component']['name'] == 'pname'
+        assert gc['component']['state'] == 'active'
+
+        mock_github_result = mock.Mock()
+        mock_github_request.get.return_value = mock_github_result
+
+        mock_github_result.status_code = 200
+        mock_github_result.json.return_value = {
+            'number': 1,  # issue_id
+            'title': 'Create a GET handler for /componenttype/<ct_name>',
+            'user': {'login': 'Spredzy'},  # reporter
+            'assignee': None,
+            'state': 'closed',  # status
+            'product': 'redhat-cip',
+            'component': 'dci-control-server',
+            'created_at': '2015-12-09T09:29:26Z',
+            'updated_at': '2015-12-18T15:19:41Z',
+            'closed_at': '2015-12-18T15:19:41Z',
+        }
+
+        data = {
+            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
+        }
+        result = admin.post('/api/v1/components/%s/issues' % component_id,
+                            data=data)
+        issue_id = result.data['issue_id']
+        result = admin.get('/api/v1/components/%s/issues' % component_id).data
+        assert result['_meta']['count'] == 1
+        admin.delete('/api/v1/components/%s/issues/%s' % (component_id,
+                                                          issue_id))
+        result = admin.get('/api/v1/components/%s/issues' % component_id).data
         assert result['_meta']['count'] == 0
 
 
