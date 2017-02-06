@@ -429,7 +429,7 @@ def get_job_by_id(user, job_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
     job = _get_job(user, job_id, embed)
     job['issues'] = (
-        json.loads(issues.get_all_issues(job_id).response[0])['issues']
+        json.loads(issues.get_all_issues(job_id, _TABLE).response[0])['issues']
     )
     res = flask.jsonify({'job': job})
     res.headers.add_header('ETag', job['etag'])
@@ -541,21 +541,21 @@ def add_file_to_jobs(user, j_id):
 @auth.requires_auth
 def retrieve_issues_from_job(user, j_id):
     """Retrieve all issues attached to a job."""
-    return issues.get_all_issues(j_id)
+    return issues.get_all_issues(j_id, _TABLE)
 
 
 @api.route('/jobs/<j_id>/issues', methods=['POST'])
 @auth.requires_auth
 def attach_issue_to_jobs(user, j_id):
     """Attach an issue to a job."""
-    return issues.attach_issue(j_id)
+    return issues.attach_issue(j_id, _TABLE)
 
 
 @api.route('/jobs/<j_id>/issues/<i_id>', methods=['DELETE'])
 @auth.requires_auth
 def unattach_issue_from_job(user, j_id, i_id):
     """Unattach an issue to a job."""
-    return issues.unattach_issue(j_id, i_id)
+    return issues.unattach_issue(j_id, i_id, _TABLE)
 
 
 @api.route('/jobs/<j_id>/files', methods=['GET'])
