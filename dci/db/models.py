@@ -66,6 +66,18 @@ COMPONENTS = sa.Table(
     sa.Column('state', STATES, default='active')
 )
 
+JOIN_COMPONENTS_ISSUES = sa.Table(
+    'components_issues', metadata,
+    sa.Column('component_id', sa.String(36),
+              sa.ForeignKey('components.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('issue_id', sa.String(36),
+              sa.ForeignKey('issues.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('user_id', sa.String(36),
+              sa.ForeignKey('users.id'),
+              nullable=False))
+
 TOPICS = sa.Table(
     'topics', metadata,
     sa.Column('id', sa.String(36), primary_key=True,
@@ -273,7 +285,10 @@ JOIN_JOBS_ISSUES = sa.Table(
               nullable=False, primary_key=True),
     sa.Column('issue_id', sa.String(36),
               sa.ForeignKey('issues.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True))
+              nullable=False, primary_key=True),
+    sa.Column('user_id', sa.String(36),
+              sa.ForeignKey('users.id'),
+              nullable=False))
 
 JOBSTATES = sa.Table(
     'jobstates', metadata,
