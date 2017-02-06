@@ -23,6 +23,7 @@ from dci.api.v1 import utils as v1_utils
 
 def components():
     files = models.COMPONENT_FILES.alias('files')
+    issues = models.ISSUES.alias('issues')
     return {
         'files': v1_utils.embed(
             select=[files],
@@ -31,6 +32,18 @@ def components():
                 files.c.state != 'archived'
             ),
             many=True),
+        'issues': v1_utils.embed(
+            select=[issues],
+            join=models.COMPONENTS.join(
+                models.JOIN_COMPONENTS_ISSUES.join(
+                    issues,
+                    issues.c.id == models.JOIN_COMPONENTS_ISSUES.c.issue_id,
+                    isouter=True
+                ),
+                models.COMPONENTS.c.id ==
+                models.JOIN_COMPONENTS_ISSUES.c.component_id,
+                isouter=True
+            ), many=True)
     }
 
 
@@ -93,6 +106,7 @@ def jobs():
     jobdefinition = models.JOBDEFINITIONS.alias('jobdefinition')
     jobdefinition_tests = models.TESTS.alias('jobdefinition.tests')
     team = models.TEAMS.alias('team')
+    issues = models.ISSUES.alias('issues')
     remoteci = models.REMOTECIS.alias('remoteci')
     remoteci_tests = models.TESTS.alias('remoteci.tests')
     # j = models.JOBS.alias('j')
@@ -172,6 +186,18 @@ def jobs():
                 isouter=True),
             where=j4.c.id == models.JOBS.c.id,
             many=True),
+        'issues': v1_utils.embed(
+            select=[issues],
+            join=models.JOBS.join(
+                models.JOIN_JOBS_ISSUES.join(
+                    issues,
+                    issues.c.id == models.JOIN_JOBS_ISSUES.c.issue_id,
+                    isouter=True
+                ),
+                models.JOBS.c.id ==
+                models.JOIN_JOBS_ISSUES.c.job_id,
+                isouter=True
+            ), many=True),
         'components': v1_utils.embed(
             select=[models.COMPONENTS],
             join=j5.join(
