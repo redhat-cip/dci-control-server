@@ -195,7 +195,7 @@ def test_schedule_give_latest_components(admin, jobdefinition_factory,
 
     c1 = components_from_job()
     c2 = components_from_job()
-    assert c1[0]['type'] == c2[0]['type']
+    assert set([i['type'] for i in c1]) == set([i['type'] for i in c2])
     assert c1[0]['id'] != c2[0]['id']
 
 

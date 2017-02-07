@@ -115,7 +115,7 @@ def get_all_users(user, team_id=None):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
 
     return flask.jsonify({'users': rows, '_meta': {'count': nb_row}})
 
@@ -140,7 +140,7 @@ def get_user_by_id_or_name(user, user_id):
     q_bd.where.append(where_clause)
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
     if len(rows) != 1:
         raise dci_exc.DCINotFound('User', user_id)
     guser = rows[0]
