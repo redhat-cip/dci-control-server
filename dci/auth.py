@@ -80,11 +80,11 @@ def is_admin(user, super=False):
 
 
 def is_admin_user(user, team_id):
-    return user['team_id'] == team_id and user['role'] == 'admin'
+    return str(user['team_id']) == str(team_id) and user['role'] == 'admin'
 
 
 def is_in_team(user, team_id):
-    return user['team_id'] == team_id
+    return str(user['team_id']) == str(team_id)
 
 
 def check_export_control(user, component):

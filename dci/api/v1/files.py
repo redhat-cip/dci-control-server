@@ -18,6 +18,7 @@ import datetime
 import os
 
 import flask
+import uuid
 from flask import json
 
 from sqlalchemy import sql
@@ -148,11 +149,21 @@ def get_file_by_id_or_name(user, file_id):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    where_clause = sql.and_(
-        _TABLE.c.state != 'archived',
-        sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
-    )
-    q_bd.where.append(where_clause)
+    try:
+        uuid.UUID(file_id)
+        q_bd.where.append(
+            sql.and_(
+                _TABLE.c.state != 'archived',
+                _TABLE.c.id == file_id
+            )
+        )
+    except ValueError:
+        q_bd.where.append(
+            sql.and_(
+                _TABLE.c.state != 'archived',
+                _TABLE.c.name == file_id
+            )
+        )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(embed, rows)

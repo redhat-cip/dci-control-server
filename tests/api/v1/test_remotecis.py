@@ -16,6 +16,7 @@
 
 from __future__ import unicode_literals
 import pytest
+import uuid
 
 
 def test_create_remotecis(admin, team_id):
@@ -335,7 +336,7 @@ def test_put_remotecis(admin, team_id):
     gr = admin.get('/api/v1/remotecis/pname')
     assert gr.status_code == 200
 
-    ppr = admin.put('/api/v1/remotecis/pname',
+    ppr = admin.put('/api/v1/remotecis/%s' % gr.data['remoteci']['id'],
                     data={'name': 'nname'},
                     headers={'If-match': pr_etag})
     assert ppr.status_code == 204
@@ -395,7 +396,7 @@ def test_delete_remoteci_by_id(admin, team_id):
 
 
 def test_delete_remoteci_not_found(admin):
-    result = admin.delete('/api/v1/remotecis/ptdr',
+    result = admin.delete('/api/v1/remotecis/%s' % uuid.uuid4(),
                           headers={'If-match': 'mdr'})
     assert result.status_code == 404
 
@@ -466,7 +467,8 @@ def test_put_remoteci_as_user(user, team_user_id, remoteci_id, admin):
     remoteci = user.get('/api/v1/remotecis/rname')
     remoteci_etag = remoteci.headers.get("ETag")
 
-    remoteci_put = user.put('/api/v1/remotecis/rname',
+    remoteci_put = user.put('/api/v1/remotecis/%s'
+                            % remoteci.data['remoteci']['id'],
                             data={'name': 'nname',
                                   'allow_upgrade_job': True},
                             headers={'If-match': remoteci_etag})
@@ -490,7 +492,8 @@ def test_delete_remoteci_as_user(user, team_user_id, admin, remoteci_id):
     remoteci = user.get('/api/v1/remotecis/rname')
     remoteci_etag = remoteci.headers.get("ETag")
 
-    remoteci_delete = user.delete('/api/v1/remotecis/rname',
+    remoteci_delete = user.delete('/api/v1/remotecis/%s'
+                                  % remoteci.data['remoteci']['id'],
                                   headers={'If-match': remoteci_etag})
     assert remoteci_delete.status_code == 204
 
