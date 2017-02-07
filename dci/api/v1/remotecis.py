@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
+import uuid
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -106,10 +107,21 @@ def get_remoteci_by_id_or_name(user, r_id):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    q_bd.where.append(sql.and_(
-        _TABLE.c.state != 'archived',
-        sql.or_(_TABLE.c.id == r_id, _TABLE.c.name == r_id))
-    )
+    try:
+        uuid.UUID(r_id)
+        q_bd.where.append(
+            sql.and_(
+                _TABLE.c.state != 'archived',
+                _TABLE.c.id == r_id
+            )
+        )
+    except ValueError:
+        q_bd.where.append(
+            sql.and_(
+                _TABLE.c.state != 'archived',
+                _TABLE.c.name == r_id
+            )
+        )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(embed, rows)
@@ -141,10 +153,9 @@ def put_remoteci(user, r_id):
         raise auth.UNAUTHORIZED
 
     values['etag'] = utils.gen_etag()
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == r_id, _TABLE.c.name == r_id)
-    )
+    where_clause = sql.and_(_TABLE.c.etag == if_match_etag,
+                            _TABLE.c.state != 'archived',
+                            _TABLE.c.id == r_id)
 
     query = (_TABLE
              .update()
@@ -174,7 +185,7 @@ def delete_remoteci_by_id_or_name(user, r_id):
     values = {'state': 'archived'}
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == r_id, _TABLE.c.name == r_id)
+        _TABLE.c.id == r_id
     )
     query = _TABLE.update().where(where_clause).values(**values)
 

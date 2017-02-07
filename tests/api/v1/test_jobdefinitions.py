@@ -15,6 +15,7 @@
 # under the License.
 
 from __future__ import unicode_literals
+import uuid
 
 
 def test_create_jobdefinitions(admin, topic_id):
@@ -261,7 +262,7 @@ def test_get_all_jobdefinitions_with_sort(admin, topic_id):
 
 
 def test_delete_jobdefinition_not_found(admin):
-    url = '/api/v1/jobdefinitions/ptdr'
+    url = '/api/v1/jobdefinitions/%s' % uuid.uuid4()
     result = admin.delete(url, headers={'If-match': 'mdr'})
     assert result.status_code == 404
 
