@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
+import uuid
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -101,11 +102,21 @@ def get_team_by_id_or_name(user, t_id):
     q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
     q_bd.join(embed)
 
-    where_clause = sql.and_(
-        _TABLE.c.state != 'archived',
-        sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
-    )
-    q_bd.where.append(where_clause)
+    try:
+        uuid.UUID(t_id)
+        q_bd.where.append(
+            sql.and_(
+                _TABLE.c.state != 'archived',
+                _TABLE.c.id == t_id
+            )
+        )
+    except ValueError:
+        q_bd.where.append(
+            sql.and_(
+                _TABLE.c.state != 'archived',
+                _TABLE.c.name == t_id
+            )
+        )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(rows)

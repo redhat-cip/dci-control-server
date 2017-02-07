@@ -16,6 +16,7 @@
 
 import flask
 import six
+import uuid
 from sqlalchemy import sql, func
 from sqlalchemy import Table as sa_Table
 from sqlalchemy.sql import text
@@ -52,7 +53,19 @@ def verify_existence_and_get(id, table, get_id=False):
     exception.
     """
     if 'name' in table.columns:
-        where_clause = sql.or_(table.c.id == id, table.c.name == id)
+        try:
+            uuid.UUID(id)
+            if 'state' in table.columns:
+                where_clause = sql.and_(table.c.state != 'archived',
+                                        table.c.id == id)
+            else:
+                where_clause = table.c.id == id
+        except ValueError:
+            if 'state' in table.columns:
+                where_clause = sql.and_(table.c.state != 'archived',
+                                        table.c.name == id)
+            else:
+                where_clause = table.c.name == id
     else:
         where_clause = table.c.id == id
 
@@ -78,7 +91,7 @@ def user_topic_ids(user):
         .where(models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id']))
 
     rows = flask.g.db_conn.execute(query).fetchall()
-    return [row[0] for row in rows]
+    return [str(row[0]) for row in rows]
 
 
 def verify_team_in_topic(user, topic_id):
@@ -87,7 +100,7 @@ def verify_team_in_topic(user, topic_id):
     """
     if auth.is_admin(user):
         return
-    if topic_id not in user_topic_ids(user):
+    if str(topic_id) not in user_topic_ids(user):
         raise dci_exc.DCIException('User team does not belongs to topic %s.'
                                    % topic_id, status_code=412)
 
@@ -218,7 +231,9 @@ def where_query(where, table, columns):
         m_column = getattr(table.c, name)
         # TODO(yassine): do the same for columns type different from string
         # if it's an Integer column, then try to cast the value
-        if m_column.type.python_type == int:
+        if str(m_column.type) == "UUID":
+            pass
+        elif m_column.type.python_type == int:
             try:
                 value = int(value)
             except ValueError:
@@ -473,6 +488,8 @@ def flask_headers_to_dict(headers):
 
 
 def build_file_path(file_folder, team_id, file_id, create=True):
+    team_id = str(team_id)
+    file_id = str(file_id)
     directory = os.path.join(
         file_folder, team_id, file_id[0:2], file_id[2:4], file_id[4:6]
     )
