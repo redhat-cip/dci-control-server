@@ -87,7 +87,7 @@ def get_all_teams(user):
 
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
 
     return flask.jsonify({'teams': rows, '_meta': {'count': nb_row}})
 
@@ -107,7 +107,7 @@ def get_team_by_id_or_name(user, t_id):
     q_bd.where.append(where_clause)
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
     if len(rows) != 1:
         raise dci_exc.DCINotFound('Team', t_id)
     team = rows[0]
