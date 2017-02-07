@@ -17,6 +17,7 @@
 from __future__ import unicode_literals
 import mock
 import pytest
+import uuid
 
 
 def test_create_jobs(admin, jobdefinition_id, team_id, remoteci_id,
@@ -591,7 +592,7 @@ def test_get_jobstates_by_job_id(admin, job_id, team_id):
 
 
 def test_get_job_not_found(admin):
-    result = admin.get('/api/v1/jobs/ptdr')
+    result = admin.get('/api/v1/jobs/%s' % uuid.uuid4())
     assert result.status_code == 404
 
 

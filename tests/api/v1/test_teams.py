@@ -163,7 +163,7 @@ def test_put_teams(admin):
     gt = admin.get('/api/v1/teams/pname')
     assert gt.status_code == 200
 
-    ppt = admin.put('/api/v1/teams/pname',
+    ppt = admin.put('/api/v1/teams/%s' % gt.data['team']['id'],
                     data={'name': 'nname'},
                     headers={'If-match': pt_etag})
     assert ppt.status_code == 204
