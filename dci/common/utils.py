@@ -44,6 +44,8 @@ class JSONEncoder(flask.json.JSONEncoder):
             return dict(o)
         elif isinstance(o, result.ResultProxy):
             return list(o)
+        elif isinstance(o, uuid.UUID):
+            return str(o)
 
 
 def gen_uuid():
