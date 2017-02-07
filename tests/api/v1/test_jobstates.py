@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 import tests.api.v1.test_files as files
 
 import pytest
+import uuid
 
 
 def test_create_jobstates(admin, job_id):
@@ -217,7 +218,7 @@ def test_get_jobstate_by_id(admin, job_id):
 
 
 def test_get_jobstate_not_found(admin):
-    result = admin.get('/api/v1/jobstates/ptdr')
+    result = admin.get('/api/v1/jobstates/%s' % uuid.uuid4())
     assert result.status_code == 404
 
 
