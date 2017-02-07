@@ -18,6 +18,7 @@ import flask
 import six
 from sqlalchemy import sql, func
 from sqlalchemy import Table as sa_Table
+from sqlalchemy.sql import text
 
 from dci import auth
 from dci.common import exceptions as dci_exc
@@ -174,8 +175,11 @@ def get_columns_name_with_objects(table, embed={}):
     }
     for v in embed.values():
         for t in v.select:
-            for i in t.c:
-                columns[str(i)] = i
+            if hasattr(t, 'c'):
+                for i in t.c:
+                    columns[str(i)] = i
+            else:
+                columns[str(t)] = t
     return columns
 
 
@@ -248,6 +252,7 @@ class QueryBuilder(object):
         self.extra_where = []
         self._join = []
         self.valid_embed = embed or {}
+        self.embed_list = []
 
     def ignore_columns(self, columns):
         """Remove the specified set of columns from the SQL query."""
@@ -272,8 +277,9 @@ class QueryBuilder(object):
             root = i.split('.')[0]
             if root not in embed_list:
                 embed_list.append(root)
+        self.embed_list = sorted(set(embed_list))
 
-        for embed in sorted(set(embed_list)):
+        for embed in self.embed_list:
             if embed not in self.valid_embed:
                 raise dci_exc.DCIException(
                     'Invalid embed list: "%s"' % embed_list,
@@ -292,7 +298,28 @@ class QueryBuilder(object):
             if e.select is not None:
                 self.select += e.select
 
-    def dedup_rows(self, embed_list, rows):
+    def _remove_cur_table_field_prefix(self, row):
+        t_row = collections.OrderedDict()
+        t_prefix = self.table.name + '_'
+        for i, v in row.items():
+            if i.startswith(t_prefix):
+                i = i[len(t_prefix):]
+            t_row[i] = v
+        return t_row
+
+    def _flatten_embedded_field(self, row):
+        # Rename the embedded fields from table_field to table.field to be
+        # consistent with the internal model
+        fixed_row = {}
+        for e in self.embed_list:
+            for k in row.keys():
+                if k.startswith(e + '_'):
+                    fixed_k = e + '.' + k[len(e) + 1:]
+                    fixed_row[fixed_k] = row.pop(k)
+        row.update(fixed_row)
+        return row
+
+    def dedup_rows(self, rows):
         # the DB returns a list of rows with all the information,
         # sometime, we will get several raws for on item. e.g: a
         # component has 3 associated jobs
@@ -311,22 +338,16 @@ class QueryBuilder(object):
         #         {"name": "job1"},
         #         {"name": "job2"},
         #         {"name": "job3"}]}
-        embed_list.sort()
         aggregates = [
             (e, collections.defaultdict(list), e.split('.'))
-            for e in embed_list
+            for e in self.embed_list
             if self.valid_embed[e] and self.valid_embed[e].many]
         parsed_rows = collections.OrderedDict()
 
         for row in rows:
-            t_row = collections.OrderedDict()
-            t_prefix = self.table.name + '_'
-            for i, v in row.items():
-                if i.startswith(t_prefix):
-                    i = i[len(t_prefix):]
-                t_row[i] = v
-            row = t_row
-            row = group_embedded_resources(embed_list, row)
+            row = self._remove_cur_table_field_prefix(row)
+            row = self._flatten_embedded_field(row)
+            row = group_embedded_resources(self.embed_list, row)
             for aggr, aggr_dict, aggr_splitted in aggregates:
                 base_element = row
                 for i in aggr_splitted[:-1]:
@@ -338,8 +359,7 @@ class QueryBuilder(object):
                 cur_ids = [i['id'] for i in aggr_dict[row['id']]]
                 if obj['id'] not in cur_ids:
                     aggr_dict[row['id']].append(obj)
-            if row['id'] not in parsed_rows:
-                parsed_rows[row['id']] = row
+            parsed_rows[row['id']] = row
 
         for row_id, row in six.iteritems(parsed_rows):
             for aggr, aggr_dict, aggr_splitted in aggregates:
@@ -365,7 +385,8 @@ class QueryBuilder(object):
         return query
 
     def build(self):
-        query = sql.select(self.select, use_labels=True)
+        distinct_on = [self.table.c.id] + [i + '_id' for i in self.embed_list]
+        query = sql.select(self.select, use_labels=True).distinct(*distinct_on)
         # One record information may be splitted on more than just one SQL
         # row. These rows will be ultimately merged in one line by
         # dedup_rows().
@@ -387,10 +408,20 @@ class QueryBuilder(object):
             _where = self.table.c.id == None  # noqa
         self.extra_where.append(_where)
 
-        for sort in self._sort + self.sort:
+        for sort in distinct_on:
             query = query.order_by(sort)
 
-        query = self.prepare_join(query)
+        query = self.prepare_join(query).alias(str(self.table))
+        query = sql.select(['*'], from_obj=query)
+        try:  # case where a table is in the select
+            id_c_name = '%s_%s' % (
+                self.select[0].name, self.select[0].c['id'].name)
+        except AttributeError:
+            id_c_name = self.select[0].name
+            if '_' not in id_c_name:
+                id_c_name = str(self.table) + '_' + id_c_name
+        for id_ in reversed(ids):
+            query = query.order_by(text("%s='%s' ASC" % (id_c_name, id_)))
         return query
 
     def build_list_ids(self):

@@ -52,7 +52,9 @@ def files():
                     f0.c.jobstate_id == jobstate.c.id,
                     f0.c.jobstate_id == None))),  # noqa
         'jobstate.job': v1_utils.embed(
-            select=[jobstate_job],
+            select=[c
+                    for n, c in jobstate_job.c.items()
+                    if n != 'configuration'],
             join=jobstate_t.join(
                 jobstate_job,
                 sql.expression.or_(
@@ -95,7 +97,6 @@ def jobs():
     team = models.TEAMS.alias('team')
     remoteci = models.REMOTECIS.alias('remoteci')
     remoteci_tests = models.TESTS.alias('remoteci.tests')
-    # j = models.JOBS.alias('j')
     j0 = models.JOBS.alias('j0')
     j1 = models.JOBS.alias('j1')
     j2 = models.JOBS.alias('j2')
@@ -207,7 +208,7 @@ def jobstates():
             where=js0.c.id == models.JOBSTATES.c.id,
             many=True),
         'job': v1_utils.embed(
-            select=[job],
+            select=[c for n, c in job.c.items() if n != 'configuration'],
             join=js1.join(
                 job,
                 and_(
@@ -252,7 +253,7 @@ def remotecis():
                                       team.c.state != 'archived')),
             where=rci0.c.id == models.REMOTECIS.c.id),
         'last_job': v1_utils.embed(
-            select=[lj],
+            select=[c for n, c in lj.c.items() if n != 'configuration'],
             join=rci1.join(
                 lj,
                 and_(
@@ -292,7 +293,7 @@ def remotecis():
                     lj.c.id == None)),
             many=True),
         'current_job': v1_utils.embed(
-            select=[cj],
+            select=[c for n, c in cj.c.items() if n != 'configuration'],
             join=rci3.join(
                 cj,
                 and_(

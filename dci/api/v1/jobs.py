@@ -127,7 +127,7 @@ def search_jobs(user):
     q_bd.where.append(sa_op(*filering_rules))
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
 
     return flask.jsonify({'jobs': rows, '_meta': {'count': len(rows)}})
 
@@ -265,7 +265,7 @@ def _get_job(user, j_id, embed):
     q_bd.where.append(_TABLE.c.state != 'archived')
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
     if len(rows) != 1:
         raise dci_exc.DCINotFound('Job', j_id)
     job = rows[0]
@@ -402,7 +402,7 @@ def get_all_jobs(user, jd_id=None):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
 
     return flask.jsonify({'jobs': rows, '_meta': {'count': nb_row}})
 
