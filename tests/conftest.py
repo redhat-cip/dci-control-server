@@ -113,14 +113,14 @@ def topic_id(admin, team_id):
     t_id = topic['topic']['id']
     admin.post('/api/v1/topics/%s/teams' % t_id,
                data={'team_id': team_id})
-    return t_id
+    return str(t_id)
 
 
 @pytest.fixture
 def test_id(admin, team_id):
     data = {'name': 'pname', 'team_id': team_id}
     test = admin.post('/api/v1/tests', data=data).data
-    return test['test']['id']
+    return str(test['test']['id'])
 
 
 @pytest.fixture
@@ -128,7 +128,7 @@ def team_id(admin):
     team = admin.post('/api/v1/teams', data={'name': 'pname',
                                              'notification': False,
                                              'email': 'dci@example.com'}).data
-    return team['team']['id']
+    return str(team['team']['id'])
 
 
 @pytest.fixture
@@ -136,19 +136,19 @@ def team_id_notif(admin):
     team = admin.post('/api/v1/teams', data={'name': 'pname2',
                                              'notification': True,
                                              'email': 'dci@example.com'}).data
-    return team['team']['id']
+    return str(team['team']['id'])
 
 
 @pytest.fixture
 def team_user_id(admin):
     team = admin.get('/api/v1/teams/user').data
-    return team['team']['id']
+    return str(team['team']['id'])
 
 
 @pytest.fixture
 def team_admin_id(admin):
     team = admin.get('/api/v1/teams/admin').data
-    return team['team']['id']
+    return str(team['team']['id'])
 
 
 @pytest.fixture
@@ -158,14 +158,14 @@ def topic_user_id(admin, user, team_user_id):
     t_id = topic['topic']['id']
     admin.post('/api/v1/topics/%s/teams' % t_id,
                data={'team_id': team_user_id})
-    return t_id
+    return str(t_id)
 
 
 @pytest.fixture
 def remoteci_id(admin, team_id):
     data = {'name': 'pname', 'team_id': team_id, 'allow_upgrade_job': True}
     remoteci = admin.post('/api/v1/remotecis', data=data).data
-    return remoteci['remoteci']['id']
+    return str(remoteci['remoteci']['id'])
 
 
 @pytest.fixture
@@ -173,7 +173,7 @@ def remoteci_user_id(user, team_user_id):
     data = {'name': 'rname', 'team_id': team_user_id,
             'allow_upgrade_job': True}
     remoteci = user.post('/api/v1/remotecis', data=data).data
-    return remoteci['remoteci']['id']
+    return str(remoteci['remoteci']['id'])
 
 
 def create_components(user, topic_id, component_types):
@@ -184,7 +184,7 @@ def create_components(user, topic_id, component_types):
                 'type': ct,
                 'export_control': True}
         cmpt = user.post('/api/v1/components', data=data).data
-        component_ids.append(cmpt['component']['id'])
+        component_ids.append(str(cmpt['component']['id']))
     return component_ids
 
 
@@ -209,7 +209,7 @@ def components_ids(admin, topic_id):
 @pytest.fixture
 def jobdefinition_id(jobdefinition_factory):
     jd = jobdefinition_factory()
-    return jd['jobdefinition']['id']
+    return str(jd['jobdefinition']['id'])
 
 
 @pytest.fixture
