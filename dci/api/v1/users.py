@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
+import uuid
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -133,11 +134,21 @@ def get_user_by_id_or_name(user, user_id):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    where_clause = sql.and_(
-        _TABLE.c.state != 'archived',
-        sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
-    )
-    q_bd.where.append(where_clause)
+    try:
+        uuid.UUID(user_id)
+        q_bd.where.append(
+            sql.and_(
+                _TABLE.c.state != 'archived',
+                _TABLE.c.id == user_id
+            )
+        )
+    except ValueError:
+        q_bd.where.append(
+            sql.and_(
+                _TABLE.c.state != 'archived',
+                _TABLE.c.name == user_id
+            )
+        )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(embed, rows)
@@ -202,7 +213,7 @@ def delete_user_by_id_or_name(user, user_id):
     values = {'state': 'archived'}
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
+        _TABLE.c.id == user_id
     )
     query = _TABLE.update().where(where_clause).values(**values)
 

@@ -15,7 +15,7 @@
 # under the License.
 
 from __future__ import unicode_literals
-
+import uuid
 
 def test_create_users(admin, team_id):
     pu = admin.post('/api/v1/users',
@@ -209,7 +209,7 @@ def test_put_users(admin, team_id):
     gu = admin.get('/api/v1/users/pname')
     assert gu.status_code == 200
 
-    ppu = admin.put('/api/v1/users/pname',
+    ppu = admin.put('/api/v1/users/%s' % gu.data['user']['id'],
                     data={'name': 'nname'},
                     headers={'If-match': pu_etag})
     assert ppu.status_code == 204
@@ -232,7 +232,7 @@ def test_change_user_state(admin, team_id):
     gu = admin.get('/api/v1/users/pname')
     assert gu.status_code == 200
 
-    ppu = admin.put('/api/v1/users/pname',
+    ppu = admin.put('/api/v1/users/%s' % gu.data['user']['id'],
                     data={'state': 'inactive'},
                     headers={'If-match': pu_etag})
     assert ppu.status_code == 204
@@ -253,7 +253,7 @@ def test_change_user_to_invalid_state(admin, team_id):
     gu = admin.get('/api/v1/users/pname')
     assert gu.status_code == 200
 
-    ppu = admin.put('/api/v1/users/pname',
+    ppu = admin.put('/api/v1/users/%s' % gu.data['user']['id'],
                     data={'state': 'kikoolol'},
                     headers={'If-match': pu_etag})
     assert ppu.status_code == 400
@@ -284,7 +284,7 @@ def test_delete_user_by_id(admin, team_id):
 
 
 def test_delete_user_not_found(admin):
-    result = admin.delete('/api/v1/users/ptdr',
+    result = admin.delete('/api/v1/users/%s' % uuid.uuid4(),
                           headers={'If-match': 'mdr'})
     assert result.status_code == 404
 
@@ -331,12 +331,12 @@ def test_put_user_as_user_admin(user, user_admin):
     puser = user.get('/api/v1/users/user')
     user_etag = puser.headers.get("ETag")
 
-    user_put = user.put('/api/v1/users/user_admin',
+    user_put = user.put('/api/v1/users/%s' % puser.data['user']['id'],
                         data={'name': 'nname'},
                         headers={'If-match': user_etag})
     assert user_put.status_code == 401
 
-    user_put = user_admin.put('/api/v1/users/user',
+    user_put = user_admin.put('/api/v1/users/%s' % puser.data['user']['id'],
                               data={'name': 'nname'},
                               headers={'If-match': user_etag})
     assert user_put.status_code == 204
@@ -344,13 +344,13 @@ def test_put_user_as_user_admin(user, user_admin):
 
 # Only super admin can delete a team
 def test_delete_as_user_admin(user, user_admin):
-    puser = user.get('/api/v1/users/user')
+    puser = user.get('/api/v1/users/%s' % user)
     user_etag = puser.headers.get("ETag")
 
-    user_delete = user.delete('/api/v1/users/user',
+    user_delete = user.delete('/api/v1/users/%s' % puser.data['user']['id'],
                               headers={'If-match': user_etag})
     assert user_delete.status_code == 401
 
-    user_delete = user_admin.delete('/api/v1/users/user',
+    user_delete = user_admin.delete('/api/v1/users/%s' % puser.data['user']['id'],
                                     headers={'If-match': user_etag})
     assert user_delete.status_code == 204

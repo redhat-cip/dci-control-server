@@ -29,6 +29,7 @@ def test_delete_meta(user, job_user_id):
 
     meta_deleted = user.delete('/api/v1/jobs/%s/metas/%s' % (job_user_id,
                                                              meta_id))
+    print meta_deleted
     assert meta_deleted.status_code == 204
 
     all_metas = user.get('/api/v1/jobs/%s/metas' % job_user_id).data

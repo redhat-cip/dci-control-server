@@ -17,6 +17,7 @@
 import datetime
 
 import flask
+import uuid
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -114,6 +115,7 @@ def get_all_components(user, topic_id):
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(embed, rows)
+    print rows
 
     # Return only the component which have the export_control flag set to true
     #
@@ -155,12 +157,21 @@ def get_component_by_id_or_name(user, c_id):
     q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
     q_bd.join(embed)
 
-    q_bd.where.append(
-        sql.and_(
-            _TABLE.c.state != 'archived',
-            sql.or_(_TABLE.c.id == c_id, _TABLE.c.name == c_id)
+    try:
+        uuid.UUID(c_id)
+        q_bd.where.append(
+            sql.and_(
+                _TABLE.c.state != 'archived',
+                _TABLE.c.id == c_id
+            )
         )
-    )
+    except ValueError:
+        q_bd.where.append(
+            sql.and_(
+                _TABLE.c.state != 'archived',
+                _TABLE.c.name == c_id
+            )
+        )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(embed, rows)
@@ -179,6 +190,11 @@ def delete_component_by_id_or_name(user, c_id):
     # get If-Match header
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
+
+    try:
+        uuid.UUID(c_id)
+    except ValueError:
+        raise dci_exc.DCIDeleteConflict('Component', c_id)
 
     v1_utils.verify_existence_and_get(c_id, _TABLE)
 

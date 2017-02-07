@@ -300,6 +300,7 @@ def schedule_jobs(user):
     # test if there is some job to recheck
     query = _recheck_job(remoteci['id'])
     recheck_job = flask.g.db_conn.execute(query).fetchone()
+    print recheck_job
     if recheck_job:
         values = _build_recheck(recheck_job, values)
     else:
@@ -333,18 +334,18 @@ def upgrade_jobs(user):
     v1_utils.verify_user_in_team(user, original_job['team_id'])
 
     # get the remoteci
-    remoteci_id = original_job['remoteci_id']
+    remoteci_id = str(original_job['remoteci_id'])
     remoteci = v1_utils.verify_existence_and_get(remoteci_id,
                                                  models.REMOTECIS)
     values.update({'remoteci_id': remoteci_id})
 
     # get the jobdefinition
-    jobdefinition_id = original_job['jobdefinition_id']
+    jobdefinition_id = str(original_job['jobdefinition_id'])
     jobdefinition = v1_utils.verify_existence_and_get(jobdefinition_id,
                                                       models.JOBDEFINITIONS)
 
     # get the associated topic
-    topic_id = jobdefinition['topic_id']
+    topic_id = str(jobdefinition['topic_id'])
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
 
     values.update({
@@ -483,7 +484,7 @@ def update_job_by_id(user, job_id):
             if team_info['email'] is not None:
                 msg = {'event': 'notification',
                        'email': team_info['email'],
-                       'job_id': job['id']}
+                       'job_id': str(job['id'])}
                 flask.g.sender.send_json(msg)
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
