@@ -365,7 +365,7 @@ class QueryBuilder(object):
         return query
 
     def build(self):
-        query = sql.select(self.select, use_labels=True)
+        query = sql.select(self.select, use_labels=True).distinct(self.table.c.id, 'current_job.components_id')
         # One record information may be splitted on more than just one SQL
         # row. These rows will be ultimately merged in one line by
         # dedup_rows().
@@ -387,7 +387,7 @@ class QueryBuilder(object):
             _where = self.table.c.id == None  # noqa
         self.extra_where.append(_where)
 
-        for sort in self._sort + self.sort:
+        for sort in [self.table.c.id, 'current_job.components_id'] + self._sort + self.sort:
             query = query.order_by(sort)
 
         query = self.prepare_join(query)

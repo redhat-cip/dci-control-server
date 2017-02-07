@@ -97,6 +97,11 @@ def test_get_all_remotecis_with_last_job(admin, team_id, remoteci_id,
         'last_job.components,'
         'current_job,'
         'current_job.components')).data
+    from pprint import pprint
+    pprint(remotecis)
+    from dci.db import models
+    for i in models.JOBS.c:
+        print(i.type)
     assert len(remotecis['remotecis']) == 2
     assert 'id' not in remotecis['remotecis'][0]['current_job']
     assert 'id' not in remotecis['remotecis'][0]['last_job']
