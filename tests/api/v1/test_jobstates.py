@@ -192,14 +192,15 @@ def test_get_all_jobstates_with_sub_sort(admin, job_id):
     files.post_file(admin, jd_1_2['id'], files.FileDesc('something', 'bar'))
     files.post_file(admin, jd_1_2['id'], files.FileDesc('latest', 'bar'))
 
-    jds = admin.get('/api/v1/jobstates?sort=comment,' +
-                    '-files.created_at&embed=files').data
+    jds = admin.get('/api/v1/jobstates?sort=comment' +
+                    '&embed=files').data
     # check the sort by comment
     commands = [j['comment'] for j in jds['jobstates']]
     assert ['a', 'b'] == commands
     # check the order by file creation date
     names = [f['name'] for f in jds['jobstates'][0]['files']]
-    assert ['latest', 'something', 'older'] == names
+    # We don't preserve order of embedded resources
+    assert set(['latest', 'something', 'older']) == set(names)
 
 
 def test_get_jobstate_by_id(admin, job_id):

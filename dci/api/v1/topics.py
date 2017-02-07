@@ -81,7 +81,7 @@ def get_topic_by_id_or_name(user, topic_id):
     q_bd.where.append(where_clause)
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
     if len(rows) != 1:
         raise dci_exc.DCINotFound('Topic', topic_id)
     topic = rows[0]
@@ -108,7 +108,7 @@ def get_all_topics(user):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
 
     return flask.jsonify({'topics': rows, '_meta': {'count': nb_row}})
 
@@ -293,7 +293,7 @@ def get_all_tests(user, topic_id):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
 
     res = flask.jsonify({'tests': rows,
                          '_meta': {'count': nb_row}})
