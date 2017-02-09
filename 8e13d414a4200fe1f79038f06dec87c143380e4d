@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "7a75e904_8f765dd7",
+        "filename": "dci/alembic/versions/43363af27126_create_components_issues_table.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-02-09T10:10:38Z",
+      "side": 1,
+      "message": "I\u0027ll add the user, team can be deducted by the user_id.",
+      "parentUuid": "7a75e904_cfacd58f",
+      "revId": "8e13d414a4200fe1f79038f06dec87c143380e4d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a75e904_efa9917c",
         "filename": "dci/api/v1/issues.py",
         "patchSetId": 2
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "7a75e904_6f7201e7",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-02-09T10:10:38Z",
+      "side": 1,
+      "message": "I\u0027ll take a look. Do you have any example of something like this done in the code I could get inspired by?",
+      "parentUuid": "7a75e904_efa9917c",
+      "revId": "8e13d414a4200fe1f79038f06dec87c143380e4d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a75e904_0fb6eddc",
         "filename": "dci/api/v1/issues.py",
         "patchSetId": 2
@@ -47,6 +83,24 @@
       "writtenOn": "2017-02-08T21:25:04Z",
       "side": 1,
       "message": "I\u0027m 99% convinced we don\u0027t need to attach issue to jobs. Thought?",
+      "revId": "8e13d414a4200fe1f79038f06dec87c143380e4d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a75e904_4f6d4504",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-02-09T10:10:38Z",
+      "side": 1,
+      "message": "In an ideal scenarios, yes we wouldn\u0027t need them. By ideal scenario I mean each piece of code used for a job is tied to a component.\n\nUnfortunately, as of today this is not the case. And jobs rely to external piece of code unrelated to the components. This is where this could come handy \"for now\".",
+      "parentUuid": "7a75e904_0fb6eddc",
       "revId": "8e13d414a4200fe1f79038f06dec87c143380e4d",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
