@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "7a75e904_fa19517a",
+        "filename": "dci/alembic/versions/43363af27126_create_components_issues_table.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-02-09T12:50:10Z",
+      "side": 1,
+      "message": "Good point.",
+      "parentUuid": "7a75e904_8f765dd7",
+      "revId": "8e13d414a4200fe1f79038f06dec87c143380e4d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a75e904_efa9917c",
         "filename": "dci/api/v1/issues.py",
         "patchSetId": 2
@@ -72,6 +90,24 @@
     },
     {
       "key": {
+        "uuid": "7a75e904_1a262dbb",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-02-09T12:50:10Z",
+      "side": 1,
+      "message": "I guess we can reuse what has been done for the job issues.",
+      "parentUuid": "7a75e904_6f7201e7",
+      "revId": "8e13d414a4200fe1f79038f06dec87c143380e4d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a75e904_0fb6eddc",
         "filename": "dci/api/v1/issues.py",
         "patchSetId": 2
@@ -101,6 +137,24 @@
       "side": 1,
       "message": "In an ideal scenarios, yes we wouldn\u0027t need them. By ideal scenario I mean each piece of code used for a job is tied to a component.\n\nUnfortunately, as of today this is not the case. And jobs rely to external piece of code unrelated to the components. This is where this could come handy \"for now\".",
       "parentUuid": "7a75e904_0fb6eddc",
+      "revId": "8e13d414a4200fe1f79038f06dec87c143380e4d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a75e904_3a2be983",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 164,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-02-09T12:50:10Z",
+      "side": 1,
+      "message": "Agreed.",
+      "parentUuid": "7a75e904_4f6d4504",
       "revId": "8e13d414a4200fe1f79038f06dec87c143380e4d",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
