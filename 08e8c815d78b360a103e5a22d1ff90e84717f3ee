@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a75e904_352bfa83",
+        "filename": "dci/alembic/versions/510fe892157a_create_components_issues_table.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-02-10T14:26:17Z",
+      "side": 1,
+      "message": "Why do you create an index if user_id is already a primary key ?",
+      "range": {
+        "startLine": 54,
+        "startChar": 8,
+        "endLine": 54,
+        "endChar": 60
+      },
+      "revId": "08e8c815d78b360a103e5a22d1ff90e84717f3ee",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a75e904_5520769b",
+        "filename": "dci/alembic/versions/510fe892157a_create_components_issues_table.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-02-10T14:26:17Z",
+      "side": 1,
+      "message": "Should be a string ?",
+      "range": {
+        "startLine": 61,
+        "startChar": 33,
+        "endLine": 61,
+        "endChar": 41
+      },
+      "revId": "08e8c815d78b360a103e5a22d1ff90e84717f3ee",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
