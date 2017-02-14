@@ -90,7 +90,7 @@ def get_all_tests(user, team_id):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, team_id)):
+    if not(user.is_super_admin() or user.team_id == team_id):
         raise auth.UNAUTHORIZED
 
     q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],

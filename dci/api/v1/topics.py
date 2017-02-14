@@ -17,6 +17,7 @@ import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
+from sqlalchemy.orm import *
 
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -30,6 +31,8 @@ from dci.common import schemas
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
+from dci.db.orm import dci_orm
+from dci.db.orm import orm_utils
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.TOPICS
@@ -43,76 +46,71 @@ def create_topics(user):
     created_at, updated_at = utils.get_dates(user)
     values = schemas.topic.post(flask.request.json)
 
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
-    etag = utils.gen_etag()
+    session = flask.g.db
+    new_topic = dci_orm.Topic()
+
     values.update({
         'id': utils.gen_uuid(),
         'created_at': created_at,
         'updated_at': updated_at,
-        'etag': etag
+        'etag': utils.gen_etag()
     })
 
-    query = _TABLE.insert().values(**values)
+    for key, value in values.iteritems():
+        setattr(new_topic, key, value)
 
     try:
-        flask.g.db_conn.execute(query)
+        session.add(new_topic)
+        session.commit()
+        session.flush()
     except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
+        session.rollback()
+        raise dci_exc.DCICreationConflict('TOPICS', 'name')
 
-    result = json.dumps({'topic': values})
-    return flask.Response(result, 201, headers={'ETag': etag},
+    result = json.dumps({'topic': new_topic.serialize})
+    return flask.Response(result, 201, headers={'ETag': new_topic.etag},
                           content_type='application/json')
 
 
 @api.route('/topics/<uuid:topic_id>', methods=['GET'])
 @auth.requires_auth
 def get_topic_by_id(user, topic_id):
+    args = schemas.args(flask.request.args.to_dict())
 
-    embed = schemas.args(flask.request.args.to_dict())['embed']
+    if not (user.is_super_admin() or user.is_in_topic(topic_id)):
+        raise dci_exc.DCIException('User team does not belongs to topic %s.'
+                                   % topic_id, status_code=412)
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
-    q_bd.join(embed)
+    session = flask.g.db
+    query = session.query(dci_orm.Topic)
+    query = query.filter(dci_orm.Topic.state != 'archived')
+    query = query.filter(dci_orm.Topic.id == topic_id)
 
-    q_bd.where.append(
-        sql.and_(
-            _TABLE.c.state != 'archived',
-            _TABLE.c.id == topic_id
-        )
-    )
-
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
-    if len(rows) != 1:
+    if query.count() == 0:
         raise dci_exc.DCINotFound('Topic', topic_id)
-    topic = rows[0]
-    v1_utils.verify_team_in_topic(user, topic['id'])
-    return flask.jsonify({'topic': topic})
+
+    return flask.jsonify({'topic': query.first().serialize})
 
 
 @api.route('/topics', methods=['GET'])
 @auth.requires_auth
 def get_all_topics(user):
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
-    # if the user is an admin then he can get all the topics
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 _VALID_EMBED)
-    q_bd.join(embed)
 
-    q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS,
-                                    default='name')
-    if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))
+    session = flask.g.db
+    query = session.query(dci_orm.Topic)
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
-    # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    if not user.is_super_admin():
+        query = query.join(dci_orm.Topic.topic_team) \
+                     .filter(dci_orm.Team.id == user.team_id)
 
-    return flask.jsonify({'topics': rows, '_meta': {'count': nb_row}})
+    query = orm_utils.std_query(dci_orm.Topic, query, args)
+
+    return flask.jsonify({'topics': [i.serialize for i in query.all()],
+                          '_meta': {'count': query.count()}})
 
 
 @api.route('/topics/<uuid:topic_id>', methods=['PUT'])
@@ -123,52 +121,56 @@ def put_topic(user, topic_id):
 
     values = schemas.topic.put(flask.request.json)
 
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
-    def _verify_team_in_topic(user, topic_id):
-        topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE,
-                                                     get_id=True)
-        # verify user's team in the topic
-        v1_utils.verify_team_in_topic(user, topic_id)
-        return topic_id
+    session = flask.g.db
+    topic = session.query(dci_orm.Topic).get(topic_id)
 
-    topic_id = _verify_team_in_topic(user, topic_id)
-
-    next_topic = values['next_topic']
-    if next_topic:
-        _verify_team_in_topic(user, next_topic)
+    if not topic.etag == if_match_etag:
+        raise dci_exc.DCIConflict('Team', t_id)
 
     values['etag'] = utils.gen_etag()
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == topic_id
-    )
-    query = _TABLE.update().where(where_clause).values(**values)
 
-    result = flask.g.db_conn.execute(query)
-    if not result.rowcount:
+    for key, value in values.iteritems():
+        setattr(topic, key, value)
+
+    try:
+        session.commit()
+        session.flush()
+    except:
+        session.rollaback()
         raise dci_exc.DCIConflict('Topic', topic_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
+    return flask.Response(None, 204, headers={'ETag': topic.etag},
                           content_type='application/json')
 
 
 @api.route('/topics/<uuid:topic_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_topic_by_id_or_name(user, topic_id):
-    if not(auth.is_admin(user)):
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
-    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
+    session = flask.g.db
+    topic = session.query(dci_orm.Topic).get(topic_id)
 
-    values = {'state': 'archived'}
-    where_clause = sql.and_(_TABLE.c.id == topic_id)
-    query = _TABLE.update().where(where_clause).values(**values)
+    if topic is None:
+        raise dci_exc.DCIException('Resource "%s" not found.' % topic_id,
+                                   status_code=404)
 
-    result = flask.g.db_conn.execute(query)
+    if not topic.etag == if_match_etag:
+        raise dci_exc.DCIDeleteConflict('Topic', topic.id)
 
-    if not result.rowcount:
+    topic.status = 'archived'
+
+    try:
+        session.commit()
+        session.flush()
+    except:
+        session.rollback()
         raise dci_exc.DCIDeleteConflict('Topic', topic_id)
 
     return flask.Response(None, 204, content_type='application/json')
@@ -206,7 +208,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
     args = schemas.args(flask.request.args.to_dict())
 
     # if the user is not the admin then filter by team_id
-    team_id = user['team_id'] if not auth.is_admin(user) else None
+    team_id = user['team_id'] if not user.is_super_admin() else None
 
     # Get the last (by created_at field) component id of <type_id> type
     # within <topic_id> topic
@@ -275,7 +277,7 @@ def get_all_jobdefinitions_by_topic(user, topic_id):
 def get_all_tests(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         v1_utils.verify_team_in_topic(user, topic_id)
     v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
@@ -306,7 +308,7 @@ def get_all_tests(user, topic_id):
 @api.route('/topics/<uuid:topic_id>/tests', methods=['POST'])
 @auth.requires_auth
 def add_test_to_topic(user, topic_id):
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
     data_json = flask.request.json
     values = {'topic_id': topic_id,
@@ -327,7 +329,7 @@ def add_test_to_topic(user, topic_id):
 @api.route('/topics/<uuid:t_id>/tests/<uuid:test_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_test_from_topic(user, t_id, test_id):
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         v1_utils.verify_team_in_topic(user, t_id)
     v1_utils.verify_existence_and_get(test_id, _TABLE)
 
@@ -347,7 +349,7 @@ def delete_test_from_topic(user, t_id, test_id):
 @api.route('/topics/<uuid:topic_id>/teams', methods=['POST'])
 @auth.requires_auth
 def add_team_to_topic(user, topic_id):
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
     # TODO(yassine): use voluptuous schema
@@ -374,7 +376,7 @@ def add_team_to_topic(user, topic_id):
 @api.route('/topics/<uuid:topic_id>/teams/<uuid:team_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_team_from_topic(user, topic_id, team_id):
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
@@ -396,7 +398,7 @@ def delete_team_from_topic(user, topic_id, team_id):
 @api.route('/topics/<uuid:topic_id>/teams', methods=['GET'])
 @auth.requires_auth
 def get_all_teams_from_topic(user, topic_id):
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)

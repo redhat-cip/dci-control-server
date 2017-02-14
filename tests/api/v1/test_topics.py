@@ -150,6 +150,7 @@ def test_get_topic_by_id(admin, user, team_user_id):
 
     # get by uuid
     created_ct = user.get('/api/v1/topics/%s' % pt_id)
+    print created_ct.data
     assert created_ct.status_code == 200
 
     created_ct = created_ct.data
@@ -170,7 +171,8 @@ def test_delete_topic_by_id(admin):
     created_ct = admin.get('/api/v1/topics/%s' % pt_id)
     assert created_ct.status_code == 200
 
-    deleted_ct = admin.delete('/api/v1/topics/%s' % pt_id)
+    deleted_ct = admin.delete('/api/v1/topics/%s' % pt_id,
+                              headers={'If-match': pt.data['topic']['etag']})
     assert deleted_ct.status_code == 204
 
     gct = admin.get('/api/v1/topics/%s' % pt_id)
@@ -186,7 +188,8 @@ def test_delete_topic_by_id_as_user(admin, user):
     created_ct = admin.get('/api/v1/topics/%s' % pt_id)
     assert created_ct.status_code == 200
 
-    deleted_ct = user.delete('/api/v1/topics/%s' % pt_id)
+    deleted_ct = user.delete('/api/v1/topics/%s' % pt_id,
+                             headers={'If-match': pt.data['topic']['etag']})
     assert deleted_ct.status_code == 401
 
 
@@ -196,7 +199,8 @@ def test_purge_topic(admin):
     pt_id = pt.data['topic']['id']
     assert pt.status_code == 201
 
-    ppt = admin.delete('/api/v1/topics/%s' % pt_id)
+    ppt = admin.delete('/api/v1/topics/%s' % pt_id,
+                       headers={'If-match': pt.data['topic']['etag']})
     assert ppt.status_code == 204
 
 
@@ -227,7 +231,8 @@ def test_get_all_topics_with_sort(admin):
 
 
 def test_delete_topic_not_found(admin):
-    result = admin.delete('/api/v1/topics/%s' % uuid.uuid4())
+    result = admin.delete('/api/v1/topics/%s' % uuid.uuid4(),
+                          headers={'If-match': uuid.uuid4()})
     assert result.status_code == 404
 
 
