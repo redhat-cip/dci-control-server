@@ -19,9 +19,12 @@ from functools import wraps
 import json
 from passlib.apps import custom_app_context as pwd_context
 import sqlalchemy.sql
+from sqlalchemy.orm import *
 
 from dci.common import exceptions as exc
 from dci.db import models
+from dci.db.orm import users
+from dci.db.orm import teams
 
 UNAUTHORIZED = exc.DCIException('Operation not authorized.', status_code=401)
 
@@ -35,29 +38,22 @@ def build_auth(username, password):
     database.
     """
 
-    where_clause = sqlalchemy.sql.expression.and_(
-        models.USERS.c.name == username,
-        models.USERS.c.state == 'active',
-        models.TEAMS.c.state == 'active'
-    )
-    t_j = sqlalchemy.join(
-        models.USERS, models.TEAMS,
-        models.USERS.c.team_id == models.TEAMS.c.id)
-    query_get_user = (sqlalchemy.sql
-                      .select([
-                          models.USERS,
-                          models.TEAMS.c.name.label('team_name'),
-                          models.TEAMS.c.country.label('team_country'),
-                      ])
-                      .select_from(t_j)
-                      .where(where_clause))
+    Session = sessionmaker(bind=flask.g.db_conn)
+    session = Session()
 
-    user = flask.g.db_conn.execute(query_get_user).fetchone()
+    query = session.query(users.User)
+    query = query.options(eagerload('team'))
+    query = query.filter(users.User.state == 'active')
+    query = query.filter(teams.Team.state == 'active')
+    query = query.filter(users.User.name == username)
+
+    user = query.first()
+
+    print user
+
     if user is None:
         return None, False
-    user = dict(user)
-
-    return user, pwd_context.verify(password, user.get('password'))
+    return user, pwd_context.verify(password, user.get_password())
 
 
 def reject():
