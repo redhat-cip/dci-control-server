@@ -19,6 +19,7 @@ from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
 from dci.api.v1 import api
+from dci.api.v1 import base
 from dci.api.v1 import components
 from dci.api.v1 import jobdefinitions
 from dci.api.v1 import tests
@@ -410,3 +411,15 @@ def get_all_teams_from_topic(user, topic_id):
                          '_meta': {'count': rows.rowcount}})
     res.status_code = 201
     return res
+
+
+@api.route('/topics/purge', methods=['GET'])
+@auth.requires_auth
+def get_to_purge_archived_topics(user):
+    return base.get_to_purge_archived_resources(user, _TABLE)
+
+
+@api.route('/topics/purge', methods=['POST'])
+@auth.requires_auth
+def purge_archived_topics(user):
+    return base.purge_archived_resources(user, _TABLE)

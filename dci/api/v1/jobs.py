@@ -23,6 +23,7 @@ from sqlalchemy import sql
 
 
 from dci.api.v1 import api
+from dci.api.v1 import base
 from dci.api.v1 import transformations as tsfm
 from dci.api.v1 import utils as v1_utils
 from dci import auth
@@ -670,3 +671,15 @@ def delete_meta(user, j_id, m_id):
     if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
         raise auth.UNAUTHORIZED
     return metas.delete_meta(j_id, m_id)
+
+
+@api.route('/jobs/purge', methods=['GET'])
+@auth.requires_auth
+def get_to_purge_archived_jobs(user):
+    return base.get_to_purge_archived_resources(user, _TABLE)
+
+
+@api.route('/jobs/purge', methods=['POST'])
+@auth.requires_auth
+def purge_archived_jobs(user):
+    return base.purge_archived_resources(user, _TABLE)

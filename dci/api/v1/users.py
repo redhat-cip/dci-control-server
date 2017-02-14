@@ -19,6 +19,7 @@ from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
 from dci.api.v1 import api
+from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci.common import exceptions as dci_exc
@@ -212,3 +213,15 @@ def delete_user_by_id_or_name(user, user_id):
         raise dci_exc.DCIDeleteConflict('User', user_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/users/purge', methods=['GET'])
+@auth.requires_auth
+def get_to_purge_archived_users(user):
+    return base.get_to_purge_archived_resources(user, _TABLE)
+
+
+@api.route('/users/purge', methods=['POST'])
+@auth.requires_auth
+def purge_archived_users(user):
+    return base.purge_archived_resources(user, _TABLE)
