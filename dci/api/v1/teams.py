@@ -30,6 +30,8 @@ from dci.common import schemas
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
+from dci.db.orm import dci_orm
+from dci.db.orm import orm_utils
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.TEAMS
@@ -44,27 +46,33 @@ def create_teams(user):
     created_at, updated_at = utils.get_dates(user)
     values = schemas.team.post(flask.request.json)
 
-    if not auth.is_admin(user):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
-    etag = utils.gen_etag()
     values.update({
         'id': utils.gen_uuid(),
         'created_at': created_at,
         'updated_at': updated_at,
-        'etag': etag
+        'etag': utils.gen_etag()
     })
+    session = flask.g.db
 
-    query = _TABLE.insert().values(**values)
+    new_team = dci_orm.Team()
+
+    for key, value in values.iteritems():
+        setattr(new_team, key, value)
 
     try:
-        flask.g.db_conn.execute(query)
+        session.add(new_team)
+        session.commit()
+        session.flush()
     except sa_exc.IntegrityError:
+        session.rollback()
         raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
 
     return flask.Response(
-        json.dumps({'team': values}), 201,
-        headers={'ETag': etag}, content_type='application/json'
+        json.dumps({'team': new_team.serialize}), 201,
+        headers={'ETag': new_team.etag}, content_type='application/json'
     )
 
 
@@ -72,53 +80,37 @@ def create_teams(user):
 @auth.requires_auth
 def get_all_teams(user):
     args = schemas.args(flask.request.args.to_dict())
-    embed = schemas.args(flask.request.args.to_dict())['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 embed=_VALID_EMBED)
-    q_bd.join(embed)
+    session = flask.g.db
+    query = session.query(dci_orm.Team)
 
-    q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS, default='name')
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
+    if not user.is_super_admin():
+        query = query.filter(dci_orm.Team.id == user.team_id)
 
-    if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.id == user['team_id'])
+    query = orm_utils.std_query(dci_orm.Team, query, args)
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
-
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
-
-    return flask.jsonify({'teams': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'teams': [i.serialize for i in query.all()],
+                          '_meta': {'count': query.count()}})
 
 
 @api.route('/teams/<uuid:t_id>', methods=['GET'])
 @auth.requires_auth
 def get_team_by_id_or_name(user, t_id):
-    embed = schemas.args(flask.request.args.to_dict())['embed']
+    args = schemas.args(flask.request.args.to_dict())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
-    q_bd.join(embed)
-
-    q_bd.where.append(
-        sql.and_(
-            _TABLE.c.state != 'archived',
-            _TABLE.c.id == t_id
-        )
-    )
-
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
-    if len(rows) != 1:
-        raise dci_exc.DCINotFound('Team', t_id)
-    team = rows[0]
-
-    if not(auth.is_admin(user) or auth.is_in_team(user, team['id'])):
+    if not(user.is_super_admin() or user.team_id == uuid.UUID(t_id)):
         raise auth.UNAUTHORIZED
 
-    res = flask.jsonify({'team': team})
-    res.headers.add_header('ETag', team['etag'])
+    session = flask.g.db
+    query = session.query(dci_orm.Team)
+
+    query = query.filter(dci_orm.Team.state != 'archived')
+    query = query.filter(dci_orm.Team.id == uuid.UUID(t_id))
+
+    team = query.first()
+
+    res = flask.jsonify({'team': team.serialize})
+    res.headers.add_header('ETag', team.etag)
     return res
 
 
@@ -144,24 +136,28 @@ def put_team(user, t_id):
 
     values = schemas.team.put(flask.request.json)
 
-    if not(auth.is_admin(user) or auth.is_admin_user(user, t_id)):
+    if not(user.is_super_admin() or user.is_team_admin(uuid.UUID(t_id))):
         raise auth.UNAUTHORIZED
 
-    v1_utils.verify_existence_and_get(t_id, _TABLE)
+    session = flask.g.db
 
-    values['etag'] = utils.gen_etag()
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == t_id
-    )
-    query = _TABLE.update().where(where_clause).values(**values)
+    pteam = session.query(dci_orm.Team).get(t_id)
 
-    result = flask.g.db_conn.execute(query)
+    if not pteam.etag == if_match_etag:
+        raise dci_exc.DCIConflict('Team', t_id)
+    pteam.etag = utils.gen_etag()
 
-    if not result.rowcount:
+    for key, value in values.iteritems():
+        setattr(pteam, key, value)
+
+    try:
+        session.commit()
+        session.flush()
+    except:
+        session.rollaback()
         raise dci_exc.DCIConflict('Team', t_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
+    return flask.Response(None, 204, headers={'ETag': pteam.etag},
                           content_type='application/json')
 
 
@@ -171,20 +167,21 @@ def delete_team_by_id_or_name(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    if not auth.is_admin(user):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
-    v1_utils.verify_existence_and_get(t_id, _TABLE)
+    session = flask.g.db
 
-    values = {'state': 'archived'}
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == t_id
-    )
-    query = _TABLE.update().where(where_clause).values(**values)
-    result = flask.g.db_conn.execute(query)
+    dteam = session.query(dci_orm.Team).get(t_id)
 
-    if not result.rowcount:
+    if not duser.etag == if_match_etag:
+        raise dci_exc.DCIDeleteConflict('Team', t_id)
+
+    duser.state = 'archived'
+    try:
+        session.commit()
+        session.flush()
+    except:
         raise dci_exc.DCIDeleteConflict('Team', t_id)
 
     return flask.Response(None, 204, content_type='application/json')
