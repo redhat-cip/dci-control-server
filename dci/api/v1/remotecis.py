@@ -41,8 +41,8 @@ def create_remotecis(user):
     values = schemas.remoteci.post(flask.request.json)
 
     # If it's not a super admin nor belongs to the same team_id
-    if not(auth.is_admin(user) or
-           auth.is_in_team(user, values.get('team_id'))):
+    if not(user.is_super_admin() or
+           user.team_id == values.get('team_id')):
         raise auth.UNAUTHORIZED
 
     etag = utils.gen_etag()

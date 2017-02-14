@@ -346,7 +346,6 @@ def test_delete_as_user_admin(user, user_admin):
     puser = user.get('/api/v1/users?where=name:user')
     puser = user.get('/api/v1/users/%s' % puser.data['users'][0]['id'])
     user_etag = puser.headers.get("ETag")
-
     user_delete = user.delete('/api/v1/users/%s' % puser.data['user']['id'],
                               headers={'If-match': user_etag})
     assert user_delete.status_code == 401

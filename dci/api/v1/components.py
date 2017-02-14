@@ -44,7 +44,7 @@ _JOBS_C_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBS)
 @auth.requires_auth
 def create_components(user):
     created_at, updated_at = utils.get_dates(user)
-    if not(auth.is_admin(user)):
+    if not(user.is_super_admin()):
         raise auth.UNAUTHORIZED
 
     values = schemas.component.post(flask.request.json)
