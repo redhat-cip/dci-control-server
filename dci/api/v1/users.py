@@ -17,6 +17,7 @@ import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
+from sqlalchemy.orm import *
 
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
@@ -26,6 +27,8 @@ from dci.common import schemas
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
+from dci.db.orm import users
+from dci.db.orm import orm_utils
 
 
 # associate column names with the corresponding SA Column object
@@ -92,32 +95,51 @@ def create_users(user):
 @auth.requires_auth
 def get_all_users(user, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 _VALID_EMBED)
-    q_bd.select = list(_SELECT_WITHOUT_PASSWORD)
-    q_bd.join(embed)
+    Session = sessionmaker(bind=flask.g.db_conn)
+    session = Session()
+    query = session.query(users.User)
 
-    q_bd.sort = v1_utils.sort_query(args['sort'], _USERS_COLUMNS,
-                                    default='name')
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _USERS_COLUMNS)
+    # q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
+    #                              _VALID_EMBED)
+    # q_bd.select = list(_SELECT_WITHOUT_PASSWORD)
+    # q_bd.join(embed)
+    #
+    # q_bd.sort = v1_utils.sort_query(args['sort'], _USERS_COLUMNS,
+    #                                 default='name')
+    # q_bd.where = v1_utils.where_query(args['where'], _TABLE, _USERS_COLUMNS)
+    #
+    # # If it's not an admin, then get only the users of the caller's team
+    # if not auth.is_admin(user):
+    #     q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+    #
+    # if team_id is not None:
+    #     q_bd.where.append(_TABLE.c.team_id == team_id)
+    #
+    # q_bd.where.append(_TABLE.c.state != 'archived')
+    #
+    # # get the number of rows for the '_meta' section
+    # nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
+    # rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    # rows = q_bd.dedup_rows(embed, rows)
+    #
 
-    # If it's not an admin, then get only the users of the caller's team
-    if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+    # Get all informations about the user who is making the request
+    cur_user = query.join('team').filter(users.User.id == user['id']).first()
 
-    if team_id is not None:
-        q_bd.where.append(_TABLE.c.team_id == team_id)
+    # If the user is not super admin limit the select to his team
+    if not cur_user.is_super_admin():
+        query = query.filter(users.User.team_id == cur_user.team_id)
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
+    # So you'r super admin and you want a specific team
+    elif team_id is not None and cur_user.is_super_admin():
+        query = query.filter(users.User.team_id == team_id)
 
-    # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    # Normalize the query
+    query = orm_utils.std_query(users.User, query, args)
 
-    return flask.jsonify({'users': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'users': [i.serialize for i in query.all()],
+                          '_meta': {'count': query.count()}})
 
 
 @api.route('/users/<user_id>', methods=['GET'])
