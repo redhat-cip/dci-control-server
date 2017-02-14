@@ -25,6 +25,7 @@ import logging
 import zmq
 
 from sqlalchemy import exc as sa_exc
+from flask_sqlalchemy import SQLAlchemy
 
 from dci import dci_config
 
@@ -38,6 +39,7 @@ class DciControlServer(flask.Flask):
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
         self.es_engine = es_engine.DCIESEngine(conf)
+        self.config['SQLALCHEMY_DATABASE_URI'] = conf['SQLALCHEMY_DATABASE_URI']
         self.sender = self._get_zmq_sender(conf['ZMQ_CONN'])
 
     def _get_zmq_sender(self, zmq_conn):
@@ -83,6 +85,7 @@ def handle_dbapi_exception(dbapi_exception):
 def create_app(conf):
     dci_config.sanity_check()
     dci_app = DciControlServer(conf)
+    db = SQLAlchemy(dci_app)
 
     # Logging support
     loggers = [dci_app.logger, logging.getLogger('sqlalchemy'),
@@ -101,6 +104,7 @@ def create_app(conf):
     @dci_app.before_request
     def before_request():
         flask.g.db_conn = dci_app.engine.connect()
+        flask.g.db = db.session()
         flask.g.es_conn = dci_app.es_engine
         flask.g.sender = dci_app.sender
 
