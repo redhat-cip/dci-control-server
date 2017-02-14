@@ -21,6 +21,7 @@ import dci.common.exceptions as exceptions
 import dci.common.utils as utils
 import dci.db.models as models
 import six
+import uuid
 import voluptuous as v
 
 
@@ -34,6 +35,9 @@ def Url(value):
         return value
     except Exception:
         raise ValueError
+
+def UUID(value):
+    return uuid.UUID(value)
 
 VALID_STATUS_UPDATE = ['failure', 'success', 'killed', 'product-failure',
                        'deployment-failure']
@@ -185,7 +189,7 @@ test = schema_factory(test)
 user = utils.dict_merge(base, {
     'password': six.text_type,
     v.Optional('role'): v.Any(*models.USER_ROLES, msg=INVALID_ROLE),
-    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    'team_id': v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 })

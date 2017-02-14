@@ -220,8 +220,9 @@ def test_get_teams_as_user(user):
 
 
 # Only super admin and an admin of a team can update the team
-def test_put_team_as_user_admin(user, user_admin):
-    team = user.get('/api/v1/teams/user')
+def test_put_team_as_user_admin(user, team_user_id, user_admin):
+    team = user.get('/api/v1/teams/%s' % team_user_id)
+    print team
     team_etag = team.headers.get("ETag")
     team_user_id = team.data['team']['id']
 

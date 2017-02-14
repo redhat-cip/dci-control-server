@@ -83,6 +83,7 @@ def test_get_all_users_with_team(admin):
     # this will be fixed later.
     db_users = admin.get('/api/v1/users?embed=team&where=name:admin').data
     db_users = db_users['users']
+    print db_users
     assert db_users[0]['team']['id']
 
 
@@ -305,6 +306,9 @@ def test_create_user_as_user(user, user_admin, team_user_id):
                          data={'name': 'pname',
                                'password': 'ppass',
                                'team_id': team_user_id})
+    print user_admin.get('/api/v1/users')
+    print team_user_id
+    print pu
     assert pu.status_code == 201
 
 
@@ -347,7 +351,6 @@ def test_put_user_as_user_admin(user, user_admin):
 def test_delete_as_user_admin(user, user_admin):
     puser = user.get('/api/v1/users/user')
     user_etag = puser.headers.get("ETag")
-
     user_delete = user.delete('/api/v1/users/%s' % puser.data['user']['id'],
                               headers={'If-match': user_etag})
     assert user_delete.status_code == 401
