@@ -95,7 +95,7 @@ def dict_merge(*dict_list):
 
 def get_dates(user):
     now = datetime.datetime.utcnow().isoformat()
-    if user['team_name'] == 'admin' and flask.request.json:
+    if user.is_super_admin() and flask.request.json:
         created_at = flask.request.json.pop('created_at', now)
         updated_at = flask.request.json.pop('updated_at', now)
     else:
