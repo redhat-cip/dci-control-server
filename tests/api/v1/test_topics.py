@@ -136,6 +136,7 @@ def test_get_topic_by_id(admin, user, team_user_id):
 
     # get by uuid
     created_ct = user.get('/api/v1/topics/%s' % pt_id)
+    print created_ct.data
     assert created_ct.status_code == 200
 
     created_ct = created_ct.data

@@ -1,6 +1,7 @@
 alembic
 elasticsearch
 flask
+Flask-SQLAlchemy
 six
 SQLAlchemy
 SQLAlchemy-Utils

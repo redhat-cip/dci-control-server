@@ -43,7 +43,7 @@ def create_topics(user):
     created_at, updated_at = utils.get_dates(user)
     values = schemas.topic.post(flask.request.json)
 
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
     etag = utils.gen_etag()
@@ -75,6 +75,9 @@ def get_topic_by_id(user, topic_id):
     q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
     q_bd.join(embed)
 
+    if not user.is_super_admin():
+        q_bd.where.append(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))
+
     q_bd.where.append(
         sql.and_(
             _TABLE.c.state != 'archived',
@@ -103,7 +106,7 @@ def get_all_topics(user):
 
     q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS,
                                     default='name')
-    if not auth.is_admin(user):
+    if not user.is_super_admin():
         q_bd.where.append(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))
 
     q_bd.where.append(_TABLE.c.state != 'archived')
@@ -123,7 +126,7 @@ def put_topic(user, topic_id):
 
     values = schemas.topic.put(flask.request.json)
 
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
     def _verify_team_in_topic(user, topic_id):
@@ -157,7 +160,7 @@ def put_topic(user, topic_id):
 @api.route('/topics/<uuid:topic_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_topic_by_id_or_name(user, topic_id):
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
@@ -206,7 +209,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
     args = schemas.args(flask.request.args.to_dict())
 
     # if the user is not the admin then filter by team_id
-    team_id = user['team_id'] if not auth.is_admin(user) else None
+    team_id = user['team_id'] if not user.is_super_admin() else None
 
     # Get the last (by created_at field) component id of <type_id> type
     # within <topic_id> topic
@@ -275,7 +278,7 @@ def get_all_jobdefinitions_by_topic(user, topic_id):
 def get_all_tests(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         v1_utils.verify_team_in_topic(user, topic_id)
     v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
@@ -306,7 +309,7 @@ def get_all_tests(user, topic_id):
 @api.route('/topics/<uuid:topic_id>/tests', methods=['POST'])
 @auth.requires_auth
 def add_test_to_topic(user, topic_id):
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
     data_json = flask.request.json
     values = {'topic_id': topic_id,
@@ -327,7 +330,7 @@ def add_test_to_topic(user, topic_id):
 @api.route('/topics/<uuid:t_id>/tests/<uuid:test_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_test_from_topic(user, t_id, test_id):
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         v1_utils.verify_team_in_topic(user, t_id)
     v1_utils.verify_existence_and_get(test_id, _TABLE)
 
@@ -347,7 +350,7 @@ def delete_test_from_topic(user, t_id, test_id):
 @api.route('/topics/<uuid:topic_id>/teams', methods=['POST'])
 @auth.requires_auth
 def add_team_to_topic(user, topic_id):
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
     # TODO(yassine): use voluptuous schema
@@ -374,7 +377,7 @@ def add_team_to_topic(user, topic_id):
 @api.route('/topics/<uuid:topic_id>/teams/<uuid:team_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_team_from_topic(user, topic_id, team_id):
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
@@ -396,7 +399,7 @@ def delete_team_from_topic(user, topic_id, team_id):
 @api.route('/topics/<uuid:topic_id>/teams', methods=['GET'])
 @auth.requires_auth
 def get_all_teams_from_topic(user, topic_id):
-    if not(auth.is_admin(user)):
+    if not user.is_super_admin():
         raise auth.UNAUTHORIZED
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)

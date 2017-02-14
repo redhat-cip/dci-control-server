@@ -24,6 +24,7 @@ from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import utils
 from dci.db import models
+from dci.db.orm import dci_orm
 
 import collections
 import os
@@ -69,23 +70,24 @@ def verify_existence_and_get(id, table, get_id=False):
 
 
 def user_topic_ids(user):
-    query = (
-        sql.select([
-            models.JOINS_TOPICS_TEAMS.c.topic_id,
-        ]).select_from(models.JOINS_TOPICS_TEAMS)
-        .where(models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id']))
+    session = flask.g.db
 
-    rows = flask.g.db_conn.execute(query).fetchall()
-    return [str(row[0]) for row in rows]
+    topics = session.query(dci_orm.Topic.id).filter(dci_orm.Topic.topic_team.any(dci_orm.Team.id == user.team_id)).all()
+
+    return [topic for topic in list(topics[0])]
 
 
 def verify_team_in_topic(user, topic_id):
     """Verify that the user's team does belongs to the given topic. If
     the user is an admin then it belongs to all topics.
     """
-    if auth.is_admin(user):
+    if user.is_super_admin():
         return
-    if str(topic_id) not in user_topic_ids(user):
+    # TODO(cedric)
+    # Delete str when topic_id is UUID
+    if str(topic_id) not in [str(topic) for topic in user_topic_ids(user)]:
+        print topic_id
+        print user_topic_ids(user)
         raise dci_exc.DCIException('User team does not belongs to topic %s.'
                                    % topic_id, status_code=412)
 
