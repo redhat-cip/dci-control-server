@@ -67,4 +67,4 @@ class DCICreationConflict(DCIException):
     def __init__(self, resource_name, field_name):
         msg = 'conflict on %s' % resource_name
         payload = {'error': {field_name: 'already_exists'}}
-        super(DCICreationConflict, self).__init__(msg, payload, 422)
+        super(DCICreationConflict, self).__init__(msg, payload, 409)

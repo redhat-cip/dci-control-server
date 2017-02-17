@@ -34,7 +34,7 @@ def test_create_tests_already_exist(admin, team_id):
     pstatus_code = admin.post('/api/v1/tests',
                               data={'name': 'pname',
                                     'team_id': team_id}).status_code
-    assert pstatus_code == 422
+    assert pstatus_code == 409
 
 
 def test_get_all_tests(admin, team_id, topic_id):

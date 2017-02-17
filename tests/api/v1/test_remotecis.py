@@ -35,7 +35,7 @@ def test_create_remotecis_already_exist(admin, team_id):
     pstatus_code = admin.post('/api/v1/remotecis',
                               data={'name': 'pname',
                                     'team_id': team_id}).status_code
-    assert pstatus_code == 422
+    assert pstatus_code == 409
 
 
 def test_create_unique_remoteci_against_teams(admin, team_admin_id,
@@ -45,7 +45,7 @@ def test_create_unique_remoteci_against_teams(admin, team_admin_id,
     assert res.status_code == 201
 
     res = admin.post('/api/v1/remotecis', data=data)
-    assert res.status_code == 422
+    assert res.status_code == 409
 
     data['team_id'] = team_admin_id
     res = admin.post('/api/v1/remotecis', data=data)

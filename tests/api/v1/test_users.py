@@ -34,11 +34,11 @@ def test_create_unique_user_against_teams(admin, team_admin_id, team_user_id):
     assert res.status_code == 201
 
     res = admin.post('/api/v1/users', data=data)
-    assert res.status_code == 422
+    assert res.status_code == 409
 
     data['team_id'] = team_admin_id
     res = admin.post('/api/v1/users', data=data)
-    assert res.status_code == 422
+    assert res.status_code == 409
 
 
 def test_create_users_already_exist(admin, team_id):
@@ -52,7 +52,7 @@ def test_create_users_already_exist(admin, team_id):
                               data={'name': 'pname',
                                     'password': 'ppass',
                                     'team_id': team_id}).status_code
-    assert pstatus_code == 422
+    assert pstatus_code == 409
 
 
 def test_get_all_users(admin, team_id):

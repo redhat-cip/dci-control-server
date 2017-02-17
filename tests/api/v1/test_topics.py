@@ -73,7 +73,7 @@ def test_create_topics_already_exist(admin):
 
     data = {'name': 'tname'}
     pstatus_code = admin.post('/api/v1/topics', data=data).status_code
-    assert pstatus_code == 422
+    assert pstatus_code == 409
 
 
 def test_get_all_topics_by_admin(admin):
