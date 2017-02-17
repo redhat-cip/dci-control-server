@@ -116,6 +116,7 @@ The implementation of the DCI control server API.
 
 
 %prep -a
+ls -lR /tmp
 %autosetup -n %{name}-%{version}
 
 %build
