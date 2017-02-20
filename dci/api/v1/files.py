@@ -132,7 +132,7 @@ def get_all_files(user, j_id=None):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
 
     return json.jsonify({'files': rows, '_meta': {'count': nb_row}})
 
@@ -156,7 +156,7 @@ def get_file_by_id_or_name(user, file_id):
     q_bd.where.append(where_clause)
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
     if len(rows) != 1:
         raise dci_exc.DCINotFound('File', file_id)
     file_ = rows[0]

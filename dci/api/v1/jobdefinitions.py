@@ -90,7 +90,7 @@ def _get_all_jobdefinitions(user, topic_id=None):
     # get the number of rows for the '_meta' section
     nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
 
     return flask.jsonify({'jobdefinitions': rows, '_meta': {'count': nb_row}})
 
@@ -117,7 +117,7 @@ def get_jobdefinition_by_id_or_name(user, jd_id):
     q_bd.where.append(where_clause)
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(embed, rows)
+    rows = q_bd.dedup_rows(rows)
     if len(rows) != 1:
         raise dci_exc.DCINotFound('Jobdefinition', jd_id)
     jobdefinition = rows[0]
