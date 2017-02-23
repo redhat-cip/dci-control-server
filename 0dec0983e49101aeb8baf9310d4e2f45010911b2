@@ -50,6 +50,24 @@
       "revId": "0dec0983e49101aeb8baf9310d4e2f45010911b2",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a75e904_fae30303",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2017-02-23T16:44:12Z",
+      "side": 1,
+      "message": "\u003e\u003e\u003e uuid.UUID(\u0027test\u0027)\nTraceback (most recent call last):\n  File \"\u003cstdin\u003e\", line 1, in \u003cmodule\u003e\n  File \"/usr/lib64/python2.7/uuid.py\", line 136, in __init__\n    raise ValueError(\u0027badly formed hexadecimal UUID string\u0027)\nValueError: badly formed hexadecimal UUID string\n\u003e\u003e\u003e uuid.UUID(uuid.uuid4())\nTraceback (most recent call last):\n  File \"\u003cstdin\u003e\", line 1, in \u003cmodule\u003e\n  File \"/usr/lib64/python2.7/uuid.py\", line 133, in __init__\n    hex \u003d hex.replace(\u0027urn:\u0027, \u0027\u0027).replace(\u0027uuid:\u0027, \u0027\u0027)\nAttributeError: \u0027UUID\u0027 object has no attribute \u0027replace\u0027",
+      "parentUuid": "7a75e904_da71e778",
+      "revId": "0dec0983e49101aeb8baf9310d4e2f45010911b2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
