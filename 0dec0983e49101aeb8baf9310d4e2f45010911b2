@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a75e904_5a5ed7ea",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-02-23T16:31:43Z",
+      "side": 1,
+      "message": "Debug print ^",
+      "revId": "0dec0983e49101aeb8baf9310d4e2f45010911b2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a75e904_3a691b8c",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-02-23T16:31:43Z",
+      "side": 1,
+      "message": "Sound like we keep doing filter on the name column. Is this on purpose. I think, the \"where_clause \u003d table.c.id \u003d\u003d id\" should be enough.",
+      "revId": "0dec0983e49101aeb8baf9310d4e2f45010911b2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a75e904_da71e778",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-02-23T16:31:43Z",
+      "side": 1,
+      "message": "I believe you can also remove the try/execpt. As far as I understand the ValueError was raised by uuid.UUID().",
+      "revId": "0dec0983e49101aeb8baf9310d4e2f45010911b2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
