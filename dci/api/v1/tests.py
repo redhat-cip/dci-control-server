@@ -59,7 +59,7 @@ def create_tests(user):
     )
 
 
-@api.route('/tests/<t_id>', methods=['PUT'])
+@api.route('/tests/<uuid:t_id>', methods=['PUT'])
 @auth.requires_auth
 def update_tests(user, t_id):
     if not(auth.is_admin(user)):
@@ -111,7 +111,7 @@ def get_all_tests(user, team_id):
     return flask.jsonify({'tests': rows, '_meta': {'count': nb_row}})
 
 
-@api.route('/tests/<t_id>', methods=['GET'])
+@api.route('/tests/<uuid:t_id>', methods=['GET'])
 @auth.requires_auth
 def get_test_by_id_or_name(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
@@ -121,7 +121,7 @@ def get_test_by_id_or_name(user, t_id):
     return res
 
 
-@api.route('/tests/<t_id>/jobdefinitions', methods=['GET'])
+@api.route('/tests/<uuid:t_id>/jobdefinitions', methods=['GET'])
 @auth.requires_auth
 def get_jobdefinitions_by_test(user, test_id):
     test = v1_utils.verify_existence_and_get(test_id, _TABLE)
@@ -130,14 +130,14 @@ def get_jobdefinitions_by_test(user, test_id):
     return jobdefinitions.get_all_jobdefinitions(test['id'])
 
 
-@api.route('/tests/<t_id>/remotecis', methods=['GET'])
+@api.route('/tests/<uuid:t_id>/remotecis', methods=['GET'])
 @auth.requires_auth
 def get_remotecis_by_test(user, test_id):
     test = v1_utils.verify_existence_and_get(test_id, _TABLE)
     return remotecis.get_all_remotecis(test['id'])
 
 
-@api.route('/tests/<t_id>', methods=['DELETE'])
+@api.route('/tests/<uuid:t_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_test_by_id_or_name(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
@@ -146,7 +146,7 @@ def delete_test_by_id_or_name(user, t_id):
         raise auth.UNAUTHORIZED
 
     values = {'state': 'archived'}
-    where_clause = sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
+    where_clause = _TABLE.c.id == t_id
     query = _TABLE.update().where(where_clause).values(**values)
     result = flask.g.db_conn.execute(query)
 

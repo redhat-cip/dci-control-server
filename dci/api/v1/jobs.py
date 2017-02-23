@@ -408,7 +408,7 @@ def get_all_jobs(user, jd_id=None):
     return flask.jsonify({'jobs': rows, '_meta': {'count': nb_row}})
 
 
-@api.route('/jobs/<job_id>/components', methods=['GET'])
+@api.route('/jobs/<uuid:job_id>/components', methods=['GET'])
 @auth.requires_auth
 def get_components_from_job(user, job_id):
     job = _get_job(user, job_id, ['components'])
@@ -416,14 +416,14 @@ def get_components_from_job(user, job_id):
                           '_meta': {'count': len(job['components'])}})
 
 
-@api.route('/jobs/<j_id>/jobstates', methods=['GET'])
+@api.route('/jobs/<uuid:j_id>/jobstates', methods=['GET'])
 @auth.requires_auth
 def get_jobstates_by_job(user, j_id):
     v1_utils.verify_existence_and_get(j_id, _TABLE)
     return jobstates.get_all_jobstates(j_id=j_id)
 
 
-@api.route('/jobs/<job_id>', methods=['GET'])
+@api.route('/jobs/<uuid:job_id>', methods=['GET'])
 @auth.requires_auth
 def get_job_by_id(user, job_id):
     # get the diverse parameters
@@ -437,7 +437,7 @@ def get_job_by_id(user, job_id):
     return res
 
 
-@api.route('/jobs/<job_id>', methods=['PUT'])
+@api.route('/jobs/<uuid:job_id>', methods=['PUT'])
 @auth.requires_auth
 @audits.log
 def update_job_by_id(user, job_id):
@@ -490,7 +490,7 @@ def update_job_by_id(user, job_id):
                           content_type='application/json')
 
 
-@api.route('/jobs/<j_id>/recheck', methods=['POST'])
+@api.route('/jobs/<uuid:j_id>/recheck', methods=['POST'])
 @auth.requires_auth
 def job_recheck(user, j_id):
 
@@ -528,7 +528,7 @@ def job_recheck(user, j_id):
                           content_type='application/json')
 
 
-@api.route('/jobs/<j_id>/files', methods=['POST'])
+@api.route('/jobs/<uuid:j_id>/files', methods=['POST'])
 @auth.requires_auth
 def add_file_to_jobs(user, j_id):
     values = schemas.job.post(flask.request.json)
@@ -538,28 +538,28 @@ def add_file_to_jobs(user, j_id):
     return files.create_files(user, values)
 
 
-@api.route('/jobs/<j_id>/issues', methods=['GET'])
+@api.route('/jobs/<uuid:j_id>/issues', methods=['GET'])
 @auth.requires_auth
 def retrieve_issues_from_job(user, j_id):
     """Retrieve all issues attached to a job."""
     return issues.get_all_issues(j_id)
 
 
-@api.route('/jobs/<j_id>/issues', methods=['POST'])
+@api.route('/jobs/<uuid:j_id>/issues', methods=['POST'])
 @auth.requires_auth
 def attach_issue_to_jobs(user, j_id):
     """Attach an issue to a job."""
     return issues.attach_issue(j_id)
 
 
-@api.route('/jobs/<j_id>/issues/<i_id>', methods=['DELETE'])
+@api.route('/jobs/<uuid:j_id>/issues/<uuid:i_id>', methods=['DELETE'])
 @auth.requires_auth
 def unattach_issue_from_job(user, j_id, i_id):
     """Unattach an issue to a job."""
     return issues.unattach_issue(j_id, i_id)
 
 
-@api.route('/jobs/<j_id>/files', methods=['GET'])
+@api.route('/jobs/<uuid:j_id>/files', methods=['GET'])
 @auth.requires_auth
 def get_all_files_from_jobs(user, j_id):
     """Get all files.
@@ -567,7 +567,7 @@ def get_all_files_from_jobs(user, j_id):
     return files.get_all_files(j_id)
 
 
-@api.route('/jobs/<j_id>/results', methods=['GET'])
+@api.route('/jobs/<uuid:j_id>/results', methods=['GET'])
 @auth.requires_auth
 def get_all_results_from_jobs(user, j_id):
     """Get all results from job.
@@ -602,7 +602,7 @@ def get_all_results_from_jobs(user, j_id):
                           '_meta': {'count': len(results)}})
 
 
-@api.route('/jobs/<j_id>', methods=['DELETE'])
+@api.route('/jobs/<uuid:j_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_job_by_id(user, j_id):
     # get If-Match header
@@ -628,7 +628,7 @@ def delete_job_by_id(user, j_id):
 
 # jobs metas controllers
 
-@api.route('/jobs/<j_id>/metas', methods=['POST'])
+@api.route('/jobs/<uuid:j_id>/metas', methods=['POST'])
 @auth.requires_auth
 def associate_meta(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
@@ -637,7 +637,7 @@ def associate_meta(user, j_id):
     return metas.create_meta(user, j_id)
 
 
-@api.route('/jobs/<j_id>/metas/<m_id>', methods=['GET'])
+@api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['GET'])
 @auth.requires_auth
 def get_meta_by_id(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
@@ -646,7 +646,7 @@ def get_meta_by_id(user, j_id, m_id):
     return metas.get_meta_by_id(m_id)
 
 
-@api.route('/jobs/<j_id>/metas', methods=['GET'])
+@api.route('/jobs/<uuid:j_id>/metas', methods=['GET'])
 @auth.requires_auth
 def get_all_metas(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
@@ -655,7 +655,7 @@ def get_all_metas(user, j_id):
     return metas.get_all_metas_from_job(j_id)
 
 
-@api.route('/jobs/<j_id>/metas/<m_id>', methods=['PUT'])
+@api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['PUT'])
 @auth.requires_auth
 def put_meta(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
@@ -664,7 +664,7 @@ def put_meta(user, j_id, m_id):
     return metas.put_meta(j_id, m_id)
 
 
-@api.route('/jobs/<j_id>/metas/<m_id>', methods=['DELETE'])
+@api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_meta(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
