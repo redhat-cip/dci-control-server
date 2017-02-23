@@ -15,7 +15,6 @@
 # under the License.
 
 import flask
-import uuid
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -102,7 +101,7 @@ def get_all_jobdefinitions(user):
     return _get_all_jobdefinitions(user)
 
 
-@api.route('/jobdefinitions/<jd_id>', methods=['GET'])
+@api.route('/jobdefinitions/<uuid:jd_id>', methods=['GET'])
 @auth.requires_auth
 def get_jobdefinition_by_id_or_name(user, jd_id):
     # get the diverse parameters
@@ -111,21 +110,12 @@ def get_jobdefinition_by_id_or_name(user, jd_id):
     q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
     q_bd.join(embed)
 
-    try:
-        uuid.UUID(jd_id)
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.id == jd_id
-            )
+    q_bd.where.append(
+        sql.and_(
+            _TABLE.c.state != 'archived',
+            _TABLE.c.id == jd_id
         )
-    except ValueError:
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.name == jd_id
-            )
-        )
+    )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(rows)
@@ -138,7 +128,7 @@ def get_jobdefinition_by_id_or_name(user, jd_id):
     return res
 
 
-@api.route('/jobdefinitions/<jd_id>', methods=['PUT'])
+@api.route('/jobdefinitions/<uuid:jd_id>', methods=['PUT'])
 @auth.requires_auth
 def put_jobdefinition(user, jd_id):
     # get If-Match header
@@ -154,7 +144,7 @@ def put_jobdefinition(user, jd_id):
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == jd_id, _TABLE.c.name == jd_id)
+        _TABLE.c.id == jd_id
     )
     query = _TABLE.update().where(where_clause).values(**values)
 
@@ -167,7 +157,7 @@ def put_jobdefinition(user, jd_id):
                           content_type='application/json')
 
 
-@api.route('/jobdefinitions/<jd_id>', methods=['DELETE'])
+@api.route('/jobdefinitions/<uuid:jd_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_jobdefinition_by_id_or_name(user, jd_id):
     # get If-Match header
@@ -178,7 +168,7 @@ def delete_jobdefinition_by_id_or_name(user, jd_id):
     values = {'state': 'archived'}
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == jd_id, _TABLE.c.name == jd_id)
+        _TABLE.c.id == jd_id
     )
     query = _TABLE.update().where(where_clause).values(**values)
 
@@ -193,7 +183,7 @@ def delete_jobdefinition_by_id_or_name(user, jd_id):
 # Controllers for jobdefinition and components management
 
 
-@api.route('/jobdefinitions/<jd_id>/tests', methods=['POST'])
+@api.route('/jobdefinitions/<uuid:jd_id>/tests', methods=['POST'])
 @auth.requires_auth
 def add_test_to_jobdefinitions(user, jd_id):
     data_json = flask.request.json
@@ -212,7 +202,7 @@ def add_test_to_jobdefinitions(user, jd_id):
     return flask.Response(result, 201, content_type='application/json')
 
 
-@api.route('/jobdefinitions/<jd_id>/tests', methods=['GET'])
+@api.route('/jobdefinitions/<uuid:jd_id>/tests', methods=['GET'])
 @auth.requires_auth
 def get_all_tests_from_jobdefinitions(user, jd_id):
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
@@ -230,7 +220,8 @@ def get_all_tests_from_jobdefinitions(user, jd_id):
     return res
 
 
-@api.route('/jobdefinitions/<jd_id>/tests/<t_id>', methods=['DELETE'])
+@api.route('/jobdefinitions/<uuid:jd_id>/tests/<uuid:t_id>',
+           methods=['DELETE'])
 @auth.requires_auth
 def delete_test_from_jobdefinition(user, jd_id, t_id):
     v1_utils.verify_existence_and_get(jd_id, _TABLE)

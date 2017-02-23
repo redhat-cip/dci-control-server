@@ -18,7 +18,6 @@ import datetime
 import os
 
 import flask
-import uuid
 from flask import json
 
 from sqlalchemy import sql
@@ -138,7 +137,7 @@ def get_all_files(user, j_id=None):
     return json.jsonify({'files': rows, '_meta': {'count': nb_row}})
 
 
-@api.route('/files/<file_id>', methods=['GET'])
+@api.route('/files/<uuid:file_id>', methods=['GET'])
 @auth.requires_auth
 def get_file_by_id_or_name(user, file_id):
     # get the diverse parameters
@@ -150,21 +149,12 @@ def get_file_by_id_or_name(user, file_id):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    try:
-        uuid.UUID(file_id)
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.id == file_id
-            )
+    q_bd.where.append(
+        sql.and_(
+            _TABLE.c.state != 'archived',
+            _TABLE.c.id == file_id
         )
-    except ValueError:
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.name == file_id
-            )
-        )
+    )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(rows)
@@ -176,7 +166,7 @@ def get_file_by_id_or_name(user, file_id):
     return result
 
 
-@api.route('/files/<file_id>/content', methods=['GET'])
+@api.route('/files/<uuid:file_id>/content', methods=['GET'])
 @auth.requires_auth
 def get_file_content(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
@@ -212,7 +202,7 @@ def get_file_content(user, file_id):
     )
 
 
-@api.route('/files/<file_id>', methods=['DELETE'])
+@api.route('/files/<uuid:file_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_file_by_id(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
@@ -221,7 +211,7 @@ def delete_file_by_id(user, file_id):
         raise auth.UNAUTHORIZED
 
     values = {'state': 'archived'}
-    where_clause = sql.or_(_TABLE.c.id == file_id, _TABLE.c.name == file_id)
+    where_clause = _TABLE.c.id == file_id
 
     query = _TABLE.update().where(where_clause).values(**values)
 

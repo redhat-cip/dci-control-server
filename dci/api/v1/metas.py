@@ -78,7 +78,7 @@ def put_meta(job_id, meta_id):
 
     meta_retrieved = v1_utils.verify_existence_and_get(meta_id, _TABLE)
 
-    if str(meta_retrieved['job_id']) != job_id:
+    if meta_retrieved['job_id'] != job_id:
         raise dci_exc.DCIException(
             "Meta '%s' is not associated to job '%s'." % (meta_id, job_id))
 
@@ -103,7 +103,7 @@ def delete_meta(job_id, meta_id):
 
     meta_retrieved = v1_utils.verify_existence_and_get(meta_id, _TABLE)
 
-    if str(meta_retrieved['job_id']) != job_id:
+    if meta_retrieved['job_id'] != job_id:
         raise dci_exc.DCIDeleteConflict(
             "Meta '%s' is not associated to job '%s'." % (meta_id, job_id))
 

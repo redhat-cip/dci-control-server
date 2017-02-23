@@ -17,7 +17,6 @@
 import datetime
 
 import flask
-import uuid
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -68,7 +67,7 @@ def create_components(user):
     return flask.Response(result, 201, content_type='application/json')
 
 
-@api.route('/components/<c_id>', methods=['PUT'])
+@api.route('/components/<uuid:c_id>', methods=['PUT'])
 @auth.requires_auth
 def update_components(user, c_id):
     if not(auth.is_admin(user)):
@@ -150,7 +149,7 @@ def get_jobs(user, component_id, team_id=None):
     return flask.jsonify({'jobs': rows, '_meta': {'count': len(rows)}})
 
 
-@api.route('/components/<c_id>', methods=['GET'])
+@api.route('/components/<uuid:c_id>', methods=['GET'])
 @auth.requires_auth
 def get_component_by_id_or_name(user, c_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
@@ -158,22 +157,12 @@ def get_component_by_id_or_name(user, c_id):
     q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
     q_bd.join(embed)
 
-    try:
-        uuid.UUID(c_id)
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.id == c_id
-            )
+    q_bd.where.append(
+        sql.and_(
+            _TABLE.c.state != 'archived',
+            _TABLE.c.id == c_id
         )
-    except ValueError:
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.name == c_id
-            )
-        )
-
+    )
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(rows)
     if len(rows) != 1:
@@ -185,17 +174,12 @@ def get_component_by_id_or_name(user, c_id):
     return res
 
 
-@api.route('/components/<c_id>', methods=['DELETE'])
+@api.route('/components/<uuid:c_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_component_by_id_or_name(user, c_id):
     # get If-Match header
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
-
-    try:
-        uuid.UUID(c_id)
-    except ValueError:
-        raise dci_exc.DCIDeleteConflict('Component', c_id)
 
     v1_utils.verify_existence_and_get(c_id, _TABLE)
 
@@ -225,7 +209,7 @@ def purge_archived_components(user):
     return base.purge_archived_resources(user, _TABLE)
 
 
-@api.route('/components/<c_id>/files', methods=['GET'])
+@api.route('/components/<uuid:c_id>/files', methods=['GET'])
 @auth.requires_auth
 def list_components_files(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
@@ -252,7 +236,7 @@ def list_components_files(user, c_id):
     return flask.jsonify({'component_files': rows, '_meta': {'count': nb_row}})
 
 
-@api.route('/components/<c_id>/files/<f_id>', methods=['GET'])
+@api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['GET'])
 @auth.requires_auth
 def list_component_file(user, c_id, f_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
@@ -274,7 +258,8 @@ def list_component_file(user, c_id, f_id):
     return res
 
 
-@api.route('/components/<c_id>/files/<f_id>/content', methods=['GET'])
+@api.route('/components/<uuid:c_id>/files/<uuid:f_id>/content',
+           methods=['GET'])
 @auth.requires_auth
 def download_component_file(user, c_id, f_id):
     swift = dci_config.get_store()
@@ -292,7 +277,7 @@ def download_component_file(user, c_id, f_id):
     return flask.Response(get_object(file_path))
 
 
-@api.route('/components/<c_id>/files', methods=['POST'])
+@api.route('/components/<uuid:c_id>/files', methods=['POST'])
 @auth.requires_auth
 def upload_component_file(user, c_id):
     if not(auth.is_admin(user)):
@@ -328,7 +313,7 @@ def upload_component_file(user, c_id):
     return flask.Response(result, 201, content_type='application/json')
 
 
-@api.route('/components/<c_id>/files/<f_id>', methods=['DELETE'])
+@api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_component_file(user, c_id, f_id):
     if not(auth.is_admin(user)):
@@ -338,8 +323,7 @@ def delete_component_file(user, c_id, f_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     v1_utils.verify_existence_and_get(f_id, COMPONENT_FILES)
 
-    where_clause = sql.or_(COMPONENT_FILES.c.id == f_id,
-                           COMPONENT_FILES.c.name == f_id)
+    where_clause = COMPONENT_FILES.c.id == f_id
 
     query = COMPONENT_FILES.delete().where(where_clause)
 

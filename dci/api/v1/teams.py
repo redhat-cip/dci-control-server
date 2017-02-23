@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-import uuid
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -94,7 +93,7 @@ def get_all_teams(user):
     return flask.jsonify({'teams': rows, '_meta': {'count': nb_row}})
 
 
-@api.route('/teams/<t_id>', methods=['GET'])
+@api.route('/teams/<uuid:t_id>', methods=['GET'])
 @auth.requires_auth
 def get_team_by_id_or_name(user, t_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
@@ -102,21 +101,12 @@ def get_team_by_id_or_name(user, t_id):
     q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
     q_bd.join(embed)
 
-    try:
-        uuid.UUID(t_id)
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.id == t_id
-            )
+    q_bd.where.append(
+        sql.and_(
+            _TABLE.c.state != 'archived',
+            _TABLE.c.id == t_id
         )
-    except ValueError:
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.name == t_id
-            )
-        )
+    )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(rows)
@@ -132,21 +122,21 @@ def get_team_by_id_or_name(user, t_id):
     return res
 
 
-@api.route('/teams/<team_id>/remotecis', methods=['GET'])
+@api.route('/teams/<uuid:team_id>/remotecis', methods=['GET'])
 @auth.requires_auth
 def get_remotecis_by_team(user, team_id):
     team = v1_utils.verify_existence_and_get(team_id, _TABLE)
     return remotecis.get_all_remotecis(team['id'])
 
 
-@api.route('/teams/<team_id>/tests', methods=['GET'])
+@api.route('/teams/<uuid:team_id>/tests', methods=['GET'])
 @auth.requires_auth
 def get_tests_by_team(user, team_id):
     team = v1_utils.verify_existence_and_get(team_id, _TABLE)
     return tests.get_all_tests(user, team['id'])
 
 
-@api.route('/teams/<t_id>', methods=['PUT'])
+@api.route('/teams/<uuid:t_id>', methods=['PUT'])
 @auth.requires_auth
 def put_team(user, t_id):
     # get If-Match header
@@ -162,7 +152,7 @@ def put_team(user, t_id):
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
+        _TABLE.c.id == t_id
     )
     query = _TABLE.update().where(where_clause).values(**values)
 
@@ -175,7 +165,7 @@ def put_team(user, t_id):
                           content_type='application/json')
 
 
-@api.route('/teams/<t_id>', methods=['DELETE'])
+@api.route('/teams/<uuid:t_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_team_by_id_or_name(user, t_id):
     # get If-Match header
@@ -189,7 +179,7 @@ def delete_team_by_id_or_name(user, t_id):
     values = {'state': 'archived'}
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == t_id, _TABLE.c.name == t_id)
+        _TABLE.c.id == t_id
     )
     query = _TABLE.update().where(where_clause).values(**values)
     result = flask.g.db_conn.execute(query)
