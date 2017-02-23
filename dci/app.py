@@ -23,6 +23,7 @@ from dci.elasticsearch import engine as es_engine
 import flask
 import logging
 import zmq
+import uuid
 
 from sqlalchemy import exc as sa_exc
 
@@ -83,6 +84,7 @@ def handle_dbapi_exception(dbapi_exception):
 def create_app(conf):
     dci_config.sanity_check()
     dci_app = DciControlServer(conf)
+    dci_app.url_map.converters['uuid'] = utils.UUIDConverter
 
     # Logging support
     loggers = [dci_app.logger, logging.getLogger('sqlalchemy'),

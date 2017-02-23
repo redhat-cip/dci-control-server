@@ -67,30 +67,21 @@ def create_topics(user):
                           content_type='application/json')
 
 
-@api.route('/topics/<topic_id>', methods=['GET'])
+@api.route('/topics/<uuid:topic_id>', methods=['GET'])
 @auth.requires_auth
-def get_topic_by_id_or_name(user, topic_id):
+def get_topic_by_id(user, topic_id):
 
     embed = schemas.args(flask.request.args.to_dict())['embed']
 
     q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
     q_bd.join(embed)
 
-    try:
-        uuid.UUID(topic_id)
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.id == topic_id
-            )
+    q_bd.where.append(
+        sql.and_(
+            _TABLE.c.state != 'archived',
+            _TABLE.c.id == topic_id
         )
-    except ValueError:
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.name == topic_id
-            )
-        )
+    )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(rows)
