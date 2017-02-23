@@ -168,13 +168,6 @@ def test_get_component_by_id_or_name(admin, topic_id):
     created_ct = created_ct.data
     assert created_ct['component']['id'] == pc_id
 
-    # get by name
-    created_ct = admin.get('/api/v1/components/pname')
-    assert created_ct.status_code == 200
-
-    created_ct = created_ct.data
-    assert created_ct['component']['id'] == pc_id
-
 
 def test_get_component_export_control(admin, user, topic_id):
     data = {'name': 'pname',
@@ -182,10 +175,12 @@ def test_get_component_export_control(admin, user, topic_id):
             'topic_id': topic_id,
             'export_control': False
             }
-    admin.post('/api/v1/components', data=data)
-    created_ct = admin.get('/api/v1/components/pname')
+    ncomp = admin.post('/api/v1/components', data=data)
+    created_ct = admin.get('/api/v1/components/%s'
+                           % ncomp.data['component']['id'])
     assert created_ct.status_code == 200
-    created_ct = user.get('/api/v1/components/pname')
+    created_ct = user.get('/api/v1/components/%s'
+                          % ncomp.data['component']['id'])
     assert created_ct.status_code == 401
 
 

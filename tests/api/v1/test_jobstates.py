@@ -238,8 +238,12 @@ def test_get_jobstate_with_embed(admin, job_id, team_admin_id):
     assert js == js_embed
 
 
-def test_get_jobstate_with_embed_not_valid(admin):
-    js = admin.get('/api/v1/jobstates/pname?embed=mdr')
+def test_get_jobstate_with_embed_not_valid(admin, job_id):
+    js = admin.post('/api/v1/jobstates',
+                    data={'job_id': job_id,
+                          'comment': 'kikoolol',
+                          'status': 'running'}).data
+    js = admin.get('/api/v1/jobstates/%s?embed=mdr' % js['jobstate']['id'])
     assert js.status_code == 400
 
 
