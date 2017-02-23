@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-import uuid
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -67,30 +66,21 @@ def create_topics(user):
                           content_type='application/json')
 
 
-@api.route('/topics/<topic_id>', methods=['GET'])
+@api.route('/topics/<uuid:topic_id>', methods=['GET'])
 @auth.requires_auth
-def get_topic_by_id_or_name(user, topic_id):
+def get_topic_by_id(user, topic_id):
 
     embed = schemas.args(flask.request.args.to_dict())['embed']
 
     q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
     q_bd.join(embed)
 
-    try:
-        uuid.UUID(topic_id)
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.id == topic_id
-            )
+    q_bd.where.append(
+        sql.and_(
+            _TABLE.c.state != 'archived',
+            _TABLE.c.id == topic_id
         )
-    except ValueError:
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.name == topic_id
-            )
-        )
+    )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(rows)
@@ -126,7 +116,7 @@ def get_all_topics(user):
     return flask.jsonify({'topics': rows, '_meta': {'count': nb_row}})
 
 
-@api.route('/topics/<topic_id>', methods=['PUT'])
+@api.route('/topics/<uuid:topic_id>', methods=['PUT'])
 @auth.requires_auth
 def put_topic(user, topic_id):
     # get If-Match header
@@ -165,7 +155,7 @@ def put_topic(user, topic_id):
                           content_type='application/json')
 
 
-@api.route('/topics/<topic_id>', methods=['DELETE'])
+@api.route('/topics/<uuid:topic_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_topic_by_id_or_name(user, topic_id):
     if not(auth.is_admin(user)):
@@ -186,7 +176,7 @@ def delete_topic_by_id_or_name(user, topic_id):
 
 
 # components, jobdefinitions, tests GET
-@api.route('/topics/<topic_id>/components', methods=['GET'])
+@api.route('/topics/<uuid:topic_id>/components', methods=['GET'])
 @auth.requires_auth
 def get_all_components(user, topic_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
@@ -194,7 +184,7 @@ def get_all_components(user, topic_id):
     return components.get_all_components(user, topic_id=topic_id)
 
 
-@api.route('/topics/<topic_id>/components/<component_id>/jobs',
+@api.route('/topics/<uuid:topic_id>/components/<uuid:component_id>/jobs',
            methods=['GET'])
 @auth.requires_auth
 def get_jobs_from_components(user, topic_id, component_id):
@@ -208,7 +198,7 @@ def get_jobs_from_components(user, topic_id, component_id):
     return components.get_jobs(user, component_id, team_id=team_id)
 
 
-@api.route('/topics/<topic_id>/type/<type_id>/status',
+@api.route('/topics/<uuid:topic_id>/type/<type_id>/status',
            methods=['GET'])
 @auth.requires_auth
 def get_jobs_status_from_components(user, topic_id, type_id):
@@ -285,7 +275,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
                           '_meta': {'count': nb_row}})
 
 
-@api.route('/topics/<topic_id>/jobdefinitions', methods=['GET'])
+@api.route('/topics/<uuid:topic_id>/jobdefinitions', methods=['GET'])
 @auth.requires_auth
 def get_all_jobdefinitions_by_topic(user, topic_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
@@ -293,7 +283,7 @@ def get_all_jobdefinitions_by_topic(user, topic_id):
     return jobdefinitions._get_all_jobdefinitions(user, topic_id=topic_id)
 
 
-@api.route('/topics/<topic_id>/tests', methods=['GET'])
+@api.route('/topics/<uuid:topic_id>/tests', methods=['GET'])
 @auth.requires_auth
 def get_all_tests(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
@@ -326,7 +316,7 @@ def get_all_tests(user, topic_id):
     return res
 
 
-@api.route('/topics/<topic_id>/tests', methods=['POST'])
+@api.route('/topics/<uuid:topic_id>/tests', methods=['POST'])
 @auth.requires_auth
 def add_test_to_topic(user, topic_id):
     if not(auth.is_admin(user)):
@@ -347,7 +337,7 @@ def add_test_to_topic(user, topic_id):
     return flask.Response(result, 201, content_type='application/json')
 
 
-@api.route('/topics/<t_id>/tests/<test_id>', methods=['DELETE'])
+@api.route('/topics/<uuid:t_id>/tests/<uuid:test_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_test_from_topic(user, t_id, test_id):
     if not(auth.is_admin(user)):
@@ -367,7 +357,7 @@ def delete_test_from_topic(user, t_id, test_id):
 
 
 # teams set apis
-@api.route('/topics/<topic_id>/teams', methods=['POST'])
+@api.route('/topics/<uuid:topic_id>/teams', methods=['POST'])
 @auth.requires_auth
 def add_team_to_topic(user, topic_id):
     if not(auth.is_admin(user)):
@@ -394,7 +384,7 @@ def add_team_to_topic(user, topic_id):
     return flask.Response(result, 201, content_type='application/json')
 
 
-@api.route('/topics/<topic_id>/teams/<team_id>', methods=['DELETE'])
+@api.route('/topics/<uuid:topic_id>/teams/<uuid:team_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_team_from_topic(user, topic_id, team_id):
     if not(auth.is_admin(user)):
@@ -416,7 +406,7 @@ def delete_team_from_topic(user, topic_id, team_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
-@api.route('/topics/<topic_id>/teams', methods=['GET'])
+@api.route('/topics/<uuid:topic_id>/teams', methods=['GET'])
 @auth.requires_auth
 def get_all_teams_from_topic(user, topic_id):
     if not(auth.is_admin(user)):
