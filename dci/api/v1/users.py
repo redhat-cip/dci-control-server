@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-import uuid
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -124,7 +123,7 @@ def get_all_users(user, team_id=None):
 
 @api.route('/users/<user_id>', methods=['GET'])
 @auth.requires_auth
-def get_user_by_id_or_name(user, user_id):
+def get_user_by_id(user, user_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
 
     q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
@@ -135,21 +134,12 @@ def get_user_by_id_or_name(user, user_id):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    try:
-        uuid.UUID(user_id)
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.id == user_id
-            )
+    q_bd.where.append(
+        sql.and_(
+            _TABLE.c.state != 'archived',
+            _TABLE.c.id == user_id
         )
-    except ValueError:
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.name == user_id
-            )
-        )
+    )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(rows)
