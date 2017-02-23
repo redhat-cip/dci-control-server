@@ -54,7 +54,8 @@ def verify_existence_and_get(id, table, get_id=False):
     """
     if 'name' in table.columns:
         try:
-            uuid.UUID(id)
+            if not type(id) == uuid.UUID:
+                id = uuid.UUID(id)
             if 'state' in table.columns:
                 where_clause = sql.and_(table.c.state != 'archived',
                                         table.c.id == id)
