@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a75e904_7a655344",
+        "filename": "scripts/global_status/gstatus.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 149,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-02-23T20:42:25Z",
+      "side": 1,
+      "message": "if gfilter ? because if we don\u0027t use a filter it will fail",
+      "range": {
+        "startLine": 149,
+        "startChar": 4,
+        "endLine": 149,
+        "endChar": 79
+      },
+      "revId": "1a9865e456f30f68ddc53f4fd8b507f5d5c92cc5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
