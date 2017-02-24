@@ -126,6 +126,20 @@ def test_get_topics_of_user(admin, user, team_user_id):
     assert len(topics_user['topics']) == 1
 
 
+def test_get_topics_of_user_with_embed(admin, user, team_user_id):
+    data = {'name': 'test_name'}
+    topic = admin.post('/api/v1/topics', data=data).data['topic']
+    topic_id = topic['id']
+    admin.post('/api/v1/topics/%s/teams' % topic_id,
+               data={'team_id': team_user_id})
+    for i in range(5):
+        admin.post('/api/v1/topics',
+                   data={'name': 'tname%s' % uuid.uuid4()})
+    topics_user = user.get('/api/v1/topics?embed=teams').data
+    assert topics_user['topics'][0]['teams']
+    assert len(topics_user['topics'][0]['teams']) > 0
+
+
 def test_get_topic_by_id_or_name(admin, user, team_user_id):
     data = {'name': 'tname'}
     pt = admin.post('/api/v1/topics', data=data).data
