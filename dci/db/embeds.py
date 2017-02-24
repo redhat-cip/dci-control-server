@@ -384,6 +384,7 @@ def tests():
 def topics():
     return {
         'teams': v1_utils.embed(
+            select=[models.TEAMS],
             join=models.TOPICS.join(
                 models.JOINS_TOPICS_TEAMS.join(
                     models.TEAMS,
