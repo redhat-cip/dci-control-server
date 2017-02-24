@@ -333,8 +333,8 @@ def remotecis():
 
 
 def teams():
-    t0 = models.TOPICS.alias('t0')
-    t1 = models.TOPICS.alias('t1')
+    t0 = models.TEAMS.alias('t0')
+    t1 = models.TEAMS.alias('t1')
     return {
         'topics': v1_utils.embed(
             select=[models.TOPICS],
@@ -347,7 +347,7 @@ def teams():
                         models.TOPICS.c.state != 'archived',
                     ),
                     isouter=True),
-                models.JOINS_TOPICS_TEAMS.c.team_id == models.TEAMS.c.id,
+                models.JOINS_TOPICS_TEAMS.c.team_id == t0.c.id,
                 isouter=True
             ),
             where=t0.c.id == models.TEAMS.c.id,
