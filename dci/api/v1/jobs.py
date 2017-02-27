@@ -407,6 +407,96 @@ def get_all_jobs(user, jd_id=None):
 
     return flask.jsonify({'jobs': rows, '_meta': {'count': nb_row}})
 
+import logging
+sqllog = logging.getLogger('sqlalchemy')
+
+
+def _process_embed_field(row, root_level):
+    result = {}
+    for field in row:
+        prefix, suffix = field.split('_', 1)
+        if prefix not in result:
+            result[prefix] = {suffix: row[field]}
+        else:
+            result[prefix].update({suffix: row[field]})
+    root_level_fields = result.pop(root_level)
+    result.update(root_level_fields)
+    return result
+
+@api.route('/jobs2', methods=['GET'])
+@auth.requires_auth
+def get_all_jobs2(user, jd_id=None):
+    """Get all jobs.
+
+    If jd_id is not None, then return all the jobs with a jobdefinition
+    pointed by jd_id.
+    """
+    # get the diverse parameters
+    args = schemas.args(flask.request.args.to_dict())
+    embed = args['embed']
+
+    # embed=jobdefinition,remotecis,teams
+    childjoin = models.JOBS.join(models.JOBDEFINITIONS).\
+        join(models.REMOTECIS).\
+        join(models.TEAMS)
+
+    query = sql.select([models.JOBS.c.id, models.JOBDEFINITIONS,
+                        models.REMOTECIS, models.TEAMS], from_obj=childjoin,
+                       use_labels=True).limit(8)
+    result = list(flask.g.db_conn.execute(query))
+
+    chunk_jobs = []
+    chunk_jobs_ids = []
+    jobdefinitions_ids = []
+    for cjob in result:
+        new_cjob = dict(cjob)
+        new_cjob = _process_embed_field(new_cjob, 'jobs')
+        chunk_jobs.append(new_cjob)
+        chunk_jobs_ids.append(new_cjob['id'])
+        jobdefinitions_ids.append(new_cjob['jobdefinitions']['id'])
+
+    # embed=components
+    childjoin = models.COMPONENTS.join(models.JOIN_JOBS_COMPONENTS)
+
+    query = sql.select([models.JOIN_JOBS_COMPONENTS.c.job_id, models.COMPONENTS], from_obj=childjoin,
+                       use_labels=True).where(models.JOIN_JOBS_COMPONENTS.c.job_id.in_(chunk_jobs_ids))
+
+    result = list(flask.g.db_conn.execute(query))
+    chunk_components = {}
+    for ccmpt in result:
+        job_id = ccmpt['jobs_components_job_id']
+        if job_id not in chunk_components:
+            chunk_components[job_id] = [ccmpt]
+        else:
+            chunk_components[job_id].append(ccmpt)
+
+    # embed=jobdefinition.tests
+    childjoin = models.TESTS.join(models.JOIN_JOBDEFINITIONS_TESTS)
+
+    query = sql.select([models.JOIN_JOBDEFINITIONS_TESTS.c.jobdefinition_id, models.TESTS], from_obj=childjoin,
+                       use_labels=True).where(models.JOIN_JOBDEFINITIONS_TESTS.c.jobdefinition_id.in_(jobdefinitions_ids))
+
+    result = list(flask.g.db_conn.execute(query))
+    chunk_jd_tests = {}
+    for jd_test in result:
+        jobdefinition_id = jd_test['jobdefinition_tests_jobdefinition_id']
+        if jobdefinition_id not in chunk_jd_tests:
+            chunk_jd_tests[jobdefinition_id] = [jd_test]
+        else:
+            chunk_jd_tests[jobdefinition_id].append(jd_test)
+
+    for cjob in chunk_jobs:
+        job_id = cjob['id']
+        components_for_job = chunk_components[job_id]
+        cjob['components'] = components_for_job
+        jobdefinition_id = cjob['jobdefinitions']['id']
+        if jobdefinition_id in chunk_jd_tests:
+            tests_for_jobdefinition = chunk_jd_tests[jobdefinition_id]
+            cjob['jobdefinition.tests'] = tests_for_jobdefinition
+
+
+    return flask.jsonify({'result': chunk_jobs})
+
 
 @api.route('/jobs/<job_id>/components', methods=['GET'])
 @auth.requires_auth
