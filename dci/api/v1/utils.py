@@ -24,26 +24,10 @@ from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import utils
 from dci.db import models
+from dci.db import embeds
 
 import collections
 import os
-
-
-Embed = collections.namedtuple('Embed', [
-    'many', 'select', 'where', 'sort', 'join'])
-
-
-def embed(many=False, select=None, where=None,
-          sort=None, join=None):
-    """Prepare a Embed named tuple
-
-    :param many: True if it's a one-to-many join
-    :param select: an optional list of field to embed
-    :param where: an extra WHERE clause
-    :param sort: an extra ORDER BY clause
-    :param join: an SQLAlchemy-core Join instance
-    """
-    return Embed(many, select, where, sort, join)
 
 
 def verify_existence_and_get(id, table, get_id=False):
@@ -236,6 +220,272 @@ def request_wants_html():
     return (best == 'text/html' and
             flask.request.accept_mimetypes[best] >
             flask.request.accept_mimetypes['application/json'])
+
+
+class QueryBuilder2(object):
+
+    def __init__(self, root_table, args, strings_to_columns, ignore_columns=None):  # noqa
+        self._root_table = root_table
+        self._embeds = args.get('embed', [])
+        self._limit = args.get('limit', None)
+        self._offset = args.get('offset', None)
+        self._sort = sort_query(args.get('sort', []), strings_to_columns)
+        self._where = where_query(args.get('where', []), self._root_table,
+                                  strings_to_columns)
+        self._strings_to_columns = strings_to_columns
+        self._extras_conditions = []
+        self._ignored_columns = ignore_columns or []
+
+    def add_extra_condition(self, condition):
+        self._extras_conditions.append(condition)
+
+    def _get_root_columns(self):
+        # remove ignored columns
+        columns_from_root_table = dict(self._strings_to_columns)
+        for column_to_ignore in self._ignored_columns:
+            columns_from_root_table.pop(column_to_ignore, None)
+        return list(columns_from_root_table.values())
+
+    def _add_sort_to_query(self, query):
+        for sort in self._sort:
+            query = query.order_by(sort)
+        return query
+
+    def _add_where_to_query(self, query):
+        for where in self._where:
+            query = query.where(where)
+        for e_c in self._extras_conditions:
+            query = query.where(e_c)
+        return query
+
+    def _do_subquery(self):
+        # if embed with limit or offset requested then we will use a subquery
+        # for the root table
+        return self._embeds and (self._limit or self._offset)
+
+    def _get_embed_list(self, embed_joins):
+        valid_embed = embed_joins.keys()
+        embed_list = []
+        for embed_elem in self._embeds:
+            left = embed_elem.split('.')[0]
+            if embed_elem not in valid_embed:
+                raise dci_exc.DCIException(
+                    'Invalid embed list',
+                    payload={'Valid elements': valid_embed}
+                )
+            if left not in embed_list:
+                embed_list.append(left)
+            embed_list.append(embed_elem)
+        return sorted(set(embed_list))
+
+    def build(self):
+        select_clause = self._get_root_columns()
+        root_select = self._root_table
+        if self._do_subquery():
+            root_subquery = sql.select(select_clause)
+            root_subquery = self._add_where_to_query(root_subquery)
+            root_subquery = self._add_sort_to_query(root_subquery)
+            if self._limit:
+                root_subquery = root_subquery.limit(self._limit)
+            if self._offset:
+                root_subquery = root_subquery.offset(self._offset)
+            root_subquery = root_subquery.alias(self._root_table.name)
+            select_clause = [root_subquery]
+            root_select = root_subquery
+
+        embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select)  # noqa
+        embed_list = self._get_embed_list(embed_joins)
+
+        children = root_select
+        for embed_elem in embed_list:
+            for join_param in embed_joins[embed_elem]:
+                children = children.join(**join_param)
+            select_clause.append(embeds.EMBED_STRING_TO_OBJECT[embed_elem])
+
+        query = sql.select(select_clause,
+                           use_labels=True,
+                           from_obj=children)
+
+        if not self._do_subquery():
+            query = self._add_sort_to_query(query)
+            query = self._add_where_to_query(query)
+
+            if self._limit:
+                query = query.limit(self._limit)
+            if self._offset:
+                query = query.offset(self._offset)
+
+        return query
+
+
+def _format_level_1(rows, root_table_name):
+    """
+    Transform sqlalchemy source:
+    [{'a_id' : 'id1',
+      'a_name' : 'name1,
+      'b_id' : 'id2',
+      'b_name' : 'name2},
+     {'a_id' : 'id3',
+      'a_name' : 'name3,
+      'b_id' : 'id4',
+      'b_name' : 'name4}
+    ]
+    to
+    [{'id' : 'id1',
+      'name': 'name2',
+      'b' : {'id': 'id2', 'name': 'name2'},
+     {'id' : 'id3',
+      'name': 'name3',
+      'b' : {'id': 'id4', 'name': 'name4'}
+    ]
+    """
+    result_rows = []
+    for row in rows:
+        row = dict(row)
+        result_row = {}
+        prefixes_to_remove = []
+        for field in row:
+            prefix, suffix = field.split('_', 1)
+            if suffix == 'id' and row[field] is None:
+                prefixes_to_remove.append(prefix)
+            if prefix not in result_row:
+                result_row[prefix] = {suffix: row[field]}
+            else:
+                result_row[prefix].update({suffix: row[field]})
+        # remove field with id == null
+        for prefix_to_remove in prefixes_to_remove:
+            result_row.pop(prefix_to_remove)
+        root_table_fields = result_row.pop(root_table_name)
+        result_row.update(root_table_fields)
+        result_rows.append(result_row)
+    return result_rows
+
+
+def _format_level_2(rows, list_embeds, embed_many):
+    """
+    From the _format_level_1 function we have a list of rows. Because of using
+    joins, we have as many rows as join result.
+
+    For example:
+    [{'id' : 'id1',
+      'name' : 'name1,
+      'b' : {'id': 'id2,
+             'name': 'name2'}
+     }
+     {'id' : 'id1',
+      'name' : 'name1,
+      'b' : {'id' : 'id4',
+             'name' : 'name4}
+     }
+    ]
+
+    Here there is two elements which correspond to one rows because of the
+    embed field 'b'. So we should transform it to:
+
+    [{'id' : 'id1',
+      'name' : 'name1,
+      'b' : [{'id': 'id2,
+             'name': 'name2'},
+             {'id' : 'id4',
+             'name' : 'name4}]
+     }
+    ]
+
+    This is the purpose of this function.
+    """
+
+    def _uniqify_list(list_of_dicts):
+        # list() for py34
+        return list({v['id']: v for v in list_of_dicts}.values())
+
+    row_ids_to_embed_values = {}
+    for row in rows:
+        # for each row, associate rows's id -> {all embeds values}
+        if row['id'] not in row_ids_to_embed_values:
+            row_ids_to_embed_values[row['id']] = {}
+        # add embeds values to the current row
+        for embd in list_embeds:
+            if embd not in row:
+                continue
+            if embd not in row_ids_to_embed_values[row['id']]:
+                # create a list or a dict depending on embed_many
+                if embed_many[embd]:
+                    row_ids_to_embed_values[row['id']][embd] = [row[embd]]
+                else:
+                    row_ids_to_embed_values[row['id']][embd] = row[embd]
+            else:
+                if embed_many[embd]:
+                    row_ids_to_embed_values[row['id']][embd].append(row[embd])
+        # uniqify each embed list
+        for embd in list_embeds:
+            if embd in row_ids_to_embed_values[row['id']]:
+                embed_values = row_ids_to_embed_values[row['id']][embd]
+                if isinstance(embed_values, list):
+                    row_ids_to_embed_values[row['id']][embd] = _uniqify_list(embed_values)  # noqa
+            else:
+                row_ids_to_embed_values[row['id']][embd] = []
+
+    # last loop over the initial rows in order to keep the ordering
+    result = []
+    # if row id in seen set then it means the row has been completely processed
+    seen = set()
+    for row in rows:
+        if row['id'] in seen:
+            continue
+        seen.add(row['id'])
+        new_row = {}
+        # adds level 1 fields
+        for field in row:
+            if field not in list_embeds:
+                new_row[field] = row[field]
+        # adds all level 2 fields
+        # list() for py34
+        row_ids_to_embed_values_keys = list(row_ids_to_embed_values[new_row['id']].keys())  # noqa
+        row_ids_to_embed_values_keys.sort()
+        # adds the nested fields if there is somes
+        for embd in list_embeds:
+            if embd in row_ids_to_embed_values_keys:
+                if '.' in embd:
+                    prefix, suffix = embd.split('.', 1)
+                    new_row[prefix][suffix] = row_ids_to_embed_values[new_row['id']][embd]  # noqa
+                else:
+                    new_row[embd] = row_ids_to_embed_values[new_row['id']][embd]  # noqa
+            else:
+                new_row_embd_value = {}
+                if embed_many[embd]:
+                    new_row_embd_value = []
+                if '.' in embd:
+                    prefix, suffix = embd.split('.', 1)
+                    new_row[prefix][suffix] = new_row_embd_value
+                else:
+                    new_row[embd] = new_row_embd_value
+        # row is complete !
+        result.append(new_row)
+    return result
+
+
+def format_result(rows, root_table_name, list_embeds, embed_many):
+    result_rows = _format_level_1(rows, root_table_name)
+
+    if list_embeds:
+        return _format_level_2(result_rows, list_embeds, embed_many)
+    return result_rows
+
+
+Embed = collections.namedtuple('Embed', [
+    'many', 'select', 'where', 'sort', 'join'])
+
+
+def embed(many=False, select=None, where=None,
+          sort=None, join=None):
+    """Prepare a Embed named tuple
+    :param many: True if it's a one-to-many join
+    :param select: an optional list of field to embed
+    :param where: an extra WHERE clause
+    :param sort: an extra ORDER BY clause
+    :param join: an SQLAlchemy-core Join instance
+    """
+    return Embed(many, select, where, sort, join)
 
 
 class QueryBuilder(object):
