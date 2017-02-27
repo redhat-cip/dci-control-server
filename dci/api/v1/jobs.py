@@ -46,6 +46,14 @@ _TABLE = models.JOBS
 _VALID_EMBED = embeds.jobs()
 # associate column names with the corresponding SA Column object
 _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_EMBED_MANY = {
+    'files': True,
+    'metas': True,
+    'jobdefinition': False,
+    'jobdefinition.tests': True,
+    'remoteci': False,
+    'remoteci.tests': True,
+    'components': True, 'team': False}
 
 
 @api.route('/jobs', methods=['POST'])
@@ -100,19 +108,17 @@ def search_jobs(user):
     jobdefinition_id = values.get('jobdefinition_id')
     configuration = values.get('configuration')
     config_op = configuration.pop('_op', 'and')
-    embed = schemas.args(flask.request.args.to_dict())['embed']
 
     args = schemas.args(flask.request.args.to_dict())
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
-    q_bd.join(embed)
-    q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_COLUMNS)
+    query = v1_utils.QueryBuilder2(_TABLE, args, _JOBS_COLUMNS,
+                                   ['configuration'])
 
     # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
     if jobdefinition_id is not None:
-        q_bd.where.append(_TABLE.c.jobdefinition_id == jobdefinition_id)
+        query.add_extra_condition(_TABLE.c.jobdefinition_id == jobdefinition_id)  # noqa
 
     if config_op == 'and':
         sa_op = sql.expression.and_
@@ -125,12 +131,14 @@ def search_jobs(user):
         for sk in k.split('.'):
             path.append(sk)
         filering_rules.append(_TABLE.c.configuration[path].astext == v)
-    q_bd.where.append(sa_op(*filering_rules))
+    query.add_extra_condition(sa_op(*filering_rules))
 
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
 
-    return flask.jsonify({'jobs': rows, '_meta': {'count': len(rows)}})
+    return flask.jsonify({'jobs': rows, '_meta': {'count': nb_rows}})
 
 
 def _recheck_job(remoteci_id):
@@ -255,22 +263,25 @@ def _validate_input(values, user):
     return topic_id, remoteci
 
 
-def _get_job(user, j_id, embed):
-    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
-    q_bd.join(embed)
+def _get_job(user, job_id, embed):
+    # build the query thanks to the QueryBuilder class
+    args = {'embed': embed}
+    query = v1_utils.QueryBuilder2(_TABLE, args, _JOBS_COLUMNS)
 
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
-    q_bd.where.append(_TABLE.c.id == j_id)
-    q_bd.where.append(_TABLE.c.state != 'archived')
+    query.add_extra_condition(_TABLE.c.id == job_id)
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
     if len(rows) != 1:
-        raise dci_exc.DCINotFound('Job', j_id)
+        raise dci_exc.DCINotFound('Job', job_id)
     job = rows[0]
-    return job
+    return job, nb_rows
 
 
 @api.route('/jobs/schedule', methods=['POST'])
@@ -380,40 +391,38 @@ def get_all_jobs(user, jd_id=None):
     """
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 _VALID_EMBED)
+    # build the query thanks to the QueryBuilder class
+    query = v1_utils.QueryBuilder2(_TABLE, args, _JOBS_COLUMNS,
+                                   ['configuration'])
 
-    # Its not necessary to retrieve job configuration on job list
-    q_bd.ignore_columns(['configuration'])
-    q_bd.join(embed)
-    q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_COLUMNS)
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _JOBS_COLUMNS)
+    # add extra conditions for filtering
 
-    # If it's not an admin then restrict the view to the team's file
+    # # If not admin then restrict the view to the team
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
+    # # If jd_id not None, then filter by jobdefinition_id
     if jd_id is not None:
-        q_bd.where.append(_TABLE.c.jobdefinition_id == jd_id)
+        query.add_extra_condition(_TABLE.c.jobdefinition_id == jd_id)
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
+    # # Get only the non archived jobs
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
 
-    return flask.jsonify({'jobs': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'jobs': rows, '_meta': {'count': nb_rows}})
 
 
 @api.route('/jobs/<uuid:job_id>/components', methods=['GET'])
 @auth.requires_auth
 def get_components_from_job(user, job_id):
-    job = _get_job(user, job_id, ['components'])
+    job, nb_rows = _get_job(user, job_id, ['components'])
     return flask.jsonify({'components': job['components'],
-                          '_meta': {'count': len(job['components'])}})
+                          '_meta': {'count': nb_rows}})
 
 
 @api.route('/jobs/<uuid:j_id>/jobstates', methods=['GET'])
@@ -428,7 +437,7 @@ def get_jobstates_by_job(user, j_id):
 def get_job_by_id(user, job_id):
     # get the diverse parameters
     embed = schemas.args(flask.request.args.to_dict())['embed']
-    job = _get_job(user, job_id, embed)
+    job, _ = _get_job(user, job_id, embed)
     job['issues'] = (
         json.loads(issues.get_all_issues(job_id).response[0])['issues']
     )
