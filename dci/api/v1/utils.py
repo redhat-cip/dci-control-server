@@ -19,7 +19,9 @@ import six
 from sqlalchemy import sql, func
 from sqlalchemy import Table as sa_Table
 from sqlalchemy.sql import text
+from sqlalchemy.sql import and_
 
+from dci.api.v1 import embeds
 from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import utils
@@ -240,222 +242,102 @@ def request_wants_html():
 
 class QueryBuilder(object):
 
-    def __init__(self, table, offset=None, limit=None, embed=None):
-        self.table = table
-        self.offset = offset
-        self.limit = limit
-        self._sort = []
-        self.sort = []
-        self.where = []
-        self.select = [table]
-        self.extra_tables = []
-        self.extra_where = []
-        self._join = []
-        self.valid_embed = embed or {}
-        self.embed_list = []
+    def __init__(self, root_table, args, strings_to_columns, ignore_columns):
+        self._root_table = root_table
+        self._embeds = args.get('embed', None)
+        self._limit = args.get('limit', None)
+        self._offset = args.get('offset', None)
+        self._sort = sort_query(args.get('sort', None), strings_to_columns)
+        self._where = where_query(args.get('where', None), self._root_table,
+                                  strings_to_columns)
+        self._strings_to_columns = strings_to_columns
+        self._extras_conditions = []
+        self._ignored_columns = ignore_columns
 
-    def ignore_columns(self, columns):
-        """Remove the specified set of columns from the SQL query."""
+    def add_extra_condition(self, condition):
+        self._extras_conditions.append(condition)
 
-        select = []
-        for entity in self.select:
-            if isinstance(entity, sa_Table):
-                for column in entity._columns.values():
-                    if column.name not in columns:
-                        select.append(column)
-            elif entity.name not in columns:
-                select.append(entity)
-        self.select = select
+    def _get_root_columns(self):
+        # remove ignored columns
+        columns_from_root_table = dict(self._strings_to_columns)
+        for column_to_ignore in self._ignored_columns:
+            columns_from_root_table.pop(column_to_ignore, None)
+        return columns_from_root_table.values()
 
-    def join(self, embed_list):
-        """Given a select query on one table columns and a list of tables to
-        join with, this function add to the query builder the needed selections
-        and joins
-        """
-
-        for i in embed_list:
-            root = i.split('.')[0]
-            if root not in embed_list:
-                embed_list.append(root)
-        self.embed_list = sorted(set(embed_list))
-
-        for embed in self.embed_list:
-            if embed not in self.valid_embed:
-                raise dci_exc.DCIException(
-                    'Invalid embed list: "%s"' % embed_list,
-                    payload={'Valid elements': list(self.valid_embed)}
-                )
-            e = self.valid_embed[embed]
-            if not e:
-                continue
-            # order is important for the SQL join
-            if e.join is not None:
-                self._join.append(e.join)
-            if e.where is not None:
-                self.extra_where.append(e.where)
-            if e.sort is not None:
-                self._sort.append(e.sort)
-            if e.select is not None:
-                self.select += e.select
-
-    def _remove_cur_table_field_prefix(self, row):
-        t_row = collections.OrderedDict()
-        t_prefix = self.table.name + '_'
-        for i, v in row.items():
-            if i.startswith(t_prefix):
-                i = i[len(t_prefix):]
-            t_row[i] = v
-        return t_row
-
-    def _flatten_embedded_field(self, row):
-        # Rename the embedded fields from table_field to table.field to be
-        # consistent with the internal model
-        fixed_row = {}
-        for e in self.embed_list:
-            for k in row.keys():
-                if k.startswith(e + '_'):
-                    fixed_k = e + '.' + k[len(e) + 1:]
-                    fixed_row[fixed_k] = row.pop(k)
-        row.update(fixed_row)
-        return row
-
-    def dedup_rows(self, rows):
-        # the DB returns a list of rows with all the information,
-        # sometime, we will get several raws for on item. e.g: a
-        # component has 3 associated jobs
-        # This function, will loop over all the rows and generate
-        # a Python structure:
-        #
-        # | remotecis.name | jobs.name |
-        # ------------------------------
-        # | r1             | job1      |
-        # | r1             | job2      |
-        # | r1             | job3      |
-        #
-        # => {"remotecis": {
-        #     "name": "r1":
-        #     "jobs": [
-        #         {"name": "job1"},
-        #         {"name": "job2"},
-        #         {"name": "job3"}]}
-        aggregates = [
-            (e, collections.defaultdict(list), e.split('.'))
-            for e in self.embed_list
-            if self.valid_embed[e] and self.valid_embed[e].many]
-        parsed_rows = collections.OrderedDict()
-
-        for row in rows:
-            row = self._remove_cur_table_field_prefix(row)
-            row = self._flatten_embedded_field(row)
-            row = group_embedded_resources(self.embed_list, row)
-            for aggr, aggr_dict, aggr_splitted in aggregates:
-                base_element = row
-                for i in aggr_splitted[:-1]:
-                    base_element = base_element[i]
-                obj = base_element.pop(aggr_splitted[-1])
-                if not obj.get('id'):
-                    # skip the the object if ID is NULL
-                    continue
-                cur_ids = [i['id'] for i in aggr_dict[row['id']]]
-                if obj['id'] not in cur_ids:
-                    aggr_dict[row['id']].append(obj)
-            parsed_rows[row['id']] = row
-
-        for row_id, row in six.iteritems(parsed_rows):
-            for aggr, aggr_dict, aggr_splitted in aggregates:
-                base_element = row
-                for i in aggr_splitted[:-1]:
-                    base_element = base_element[i]
-                if base_element:
-                    base_element[aggr_splitted[-1]] = aggr_dict[row_id]
-
-        return list(parsed_rows.values())
-
-    def _get_ids(self):
-        rows = flask.g.db_conn.execute(self.build_list_ids()).fetchall()
-        return [i[0] for i in rows]
-
-    def prepare_join(self, query):
-        for join in self._join:
-            query = query.select_from(join)
-        for i in self.extra_tables:
-            query.append_from(i)
-        if self.extra_where:
-            query = query.where(sql.and_(*self.extra_where))
+    def _add_sort_to_query(self, query):
+        for sort in self._sort:
+            query = query.order_by(sort)
         return query
+
+    def _add_where_to_query(self, query):
+        for where in self._where:
+            query = query.where(where)
+        for e_c in self._extras_conditions:
+            query = query.where(e_c)
+        return query
+
+    def _do_subquery(self):
+        # if embed with limit or offset requested then we will use a subquery
+        # for the root table
+        return self._embeds and (self._limit or self._offset)
+
+    def _get_embed_list(self, embed_joins):
+        valid_embed = embed_joins.keys()
+        embed_list = []
+        for embed_elem in self._embeds:
+            left = embed_elem.split('.')[0]
+            if embed_elem not in valid_embed:
+                raise dci_exc.DCIException(
+                    'Invalid embed list',
+                    payload={'Valid elements': valid_embed}
+                )
+            if left not in embed_list:
+                embed_list.append(left)
+        return sorted(set(embed_list))
 
     def build(self):
-        distinct_on = [self.table.c.id] + [i + '_id' for i in self.embed_list]
-        query = sql.select(self.select, use_labels=True).distinct(*distinct_on)
-        # One record information may be splitted on more than just one SQL
-        # row. These rows will be ultimately merged in one line by
-        # dedup_rows().
-        #
-        # E.g:
-        #
-        #  | id   | embeded_field
-        #  | id_1 |         data1
-        #  | id_1 |         data2
-        #
-        # If we use a limit operator here, we may end up with a truncated
-        # record. This is the reason why we do a first iteration to only
-        # identify the IDs. The second iterations is used to actually collect
-        # the full record data.
-        ids = self._get_ids()
-        if ids:
-            _where = self.table.c.id.in_(ids)
-        else:
-            _where = self.table.c.id == None  # noqa
-        self.extra_where.append(_where)
 
-        for sort in distinct_on:
-            query = query.order_by(sort)
+        select_clause = self._get_root_columns()
+        root_select = self._root_table
+        if self._do_subquery():
+            root_subquery = sql.select(select_clause)
+            root_subquery = self._add_where_to_query(root_subquery)
+            root_subquery = self._add_sort_to_query(root_subquery)
+            if self._limit:
+                root_subquery = root_subquery.limit(self._limit)
+            if self._offset:
+                root_subquery = root_subquery.offset(self._offset)
+            root_subquery = root_subquery.alias(self._root_table.name)
+            select_clause = [root_subquery]
+            root_select = root_subquery
 
-        query = self.prepare_join(query).alias(str(self.table))
-        query = sql.select(['*'], from_obj=query)
-        try:  # case where a table is in the select
-            id_c_name = '%s_%s' % (
-                self.select[0].name, self.select[0].c['id'].name)
-        except AttributeError:
-            id_c_name = self.select[0].name
-            if '_' not in id_c_name:
-                id_c_name = str(self.table) + '_' + id_c_name
-        for id_ in reversed(ids):
-            query = query.order_by(text("%s='%s' ASC" % (id_c_name, id_)))
+        embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select)
+        embed_list = self._get_embed_list(embed_joins)
+
+        children = root_select
+        for embed_elem in embed_list:
+            for join_param in embed_joins[embed_elem]:
+                children = children.join(**join_param)
+            select_clause.append(embeds.EMBED_STRING_TO_OBJECT[embed_elem])
+
+        query = sql.select(select_clause,
+                           use_labels=True,
+                           from_obj=children)
+
+        if not self._do_subquery():
+            query = self._add_sort_to_query(query)
+            query = self._add_where_to_query(query)
+
+            if self._limit:
+                query = query.limit(self._limit)
+            if self._offset:
+                query = query.offset(self._offset)
+
         return query
 
-    def build_list_ids(self):
-        # If we want the WHERE to work, we need to have its columns in the
-        # SELECT
-        search_columns = [s.element if hasattr(s, 'element') else s
-                          for s in self.sort]
-        query = sql.select([func.distinct(self.table.c.id)] + search_columns)
 
-        for where in self.where:
-            query = query.where(where)
-
-        if self.limit:
-            query = query.limit(self.limit)
-
-        if self.offset:
-            query = query.offset(self.offset)
-
-        for sort in self.sort:
-            query = query.order_by(sort)
-
-        query = self.prepare_join(query)
-        return query
-
-    def build_nb_row(self):
-        query = sql.select([
-            func.count(
-                func.distinct(self.table.c.id))]).select_from(self.table)
-
-        for where in self.where:
-            query = query.where(where)
-
-        query = self.prepare_join(query)
-        return query
+def format_result(rows):
+    return rows
 
 
 def flask_headers_to_dict(headers):

@@ -19,7 +19,9 @@ import datetime
 import flask
 from flask import json
 import six
+import sqlalchemy
 from sqlalchemy import sql
+from sqlalchemy import func as sa_func
 
 
 from dci.api.v1 import api
@@ -380,32 +382,28 @@ def get_all_jobs(user, jd_id=None):
     """
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 _VALID_EMBED)
+    # build the query thanks to the QueryBuilder class
+    query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS,
+                                   ['configuration'])
 
-    # Its not necessary to retrieve job configuration on job list
-    q_bd.ignore_columns(['configuration'])
-    q_bd.join(embed)
-    q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_COLUMNS)
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _JOBS_COLUMNS)
+    # add extra conditions for filtering
 
-    # If it's not an admin then restrict the view to the team's file
+    ## If not admin then restrict the view to the team
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
+    ## If jd_id not None, then filter by jobdefinition_id
     if jd_id is not None:
-        q_bd.where.append(_TABLE.c.jobdefinition_id == jd_id)
+        query.add_extra_condition(_TABLE.c.jobdefinition_id == jd_id)
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
+    ## Get only the non archived jobs
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    rows = flask.g.db_conn.execute(query.build()).fetchall()
+    rows = v1_utils.format_result(rows)
 
-    return flask.jsonify({'jobs': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'jobs': rows, '_meta': {'count': len(rows)}})
 
 
 @api.route('/jobs/<job_id>/components', methods=['GET'])
