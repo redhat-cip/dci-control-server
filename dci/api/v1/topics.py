@@ -99,9 +99,10 @@ def get_all_topics(user):
     q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
                                  _VALID_EMBED)
     q_bd.join(embed)
-
     q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS,
                                     default='name')
+    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
+
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))
 

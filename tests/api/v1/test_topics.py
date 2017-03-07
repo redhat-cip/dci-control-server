@@ -112,6 +112,21 @@ def test_get_all_topics_with_pagination(admin):
     assert cs.data['topics'] == []
 
 
+def test_get_all_topics_with_where(admin):
+    # create 20 topic types and check meta data count
+    topics = {}
+    for i in range(20):
+        t_name = str(uuid.uuid4())
+        r = admin.post('/api/v1/topics',
+                       data={'name': t_name}).data
+        topics[t_name] = r['topic']['id']
+
+    for t_name, t_id in topics.items():
+        r = admin.get('/api/v1/topics?where=name:%s&limit=1' % t_name).data
+        assert r['_meta']['count'] == 1
+        assert r['topics'][0]['id'] == t_id
+
+
 def test_get_topics_of_user(admin, user, team_user_id):
     data = {'name': 'test_name'}
     topic = admin.post('/api/v1/topics', data=data).data['topic']
