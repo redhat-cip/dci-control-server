@@ -106,16 +106,15 @@ def attach_issue(job_id):
 
     # Second, insert a join record in the JOIN_JOBS_ISSUES
     # database.
-    values = {
+    query = models.JOIN_JOBS_ISSUES.insert().values({
         'job_id': job_id,
         'issue_id': issue_id
-    }
-    query = models.JOIN_JOBS_ISSUES.insert().values(**values)
+    })
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError:
         raise dci_exc.DCICreationConflict(models.JOIN_JOBS_ISSUES.name,
                                           'job_id, issue_id')
 
-    result = json.dumps(values)
+    result = json.dumps({'issue': values})
     return flask.Response(result, 201, content_type='application/json')

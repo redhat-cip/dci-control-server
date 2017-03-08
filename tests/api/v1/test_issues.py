@@ -46,8 +46,9 @@ def test_attach_issue_to_job(admin, job_id):
         data = {
             'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
         }
-        admin.post('/api/v1/jobs/%s/issues' % job_id, data=data)
+        issue = admin.post('/api/v1/jobs/%s/issues' % job_id, data=data).data
         result = admin.get('/api/v1/jobs/%s/issues' % job_id).data
+        assert result['issues'][0]['id'] == issue['issue']['id']
         assert result['issues'][0]['url'] == data['url']
 
 
@@ -82,7 +83,7 @@ def test_unattach_issue_from_job(admin, job_id):
             'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
         }
         result = admin.post('/api/v1/jobs/%s/issues' % job_id, data=data)
-        issue_id = result.data['issue_id']
+        issue_id = result.data['issue']['id']
         result = admin.get('/api/v1/jobs/%s/issues' % job_id).data
         assert result['_meta']['count'] == 1
         admin.delete('/api/v1/jobs/%s/issues/%s' % (job_id, issue_id))
