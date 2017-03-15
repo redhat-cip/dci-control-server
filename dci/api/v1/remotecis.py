@@ -30,8 +30,15 @@ from dci.db import models
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.REMOTECIS
-_VALID_EMBED = embeds.remotecis()
+_VALID_EMBED = embeds.remotecis2()
 _R_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_EMBED_MANY = {
+    'team': False,
+    'lastjob': False,
+    'lastjob.components': True,
+    'currentjob': False,
+    'currentjob.components': True
+}
 
 
 @api.route('/remotecis', methods=['POST'])
@@ -71,28 +78,27 @@ def create_remotecis(user):
 @auth.requires_auth
 def get_all_remotecis(user, t_id=None):
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 _VALID_EMBED)
-    q_bd.join(embed)
-    q_bd.sort = v1_utils.sort_query(args['sort'], _R_COLUMNS, default='name')
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _R_COLUMNS)
+    # build the query thanks to the QueryBuilder class
+    query = v1_utils.QueryBuilder2(_TABLE, args, _R_COLUMNS)
 
     # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
     if t_id is not None:
-        q_bd.where.append(_TABLE.c.team_id == t_id)
+        query.add_extra_condition(_TABLE.c.team_id == t_id)
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    rows = flask.g.db_conn.execute(query.build()).fetchall()
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
 
-    return flask.jsonify({'remotecis': rows, '_meta': {'count': nb_row}})
+    from sqlalchemy.dialects import postgresql
+    res = str(query.build().compile(dialect=postgresql.dialect()))
+
+    return flask.jsonify({'remotecis': rows, '_meta': {'count': len(rows)}})
 
 
 @api.route('/remotecis/<r_id>', methods=['GET'])
