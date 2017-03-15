@@ -38,6 +38,10 @@ _JJC = models.JOIN_JOBS_COMPONENTS
 _VALID_EMBED = embeds.components()
 _C_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _JOBS_C_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBS)
+_EMBED_MANY = {
+    'cfiles': True,
+    'jobs': True
+}
 
 
 @api.route('/components', methods=['POST'])
@@ -96,76 +100,47 @@ def update_components(user, c_id):
 
 def get_all_components(user, topic_id):
     """Get all components of a topic."""
-    # get the diverse parameters
+
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
+
     v1_utils.verify_team_in_topic(user, topic_id)
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 _VALID_EMBED)
-    q_bd.join(embed)
+    query = v1_utils.QueryBuilder2(_TABLE, args, _C_COLUMNS)
 
-    q_bd.sort = v1_utils.sort_query(args['sort'], _C_COLUMNS)
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _C_COLUMNS)
-    where_clause = sql.and_(
+    query.add_extra_condition(sql.and_(
         _TABLE.c.topic_id == topic_id,
-        _TABLE.c.state != 'archived'
-    )
-    q_bd.where.append(where_clause)
+        _TABLE.c.state != 'archived'))
 
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
 
     # Return only the component which have the export_control flag set to true
     #
     if not (auth.is_admin(user)):
         rows = [row for row in rows if row['export_control']]
 
-    return flask.jsonify({'components': rows, '_meta': {'count': len(rows)}})
-
-
-def get_jobs(user, component_id, team_id=None):
-    """Get all the jobs associated to a specific component. If team_id is
-    provided then filter by the jobs by team_id otherwise returns all the
-    jobs.
-    """
-    args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
-
-    q_bd = v1_utils.QueryBuilder(models.JOBS, args['offset'], args['limit'],
-                                 _VALID_EMBED)
-    q_bd.join(embed)
-    q_bd.sort = v1_utils.sort_query(args['sort'], _JOBS_C_COLUMNS)
-
-    q_bd.ignore_columns(['configuration'])
-    q_bd.where.append(_JJC.c.component_id == component_id)
-    if team_id:
-        q_bd.where.append(models.JOBS.c.team_id == team_id)
-
-    q_bd.where.append(models.JOBS.c.state != 'archived')
-
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
-    return flask.jsonify({'jobs': rows, '_meta': {'count': len(rows)}})
+    return flask.jsonify({'components': rows, '_meta': {'count': nb_rows}})
 
 
 @api.route('/components/<uuid:c_id>', methods=['GET'])
 @auth.requires_auth
 def get_component_by_id_or_name(user, c_id):
-    embed = schemas.args(flask.request.args.to_dict())['embed']
+    args = schemas.args(flask.request.args.to_dict())
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    v1_utils.verify_team_in_topic(user, component['topic_id'])
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
-    q_bd.join(embed)
+    query = v1_utils.QueryBuilder2(_TABLE, args, _C_COLUMNS)
 
-    q_bd.where.append(
+    query.add_extra_condition(
         sql.and_(
             _TABLE.c.state != 'archived',
-            _TABLE.c.id == c_id
-        )
-    )
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
-    if len(rows) != 1:
+            _TABLE.c.id == c_id))
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
+    if len(rows) < 1:
         raise dci_exc.DCINotFound('Component', c_id)
     component = rows[0]
     auth.check_export_control(user, component)
@@ -216,24 +191,23 @@ def list_components_files(user, c_id):
     v1_utils.verify_team_in_topic(user, component['topic_id'])
 
     args = schemas.args(flask.request.args.to_dict())
+    args['embed'] = ['cfiles']
 
-    COMPONENT_FILES = models.COMPONENT_FILES
-    COLUMN_CF = v1_utils.get_columns_name_with_objects(COMPONENT_FILES)
+    query = v1_utils.QueryBuilder2(_TABLE, args, _C_COLUMNS)
+    query.add_extra_condition(models.COMPONENT_FILES.c.component_id == c_id)
 
-    q_bd = v1_utils.QueryBuilder(COMPONENT_FILES,
-                                 args['offset'], args['limit'],
-                                 embed=_VALID_EMBED)
+    nb_rows = query.get_number_of_rows(models.COMPONENT_FILES,
+                                       models.COMPONENT_FILES.c.component_id == c_id)  # noqa
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
+    if len(rows) == 0:
+        rows = []
+    else:
+        rows = rows[0]['cfiles']
 
-    q_bd.sort = v1_utils.sort_query(args['sort'], COLUMN_CF)
-    q_bd.where = v1_utils.where_query(args['where'], COMPONENT_FILES,
-                                      COLUMN_CF)
-    q_bd.where.append(COMPONENT_FILES.c.component_id == c_id)
-
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
-
-    return flask.jsonify({'component_files': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'component_files': rows,
+                          '_meta': {'count': nb_rows}})
 
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['GET'])
