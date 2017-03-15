@@ -98,9 +98,9 @@ def get_all_remotecis(user, t_id=None):
     return flask.jsonify({'remotecis': rows, '_meta': {'count': len(rows)}})
 
 
-@api.route('/remotecis/<uuid:r_id>', methods=['GET'])
+@api.route('/remotecis/<uuid:remoteci_id>', methods=['GET'])
 @auth.requires_auth
-def get_remoteci_by_id_or_name(user, r_id):
+def get_remoteci_by_id_or_name(user, remoteci_id):
 
     args = schemas.args(flask.request.args.to_dict())
 
@@ -119,7 +119,7 @@ def get_remoteci_by_id_or_name(user, r_id):
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
     if len(rows) != 1:
-        raise dci_exc.DCINotFound('Remoteci', r_id)
+        raise dci_exc.DCINotFound('Remoteci', remoteci_id)
 
     res = flask.jsonify({'remoteci': rows[0], '_meta': {'count': len(rows)}})
     res.headers.add_header('ETag', rows[0]['etag'])

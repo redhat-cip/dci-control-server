@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
+import uuid
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -182,20 +183,6 @@ def get_all_components(user, topic_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
     return components.get_all_components(user, topic_id=topic_id)
-
-
-@api.route('/topics/<uuid:topic_id>/components/<uuid:component_id>/jobs',
-           methods=['GET'])
-@auth.requires_auth
-def get_jobs_from_components(user, topic_id, component_id):
-    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
-    v1_utils.verify_team_in_topic(user, topic_id)
-    v1_utils.verify_existence_and_get(component_id, models.COMPONENTS)
-
-    # if the user is not the admin then filter by team_id
-    team_id = user['team_id'] if not auth.is_admin(user) else None
-
-    return components.get_jobs(user, component_id, team_id=team_id)
 
 
 @api.route('/topics/<uuid:topic_id>/type/<type_id>/status',
