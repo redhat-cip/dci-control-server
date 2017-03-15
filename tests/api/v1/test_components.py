@@ -169,10 +169,10 @@ def test_get_component_by_id_or_name(admin, topic_id):
     assert created_ct['component']['id'] == pc_id
 
 
-def test_get_component_export_control(admin, user, topic_id):
+def test_get_component_export_control(admin, user, topic_user_id):
     data = {'name': 'pname',
             'type': 'gerrit_review',
-            'topic_id': topic_id,
+            'topic_id': topic_user_id,
             'export_control': False
             }
     ncomp = admin.post('/api/v1/components', data=data)
@@ -348,9 +348,9 @@ def test_add_file_to_component(admin, topic_id):
         assert l_file.data['_meta']['count'] == 1
         assert l_file.data['component_files'][0]['component_id'] == ct_1['id']
         cts = admin.get(
-            '/api/v1/components/%s?embed=files' % ct_1['id']).data
-        assert len(cts['component']['files']) == 1
-        assert cts['component']['files'][0]['size'] == 1
+            '/api/v1/components/%s?embed=cfiles' % ct_1['id']).data
+        assert len(cts['component']['cfiles']) == 1
+        assert cts['component']['cfiles'][0]['size'] == 1
 
 
 def test_download_file_from_component(admin, topic_id):
@@ -408,6 +408,9 @@ def test_delete_file_from_component(admin, topic_id):
         url = '/api/v1/components/%s/files' % ct_1['id']
         data = "lol"
         c_file = admin.post(url, data=data).data['component_file']
+        url = '/api/v1/components/%s/files' % ct_1['id']
+        g_file = admin.get(url)
+        assert g_file.data['_meta']['count'] == 1
 
         url = '/api/v1/components/%s/files/%s' % (ct_1['id'], c_file['id'])
         d_file = admin.delete(url)
