@@ -18,16 +18,30 @@ from dci.db import models
 
 from sqlalchemy import sql
 from sqlalchemy.sql import and_
-from sqlalchemy.sql import or_
 
+
+def ignore_columns_from_table(table, ignored_columns):
+    return [getattr(table.c, column.name)
+            for column in table.columns
+            if column.name not in ignored_columns]
 
 # These functions should be called by v1_utils.QueryBuilder
 
 # Create necessary aliases
 REMOTECI_TESTS = models.TESTS.alias('remoteci.tests')
 JOBDEFINITION_TESTS = models.TESTS.alias('jobdefinition.tests')
-JOBS_TEAM = models.TEAMS.alias('team')
-JOBS_REMOTECI = models.REMOTECIS.alias('remoteci')
+TEAM = models.TEAMS.alias('team')
+REMOTECI = models.REMOTECIS.alias('remoteci')
+
+LASTJOB = models.JOBS.alias('lastjob')
+LASTJOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(LASTJOB, ['configuration'])  # noqa
+LASTJOB_COMPONENTS = models.COMPONENTS.alias('lastjob.components')
+LASTJOB_JOIN_COMPONENTS = models.JOIN_JOBS_COMPONENTS.alias('lastjob.jobcomponents')  # noqa
+
+CURRENTJOB = models.JOBS.alias('currentjob')
+CURRENTJOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(CURRENTJOB, ['configuration'])  # noqa
+CURRENTJOB_COMPONENTS = models.COMPONENTS.alias('currentjob.components')
+CURRENTJOB_JOIN_COMPONENTS = models.JOIN_JOBS_COMPONENTS.alias('currentjob.jobcomponents')  # noqa
 
 
 def jobs(root_select=models.JOBS):
@@ -54,12 +68,12 @@ def jobs(root_select=models.JOBS):
                               JOBDEFINITION_TESTS.c.state != 'archived'),
              'isouter': True}],
         'remoteci': [
-            {'right': JOBS_REMOTECI,
-             'onclause': and_(root_select.c.remoteci_id == JOBS_REMOTECI.c.id,
-                              JOBS_REMOTECI.c.state != 'archived')}],
+            {'right': REMOTECI,
+             'onclause': and_(root_select.c.remoteci_id == REMOTECI.c.id,
+                              REMOTECI.c.state != 'archived')}],
         'remoteci.tests': [
             {'right': models.JOIN_REMOTECIS_TESTS,
-             'onclause': models.JOIN_REMOTECIS_TESTS.c.remoteci_id == JOBS_REMOTECI.c.id,  # noqa
+             'onclause': models.JOIN_REMOTECIS_TESTS.c.remoteci_id == REMOTECI.c.id,  # noqa
              'isouter': True},
             {'right': REMOTECI_TESTS,
              'onclause': and_(REMOTECI_TESTS.c.id == models.JOIN_REMOTECIS_TESTS.c.test_id,  # noqa
@@ -74,9 +88,59 @@ def jobs(root_select=models.JOBS):
                               models.COMPONENTS.c.state != 'archived'),
              'isouter': True}],
         'team': [
-            {'right': JOBS_TEAM,
-             'onclause': and_(root_select.c.team_id == JOBS_TEAM.c.id,
-                              JOBS_TEAM.c.state != 'archived')}]
+            {'right': TEAM,
+             'onclause': and_(root_select.c.team_id == TEAM.c.id,
+                              TEAM.c.state != 'archived')}]
+    }
+
+
+def remotecis(root_select=models.REMOTECIS):
+    return {
+        'team': [
+            {'right': TEAM,
+             'onclause': and_(TEAM.c.id == root_select.c.team_id,
+                              TEAM.c.state != 'archived')}
+        ],
+        'lastjob': [
+            {'right': LASTJOB,
+             'onclause': and_(
+                 LASTJOB.c.state != 'archived',
+                 LASTJOB.c.status.in_([
+                     'success',
+                     'failure',
+                     'killed',
+                     'product-failure',
+                     'deployment-failure']),
+                 LASTJOB.c.remoteci_id == root_select.c.id),
+             'isouter': True,
+             'sort': LASTJOB.c.created_at}],
+        'lastjob.components': [
+            {'right': LASTJOB_JOIN_COMPONENTS,
+             'onclause': LASTJOB_JOIN_COMPONENTS.c.job_id == LASTJOB.c.id,  # noqa
+             'isouter': True},
+            {'right': LASTJOB_COMPONENTS,
+             'onclause': and_(LASTJOB_COMPONENTS.c.id == LASTJOB_JOIN_COMPONENTS.c.component_id,  # noqa
+                              LASTJOB_COMPONENTS.c.state != 'archived'),
+             'isouter': True}],
+        'currentjob': [
+            {'right': CURRENTJOB,
+             'onclause': and_(
+                 CURRENTJOB.c.state != 'archived',
+                 CURRENTJOB.c.status.in_([
+                     'new',
+                     'pre-run',
+                     'running']),
+                 CURRENTJOB.c.remoteci_id == root_select.c.id),
+             'isouter': True,
+             'sort': CURRENTJOB.c.created_at}],
+        'currentjob.components': [
+            {'right': CURRENTJOB_JOIN_COMPONENTS,
+             'onclause': CURRENTJOB_JOIN_COMPONENTS.c.job_id == CURRENTJOB.c.id,  # noqa
+             'isouter': True},
+            {'right': CURRENTJOB_COMPONENTS,
+             'onclause': and_(CURRENTJOB_COMPONENTS.c.id == CURRENTJOB_JOIN_COMPONENTS.c.component_id,  # noqa
+                              CURRENTJOB_COMPONENTS.c.state != 'archived'),
+             'isouter': True}]
     }
 
 
@@ -87,15 +151,22 @@ EMBED_STRING_TO_OBJECT = {
         'metas': models.METAS,
         'jobdefinition': models.JOBDEFINITIONS.alias('jobdefinition'),
         'jobdefinition.tests': JOBDEFINITION_TESTS,
-        'remoteci': JOBS_REMOTECI,
+        'remoteci': REMOTECI,
         'remoteci.tests': REMOTECI_TESTS,
         'components': models.COMPONENTS,
-        'team': JOBS_TEAM}
+        'team': TEAM},
+    'remotecis': {
+        'team': TEAM,
+        'lastjob': LASTJOB_WITHOUT_CONFIGURATION,
+        'lastjob.components': LASTJOB_COMPONENTS,
+        'currentjob': CURRENTJOB_WITHOUT_CONFIGURATION,
+        'currentjob.components': CURRENTJOB_COMPONENTS}
 }
 
 # for each table associate its embed's function handler
 EMBED_JOINS = {
-    'jobs': jobs
+    'jobs': jobs,
+    'remotecis': remotecis
 }
 
 
@@ -227,108 +298,6 @@ def jobstates():
                 team.c.state != 'archived'
             )
         )}
-
-
-def remotecis():
-    lj = models.JOBS.alias('last_job')
-    cj = models.JOBS.alias('current_job')
-    lj_components = models.COMPONENTS.alias('last_job.components')
-    cj_components = models.COMPONENTS.alias('current_job.components')
-    cjc = models.JOIN_JOBS_COMPONENTS.alias('cjc')
-    ljc = models.JOIN_JOBS_COMPONENTS.alias('ljc')
-    rci0 = models.REMOTECIS.alias('remoteci_0')
-    rci1 = models.REMOTECIS.alias('remoteci_1')
-    rci2 = models.REMOTECIS.alias('remoteci_2')
-    rci3 = models.REMOTECIS.alias('remoteci_3')
-    rci4 = models.REMOTECIS.alias('remoteci_4')
-    lj_t = models.JOBS.alias('last_job_t')
-    cj_t = models.JOBS.alias('current_job_t')
-    team = models.TEAMS.alias('team')
-
-    return {
-        'team': embed(
-            select=[team],
-            join=rci0.join(team, and_(team.c.id == rci0.c.team_id,
-                                      team.c.state != 'archived')),
-            where=rci0.c.id == models.REMOTECIS.c.id),
-        'last_job': embed(
-            select=[c for n, c in lj.c.items() if n != 'configuration'],
-            join=rci1.join(
-                lj,
-                and_(
-                    lj.c.state != 'archived',
-                    lj.c.remoteci_id == rci1.c.id,
-                    lj.c.status.in_([
-                        'success',
-                        'failure',
-                        'killed',
-                        'product-failure',
-                        'deployment-failure'])),
-                isouter=True),
-            where=rci1.c.id == models.REMOTECIS.c.id,
-            sort=lj.c.created_at),
-        'last_job.components': embed(
-            select=[lj_components],
-            join=rci2.join(
-                lj_t.join(
-                    ljc.join(
-                        lj_components,
-                        and_(
-                            ljc.c.component_id == lj_components.c.id,
-                            lj_components.c.state != 'archived'
-                        ),
-                        isouter=True),
-                    and_(
-                        ljc.c.job_id == lj_t.c.id,
-                        lj_t.c.state != 'archived'
-                    ),
-                    isouter=True),
-                lj_t.c.remoteci_id == rci2.c.id,
-                isouter=True),
-            where=and_(
-                rci2.c.id == models.REMOTECIS.c.id,
-                or_(
-                    lj.c.id == lj_t.c.id,
-                    lj.c.id == None)),
-            many=True),
-        'current_job': embed(
-            select=[c for n, c in cj.c.items() if n != 'configuration'],
-            join=rci3.join(
-                cj,
-                and_(
-                    cj.c.state != 'archived',
-                    cj.c.remoteci_id == rci3.c.id,
-                    cj.c.status.in_([
-                        'new',
-                        'pre-run',
-                        'running'])),
-                isouter=True),
-            where=rci3.c.id == models.REMOTECIS.c.id,
-            sort=cj.c.created_at),
-        'current_job.components': embed(
-            select=[cj_components],
-            join=rci4.join(
-                cj_t.join(
-                    cjc.join(
-                        cj_components,
-                        and_(
-                            cjc.c.component_id == cj_components.c.id,
-                            cj_components.c.state != 'archived'
-                        ),
-                        isouter=True),
-                    and_(
-                        cjc.c.job_id == cj_t.c.id,
-                        cj_t.c.state != 'archived'
-                    ),
-                    isouter=True),
-                cj_t.c.remoteci_id == rci4.c.id,
-                isouter=True),
-            where=and_(
-                rci4.c.id == models.REMOTECIS.c.id,
-                or_(
-                    cj.c.id == cj_t.c.id,
-                    cj.c.id == None)),  # noqa
-            many=True)}
 
 
 def teams():
