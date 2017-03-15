@@ -32,6 +32,9 @@ REMOTECI_TESTS = models.TESTS.alias('remoteci.tests')
 JOBDEFINITION_TESTS = models.TESTS.alias('jobdefinition.tests')
 TEAM = models.TEAMS.alias('team')
 REMOTECI = models.REMOTECIS.alias('remoteci')
+CFILES = models.COMPONENT_FILES.alias('files')
+
+JOBS_WITHOUT_CONFIGURATION = ignore_columns_from_table(models.JOBS, ['configuration'])  # noqa
 
 LASTJOB = models.JOBS.alias('lastjob')
 LASTJOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(LASTJOB, ['configuration'])  # noqa
@@ -144,7 +147,28 @@ def remotecis(root_select=models.REMOTECIS):
     }
 
 
+def components(root_select=models.COMPONENTS):
+    return {
+        'files': [
+            {'right': CFILES,
+             'onclause': and_(
+                 CFILES.c.component_id == root_select.c.id,
+                 CFILES.c.state != 'archived'),
+             'isouter': True
+             }],
+        'jobs': [
+            {'right': models.JOIN_JOBS_COMPONENTS,
+             'onclause': models.JOIN_JOBS_COMPONENTS.c.component_id == root_select.c.id,  # noqa
+             'isouter': True},
+            {'right': models.JOBS,
+             'onclause': and_(models.JOBS.c.id == models.JOIN_JOBS_COMPONENTS.c.job_id,  # noqa
+                              models.JOBS.c.state != 'archived'),
+             'isouter': True}]
+    }
+
+
 # associate the name table to the object table
+# used for select clause
 EMBED_STRING_TO_OBJECT = {
     'jobs': {
         'files': models.FILES,
@@ -160,13 +184,18 @@ EMBED_STRING_TO_OBJECT = {
         'lastjob': LASTJOB_WITHOUT_CONFIGURATION,
         'lastjob.components': LASTJOB_COMPONENTS,
         'currentjob': CURRENTJOB_WITHOUT_CONFIGURATION,
-        'currentjob.components': CURRENTJOB_COMPONENTS}
+        'currentjob.components': CURRENTJOB_COMPONENTS},
+    'components': {
+        'files': CFILES,
+        'jobs': JOBS_WITHOUT_CONFIGURATION
+    }
 }
 
 # for each table associate its embed's function handler
 EMBED_JOINS = {
     'jobs': jobs,
-    'remotecis': remotecis
+    'remotecis': remotecis,
+    'components': components
 }
 
 
@@ -186,21 +215,6 @@ def embed(many=False, select=None, where=None,
     :param join: an SQLAlchemy-core Join instance
     """
     return Embed(many, select, where, sort, join)
-
-
-def components():
-    component = models.COMPONENTS
-    component_files = models.COMPONENT_FILES.alias('files')
-    return {
-        'files': embed(
-            select=[component_files],
-            join=component.join(
-                component_files,
-                component_files.c.component_id == component.c.id,
-                isouter=True
-            ),
-            many=True),
-    }
 
 
 def files():

@@ -329,9 +329,13 @@ class QueryBuilder2(object):
 
         return query
 
-    def get_number_of_rows(self):
-        query = sql.select([func.count(self._root_table.c.id)])
-        query = self._add_where_to_query(query)
+    def get_number_of_rows(self, root_table=None, where=None):
+        if root_table is not None:
+            query = sql.select([func.count(root_table.c.id)])
+            query = query.where(where)
+        else:
+            query = sql.select([func.count(self._root_table.c.id)])
+            query = self._add_where_to_query(query)
         return flask.g.db_conn.execute(query).scalar()
 
     def execute(self, fetchall=False, fetchone=False):
