@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a72e520_59d193cc",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 410,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-15T15:46:18Z",
+      "side": 1,
+      "message": "If you have a limit, the rows number will be the limit. The len(rows) will be also the limit value. You should use the COUNT function instead.",
+      "revId": "9e541050e1b8b8e84abd6c2a4a8b807a68ef8c94",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
