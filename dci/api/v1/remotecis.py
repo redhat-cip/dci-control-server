@@ -32,6 +32,13 @@ from dci.db import models
 _TABLE = models.REMOTECIS
 _VALID_EMBED = embeds.remotecis()
 _R_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_EMBED_MANY = {
+    'team': False,
+    'lastjob': False,
+    'lastjob.components': True,
+    'currentjob': False,
+    'currentjob.components': True
+}
 
 
 @api.route('/remotecis', methods=['POST'])
@@ -71,56 +78,51 @@ def create_remotecis(user):
 @auth.requires_auth
 def get_all_remotecis(user, t_id=None):
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 _VALID_EMBED)
-    q_bd.join(embed)
-    q_bd.sort = v1_utils.sort_query(args['sort'], _R_COLUMNS, default='name')
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _R_COLUMNS)
+    # build the query thanks to the QueryBuilder class
+    query = v1_utils.QueryBuilder2(_TABLE, args, _R_COLUMNS)
 
     # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
     if t_id is not None:
-        q_bd.where.append(_TABLE.c.team_id == t_id)
+        query.add_extra_condition(_TABLE.c.team_id == t_id)
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    rows = flask.g.db_conn.execute(query.build()).fetchall()
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
 
-    return flask.jsonify({'remotecis': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'remotecis': rows, '_meta': {'count': len(rows)}})
 
 
 @api.route('/remotecis/<uuid:r_id>', methods=['GET'])
 @auth.requires_auth
 def get_remoteci_by_id_or_name(user, r_id):
-    embed = schemas.args(flask.request.args.to_dict())['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
-    q_bd.join(embed)
+    args = schemas.args(flask.request.args.to_dict())
 
+    # build the query thanks to the QueryBuilder class
+    query = v1_utils.QueryBuilder2(_TABLE, args, _R_COLUMNS)
+
+    # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
-    q_bd.where.append(
-        sql.and_(
-            _TABLE.c.state != 'archived',
-            _TABLE.c.id == r_id
-        )
-    )
+    query.add_extra_condition(_TABLE.c.id == r_id)
 
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    query.add_extra_condition(_TABLE.c.state != 'archived')
+
+    rows = flask.g.db_conn.execute(query.build()).fetchall()
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
     if len(rows) != 1:
-        raise dci_exc.DCINotFound('RemoteCI', r_id)
-    remoteci = rows[0]
+        raise dci_exc.DCINotFound('Remoteci', r_id)
 
-    res = flask.jsonify({'remoteci': remoteci})
-    res.headers.add_header('ETag', remoteci['etag'])
+    res = flask.jsonify({'remoteci': rows[0], '_meta': {'count': len(rows)}})
+    res.headers.add_header('ETag', rows[0]['etag'])
     return res
 
 
@@ -161,13 +163,13 @@ def put_remoteci(user, r_id):
                           content_type='application/json')
 
 
-@api.route('/remotecis/<uuid:r_id>', methods=['DELETE'])
+@api.route('/remotecis/<uuid:remoteci_id>', methods=['DELETE'])
 @auth.requires_auth
-def delete_remoteci_by_id_or_name(user, r_id):
+def delete_remoteci_by_id_or_name(user, remoteci_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+    remoteci = v1_utils.verify_existence_and_get(remoteci_id, _TABLE)
 
     if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
         raise auth.UNAUTHORIZED
@@ -175,14 +177,13 @@ def delete_remoteci_by_id_or_name(user, r_id):
     values = {'state': 'archived'}
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == r_id
-    )
+        _TABLE.c.id == remoteci_id)
     query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
-        raise dci_exc.DCIDeleteConflict('RemoteCI', r_id)
+        raise dci_exc.DCIDeleteConflict('RemoteCI', remoteci_id)
 
     return flask.Response(None, 204, content_type='application/json')
 
@@ -201,13 +202,13 @@ def get_remoteci_data(user, r_id):
 
 
 def get_remoteci_data_json(user, r_id):
-    q_bd = v1_utils.QueryBuilder(_TABLE)
+    query = v1_utils.QueryBuilder2(_TABLE, {}, _R_COLUMNS)
 
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
-    q_bd.where.append(_TABLE.c.id == r_id)
-    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
+    query.add_extra_condition(_TABLE.c.id == r_id)
+    row = flask.g.db_conn.execute(query.build()).fetchone()
 
     if row is None:
         raise dci_exc.DCINotFound('RemoteCI', r_id)
