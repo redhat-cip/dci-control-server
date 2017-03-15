@@ -86,6 +86,7 @@ def test_get_all_remotecis_with_last_job(admin, team_id, remoteci_id,
 
     data = {'name': 'idle', 'team_id': team_id}
     idle_remoteci = admin.post('/api/v1/remotecis', data=data).data
+    idle_remoteci_id = idle_remoteci['remoteci']['id']
     admin.post('/api/v1/topics/%s/teams' % topic_id,
                data={'team_id': team_id})
     data = {'name': 'foo', 'topic_id': topic_id,
@@ -94,15 +95,16 @@ def test_get_all_remotecis_with_last_job(admin, team_id, remoteci_id,
     remotecis = admin.get((
         '/api/v1/remotecis?embed='
         'team,'
-        'last_job,'
-        'last_job.components,'
-        'current_job,'
-        'current_job.components')).data
+        'lastjob,'
+        'lastjob.components,'
+        'currentjob,'
+        'currentjob.components')).data
+
     assert len(remotecis['remotecis']) == 2
-    assert 'id' not in remotecis['remotecis'][1]['current_job']
-    assert 'id' not in remotecis['remotecis'][1]['last_job']
-    assert 'id' not in remotecis['remotecis'][0]['current_job']
-    assert 'id' not in remotecis['remotecis'][0]['last_job']
+    assert 'id' not in remotecis['remotecis'][1]['currentjob']
+    assert 'id' not in remotecis['remotecis'][1]['lastjob']
+    assert 'id' not in remotecis['remotecis'][0]['currentjob']
+    assert 'id' not in remotecis['remotecis'][0]['lastjob']
 
     admin.post('/api/v1/jobs/schedule',
                data={'remoteci_id': remoteci_id,
@@ -110,16 +112,22 @@ def test_get_all_remotecis_with_last_job(admin, team_id, remoteci_id,
     remotecis = admin.get((
         '/api/v1/remotecis?embed='
         'team,'
-        'last_job,'
-        'last_job.components,'
-        'current_job,'
-        'current_job.components')).data
+        'lastjob,'
+        'lastjob.components,'
+        'currentjob,'
+        'currentjob.components')).data
+
     assert len(remotecis['remotecis']) == 2
-    assert 'id' in remotecis['remotecis'][1]['current_job']
-    assert len(remotecis['remotecis'][1]['current_job']['components']) == 3
-    assert 'id' not in remotecis['remotecis'][0]['last_job']
-    assert 'id' not in remotecis['remotecis'][0]['current_job']
-    assert 'id' not in remotecis['remotecis'][1]['last_job']
+    working_remoteci = remotecis['remotecis'][0]
+    idle_remoteci = remotecis['remotecis'][1]
+    if remotecis['remotecis'][0]['id'] != remoteci_id:
+        working_remoteci, idle_remoteci = idle_remoteci, working_remoteci
+
+    assert 'id' in working_remoteci['currentjob']
+    assert len(working_remoteci['currentjob']['components']) == 3
+    assert 'id' not in working_remoteci['lastjob']
+    assert 'id' not in idle_remoteci['lastjob']
+    assert 'id' not in idle_remoteci['currentjob']
 
     admin.post('/api/v1/jobs/schedule',
                data={'remoteci_id': remoteci_id,
@@ -127,48 +135,61 @@ def test_get_all_remotecis_with_last_job(admin, team_id, remoteci_id,
     remotecis = admin.get((
         '/api/v1/remotecis?embed='
         'team,'
-        'last_job,'
-        'last_job.components,'
-        'current_job,'
-        'current_job.components')).data
-    assert 'id' in remotecis['remotecis'][1]['current_job']
-    assert 'id' in remotecis['remotecis'][1]['last_job']
-    assert 'id' not in remotecis['remotecis'][0]['current_job']
-    assert 'id' not in remotecis['remotecis'][0]['last_job']
+        'lastjob,'
+        'lastjob.components,'
+        'currentjob,'
+        'currentjob.components')).data
+    working_remoteci = remotecis['remotecis'][0]
+    idle_remoteci = remotecis['remotecis'][1]
+    if remotecis['remotecis'][0]['id'] != remoteci_id:
+        working_remoteci, idle_remoteci = idle_remoteci, working_remoteci
+    assert 'id' in working_remoteci['currentjob']
+    assert 'id' in working_remoteci['lastjob']
+    assert 'id' not in idle_remoteci['currentjob']
+    assert 'id' not in idle_remoteci['lastjob']
 
     admin.post('/api/v1/jobs/schedule',
-               data={'remoteci_id': idle_remoteci['remoteci']['id'],
+               data={'remoteci_id': idle_remoteci_id,
                      'topic_id': topic_id})
     remotecis = admin.get((
         '/api/v1/remotecis?embed='
         'team,'
-        'last_job,'
-        'last_job.components,'
-        'current_job,'
-        'current_job.components')).data
-    assert 'id' in remotecis['remotecis'][1]['current_job']
-    assert 'id' in remotecis['remotecis'][1]['last_job']
-    assert 'id' in remotecis['remotecis'][0]['current_job']
-    assert 'id' not in remotecis['remotecis'][0]['last_job']
+        'lastjob,'
+        'lastjob.components,'
+        'currentjob,'
+        'currentjob.components')).data
+    working_remoteci = remotecis['remotecis'][0]
+    idle_remoteci = remotecis['remotecis'][1]
+    if remotecis['remotecis'][0]['id'] != remoteci_id:
+        working_remoteci, idle_remoteci = idle_remoteci, working_remoteci
+    assert 'id' in working_remoteci['currentjob']
+    assert 'id' in working_remoteci['lastjob']
+    assert 'id' in idle_remoteci['currentjob']
+    assert 'id' not in idle_remoteci['lastjob']
 
     admin.post('/api/v1/jobs/schedule',
-               data={'remoteci_id': idle_remoteci['remoteci']['id'],
+               data={'remoteci_id': idle_remoteci_id,
                      'topic_id': topic_id})
     remotecis = admin.get((
         '/api/v1/remotecis?embed='
         'team,'
-        'last_job,'
-        'last_job.components,'
-        'current_job,'
-        'current_job.components')).data
-    assert 'id' in remotecis['remotecis'][1]['current_job']
-    assert 'id' in remotecis['remotecis'][1]['last_job']
-    assert 'id' in remotecis['remotecis'][0]['current_job']
-    assert 'id' in remotecis['remotecis'][0]['last_job']
+        'lastjob,'
+        'lastjob.components,'
+        'currentjob,'
+        'currentjob.components')).data
 
-    assert len(remotecis['remotecis'][1]['last_job']['components']) == 3
-    assert len(remotecis['remotecis'][0]['current_job']['components']) == 3
-    assert len(remotecis['remotecis'][0]['last_job']['components']) == 3
+    working_remoteci = remotecis['remotecis'][0]
+    idle_remoteci = remotecis['remotecis'][1]
+    if remotecis['remotecis'][0]['id'] != remoteci_id:
+        working_remoteci, idle_remoteci = idle_remoteci, working_remoteci
+    assert 'id' in working_remoteci['currentjob']
+    assert 'id' in working_remoteci['lastjob']
+    assert 'id' in idle_remoteci['currentjob']
+    assert 'id' in idle_remoteci['lastjob']
+
+    assert len(working_remoteci['lastjob']['components']) == 3
+    assert len(idle_remoteci['currentjob']['components']) == 3
+    assert len(idle_remoteci['lastjob']['components']) == 3
 
 
 def test_where_invalid(admin):
@@ -239,7 +260,6 @@ def test_get_all_remotecis_embed(admin, team_id):
     remotecis = admin.get('/api/v1/remotecis?embed=team').data
 
     for remoteci in remotecis['remotecis']:
-        assert 'team_id' not in remoteci
         assert remoteci['team'] == team
 
 
@@ -255,13 +275,6 @@ def test_get_remoteci_by_id_or_name(admin, team_id):
     created_r = created_r.data
     assert created_r['remoteci']['id'] == pr_id
 
-    # get by name
-    created_r = admin.get('/api/v1/remotecis/pname')
-    assert created_r.status_code == 200
-
-    created_r = created_r.data
-    assert created_r['remoteci']['id'] == pr_id
-
 
 def test_get_remoteci_with_embed(admin, team_id):
     team = admin.get('/api/v1/teams/%s' % team_id).data['team']
@@ -271,7 +284,6 @@ def test_get_remoteci_with_embed(admin, team_id):
 
     # verify embed
     db_remoteci = admin.get('/api/v1/remotecis/%s?embed=team' % r_id).data
-    assert 'team_id' not in premoteci
     assert db_remoteci['remoteci']['team'] == team
 
 
@@ -333,7 +345,7 @@ def test_put_remotecis(admin, team_id):
 
     pr_etag = pr.headers.get("ETag")
 
-    gr = admin.get('/api/v1/remotecis/pname')
+    gr = admin.get('/api/v1/remotecis/%s' % pr.data['remoteci']['id'])
     assert gr.status_code == 200
 
     ppr = admin.put('/api/v1/remotecis/%s' % gr.data['remoteci']['id'],
@@ -341,11 +353,8 @@ def test_put_remotecis(admin, team_id):
                     headers={'If-match': pr_etag})
     assert ppr.status_code == 204
 
-    gr = admin.get('/api/v1/remotecis/pname')
-    assert gr.status_code == 404
-
-    gr = admin.get('/api/v1/remotecis/nname')
-    assert gr.status_code == 200
+    gr = admin.get('/api/v1/remotecis/%s' % pr.data['remoteci']['id']).data
+    assert gr['remoteci']['name'] == 'nname'
 
 
 def test_put_remoteci_data(admin, team_id):
@@ -462,13 +471,12 @@ def test_get_remoteci_as_user(user, team_user_id, remoteci_id):
 
 
 def test_put_remoteci_as_user(user, team_user_id, remoteci_id, admin):
-    user.post('/api/v1/remotecis',
-              data={'name': 'rname', 'team_id': team_user_id})
-    remoteci = user.get('/api/v1/remotecis/rname')
+    pr = user.post('/api/v1/remotecis',
+                   data={'name': 'rname', 'team_id': team_user_id}).data
+    remoteci = user.get('/api/v1/remotecis/%s' % pr['remoteci']['id'])
     remoteci_etag = remoteci.headers.get("ETag")
 
-    remoteci_put = user.put('/api/v1/remotecis/%s'
-                            % remoteci.data['remoteci']['id'],
+    remoteci_put = user.put('/api/v1/remotecis/%s' % pr['remoteci']['id'],
                             data={'name': 'nname',
                                   'allow_upgrade_job': True},
                             headers={'If-match': remoteci_etag})
@@ -487,13 +495,12 @@ def test_put_remoteci_as_user(user, team_user_id, remoteci_id, admin):
 
 
 def test_delete_remoteci_as_user(user, team_user_id, admin, remoteci_id):
-    user.post('/api/v1/remotecis',
-              data={'name': 'rname', 'team_id': team_user_id})
-    remoteci = user.get('/api/v1/remotecis/rname')
+    remoteci = user.post('/api/v1/remotecis',
+                         data={'name': 'rname', 'team_id': team_user_id})
     remoteci_etag = remoteci.headers.get("ETag")
 
-    remoteci_delete = user.delete('/api/v1/remotecis/%s'
-                                  % remoteci.data['remoteci']['id'],
+    remoteci_delete = user.delete('/api/v1/remotecis/%s' %
+                                  remoteci.data['remoteci']['id'],
                                   headers={'If-match': remoteci_etag})
     assert remoteci_delete.status_code == 204
 
