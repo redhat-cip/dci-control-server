@@ -251,7 +251,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
             models.JOBS.c.status.in_(valid_status),
             models.JOBS.c.state != 'archived',
         )).order_by(
-            models.JOBS.c.created_at.desc()).limit(1).alias('job')
+            models.JOBS.c.created_at.desc()).alias('job')
     q_bd.select = [
         models.REMOTECIS.c.id.label('remoteci_id'),
         models.REMOTECIS.c.name.label('remoteci_name'),
