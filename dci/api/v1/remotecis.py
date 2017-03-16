@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-import uuid
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -96,7 +95,7 @@ def get_all_remotecis(user, t_id=None):
     return flask.jsonify({'remotecis': rows, '_meta': {'count': nb_row}})
 
 
-@api.route('/remotecis/<r_id>', methods=['GET'])
+@api.route('/remotecis/<uuid:r_id>', methods=['GET'])
 @auth.requires_auth
 def get_remoteci_by_id_or_name(user, r_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
@@ -107,21 +106,12 @@ def get_remoteci_by_id_or_name(user, r_id):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    try:
-        uuid.UUID(r_id)
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.id == r_id
-            )
+    q_bd.where.append(
+        sql.and_(
+            _TABLE.c.state != 'archived',
+            _TABLE.c.id == r_id
         )
-    except ValueError:
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.name == r_id
-            )
-        )
+    )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(rows)
@@ -134,7 +124,7 @@ def get_remoteci_by_id_or_name(user, r_id):
     return res
 
 
-@api.route('/remotecis/<r_id>', methods=['PUT'])
+@api.route('/remotecis/<uuid:r_id>', methods=['PUT'])
 @auth.requires_auth
 def put_remoteci(user, r_id):
     # get If-Match header
@@ -171,7 +161,7 @@ def put_remoteci(user, r_id):
                           content_type='application/json')
 
 
-@api.route('/remotecis/<r_id>', methods=['DELETE'])
+@api.route('/remotecis/<uuid:r_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_remoteci_by_id_or_name(user, r_id):
     # get If-Match header
@@ -197,7 +187,7 @@ def delete_remoteci_by_id_or_name(user, r_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
-@api.route('/remotecis/<r_id>/data', methods=['GET'])
+@api.route('/remotecis/<uuid:r_id>/data', methods=['GET'])
 @auth.requires_auth
 def get_remoteci_data(user, r_id):
     remoteci_data = get_remoteci_data_json(user, r_id)
@@ -216,7 +206,7 @@ def get_remoteci_data_json(user, r_id):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    q_bd.where.append(sql.or_(_TABLE.c.id == r_id, _TABLE.c.name == r_id))
+    q_bd.where.append(_TABLE.c.id == r_id)
     row = flask.g.db_conn.execute(q_bd.build()).fetchone()
 
     if row is None:
@@ -225,7 +215,7 @@ def get_remoteci_data_json(user, r_id):
     return row['remotecis_data']
 
 
-@api.route('/remotecis/<r_id>/tests', methods=['POST'])
+@api.route('/remotecis/<uuid:r_id>/tests', methods=['POST'])
 @auth.requires_auth
 def add_test_to_remoteci(user, r_id):
     data_json = flask.request.json
@@ -244,7 +234,7 @@ def add_test_to_remoteci(user, r_id):
     return flask.Response(result, 201, content_type='application/json')
 
 
-@api.route('/remotecis/<r_id>/tests', methods=['GET'])
+@api.route('/remotecis/<uuid:r_id>/tests', methods=['GET'])
 @auth.requires_auth
 def get_all_tests_from_remotecis(user, r_id):
     v1_utils.verify_existence_and_get(r_id, _TABLE)
@@ -261,7 +251,7 @@ def get_all_tests_from_remotecis(user, r_id):
     return res
 
 
-@api.route('/remotecis/<r_id>/tests/<t_id>', methods=['DELETE'])
+@api.route('/remotecis/<uuid:r_id>/tests/<uuid:t_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_test_from_remoteci(user, r_id, t_id):
     v1_utils.verify_existence_and_get(r_id, _TABLE)

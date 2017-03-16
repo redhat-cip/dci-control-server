@@ -100,7 +100,7 @@ def get_all_jobstates(user, j_id=None):
     return flask.jsonify({'jobstates': rows, '_meta': {'count': nb_row}})
 
 
-@api.route('/jobstates/<js_id>', methods=['GET'])
+@api.route('/jobstates/<uuid:js_id>', methods=['GET'])
 @auth.requires_auth
 def get_jobstate_by_id(user, js_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
@@ -123,7 +123,7 @@ def get_jobstate_by_id(user, js_id):
     return res
 
 
-@api.route('/jobstates/<js_id>', methods=['DELETE'])
+@api.route('/jobstates/<uuid:js_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_jobstate_by_id(user, js_id):
     jobstate = v1_utils.verify_existence_and_get(js_id, _TABLE)

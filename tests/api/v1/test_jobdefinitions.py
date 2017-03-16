@@ -129,20 +129,13 @@ def test_where_invalid(admin, topic_id):
     }
 
 
-def test_get_jobdefinition_by_id_or_name(admin, topic_id):
+def test_get_jobdefinition_by_id(admin, topic_id):
     pjd = admin.post('/api/v1/jobdefinitions',
                      data={'name': 'pname', 'topic_id': topic_id}).data
     pjd_id = pjd['jobdefinition']['id']
 
     # get by uuid
     created_ct = admin.get('/api/v1/jobdefinitions/%s' % pjd_id)
-    assert created_ct.status_code == 200
-
-    created_ct = created_ct.data
-    assert created_ct['jobdefinition']['id'] == pjd_id
-
-    # get by name
-    created_ct = admin.get('/api/v1/jobdefinitions/pname')
     assert created_ct.status_code == 200
 
     created_ct = created_ct.data

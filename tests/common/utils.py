@@ -20,12 +20,13 @@ import dci.common.schemas as schemas
 import dci.common.utils as utils
 import pytest
 import six
+import uuid
 
 # convenient alias
 dict_merge = utils.dict_merge
 text_type = six.text_type()
 
-ID = 'id', text_type
+ID = 'id', uuid.uuid4()
 
 NAME = 'name', text_type
 TYPE = 'type', text_type
@@ -39,13 +40,13 @@ STATE = 'state', 'active'
 COMMENT = 'comment', text_type
 CONTENT = 'content', text_type
 LABEL = 'label', text_type
-NEXT_TOPIC = 'next_topic', text_type
+NEXT_TOPIC = 'next_topic', uuid.uuid4()
 COUNTRY = 'country', text_type
 EMAIL = 'email', text_type
 NOTIF = 'notification', True
 VALUE = 'value', text_type
 ALLOW_UPGRADE_JOB = 'allow_upgrade_job', False
-PREVIOUS_JOB_ID = 'previous_job_id', text_type
+PREVIOUS_JOB_ID = 'previous_job_id', uuid.uuid4()
 
 INVALID_NAME = 'name', None
 INVALID_NAME_ERROR = 'name', schemas.INVALID_STRING

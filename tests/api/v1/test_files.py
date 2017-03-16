@@ -150,16 +150,11 @@ def test_get_all_files_with_sort(admin, jobstate_id):
     assert files_ids == [file_1_2, file_1_1, file_2_2, file_2_1]
 
 
-def test_get_file_by_id_or_name(admin, jobstate_id):
+def test_get_file_by_id(admin, jobstate_id):
     file_id = post_file(admin, jobstate_id, FileDesc('kikoolol', ''))
 
     # get by uuid
     created_file = admin.get('/api/v1/files/%s' % file_id)
-    assert created_file.status_code == 200
-    assert created_file.data['file']['name'] == 'kikoolol'
-
-    # get by name
-    created_file = admin.get('/api/v1/files/kikoolol')
     assert created_file.status_code == 200
     assert created_file.data['file']['name'] == 'kikoolol'
 
@@ -183,8 +178,9 @@ def test_get_file_with_embed(admin, jobstate_id, team_admin_id):
     assert file == file_embed
 
 
-def test_get_jobdefinition_with_embed_not_valid(admin):
-    file = admin.get('/api/v1/files/pname?embed=mdr')
+def test_get_jobdefinition_with_embed_not_valid(admin, jobstate_id):
+    file_id = post_file(admin, jobstate_id, FileDesc('name', ''))
+    file = admin.get('/api/v1/files/%s?embed=mdr' % file_id)
     assert file.status_code == 400
 
 

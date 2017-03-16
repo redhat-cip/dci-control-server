@@ -124,20 +124,13 @@ def test_get_all_tests_with_sort(admin, team_id, topic_id):
     assert gts['tests'][1]['id'] == t_1['id']
 
 
-def test_get_test_by_id_or_name(admin, team_id):
+def test_get_test_by_id(admin, team_id):
     pt = admin.post('/api/v1/tests', data={'name': 'pname',
                                            'team_id': team_id}).data
     pt_id = pt['test']['id']
 
     # get by uuid
     created_t = admin.get('/api/v1/tests/%s' % pt_id)
-    assert created_t.status_code == 200
-
-    created_t = created_t.data
-    assert created_t['test']['id'] == pt_id
-
-    # get by name
-    created_t = admin.get('/api/v1/tests/pname')
     assert created_t.status_code == 200
 
     created_t = created_t.data

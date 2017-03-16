@@ -15,6 +15,7 @@
 # under the License.
 
 from __future__ import unicode_literals
+import uuid
 
 
 def test_create_teams(admin):
@@ -129,7 +130,7 @@ def test_get_all_teams_with_embed(admin, topic_user_id):
     assert db_teams['teams'][0]['topics'][0]['id'] == topic_user_id
 
 
-def test_get_team_by_id_or_name(admin):
+def test_get_team_by_id(admin):
     pt = admin.post('/api/v1/teams',
                     data={'name': 'pname'}).data
     pt_id = pt['team']['id']
@@ -141,16 +142,9 @@ def test_get_team_by_id_or_name(admin):
     created_t = created_t.data
     assert created_t['team']['id'] == pt_id
 
-    # get by name
-    created_t = admin.get('/api/v1/teams/pname')
-    assert created_t.status_code == 200
-
-    created_t = created_t.data
-    assert created_t['team']['id'] == pt_id
-
 
 def test_get_team_not_found(admin):
-    result = admin.get('/api/v1/teams/ptdr')
+    result = admin.get('/api/v1/teams/%s' % uuid.uuid4())
     assert result.status_code == 404
 
 
@@ -160,7 +154,7 @@ def test_put_teams(admin):
 
     pt_etag = pt.headers.get("ETag")
 
-    gt = admin.get('/api/v1/teams/pname')
+    gt = admin.get('/api/v1/teams/%s' % pt.data['team']['id'])
     assert gt.status_code == 200
 
     ppt = admin.put('/api/v1/teams/%s' % gt.data['team']['id'],
@@ -168,11 +162,8 @@ def test_put_teams(admin):
                     headers={'If-match': pt_etag})
     assert ppt.status_code == 204
 
-    gt = admin.get('/api/v1/teams/pname')
-    assert gt.status_code == 404
-
-    gt = admin.get('/api/v1/teams/nname')
-    assert gt.status_code == 200
+    gt = admin.get('/api/v1/teams/%s' % gt.data['team']['id'])
+    assert gt.data['team']['name'] == 'nname'
 
 
 def test_delete_team_by_id(admin):
@@ -194,7 +185,7 @@ def test_delete_team_by_id(admin):
 
 
 def test_delete_team_not_found(admin):
-    result = admin.delete('/api/v1/teams/ptdr',
+    result = admin.delete('/api/v1/teams/%s' % uuid.uuid4(),
                           headers={'If-match': 'mdr'})
     assert result.status_code == 404
 
@@ -212,11 +203,11 @@ def test_get_all_teams_as_user(user):
     assert teams.status_code == 200
 
 
-def test_get_teams_as_user(user):
-    team = user.get('/api/v1/teams/admin')
+def test_get_teams_as_user(user, team_user_id, team_admin_id):
+    team = user.get('/api/v1/teams/%s' % team_admin_id)
     assert team.status_code == 401
 
-    team = user.get('/api/v1/teams/user')
+    team = user.get('/api/v1/teams/%s' % team_user_id)
     assert team.status_code == 200
 
     teams = user.get('/api/v1/teams')
@@ -225,8 +216,8 @@ def test_get_teams_as_user(user):
 
 
 # Only super admin and an admin of a team can update the team
-def test_put_team_as_user_admin(user, user_admin):
-    team = user.get('/api/v1/teams/user')
+def test_put_team_as_user_admin(user, team_user_id, user_admin):
+    team = user.get('/api/v1/teams/%s' % team_user_id)
     team_etag = team.headers.get("ETag")
     team_user_id = team.data['team']['id']
 
@@ -265,15 +256,15 @@ def test_change_team_to_invalid_state(admin, team_id):
 
 
 # Only super admin can delete a team
-def test_delete_as_user_admin(user, user_admin):
-    team = user.get('/api/v1/teams/user')
+def test_delete_as_user_admin(user, team_user_id, user_admin):
+    team = user.get('/api/v1/teams/%s' % team_user_id)
     team_etag = team.headers.get("ETag")
 
-    team_delete = user.delete('/api/v1/teams/user',
+    team_delete = user.delete('/api/v1/teams/%s' % team_user_id,
                               headers={'If-match': team_etag})
     assert team_delete.status_code == 401
 
-    team_delete = user_admin.delete('/api/v1/teams/user',
+    team_delete = user_admin.delete('/api/v1/teams/%s' % team_user_id,
                                     headers={'If-match': team_etag})
     assert team_delete.status_code == 401
 

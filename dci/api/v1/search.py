@@ -40,7 +40,7 @@ def search(user):
     return result
 
 
-@api.route('/search/<id>', methods=['GET'])
+@api.route('/search/<uuid:id>', methods=['GET'])
 @auth.requires_auth
 def get(user, id):
     if auth.is_admin(user):

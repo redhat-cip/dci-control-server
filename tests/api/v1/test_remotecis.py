@@ -243,20 +243,13 @@ def test_get_all_remotecis_embed(admin, team_id):
         assert remoteci['team'] == team
 
 
-def test_get_remoteci_by_id_or_name(admin, team_id):
+def test_get_remoteci_by_id(admin, team_id):
     pr = admin.post('/api/v1/remotecis',
                     data={'name': 'pname', 'team_id': team_id}).data
     pr_id = pr['remoteci']['id']
 
     # get by uuid
     created_r = admin.get('/api/v1/remotecis/%s' % pr_id)
-    assert created_r.status_code == 200
-
-    created_r = created_r.data
-    assert created_r['remoteci']['id'] == pr_id
-
-    # get by name
-    created_r = admin.get('/api/v1/remotecis/pname')
     assert created_r.status_code == 200
 
     created_r = created_r.data
@@ -276,7 +269,7 @@ def test_get_remoteci_with_embed(admin, team_id):
 
 
 def test_get_remoteci_not_found(admin):
-    result = admin.get('/api/v1/remotecis/ptdr')
+    result = admin.get('/api/v1/remotecis/%s' % uuid.uuid4())
     assert result.status_code == 404
 
 
@@ -333,7 +326,7 @@ def test_put_remotecis(admin, team_id):
 
     pr_etag = pr.headers.get("ETag")
 
-    gr = admin.get('/api/v1/remotecis/pname')
+    gr = admin.get('/api/v1/remotecis/%s' % pr.data['remoteci']['id'])
     assert gr.status_code == 200
 
     ppr = admin.put('/api/v1/remotecis/%s' % gr.data['remoteci']['id'],
@@ -341,11 +334,8 @@ def test_put_remotecis(admin, team_id):
                     headers={'If-match': pr_etag})
     assert ppr.status_code == 204
 
-    gr = admin.get('/api/v1/remotecis/pname')
-    assert gr.status_code == 404
-
-    gr = admin.get('/api/v1/remotecis/nname')
-    assert gr.status_code == 200
+    gr = admin.get('/api/v1/remotecis/%s' % gr.data['remoteci']['id'])
+    assert gr.data['remoteci']['name'] == 'nname'
 
 
 def test_put_remoteci_data(admin, team_id):
@@ -455,16 +445,18 @@ def test_get_remoteci_as_user(user, team_user_id, remoteci_id):
     remoteci = user.get('/api/v1/remotecis/%s' % remoteci_id)
     assert remoteci.status_code == 404
 
-    user.post('/api/v1/remotecis',
-              data={'name': 'rname', 'team_id': team_user_id})
-    remoteci = user.get('/api/v1/remotecis/rname')
+    remoteci = user.post('/api/v1/remotecis',
+                         data={'name': 'rname', 'team_id': team_user_id})
+    remoteci = user.get('/api/v1/remotecis/%s'
+                        % remoteci.data['remoteci']['id'])
     assert remoteci.status_code == 200
 
 
 def test_put_remoteci_as_user(user, team_user_id, remoteci_id, admin):
-    user.post('/api/v1/remotecis',
-              data={'name': 'rname', 'team_id': team_user_id})
-    remoteci = user.get('/api/v1/remotecis/rname')
+    remoteci = user.post('/api/v1/remotecis',
+                         data={'name': 'rname', 'team_id': team_user_id})
+    remoteci = user.get('/api/v1/remotecis/%s'
+                        % remoteci.data['remoteci']['id'])
     remoteci_etag = remoteci.headers.get("ETag")
 
     remoteci_put = user.put('/api/v1/remotecis/%s'
@@ -474,7 +466,8 @@ def test_put_remoteci_as_user(user, team_user_id, remoteci_id, admin):
                             headers={'If-match': remoteci_etag})
     assert remoteci_put.status_code == 204
 
-    remoteci = user.get('/api/v1/remotecis/nname').data['remoteci']
+    remoteci = user.get('/api/v1/remotecis/%s'
+                        % remoteci.data['remoteci']['id']).data['remoteci']
     assert remoteci['name'] == 'nname'
     assert remoteci['allow_upgrade_job'] is True
 
@@ -487,9 +480,10 @@ def test_put_remoteci_as_user(user, team_user_id, remoteci_id, admin):
 
 
 def test_delete_remoteci_as_user(user, team_user_id, admin, remoteci_id):
-    user.post('/api/v1/remotecis',
-              data={'name': 'rname', 'team_id': team_user_id})
-    remoteci = user.get('/api/v1/remotecis/rname')
+    remoteci = user.post('/api/v1/remotecis',
+                         data={'name': 'rname', 'team_id': team_user_id})
+    remoteci = user.get('/api/v1/remotecis/%s'
+                        % remoteci.data['remoteci']['id'])
     remoteci_etag = remoteci.headers.get("ETag")
 
     remoteci_delete = user.delete('/api/v1/remotecis/%s'

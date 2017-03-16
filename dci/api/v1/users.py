@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-import uuid
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -42,7 +41,7 @@ _SELECT_WITHOUT_PASSWORD = [
 
 
 def _verify_existence_and_get_user(user_id):
-    where_clause = sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
+    where_clause = _TABLE.c.id == user_id
     query = sql.select(_SELECT_WITHOUT_PASSWORD).where(where_clause)
     result = flask.g.db_conn.execute(query).fetchone()
 
@@ -122,9 +121,9 @@ def get_all_users(user, team_id=None):
     return flask.jsonify({'users': rows, '_meta': {'count': nb_row}})
 
 
-@api.route('/users/<user_id>', methods=['GET'])
+@api.route('/users/<uuid:user_id>', methods=['GET'])
 @auth.requires_auth
-def get_user_by_id_or_name(user, user_id):
+def get_user_by_id(user, user_id):
     embed = schemas.args(flask.request.args.to_dict())['embed']
 
     q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
@@ -135,21 +134,12 @@ def get_user_by_id_or_name(user, user_id):
     if not auth.is_admin(user):
         q_bd.where.append(_TABLE.c.team_id == user['team_id'])
 
-    try:
-        uuid.UUID(user_id)
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.id == user_id
-            )
+    q_bd.where.append(
+        sql.and_(
+            _TABLE.c.state != 'archived',
+            _TABLE.c.id == user_id
         )
-    except ValueError:
-        q_bd.where.append(
-            sql.and_(
-                _TABLE.c.state != 'archived',
-                _TABLE.c.name == user_id
-            )
-        )
+    )
 
     rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
     rows = q_bd.dedup_rows(rows)
@@ -162,7 +152,7 @@ def get_user_by_id_or_name(user, user_id):
     return res
 
 
-@api.route('/users/<user_id>', methods=['PUT'])
+@api.route('/users/<uuid:user_id>', methods=['PUT'])
 @auth.requires_auth
 def put_user(user, user_id):
     # get If-Match header
@@ -171,7 +161,7 @@ def put_user(user, user_id):
 
     puser = dict(_verify_existence_and_get_user(user_id))
 
-    if puser['id'] != user_id:
+    if puser['id'] != str(user_id):
         if not(auth.is_admin(user) or
                auth.is_admin_user(user, puser['team_id'])):
             raise auth.UNAUTHORIZED
@@ -186,7 +176,7 @@ def put_user(user, user_id):
 
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
-        sql.or_(_TABLE.c.id == user_id, _TABLE.c.name == user_id)
+        _TABLE.c.id == user_id
     )
     query = _TABLE.update().where(where_clause).values(**values)
 
@@ -199,7 +189,7 @@ def put_user(user, user_id):
                           content_type='application/json')
 
 
-@api.route('/users/<user_id>', methods=['DELETE'])
+@api.route('/users/<uuid:user_id>', methods=['DELETE'])
 @auth.requires_auth
 def delete_user_by_id_or_name(user, user_id):
     # get If-Match header

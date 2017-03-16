@@ -155,7 +155,7 @@ def test_get_topics_of_user_with_embed(admin, user, team_user_id):
     assert len(topics_user['topics'][0]['teams']) > 0
 
 
-def test_get_topic_by_id_or_name(admin, user, team_user_id):
+def test_get_topic_by_id(admin, user, team_user_id):
     data = {'name': 'tname'}
     pt = admin.post('/api/v1/topics', data=data).data
     pt_id = pt['topic']['id']
@@ -170,16 +170,9 @@ def test_get_topic_by_id_or_name(admin, user, team_user_id):
     created_ct = created_ct.data
     assert created_ct['topic']['id'] == pt_id
 
-    # get by name
-    created_ct = user.get('/api/v1/topics/tname')
-    assert created_ct.status_code == 200
-
-    created_ct = created_ct.data
-    assert created_ct['topic']['id'] == pt_id
-
 
 def test_get_topic_not_found(admin):
-    result = admin.get('/api/v1/topics/ptdr')
+    result = admin.get('/api/v1/topics/%s' % uuid.uuid4())
     assert result.status_code == 404
 
 
@@ -249,7 +242,7 @@ def test_get_all_topics_with_sort(admin):
 
 
 def test_delete_topic_not_found(admin):
-    result = admin.delete('/api/v1/topics/ptdr')
+    result = admin.delete('/api/v1/topics/%s' % uuid.uuid4())
     assert result.status_code == 404
 
 
@@ -259,21 +252,18 @@ def test_put_topics(admin, topic_id):
 
     pt_etag = pt.headers.get("ETag")
 
-    gt = admin.get('/api/v1/topics/pname')
+    gt = admin.get('/api/v1/topics/%s' % pt.data['topic']['id'])
     assert gt.status_code == 200
 
-    ppt = admin.put('/api/v1/topics/pname',
+    ppt = admin.put('/api/v1/topics/%s' % pt.data['topic']['id'],
                     data={'name': 'nname',
                           'next_topic': topic_id},
                     headers={'If-match': pt_etag})
     assert ppt.status_code == 204
 
-    gt = admin.get('/api/v1/topics/pname')
-    assert gt.status_code == 404
-
-    gt = admin.get('/api/v1/topics/nname')
+    gt = admin.get('/api/v1/topics/%s' % pt.data['topic']['id'])
     assert gt.status_code == 200
-    assert gt.data['topic']['next_topic'] == topic_id
+    assert gt.data['topic']['name'] == 'nname'
 
 
 # Tests for topics and teams management

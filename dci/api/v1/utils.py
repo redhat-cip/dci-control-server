@@ -16,7 +16,6 @@
 
 import flask
 import six
-import uuid
 from sqlalchemy import sql, func
 from sqlalchemy import Table as sa_Table
 from sqlalchemy.sql import text
@@ -52,22 +51,8 @@ def verify_existence_and_get(id, table, get_id=False):
     return it if it exists, according to the condition, or raise an
     exception.
     """
-    if 'name' in table.columns:
-        try:
-            uuid.UUID(id)
-            if 'state' in table.columns:
-                where_clause = sql.and_(table.c.state != 'archived',
-                                        table.c.id == id)
-            else:
-                where_clause = table.c.id == id
-        except ValueError:
-            if 'state' in table.columns:
-                where_clause = sql.and_(table.c.state != 'archived',
-                                        table.c.name == id)
-            else:
-                where_clause = table.c.name == id
-    else:
-        where_clause = table.c.id == id
+
+    where_clause = table.c.id == id
 
     if 'state' in table.columns:
         where_clause = sql.and_(table.c.state != 'archived', where_clause)

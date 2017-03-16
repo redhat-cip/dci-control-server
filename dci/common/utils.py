@@ -26,6 +26,7 @@ import six
 
 from dci.common import exceptions
 from sqlalchemy.engine import result
+from werkzeug.routing import BaseConverter, ValidationError
 
 
 def read(file_path, chunk_size=None, mode='rb'):
@@ -33,6 +34,18 @@ def read(file_path, chunk_size=None, mode='rb'):
     with open(file_path, mode) as f:
         for chunk in iter(lambda: f.read(chunk_size) or None, None):
             yield chunk
+
+
+class UUIDConverter(BaseConverter):
+
+    def to_python(self, value):
+        try:
+            return uuid.UUID(value)
+        except ValueError:
+            raise ValidationError()
+
+    def to_url(self, values):
+        return str(values)
 
 
 class JSONEncoder(flask.json.JSONEncoder):

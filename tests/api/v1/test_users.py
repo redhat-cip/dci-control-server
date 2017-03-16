@@ -172,7 +172,7 @@ def test_get_all_users_with_sort(admin, team_id):
     assert gusers['users'] == db_users
 
 
-def test_get_user_by_id_or_name(admin, team_id):
+def test_get_user_by_id(admin, team_id):
     puser = admin.post('/api/v1/users',
                        data={'name': 'pname',
                              'password': 'ppass',
@@ -186,16 +186,9 @@ def test_get_user_by_id_or_name(admin, team_id):
     created_user = created_user.data
     assert created_user['user']['id'] == puser_id
 
-    # get by name
-    created_user = admin.get('/api/v1/users/pname')
-    assert created_user.status_code == 200
-
-    created_user = created_user.data
-    assert created_user['user']['id'] == puser_id
-
 
 def test_get_user_not_found(admin):
-    result = admin.get('/api/v1/users/ptdr')
+    result = admin.get('/api/v1/users/%s' % uuid.uuid4())
     assert result.status_code == 404
 
 
@@ -207,7 +200,7 @@ def test_put_users(admin, team_id):
 
     pu_etag = pu.headers.get("ETag")
 
-    gu = admin.get('/api/v1/users/pname')
+    gu = admin.get('/api/v1/users/%s' % pu.data['user']['id'])
     assert gu.status_code == 200
 
     ppu = admin.put('/api/v1/users/%s' % gu.data['user']['id'],
@@ -215,11 +208,8 @@ def test_put_users(admin, team_id):
                     headers={'If-match': pu_etag})
     assert ppu.status_code == 204
 
-    gu = admin.get('/api/v1/users/pname')
-    assert gu.status_code == 404
-
-    gu = admin.get('/api/v1/users/nname')
-    assert gu.status_code == 200
+    gu = admin.get('/api/v1/users/%s' % gu.data['user']['id'])
+    assert gu.data['user']['name'] == 'nname'
 
 
 def test_change_user_state(admin, team_id):
@@ -230,7 +220,7 @@ def test_change_user_state(admin, team_id):
 
     pu_etag = pu.headers.get("ETag")
 
-    gu = admin.get('/api/v1/users/pname')
+    gu = admin.get('/api/v1/users/%s' % pu.data['user']['id'])
     assert gu.status_code == 200
 
     ppu = admin.put('/api/v1/users/%s' % gu.data['user']['id'],
@@ -238,7 +228,7 @@ def test_change_user_state(admin, team_id):
                     headers={'If-match': pu_etag})
     assert ppu.status_code == 204
 
-    gu = admin.get('/api/v1/users/pname')
+    gu = admin.get('/api/v1/users/%s' % pu.data['user']['id'])
     assert gu.status_code == 200
     assert gu.data['user']['state'] == 'inactive'
 
@@ -251,7 +241,7 @@ def test_change_user_to_invalid_state(admin, team_id):
 
     pu_etag = pu.headers.get("ETag")
 
-    gu = admin.get('/api/v1/users/pname')
+    gu = admin.get('/api/v1/users/%s' % pu.data['user']['id'])
     assert gu.status_code == 200
 
     ppu = admin.put('/api/v1/users/%s' % gu.data['user']['id'],
@@ -259,7 +249,7 @@ def test_change_user_to_invalid_state(admin, team_id):
                     headers={'If-match': pu_etag})
     assert ppu.status_code == 400
 
-    gu = admin.get('/api/v1/users/pname')
+    gu = admin.get('/api/v1/users/%s' % pu.data['user']['id'])
     assert gu.status_code == 200
     assert gu.data['user']['state'] == 'active'
 
@@ -318,18 +308,26 @@ def test_get_all_users_as_user(user, team_user_id):
         assert guser['team_id'] == team_user_id
 
 
-def test_get_user_as_user(user):
+def test_get_user_as_user(user, admin):
     # admin does not belong to this user's team
-    guser = user.get('/api/v1/users/admin')
+    padmin = admin.get('/api/v1/users?where=name:admin')
+    padmin = admin.get('/api/v1/users/%s' % padmin.data['users'][0]['id'])
+
+    puser = user.get('/api/v1/users?where=name:user')
+    puser = user.get('/api/v1/users/%s' % puser.data['users'][0]['id'])
+
+    guser = user.get('/api/v1/users/%s' % padmin.data['user']['id'])
     assert guser.status_code == 404
 
-    guser = user.get('/api/v1/users/user')
+    guser = user.get('/api/v1/users/%s' % puser.data['user']['id'])
     assert guser.status_code == 200
 
 
 # Only super admin and an admin of a team can update the user
 def test_put_user_as_user_admin(user, user_admin):
-    puser = user.get('/api/v1/users/user')
+
+    puser = user.get('/api/v1/users?where=name:user')
+    puser = user.get('/api/v1/users/%s' % puser.data['users'][0]['id'])
     user_etag = puser.headers.get("ETag")
 
     user_put = user.put('/api/v1/users/%s' % puser.data['user']['id'],
@@ -345,7 +343,8 @@ def test_put_user_as_user_admin(user, user_admin):
 
 # Only super admin can delete a team
 def test_delete_as_user_admin(user, user_admin):
-    puser = user.get('/api/v1/users/user')
+    puser = user.get('/api/v1/users?where=name:user')
+    puser = user.get('/api/v1/users/%s' % puser.data['users'][0]['id'])
     user_etag = puser.headers.get("ETag")
 
     user_delete = user.delete('/api/v1/users/%s' % puser.data['user']['id'],

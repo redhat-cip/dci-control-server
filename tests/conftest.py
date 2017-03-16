@@ -141,13 +141,15 @@ def team_id_notif(admin):
 
 @pytest.fixture
 def team_user_id(admin):
-    team = admin.get('/api/v1/teams/user').data
+    team = admin.get('/api/v1/teams?where=name:user')
+    team = admin.get('/api/v1/teams/%s' % team.data['teams'][0]['id']).data
     return str(team['team']['id'])
 
 
 @pytest.fixture
 def team_admin_id(admin):
-    team = admin.get('/api/v1/teams/admin').data
+    team = admin.get('/api/v1/teams?where=name:admin')
+    team = admin.get('/api/v1/teams/%s' % team.data['teams'][0]['id']).data
     return str(team['team']['id'])
 
 

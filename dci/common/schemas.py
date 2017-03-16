@@ -21,6 +21,7 @@ import dci.common.exceptions as exceptions
 import dci.common.utils as utils
 import dci.db.models as models
 import six
+import uuid
 import voluptuous as v
 
 
@@ -32,6 +33,16 @@ def Url(value):
         if not parsed.scheme or not parsed.netloc:
             raise v.UrlInvalid("must have a URL scheme and host")
         return value
+    except Exception:
+        raise ValueError
+
+
+def UUID(value):
+    try:
+        if type(value) == uuid.UUID:
+            return value
+        else:
+            return uuid.UUID(value)
     except Exception:
         raise ValueError
 
@@ -169,7 +180,7 @@ team = schema_factory(team)
 ###############################################################################
 
 test = utils.dict_merge(base, DATA_FIELD, {
-    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    'team_id': v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 })
@@ -185,7 +196,7 @@ test = schema_factory(test)
 user = utils.dict_merge(base, {
     'password': six.text_type,
     v.Optional('role'): v.Any(*models.USER_ROLES, msg=INVALID_ROLE),
-    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    'team_id': v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 })
@@ -206,7 +217,7 @@ component = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('export_control', default=False): bool,
     v.Optional('url', default=None): Url(),
     'type': six.text_type,
-    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC),
+    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
     v.Optional('active', default=True): bool,
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
@@ -231,7 +242,7 @@ jobdefinition = utils.dict_merge(base, {
     v.Optional('priority', default=0): v.All(
         v.Coerce(int), v.Range(min=0, max=1000), msg=INVALID_PRIORITY
     ),
-    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC),
+    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
     v.Optional('active', default=True): bool,
     v.Optional('comment', default=None): six.text_type,
     v.Optional('component_types', default=[]): list,
@@ -261,7 +272,7 @@ jobdefinition = DCISchema(schema_factory(jobdefinition).post,
 ###############################################################################
 
 remoteci = utils.dict_merge(base, DATA_FIELD, {
-    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    'team_id': v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('active', default=True): bool,
     v.Optional('allow_upgrade_job', default=False): bool,
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
@@ -271,7 +282,7 @@ remoteci = utils.dict_merge(base, DATA_FIELD, {
 remoteci_put = {
     v.Optional('name'): six.text_type,
     v.Optional('data'): dict,
-    v.Optional('team_id'): v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('active'): bool,
     v.Optional('allow_upgrade_job'): bool,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
@@ -287,12 +298,12 @@ remoteci = DCISchema(schema_factory(remoteci).post, Schema(remoteci_put))
 ###############################################################################
 
 job = {
-    'jobdefinition_id': v.Any(UUID_FIELD, msg=INVALID_JOB_DEFINITION),
-    'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
-    'team_id': v.Any(UUID_FIELD, msg=INVALID_TEAM),
+    'jobdefinition_id': v.Any(UUID, msg=INVALID_JOB_DEFINITION),
+    'remoteci_id': v.Any(UUID, msg=INVALID_REMOTE_CI),
+    'team_id': v.Any(UUID, msg=INVALID_TEAM),
     'components': list,
     v.Optional('comment', default=None): six.text_type,
-    v.Optional('previous_job_id', default=None): v.Any(UUID_FIELD,
+    v.Optional('previous_job_id', default=None): v.Any(UUID,
                                                        msg=INVALID_JOB),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
@@ -310,30 +321,30 @@ job_put = {
 job = DCISchema(schema_factory(job).post, Schema(job_put))
 
 job_schedule = {
-    'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
-    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC)
+    'remoteci_id': v.Any(UUID, msg=INVALID_REMOTE_CI),
+    'topic_id': v.Any(UUID, msg=INVALID_TOPIC)
 }
 
 job_schedule = schema_factory(job_schedule)
 
 
 job_upgrade = {
-    'job_id': v.Any(UUID_FIELD, msg=INVALID_JOB)
+    'job_id': v.Any(UUID, msg=INVALID_JOB)
 }
 
 job_upgrade = schema_factory(job_upgrade)
 
 
 job_schedule_template = {
-    'remoteci_id': v.Any(UUID_FIELD, msg=INVALID_REMOTE_CI),
-    'topic_id': v.Any(UUID_FIELD, msg=INVALID_TOPIC),
+    'remoteci_id': v.Any(UUID, msg=INVALID_REMOTE_CI),
+    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
 
 }
 
 job_schedule_template = schema_factory(job_schedule_template)
 
 job_search = {
-    'jobdefinition_id': v.Any(UUID_FIELD, msg=INVALID_JOB_DEFINITION),
+    'jobdefinition_id': v.Any(UUID, msg=INVALID_JOB_DEFINITION),
     # todo(yassine): validate configuration structure
     'configuration': dict
 }
@@ -348,7 +359,7 @@ job_search = schema_factory(job_search)
 
 jobstate = {
     'status': six.text_type,
-    'job_id': v.Any(UUID_FIELD, msg=INVALID_JOB),
+    'job_id': v.Any(UUID, msg=INVALID_JOB),
     v.Optional('comment', default=None): six.text_type,
 }
 
@@ -364,13 +375,13 @@ file = utils.dict_merge(base, {
     v.Optional('content', default=''): six.text_type,
     v.Optional('md5', default=None): six.text_type,
     v.Optional('mime', default=None): six.text_type,
-    v.Optional('jobstate_id', default=None): v.Any(UUID_FIELD,
+    v.Optional('jobstate_id', default=None): v.Any(UUID,
                                                    msg=INVALID_JOB_STATE),
-    v.Optional('job_id', default=None): v.Any(UUID_FIELD,
+    v.Optional('job_id', default=None): v.Any(UUID,
                                               msg=INVALID_JOB),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
-    v.Optional('test_id', default=None): v.Any(UUID_FIELD,
+    v.Optional('test_id', default=None): v.Any(UUID,
                                                msg=INVALID_TEST)
 })
 
@@ -384,7 +395,7 @@ file = schema_factory(file)
 
 topic = utils.dict_merge(base, {
     v.Optional('label', default=None): six.text_type,
-    v.Optional('next_topic', default=None): v.Any(UUID_FIELD,
+    v.Optional('next_topic', default=None): v.Any(UUID,
                                                   msg=INVALID_JOB),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
