@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "5a72e520_1a9b89ca",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 425,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-16T15:20:15Z",
+      "side": 1,
+      "message": "maybe with a collections.OrderedDict :)",
+      "parentUuid": "5a72e520_3f659745",
+      "revId": "2cd27fb837e6a709e40707b5df0769f502901511",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5a72e520_bf78a72c",
         "filename": "tests/api/v1/test_remotecis.py",
         "patchSetId": 6
