@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a72e520_1ab629dd",
+        "filename": "scripts/sync.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-16T20:30:34Z",
+      "side": 1,
+      "message": "You can avoid a level of indentation if you just do:\n\nif not filenames:\n    continue\nfor filename in filenames:\n(...)",
+      "revId": "d10b0d03006a6f3696168b82d7d6eba595a08cb4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_faa94d7c",
+        "filename": "scripts/sync.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-16T20:30:34Z",
+      "side": 1,
+      "message": "We can save a lot of time if we skip the files of deleted jobs.",
+      "revId": "d10b0d03006a6f3696168b82d7d6eba595a08cb4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_3abbe5c5",
+        "filename": "scripts/sync.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-16T20:30:34Z",
+      "side": 1,
+      "message": "you can juse use a:\ncontinue\n\nhere to jump to the next file and avoid the:\nif result.rowcount \u003d\u003d 1:\n\nThis to save a level of indentation again.",
+      "revId": "d10b0d03006a6f3696168b82d7d6eba595a08cb4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
