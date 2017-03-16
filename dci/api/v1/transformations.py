@@ -13,6 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import json
 
 import dci
 import logging
@@ -20,11 +21,10 @@ import lxml.etree as ET
 import os
 import pkg_resources
 
-LOG = logging.getLogger('__name__')
+LOG = logging.getLogger(__name__)
 
 
 def junit2json(string):
-
     if not string:
         return '{}'
 
@@ -51,3 +51,32 @@ def junit2json(string):
         LOG.info('transformations.junittojson: XMLSyntaxError %s' % str(e))
 
     return string
+
+
+def format_test_result(test_result):
+    r = {
+        'name': u'',
+        'total': 0,
+        'skips': 0,
+        'failures': 0,
+        'errors': 0,
+        'success': 0,
+        'time': 0.0
+    }
+    try:
+        r['name'] = test_result['name']
+        for field in ['total', 'skips', 'failures', 'errors']:
+            if field in test_result and test_result[field]:
+                r[field] = int(test_result[field])
+        r['success'] = (r['total'] - r['failures'] - r['errors'] - r['skips'])
+        if 'time' in test_result and test_result['time']:
+            r['time'] = float(test_result['time'])
+    except Exception as e:
+        LOG.exception(e)
+    return r
+
+
+def junit2dict(filename):
+    with open(filename, 'r') as f:
+        data = f.read()
+    return format_test_result(json.loads(junit2json(data)))
