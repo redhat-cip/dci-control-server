@@ -302,6 +302,27 @@ JOBSTATES = sa.Table(
               nullable=False),
     sa.Index('jobstates_team_id_idx', 'team_id'))
 
+JOBRESULTS = sa.Table(
+    'jobresults', metadata,
+    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('name', sa.String(255), nullable=False),
+    sa.Column('total', sa.Integer, default=0),
+    sa.Column('success', sa.Integer, default=0),
+    sa.Column('skips', sa.Integer, default=0),
+    sa.Column('failures', sa.Integer, default=0),
+    sa.Column('errors', sa.Integer, default=0),
+    sa.Column('time', sa.Integer, default=0),
+    sa.Column('jobstate_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('jobstates.id', ondelete='CASCADE'),
+              nullable=True),
+)
+
 FILES = sa.Table(
     'files', metadata,
     sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
