@@ -338,6 +338,12 @@ def test_add_file_to_component(admin, topic_id):
                 'export_control': True}
         ct_1 = admin.post('/api/v1/components', data=data).data['component']
 
+        cts = admin.get(
+            '/api/v1/components/%s?embed=files' % ct_1['id']).data
+        from pprint import pprint
+        pprint(cts)
+        assert len(cts['component']['files']) == 0
+
         url = '/api/v1/components/%s/files' % ct_1['id']
         data = "lol"
         c_file = admin.post(url, data=data)
