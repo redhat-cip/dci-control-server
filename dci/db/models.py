@@ -249,6 +249,30 @@ JOBS = sa.Table(
     sa.Column('state', STATES, default='active')
 )
 
+TESTS_RESULTS = sa.Table(
+    'tests_results', metadata,
+    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('name', sa.String(255), nullable=False),
+    sa.Column('total', sa.Integer, nullable=True, default=None),
+    sa.Column('success', sa.Integer, nullable=True, default=None),
+    sa.Column('skips', sa.Integer, nullable=True, default=None),
+    sa.Column('failures', sa.Integer, nullable=True, default=None),
+    sa.Column('errors', sa.Integer, nullable=True, default=None),
+    sa.Column('time', sa.Integer, nullable=True, default=None),
+    sa.Column('job_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+              nullable=False),
+    sa.Column('file_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('files.id', ondelete='CASCADE'),
+              nullable=False),
+)
+
 METAS = sa.Table(
     'metas', metadata,
     sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
