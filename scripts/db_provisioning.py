@@ -48,30 +48,9 @@ def write(file_path, content):
     with open(file_path, 'w') as f:
         f.write(content)
 
-JUNIT_EMPTY = """
-<testsuite errors="0" failures="0" name="" tests="0" time="0.307">
-</testsuite>
-"""
-
-JUNIT = """
-<testsuite errors="0" failures="0" name="pytest" skips="1"
-           tests="3" time="46.050">
-<properties>
-  <property name="x" value="y" />
-  <property name="a" value="b" />
-</properties>
-<testcase classname="" file="test-requirements.txt"
-          name="test-requirements.txt" time="0.0109479427338">
-    <skipped message="all tests skipped by +SKIP option"
-             type="pytest.skip">Skipped for whatever reasons</skipped>
-</testcase>
-<testcase classname="tests.test_app" file="tests/test_app.py" line="26"
-          name="test_cors_preflight" time="2.91562318802"/>
-<testcase classname="tests.test_app" file="tests/test_app.py" line="42"
-          name="test_cors_headers" time="0.574683904648"/>
-</testsuite>"""
-
-STACKDETAILS = open('scripts/data/tripleo-stack-dump-sample.json', 'r').read()
+JUNIT_TEMPEST = open('scripts/data/tempest-results.xml', 'r').read()
+JUNIT_RALLY = open('scripts/data/rally-results.xml', 'r').read()
+STACK_DETAILS = open('scripts/data/tripleo-stack-dump-sample.json', 'r').read()
 
 
 def db_insert(db_conn, model_item, **kwargs):
@@ -466,7 +445,7 @@ def init_db(db_conn, minimal):
     job_dell_12 = db_ins(
         models.JOBS, status='success', jobdefinition_id=jobdef_dell_2,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[3][20],
-        updated_at=time[0][0], configuration=STACKDETAILS,
+        updated_at=time[0][0], configuration=STACK_DETAILS,
         user_agent='python-dciclient_0.1.0'
     )
     db_ins(
@@ -629,20 +608,20 @@ def init_db(db_conn, minimal):
 
     # create files only for the last job i.e: dell_12
     f_id = db_ins(
-        models.FILES, name='res_junit.xml', mime='application/junit',
+        models.FILES, name='', mime='application/junit',
         created_at=time[0][0], team_id=team_dell, job_id=job_dell_12
     )
 
     path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
-    write(path, JUNIT)
+    write(path, JUNIT_TEMPEST)
 
     f_id2 = db_ins(
-        models.FILES, name='res_junit2.xml', mime='application/junit',
+        models.FILES, name='Rally test suite', mime='application/junit',
         created_at=time[0][0], team_id=team_dell, job_id=job_dell_12
     )
 
     path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id2)
-    write(path, JUNIT_EMPTY)
+    write(path, JUNIT_RALLY)
 
     f_id = db_ins(
         models.FILES, name='foo.txt', mime='text/play',
