@@ -1,0 +1,79 @@
+#!/usr/bin/env python
+import json
+import pprint
+
+import sys
+from sqlalchemy import sql, func
+
+from dci import dci_config
+from dci.db import models
+from dci.api.v1 import transformations
+from dci.api.v1 import utils as v1_utils
+from dci.common import utils
+
+conf = dci_config.generate_conf()
+engine = dci_config.get_engine(conf).connect()
+
+_TABLE = models.FILES
+_FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
+
+
+def get_junit_results(file):
+    file_path = v1_utils.build_file_path(
+        _FILES_FOLDER, file['team_id'], file['id'], create=False)
+    data = ''.join([s for s in utils.read(file_path, mode='r')])
+    return json.loads(transformations.junit2json(data))
+
+
+def get_next_files_metadata(offset, limit):
+    query = (sql
+             .select([_TABLE])
+             .offset(offset)
+             .limit(limit)
+             .where(_TABLE.c.mime == 'application/junit'))
+    return engine.execute(query)
+
+
+def get_test_result(tr):
+    total = int(tr['total']) if tr['total'] else 0
+    skips = int(tr['skips']) if tr['skips'] and total else 0
+    failures = int(tr['failures']) if tr['failures'] and total else 0
+    errors = int(tr['errors']) if tr['errors'] and total else 0
+    success = (total - failures - errors - skips)
+    return {
+        'name': tr['name'],
+        'total': total,
+        'success': success,
+        'skips': skips,
+        'failures': failures,
+        'errors': errors,
+        'time': float(tr['time'])
+    }
+
+
+def main(callback):
+    query = (sql
+             .select([func.count(_TABLE.c.id)])
+             .select_from(_TABLE)
+             .where(_TABLE.c.mime == 'application/junit'))
+    nb_row = engine.execute(query).scalar()
+
+    offset = 0
+    while offset < nb_row:
+        files_meta = get_next_files_metadata(offset, limit=1000)
+        for file_meta in files_meta:
+            try:
+                file = dict(file_meta)
+                junit_results = get_junit_results(file)
+                test_result = get_test_result(junit_results)
+                test_result['jobstate_id'] = file['jobstate_id']
+                callback(test_result)
+            except Exception as e:
+                print(e)
+        offset += files_meta.rowcount
+
+
+if __name__ == '__main__':
+    args = sys.argv
+    if len(args) == 1:
+        main(pprint.pprint)
