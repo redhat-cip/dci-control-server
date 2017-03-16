@@ -332,21 +332,32 @@ def test_add_file_to_component(admin, topic_id):
         mockito.head.return_value = head_result
         mock_swift.return_value = mockito
 
-        data = {'name': "pname1", 'title': 'aaa',
-                'type': 'gerrit_review',
-                'topic_id': topic_id,
-                'export_control': True}
-        ct_1 = admin.post('/api/v1/components', data=data).data['component']
+        def create_ct(name):
+            data = {'name': name, 'title': 'aaa',
+                    'type': 'gerrit_review',
+                    'topic_id': topic_id,
+                    'export_control': True}
+            return admin.post(
+                '/api/v1/components',
+                data=data).data['component']
+
+        ct_1 = create_ct('pname1')
+        ct_2 = create_ct('pname2')
+
+        cts = admin.get(
+            '/api/v1/components/%s?embed=files' % ct_1['id']).data
+        assert len(cts['component']['files']) == 0
 
         url = '/api/v1/components/%s/files' % ct_1['id']
-        data = "lol"
-        c_file = admin.post(url, data=data)
+        c_file = admin.post(url, data='lol')
+        url = '/api/v1/components/%s/files' % ct_2['id']
+        c_file = admin.post(url, data='lol2')
 
         assert c_file.status_code == 201
         l_file = admin.get(url)
         assert l_file.status_code == 200
         assert l_file.data['_meta']['count'] == 1
-        assert l_file.data['component_files'][0]['component_id'] == ct_1['id']
+        assert l_file.data['component_files'][0]['component_id'] == ct_2['id']
         cts = admin.get(
             '/api/v1/components/%s?embed=files' % ct_1['id']).data
         assert len(cts['component']['files']) == 1

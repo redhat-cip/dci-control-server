@@ -22,13 +22,15 @@ from dci.api.v1 import utils as v1_utils
 
 
 def components():
-    files = models.COMPONENT_FILES.alias('files')
+    component = models.COMPONENTS
+    component_files = models.COMPONENT_FILES.alias('files')
     return {
         'files': v1_utils.embed(
-            select=[files],
-            where=and_(
-                files.c.component_id == models.COMPONENTS.c.id,
-                files.c.state != 'archived'
+            select=[component_files],
+            join=component.join(
+                component_files,
+                component_files.c.component_id == component.c.id,
+                isouter=True
             ),
             many=True),
     }
