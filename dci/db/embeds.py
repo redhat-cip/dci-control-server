@@ -34,6 +34,8 @@ TEAM = models.TEAMS.alias('team')
 REMOTECI = models.REMOTECIS.alias('remoteci')
 CFILES = models.COMPONENT_FILES.alias('files')
 
+JOB = models.JOBS.alias('job')
+JOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(JOB, ['configuration'])  # noqa
 JOBS_WITHOUT_CONFIGURATION = ignore_columns_from_table(models.JOBS, ['configuration'])  # noqa
 
 LASTJOB = models.JOBS.alias('lastjob')
@@ -45,6 +47,10 @@ CURRENTJOB = models.JOBS.alias('currentjob')
 CURRENTJOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(CURRENTJOB, ['configuration'])  # noqa
 CURRENTJOB_COMPONENTS = models.COMPONENTS.alias('currentjob.components')
 CURRENTJOB_JOIN_COMPONENTS = models.JOIN_JOBS_COMPONENTS.alias('currentjob.jobcomponents')  # noqa
+
+JOBSTATE = models.JOBSTATES.alias('jobstate')
+JOBSTATE_JOBS = models.JOBS.alias('jobstate.job')
+JOBSTATEJOBS_WITHOUT_CONFIGURATION = ignore_columns_from_table(JOBSTATE_JOBS, ['configuration'])  # noqa
 
 
 def jobs(root_select=models.JOBS):
@@ -167,6 +173,29 @@ def components(root_select=models.COMPONENTS):
     }
 
 
+def files(root_select=models.FILES):
+    return {
+        'jobstate': [
+            {'right': JOBSTATE,
+             'onclause': JOBSTATE.c.id == root_select.c.jobstate_id,
+             'isouter': True}
+        ],
+        'jobstate.job': [
+            {'right': JOBSTATE_JOBS,
+             'onclause': JOBSTATE.c.job_id == JOBSTATE_JOBS.c.id,
+             'isouter': True}],
+        'job': [
+            {'right': JOB,
+             'onclause': root_select.c.job_id == JOB.c.id,
+             'isouter': True}
+        ],
+        'team': [
+            {'right': TEAM,
+             'onclause': root_select.c.team_id == TEAM.c.id}
+        ]
+    }
+
+
 # associate the name table to the object table
 # used for select clause
 EMBED_STRING_TO_OBJECT = {
@@ -187,15 +216,21 @@ EMBED_STRING_TO_OBJECT = {
         'currentjob.components': CURRENTJOB_COMPONENTS},
     'components': {
         'files': CFILES,
-        'jobs': JOBS_WITHOUT_CONFIGURATION
-    }
+        'jobs': JOBS_WITHOUT_CONFIGURATION},
+    'files': {
+        'jobstate': JOBSTATE,
+        'jobstate.job': JOBSTATEJOBS_WITHOUT_CONFIGURATION,
+        'job': JOB_WITHOUT_CONFIGURATION,
+        'team': TEAM}
 }
+
 
 # for each table associate its embed's function handler
 EMBED_JOINS = {
     'jobs': jobs,
     'remotecis': remotecis,
-    'components': components
+    'components': components,
+    'files': files
 }
 
 
@@ -215,52 +250,6 @@ def embed(many=False, select=None, where=None,
     :param join: an SQLAlchemy-core Join instance
     """
     return Embed(many, select, where, sort, join)
-
-
-def files():
-    team = models.TEAMS.alias('team')
-    jobstate = models.JOBSTATES.alias('jobstate')
-    jobstate_t = models.JOBSTATES.alias('jobstate_t')
-    jobstate_job = models.JOBS.alias('jobstate.job')
-    job = models.JOBS.alias('job')
-    f0 = models.FILES.alias('f0')
-    f1 = models.FILES.alias('f1')
-    # f2 = models.FILES.alias('f2')
-    return {
-        'jobstate': embed(
-            select=[jobstate],
-            join=f0.join(
-                jobstate,
-                sql.expression.or_(
-                    f0.c.jobstate_id == jobstate.c.id,
-                    f0.c.jobstate_id == None))),  # noqa
-        'jobstate.job': embed(
-            select=[c
-                    for n, c in jobstate_job.c.items()
-                    if n != 'configuration'],
-            join=jobstate_t.join(
-                jobstate_job,
-                sql.expression.or_(
-                    jobstate_t.c.job_id == jobstate_job.c.id,
-                    jobstate_job.c.id == None)),
-            where=jobstate.c.id == jobstate_t.c.id),
-        'job': embed(
-            select=[job],
-            join=f1.join(
-                job,
-                sql.expression.or_(
-                    job.c.id == f1.c.job_id,
-                    job.c.id == None)
-            ),
-            where=job.c.state != 'archived'),
-        'team': embed(
-            select=[team],
-            where=and_(
-                models.FILES.c.team_id == team.c.id,
-                team.c.state != 'archived'
-            )
-        )
-    }
 
 
 def jobdefinitions():
