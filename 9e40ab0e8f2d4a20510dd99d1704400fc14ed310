@@ -22,6 +22,30 @@
       "revId": "9e40ab0e8f2d4a20510dd99d1704400fc14ed310",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_0e9c2a69",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 222,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-03-17T16:03:08Z",
+      "side": 1,
+      "message": "haha :) you got me ! I didn\u0027t run the test on my setup after the rebase ;)",
+      "parentUuid": "5a72e520_3a876563",
+      "range": {
+        "startLine": 221,
+        "startChar": 0,
+        "endLine": 222,
+        "endChar": 40
+      },
+      "revId": "9e40ab0e8f2d4a20510dd99d1704400fc14ed310",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
