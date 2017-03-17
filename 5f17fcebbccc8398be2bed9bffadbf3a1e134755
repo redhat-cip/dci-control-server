@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a72e520_3ac125e5",
+        "filename": "scripts/sync.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-17T13:13:17Z",
+      "side": 1,
+      "message": "to clarify my message, a lot of these files my come from jobs with the status \u0027deleted\u0027, if you join the job table on filter on the status you probably can greatly reduce the number of files.",
+      "revId": "5f17fcebbccc8398be2bed9bffadbf3a1e134755",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
