@@ -40,6 +40,12 @@ _TABLE = models.FILES
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
 _VALID_EMBED = embeds.files()
 _FILES_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_EMBED_MANY = {
+    'jobstate': False,
+    'jobstate.job': False,
+    'job': False,
+    'team': False
+}
 
 
 @api.route('/files', methods=['POST'])
@@ -59,18 +65,19 @@ def create_files(user):
         raise dci_exc.DCIException('HTTP header DCI-NAME must be specified')
 
     if values['jobstate_id']:
-        q_bd = v1_utils.QueryBuilder(models.JOBSTATES)
-        q_bd.where.append(models.JOBSTATES.c.id == values['jobstate_id'])
-        row = flask.g.db_conn.execute(q_bd.build()).fetchone()
+        query = v1_utils.QueryBuilder2(models.JOBSTATES)
+        query.add_extra_condition(
+            models.JOBSTATES.c.id == values['jobstate_id'])
+        row = flask.g.db_conn.execute(query.build()).fetchone()
         if row is None:
             raise dci_exc.DCINotFound('Jobstate', values['jobstate_id'])
         values['job_id'] = row['jobstates_job_id']
 
-    q_bd = v1_utils.QueryBuilder(models.JOBS)
+    query = v1_utils.QueryBuilder2(models.JOBS)
     if not auth.is_admin(user):
-        q_bd.where.append(models.JOBS.c.team_id == user['team_id'])
-    q_bd.where.append(models.JOBS.c.id == values['job_id'])
-    row = flask.g.db_conn.execute(q_bd.build()).fetchone()
+        query.add_extra_condition(models.JOBS.c.team_id == user['team_id'])
+    query.add_extra_condition(models.JOBS.c.id == values['job_id'])
+    row = flask.g.db_conn.execute(query.build()).fetchone()
     if row is None:
         raise dci_exc.DCINotFound('Job', values['job_id'])
 
@@ -112,52 +119,38 @@ def get_all_files(user, j_id=None):
     """
     args = schemas.args(flask.request.args.to_dict())
 
-    embed = args['embed']
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 embed=_VALID_EMBED)
-
-    q_bd.join(embed)
-    q_bd.sort = v1_utils.sort_query(args['sort'], _FILES_COLUMNS)
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _FILES_COLUMNS)
+    query = v1_utils.QueryBuilder2(_TABLE, args, _FILES_COLUMNS)
 
     # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
-
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
     if j_id is not None:
-        q_bd.where.append(_TABLE.c.job_id == j_id)
+        query.add_extra_condition(_TABLE.c.job_id == j_id)
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
-
-    # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
-
-    return json.jsonify({'files': rows, '_meta': {'count': nb_row}})
+    rows = flask.g.db_conn.execute(query.build()).fetchall()
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
+    return json.jsonify({'files': rows, '_meta': {'count': len(rows)}})
 
 
 @api.route('/files/<uuid:file_id>', methods=['GET'])
 @auth.requires_auth
 def get_file_by_id_or_name(user, file_id):
     # get the diverse parameters
-    embed = schemas.args(flask.request.args.to_dict())['embed']
-
-    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
-    q_bd.join(embed)
+    args = schemas.args(flask.request.args.to_dict())
+    query = v1_utils.QueryBuilder2(_TABLE, args, _FILES_COLUMNS)
 
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
-    q_bd.where.append(
-        sql.and_(
-            _TABLE.c.state != 'archived',
-            _TABLE.c.id == file_id
-        )
-    )
+    query.add_extra_condition(sql.and_(
+        _TABLE.c.state != 'archived',
+        _TABLE.c.id == file_id))
 
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    rows = flask.g.db_conn.execute(query.build()).fetchall()
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
     if len(rows) != 1:
         raise dci_exc.DCINotFound('File', file_id)
     file_ = rows[0]
