@@ -167,6 +167,8 @@ def get_columns_name_with_objects(table, embed={}):
 
 def sort_query(sort, valid_columns, default='-created_at'):
     order_by = []
+    if not sort and not valid_columns:
+        return []
     if not sort:
         sort = [default]
     for sort_elem in sort:
@@ -224,7 +226,7 @@ def request_wants_html():
 
 class QueryBuilder2(object):
 
-    def __init__(self, root_table, args, strings_to_columns, ignore_columns=None):  # noqa
+    def __init__(self, root_table, args={}, strings_to_columns={}, ignore_columns=None):  # noqa
         self._root_table = root_table
         self._embeds = args.get('embed', [])
         self._limit = args.get('limit', None)
@@ -239,7 +241,7 @@ class QueryBuilder2(object):
     def add_extra_condition(self, condition):
         self._extras_conditions.append(condition)
 
-    def _get_root_columns(self):
+    def _filtered_root_columns(self):
         # remove ignored columns
         columns_from_root_table = dict(self._strings_to_columns)
         for column_to_ignore in self._ignored_columns:
@@ -279,7 +281,9 @@ class QueryBuilder2(object):
         return sorted(set(embed_list))
 
     def get_query(self):
-        select_clause = self._get_root_columns()
+        select_clause = [self._root_table]
+        if self._ignored_columns:
+            select_clause = self._filtered_root_columns()
         root_select = self._root_table
         if self._do_subquery():
             root_subquery = sql.select(select_clause)
@@ -312,6 +316,7 @@ class QueryBuilder2(object):
                     select_clause.append(select_elem)
             query = sql.select(select_clause, use_labels=True, from_obj=children)  # noqa
 
+        if self._embeds:
             for embed_sort in embed_sorts:
                 query = query.order_by(embed_sort)
 
