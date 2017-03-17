@@ -99,11 +99,10 @@ def test_get_all_files_with_embed(admin, jobstate_id, team_admin_id, job_id):
     files = admin.get('/api/v1/files?embed=team,jobstate,jobstate.job').data
 
     for file in files['files']:
-        assert 'team_id' not in file
         assert 'team' in file
         assert file['team']['id'] == team_admin_id
-        assert 'jobstate_id' not in file
         assert 'jobstate' in file
+        assert file['jobstate'] == ''
         assert file['jobstate']['id'] == jobstate_id
         assert file['jobstate']['job']['id'] == job_id
 
@@ -170,7 +169,6 @@ def test_get_file_with_embed(admin, jobstate_id, team_admin_id):
     file = admin.post('/api/v1/files', headers=headers).data
 
     file_id = file['file']['id']
-    del file['file']['team_id']
     file['file']['team'] = pt['team']
 
     # verify embed
