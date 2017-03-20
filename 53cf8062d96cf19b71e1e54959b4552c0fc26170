@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a72e520_8488fbe8",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-20T18:04:58Z",
+      "side": 1,
+      "message": "I would put a \\n in front of \u0027team\u0027: False",
+      "revId": "53cf8062d96cf19b71e1e54959b4552c0fc26170",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
