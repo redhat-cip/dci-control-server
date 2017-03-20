@@ -583,15 +583,17 @@ def get_all_results_from_jobs(user, j_id):
     """Get all results from job.
     """
 
+    swift = dci_config.get_store('files')
     job_files = json.loads(files.get_all_files(j_id).response[0])['files']
     r_files = [file for file in job_files
                if file['mime'] == 'application/junit']
 
     results = []
     for file in r_files:
-        file_path = v1_utils.build_file_path(_FILES_FOLDER, file['team_id'],
-                                             file['id'], create=False)
-        data = ''.join([s for s in utils.read(file_path, mode='r')])
+        file_path = swift.build_file_path(user['team_id'],
+                                          j_id,
+                                          file['id'])
+        data = ''.join(swift.get(file_path)[1])
         data = json.loads(tsfm.junit2json(data))
 
         if not isinstance(data['skips'], int):
