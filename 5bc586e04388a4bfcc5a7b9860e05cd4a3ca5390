@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a72e520_a7aed9e5",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 110,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-20T18:26:38Z",
+      "side": 1,
+      "message": "do we really need these two comments?",
+      "revId": "5bc586e04388a4bfcc5a7b9860e05cd4a3ca5390",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_c7abd5d4",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-20T18:26:38Z",
+      "side": 1,
+      "message": "So far, we were not returning the count for the /foo/$id queries. I\u0027m not sure there is a big value since we should get either 200 or 404.",
+      "revId": "5bc586e04388a4bfcc5a7b9860e05cd4a3ca5390",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
