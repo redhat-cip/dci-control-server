@@ -19,6 +19,15 @@ import mock
 import pytest
 import uuid
 
+from dci.stores.swift import Swift
+from dci.common import utils
+
+SWIFT = 'dci.stores.swift.Swift'
+JUNIT = """<testsuite errors="0" failures="0" name="pytest" skips="1"
+           tests="3" time="46.050"></testsuite>"""
+JUNIT_EMPTY = """<testsuite errors="0" failures="0" name="" tests="0"
+                 time="0.307"> </testsuite>"""
+
 
 def test_create_jobs(admin, jobdefinition_id, team_id, remoteci_id,
                      components_ids):
@@ -592,23 +601,34 @@ def test_get_jobstates_by_job_id(admin, job_id, team_id):
 
 
 def test_get_jobstates_by_job_id_with_embed(admin, job_id, team_id, jobstate_id):  # noqa
-    headers = {'DCI-JOBSTATE-ID': jobstate_id,
-               'DCI-NAME': 'name1'}
-    pfile = admin.post('/api/v1/files', headers=headers, data='kikoolol').data
-    file1_id = pfile['file']['id']
-    headers = {'DCI-JOBSTATE-ID': jobstate_id,
-               'DCI-NAME': 'name2'}
-    pfile = admin.post('/api/v1/files', headers=headers, data='kikoolol').data
-    file2_id = pfile['file']['id']
-    jobstates = admin.get('/api/v1/jobs/%s/jobstates?embed=files&sort=files.name' % job_id)  # noqa
-    jobstate = jobstates.data['jobstates'][0]
-    assert jobstate['files'][0]['id'] == file1_id
-    assert jobstate['files'][1]['id'] == file2_id
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+        mockito = mock.MagicMock()
 
-    jobstates = admin.get('/api/v1/jobs/%s/jobstates?embed=files&sort=-files.name' % job_id)  # noqa
-    jobstate = jobstates.data['jobstates'][0]
-    assert jobstate['files'][0]['id'] == file2_id
-    assert jobstate['files'][1]['id'] == file1_id
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        headers = {'DCI-JOBSTATE-ID': jobstate_id,
+                   'DCI-NAME': 'name1'}
+        pfile = admin.post('/api/v1/files', headers=headers, data='kikoolol').data
+        file1_id = pfile['file']['id']
+        headers = {'DCI-JOBSTATE-ID': jobstate_id,
+                   'DCI-NAME': 'name2'}
+        pfile = admin.post('/api/v1/files', headers=headers, data='kikoolol').data
+        file2_id = pfile['file']['id']
+        jobstates = admin.get('/api/v1/jobs/%s/jobstates?embed=files&sort=files.name' % job_id)  # noqa
+        jobstate = jobstates.data['jobstates'][0]
+        assert jobstate['files'][0]['id'] == file1_id
+        assert jobstate['files'][1]['id'] == file2_id
+
+        jobstates = admin.get('/api/v1/jobs/%s/jobstates?embed=files&sort=-files.name' % job_id)  # noqa
+        jobstate = jobstates.data['jobstates'][0]
+        assert jobstate['files'][0]['id'] == file2_id
+        assert jobstate['files'][1]['id'] == file1_id
 
 
 def test_get_job_not_found(admin):
@@ -760,22 +780,32 @@ def test_delete_job_as_user(user, team_user_id, admin, job_id,
 
 def test_create_file_for_job_id(user, jobdefinition_id, team_user_id,
                                 remoteci_id, components_ids):
-    # create a job
-    job = user.post('/api/v1/jobs',
-                    data={'jobdefinition_id': jobdefinition_id,
-                          'team_id': team_user_id,
-                          'remoteci_id': remoteci_id,
-                          'components': components_ids})
-    job_id = job.data['job']['id']
-    assert job.status_code == 201
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
-    # create a file
-    headers = {'DCI-JOB-ID': job_id,
-               'DCI-NAME': 'foobar'}
-    file = user.post('/api/v1/files', headers=headers)
-    file_id = file.data['file']['id']
-    file = user.get('/api/v1/files/%s' % file_id).data
-    assert file['file']['name'] == 'foobar'
+        mockito = mock.MagicMock()
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        # create a job
+        job = user.post('/api/v1/jobs',
+                        data={'jobdefinition_id': jobdefinition_id,
+                              'team_id': team_user_id,
+                              'remoteci_id': remoteci_id,
+                              'components': components_ids})
+        job_id = job.data['job']['id']
+        assert job.status_code == 201
+
+        # create a file
+        headers = {'DCI-JOB-ID': job_id,
+                   'DCI-NAME': 'foobar'}
+        file = user.post('/api/v1/files', headers=headers)
+        file_id = file.data['file']['id']
+        file = user.get('/api/v1/files/%s' % file_id).data
+        assert file['file']['name'] == 'foobar'
 
 
 @pytest.mark.usefixtures('file_job_user_id')
@@ -790,24 +820,45 @@ def test_get_file_by_job_id(user, job_user_id):
 
 @pytest.mark.usefixtures('file_job_junit_user_id')
 def test_get_results_by_job_id(user, job_user_id):
-    url = '/api/v1/jobs/%s/results' % job_user_id
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+        mockito = mock.MagicMock()
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+        mockito.head.return_value = head_result
+        mockito.get.return_value = ['', JUNIT]
+        mock_swift.return_value = mockito
 
-    # get file from job
-    file_from_job = user.get(url)
-    assert file_from_job.status_code == 200
-    assert file_from_job.data['_meta']['count'] == 1
-    assert file_from_job.data['results'][0]['total'] == '3'
+        url = '/api/v1/jobs/%s/results' % job_user_id
+
+        # get file from job
+        file_from_job = user.get(url)
+        assert file_from_job.status_code == 200
+        assert file_from_job.data['_meta']['count'] == 1
+        assert file_from_job.data['results'][0]['total'] == '3'
 
 
 @pytest.mark.usefixtures('file_job_junit_empty_user_id')
 def test_get_empty_results_by_job_id(user, job_user_id):
-    url = '/api/v1/jobs/%s/results' % job_user_id
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+        mockito = mock.MagicMock()
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+        mockito.head.return_value = head_result
+        mockito.get.return_value = ['', JUNIT_EMPTY]
+        mock_swift.return_value = mockito
+        url = '/api/v1/jobs/%s/results' % job_user_id
 
-    # get file from job
-    file_from_job = user.get(url)
-    assert file_from_job.status_code == 200
-    assert file_from_job.data['_meta']['count'] == 1
-    assert file_from_job.data['results'][0]['total'] == '0'
+        # get file from job
+        file_from_job = user.get(url)
+        assert file_from_job.status_code == 200
+        assert file_from_job.data['_meta']['count'] == 1
+        assert file_from_job.data['results'][0]['total'] == '0'
 
 
 def test_job_search(user, jobdefinition_id, team_user_id, remoteci_id,
