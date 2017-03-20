@@ -17,10 +17,8 @@
 
 import collections
 import datetime
-import dci.api.v1.utils as utils
 import dci.auth as auth
 import dci.db.models as models
-import dci.dci_config
 import functools
 import getopt
 import six.moves
@@ -28,7 +26,9 @@ import sqlalchemy
 import sqlalchemy_utils.functions
 import sys
 
-conf = dci.dci_config.generate_conf()
+from dci import dci_config
+
+conf = dci_config.generate_conf()
 
 
 def time_helper():
@@ -628,34 +628,39 @@ def init_db(db_conn, minimal):
     )
 
     # create files only for the last job i.e: dell_12
+
+    swift = dci_config.get_store('files')
     f_id = db_ins(
         models.FILES, name='res_junit.xml', mime='application/junit',
         created_at=time[0][0], team_id=team_dell, job_id=job_dell_12
     )
 
-    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
-    write(path, JUNIT)
+    file_path = swift.build_file_path(team_dell, job_dell_12, f_id)
+    swift.upload(file_path, JUNIT)
 
     f_id2 = db_ins(
         models.FILES, name='res_junit2.xml', mime='application/junit',
         created_at=time[0][0], team_id=team_dell, job_id=job_dell_12
     )
 
-    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id2)
-    write(path, JUNIT_EMPTY)
+    file_path = swift.build_file_path(team_dell, job_dell_12, f_id2)
+    swift.upload(file_path, JUNIT_EMPTY)
 
     f_id = db_ins(
         models.FILES, name='foo.txt', mime='text/play',
         created_at=time[0][0], team_id=team_dell, jobstate_id=job_dell_12_12
     )
-    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
-    write(path, 'some content')
+
+    file_path = swift.build_file_path(team_dell, job_dell_12, f_id)
+    swift.upload(file_path, 'some content')
+
     f_id = db_ins(
         models.FILES, name='bar.txt', mime='text/play',
         created_at=time[0][0], team_id=team_dell, jobstate_id=job_dell_12_12
     )
-    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
-    write(path, 'some other content')
+
+    file_path = swift.build_file_path(team_dell, job_dell_12, f_id)
+    swift.upload(file_path, 'some other content')
 
 
 if __name__ == '__main__':
