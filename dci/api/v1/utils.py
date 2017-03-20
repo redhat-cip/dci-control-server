@@ -26,7 +26,6 @@ from dci.common import utils
 from dci.db import models
 
 import collections
-import os
 
 
 Embed = collections.namedtuple('Embed', [
@@ -470,15 +469,3 @@ def flask_headers_to_dict(headers):
             rv[header[4:]] = value
 
     return rv
-
-
-def build_file_path(file_folder, team_id, file_id, create=True):
-    team_id = str(team_id)
-    file_id = str(file_id)
-    directory = os.path.join(
-        file_folder, team_id, file_id[0:2], file_id[2:4], file_id[4:6]
-    )
-    if create and not os.path.exists(directory):
-        os.makedirs(directory)
-
-    return os.path.join(directory, file_id)
