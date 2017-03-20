@@ -18,23 +18,35 @@ from __future__ import unicode_literals
 import pytest
 
 from dci.api.v1 import utils as v1_utils
+from dci.stores.swift import Swift
 
 import collections
 import os
 import tests.utils
 
-
-_FILES_FOLDER = tests.utils.conf['FILES_UPLOAD_FOLDER']
+SWIFT = 'dci.stores.swift.Swift'
 
 FileDesc = collections.namedtuple('FileDesc', ['name', 'content'])
 
 
 def post_file(client, jobstate_id, file_desc):
-    headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
-               'Content-Type': 'text/plain'}
-    res = client.post('/api/v1/files', headers=headers, data=file_desc.content)
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
-    return res.data['file']['id']
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 1
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
+                   'Content-Type': 'text/plain'}
+        res = client.post('/api/v1/files', headers=headers, data=file_desc.content)
+
+        return res.data['file']['id']
 
 
 def test_create_files(admin, jobstate_id, team_admin_id):
