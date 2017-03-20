@@ -17,10 +17,8 @@
 
 import collections
 import datetime
-import dci.api.v1.utils as utils
 import dci.auth as auth
 import dci.db.models as models
-import dci.dci_config
 import functools
 import getopt
 import six.moves
@@ -28,7 +26,9 @@ import sqlalchemy
 import sqlalchemy_utils.functions
 import sys
 
-conf = dci.dci_config.generate_conf()
+from dci import dci_config
+
+conf = dci_config.generate_conf()
 
 
 def time_helper():
@@ -79,7 +79,7 @@ def db_insert(db_conn, model_item, **kwargs):
     return db_conn.execute(query).inserted_primary_key[0]
 
 
-def init_db(db_conn, minimal):
+def init_db(db_conn, minimal, file):
     """Initialize the database with fake datas
 
     Create an admin team and 2 other teams HP and DELL
@@ -633,34 +633,42 @@ def init_db(db_conn, minimal):
         created_at=time[0][0], team_id=team_dell, job_id=job_dell_12
     )
 
-    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
-    write(path, JUNIT)
+    if file:
+        swift = dci_config.get_store('files')
+        file_path = swift.build_file_path(team_dell, job_dell_12, f_id)
+        swift.upload(file_path, JUNIT)
 
     f_id2 = db_ins(
         models.FILES, name='res_junit2.xml', mime='application/junit',
         created_at=time[0][0], team_id=team_dell, job_id=job_dell_12
     )
 
-    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id2)
-    write(path, JUNIT_EMPTY)
+    if file:
+        file_path = swift.build_file_path(team_dell, job_dell_12, f_id2)
+        swift.upload(file_path, JUNIT_EMPTY)
 
     f_id = db_ins(
         models.FILES, name='foo.txt', mime='text/play',
         created_at=time[0][0], team_id=team_dell, jobstate_id=job_dell_12_12
     )
-    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
-    write(path, 'some content')
+
+    if file:
+        file_path = swift.build_file_path(team_dell, job_dell_12, f_id)
+        swift.upload(file_path, 'some content')
+
     f_id = db_ins(
         models.FILES, name='bar.txt', mime='text/play',
         created_at=time[0][0], team_id=team_dell, jobstate_id=job_dell_12_12
     )
-    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
-    write(path, 'some other content')
+
+    if file:
+        file_path = swift.build_file_path(team_dell, job_dell_12, f_id)
+        swift.upload(file_path, 'some other content')
 
 
 if __name__ == '__main__':
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
-    minimal, force = False, False
+    minimal, force, file = False, False, False
 
     opts, _ = getopt.getopt(sys.argv[1:], 'ym')
     for opt in opts:
@@ -668,6 +676,8 @@ if __name__ == '__main__':
             force = True
         if opt == ('-m', ''):
             minimal = True
+        if opt == ('-f', ''):
+            file = True
 
     if not force:
         print('you can force the deletion by adding -y as a parameter')
@@ -690,4 +700,4 @@ if __name__ == '__main__':
     engine = sqlalchemy.create_engine(db_uri)
     models.metadata.create_all(engine)
     with engine.begin() as conn:
-        init_db(conn, minimal)
+        init_db(conn, minimal, file)

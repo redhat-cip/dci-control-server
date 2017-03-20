@@ -54,7 +54,7 @@ def test_sample_db_provisionning(engine, db_clean):
         'db_provisioning', 'scripts/db_provisioning.py'
     )
     with engine.begin() as db_conn:
-        db_provisioning.init_db(db_conn, False)
+        db_provisioning.init_db(db_conn, False, False)
 
 
 def test_db_migration(engine, clean_all):
