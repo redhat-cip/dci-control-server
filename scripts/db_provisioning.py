@@ -633,29 +633,30 @@ def init_db(db_conn, minimal):
         created_at=time[0][0], team_id=team_dell, job_id=job_dell_12
     )
 
-    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
-    write(path, JUNIT)
+
+    # path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
+    #write(path, JUNIT)
 
     f_id2 = db_ins(
         models.FILES, name='res_junit2.xml', mime='application/junit',
         created_at=time[0][0], team_id=team_dell, job_id=job_dell_12
     )
 
-    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id2)
-    write(path, JUNIT_EMPTY)
+    # path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id2)
+    # write(path, JUNIT_EMPTY)
 
     f_id = db_ins(
         models.FILES, name='foo.txt', mime='text/play',
         created_at=time[0][0], team_id=team_dell, jobstate_id=job_dell_12_12
     )
-    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
-    write(path, 'some content')
+    # path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
+    #write(path, 'some content')
     f_id = db_ins(
         models.FILES, name='bar.txt', mime='text/play',
         created_at=time[0][0], team_id=team_dell, jobstate_id=job_dell_12_12
     )
-    path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
-    write(path, 'some other content')
+    # path = utils.build_file_path(conf['FILES_UPLOAD_FOLDER'], team_dell, f_id)
+    # write(path, 'some other content')
 
 
 if __name__ == '__main__':
