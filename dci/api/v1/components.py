@@ -242,7 +242,7 @@ def download_component_file(user, c_id, f_id):
     COMPONENT_FILES = models.COMPONENT_FILES
     v1_utils.verify_existence_and_get(f_id, COMPONENT_FILES)
     auth.check_export_control(user, component)
-    file_path = "%s/%s/%s" % (component['topic_id'], c_id, f_id)
+    file_path = swift.build_file_path(component['topic_id'], c_id, f_id)
     return flask.Response(get_object(file_path))
 
 
@@ -256,8 +256,10 @@ def upload_component_file(user, c_id):
 
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
 
+    swift = dci_config.get_store('components')
+
     file_id = utils.gen_uuid()
-    file_path = "%s/%s/%s" % (component['topic_id'], c_id, file_id)
+    file_path = swift.build_file_path(component['topic_id'], c_id, file_id)
 
     swift = dci_config.get_store('components')
     swift.upload(file_path, flask.request.stream.read())
@@ -301,8 +303,8 @@ def delete_component_file(user, c_id, f_id):
     if not result.rowcount:
         raise dci_exc.DCIDeleteConflict('Component File', f_id)
 
-    file_path = "%s/%s/%s" % (component['topic_id'], c_id, f_id)
     swift = dci_config.get_store('components')
+    file_path = swift.build_file_path(component['topic_id'], c_id, f_id)
     swift.delete(file_path)
 
     return flask.Response(None, 204, content_type='application/json')

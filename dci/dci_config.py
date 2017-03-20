@@ -54,7 +54,7 @@ def get_store(container):
     if container == 'files':
         configuration['container'] = conf['STORE_FILES_CONTAINER']
     if container == 'components':
-        configuration['components'] = conf['STORE_COMPONENTS_CONTAINER']
+        configuration['container'] = conf['STORE_COMPONENTS_CONTAINER']
     stores_engine = swift.Swift(configuration)
     return stores_engine
 
