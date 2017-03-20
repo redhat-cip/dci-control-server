@@ -31,8 +31,10 @@ class Swift(stores.Store):
                                        os.getenv('OS_TENANT_NAME'))
         self.os_auth_url = conf.get('os_auth_url',
                                     os.getenv('OS_AUTH_URL'))
-        self.container = conf.get('container', os.getenv('CONTAINER'))
+        self.container = conf.get('container',
+                                  os.getenv('CONTAINER'))
         self.connection = self.get_connection()
+        print self.container
 
     def get_connection(self):
         return swiftclient.client.Connection(auth_version='2',
@@ -57,6 +59,7 @@ class Swift(stores.Store):
 
     def upload(self, file_path, iterable, pseudo_folder=None,
                create_container=True):
+        print self.container
         try:
             self.connection.head_container(self.container)
         except swiftclient.exceptions.ClientException as exc:
@@ -65,3 +68,9 @@ class Swift(stores.Store):
 
         self.connection.put_object(self.container, file_path,
                                    iterable)
+
+    def build_file_path(self, root, middle, file_id):
+        root = str(root)
+        middle = str(middle)
+        file_id = str(file_id)
+        return "%s/%s/%s" % (root, middle, file_id)

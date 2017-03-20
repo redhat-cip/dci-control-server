@@ -17,14 +17,19 @@
 import dci.app
 from dci.db import models
 from dci.elasticsearch import engine as es_engine
+from dci.stores.swift import Swift
 import tests.utils as utils
+from dci.common import utils as dci_utils
 
 from passlib.apps import custom_app_context as pwd_context
 import pytest
 import sqlalchemy
 import sqlalchemy_utils.functions
+import mock
 
 import uuid
+
+SWIFT = 'dci.stores.swift.Swift'
 
 
 @pytest.fixture(scope='session')
@@ -254,70 +259,132 @@ def jobstate_user_id(user, job_user_id):
 
 @pytest.fixture
 def file_id(admin, jobstate_id, team_admin_id):
-    headers = {'DCI-JOBSTATE-ID': jobstate_id,
-               'DCI-NAME': 'name'}
-    file = admin.post('/api/v1/files', headers=headers, data='kikoolol').data
-    headers['team_id'] = team_admin_id
-    headers['id'] = file['file']['id']
-    conn = es_engine.DCIESEngine(utils.conf)
-    conn.index(headers)
-    return file['file']['id']
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': dci_utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 1
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        headers = {'DCI-JOBSTATE-ID': jobstate_id,
+                   'DCI-NAME': 'name'}
+        file = admin.post('/api/v1/files',
+                          headers=headers,
+                          data='kikoolol').data
+        headers['team_id'] = team_admin_id
+        headers['id'] = file['file']['id']
+        conn = es_engine.DCIESEngine(utils.conf)
+        conn.index(headers)
+        return file['file']['id']
 
 
 @pytest.fixture
 def file_user_id(user, jobstate_user_id, team_user_id):
-    headers = {'DCI-JOBSTATE-ID': jobstate_user_id,
-               'DCI-NAME': 'name'}
-    file = user.post('/api/v1/files', headers=headers, data='kikoolol').data
-    headers['team_id'] = team_user_id
-    headers['id'] = file['file']['id']
-    conn = es_engine.DCIESEngine(utils.conf)
-    conn.index(headers)
-    return file['file']['id']
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': dci_utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 1
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        headers = {'DCI-JOBSTATE-ID': jobstate_user_id,
+                   'DCI-NAME': 'name'}
+        file = user.post('/api/v1/files', headers=headers, data='kikoolol').data
+        headers['team_id'] = team_user_id
+        headers['id'] = file['file']['id']
+        conn = es_engine.DCIESEngine(utils.conf)
+        conn.index(headers)
+        return file['file']['id']
 
 
 @pytest.fixture
 def file_job_user_id(user, job_user_id, team_user_id):
-    headers = {'DCI-JOB-ID': job_user_id,
-               'DCI-NAME': 'name'}
-    file = user.post('/api/v1/files', headers=headers, data='foobar').data
-    headers['team_id'] = team_user_id
-    headers['id'] = file['file']['id']
-    conn = es_engine.DCIESEngine(utils.conf)
-    conn.index(headers)
-    return file['file']['id']
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': dci_utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 1
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        headers = {'DCI-JOB-ID': job_user_id,
+                   'DCI-NAME': 'name'}
+        file = user.post('/api/v1/files', headers=headers, data='foobar').data
+        headers['team_id'] = team_user_id
+        headers['id'] = file['file']['id']
+        conn = es_engine.DCIESEngine(utils.conf)
+        conn.index(headers)
+        return file['file']['id']
 
 
 @pytest.fixture
 def file_job_junit_user_id(user, job_user_id, team_user_id):
-    JUNIT = """<testsuite errors="0" failures="0" name="pytest" skips="1"
-               tests="3" time="46.050"></testsuite>"""
-    headers = {'DCI-JOB-ID': job_user_id,
-               'Content-Type': 'application/junit',
-               'DCI-MIME': 'application/junit',
-               'DCI-NAME': 'res_junit.xml'}
-    file = user.post('/api/v1/files', headers=headers, data=JUNIT).data
-    headers['team_id'] = team_user_id
-    headers['id'] = file['file']['id']
-    conn = es_engine.DCIESEngine(utils.conf)
-    conn.index(headers)
-    return file['file']['id']
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': dci_utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 1
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        JUNIT = """<testsuite errors="0" failures="0" name="pytest" skips="1"
+                   tests="3" time="46.050"></testsuite>"""
+        headers = {'DCI-JOB-ID': job_user_id,
+                   'Content-Type': 'application/junit',
+                   'DCI-MIME': 'application/junit',
+                   'DCI-NAME': 'res_junit.xml'}
+        file = user.post('/api/v1/files', headers=headers, data=JUNIT).data
+        headers['team_id'] = team_user_id
+        headers['id'] = file['file']['id']
+        conn = es_engine.DCIESEngine(utils.conf)
+        conn.index(headers)
+        return file['file']['id']
 
 
 @pytest.fixture
 def file_job_junit_empty_user_id(user, job_user_id, team_user_id):
-    JUNIT = """<testsuite errors="0" failures="0" name="" tests="0"
-               time="0.307"> </testsuite>"""
-    headers = {'DCI-JOB-ID': job_user_id,
-               'Content-Type': 'application/junit',
-               'DCI-MIME': 'application/junit',
-               'DCI-NAME': 'res_junit.xml'}
-    file = user.post('/api/v1/files', headers=headers, data=JUNIT).data
-    headers['team_id'] = team_user_id
-    headers['id'] = file['file']['id']
-    conn = es_engine.DCIESEngine(utils.conf)
-    conn.index(headers)
-    return file['file']['id']
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': dci_utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 1
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        JUNIT = """<testsuite errors="0" failures="0" name="" tests="0"
+                   time="0.307"> </testsuite>"""
+        headers = {'DCI-JOB-ID': job_user_id,
+                   'Content-Type': 'application/junit',
+                   'DCI-MIME': 'application/junit',
+                   'DCI-NAME': 'res_junit.xml'}
+        file = user.post('/api/v1/files', headers=headers, data=JUNIT).data
+        headers['team_id'] = team_user_id
+        headers['id'] = file['file']['id']
+        conn = es_engine.DCIESEngine(utils.conf)
+        conn.index(headers)
+        return file['file']['id']
 
 
 @pytest.fixture
