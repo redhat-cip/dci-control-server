@@ -16,40 +16,47 @@
 
 from __future__ import unicode_literals
 import pytest
+import mock
 
-from dci.api.v1 import utils as v1_utils
+from dci.stores.swift import Swift
+from dci.common import utils
 
 import collections
-import os
-import tests.utils
 
-
-_FILES_FOLDER = tests.utils.conf['FILES_UPLOAD_FOLDER']
+SWIFT = 'dci.stores.swift.Swift'
 
 FileDesc = collections.namedtuple('FileDesc', ['name', 'content'])
 
 
 def post_file(client, jobstate_id, file_desc):
-    headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
-               'Content-Type': 'text/plain'}
-    res = client.post('/api/v1/files', headers=headers, data=file_desc.content)
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
-    return res.data['file']['id']
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
+                   'Content-Type': 'text/plain'}
+        res = client.post('/api/v1/files',
+                          headers=headers,
+                          data=file_desc.content)
+
+        return res.data['file']['id']
 
 
 def test_create_files(admin, jobstate_id, team_admin_id):
     file_id = post_file(admin, jobstate_id, FileDesc('kikoolol', 'content'))
 
     file = admin.get('/api/v1/files/%s' % file_id).data['file']
-    file_path = v1_utils.build_file_path(_FILES_FOLDER, team_admin_id,
-                                         file['id'])
 
     assert file['name'] == 'kikoolol'
     assert file['size'] == 7
-    assert os.path.exists(file_path)
-
-    with open(file_path, 'r') as f:
-        assert f.read() == 'content'
 
 
 def test_create_files_jobstate_id_and_job_id_missing(admin, team_admin_id):
@@ -163,16 +170,29 @@ def test_get_file_not_found(admin):
 
 
 def test_get_file_with_embed(admin, jobstate_id, team_admin_id):
-    pt = admin.get('/api/v1/teams/%s' % team_admin_id).data
-    headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': 'kikoolol'}
-    file = admin.post('/api/v1/files', headers=headers).data
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
-    file_id = file['file']['id']
-    file['file']['team'] = pt['team']
+        mockito = mock.MagicMock()
 
-    # verify embed
-    file_embed = admin.get('/api/v1/files/%s?embed=team' % file_id).data
-    assert file == file_embed
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        pt = admin.get('/api/v1/teams/%s' % team_admin_id).data
+        headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': 'kikoolol'}
+        file = admin.post('/api/v1/files', headers=headers).data
+
+        file_id = file['file']['id']
+        del file['file']['team_id']
+        file['file']['team'] = pt['team']
+
+        # verify embed
+        file_embed = admin.get('/api/v1/files/%s?embed=team' % file_id).data
+        assert file == file_embed
 
 
 def test_get_jobdefinition_with_embed_not_valid(admin, jobstate_id):
@@ -199,9 +219,21 @@ def test_delete_file_by_id(admin, jobstate_id):
 
 
 def test_create_file_as_user(user, jobstate_user_id):
-    headers = {'DCI-JOBSTATE-ID': jobstate_user_id, 'DCI-NAME': 'name'}
-    file = user.post('/api/v1/files', headers=headers)
-    assert file.status_code == 201
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        headers = {'DCI-JOBSTATE-ID': jobstate_user_id, 'DCI-NAME': 'name'}
+        file = user.post('/api/v1/files', headers=headers)
+        assert file.status_code == 201
 
 
 @pytest.mark.usefixtures('file_id', 'file_user_id')
@@ -214,15 +246,27 @@ def test_get_all_files_as_user(user, team_user_id):
 
 
 def test_get_file_as_user(user, file_id, jobstate_user_id):
-    file = user.get('/api/v1/files/%s' % file_id)
-    assert file.status_code == 404
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
-    headers = {'DCI-JOBSTATE-ID': jobstate_user_id,
-               'DCI-NAME': 'name'}
-    file = user.post('/api/v1/files', headers=headers).data
-    file_id = file['file']['id']
-    file = user.get('/api/v1/files/%s' % file_id)
-    assert file.status_code == 200
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        file = user.get('/api/v1/files/%s' % file_id)
+        assert file.status_code == 404
+
+        headers = {'DCI-JOBSTATE-ID': jobstate_user_id,
+                   'DCI-NAME': 'name'}
+        file = user.post('/api/v1/files', headers=headers).data
+        file_id = file['file']['id']
+        file = user.get('/api/v1/files/%s' % file_id)
+        assert file.status_code == 200
 
 
 def test_delete_file_as_user(user, admin, jobstate_user_id,
@@ -241,20 +285,45 @@ def test_delete_file_as_user(user, admin, jobstate_user_id,
 
 
 def test_get_file_content(admin, jobstate_id):
-    data = "azertyuiop1234567890"
-    file_id = post_file(admin, jobstate_id, FileDesc('foo', data))
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
-    get_file = admin.get('/api/v1/files/%s/content' % file_id)
+        mockito = mock.MagicMock()
 
-    assert get_file.status_code == 200
-    assert get_file.data == data
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+
+        mockito.head.return_value = head_result
+        mockito.get.return_value = ['', "azertyuiop1234567890"]
+        mock_swift.return_value = mockito
+        data = "azertyuiop1234567890"
+        file_id = post_file(admin, jobstate_id, FileDesc('foo', data))
+
+        get_file = admin.get('/api/v1/files/%s/content' % file_id)
+
+        assert get_file.status_code == 200
+        assert get_file.data == data
 
 
 def test_get_file_content_as_user(user, file_id, file_user_id):
     url = '/api/v1/files/%s/content'
 
     assert user.get(url % file_id).status_code == 401
-    assert user.get(url % file_user_id).status_code == 200
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        assert user.get(url % file_user_id).status_code == 200
 
 
 def test_change_file_to_invalid_state(admin, file_id):
