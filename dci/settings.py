@@ -47,7 +47,8 @@ STORE_USERNAME = 'dci_components'
 STORE_PASSWORD = 'test'
 STORE_TENANT_NAME = 'DCI-Prod'
 STORE_AUTH_URL = 'http://46.231.132.68:5000/v2.0'
-STORE_CONTAINER = 'dci_components'
+STORE_FILES_CONTAINER = 'dci_files'
+STORE_COMPONENTS_CONTAINER = 'dci_components'
 
 # ZMQ Connection
 ZMQ_CONN = "tcp://127.0.0.1:5557"

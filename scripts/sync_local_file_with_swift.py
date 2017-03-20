@@ -38,7 +38,9 @@ with tqdm.tqdm(total=sum(1 for _ in file_list)) as pbar:
             if result.rowcount == 1:
                 tqdm.tqdm.write("File %s found in DB" % filename)
                 top_path = dirname[len(conf['FILES_UPLOAD_FOLDER']):]
-                swift_path = top_path + filename
+                swift_path = swift.build_file_path(result['team_id'],
+                                                   result['job_id'],
+                                                   filename)
                 tqdm.tqdm.write("Check if file is in swift : %s" % swift_path)
                 try:
                     swift.head(swift_path)
