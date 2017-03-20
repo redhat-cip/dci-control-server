@@ -47,6 +47,7 @@ _FILES_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 def create_files(user):
     # todo(yassine): use voluptuous for headers validation
     headers_values = v1_utils.flask_headers_to_dict(flask.request.headers)
+    swift = dci_config.get_store('files')
 
     values = dict.fromkeys(['md5', 'mime', 'jobstate_id',
                             'job_id', 'name', 'test_id'])
@@ -76,15 +77,18 @@ def create_files(user):
 
     file_id = utils.gen_uuid()
     # ensure the directory which will contains the file actually exist
-    file_path = v1_utils.build_file_path(_FILES_FOLDER, user['team_id'],
-                                         file_id)
+    file_path = swift.build_file_path(user['team_id'],
+                                      values['job_id'],
+                                      file_id)
 
-    with open(file_path, 'wb') as f:
-        chunk_size = 4096
-        read = flask.request.stream.read
-        for chunk in iter(lambda: read(chunk_size) or None, None):
-            f.write(chunk)
-    file_size = os.path.getsize(file_path)
+    # with open(file_path, 'wb') as f:
+    #     chunk_size = 4096
+    #     read = flask.request.stream.read
+    #     for chunk in iter(lambda: read(chunk_size) or None, None):
+    #         f.write(chunk)
+    # file_size = os.path.getsize(file_path)
+
+    swift.upload(file_path, flask.request.stream.read())
 
     etag = utils.gen_etag()
     values.update({
@@ -170,19 +174,28 @@ def get_file_by_id_or_name(user, file_id):
 @auth.requires_auth
 def get_file_content(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
+    swift = dci_config.get_store('files')
+
+    def get_object(swift_object):
+        for block in swift.get(swift_object)[1]:
+            yield block
 
     if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
-    file_path = v1_utils.build_file_path(_FILES_FOLDER, file['team_id'],
-                                         file_id, create=False)
+    # file_path = v1_utils.build_file_path(_FILES_FOLDER, file['team_id'],
+    #                                      file_id, create=False)
 
-    if not os.path.exists(file_path):
-        raise dci_exc.DCIException('Internal server file: not existing',
-                                   status_code=404)
+    file_path = swift.build_file_path(file['team_id'],
+                                      file['jobstate_id'],
+                                      file_id)
+
+    # if not os.path.exists(file_path):
+    #     raise dci_exc.DCIException('Internal server file: not existing',
+    #                                status_code=404)
 
     if flask.request.is_xhr and file['mime'] == 'application/junit':
-        data = ''.join([s for s in utils.read(file_path, mode='r')])
+        data = ''.join([s for s in swift.get(file_path)[1]])
         data = tsfm.junit2json(data)
         headers = {
             'Content-Length': len(data),
@@ -190,7 +203,6 @@ def get_file_content(user, file_id):
                                    file['name'].replace(' ', '_')
         }
     else:
-        data = utils.read(file_path)
         headers = {
             'Content-Length': file['size'],
             'Content-Disposition': 'attachment; filename=%s' %
@@ -198,7 +210,9 @@ def get_file_content(user, file_id):
         }
 
     return flask.Response(
-        data, content_type=file['mime'] or 'text/plain', headers=headers
+        get_object(file_path),
+        content_type=file['mime'] or 'text/plain',
+        headers=headers
     )
 
 

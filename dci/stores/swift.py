@@ -22,7 +22,7 @@ import swiftclient
 
 class Swift(stores.Store):
 
-    def __init__(self, conf):
+    def __init__(self, conf, container):
         self.os_username = conf.get('os_username',
                                     os.getenv('OS_USERNAME'))
         self.os_password = conf.get('os_password',
@@ -31,7 +31,8 @@ class Swift(stores.Store):
                                        os.getenv('OS_TENANT_NAME'))
         self.os_auth_url = conf.get('os_auth_url',
                                     os.getenv('OS_AUTH_URL'))
-        self.container = conf.get('container', os.getenv('CONTAINER'))
+        self.container = conf.get(conf['containers'][container],
+                                  os.getenv('CONTAINER'))
         self.connection = self.get_connection()
 
     def get_connection(self):
@@ -65,3 +66,9 @@ class Swift(stores.Store):
 
         self.connection.put_object(self.container, file_path,
                                    iterable)
+
+    def build_file_path(root, middle, file_id):
+        root = str(root)
+        middle = str(middle)
+        file_id = str(file_id)
+        return "%s/%s/%s" % (root, middle, file_id)
