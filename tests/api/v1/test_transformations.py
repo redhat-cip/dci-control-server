@@ -15,8 +15,13 @@
 # under the License.
 
 import dci.api.v1.transformations as transformations
+from dci.stores.swift import Swift
+import mock
+from dci.common import utils
 
 import json
+
+SWIFT = 'dci.stores.swift.Swift'
 
 JUNIT = """
 <testsuite errors="0" failures="0" name="junittojson" skips="1"
@@ -37,6 +42,44 @@ JUNIT = """
 </testsuite>
 """
 
+JSONUNIT = {
+    'name': 'junittojson',
+    'failures': '0',
+    'errors': '0',
+    'skips': '1',
+    'total': '3',
+    'time': '46.050',
+    'properties': [
+        {'name': 'x', 'value': 'y'},
+        {'name': 'a', 'value': 'b'}
+    ],
+    'testscases': [
+        {
+            'name': 'test-requirements.txt',
+            'classname': '',
+            'file': 'test-requirements.txt',
+            'time': u'0.0109479427338',
+            'result': {
+                'message': 'all tests skipped by +SKIP option',
+                'value': 'Skipped for whatever reasons',
+                'action': 'skipped',
+                'type': 'pytest.skip'
+            }
+        }, {
+            'name': 'test_cors_preflight',
+            'classname': 'tests.test_app',
+            'file': 'tests/test_app.py',
+            'time': '2.91562318802',
+            'result': {'action': 'passed'}
+        }, {
+            'name': 'test_cors_headers',
+            'classname': 'tests.test_app',
+            'file': 'tests/test_app.py',
+            'time': u'0.574683904648',
+            'result': {'action': 'passed'},
+        }
+    ]
+}
 
 def test_junit2json_valid():
     result = transformations.junit2json(JUNIT)
@@ -48,63 +91,39 @@ def test_junit2json_valid():
 
 
 def test_retrieve_junit2json(admin, job_id):
-    headers = {'DCI-NAME': 'junit_file.xml', 'DCI-JOB-ID': job_id,
-               'DCI-MIME': 'application/junit',
-               'Content-Disposition': 'attachment; filename=junit_file.xml',
-               'Content-Type': 'application/junit'}
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
-    file = admin.post('/api/v1/files', headers=headers, data=JUNIT)
-    file = file.data['file']['id']
+        mockito = mock.MagicMock()
 
-    # First retrieve file
-    res = admin.get('/api/v1/files/%s/content' % file)
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
 
-    assert res.data == JUNIT
+        mockito.head.return_value = head_result
+        mockito.get.return_value = ['', JUNIT]
+        mock_swift.return_value = mockito
+        headers = {'DCI-NAME': 'junit_file.xml', 'DCI-JOB-ID': job_id,
+                   'DCI-MIME': 'application/junit',
+                   'Content-Disposition': 'attachment; filename=junit_file.xml',
+                   'Content-Type': 'application/junit'}
 
-    # Now retrieve it through XHR
-    headers = {'X-Requested-With': 'XMLHttpRequest'}
-    res = admin.get('/api/v1/files/%s/content' % file, headers=headers)
+        file = admin.post('/api/v1/files', headers=headers, data=JUNIT)
+        file = file.data['file']['id']
 
-    assert (res.headers.get('Content-Disposition') ==
-            'attachment; filename=junit_file.xml')
-    assert json.loads(res.data) == {
-        'name': 'junittojson',
-        'failures': '0',
-        'errors': '0',
-        'skips': '1',
-        'total': '3',
-        'time': '46.050',
-        'properties': [
-            {'name': 'x', 'value': 'y'},
-            {'name': 'a', 'value': 'b'}
-        ],
-        'testscases': [
-            {
-                'name': 'test-requirements.txt',
-                'classname': '',
-                'file': 'test-requirements.txt',
-                'time': u'0.0109479427338',
-                'result': {
-                    'message': 'all tests skipped by +SKIP option',
-                    'value': 'Skipped for whatever reasons',
-                    'action': 'skipped',
-                    'type': 'pytest.skip'
-                }
-            }, {
-                'name': 'test_cors_preflight',
-                'classname': 'tests.test_app',
-                'file': 'tests/test_app.py',
-                'time': '2.91562318802',
-                'result': {'action': 'passed'}
-            }, {
-                'name': 'test_cors_headers',
-                'classname': 'tests.test_app',
-                'file': 'tests/test_app.py',
-                'time': u'0.574683904648',
-                'result': {'action': 'passed'},
-            }
-        ]
-    }
+        # First retrieve file
+        res = admin.get('/api/v1/files/%s/content' % file)
+
+        assert res.data == JUNIT
+
+        # Now retrieve it through XHR
+        headers = {'X-Requested-With': 'XMLHttpRequest'}
+        res = admin.get('/api/v1/files/%s/content' % file, headers=headers)
+
+        assert (res.headers.get('Content-Disposition') ==
+                'attachment; filename=junit_file.xml')
+        assert json.loads(res.data) == JSONUNIT
 
 
 def test_junit2json_invalid():
