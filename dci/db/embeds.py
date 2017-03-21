@@ -269,6 +269,15 @@ def topics(root_select=models.TOPICS):
     }
 
 
+def users(root_select=models.USERS):
+    return {
+        'team': [
+            {'right': TEAM,
+             'onclause': and_(TEAM.c.id == root_select.c.team_id,
+                              TEAM.c.state != 'archived')}
+        ]}
+
+
 # associate the name table to the object table
 # used for select clause
 EMBED_STRING_TO_OBJECT = {
@@ -312,6 +321,9 @@ EMBED_STRING_TO_OBJECT = {
     },
     'topics': {
         'teams': models.TEAMS
+    },
+    'users': {
+        'team': TEAM
     }
 }
 
@@ -326,34 +338,6 @@ EMBED_JOINS = {
     'jobstates': jobstates,
     'teams': teams,
     'tests': tests,
-    'topics': topics
+    'topics': topics,
+    'users': users
 }
-
-
-import collections
-Embed = collections.namedtuple('Embed', [
-    'many', 'select', 'where', 'sort', 'join'])
-
-
-def embed(many=False, select=None, where=None,
-          sort=None, join=None):
-    """Prepare a Embed named tuple
-
-    :param many: True if it's a one-to-many join
-    :param select: an optional list of field to embed
-    :param where: an extra WHERE clause
-    :param sort: an extra ORDER BY clause
-    :param join: an SQLAlchemy-core Join instance
-    """
-    return Embed(many, select, where, sort, join)
-
-
-def users():
-    team = models.TEAMS.alias('team')
-    return {
-        'team': embed(
-            select=[team],
-            where=and_(
-                team.c.id == models.USERS.c.team_id,
-                team.c.state != 'archived'
-            ))}

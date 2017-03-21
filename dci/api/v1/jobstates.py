@@ -82,7 +82,7 @@ def get_all_jobstates(user, j_id=None):
     """
     args = schemas.args(flask.request.args.to_dict())
 
-    query = v1_utils.QueryBuilder2(_TABLE, args, _JS_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _JS_COLUMNS)
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
@@ -104,7 +104,7 @@ def get_all_jobstates(user, j_id=None):
 def get_jobstate_by_id(user, js_id):
     args = schemas.args(flask.request.args.to_dict())
 
-    query = v1_utils.QueryBuilder2(_TABLE, args, _JS_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _JS_COLUMNS)
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 

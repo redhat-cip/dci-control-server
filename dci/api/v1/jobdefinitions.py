@@ -72,7 +72,7 @@ def list_all_jobdefinitions(user, topic_ids):
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
 
-    query = v1_utils.QueryBuilder2(_TABLE, args, _JD_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _JD_COLUMNS)
 
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.topic_id.in_(topic_ids))
@@ -100,7 +100,7 @@ def get_jobdefinition_by_id_or_name(user, jd_id):
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
 
-    query = v1_utils.QueryBuilder2(_TABLE, args, _JD_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _JD_COLUMNS)
     query.add_extra_condition(
         sql.and_(
             _TABLE.c.state != 'archived',

@@ -111,8 +111,8 @@ def search_jobs(user):
     config_op = configuration.pop('_op', 'and')
 
     args = schemas.args(flask.request.args.to_dict())
-    query = v1_utils.QueryBuilder2(_TABLE, args, _JOBS_COLUMNS,
-                                   ['configuration'])
+    query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS,
+                                  ['configuration'])
 
     # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
@@ -267,7 +267,7 @@ def _validate_input(values, user):
 def _get_job(user, job_id, embed):
     # build the query thanks to the QueryBuilder class
     args = {'embed': embed}
-    query = v1_utils.QueryBuilder2(_TABLE, args, _JOBS_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS)
 
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
@@ -394,8 +394,8 @@ def get_all_jobs(user, jd_id=None):
     args = schemas.args(flask.request.args.to_dict())
 
     # build the query thanks to the QueryBuilder class
-    query = v1_utils.QueryBuilder2(_TABLE, args, _JOBS_COLUMNS,
-                                   ['configuration'])
+    query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS,
+                                  ['configuration'])
 
     # add extra conditions for filtering
 
