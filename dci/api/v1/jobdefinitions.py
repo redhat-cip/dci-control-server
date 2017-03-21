@@ -33,6 +33,9 @@ _TABLE = models.JOBDEFINITIONS
 # associate column names with the corresponding SA Column object
 _VALID_EMBED = embeds.jobdefinitions()
 _JD_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_EMBED_MANY = {
+    'topic': False
+}
 
 
 @api.route('/jobdefinitions', methods=['POST'])
@@ -60,65 +63,54 @@ def create_jobdefinitions(user):
                           content_type='application/json')
 
 
-def _get_all_jobdefinitions(user, topic_id=None):
+def list_all_jobdefinitions(user, topic_ids):
     """Get all jobdefinitions.
 
-    If t_id is not None, then return all the jobdefinitions with a test
-    pointed by t_id.
+    If topic_id is not None, then return all the jobdefinitions with a topic
+    pointed by topic_id.
     """
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 embed=_VALID_EMBED)
-    q_bd.join(embed)
-    q_bd.sort = v1_utils.sort_query(args['sort'], _JD_COLUMNS)
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _JD_COLUMNS)
+    query = v1_utils.QueryBuilder2(_TABLE, args, _JD_COLUMNS)
 
-    if topic_id is None and not auth.is_admin(user):
-        q_bd._join.extend([models.TOPICS, models.JOINS_TOPICS_TEAMS])
-        q_bd.where += [
-            models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id'],
-            models.JOINS_TOPICS_TEAMS.c.topic_id == models.TOPICS.c.id,
-            _TABLE.c.topic_id == models.TOPICS.c.id]
-    elif topic_id is not None:
-        q_bd.where.append(_TABLE.c.topic_id == topic_id)
+    if not auth.is_admin(user):
+        query.add_extra_condition(_TABLE.c.topic_id.in_(topic_ids))
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
 
-    return flask.jsonify({'jobdefinitions': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'jobdefinitions': rows, '_meta': {'count': nb_rows}})
 
 
 @api.route('/jobdefinitions')
 @auth.requires_auth
 def get_all_jobdefinitions(user):
-    return _get_all_jobdefinitions(user)
+    topic_ids = v1_utils.user_topic_ids(user)
+    return list_all_jobdefinitions(user, topic_ids)
 
 
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['GET'])
 @auth.requires_auth
 def get_jobdefinition_by_id_or_name(user, jd_id):
     # get the diverse parameters
-    embed = schemas.args(flask.request.args.to_dict())['embed']
+    args = schemas.args(flask.request.args.to_dict())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
-    q_bd.join(embed)
-
-    q_bd.where.append(
+    query = v1_utils.QueryBuilder2(_TABLE, args, _JD_COLUMNS)
+    query.add_extra_condition(
         sql.and_(
             _TABLE.c.state != 'archived',
             _TABLE.c.id == jd_id
         )
     )
 
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
     if len(rows) != 1:
         raise dci_exc.DCINotFound('Jobdefinition', jd_id)
     jobdefinition = rows[0]
