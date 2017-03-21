@@ -95,7 +95,7 @@ def get_all_tests(user, team_id):
     if not(auth.is_admin(user) or auth.is_in_team(user, team_id)):
         raise auth.UNAUTHORIZED
 
-    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
     query.add_extra_condition(_TABLE.c.team_id == team_id)
     query.add_extra_condition(_TABLE.c.state != 'archived')
 

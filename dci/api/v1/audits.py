@@ -38,7 +38,7 @@ def get_logs(user):
     if args['limit'] is None:
         args['limit'] = 10
 
-    query = v1_utils.QueryBuilder2(_TABLE, args, _A_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _A_COLUMNS)
 
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.team_id == user['team_id'])

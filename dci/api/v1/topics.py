@@ -96,7 +96,7 @@ def get_topic_by_id(user, topic_id):
 def get_all_topics(user):
     args = schemas.args(flask.request.args.to_dict())
     # if the user is an admin then he can get all the topics
-    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
     if not auth.is_admin(user):
         if 'teams' in args['embed']:
