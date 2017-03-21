@@ -16,7 +16,6 @@
 
 from dci.db import models
 
-from sqlalchemy import sql
 from sqlalchemy.sql import and_
 
 
@@ -207,6 +206,24 @@ def jobdefinitions(root_select=models.JOBDEFINITIONS):
     }
 
 
+def jobstates(root_select=models.JOBSTATES):
+    return {
+        'files': [
+            {'right': models.FILES,
+             'onclause': and_(models.FILES.c.jobstate_id == root_select.c.id,
+                              models.FILES.c.state != 'archived'),
+             'isouter': True}],
+        'job': [
+            {'right': JOB,
+             'onclause': root_select.c.job_id == JOB.c.id,
+             'isouter': True}
+        ],
+        'team': [
+            {'right': TEAM,
+             'onclause': root_select.c.team_id == TEAM.c.id}
+        ]
+    }
+
 # associate the name table to the object table
 # used for select clause
 EMBED_STRING_TO_OBJECT = {
@@ -235,6 +252,11 @@ EMBED_STRING_TO_OBJECT = {
         'team': TEAM},
     'jobdefinitions': {
         'topic': TOPIC
+    },
+    'jobstates': {
+        'files': models.FILES,
+        'job': JOB_WITHOUT_CONFIGURATION,
+        'team': TEAM
     }
 }
 
@@ -245,7 +267,8 @@ EMBED_JOINS = {
     'remotecis': remotecis,
     'components': components,
     'files': files,
-    'jobdefinitions': jobdefinitions
+    'jobdefinitions': jobdefinitions,
+    'jobstates': jobstates
 }
 
 
@@ -265,46 +288,6 @@ def embed(many=False, select=None, where=None,
     :param join: an SQLAlchemy-core Join instance
     """
     return Embed(many, select, where, sort, join)
-
-
-def jobstates():
-    team = models.TEAMS.alias('team')
-    js0 = models.JOBSTATES.alias('js0')
-    js1 = models.JOBSTATES.alias('js1')
-    job = models.JOBS.alias('job')
-    return {
-        'files': embed(
-            select=[models.FILES],
-            join=js0.join(
-                models.FILES,
-                and_(
-                    js0.c.id == models.FILES.c.jobstate_id,
-                    models.FILES.c.state != 'archived'
-                ),
-                isouter=True),
-            where=js0.c.id == models.JOBSTATES.c.id,
-            many=True),
-        'job': embed(
-            select=[c for n, c in job.c.items() if n != 'configuration'],
-            join=js1.join(
-                job,
-                and_(
-                    sql.expression.or_(
-                        js1.c.job_id == job.c.id,
-                        job.c.id == None  # noqa
-                    ),
-                    job.c.state != 'archived',
-                    ),
-                isouter=True),
-            where=js1.c.id == models.JOBSTATES.c.id,
-            sort=job.c.created_at),
-        'team': embed(
-            select=[team],
-            where=and_(
-                models.JOBSTATES.c.team_id == team.c.id,
-                team.c.state != 'archived'
-            )
-        )}
 
 
 def teams():
