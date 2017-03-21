@@ -35,6 +35,9 @@ from dci.db import models
 _TABLE = models.TOPICS
 _VALID_EMBED = embeds.topics()
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_EMBED_MANY = {
+    'teams': True
+}
 
 
 @api.route('/topics', methods=['POST'])
@@ -70,20 +73,18 @@ def create_topics(user):
 @auth.requires_auth
 def get_topic_by_id(user, topic_id):
 
-    embed = schemas.args(flask.request.args.to_dict())['embed']
-
-    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
-    q_bd.join(embed)
-
-    q_bd.where.append(
+    args = schemas.args(flask.request.args.to_dict())
+    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
+    query.add_extra_condition(
         sql.and_(
             _TABLE.c.state != 'archived',
             _TABLE.c.id == topic_id
         )
     )
 
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
     if len(rows) != 1:
         raise dci_exc.DCINotFound('Topic', topic_id)
     topic = rows[0]
@@ -95,25 +96,20 @@ def get_topic_by_id(user, topic_id):
 @auth.requires_auth
 def get_all_topics(user):
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
     # if the user is an admin then he can get all the topics
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 _VALID_EMBED)
-    q_bd.join(embed)
-    q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS,
-                                    default='name')
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
+    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
 
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))
+        query.add_extra_condition(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))  # noqa
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
     # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
 
-    return flask.jsonify({'topics': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'topics': rows, '_meta': {'count': nb_rows}})
 
 
 @api.route('/topics/<uuid:topic_id>', methods=['PUT'])
@@ -184,83 +180,6 @@ def get_all_components(user, topic_id):
     return components.get_all_components(user, topic_id=topic_id)
 
 
-@api.route('/topics/<uuid:topic_id>/type/<type_id>/status',
-           methods=['GET'])
-@auth.requires_auth
-def get_jobs_status_from_components(user, topic_id, type_id):
-
-    # List of job meaningfull job status for global overview
-    #
-    # ie. If current job status is running, we should retrieve status
-    # from prior job.
-    valid_status = ['failure', 'product-failure', 'deployment-failure',
-                    'success']
-
-    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
-    v1_utils.verify_team_in_topic(user, topic_id)
-    args = schemas.args(flask.request.args.to_dict())
-
-    # if the user is not the admin then filter by team_id
-    team_id = user['team_id'] if not auth.is_admin(user) else None
-
-    # Get the last (by created_at field) component id of <type_id> type
-    # within <topic_id> topic
-    where_clause = sql.and_(models.COMPONENTS.c.type == type_id,
-                            models.COMPONENTS.c.topic_id == topic_id,
-                            models.COMPONENTS.c.state == 'active')
-    q_bd = sql.select([models.COMPONENTS]).where(where_clause).order_by(
-        sql.desc(models.COMPONENTS.c.created_at)).limit(1)
-    cpt_id = flask.g.db_conn.execute(q_bd).fetchone()['id']
-
-    # Get list of all remotecis that are attached to a topic this type belongs
-    # to
-    q_bd = v1_utils.QueryBuilder(models.REMOTECIS, args['offset'],
-                                 args['limit'])
-    j_subquery = sql.select([models.JOBS.join(
-        models.JOIN_JOBS_COMPONENTS,
-        sql.and_(
-            models.JOIN_JOBS_COMPONENTS.c.job_id == models.JOBS.c.id,
-            models.JOIN_JOBS_COMPONENTS.c.component_id == cpt_id,
-        ))]).where(
-        sql.and_(
-            models.JOBS.c.remoteci_id == models.REMOTECIS.c.id,
-            models.JOBS.c.status.in_(valid_status),
-            models.JOBS.c.state != 'archived',
-        )).order_by(
-            models.JOBS.c.created_at.desc()).alias('job')
-    q_bd.select = [
-        models.REMOTECIS.c.id.label('remoteci_id'),
-        models.REMOTECIS.c.name.label('remoteci_name'),
-        models.TEAMS.c.id.label('team_id'),
-        models.TEAMS.c.name.label('team_name'),
-        models.TOPICS.c.name.label('topic_name'),
-        models.COMPONENTS.c.id.label('component_id'),
-        models.COMPONENTS.c.name.label('component_name'),
-        models.COMPONENTS.c.type.label('component_type'),
-        j_subquery.c.id.label('job_id'),
-        j_subquery.c.status.label('job_status'),
-        j_subquery.c.created_at.label('job_created_at'),
-    ]
-    q_bd._join += [
-        models.REMOTECIS.join(j_subquery, isouter=True)
-    ]
-    q_bd.extra_where = [
-        models.REMOTECIS.c.team_id == models.TEAMS.c.id,
-        models.TOPICS.c.id == topic_id,
-        models.COMPONENTS.c.id == cpt_id,
-        models.REMOTECIS.c.state == 'active']
-    q_bd.sort = [models.REMOTECIS.c.name]
-    if team_id:
-        q_bd.extra_where.append(models.TEAMS.c.id == team_id)
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rcs = flask.g.db_conn.execute(q_bd.build()).fetchall()
-
-    # NOTE(Gonéri): job_id should be renamed id to be consistent with
-    # the other list that we return.
-    return flask.jsonify({'jobs': rcs,
-                          '_meta': {'count': nb_row}})
-
-
 @api.route('/topics/<uuid:topic_id>/jobdefinitions', methods=['GET'])
 @auth.requires_auth
 def get_all_jobdefinitions_by_topic(user, topic_id):
@@ -273,7 +192,6 @@ def get_all_jobdefinitions_by_topic(user, topic_id):
 @auth.requires_auth
 def get_all_tests(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
     if not(auth.is_admin(user)):
         v1_utils.verify_team_in_topic(user, topic_id)
     v1_utils.verify_existence_and_get(topic_id, _TABLE)
@@ -281,23 +199,16 @@ def get_all_tests(user, topic_id):
     TABLE = models.TESTS
     T_COLUMNS = v1_utils.get_columns_name_with_objects(TABLE)
 
-    q_bd = v1_utils.QueryBuilder(TABLE, args['offset'], args['limit'],
-                                 tests._VALID_EMBED)
-    q_bd.join(embed)
-    q_bd._join.append(models.TESTS.join(
-        models.JOIN_TOPICS_TESTS,
-        models.JOIN_TOPICS_TESTS.c.topic_id == topic_id
-    ))
-    q_bd.sort = v1_utils.sort_query(args['sort'], T_COLUMNS)
-    q_bd.where = v1_utils.where_query(args['where'], TABLE, T_COLUMNS)
+    query = v1_utils.QueryBuilder2(TABLE, args, T_COLUMNS)
 
     # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, TABLE.name, args['embed'],
+                                  tests._EMBED_MANY)
 
     res = flask.jsonify({'tests': rows,
-                         '_meta': {'count': nb_row}})
+                         '_meta': {'count': nb_rows}})
     res.status_code = 200
     return res
 
