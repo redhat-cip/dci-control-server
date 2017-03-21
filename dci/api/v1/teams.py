@@ -35,6 +35,10 @@ from dci.db import models
 _TABLE = models.TEAMS
 _VALID_EMBED = embeds.teams()
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_EMBED_MANY = {
+    'remotecis': True,
+    'topics': True
+}
 
 
 @api.route('/teams', methods=['POST'])
@@ -72,44 +76,38 @@ def create_teams(user):
 @auth.requires_auth
 def get_all_teams(user):
     args = schemas.args(flask.request.args.to_dict())
-    embed = schemas.args(flask.request.args.to_dict())['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 embed=_VALID_EMBED)
-    q_bd.join(embed)
-
-    q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS, default='name')
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
+    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
 
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.id == user['team_id'])
+        query.add_extra_condition(_TABLE.c.id == user['team_id'])
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
 
-    return flask.jsonify({'teams': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'teams': rows, '_meta': {'count': nb_rows}})
 
 
 @api.route('/teams/<uuid:t_id>', methods=['GET'])
 @auth.requires_auth
 def get_team_by_id_or_name(user, t_id):
-    embed = schemas.args(flask.request.args.to_dict())['embed']
+    args = schemas.args(flask.request.args.to_dict())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
-    q_bd.join(embed)
-
-    q_bd.where.append(
+    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
+    query.add_extra_condition(
         sql.and_(
             _TABLE.c.state != 'archived',
             _TABLE.c.id == t_id
         )
     )
 
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
     if len(rows) != 1:
         raise dci_exc.DCINotFound('Team', t_id)
     team = rows[0]
