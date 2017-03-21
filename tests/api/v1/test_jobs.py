@@ -591,6 +591,26 @@ def test_get_jobstates_by_job_id(admin, job_id, team_id):
     assert jobstate_ids == found_jobstate_ids
 
 
+def test_get_jobstates_by_job_id_with_embed(admin, job_id, team_id, jobstate_id):  # noqa
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'name1'}
+    pfile = admin.post('/api/v1/files', headers=headers, data='kikoolol').data
+    file1_id = pfile['file']['id']
+    headers = {'DCI-JOBSTATE-ID': jobstate_id,
+               'DCI-NAME': 'name2'}
+    pfile = admin.post('/api/v1/files', headers=headers, data='kikoolol').data
+    file2_id = pfile['file']['id']
+    jobstates = admin.get('/api/v1/jobs/%s/jobstates?embed=files&sort=files.name' % job_id)  # noqa
+    jobstate = jobstates.data['jobstates'][0]
+    assert jobstate['files'][0]['id'] == file1_id
+    assert jobstate['files'][1]['id'] == file2_id
+
+    jobstates = admin.get('/api/v1/jobs/%s/jobstates?embed=files&sort=-files.name' % job_id)  # noqa
+    jobstate = jobstates.data['jobstates'][0]
+    assert jobstate['files'][0]['id'] == file2_id
+    assert jobstate['files'][1]['id'] == file1_id
+
+
 def test_get_job_not_found(admin):
     result = admin.get('/api/v1/jobs/%s' % uuid.uuid4())
     assert result.status_code == 404

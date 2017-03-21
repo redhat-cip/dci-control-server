@@ -111,12 +111,10 @@ def test_get_all_jobstates_with_embed(admin, job_id, team_admin_id):
     js_1 = js['jobstates'][0]
     js_2 = js['jobstates'][1]
 
-    assert 'team_id' not in js_1
     assert 'team' in js_1
     assert js_1['team']['id'] == team_admin_id
     assert len(js_1['files']) == 0
 
-    assert 'team_id' not in js_2
     assert 'team' in js_2
     assert js_2['team']['id'] == team_admin_id
     assert len(js_2['files']) == 1
@@ -230,7 +228,6 @@ def test_get_jobstate_with_embed(admin, job_id, team_admin_id):
                           'comment': 'kikoolol',
                           'status': 'running'}).data
     js_id = js['jobstate']['id']
-    del js['jobstate']['team_id']
     js['jobstate'][u'team'] = pt['team']
 
     # verify embed
