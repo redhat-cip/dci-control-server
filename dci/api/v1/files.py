@@ -65,7 +65,7 @@ def create_files(user):
         raise dci_exc.DCIException('HTTP header DCI-NAME must be specified')
 
     if values['jobstate_id']:
-        query = v1_utils.QueryBuilder2(models.JOBSTATES)
+        query = v1_utils.QueryBuilder(models.JOBSTATES)
         query.add_extra_condition(
             models.JOBSTATES.c.id == values['jobstate_id'])
         row = query.execute(fetchone=True)
@@ -73,7 +73,7 @@ def create_files(user):
             raise dci_exc.DCINotFound('Jobstate', values['jobstate_id'])
         values['job_id'] = row['jobstates_job_id']
 
-    query = v1_utils.QueryBuilder2(models.JOBS)
+    query = v1_utils.QueryBuilder(models.JOBS)
     if not auth.is_admin(user):
         query.add_extra_condition(models.JOBS.c.team_id == user['team_id'])
     query.add_extra_condition(models.JOBS.c.id == values['job_id'])
@@ -117,7 +117,7 @@ def get_all_files(user, j_id=None):
     """
     args = schemas.args(flask.request.args.to_dict())
 
-    query = v1_utils.QueryBuilder2(_TABLE, args, _FILES_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _FILES_COLUMNS)
 
     # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
@@ -138,7 +138,7 @@ def get_all_files(user, j_id=None):
 def get_file_by_id_or_name(user, file_id):
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
-    query = v1_utils.QueryBuilder2(_TABLE, args, _FILES_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _FILES_COLUMNS)
 
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
