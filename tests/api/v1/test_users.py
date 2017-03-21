@@ -156,6 +156,7 @@ def test_get_all_users_with_sort(admin, team_id):
                               'password': 'ppass',
                               'role': 'user',
                               'team_id': team_id}).data['user']
+
     user_2 = admin.post('/api/v1/users',
                         data={'name': 'pname2',
                               'password': 'ppass',

@@ -66,7 +66,7 @@ def create_topics(user):
 def get_topic_by_id(user, topic_id):
 
     args = schemas.args(flask.request.args.to_dict())
-    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
     query.add_extra_condition(
         sql.and_(
             _TABLE.c.state != 'archived',
@@ -89,7 +89,7 @@ def get_topic_by_id(user, topic_id):
 def get_all_topics(user):
     args = schemas.args(flask.request.args.to_dict())
     # if the user is an admin then he can get all the topics
-    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))  # noqa
@@ -262,7 +262,7 @@ def get_all_tests(user, topic_id):
     TABLE = models.TESTS
     T_COLUMNS = v1_utils.get_columns_name_with_objects(TABLE)
 
-    query = v1_utils.QueryBuilder2(TABLE, args, T_COLUMNS)
+    query = v1_utils.QueryBuilder(TABLE, args, T_COLUMNS)
 
     # get the number of rows for the '_meta' section
     nb_rows = query.get_number_of_rows()
