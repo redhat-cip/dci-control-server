@@ -191,6 +191,12 @@ def sort_query(sort, root_valid_columns, embeds_valid_columns={}, default='-crea
     return order_by
 
 
+def add_sort_to_query(query, sort_list):
+    for sort in sort_list:
+        query = query.order_by(sort)
+    return query
+
+
 def where_query(where, table, columns):
     where_conds = []
     err_msg = 'Invalid where key: "%s"'
@@ -220,6 +226,19 @@ def where_query(where, table, columns):
 
         where_conds.append(m_column == value)
     return where_conds
+
+
+def add_where_to_query(query, where_list):
+    for where in where_list:
+        query = query.where(where)
+    return query
+
+
+def get_number_of_rows(root_table, where=None):
+    query = sql.select([func.count(root_table.c.id)])
+    if where is not None:
+        query = query.where(where)
+    return flask.g.db_conn.execute(query).scalar()
 
 
 def request_wants_html():
