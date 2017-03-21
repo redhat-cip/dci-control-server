@@ -35,6 +35,9 @@ from dci.db import models
 _TABLE = models.TOPICS
 _VALID_EMBED = embeds.topics()
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_EMBED_MANY = {
+    'teams': True
+}
 
 
 @api.route('/topics', methods=['POST'])
@@ -62,20 +65,18 @@ def create_topics(user):
 @auth.requires_auth
 def get_topic_by_id(user, topic_id):
 
-    embed = schemas.args(flask.request.args.to_dict())['embed']
-
-    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
-    q_bd.join(embed)
-
-    q_bd.where.append(
+    args = schemas.args(flask.request.args.to_dict())
+    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
+    query.add_extra_condition(
         sql.and_(
             _TABLE.c.state != 'archived',
             _TABLE.c.id == topic_id
         )
     )
 
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
     if len(rows) != 1:
         raise dci_exc.DCINotFound('Topic', topic_id)
     topic = rows[0]
@@ -87,25 +88,20 @@ def get_topic_by_id(user, topic_id):
 @auth.requires_auth
 def get_all_topics(user):
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
     # if the user is an admin then he can get all the topics
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 _VALID_EMBED)
-    q_bd.join(embed)
-    q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS,
-                                    default='name')
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
+    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
 
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))
+        query.add_extra_condition(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))  # noqa
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
     # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
 
-    return flask.jsonify({'topics': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'topics': rows, '_meta': {'count': nb_rows}})
 
 
 @api.route('/topics/<uuid:topic_id>', methods=['PUT'])
@@ -259,7 +255,6 @@ def get_all_jobdefinitions_by_topic(user, topic_id):
 @auth.requires_auth
 def get_all_tests(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
     if not(auth.is_admin(user)):
         v1_utils.verify_team_in_topic(user, topic_id)
     v1_utils.verify_existence_and_get(topic_id, _TABLE)
@@ -267,23 +262,16 @@ def get_all_tests(user, topic_id):
     TABLE = models.TESTS
     T_COLUMNS = v1_utils.get_columns_name_with_objects(TABLE)
 
-    q_bd = v1_utils.QueryBuilder(TABLE, args['offset'], args['limit'],
-                                 tests._VALID_EMBED)
-    q_bd.join(embed)
-    q_bd._join.append(models.TESTS.join(
-        models.JOIN_TOPICS_TESTS,
-        models.JOIN_TOPICS_TESTS.c.topic_id == topic_id
-    ))
-    q_bd.sort = v1_utils.sort_query(args['sort'], T_COLUMNS)
-    q_bd.where = v1_utils.where_query(args['where'], TABLE, T_COLUMNS)
+    query = v1_utils.QueryBuilder2(TABLE, args, T_COLUMNS)
 
     # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, TABLE.name, args['embed'],
+                                  tests._EMBED_MANY)
 
     res = flask.jsonify({'tests': rows,
-                         '_meta': {'count': nb_row}})
+                         '_meta': {'count': nb_rows}})
     res.status_code = 200
     return res
 

@@ -229,14 +229,13 @@ def test_get_all_topics_with_sort(admin):
     def get_ids(path):
         return [i['id'] for i in admin.get(path).data['topics']]
 
-    # default is to sort by name
+    # default is to sort by created_at
     cts_ids = get_ids('/api/v1/topics')
-    assert cts_ids == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
+    assert cts_ids == [ct_2_2, ct_2_1, ct_1_2, ct_1_1]
 
     cts_ids = get_ids('/api/v1/topics?sort=created_at')
     assert cts_ids == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
 
-    # sort by title first and then reverse by created_at
     cts_ids = get_ids('/api/v1/topics?sort=-name')
     assert cts_ids == [ct_2_2, ct_2_1, ct_1_2, ct_1_1]
 

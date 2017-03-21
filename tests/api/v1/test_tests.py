@@ -50,6 +50,7 @@ def test_get_all_tests(admin, team_id, topic_id):
 
     db_all_tests = admin.get(
         '/api/v1/topics/%s/tests?sort=created_at' % topic_id).data
+
     db_all_tests = db_all_tests['tests']
     db_all_tests_ids = [db_t['id'] for db_t in db_all_tests]
 
