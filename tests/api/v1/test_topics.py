@@ -229,9 +229,9 @@ def test_get_all_topics_with_sort(admin):
     def get_ids(path):
         return [i['id'] for i in admin.get(path).data['topics']]
 
-    # default is to sort by name
+    # default is to sort by created_at
     cts_ids = get_ids('/api/v1/topics')
-    assert cts_ids == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
+    assert cts_ids == [ct_2_2, ct_2_1, ct_1_2, ct_1_1]
 
     cts_ids = get_ids('/api/v1/topics?sort=created_at')
     assert cts_ids == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
@@ -358,61 +358,3 @@ def test_delete_team_from_topic_as_user(admin, user):
     status_code = user.delete(
         '/api/v1/topics/%s/teams/%s' % (pt_id, team_id)).status_code
     assert status_code == 401
-
-
-def test_status_from_component_type_last_component(admin, topic_id,
-                                                   components_ids,
-                                                   remoteci_id, job_id):
-    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
-
-    assert len(status['jobs']) == 1
-    assert status['jobs'][0]['job_status'] is None
-    assert status['jobs'][0]['component_type'] == 'type_1'
-    assert 'name-' in status['jobs'][0]['component_name']
-
-    # Adding a new version of the component
-    # so the query to topics/<t_id>/type/<type_id>/status
-    # changes and retrieve a job not run (None) yet
-    data = {
-        'name': 'newversion',
-        'type': 'type_1',
-        'url': 'http://example.com/',
-        'topic_id': topic_id,
-        'export_control': True,
-        'state': 'active'}
-    admin.post('/api/v1/components', data=data).data
-
-    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
-
-    assert len(status['jobs']) == 1
-    assert status['jobs'][0]['job_status'] is None
-    assert status['jobs'][0]['component_type'] == 'type_1'
-    assert status['jobs'][0]['component_name'] == 'newversion'
-
-
-def test_status_from_component_type_get_status(admin, topic_id, components_ids,
-                                               remoteci_id, job_id):
-    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
-
-    assert len(status['jobs']) == 1
-    assert status['jobs'][0]['job_status'] is None
-    assert status['jobs'][0]['component_type'] == 'type_1'
-    assert 'name-' in status['jobs'][0]['component_name']
-
-    job = admin.get('/api/v1/jobs/%s' % job_id).data['job']
-    data_update = {'status': 'running'}
-    admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
-              headers={'If-match': job['etag']})
-    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
-
-    assert len(status['jobs']) == 1
-    assert status['jobs'][0]['job_status'] is None
-
-    job = admin.get('/api/v1/jobs/%s' % job_id).data['job']
-    data_update = {'status': 'success'}
-    admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
-              headers={'If-match': job['etag']})
-    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
-
-    assert len(status['jobs']) == 1
-    assert status['jobs'][0]['job_status'] == 'success'

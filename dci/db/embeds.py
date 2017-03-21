@@ -245,6 +245,32 @@ def teams(root_select=models.TEAMS):
     }
 
 
+def tests(root_select=models.TESTS):
+    return {
+        'topics': [
+            {'right': models.JOIN_TOPICS_TESTS,
+             'onclause': models.JOIN_TOPICS_TESTS.c.test_id == root_select.c.id,  # noqa
+             'isouter': True},
+            {'right': models.TOPICS,
+             'onclause': and_(models.TOPICS.c.id == models.JOIN_TOPICS_TESTS.c.topic_id,  # noqa
+                              models.TOPICS.c.state != 'archived'),
+             'isouter': True}]
+    }
+
+
+def topics(root_select=models.TOPICS):
+    return {
+        'teams': [
+            {'right': models.JOINS_TOPICS_TEAMS,
+             'onclause': models.JOINS_TOPICS_TEAMS.c.topic_id == root_select.c.id,  # noqa
+             'isouter': True},
+            {'right': models.TEAMS,
+             'onclause': and_(models.TEAMS.c.id == models.JOINS_TOPICS_TEAMS.c.team_id,  # noqa
+                              models.TEAMS.c.state != 'archived'),
+             'isouter': True}]
+    }
+
+
 # associate the name table to the object table
 # used for select clause
 EMBED_STRING_TO_OBJECT = {
@@ -282,6 +308,12 @@ EMBED_STRING_TO_OBJECT = {
     'teams': {
         'remotecis': models.REMOTECIS,
         'topics': models.TOPICS
+    },
+    'tests': {
+        'topics': models.TOPICS
+    },
+    'topics': {
+        'teams': models.TEAMS
     }
 }
 
@@ -294,7 +326,9 @@ EMBED_JOINS = {
     'files': files,
     'jobdefinitions': jobdefinitions,
     'jobstates': jobstates,
-    'teams': teams
+    'teams': teams,
+    'tests': tests,
+    'topics': topics
 }
 
 
@@ -314,40 +348,6 @@ def embed(many=False, select=None, where=None,
     :param join: an SQLAlchemy-core Join instance
     """
     return Embed(many, select, where, sort, join)
-
-
-def tests():
-    topics = models.TOPICS
-    return {
-        'topics': embed(
-            select=[topics],
-            join=models.TESTS.join(
-                models.JOIN_TOPICS_TESTS.join(
-                    topics,
-                    and_(
-                        topics.c.state != 'archived',
-                        topics.c.id == models.JOIN_TOPICS_TESTS.c.topic_id
-                    )),
-                models.TESTS.c.id == models.JOIN_TOPICS_TESTS.c.test_id
-            ))}
-
-
-def topics():
-    return {
-        'teams': embed(
-            select=[models.TEAMS],
-            join=models.TOPICS.join(
-                models.JOINS_TOPICS_TEAMS.join(
-                    models.TEAMS,
-                    and_(
-                        models.TEAMS.c.state != 'archived',
-                        models.JOINS_TOPICS_TEAMS.c.team_id ==
-                        models.TEAMS.c.id),
-                    isouter=True
-                ),
-                models.JOINS_TOPICS_TEAMS.c.topic_id == models.TOPICS.c.id,
-                isouter=True),
-            many=True)}
 
 
 def users():
