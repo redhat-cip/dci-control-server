@@ -29,7 +29,7 @@ stream = zmqstream.ZMQStream(receiver)
 
 
 def mail(job, mail):
-    FROM = 'dci@redhat.com'
+    FROM = 'dci@distributed-ci.io'
     TO = [mail]
     SUBJECT = "DCI Status Failure"
 
