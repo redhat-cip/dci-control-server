@@ -35,6 +35,9 @@ _TABLE = models.TESTS
 _VALID_EMBED = embeds.tests()
 # associate column names with the corresponding SA Column object
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_EMBED_MANY = {
+    'topics': True
+}
 
 
 @api.route('/tests', methods=['POST'])
@@ -88,27 +91,21 @@ def update_tests(user, t_id):
 
 def get_all_tests(user, team_id):
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
 
     if not(auth.is_admin(user) or auth.is_in_team(user, team_id)):
         raise auth.UNAUTHORIZED
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 _VALID_EMBED)
-    q_bd.join(embed)
-
-    q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _T_COLUMNS)
-    q_bd.where.append(_TABLE.c.team_id == team_id)
-
-    q_bd.where.append(_TABLE.c.state != 'archived')
+    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
+    query.add_extra_condition(_TABLE.c.team_id == team_id)
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
     # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
 
-    return flask.jsonify({'tests': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'tests': rows, '_meta': {'count': nb_rows}})
 
 
 @api.route('/tests/<uuid:t_id>', methods=['GET'])

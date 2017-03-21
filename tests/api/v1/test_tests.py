@@ -43,7 +43,7 @@ def test_create_tests_already_exist(admin, team_id):
     assert pstatus_code == 409
 
 
-def test_get_all_tests(admin, team_id, topic_id):
+def test_get_all_tests_from_topic(admin, team_id, topic_id):
     test_1 = admin.post('/api/v1/tests', data={'name': 'pname1',
                                                'team_id': team_id}).data
     test_2 = admin.post('/api/v1/tests', data={'name': 'pname2',
@@ -56,10 +56,43 @@ def test_get_all_tests(admin, team_id, topic_id):
 
     db_all_tests = admin.get(
         '/api/v1/topics/%s/tests?sort=created_at' % topic_id).data
+
     db_all_tests = db_all_tests['tests']
     db_all_tests_ids = [db_t['id'] for db_t in db_all_tests]
 
     assert db_all_tests_ids == [test_1['test']['id'], test_2['test']['id']]
+
+
+def test_get_all_tests(admin, user, team_user_id, topic_user_id):
+    test_1 = admin.post('/api/v1/tests', data={'name': 'pname1',
+                                               'team_id': team_user_id}).data
+    test_2 = admin.post('/api/v1/tests', data={'name': 'pname2',
+                                               'team_id': team_user_id}).data
+
+    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
+               data={'test_id': test_1['test']['id']})
+    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
+               data={'test_id': test_2['test']['id']})
+
+    # get tests by admin
+    db_all_tests = admin.get('/api/v1/topics/%s/tests' % topic_user_id).data
+
+    db_all_tests = db_all_tests['tests']
+    assert len(db_all_tests) == 2
+    db_all_tests_ids = set([db_t['id'] for db_t in db_all_tests])
+
+    assert db_all_tests_ids == set([test_1['test']['id'],
+                                    test_2['test']['id']])
+
+    # get tests by user
+    db_all_tests = user.get('/api/v1/topics/%s/tests' % topic_user_id).data
+
+    db_all_tests = db_all_tests['tests']
+    assert len(db_all_tests) == 2
+    db_all_tests_ids = set([db_t['id'] for db_t in db_all_tests])
+
+    assert db_all_tests_ids == set([test_1['test']['id'],
+                                    test_2['test']['id']])
 
 
 def test_get_all_tests_not_in_topic(admin, user):

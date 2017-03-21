@@ -141,18 +141,12 @@ def test_get_topics_of_user(admin, user, team_user_id):
     assert len(topics_user['topics']) == 1
 
 
-def test_get_topics_of_user_with_embed(admin, user, team_user_id):
-    data = {'name': 'test_name'}
-    topic = admin.post('/api/v1/topics', data=data).data['topic']
-    topic_id = topic['id']
-    admin.post('/api/v1/topics/%s/teams' % topic_id,
-               data={'team_id': team_user_id})
-    for i in range(5):
-        admin.post('/api/v1/topics',
-                   data={'name': 'tname%s' % uuid.uuid4()})
-    topics_user = user.get('/api/v1/topics?embed=teams').data
-    assert topics_user['topics'][0]['teams']
-    assert len(topics_user['topics'][0]['teams']) > 0
+def test_get_topics_by_with_embed_authorization(admin, user):
+    topics_admin = admin.get('/api/v1/topics?embed=teams')
+    assert topics_admin.status_code == 200
+
+    topics_user = user.get('/api/v1/topics?embed=teams')
+    assert topics_user.status_code == 401
 
 
 def test_get_topic_by_id(admin, user, team_user_id):
@@ -169,6 +163,14 @@ def test_get_topic_by_id(admin, user, team_user_id):
 
     created_ct = created_ct.data
     assert created_ct['topic']['id'] == pt_id
+
+
+def test_get_topic_by_id_with_embed_authorization(admin, user, topic_user_id):
+    topics_admin = admin.get('/api/v1/topics/%s?embed=teams' % topic_user_id)
+    assert topics_admin.status_code == 200
+
+    topics_user = user.get('/api/v1/topics/%s?embed=teams' % topic_user_id)
+    assert topics_user.status_code == 401
 
 
 def test_get_topic_not_found(admin):
@@ -262,14 +264,13 @@ def test_get_all_topics_with_sort(admin):
     def get_ids(path):
         return [i['id'] for i in admin.get(path).data['topics']]
 
-    # default is to sort by name
+    # default is to sort by created_at
     cts_ids = get_ids('/api/v1/topics')
-    assert cts_ids == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
+    assert cts_ids == [ct_2_2, ct_2_1, ct_1_2, ct_1_1]
 
     cts_ids = get_ids('/api/v1/topics?sort=created_at')
     assert cts_ids == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
 
-    # sort by title first and then reverse by created_at
     cts_ids = get_ids('/api/v1/topics?sort=-name')
     assert cts_ids == [ct_2_2, ct_2_1, ct_1_2, ct_1_1]
 
