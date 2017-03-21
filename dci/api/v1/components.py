@@ -99,7 +99,7 @@ def get_all_components(user, topic_id):
 
     v1_utils.verify_team_in_topic(user, topic_id)
 
-    query = v1_utils.QueryBuilder2(_TABLE, args, _C_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _C_COLUMNS)
 
     query.add_extra_condition(sql.and_(
         _TABLE.c.topic_id == topic_id,
@@ -125,7 +125,7 @@ def get_component_by_id_or_name(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     v1_utils.verify_team_in_topic(user, component['topic_id'])
 
-    query = v1_utils.QueryBuilder2(_TABLE, args, _C_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _C_COLUMNS)
 
     query.add_extra_condition(
         sql.and_(
@@ -186,7 +186,7 @@ def list_components_files(user, c_id):
 
     args = schemas.args(flask.request.args.to_dict())
 
-    query = v1_utils.QueryBuilder2(models.COMPONENTFILES, args, _CF_COLUMNS)
+    query = v1_utils.QueryBuilder(models.COMPONENTFILES, args, _CF_COLUMNS)
     query.add_extra_condition(models.COMPONENTFILES.c.component_id == c_id)
 
     nb_rows = query.get_number_of_rows(models.COMPONENTFILES,
