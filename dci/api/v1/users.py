@@ -33,6 +33,9 @@ from dci.db import models
 _TABLE = models.USERS
 _VALID_EMBED = embeds.users()
 _USERS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_EMBED_MANY = {
+    'team': False
+}
 
 # select without the password column for security reasons
 _SELECT_WITHOUT_PASSWORD = [
@@ -88,58 +91,48 @@ def create_users(user):
 @auth.login_required
 def get_all_users(user, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
-    embed = args['embed']
-
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
-                                 _VALID_EMBED)
-    q_bd.select = list(_SELECT_WITHOUT_PASSWORD)
-    q_bd.join(embed)
-
-    q_bd.sort = v1_utils.sort_query(args['sort'], _USERS_COLUMNS,
-                                    default='name')
-    q_bd.where = v1_utils.where_query(args['where'], _TABLE, _USERS_COLUMNS)
-
+    query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
     # If it's not an admin, then get only the users of the caller's team
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
     if team_id is not None:
-        q_bd.where.append(_TABLE.c.team_id == team_id)
+        query.add_extra_condition(_TABLE.c.team_id == team_id)
 
-    q_bd.where.append(_TABLE.c.state != 'archived')
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
     # get the number of rows for the '_meta' section
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
 
-    return flask.jsonify({'users': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'users': rows, '_meta': {'count': nb_rows}})
 
 
 @api.route('/users/<uuid:user_id>', methods=['GET'])
 @auth.login_required
 def get_user_by_id(user, user_id):
-    embed = schemas.args(flask.request.args.to_dict())['embed']
+    args = schemas.args(flask.request.args.to_dict())
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, embed=_VALID_EMBED)
-    q_bd.select = list(_SELECT_WITHOUT_PASSWORD)
-    q_bd.join(embed)
+    query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
 
     # If it's not an admin, then get only the users of the caller's team
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == user['team_id'])
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
-    q_bd.where.append(
+    query.add_extra_condition(
         sql.and_(
             _TABLE.c.state != 'archived',
             _TABLE.c.id == user_id
         )
     )
 
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
-    rows = q_bd.dedup_rows(rows)
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
     if len(rows) != 1:
-        raise dci_exc.DCINotFound('User', user_id)
+        raise dci_exc.DCINotFound('Users', user_id)
     guser = rows[0]
 
     res = flask.jsonify({'user': guser})

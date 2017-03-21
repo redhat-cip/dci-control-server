@@ -75,7 +75,7 @@ def get_all_remotecis(user, t_id=None):
     args = schemas.args(flask.request.args.to_dict())
 
     # build the query thanks to the QueryBuilder class
-    query = v1_utils.QueryBuilder2(_TABLE, args, _R_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _R_COLUMNS)
 
     # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
@@ -100,7 +100,7 @@ def get_remoteci_by_id(user, r_id):
     args = schemas.args(flask.request.args.to_dict())
 
     # build the query thanks to the QueryBuilder class
-    query = v1_utils.QueryBuilder2(_TABLE, args, _R_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _R_COLUMNS)
 
     # If it's not an admin then restrict the view to the team's file
     if not auth.is_admin(user):
@@ -205,7 +205,7 @@ def get_remoteci_data(user, r_id):
 
 
 def get_remoteci_data_json(user, r_id):
-    query = v1_utils.QueryBuilder2(_TABLE, {}, _R_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, {}, _R_COLUMNS)
 
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.team_id == user['team_id'])

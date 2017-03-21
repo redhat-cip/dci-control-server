@@ -69,7 +69,7 @@ def create_teams(user):
 def get_all_teams(user):
     args = schemas.args(flask.request.args.to_dict())
 
-    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.id == user['team_id'])
@@ -89,7 +89,7 @@ def get_all_teams(user):
 def get_team_by_id(user, t_id):
     args = schemas.args(flask.request.args.to_dict())
 
-    query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
     query.add_extra_condition(
         sql.and_(
             _TABLE.c.state != 'archived',
