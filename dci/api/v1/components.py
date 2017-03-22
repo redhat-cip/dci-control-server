@@ -262,7 +262,7 @@ def list_component_file(user, c_id, f_id):
            methods=['GET'])
 @auth.requires_auth
 def download_component_file(user, c_id, f_id):
-    swift = dci_config.get_store()
+    swift = dci_config.get_store('components')
 
     def get_object(swift_object):
         for block in swift.get(swift_object)[1]:
@@ -290,7 +290,7 @@ def upload_component_file(user, c_id):
     file_id = utils.gen_uuid()
     file_path = "%s/%s/%s" % (component['topic_id'], c_id, file_id)
 
-    swift = dci_config.get_store()
+    swift = dci_config.get_store('components')
     swift.upload(file_path, flask.request.stream.read())
     s_file = swift.head(file_path)
 
@@ -333,7 +333,7 @@ def delete_component_file(user, c_id, f_id):
         raise dci_exc.DCIDeleteConflict('Component File', f_id)
 
     file_path = "%s/%s/%s" % (component['topic_id'], c_id, f_id)
-    swift = dci_config.get_store()
+    swift = dci_config.get_store('components')
     swift.delete(file_path)
 
     return flask.Response(None, 204, content_type='application/json')
