@@ -358,10 +358,13 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
     for job in jobs['jobs']:
         assert 'team' in job
         assert job['team']['id'] == team_id
+        assert job['team_id'] == job['team']['id']
         assert 'jobdefinition' in job
         assert job['jobdefinition']['id'] == jobdefinition_id
+        assert job['jobdefinition_id'] == job['jobdefinition']['id']
         assert 'remoteci' in job
         assert job['remoteci']['id'] == remoteci_id
+        assert job['remoteci_id'] == job['remoteci']['id']
 
     # verify embed with jobdefinition.tests nested
     query_embed = ('/api/v1/jobs?embed=jobdefinition.tests')
@@ -376,6 +379,7 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
     for job in jobs['jobs']:
         assert 'jobdefinition' in job
         assert job['jobdefinition']['id'] == jobdefinition_id
+        assert job['jobdefinition_id'] == job['jobdefinition']['id']
 
     query_embed = ('/api/v1/jobs?embed=components')
     jobs = admin.get(query_embed).data
