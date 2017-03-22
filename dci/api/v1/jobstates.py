@@ -78,7 +78,7 @@ def get_all_jobstates(user, j_id=None):
     args = schemas.args(flask.request.args.to_dict())
     embed = args['embed']
 
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['limit'], args['offset'],
+    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'],
                                  _VALID_EMBED)
     q_bd.join(embed)
 
