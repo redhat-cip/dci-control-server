@@ -24,6 +24,8 @@ from sqlalchemy.sql import or_
 # These functions should be called by v1_utils.QueryBuilder
 
 # Create necessary aliases
+JOBDEFINITION = models.JOBDEFINITIONS.alias('jobdefinition')
+
 REMOTECI_TESTS = models.TESTS.alias('remoteci.tests')
 JOBDEFINITION_TESTS = models.TESTS.alias('jobdefinition.tests')
 JOBS_TEAM = models.TEAMS.alias('team')
@@ -42,9 +44,9 @@ def jobs(root_select=models.JOBS):
              'onclause': models.METAS.c.job_id == root_select.c.id,
              'isouter': True}],
         'jobdefinition': [
-            {'right': models.JOBDEFINITIONS,
-             'onclause': and_(root_select.c.jobdefinition_id == models.JOBDEFINITIONS.c.id,  # noqa
-                              models.JOBDEFINITIONS.c.state != 'archived')}],
+            {'right': JOBDEFINITION,
+             'onclause': and_(root_select.c.jobdefinition_id == JOBDEFINITION.c.id,  # noqa
+                              JOBDEFINITION.c.state != 'archived')}],
         'jobdefinition.tests': [
             {'right': models.JOIN_JOBDEFINITIONS_TESTS,
              'onclause': models.JOIN_JOBDEFINITIONS_TESTS.c.jobdefinition_id == models.JOBDEFINITIONS.c.id,  # noqa
@@ -85,7 +87,7 @@ EMBED_STRING_TO_OBJECT = {
     'jobs': {
         'files': models.FILES,
         'metas': models.METAS,
-        'jobdefinition': models.JOBDEFINITIONS.alias('jobdefinition'),
+        'jobdefinition': JOBDEFINITION,
         'jobdefinition.tests': JOBDEFINITION_TESTS,
         'remoteci': JOBS_REMOTECI,
         'remoteci.tests': REMOTECI_TESTS,
