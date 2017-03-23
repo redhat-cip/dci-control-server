@@ -297,15 +297,26 @@ class QueryBuilder2(object):
         embed_list = self._get_embed_list(embed_joins)
 
         children = root_select
+        embed_sorts = []
         for embed_elem in embed_list:
-            for join_param in embed_joins[embed_elem]:
-                children = children.join(**join_param)
+            for param in embed_joins[embed_elem]:
+
+                children = children.join(param['right'], param['onclause'],
+                                         param.get('isouter', False))
+                if param.get('sort', None) is not None:
+                    embed_sorts.append(param.get('sort'))
             select_elem = embeds.EMBED_STRING_TO_OBJECT[self._root_table.name][embed_elem]  # noqa
-            select_clause.append(select_elem)
+            if isinstance(select_elem, list):
+                select_clause.extend(select_elem)
+            else:
+                select_clause.append(select_elem)
 
         query = sql.select(select_clause,
                            use_labels=True,
                            from_obj=children)
+
+        for embed_sort in embed_sorts:
+            query = query.order_by(embed_sort)
 
         if not self._do_subquery():
             query = self._add_sort_to_query(query)
@@ -408,7 +419,14 @@ def _format_level_2(rows, list_embeds, embed_many):
 
     def _uniqify_list(list_of_dicts):
         # list() for py34
-        return list({v['id']: v for v in list_of_dicts}.values())
+        result = []
+        set_ids = set()
+        for v in list_of_dicts:
+            if v['id'] in set_ids:
+                continue
+            set_ids.add(v['id'])
+            result.append(v)
+        return result
 
     row_ids_to_embed_values = {}
     for row in rows:
@@ -435,7 +453,9 @@ def _format_level_2(rows, list_embeds, embed_many):
                 if isinstance(embed_values, list):
                     row_ids_to_embed_values[row['id']][embd] = _uniqify_list(embed_values)  # noqa
             else:
-                row_ids_to_embed_values[row['id']][embd] = []
+                row_ids_to_embed_values[row['id']][embd] = {}
+                if embed_many[embd]:
+                    row_ids_to_embed_values[row['id']][embd] = []
 
     # last loop over the initial rows in order to keep the ordering
     result = []
