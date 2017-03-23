@@ -607,9 +607,9 @@ def test_get_jobs_with_schedule(admin, topic_id, remoteci_id,
     # get the components of the scheduled jobs
     job_components = admin.get('/api/v1/jobs/%s/components' % job_id).data
     for c in job_components['components']:
-        url = '/api/v1/topics/%s/components/%s/jobs' % (topic_id, c['id'])
-        job = admin.get(url).data
-        assert job['jobs'][0]['id'] == job_id
+        url = '/api/v1/components/%s?embed=jobs' % c['id']
+        component = admin.get(url).data
+        assert component['component']['jobs'][0]['id'] == job_id
 
 
 def test_job_recheck(admin, job_id):
