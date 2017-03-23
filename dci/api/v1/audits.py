@@ -15,10 +15,8 @@
 # under the License.
 
 import flask
-import json
 
 from dci.api.v1 import api
-from dci.api.v1 import teams
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci.common import schemas
@@ -26,7 +24,7 @@ from dci.db import models
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.LOGS
-_T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_A_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
 @api.route('/audits', methods=['GET'])
@@ -34,24 +32,19 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 def get_logs(user):
     args = schemas.args(flask.request.args.to_dict())
 
-    team_id = json.loads(teams.get_all_teams().data)['teams'][0]['id']
-
-    if not auth.is_admin(user) and not auth.is_admin_user(user, team_id):
+    if not auth.is_admin(user) and user['role'] != 'admin':
         raise auth.UNAUTHORIZED
 
     if args['limit'] is None:
         args['limit'] = 10
 
-    if not args['sort']:
-        args['sort'] = ["-created_at"]
-
-    q_bd = v1_utils.QueryBuilder(_TABLE, args['offset'], args['limit'])
-    q_bd.sort = v1_utils.sort_query(args['sort'], _T_COLUMNS)
+    query = v1_utils.QueryBuilder2(_TABLE, args, _A_COLUMNS)
 
     if not auth.is_admin(user):
-        q_bd.where.append(_TABLE.c.team_id == team_id)
+        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rows = flask.g.db_conn.execute(q_bd.build()).fetchall()
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'], None)
 
-    return flask.jsonify({'audits': rows, '_meta': {'count': nb_row}})
+    return flask.jsonify({'audits': rows, '_meta': {'count': nb_rows}})
