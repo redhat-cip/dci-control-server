@@ -293,8 +293,10 @@ class QueryBuilder2(object):
             select_clause = [root_subquery]
             root_select = root_subquery
 
-        embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select)  # noqa
-        embed_list = self._get_embed_list(embed_joins)
+        embed_list = []
+        if self._embeds:
+            embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select)  # noqa
+            embed_list = self._get_embed_list(embed_joins)
 
         children = root_select
         embed_sorts = []
