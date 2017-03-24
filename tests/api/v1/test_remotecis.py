@@ -439,6 +439,28 @@ def test_delete_remoteci_data(admin, team_id):
     assert r_data == {}
 
 
+def test_delete_remoteci_archive_dependencies(admin, jobdefinition_id,
+                                              team_id, remoteci_id,
+                                              components_ids):
+    data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
+            'remoteci_id': remoteci_id, 'comment': 'kikoolol',
+            'components': components_ids}
+    job = admin.post('/api/v1/jobs', data=data)
+    assert job.status_code == 201
+
+    url = '/api/v1/remotecis/%s' % remoteci_id
+    rci = admin.get(url)
+    etag = rci.data['remoteci']['etag']
+    assert rci.status_code == 200
+
+    deleted_rci = admin.delete(url, headers={'If-match': etag})
+    assert deleted_rci.status_code == 204
+
+    url = '/api/v1/jobs/%s' % job.data['job']['id']
+    job = admin.get(url)
+    assert job.status_code == 404
+
+
 # Tests for the isolation
 
 def test_create_remoteci_as_user(user, team_user_id, team_id):

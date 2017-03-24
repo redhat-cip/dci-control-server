@@ -166,16 +166,24 @@ def delete_team_by_id_or_name(user, t_id):
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
 
-    values = {'state': 'archived'}
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == t_id
-    )
-    query = _TABLE.update().where(where_clause).values(**values)
-    result = flask.g.db_conn.execute(query)
+    with flask.g.db_conn.begin():
+        values = {'state': 'archived'}
+        where_clause = sql.and_(
+            _TABLE.c.etag == if_match_etag,
+            _TABLE.c.id == t_id
+        )
+        query = _TABLE.update().where(where_clause).values(**values)
+        result = flask.g.db_conn.execute(query)
 
-    if not result.rowcount:
-        raise dci_exc.DCIDeleteConflict('Team', t_id)
+        if not result.rowcount:
+            raise dci_exc.DCIDeleteConflict('Team', t_id)
+
+        for model in [models.FILES, models.TESTS, models.REMOTECIS,
+                      models.USERS, models.JOBS]:
+            query = model.update().where(model.c.team_id == t_id).values(
+                **values
+            )
+            flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
 

@@ -155,14 +155,21 @@ def delete_topic_by_id_or_name(user, topic_id):
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
 
-    values = {'state': 'archived'}
-    where_clause = sql.and_(_TABLE.c.id == topic_id)
-    query = _TABLE.update().where(where_clause).values(**values)
+    with flask.g.db_conn.begin():
+        values = {'state': 'archived'}
+        where_clause = sql.and_(_TABLE.c.id == topic_id)
+        query = _TABLE.update().where(where_clause).values(**values)
 
-    result = flask.g.db_conn.execute(query)
+        result = flask.g.db_conn.execute(query)
 
-    if not result.rowcount:
-        raise dci_exc.DCIDeleteConflict('Topic', topic_id)
+        if not result.rowcount:
+            raise dci_exc.DCIDeleteConflict('Topic', topic_id)
+
+        for model in [models.COMPONENTS, models.JOBDEFINITIONS]:
+            query = model.update().where(model.c.topic_id == topic_id).values(
+                **values
+            )
+            flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
 

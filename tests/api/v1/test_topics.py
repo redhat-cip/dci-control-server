@@ -205,6 +205,39 @@ def test_delete_topic_by_id_as_user(admin, user):
     assert deleted_ct.status_code == 401
 
 
+def test_delete_topic_archive_dependencies(admin):
+    topic = admin.post('/api/v1/topics', data={'name': 'topic_name'})
+    topic_id = topic.data['topic']['id']
+    assert topic.status_code == 201
+
+    jd = admin.post('/api/v1/jobdefinitions',
+                    data={'name': 'pname',
+                          'topic_id': topic_id})
+    jd_id = jd.data['jobdefinition']['id']
+    assert jd.status_code == 201
+
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'topic_id': topic_id,
+        'export_control': True,
+        'state': 'active'}
+    component = admin.post('/api/v1/components', data=data)
+    component_id = component.data['component']['id']
+    assert component.status_code == 201
+
+    url = '/api/v1/topics/%s' % topic_id
+    deleted_topic = admin.delete(url)
+    assert deleted_topic.status_code == 204
+
+    deleted_jd = admin.get('/api/v1/jobdefinitions/%s' % jd_id)
+    assert deleted_jd.status_code == 404
+
+    deleted_component = admin.get('/api/v1/component/%s' % component_id)
+    assert deleted_component.status_code == 404
+
+
 def test_purge_topic(admin):
     data = {'name': 'tname'}
     pt = admin.post('/api/v1/topics', data=data)

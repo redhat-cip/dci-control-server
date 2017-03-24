@@ -145,13 +145,20 @@ def delete_test_by_id_or_name(user, t_id):
     if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
         raise auth.UNAUTHORIZED
 
-    values = {'state': 'archived'}
-    where_clause = _TABLE.c.id == t_id
-    query = _TABLE.update().where(where_clause).values(**values)
-    result = flask.g.db_conn.execute(query)
+    with flask.g.db_conn.begin():
+        values = {'state': 'archived'}
+        where_clause = _TABLE.c.id == t_id
+        query = _TABLE.update().where(where_clause).values(**values)
+        result = flask.g.db_conn.execute(query)
 
-    if not result.rowcount:
-        raise dci_exc.DCIDeleteConflict('Test', t_id)
+        if not result.rowcount:
+            raise dci_exc.DCIDeleteConflict('Test', t_id)
+
+        for model in [models.FILES]:
+            query = model.update().where(model.c.test_id == t_id).values(
+                **values
+            )
+            flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
 

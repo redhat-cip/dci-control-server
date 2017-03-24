@@ -170,16 +170,23 @@ def delete_remoteci_by_id_or_name(user, remoteci_id):
     if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
         raise auth.UNAUTHORIZED
 
-    values = {'state': 'archived'}
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == remoteci_id)
-    query = _TABLE.update().where(where_clause).values(**values)
+    with flask.g.db_conn.begin():
+        values = {'state': 'archived'}
+        where_clause = sql.and_(
+            _TABLE.c.etag == if_match_etag,
+            _TABLE.c.id == remoteci_id
+        )
+        query = _TABLE.update().where(where_clause).values(**values)
 
-    result = flask.g.db_conn.execute(query)
+        result = flask.g.db_conn.execute(query)
 
-    if not result.rowcount:
-        raise dci_exc.DCIDeleteConflict('RemoteCI', remoteci_id)
+        if not result.rowcount:
+            raise dci_exc.DCIDeleteConflict('RemoteCI', remoteci_id)
+
+        for model in [models.JOBS]:
+            query = model.update().where(model.c.remoteci_id == remoteci_id) \
+                         .values(**values)
+            flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
 

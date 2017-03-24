@@ -151,17 +151,23 @@ def delete_jobdefinition_by_id_or_name(user, jd_id):
 
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
-    values = {'state': 'archived'}
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == jd_id
-    )
-    query = _TABLE.update().where(where_clause).values(**values)
+    with flask.g.db_conn.begin():
+        values = {'state': 'archived'}
+        where_clause = sql.and_(
+            _TABLE.c.etag == if_match_etag,
+            _TABLE.c.id == jd_id
+        )
+        query = _TABLE.update().where(where_clause).values(**values)
 
-    result = flask.g.db_conn.execute(query)
+        result = flask.g.db_conn.execute(query)
 
-    if not result.rowcount:
-        raise dci_exc.DCIDeleteConflict('Jobdefinition', jd_id)
+        if not result.rowcount:
+            raise dci_exc.DCIDeleteConflict('Jobdefinition', jd_id)
+
+        for model in [models.JOBS]:
+            query = model.update().where(model.c.jobdefinition_id == jd_id) \
+                         .values(**values)
+            flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
 

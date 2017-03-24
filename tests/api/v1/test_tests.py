@@ -15,6 +15,12 @@
 # under the License.
 
 from __future__ import unicode_literals
+import mock
+
+from dci.stores.swift import Swift
+from dci.common import utils
+
+SWIFT = 'dci.stores.swift.Swift'
 
 
 def test_create_tests(admin, team_id):
@@ -259,6 +265,47 @@ def test_delete_test_not_found(admin):
     result = admin.delete('/api/v1/tests/ptdr',
                           headers={'If-match': 'eefrwqafeqawfqafeq'})
     assert result.status_code == 404
+
+
+def test_delete_test_archive_dependencies(admin, job_id, team_id):
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+
+        test = admin.post('/api/v1/tests', data={'name': 'pname',
+                                                 'team_id': team_id})
+        test_id = test.data['test']['id']
+        assert test.status_code == 201
+        test_etag = \
+            admin.get('/api/v1/tests/%s' % test_id).data['test']['etag']
+
+        file = admin.post('/api/v1/files',
+                          headers={
+                              'DCI-NAME': 'kikoolol',
+                              'DCI-JOB-ID': job_id,
+                              'DCI-TEST-ID': test_id
+                          },
+                          data='content')
+
+        file_id = file.data['file']['id']
+        assert file.status_code == 201
+
+        deleted_test = admin.delete('/api/v1/tests/%s' % test_id,
+                                    headers={'If-match': test_etag})
+
+        assert deleted_test.status_code == 204
+
+        deleted_file = admin.get('/api/v1/files/%s' % file_id)
+        assert deleted_file.status_code == 404
 
 
 def test_change_test(admin, test_id):
