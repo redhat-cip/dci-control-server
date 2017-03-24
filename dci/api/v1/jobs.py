@@ -630,6 +630,10 @@ def delete_job_by_id(user, j_id):
     if not result.rowcount:
         raise dci_exc.DCIDeleteConflict('Job', j_id)
 
+    for model in [models.FILES]:
+        query = model.update().where(model.c.job_id == j_id).values(**values)
+        flask.g.db_conn.execute(query)
+
     return flask.Response(None, 204, content_type='application/json')
 
 

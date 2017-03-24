@@ -261,6 +261,33 @@ def test_delete_test_not_found(admin):
     assert result.status_code == 404
 
 
+def test_delete_test_archive_dependencies(admin, job_id, team_id):
+    test = admin.post('/api/v1/tests', data={'name': 'pname',
+                                             'team_id': team_id})
+    test_id = test.data['test']['id']
+    assert test.status_code == 201
+    test_etag = admin.get('/api/v1/tests/%s' % test_id).data['test']['etag']
+
+    file = admin.post('/api/v1/files',
+                      headers={
+                          'DCI-NAME': 'kikoolol',
+                          'DCI-JOB-ID': job_id,
+                          'DCI-TEST-ID': test_id
+                      },
+                      data='content')
+
+    file_id = file.data['file']['id']
+    assert file.status_code == 201
+
+    deleted_test = admin.delete('/api/v1/tests/%s' % test_id,
+                                headers={'If-match': test_etag})
+
+    assert deleted_test.status_code == 204
+
+    deleted_file = admin.get('/api/v1/files/%s' % file_id)
+    assert deleted_file.status_code == 404
+
+
 def test_change_test(admin, test_id):
     t = admin.get('/api/v1/tests/' + test_id).data['test']
     data = {'state': 'inactive'}

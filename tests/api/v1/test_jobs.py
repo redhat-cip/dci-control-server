@@ -701,6 +701,26 @@ def test_delete_job_by_id(admin, jobdefinition_id, team_id, remoteci_id,
     job = admin.get('/api/v1/jobs/%s' % job_id)
     assert job.status_code == 404
 
+
+def test_delete_job_archive_attached_files(admin, job_id):
+    headers = {'DCI-JOB-ID': job_id, 'DCI-NAME': 'afile.txt',
+               'Content-Type': 'text/plain'}
+    file = admin.post('/api/v1/files', headers=headers, data='content')
+    assert file.status_code == 201
+
+    url = '/api/v1/jobs/%s' % job_id
+    job = admin.get(url)
+    etag = job.data['job']['etag']
+    assert job.status_code == 200
+
+    deleted_job = admin.delete(url, headers={'If-match': etag})
+    assert deleted_job.status_code == 204
+
+    url = '/api/v1/files/%s' % file.data['file']['id']
+    file = admin.get(url)
+    assert file.status_code == 404
+
+
 # Tests for the isolation
 
 

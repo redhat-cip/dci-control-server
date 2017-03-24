@@ -190,6 +190,72 @@ def test_delete_team_not_found(admin):
     assert result.status_code == 404
 
 
+def test_delete_team_archive_dependencies(admin):
+    team = admin.post('/api/v1/teams', data={'name': 'team_name'})
+    team_id = team.data['team']['id']
+    team_etag = team.data['team']['etag']
+    assert team.status_code == 201
+
+    test = admin.post('/api/v1/tests',
+                      data={'name': 'pname', 'team_id': team_id})
+    test_id = test.data['test']['id']
+    assert test.status_code == 201
+
+    user = admin.post('/api/v1/users',
+                      data={'name': 'pname', 'password': 'ppass',
+                            'team_id': team_id})
+    user_id = user.data['user']['id']
+    assert user.status_code == 201
+
+    remoteci = admin.post('/api/v1/remotecis',
+                          data={'name': 'pname', 'team_id': team_id})
+    remoteci_id = remoteci.data['remoteci']['id']
+    assert remoteci.status_code == 201
+
+    topic = admin.post('/api/v1/topics', data={'name': 'topic_name'})
+    topic_id = topic.data['topic']['id']
+    assert topic.status_code == 201
+
+    jd = admin.post('/api/v1/jobdefinitions',
+                    data={'name': 'pname', 'topic_id': topic_id})
+    jobdefinition_id = jd.data['jobdefinition']['id']
+    assert jd.status_code == 201
+
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'topic_id': topic_id,
+        'export_control': True,
+        'state': 'active'}
+    component = admin.post('/api/v1/components', data=data)
+    component_id = component.data['component']['id']
+    assert component.status_code == 201
+
+    data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
+            'remoteci_id': remoteci_id, 'comment': 'kikoolol',
+            'components': [component_id]}
+    job = admin.post('/api/v1/jobs', data=data)
+    job_id = job.data['job']['id']
+    assert job.status_code == 201
+
+    deleted_team = admin.delete('/api/v1/teams/%s' % team_id,
+                                headers={'If-match': team_etag})
+    assert deleted_team.status_code == 204
+
+    deleted_user = admin.get('/api/v1/users/%s' % user_id)
+    assert deleted_user.status_code == 404
+
+    deleted_remoteci = admin.get('/api/v1/remotecis/%s' % remoteci_id)
+    assert deleted_remoteci.status_code == 404
+
+    deleted_job = admin.get('/api/v1/jobs/%s' % job_id)
+    assert deleted_job.status_code == 404
+
+    deleted_test = admin.get('/api/v1/tests/%s' % test_id)
+    assert deleted_test.status_code == 404
+
+
 # Tests for the isolation
 
 def test_create_team_as_user(user):
