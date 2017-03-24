@@ -187,6 +187,11 @@ def delete_team_by_id_or_name(user, t_id):
     if not result.rowcount:
         raise dci_exc.DCIDeleteConflict('Team', t_id)
 
+    for model in [models.FILES, models.TESTS, models.REMOTECIS, models.USERS,
+                  models.JOBS]:
+        query = model.update().where(model.c.team_id == t_id).values(**values)
+        flask.g.db_conn.execute(query)
+
     return flask.Response(None, 204, content_type='application/json')
 
 
