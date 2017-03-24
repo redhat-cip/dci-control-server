@@ -37,6 +37,7 @@ _TABLE = models.COMPONENTS
 _JJC = models.JOIN_JOBS_COMPONENTS
 _VALID_EMBED = embeds.components()
 _C_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+_CF_COLUMNS = v1_utils.get_columns_name_with_objects(models.COMPONENTFILES)
 _JOBS_C_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBS)
 _EMBED_MANY = {
     'files': True,
@@ -191,20 +192,14 @@ def list_components_files(user, c_id):
     v1_utils.verify_team_in_topic(user, component['topic_id'])
 
     args = schemas.args(flask.request.args.to_dict())
-    args['embed'] = ['files']
 
-    query = v1_utils.QueryBuilder2(_TABLE, args, _C_COLUMNS)
-    query.add_extra_condition(models.COMPONENT_FILES.c.component_id == c_id)
+    query = v1_utils.QueryBuilder2(models.COMPONENTFILES, args, _CF_COLUMNS)
+    query.add_extra_condition(models.COMPONENTFILES.c.component_id == c_id)
 
-    nb_rows = query.get_number_of_rows(models.COMPONENT_FILES,
-                                       models.COMPONENT_FILES.c.component_id == c_id)  # noqa
+    nb_rows = query.get_number_of_rows(models.COMPONENTFILES,
+                                       models.COMPONENTFILES.c.component_id == c_id)  # noqa
     rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-    if len(rows) == 0:
-        rows = []
-    else:
-        rows = rows[0]['files']
+    rows = v1_utils.format_result(rows, models.COMPONENTFILES.name, None, None)
 
     return flask.jsonify({'component_files': rows,
                           '_meta': {'count': nb_rows}})

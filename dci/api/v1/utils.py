@@ -293,32 +293,27 @@ class QueryBuilder2(object):
             select_clause = [root_subquery]
             root_select = root_subquery
 
-        embed_list = []
+        query = sql.select(select_clause, use_labels=True)
         if self._embeds:
             embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select)  # noqa
             embed_list = self._get_embed_list(embed_joins)
+            children = root_select
+            embed_sorts = []
+            for embed_elem in embed_list:
+                for param in embed_joins[embed_elem]:
+                    children = children.join(param['right'], param['onclause'],
+                                             param.get('isouter', False))
+                    if param.get('sort', None) is not None:
+                        embed_sorts.append(param.get('sort'))
+                select_elem = embeds.EMBED_STRING_TO_OBJECT[self._root_table.name][embed_elem]  # noqa
+                if isinstance(select_elem, list):
+                    select_clause.extend(select_elem)
+                else:
+                    select_clause.append(select_elem)
+            query = sql.select(select_clause, use_labels=True, from_obj=children)  # noqa
 
-        children = root_select
-        embed_sorts = []
-        for embed_elem in embed_list:
-            for param in embed_joins[embed_elem]:
-
-                children = children.join(param['right'], param['onclause'],
-                                         param.get('isouter', False))
-                if param.get('sort', None) is not None:
-                    embed_sorts.append(param.get('sort'))
-            select_elem = embeds.EMBED_STRING_TO_OBJECT[self._root_table.name][embed_elem]  # noqa
-            if isinstance(select_elem, list):
-                select_clause.extend(select_elem)
-            else:
-                select_clause.append(select_elem)
-
-        query = sql.select(select_clause,
-                           use_labels=True,
-                           from_obj=children)
-
-        for embed_sort in embed_sorts:
-            query = query.order_by(embed_sort)
+            for embed_sort in embed_sorts:
+                query = query.order_by(embed_sort)
 
         if not self._do_subquery():
             query = self._add_sort_to_query(query)
@@ -345,6 +340,10 @@ class QueryBuilder2(object):
             return flask.g.db_conn.execute(self.get_query()).fetchall()
         elif fetchone:
             return flask.g.db_conn.execute(self.get_query()).fetchone()
+
+    def _get_pg_query(self):
+        from sqlalchemy.dialects import postgresql
+        return str(self.get_query().compile(dialect=postgresql.dialect()))
 
 
 def _format_level_1(rows, root_table_name):

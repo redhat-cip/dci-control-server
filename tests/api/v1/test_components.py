@@ -350,8 +350,10 @@ def test_add_file_to_component(admin, topic_id):
 
         url = '/api/v1/components/%s/files' % ct_1['id']
         c_file = admin.post(url, data='lol')
+        c_file_1_id = c_file.data['component_file']['id']
         url = '/api/v1/components/%s/files' % ct_2['id']
         c_file = admin.post(url, data='lol2')
+        c_file_2_id = c_file.data['component_file']['id']
 
         assert c_file.status_code == 201
         l_file = admin.get(url)
@@ -362,6 +364,12 @@ def test_add_file_to_component(admin, topic_id):
             '/api/v1/components/%s?embed=files' % ct_1['id']).data
         assert len(cts['component']['files']) == 1
         assert cts['component']['files'][0]['size'] == 1
+
+        cts = admin.get('/api/v1/components/%s/files' % ct_1['id']).data
+        assert cts['component_files'][0]['id'] == c_file_1_id
+
+        cts = admin.get('/api/v1/components/%s/files' % ct_2['id']).data
+        assert cts['component_files'][0]['id'] == c_file_2_id
 
 
 def test_download_file_from_component(admin, topic_id):
