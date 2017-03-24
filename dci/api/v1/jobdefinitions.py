@@ -177,6 +177,11 @@ def delete_jobdefinition_by_id_or_name(user, jd_id):
     if not result.rowcount:
         raise dci_exc.DCIDeleteConflict('Jobdefinition', jd_id)
 
+    for model in [models.JOBS]:
+        query = model.update().where(model.c.jobdefinition_id == jd_id) \
+                     .values(**values)
+        flask.g.db_conn.execute(query)
+
     return flask.Response(None, 204, content_type='application/json')
 
 

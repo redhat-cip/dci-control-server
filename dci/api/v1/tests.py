@@ -153,6 +153,10 @@ def delete_test_by_id_or_name(user, t_id):
     if not result.rowcount:
         raise dci_exc.DCIDeleteConflict('Test', t_id)
 
+    for model in [models.FILES]:
+        query = model.update().where(model.c.test_id == t_id).values(**values)
+        flask.g.db_conn.execute(query)
+
     return flask.Response(None, 204, content_type='application/json')
 
 

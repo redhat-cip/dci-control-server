@@ -228,6 +228,28 @@ def test_delete_jobdefinition_by_id(admin, topic_id):
     assert gjd.status_code == 404
 
 
+def test_delete_jobdefinition_archive_dependencies(admin, jobdefinition_id,
+                                                   team_id, remoteci_id,
+                                                   components_ids):
+    data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
+            'remoteci_id': remoteci_id, 'comment': 'kikoolol',
+            'components': components_ids}
+    job = admin.post('/api/v1/jobs', data=data)
+    assert job.status_code == 201
+
+    url = '/api/v1/jobdefinitions/%s' % jobdefinition_id
+    jd = admin.get(url)
+    etag = jd.data['jobdefinition']['etag']
+    assert jd.status_code == 200
+
+    deleted_jd = admin.delete(url, headers={'If-match': etag})
+    assert deleted_jd.status_code == 204
+
+    url = '/api/v1/jobs/%s' % job.data['job']['id']
+    job = admin.get(url)
+    assert job.status_code == 404
+
+
 def test_get_all_jobdefinitions_with_sort(admin, topic_id):
     # create 4 jobdefinitions ordered by created time
     jd_1_1 = admin.post('/api/v1/jobdefinitions',
