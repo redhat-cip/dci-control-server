@@ -359,6 +359,7 @@ COMPONENT_FILES = sa.Table(
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
 )
+COMPONENTFILES = COMPONENT_FILES.alias('componentfiles')
 
 USERS = sa.Table(
     'users', metadata,
