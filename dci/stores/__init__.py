@@ -30,3 +30,9 @@ class Store(object):
 
     def upload(self):
         pass
+
+    def build_file_path(self, root, middle, file_id):
+        root = str(root)
+        middle = str(middle)
+        file_id = str(file_id)
+        return "%s/%s/%s" % (root, middle, file_id)
