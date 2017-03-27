@@ -198,62 +198,58 @@ def get_jobs_status_from_components(user, topic_id, type_id):
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
-    args = schemas.args(flask.request.args.to_dict())
 
     # if the user is not the admin then filter by team_id
     team_id = user['team_id'] if not auth.is_admin(user) else None
 
-    # Get the last (by created_at field) component id of <type_id> type
-    # within <topic_id> topic
-    where_clause = sql.and_(models.COMPONENTS.c.type == type_id,
-                            models.COMPONENTS.c.topic_id == topic_id,
-                            models.COMPONENTS.c.state == 'active')
-    q_bd = sql.select([models.COMPONENTS]).where(where_clause).order_by(
-        sql.desc(models.COMPONENTS.c.created_at)).limit(1)
-    cpt_id = flask.g.db_conn.execute(q_bd).fetchone()['id']
-
     # Get list of all remotecis that are attached to a topic this type belongs
     # to
-    q_bd = v1_utils.QueryBuilder(models.REMOTECIS, args['offset'],
-                                 args['limit'])
-    j_subquery = sql.select([models.JOBS.join(
-        models.JOIN_JOBS_COMPONENTS,
-        sql.and_(
-            models.JOIN_JOBS_COMPONENTS.c.job_id == models.JOBS.c.id,
-            models.JOIN_JOBS_COMPONENTS.c.component_id == cpt_id,
-        ))]).where(
-        sql.and_(
-            models.JOBS.c.remoteci_id == models.REMOTECIS.c.id,
-            models.JOBS.c.status.in_(valid_status),
-            models.JOBS.c.state != 'archived',
-        )).order_by(
-            models.JOBS.c.created_at.desc()).alias('job')
-    q_bd.select = [
-        models.REMOTECIS.c.id.label('remoteci_id'),
-        models.REMOTECIS.c.name.label('remoteci_name'),
-        models.TEAMS.c.id.label('team_id'),
-        models.TEAMS.c.name.label('team_name'),
-        models.TOPICS.c.name.label('topic_name'),
-        models.COMPONENTS.c.id.label('component_id'),
-        models.COMPONENTS.c.name.label('component_name'),
-        models.COMPONENTS.c.type.label('component_type'),
-        j_subquery.c.id.label('job_id'),
-        j_subquery.c.status.label('job_status'),
-        j_subquery.c.created_at.label('job_created_at'),
-    ]
-    q_bd._join += [
-        models.REMOTECIS.join(j_subquery, isouter=True)
-    ]
-    q_bd.extra_where = [
-        models.REMOTECIS.c.team_id == models.TEAMS.c.id,
-        models.TOPICS.c.id == topic_id,
-        models.COMPONENTS.c.id == cpt_id,
-        models.REMOTECIS.c.state == 'active']
-    q_bd.sort = [models.REMOTECIS.c.name]
+    fields = [models.REMOTECIS.c.id.label('remoteci_id'),
+              models.REMOTECIS.c.name.label('remoteci_name'),
+              models.TEAMS.c.id.label('team_id'),
+              models.TEAMS.c.name.label('team_name'),
+              models.TOPICS.c.name.label('topic_name'),
+              models.COMPONENTS.c.id.label('component_id'),
+              models.COMPONENTS.c.name.label('component_name'),
+              models.COMPONENTS.c.type.label('component_type'),
+              models.JOBS.c.id.label('job_id'),
+              models.JOBS.c.status.label('job_status'),
+              models.JOBS.c.created_at.label('job_created_at')]
+    query = (sql.select(fields)
+             .select_from(
+                 sql.join(
+                     models.REMOTECIS,
+                     models.JOBS,
+                     models.REMOTECIS.c.id == models.JOBS.c.remoteci_id,
+                     isouter=True)
+             .join(
+                 models.JOIN_JOBS_COMPONENTS,
+                 models.JOIN_JOBS_COMPONENTS.c.job_id == models.JOBS.c.id)
+             .join(
+                 models.COMPONENTS,
+                 models.COMPONENTS.c.id == models.JOIN_JOBS_COMPONENTS.c.component_id)  # noqa
+             .join(
+                 models.TOPICS,
+                 models.TOPICS.c.id == models.COMPONENTS.c.topic_id)
+             .join(
+                 models.TEAMS,
+                 models.TEAMS.c.id == models.JOBS.c.team_id))
+             .where(
+                 sql.and_(
+                     models.REMOTECIS.c.state == 'active',
+                     models.JOBS.c.status.in_(valid_status),
+                     models.JOBS.c.state != 'archived',
+                     models.COMPONENTS.c.type == type_id,
+                     models.TOPICS.c.id == topic_id))
+             .order_by(
+                 models.REMOTECIS.c.name,
+                 models.JOBS.c.created_at.desc())
+             .distinct(models.REMOTECIS.c.name))
+
     if team_id:
-        q_bd.extra_where.append(models.TEAMS.c.id == team_id)
-    nb_row = flask.g.db_conn.execute(q_bd.build_nb_row()).scalar()
-    rcs = flask.g.db_conn.execute(q_bd.build()).fetchall()
+        query.append_whereclause(models.TEAMS.c.id == team_id)
+    rcs = flask.g.db_conn.execute(query).fetchall()
+    nb_row = len(rcs)
 
     # NOTE(Gonéri): job_id should be renamed id to be consistent with
     # the other list that we return.
