@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a72e520_d9ae55e7",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 255,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2017-03-27T21:26:27Z",
+      "side": 1,
+      "message": "I think this can be deleted",
+      "range": {
+        "startLine": 254,
+        "startChar": 0,
+        "endLine": 255,
+        "endChar": 36
+      },
+      "revId": "4c29d9622bfa3c8d8fa71c7ae6c9aa8868161c98",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
