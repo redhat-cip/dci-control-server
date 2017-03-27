@@ -362,17 +362,28 @@ def test_delete_team_from_topic_as_user(admin, user):
 
 def test_status_from_component_type_last_component(admin, topic_id,
                                                    components_ids,
-                                                   remoteci_id, job_id):
+                                                   remoteci_id,
+                                                   jobdefinition_id, team_id):
+    data = {
+        'jobdefinition_id': jobdefinition_id,
+        'team_id': team_id,
+        'remoteci_id': remoteci_id,
+        'components': components_ids
+    }
+    job = admin.post('/api/v1/jobs', data=data).data['job']
+    data_update = {'status': 'success'}
+    admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
+              headers={'If-match': job['etag']})
     status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
 
     assert len(status['jobs']) == 1
-    assert status['jobs'][0]['job_status'] is None
+    assert status['jobs'][0]['job_status'] == 'success'
     assert status['jobs'][0]['component_type'] == 'type_1'
     assert 'name-' in status['jobs'][0]['component_name']
 
     # Adding a new version of the component
     # so the query to topics/<t_id>/type/<type_id>/status
-    # changes and retrieve a job not run (None) yet
+    # doesn't changes and retrieve previous job
     data = {
         'name': 'newversion',
         'type': 'type_1',
@@ -385,30 +396,21 @@ def test_status_from_component_type_last_component(admin, topic_id,
     status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
 
     assert len(status['jobs']) == 1
-    assert status['jobs'][0]['job_status'] is None
-    assert status['jobs'][0]['component_type'] == 'type_1'
-    assert status['jobs'][0]['component_name'] == 'newversion'
-
-
-def test_status_from_component_type_get_status(admin, topic_id, components_ids,
-                                               remoteci_id, job_id):
-    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
-
-    assert len(status['jobs']) == 1
-    assert status['jobs'][0]['job_status'] is None
+    assert status['jobs'][0]['job_status'] == 'success'
     assert status['jobs'][0]['component_type'] == 'type_1'
     assert 'name-' in status['jobs'][0]['component_name']
 
-    job = admin.get('/api/v1/jobs/%s' % job_id).data['job']
-    data_update = {'status': 'running'}
-    admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
-              headers={'If-match': job['etag']})
-    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
 
-    assert len(status['jobs']) == 1
-    assert status['jobs'][0]['job_status'] is None
-
-    job = admin.get('/api/v1/jobs/%s' % job_id).data['job']
+def test_status_from_component_type_get_status(admin, topic_id, components_ids,
+                                               remoteci_id, jobdefinition_id,
+                                               team_id):
+    data = {
+        'jobdefinition_id': jobdefinition_id,
+        'team_id': team_id,
+        'remoteci_id': remoteci_id,
+        'components': components_ids,
+    }
+    job = admin.post('/api/v1/jobs', data=data).data['job']
     data_update = {'status': 'success'}
     admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
               headers={'If-match': job['etag']})
@@ -416,3 +418,24 @@ def test_status_from_component_type_get_status(admin, topic_id, components_ids,
 
     assert len(status['jobs']) == 1
     assert status['jobs'][0]['job_status'] == 'success'
+    assert status['jobs'][0]['component_type'] == 'type_1'
+    assert 'name-' in status['jobs'][0]['component_name']
+
+    job = admin.get('/api/v1/jobs/%s' % job['id']).data['job']
+    data_update = {'status': 'killed'}
+    admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
+              headers={'If-match': job['etag']})
+    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
+
+    assert len(status['jobs']) == 0
+
+    job = admin.get('/api/v1/jobs/%s' % job['id']).data['job']
+    data_update = {'status': 'failure'}
+    admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
+              headers={'If-match': job['etag']})
+    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
+
+    assert len(status['jobs']) == 1
+    assert status['jobs'][0]['job_status'] == 'failure'
+    assert status['jobs'][0]['component_type'] == 'type_1'
+    assert 'name-' in status['jobs'][0]['component_name']
