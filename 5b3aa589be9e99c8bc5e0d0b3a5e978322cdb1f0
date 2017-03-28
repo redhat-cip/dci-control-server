@@ -22,6 +22,30 @@
       "revId": "5b3aa589be9e99c8bc5e0d0b3a5e978322cdb1f0",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_9c0f6be1",
+        "filename": "dci/dci_config.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-28T19:14:52Z",
+      "side": 1,
+      "message": "in this case we can do:\n\ncontainer_mapping \u003d {\u0027file\u0027: \u0027STORE_FILe_CONTAINER\u0027, \u0027container\u0027: \u0027STORE_COMPONENTS_CONTAINER\u0027}\nconfiguration[\u0027container\u0027] \u003d container_mapping[container]",
+      "parentUuid": "5a72e520_5c05f3c0",
+      "range": {
+        "startLine": 54,
+        "startChar": 4,
+        "endLine": 57,
+        "endChar": 71
+      },
+      "revId": "5b3aa589be9e99c8bc5e0d0b3a5e978322cdb1f0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
