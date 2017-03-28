@@ -104,3 +104,25 @@ def requires_auth(f):
             return reject()
         return f(user, *args, **kwargs)
     return decorated
+
+
+def requires_platform_admin(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = flask.request.authorization
+        user, is_authenticated = build_auth(auth.username, auth.password)
+        if not is_admin(user):
+            raise UNAUTHORIZED
+        return f(*args, **kwargs)
+    return decorated
+
+
+def requires_team_admin(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth = flask.request.authorization
+        user, is_authenticated = build_auth(auth.username, auth.password)
+        if not is_admin_user(user, user['team_id']):
+            raise UNAUTHORIZED
+        return f(*args, **kwargs)
+    return decorated

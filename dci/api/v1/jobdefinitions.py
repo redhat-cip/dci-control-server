@@ -130,14 +130,12 @@ def get_jobdefinition_by_id_or_name(user, jd_id):
 
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['PUT'])
 @auth.requires_auth
+@auth.requires_team_admin
 def put_jobdefinition(user, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     values = schemas.jobdefinition.put(flask.request.json)
-
-    if not(auth.is_admin(user) or auth.is_admin_user(user, jd_id)):
-        raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
@@ -240,11 +238,13 @@ def delete_test_from_jobdefinition(user, jd_id, t_id):
 
 @api.route('/jobdefinitions/purge', methods=['GET'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def get_purge_archived_jobdefinitions(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/jobdefinitions/purge', methods=['POST'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def purge_archived_jobdefinitions(user):
     return base.purge_archived_resources(user, _TABLE)
