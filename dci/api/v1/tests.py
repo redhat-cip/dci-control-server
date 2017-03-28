@@ -38,7 +38,7 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
 @api.route('/tests', methods=['POST'])
-@auth.requires_auth
+@auth.login_required
 def create_tests(user):
     created_at, _ = utils.get_dates(user)
     data_json = schemas.test.post(flask.request.json)
@@ -60,11 +60,8 @@ def create_tests(user):
 
 
 @api.route('/tests/<uuid:t_id>', methods=['PUT'])
-@auth.requires_auth
+@auth.admin_required
 def update_tests(user, t_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     v1_utils.verify_existence_and_get(t_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -112,7 +109,7 @@ def get_all_tests(user, team_id):
 
 
 @api.route('/tests/<uuid:t_id>', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def get_test_by_id_or_name(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
     if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
@@ -122,7 +119,7 @@ def get_test_by_id_or_name(user, t_id):
 
 
 @api.route('/tests/<uuid:t_id>/jobdefinitions', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def get_jobdefinitions_by_test(user, test_id):
     test = v1_utils.verify_existence_and_get(test_id, _TABLE)
     if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
@@ -131,14 +128,14 @@ def get_jobdefinitions_by_test(user, test_id):
 
 
 @api.route('/tests/<uuid:t_id>/remotecis', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def get_remotecis_by_test(user, test_id):
     test = v1_utils.verify_existence_and_get(test_id, _TABLE)
     return remotecis.get_all_remotecis(test['id'])
 
 
 @api.route('/tests/<uuid:t_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.login_required
 def delete_test_by_id_or_name(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
 
@@ -164,12 +161,12 @@ def delete_test_by_id_or_name(user, t_id):
 
 
 @api.route('/tests/purge', methods=['GET'])
-@auth.requires_auth
+@auth.admin_required
 def get_to_purge_archived_tests(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/tests/purge', methods=['POST'])
-@auth.requires_auth
+@auth.admin_required
 def purge_archived_tests(user):
     return base.purge_archived_resources(user, _TABLE)

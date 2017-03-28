@@ -93,7 +93,7 @@ def check_export_control(user, component):
             raise UNAUTHORIZED
 
 
-def requires_auth(f):
+def check_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         auth = flask.request.authorization
@@ -101,6 +101,24 @@ def requires_auth(f):
             return reject()
         user, is_authenticated = build_auth(auth.username, auth.password)
         if not is_authenticated:
+            return reject()
+        return f(user, *args, **kwargs)
+    return decorated
+
+
+@check_auth
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        return f(user, *args, **kwargs)
+    return decorated
+
+
+@check_auth
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not is_admin(user):
             return reject()
         return f(user, *args, **kwargs)
     return decorated
