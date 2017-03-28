@@ -680,11 +680,13 @@ def delete_meta(user, j_id, m_id):
 
 @api.route('/jobs/purge', methods=['GET'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def get_to_purge_archived_jobs(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/jobs/purge', methods=['POST'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def purge_archived_jobs(user):
     return base.purge_archived_resources(user, _TABLE)

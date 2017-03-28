@@ -213,11 +213,13 @@ def delete_user_by_id_or_name(user, user_id):
 
 @api.route('/users/purge', methods=['GET'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def get_to_purge_archived_users(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/users/purge', methods=['POST'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def purge_archived_users(user):
     return base.purge_archived_resources(user, _TABLE)
