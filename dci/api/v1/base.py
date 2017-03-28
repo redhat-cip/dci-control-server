@@ -17,14 +17,11 @@
 import flask
 
 
-from dci import auth
 from sqlalchemy import sql
 
 
 def get_to_purge_archived_resources(user, table):
     """List the entries to be purged from the database. """
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
 
     where_clause = sql.and_(
         table.c.state == 'archived'
@@ -38,9 +35,6 @@ def get_to_purge_archived_resources(user, table):
 
 def purge_archived_resources(user, table):
     """Remove the entries to be purged from the database. """
-
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
 
     where_clause = sql.and_(
         table.c.state == 'archived'

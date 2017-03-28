@@ -28,7 +28,7 @@ _A_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
 @api.route('/audits', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def get_logs(user):
     args = schemas.args(flask.request.args.to_dict())
 
