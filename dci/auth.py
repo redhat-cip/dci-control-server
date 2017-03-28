@@ -104,3 +104,31 @@ def requires_auth(f):
             return reject()
         return f(user, *args, **kwargs)
     return decorated
+
+
+def requires_role(allowed_roles):
+    """Ensure only authorized roles can proceed.
+
+    This decorator ensure only allowed_roles can execute the controller
+    action that has been queried.
+
+    It exists three kind of roles:
+
+      * admin: Admin of the DCI control server
+      * team_admin: Admin of a team
+      * team_member: Regular user
+
+    """
+
+    def acls(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            auth = flask.request.authorization
+            user, is_authenticated = build_auth(auth.username, auth.password)
+
+            if 'admin' in allowed_roles and not is_admin(user):
+                return reject()
+
+            return f(*args, **kwargs)
+        return decorated
+    return acls

@@ -39,10 +39,8 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 @api.route('/topics', methods=['POST'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def create_topics(user):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     values = v1_utils.common_values_dict(user)
     values.update(schemas.topic.post(flask.request.json))
 
@@ -110,14 +108,12 @@ def get_all_topics(user):
 
 @api.route('/topics/<uuid:topic_id>', methods=['PUT'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def put_topic(user, topic_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     values = schemas.topic.put(flask.request.json)
-
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
 
     def _verify_team_in_topic(user, topic_id):
         topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE,
@@ -149,10 +145,8 @@ def put_topic(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>', methods=['DELETE'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def delete_topic_by_id_or_name(user, topic_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
 
     values = {'state': 'archived'}
@@ -290,9 +284,8 @@ def get_all_tests(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>/tests', methods=['POST'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def add_test_to_topic(user, topic_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
     data_json = flask.request.json
     values = {'topic_id': topic_id,
               'test_id': data_json.get('test_id', None)}
@@ -331,10 +324,8 @@ def delete_test_from_topic(user, t_id, test_id):
 # teams set apis
 @api.route('/topics/<uuid:topic_id>/teams', methods=['POST'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def add_team_to_topic(user, topic_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     # TODO(yassine): use voluptuous schema
     data_json = flask.request.json
     team_id = data_json.get('team_id')
@@ -358,10 +349,8 @@ def add_team_to_topic(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>/teams/<uuid:team_id>', methods=['DELETE'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def delete_team_from_topic(user, topic_id, team_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
                                                 get_id=True)
@@ -380,10 +369,8 @@ def delete_team_from_topic(user, topic_id, team_id):
 
 @api.route('/topics/<uuid:topic_id>/teams', methods=['GET'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def get_all_teams_from_topic(user, topic_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
 
     # Get all teams which belongs to a given topic
@@ -401,11 +388,13 @@ def get_all_teams_from_topic(user, topic_id):
 
 @api.route('/topics/purge', methods=['GET'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def get_to_purge_archived_topics(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/topics/purge', methods=['POST'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def purge_archived_topics(user):
     return base.purge_archived_resources(user, _TABLE)

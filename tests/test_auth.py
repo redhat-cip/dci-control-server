@@ -29,3 +29,12 @@ def test_api_with_unauthorized_credentials(unauthorized, topic_id):
     assert unauthorized.get('/api/v1/users').status_code == 401
     assert unauthorized.get('/api/v1/files').status_code == 401
     assert unauthorized.get('/api/v1/topics')
+
+
+def test_requires_platform_admin_success_when_admin(admin):
+    assert admin.post('/api/v1/teams',
+                      data={'name': 'team'}).status_code == 201
+
+
+def test_requires_platform_admin_fail_when_not_admin(user):
+    assert user.post('/api/v1/teams', data={'name': 'team'}).status_code == 401

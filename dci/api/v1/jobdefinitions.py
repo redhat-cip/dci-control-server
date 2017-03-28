@@ -234,11 +234,13 @@ def delete_test_from_jobdefinition(user, jd_id, t_id):
 
 @api.route('/jobdefinitions/purge', methods=['GET'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def get_purge_archived_jobdefinitions(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/jobdefinitions/purge', methods=['POST'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def purge_archived_jobdefinitions(user):
     return base.purge_archived_resources(user, _TABLE)

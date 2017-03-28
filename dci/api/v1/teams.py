@@ -39,13 +39,11 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 @api.route('/teams', methods=['POST'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 @audits.log
 def create_teams(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.team.post(flask.request.json))
-
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
 
     query = _TABLE.insert().values(**values)
 
@@ -159,12 +157,10 @@ def put_team(user, t_id):
 
 @api.route('/teams/<uuid:t_id>', methods=['DELETE'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def delete_team_by_id_or_name(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
 
@@ -184,11 +180,13 @@ def delete_team_by_id_or_name(user, t_id):
 
 @api.route('/teams/purge', methods=['GET'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def get_to_purge_archived_teams(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/teams/purge', methods=['POST'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def purge_archived_teams(user):
     return base.purge_archived_resources(user, _TABLE)

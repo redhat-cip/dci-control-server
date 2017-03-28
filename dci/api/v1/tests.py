@@ -61,10 +61,8 @@ def create_tests(user):
 
 @api.route('/tests/<uuid:t_id>', methods=['PUT'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def update_tests(user, t_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     v1_utils.verify_existence_and_get(t_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -158,11 +156,13 @@ def delete_test_by_id_or_name(user, t_id):
 
 @api.route('/tests/purge', methods=['GET'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def get_to_purge_archived_tests(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/tests/purge', methods=['POST'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def purge_archived_tests(user):
     return base.purge_archived_resources(user, _TABLE)
