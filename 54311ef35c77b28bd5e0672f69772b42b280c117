@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a72e520_7c2b8f82",
+        "filename": "dci/dci_config.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-28T14:46:50Z",
+      "side": 1,
+      "message": "It should be \u0027elif\u0027 instead of \u0027if\u0027.",
+      "revId": "54311ef35c77b28bd5e0672f69772b42b280c117",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_9c204b9d",
+        "filename": "dci/stores/swift.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-28T14:46:50Z",
+      "side": 1,
+      "message": "Who uses use the CONTAINER env var?",
+      "revId": "54311ef35c77b28bd5e0672f69772b42b280c117",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
