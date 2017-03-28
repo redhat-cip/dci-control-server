@@ -42,7 +42,7 @@ _EMBED_MANY = {
 
 
 @api.route('/remotecis', methods=['POST'])
-@auth.requires_auth
+@auth.login_required
 def create_remotecis(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.remoteci.post(flask.request.json))
@@ -70,7 +70,7 @@ def create_remotecis(user):
 
 
 @api.route('/remotecis', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def get_all_remotecis(user, t_id=None):
     args = schemas.args(flask.request.args.to_dict())
 
@@ -94,7 +94,7 @@ def get_all_remotecis(user, t_id=None):
 
 
 @api.route('/remotecis/<uuid:r_id>', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def get_remoteci_by_id_or_name(user, r_id):
 
     args = schemas.args(flask.request.args.to_dict())
@@ -123,7 +123,7 @@ def get_remoteci_by_id_or_name(user, r_id):
 
 
 @api.route('/remotecis/<uuid:r_id>', methods=['PUT'])
-@auth.requires_auth
+@auth.login_required
 def put_remoteci(user, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -160,7 +160,7 @@ def put_remoteci(user, r_id):
 
 
 @api.route('/remotecis/<uuid:remoteci_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.login_required
 def delete_remoteci_by_id_or_name(user, remoteci_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -192,7 +192,7 @@ def delete_remoteci_by_id_or_name(user, remoteci_id):
 
 
 @api.route('/remotecis/<uuid:r_id>/data', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def get_remoteci_data(user, r_id):
     remoteci_data = get_remoteci_data_json(user, r_id)
 
@@ -220,7 +220,7 @@ def get_remoteci_data_json(user, r_id):
 
 
 @api.route('/remotecis/<uuid:r_id>/tests', methods=['POST'])
-@auth.requires_auth
+@auth.login_required
 def add_test_to_remoteci(user, r_id):
     data_json = flask.request.json
     values = {'remoteci_id': r_id,
@@ -239,7 +239,7 @@ def add_test_to_remoteci(user, r_id):
 
 
 @api.route('/remotecis/<uuid:r_id>/tests', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def get_all_tests_from_remotecis(user, r_id):
     v1_utils.verify_existence_and_get(r_id, _TABLE)
 
@@ -256,7 +256,7 @@ def get_all_tests_from_remotecis(user, r_id):
 
 
 @api.route('/remotecis/<uuid:r_id>/tests/<uuid:t_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.login_required
 def delete_test_from_remoteci(user, r_id, t_id):
     v1_utils.verify_existence_and_get(r_id, _TABLE)
 
@@ -273,12 +273,12 @@ def delete_test_from_remoteci(user, r_id, t_id):
 
 
 @api.route('/remotecis/purge', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def get_to_purge_archived_remotecis(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/remotecis/purge', methods=['POST'])
-@auth.requires_auth
+@auth.login_required
 def purge_archived_remotecis(user):
     return base.purge_archived_resources(user, _TABLE)

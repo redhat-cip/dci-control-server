@@ -23,6 +23,7 @@ from sqlalchemy import sql
 
 def get_to_purge_archived_resources(user, table):
     """List the entries to be purged from the database. """
+
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
 
