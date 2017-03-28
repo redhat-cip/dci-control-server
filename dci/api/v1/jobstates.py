@@ -50,7 +50,7 @@ def insert_jobstate(user, values, created_at=None):
 
 
 @api.route('/jobstates', methods=['POST'])
-@auth.requires_auth
+@auth.login_required
 def create_jobstates(user):
     created_at, _ = utils.get_dates(user)
     values = schemas.jobstate.post(flask.request.json)
@@ -74,7 +74,7 @@ def create_jobstates(user):
 
 
 @api.route('/jobstates', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def get_all_jobstates(user, j_id=None):
     """Get all jobstates.
     """
@@ -98,7 +98,7 @@ def get_all_jobstates(user, j_id=None):
 
 
 @api.route('/jobstates/<uuid:js_id>', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def get_jobstate_by_id(user, js_id):
     args = schemas.args(flask.request.args.to_dict())
 
@@ -120,7 +120,7 @@ def get_jobstate_by_id(user, js_id):
 
 
 @api.route('/jobstates/<uuid:js_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.login_required
 def delete_jobstate_by_id(user, js_id):
     jobstate = v1_utils.verify_existence_and_get(js_id, _TABLE)
 
