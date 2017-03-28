@@ -267,11 +267,13 @@ def delete_test_from_remoteci(user, r_id, t_id):
 
 @api.route('/remotecis/purge', methods=['GET'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def get_to_purge_archived_remotecis(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/remotecis/purge', methods=['POST'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def purge_archived_remotecis(user):
     return base.purge_archived_resources(user, _TABLE)

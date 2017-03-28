@@ -54,12 +54,10 @@ def _verify_existence_and_get_user(user_id):
 
 @api.route('/users', methods=['POST'])
 @auth.requires_auth
+@auth.requires_team_admin
 def create_users(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.user.post(flask.request.json))
-
-    if not(auth.is_admin(user) or auth.is_admin_user(user, values['team_id'])):
-        raise auth.UNAUTHORIZED
 
     password_hash = auth.hash_password(values.get('password'))
 
@@ -186,15 +184,12 @@ def put_user(user, user_id):
 
 @api.route('/users/<uuid:user_id>', methods=['DELETE'])
 @auth.requires_auth
+@auth.requires_team_admin
 def delete_user_by_id_or_name(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    duser = _verify_existence_and_get_user(user_id)
-
-    if not(auth.is_admin(user) or
-           auth.is_admin_user(user, duser['team_id'])):
-        raise auth.UNAUTHORIZED
+    _verify_existence_and_get_user(user_id)
 
     values = {'state': 'archived'}
     where_clause = sql.and_(
@@ -213,11 +208,13 @@ def delete_user_by_id_or_name(user, user_id):
 
 @api.route('/users/purge', methods=['GET'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def get_to_purge_archived_users(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/users/purge', methods=['POST'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def purge_archived_users(user):
     return base.purge_archived_resources(user, _TABLE)
