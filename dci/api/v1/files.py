@@ -225,11 +225,13 @@ def delete_file_by_id(user, file_id):
 
 @api.route('/files/purge', methods=['GET'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def get_to_purge_archived_files(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/files/purge', methods=['POST'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def purge_archived_files(user):
     return base.purge_archived_resources(user, _TABLE)

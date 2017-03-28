@@ -61,10 +61,8 @@ def create_tests(user):
 
 @api.route('/tests/<uuid:t_id>', methods=['PUT'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def update_tests(user, t_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     v1_utils.verify_existence_and_get(t_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 

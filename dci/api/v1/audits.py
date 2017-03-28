@@ -29,11 +29,9 @@ _A_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 @api.route('/audits', methods=['GET'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def get_logs(user):
     args = schemas.args(flask.request.args.to_dict())
-
-    if not auth.is_admin(user) and user['role'] != 'admin':
-        raise auth.UNAUTHORIZED
 
     if args['limit'] is None:
         args['limit'] = 10

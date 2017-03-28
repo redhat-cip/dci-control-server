@@ -47,11 +47,9 @@ _EMBED_MANY = {
 
 @api.route('/components', methods=['POST'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def create_components(user):
     created_at, updated_at = utils.get_dates(user)
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     values = schemas.component.post(flask.request.json)
     etag = utils.gen_etag()
     values.update({
@@ -74,10 +72,8 @@ def create_components(user):
 
 @api.route('/components/<uuid:c_id>', methods=['PUT'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def update_components(user, c_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     v1_utils.verify_existence_and_get(c_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -152,11 +148,9 @@ def get_component_by_id_or_name(user, c_id):
 
 @api.route('/components/<uuid:c_id>', methods=['DELETE'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def delete_component_by_id_or_name(user, c_id):
     # get If-Match header
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     v1_utils.verify_existence_and_get(c_id, _TABLE)
 
     values = {'state': 'archived'}
@@ -175,12 +169,14 @@ def delete_component_by_id_or_name(user, c_id):
 
 @api.route('/components/purge', methods=['GET'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def get_to_purge_archived_components(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/components/purge', methods=['POST'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def purge_archived_components(user):
     return base.purge_archived_resources(user, _TABLE)
 
@@ -248,10 +244,8 @@ def download_component_file(user, c_id, f_id):
 
 @api.route('/components/<uuid:c_id>/files', methods=['POST'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def upload_component_file(user, c_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     COMPONENT_FILES = models.COMPONENT_FILES
 
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
@@ -284,9 +278,8 @@ def upload_component_file(user, c_id):
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['DELETE'])
 @auth.requires_auth
+@auth.requires_platform_admin
 def delete_component_file(user, c_id, f_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
 
     COMPONENT_FILES = models.COMPONENT_FILES
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
