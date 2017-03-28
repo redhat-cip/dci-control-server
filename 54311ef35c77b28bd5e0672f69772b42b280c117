@@ -33,6 +33,24 @@
       "revId": "54311ef35c77b28bd5e0672f69772b42b280c117",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5a72e520_5c37b3b0",
+        "filename": "dci/stores/swift.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-03-28T18:11:27Z",
+      "side": 1,
+      "message": "Agree, CONTAINER is not an openstack env var so we should only get this value from the configuration",
+      "parentUuid": "5a72e520_9c204b9d",
+      "revId": "54311ef35c77b28bd5e0672f69772b42b280c117",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
