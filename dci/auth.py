@@ -20,6 +20,7 @@ import json
 from passlib.apps import custom_app_context as pwd_context
 import sqlalchemy.sql
 
+from dci.auth_mechanism import BasicAuthMechanism
 from dci.common import exceptions as exc
 from dci.db import models
 
@@ -93,14 +94,12 @@ def check_export_control(user, component):
             raise UNAUTHORIZED
 
 
-def requires_auth(f):
+def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        auth = flask.request.authorization
-        if not auth:
-            return reject()
-        user, is_authenticated = build_auth(auth.username, auth.password)
-        if not is_authenticated:
-            return reject()
-        return f(user, *args, **kwargs)
+        for mechanism in [BasicAuthMechanism(flask.request, build_auth)]:
+            if mechanism.is_valid():
+                return f(mechanism.identity, *args, **kwargs)
+        return reject()
+
     return decorated
