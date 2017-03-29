@@ -38,8 +38,9 @@ with tqdm.tqdm(total=sum(1 for _ in file_list)) as pbar:
             if result.rowcount == 1:
                 tqdm.tqdm.write("File %s found in DB" % filename)
                 top_path = dirname[len(conf['FILES_UPLOAD_FOLDER']):]
-                swift_path = swift.build_file_path(result['team_id'],
-                                                   result['job_id'],
+                row = result.fetchone()
+                swift_path = swift.build_file_path(row['team_id'],
+                                                   row['job_id'],
                                                    filename)
                 tqdm.tqdm.write("Check if file is in swift : %s" % swift_path)
                 try:
@@ -47,6 +48,6 @@ with tqdm.tqdm(total=sum(1 for _ in file_list)) as pbar:
                     tqdm.tqdm.write("File exist on swift")
                 except:
                     tqdm.tqdm.write("File not found on swift, we will sync it")
-                    f = io.open(dirname + "/" + filename, "r")
+                    f = io.open(dirname + "/" + filename, "rb")
                     swift.upload(swift_path, f)
         pbar.update(1)
