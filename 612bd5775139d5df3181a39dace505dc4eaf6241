@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a6ff13c_e730dcea",
+        "filename": "dci/db/models.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 315,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-29T14:49:34Z",
+      "side": 1,
+      "message": "I think the default for these fields shoud be NULL, no 0. With 0, we my have some confusion later with cases where there is just no skips record.",
+      "revId": "612bd5775139d5df3181a39dace505dc4eaf6241",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3a6ff13c_2752f413",
+        "filename": "scripts/jobresults_provisioning.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-03-29T14:49:34Z",
+      "side": 1,
+      "message": "Why don\u0027t we just do that one the fly when a new JUNIT is uploaded?",
+      "revId": "612bd5775139d5df3181a39dace505dc4eaf6241",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
