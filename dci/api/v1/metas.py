@@ -31,16 +31,10 @@ def create_meta(user, job_id):
     """Create a meta information associated to a specific job."""
     v1_utils.verify_existence_and_get(job_id, models.JOBS)
 
-    created_at, updated_at = utils.get_dates(user)
-    values = schemas.meta.post(flask.request.json)
+    values = v1_utils.common_values_dict(user)
+    values.update(schemas.meta.post(flask.request.json))
 
-    etag = utils.gen_etag()
-    meta_id = utils.gen_uuid()
     values.update({
-        'id': meta_id,
-        'created_at': created_at,
-        'updated_at': updated_at,
-        'etag': etag,
         'job_id': job_id
     })
 
@@ -50,7 +44,7 @@ def create_meta(user, job_id):
         flask.g.db_conn.execute(query)
         result = json.dumps({'meta': values})
         return flask.Response(result, 201,
-                              headers={'ETag': etag},
+                              headers={'ETag': values['etag']},
                               content_type='application/json')
 
 

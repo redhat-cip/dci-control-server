@@ -55,20 +55,15 @@ def _verify_existence_and_get_user(user_id):
 @api.route('/users', methods=['POST'])
 @auth.requires_auth
 def create_users(user):
-    created_at, updated_at = utils.get_dates(user)
-    values = schemas.user.post(flask.request.json)
+    values = v1_utils.common_values_dict(user)
+    values.update(schemas.user.post(flask.request.json))
 
     if not(auth.is_admin(user) or auth.is_admin_user(user, values['team_id'])):
         raise auth.UNAUTHORIZED
 
-    etag = utils.gen_etag()
     password_hash = auth.hash_password(values.get('password'))
 
     values.update({
-        'id': utils.gen_uuid(),
-        'created_at': created_at,
-        'updated_at': updated_at,
-        'etag': etag,
         'password': password_hash,
         'role': values.get('role', 'user')
     })
@@ -85,7 +80,7 @@ def create_users(user):
 
     return flask.Response(
         json.dumps({'user': values}), 201,
-        headers={'ETag': etag}, content_type='application/json'
+        headers={'ETag': values['etag']}, content_type='application/json'
     )
 
 

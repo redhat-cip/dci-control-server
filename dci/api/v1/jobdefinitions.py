@@ -38,25 +38,19 @@ _JD_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 @api.route('/jobdefinitions', methods=['POST'])
 @auth.requires_auth
 def create_jobdefinitions(user):
-    created_at, updated_at = utils.get_dates(user)
-    etag = utils.gen_etag()
-    data_json = schemas.jobdefinition.post(flask.request.json)
-    data_json.update({
-        'id': utils.gen_uuid(),
-        'created_at': created_at,
-        'updated_at': updated_at,
-        'etag': etag
-    })
+    values = v1_utils.common_values_dict(user)
+    values.update(schemas.jobdefinition.post(flask.request.json))
 
-    query = _TABLE.insert().values(**data_json)
+    query = _TABLE.insert().values(**values)
+
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError as e:
         raise dci_exc.DCIException("Integrity error on 'test_id' field.",
                                    payload=str(e))
 
-    result = json.dumps({'jobdefinition': data_json})
-    return flask.Response(result, 201, headers={'ETag': etag},
+    result = json.dumps({'jobdefinition': values})
+    return flask.Response(result, 201, headers={'ETag': values['etag']},
                           content_type='application/json')
 
 

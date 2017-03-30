@@ -769,3 +769,23 @@ def build_file_path(file_folder, team_id, file_id, create=True):
         os.makedirs(directory)
 
     return os.path.join(directory, file_id)
+
+
+def common_values_dict(user):
+    """Build a basic values object used in every create method.
+
+       All our resources contain a same subset of value. Instead of
+       redoing this code everytime, this method ensures it is done only at
+       one place.
+    """
+
+    created_at, updated_at = utils.get_dates(user)
+    etag = utils.gen_etag()
+    values = {
+        'id': utils.gen_uuid(),
+        'created_at': created_at,
+        'updated_at': updated_at,
+        'etag': etag
+    }
+
+    return values

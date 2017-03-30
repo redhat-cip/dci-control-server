@@ -40,19 +40,11 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 @api.route('/topics', methods=['POST'])
 @auth.requires_auth
 def create_topics(user):
-    created_at, updated_at = utils.get_dates(user)
-    values = schemas.topic.post(flask.request.json)
-
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
 
-    etag = utils.gen_etag()
-    values.update({
-        'id': utils.gen_uuid(),
-        'created_at': created_at,
-        'updated_at': updated_at,
-        'etag': etag
-    })
+    values = v1_utils.common_values_dict(user)
+    values.update(schemas.topic.post(flask.request.json))
 
     query = _TABLE.insert().values(**values)
 
@@ -62,7 +54,7 @@ def create_topics(user):
         raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
 
     result = json.dumps({'topic': values})
-    return flask.Response(result, 201, headers={'ETag': etag},
+    return flask.Response(result, 201, headers={'ETag': values['etag']},
                           content_type='application/json')
 
 

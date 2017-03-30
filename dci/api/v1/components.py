@@ -48,18 +48,11 @@ _EMBED_MANY = {
 @api.route('/components', methods=['POST'])
 @auth.requires_auth
 def create_components(user):
-    created_at, updated_at = utils.get_dates(user)
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
 
-    values = schemas.component.post(flask.request.json)
-    etag = utils.gen_etag()
-    values.update({
-        'id': utils.gen_uuid(),
-        'created_at': created_at,
-        'updated_at': updated_at,
-        'etag': etag
-    })
+    values = v1_utils.common_values_dict(user)
+    values.update(schemas.component.post(flask.request.json))
 
     query = _TABLE.insert().values(**values)
 

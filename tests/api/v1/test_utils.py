@@ -16,7 +16,9 @@
 
 from dci.api.v1 import utils
 from dci.common import exceptions as dci_exc
+from uuid import UUID
 
+import datetime
 import pytest
 import sqlalchemy as sa
 
@@ -55,3 +57,26 @@ def test_group_embedded_resources():
             'a': {'id': '123', 'name': 'lol2',
                   'c': {'id': '12345', 'name': 'mdr1'}},
             'b': {'id': '1234', 'name': 'lol3'}} == result
+
+
+def test_common_values_dict_correct_fields():
+    user = {'team_name': 'team42'}
+
+    mydict = utils.common_values_dict(user)
+    expected_keys = ['id', 'created_at', 'updated_at', 'etag']
+    assert sorted(mydict.keys()) == sorted(expected_keys)
+
+
+def test_common_values_dict_correct_fields_type():
+    user = {'team_name': 'team42'}
+
+    mydict = utils.common_values_dict(user)
+    assert UUID(mydict['id'], version=4)
+    assert UUID(mydict['etag'], version=4)
+
+    assert datetime.datetime.strptime(
+        mydict['created_at'], '%Y-%m-%dT%H:%M:%S.%f'
+    )
+    assert datetime.datetime.strptime(
+        mydict['updated_at'], '%Y-%m-%dT%H:%M:%S.%f'
+    )
