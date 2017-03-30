@@ -41,19 +41,11 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 @auth.requires_auth
 @audits.log
 def create_teams(user):
-    created_at, updated_at = utils.get_dates(user)
-    values = schemas.team.post(flask.request.json)
+    values = v1_utils.common_values_dict(user)
+    values.update(schemas.team.post(flask.request.json))
 
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
-
-    etag = utils.gen_etag()
-    values.update({
-        'id': utils.gen_uuid(),
-        'created_at': created_at,
-        'updated_at': updated_at,
-        'etag': etag
-    })
 
     query = _TABLE.insert().values(**values)
 
@@ -64,7 +56,7 @@ def create_teams(user):
 
     return flask.Response(
         json.dumps({'team': values}), 201,
-        headers={'ETag': etag}, content_type='application/json'
+        headers={'ETag': values['etag']}, content_type='application/json'
     )
 
 

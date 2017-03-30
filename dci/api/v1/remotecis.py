@@ -44,21 +44,16 @@ _EMBED_MANY = {
 @api.route('/remotecis', methods=['POST'])
 @auth.requires_auth
 def create_remotecis(user):
-    created_at, updated_at = utils.get_dates(user)
-    values = schemas.remoteci.post(flask.request.json)
+    values = v1_utils.common_values_dict(user)
+    values.update(schemas.remoteci.post(flask.request.json))
 
     # If it's not a super admin nor belongs to the same team_id
     if not(auth.is_admin(user) or
            auth.is_in_team(user, values.get('team_id'))):
         raise auth.UNAUTHORIZED
 
-    etag = utils.gen_etag()
     values.update({
-        'id': utils.gen_uuid(),
-        'created_at': created_at,
-        'updated_at': updated_at,
         'data': values.get('data', {}),
-        'etag': etag
     })
 
     query = _TABLE.insert().values(**values)
@@ -70,7 +65,7 @@ def create_remotecis(user):
 
     return flask.Response(
         json.dumps({'remoteci': values}), 201,
-        headers={'ETag': etag}, content_type='application/json'
+        headers={'ETag': values['etag']}, content_type='application/json'
     )
 
 

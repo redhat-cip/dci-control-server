@@ -60,20 +60,15 @@ _EMBED_MANY = {
 @api.route('/jobs', methods=['POST'])
 @auth.requires_auth
 def create_jobs(user):
-    created_at, updated_at = utils.get_dates(user)
-    values = schemas.job.post(flask.request.json)
+    values = v1_utils.common_values_dict(user)
+    values.update(schemas.job.post(flask.request.json))
     components_ids = values.pop('components')
 
     # If it's not a super admin nor belongs to the same team_id
     if not(auth.is_admin(user) or auth.is_in_team(user, values['team_id'])):
         raise auth.UNAUTHORIZED
 
-    etag = utils.gen_etag()
     values.update({
-        'id': utils.gen_uuid(),
-        'created_at': created_at,
-        'updated_at': updated_at,
-        'etag': etag,
         'recheck': values.get('recheck', False),
         'status': 'new',
         'configuration': {},
@@ -98,7 +93,7 @@ def create_jobs(user):
                                     jobs_components_to_insert)
 
     return flask.Response(json.dumps({'job': values}), 201,
-                          headers={'ETag': etag},
+                          headers={'ETag': values['etag']},
                           content_type='application/json')
 
 
