@@ -124,14 +124,12 @@ def get_jobdefinition_by_id_or_name(user, jd_id):
 
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['PUT'])
 @auth.requires_auth
+@auth.requires_role(['admin'])
 def put_jobdefinition(user, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     values = schemas.jobdefinition.put(flask.request.json)
-
-    if not(auth.is_admin(user) or auth.is_admin_user(user, jd_id)):
-        raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
 

@@ -54,12 +54,10 @@ def _verify_existence_and_get_user(user_id):
 
 @api.route('/users', methods=['POST'])
 @auth.requires_auth
+@auth.requires_role(['admin', 'team_admin'])
 def create_users(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.user.post(flask.request.json))
-
-    if not(auth.is_admin(user) or auth.is_admin_user(user, values['team_id'])):
-        raise auth.UNAUTHORIZED
 
     password_hash = auth.hash_password(values.get('password'))
 

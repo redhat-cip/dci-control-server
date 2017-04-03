@@ -106,6 +106,20 @@ def requires_auth(f):
     return decorated
 
 
+def get_team_id():
+    """Return the team_id from the HTTP request. """
+
+    team_id = None
+
+    if 'team_id' in flask.request.json.keys():
+        team_id = flask.request.json['team_id']
+    elif flask.request.path.split('/')[3] == 'teams' and \
+            len(flask.request.path.split('/')) > 4:
+        team_id = flask.request.path.split('/')[4]
+
+    return team_id
+
+
 def requires_role(allowed_roles):
     """Ensure only authorized roles can proceed.
 
@@ -126,9 +140,13 @@ def requires_role(allowed_roles):
             auth = flask.request.authorization
             user, is_authenticated = build_auth(auth.username, auth.password)
 
-            if 'admin' in allowed_roles and not is_admin(user):
-                return reject()
+            if 'team_admin' in allowed_roles and \
+                    is_admin_user(user, get_team_id()):
+                return f(*args, **kwargs)
 
-            return f(*args, **kwargs)
+            if 'admin' in allowed_roles and is_admin(user):
+                return f(*args, **kwargs)
+
+            return reject()
         return decorated
     return acls
