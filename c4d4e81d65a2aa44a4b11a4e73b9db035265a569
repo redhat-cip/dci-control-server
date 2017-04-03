@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa963961_c20bc27c",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 17
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-04-03T12:41:44Z",
+      "side": 1,
+      "message": ".read() will read the whole file in memory which can cause Memory errors, thats why we used streaming read.",
+      "revId": "c4d4e81d65a2aa44a4b11a4e73b9db035265a569",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
