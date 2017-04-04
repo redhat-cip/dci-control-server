@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa963961_65ad2031",
+        "filename": "dci/api/v1/tests_results.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-04-04T14:52:55Z",
+      "side": 1,
+      "message": "Could you add transaction behavior\n\nwith engine.begin():\n    query \u003d _TABLE.insert().values(**test_results)\n    engine.execute(query)",
+      "revId": "e4bd0e501f2c68894d45e75d206eb703bbcd62fa",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
