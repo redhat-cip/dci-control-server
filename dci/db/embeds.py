@@ -54,6 +54,8 @@ JOBSTATE = models.JOBSTATES.alias('jobstate')
 JOBSTATE_JOBS = models.JOBS.alias('jobstate.job')
 JOBSTATEJOBS_WITHOUT_CONFIGURATION = ignore_columns_from_table(JOBSTATE_JOBS, ['configuration'])  # noqa
 
+TOPIC = models.TOPICS.alias('topic')
+
 
 def jobs(root_select=models.JOBS):
     return {
@@ -198,6 +200,15 @@ def files(root_select=models.FILES):
     }
 
 
+def jobdefinitions(root_select=models.JOBDEFINITIONS):
+    return {
+        'topic': [
+            {'right': TOPIC,
+             'onclause': root_select.c.topic_id == TOPIC.c.id}
+        ]
+    }
+
+
 # associate the name table to the object table
 # used for select clause
 EMBED_STRING_TO_OBJECT = {
@@ -223,7 +234,10 @@ EMBED_STRING_TO_OBJECT = {
         'jobstate': JOBSTATE,
         'jobstate.job': JOBSTATEJOBS_WITHOUT_CONFIGURATION,
         'job': JOB_WITHOUT_CONFIGURATION,
-        'team': TEAM}
+        'team': TEAM},
+    'jobdefinitions': {
+        'topic': TOPIC
+    }
 }
 
 
@@ -232,7 +246,8 @@ EMBED_JOINS = {
     'jobs': jobs,
     'remotecis': remotecis,
     'components': components,
-    'files': files
+    'files': files,
+    'jobdefinitions': jobdefinitions
 }
 
 
@@ -252,63 +267,6 @@ def embed(many=False, select=None, where=None,
     :param join: an SQLAlchemy-core Join instance
     """
     return Embed(many, select, where, sort, join)
-
-
-def files():
-    team = models.TEAMS.alias('team')
-    jobstate = models.JOBSTATES.alias('jobstate')
-    jobstate_t = models.JOBSTATES.alias('jobstate_t')
-    jobstate_job = models.JOBS.alias('jobstate.job')
-    job = models.JOBS.alias('job')
-    f0 = models.FILES.alias('f0')
-    f1 = models.FILES.alias('f1')
-    # f2 = models.FILES.alias('f2')
-    return {
-        'jobstate': embed(
-            select=[jobstate],
-            join=f0.join(
-                jobstate,
-                sql.expression.or_(
-                    f0.c.jobstate_id == jobstate.c.id,
-                    f0.c.jobstate_id == None))),  # noqa
-        'jobstate.job': embed(
-            select=[c
-                    for n, c in jobstate_job.c.items()
-                    if n != 'configuration'],
-            join=jobstate_t.join(
-                jobstate_job,
-                sql.expression.or_(
-                    jobstate_t.c.job_id == jobstate_job.c.id,
-                    jobstate_job.c.id == None)),
-            where=jobstate.c.id == jobstate_t.c.id),
-        'job': embed(
-            select=[job],
-            join=f1.join(
-                job,
-                sql.expression.or_(
-                    job.c.id == f1.c.job_id,
-                    job.c.id == None)
-            ),
-            where=job.c.state != 'archived'),
-        'team': embed(
-            select=[team],
-            where=and_(
-                models.FILES.c.team_id == team.c.id,
-                team.c.state != 'archived'
-            )
-        )
-    }
-
-
-def jobdefinitions():
-    topic = models.TOPICS.alias('topic')
-    return {
-        'topic': embed(
-            select=[topic],
-            where=and_(
-                models.JOBDEFINITIONS.c.topic_id == topic.c.id,
-                topic.c.state != 'archived'
-            ))}
 
 
 def jobstates():
