@@ -36,6 +36,8 @@ TEAM = models.TEAMS.alias('team')
 REMOTECI = models.REMOTECIS.alias('remoteci')
 CFILES = models.COMPONENT_FILES.alias('files')
 
+JOB = models.JOBS.alias('job')
+JOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(JOB, ['configuration'])  # noqa
 JOBS_WITHOUT_CONFIGURATION = ignore_columns_from_table(models.JOBS, ['configuration'])  # noqa
 
 LASTJOB = models.JOBS.alias('lastjob')
@@ -47,6 +49,10 @@ CURRENTJOB = models.JOBS.alias('currentjob')
 CURRENTJOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(CURRENTJOB, ['configuration'])  # noqa
 CURRENTJOB_COMPONENTS = models.COMPONENTS.alias('currentjob.components')
 CURRENTJOB_JOIN_COMPONENTS = models.JOIN_JOBS_COMPONENTS.alias('currentjob.jobcomponents')  # noqa
+
+JOBSTATE = models.JOBSTATES.alias('jobstate')
+JOBSTATE_JOBS = models.JOBS.alias('jobstate.job')
+JOBSTATEJOBS_WITHOUT_CONFIGURATION = ignore_columns_from_table(JOBSTATE_JOBS, ['configuration'])  # noqa
 
 
 def jobs(root_select=models.JOBS):
@@ -169,6 +175,29 @@ def components(root_select=models.COMPONENTS):
     }
 
 
+def files(root_select=models.FILES):
+    return {
+        'jobstate': [
+            {'right': JOBSTATE,
+             'onclause': JOBSTATE.c.id == root_select.c.jobstate_id,
+             'isouter': True}
+        ],
+        'jobstate.job': [
+            {'right': JOBSTATE_JOBS,
+             'onclause': JOBSTATE.c.job_id == JOBSTATE_JOBS.c.id,
+             'isouter': True}],
+        'job': [
+            {'right': JOB,
+             'onclause': root_select.c.job_id == JOB.c.id,
+             'isouter': True}
+        ],
+        'team': [
+            {'right': TEAM,
+             'onclause': root_select.c.team_id == TEAM.c.id}
+        ]
+    }
+
+
 # associate the name table to the object table
 # used for select clause
 EMBED_STRING_TO_OBJECT = {
@@ -189,15 +218,21 @@ EMBED_STRING_TO_OBJECT = {
         'currentjob.components': CURRENTJOB_COMPONENTS},
     'components': {
         'files': CFILES,
-        'jobs': JOBS_WITHOUT_CONFIGURATION
-    }
+        'jobs': JOBS_WITHOUT_CONFIGURATION},
+    'files': {
+        'jobstate': JOBSTATE,
+        'jobstate.job': JOBSTATEJOBS_WITHOUT_CONFIGURATION,
+        'job': JOB_WITHOUT_CONFIGURATION,
+        'team': TEAM}
 }
+
 
 # for each table associate its embed's function handler
 EMBED_JOINS = {
     'jobs': jobs,
     'remotecis': remotecis,
-    'components': components
+    'components': components,
+    'files': files
 }
 
 
