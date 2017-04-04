@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa963961_a813ff0c",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 25
+      },
+      "lineNbr": 101,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-04-04T19:33:05Z",
+      "side": 1,
+      "message": "are you sure this header isn\u0027t case sensitive ? because the real value is Content-Length",
+      "range": {
+        "startLine": 101,
+        "startChar": 24,
+        "endLine": 101,
+        "endChar": 38
+      },
+      "revId": "36618fcb032c72af2cbbb96fbb4775ef00d4b6ff",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_88f95bcb",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 25
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-04-04T19:33:05Z",
+      "side": 1,
+      "message": "I don\u0027t understand why you need to define this function here if you are using it once.",
+      "range": {
+        "startLine": 167,
+        "startChar": 4,
+        "endLine": 169,
+        "endChar": 23
+      },
+      "revId": "36618fcb032c72af2cbbb96fbb4775ef00d4b6ff",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
