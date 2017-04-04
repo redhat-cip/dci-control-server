@@ -19,6 +19,23 @@
     },
     {
       "key": {
+        "uuid": "fa963961_052bf4ec",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 628,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-04-04T14:02:40Z",
+      "side": 1,
+      "message": "The two updates should be done in a transaction. It\u0027s the same for the other similar endpoints.",
+      "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fa963961_85ca644e",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 4
@@ -30,6 +47,24 @@
       "writtenOn": "2017-04-04T13:14:54Z",
       "side": 1,
       "message": "same here",
+      "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_856dc434",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 636,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-04-04T14:02:40Z",
+      "side": 1,
+      "message": "You can also archive the associated jobstate.",
+      "parentUuid": "fa963961_85ca644e",
       "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +88,23 @@
     },
     {
       "key": {
+        "uuid": "fa963961_e564904a",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 192,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-04-04T14:02:40Z",
+      "side": 1,
+      "message": "there is also the jobstates.",
+      "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fa963961_25c1582f",
         "filename": "dci/api/v1/tests.py",
         "patchSetId": 4
@@ -64,6 +116,41 @@
       "writtenOn": "2017-04-04T13:14:54Z",
       "side": 1,
       "message": "same here",
+      "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_c5598c90",
+        "filename": "dci/api/v1/tests.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-04-04T14:02:40Z",
+      "side": 1,
+      "message": "Should we also delete the jobs associated to the files.",
+      "parentUuid": "fa963961_25c1582f",
+      "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_a55e8874",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 175,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-04-04T14:02:40Z",
+      "side": 1,
+      "message": "Files and jobs too?",
       "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
