@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa963961_a5b448d1",
+        "filename": "dci/api/v1/jobdefinitions.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-04-04T13:14:54Z",
+      "side": 1,
+      "message": "Because you only have one table you should avoid the loop",
+      "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_85ca644e",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 636,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-04-04T13:14:54Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_65c76046",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-04-04T13:14:54Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_25c1582f",
+        "filename": "dci/api/v1/tests.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-04-04T13:14:54Z",
+      "side": 1,
+      "message": "same here",
+      "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
