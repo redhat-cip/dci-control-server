@@ -150,36 +150,44 @@ def group_embedded_resources(items_to_embed, row):
     return utils.dict_merge(res, row)
 
 
-def get_columns_name_with_objects(table, embed={}):
-    columns = {
-        column.name: getattr(table.c, column.name)
-        for column in table.columns
-    }
-    for v in embed.values():
-        for t in v.select:
-            if hasattr(t, 'c'):
-                for i in t.c:
-                    columns[str(i)] = i
-            else:
-                columns[str(t)] = t
+def get_columns_name_with_objects(table, table_prefix=False):
+    if table_prefix:
+        columns = {
+            '%s_%s' % (table.name, column.name): getattr(table.columns, column.name)   # noqa
+            for column in table.columns
+        }
+    else:
+        columns = {
+            column.name: getattr(table.columns, column.name)
+            for column in table.columns
+        }
     return columns
 
 
-def sort_query(sort, valid_columns, default='-created_at'):
+def sort_query(sort, root_valid_columns, embeds_valid_columns={}, default='-created_at'):  # noqa
     order_by = []
-    if not sort and not valid_columns:
+    if not sort and not root_valid_columns:
         return []
     if not sort:
         sort = [default]
+    valid_columns_keys = list(root_valid_columns.keys())
+    valid_columns = dict(root_valid_columns)
+    if embeds_valid_columns:
+        valid_columns.update(embeds_valid_columns)
+        embed_valid_columns_keys = [i.replace('_', '.', 1)
+                                    for i in list(embeds_valid_columns.keys())]
+        valid_columns_keys.extend(embed_valid_columns_keys)
     for sort_elem in sort:
         sort_order = (sql.desc
                       if sort_elem.startswith('-') else sql.asc)
         sort_elem = sort_elem.strip(' -')
-        if sort_elem not in valid_columns:
+        if sort_elem not in valid_columns_keys:
             raise dci_exc.DCIException(
                 'Invalid sort key: "%s"' % sort_elem,
-                payload={'Valid sort keys': list(valid_columns.keys())}
+                payload={'Valid sort keys': sorted(set(valid_columns_keys))}
             )
+        if '.' in sort_elem:
+            sort_elem = sort_elem.replace('.', '_', 1)
         order_by.append(sort_order(valid_columns[sort_elem]))
     return order_by
 
@@ -231,12 +239,27 @@ class QueryBuilder2(object):
         self._embeds = args.get('embed', [])
         self._limit = args.get('limit', None)
         self._offset = args.get('offset', None)
-        self._sort = sort_query(args.get('sort', []), strings_to_columns)
+        self._sort = self._get_sort_query_with_embeds(args.get('sort', []),
+                                                      root_table.name,
+                                                      strings_to_columns)
         self._where = where_query(args.get('where', []), self._root_table,
                                   strings_to_columns)
         self._strings_to_columns = strings_to_columns
         self._extras_conditions = []
         self._ignored_columns = ignore_columns or []
+
+    def _get_sort_query_with_embeds(self, args_sort, root_table_name, strings_to_columns):  # noqa
+        # add embeds field for the sorting
+        strings_to_columns_with_embeds = {}
+        if root_table_name in embeds.EMBED_STRING_TO_OBJECT:
+            for embed_elem in embeds.EMBED_STRING_TO_OBJECT[root_table_name].values():  # noqa
+                if isinstance(embed_elem, list):
+                    embed_str_to_objects = {'%s_%s' % (c.table.name, c.name): c for c in embed_elem}  # noqa
+                    strings_to_columns_with_embeds.update(embed_str_to_objects)
+                else:
+                    strings_to_columns_with_embeds.update(
+                        get_columns_name_with_objects(embed_elem, table_prefix=True))  # noqa
+        return sort_query(args_sort, strings_to_columns, strings_to_columns_with_embeds)  # noqa
 
     def add_extra_condition(self, condition):
         self._extras_conditions.append(condition)
@@ -302,6 +325,7 @@ class QueryBuilder2(object):
             embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select)  # noqa
             embed_list = self._get_embed_list(embed_joins)
             children = root_select
+            # embed sort for embeds such like lastjob
             embed_sorts = []
             for embed_elem in embed_list:
                 for param in embed_joins[embed_elem]:
