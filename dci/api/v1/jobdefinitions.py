@@ -57,7 +57,7 @@ def create_jobdefinitions(user):
                           content_type='application/json')
 
 
-def list_all_jobdefinitions(user, topic_ids):
+def list_jobdefinitions(user, topic_ids, by_topic):
     """Get all jobdefinitions.
 
     If topic_id is not None, then return all the jobdefinitions with a topic
@@ -68,7 +68,10 @@ def list_all_jobdefinitions(user, topic_ids):
 
     query = v1_utils.QueryBuilder2(_TABLE, args, _JD_COLUMNS)
 
-    if not auth.is_admin(user):
+    if not by_topic:
+        if not auth.is_admin(user):
+            query.add_extra_condition(_TABLE.c.topic_id.in_(topic_ids))
+    else:
         query.add_extra_condition(_TABLE.c.topic_id.in_(topic_ids))
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
@@ -85,7 +88,7 @@ def list_all_jobdefinitions(user, topic_ids):
 @auth.requires_auth
 def get_all_jobdefinitions(user):
     topic_ids = v1_utils.user_topic_ids(user)
-    return list_all_jobdefinitions(user, topic_ids)
+    return list_jobdefinitions(user, topic_ids, by_topic=False)
 
 
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['GET'])
