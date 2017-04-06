@@ -68,8 +68,11 @@ def list_all_jobdefinitions(user, topic_ids):
 
     query = v1_utils.QueryBuilder2(_TABLE, args, _JD_COLUMNS)
 
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.topic_id.in_(topic_ids))
+    if isinstance(topic_ids, list):
+        if not auth.is_admin(user):
+            query.add_extra_condition(_TABLE.c.topic_id.in_(topic_ids))
+    elif topic_ids is not None:
+        query.add_extra_condition(_TABLE.c.topic_id == topic_ids)
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
