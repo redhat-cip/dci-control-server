@@ -88,7 +88,7 @@ def create_files(user):
                                       values['job_id'],
                                       file_id)
 
-    swift.upload(file_path, flask.request.stream.read())
+    swift.upload(file_path, flask.request.stream)
     s_file = swift.head(file_path)
 
     etag = utils.gen_etag()
@@ -175,7 +175,8 @@ def get_file_content(user, file_id):
                                       file['job_id'],
                                       file_id)
 
-    data = get_object(file_path)
+    # Check if file exist on the storage engine
+    swift.head(file_path)
 
     if flask.request.is_xhr and file['mime'] == 'application/junit':
         data = ''.join(swift.get(file_path)[1])
@@ -185,18 +186,22 @@ def get_file_content(user, file_id):
             'Content-Disposition': 'attachment; filename=%s' %
                                    file['name'].replace(' ', '_')
         }
+        return flask.Response(
+            data,
+            content_type=file['mime'],
+            headers=headers
+        )
     else:
         headers = {
             'Content-Length': file['size'],
             'Content-Disposition': 'attachment; filename=%s' %
                                    file['name'].replace(' ', '_')
         }
-
-    return flask.Response(
-        data,
-        content_type=file['mime'] or 'text/plain',
-        headers=headers
-    )
+        return flask.Response(
+            get_object(file_path),
+            content_type=file['mime'] or 'text/plain',
+            headers=headers
+        )
 
 
 @api.route('/files/<uuid:file_id>', methods=['DELETE'])
