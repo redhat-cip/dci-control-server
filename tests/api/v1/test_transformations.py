@@ -126,6 +126,7 @@ def test_retrieve_junit2json(admin, job_id):
 
         assert (res.headers.get('Content-Disposition') ==
                 'attachment; filename=junit_file.xml')
+        print res.headers
         assert json.loads(res.data) == JSONUNIT
 
 

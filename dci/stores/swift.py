@@ -53,7 +53,10 @@ class Swift(stores.Store):
                                           resp_chunk_size=65535)
 
     def head(self, filename):
-        return self.connection.head_object(self.container, filename)
+        try:
+            return self.connection.head_object(self.container, filename)
+        except swiftclient.exceptions.ClientException:
+            raise exceptions.DCINotFound('Content File', filename)
 
     def upload(self, file_path, iterable, pseudo_folder=None,
                create_container=True):
@@ -63,8 +66,7 @@ class Swift(stores.Store):
             if exc.http_reason == 'Not Found' and create_container:
                 self.connection.put_container(self.container)
 
-        self.connection.put_object(self.container, file_path,
-                                   iterable)
+        self.connection.put_object(self.container, file_path, iterable)
 
     def build_file_path(self, root, middle, file_id):
         root = str(root)
