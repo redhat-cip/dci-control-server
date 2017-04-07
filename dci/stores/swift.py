@@ -63,8 +63,7 @@ class Swift(stores.Store):
             if exc.http_reason == 'Not Found' and create_container:
                 self.connection.put_container(self.container)
 
-        self.connection.put_object(self.container, file_path,
-                                   iterable)
+        self.connection.put_object(self.container, file_path, iterable)
 
     def build_file_path(self, root, middle, file_id):
         root = str(root)
