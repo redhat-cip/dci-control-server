@@ -32,6 +32,7 @@ from dci.common import utils
 from dci.db import embeds
 from dci.db import models
 from dci import dci_config
+from swiftclient import exceptions.ClientException
 
 
 _TABLE = models.FILES
@@ -229,4 +230,19 @@ def get_to_purge_archived_files(user):
 @api.route('/files/purge', methods=['POST'])
 @auth.requires_auth
 def purge_archived_files(user):
+
+    try:
+        swift = dci_config.get_store('files')
+        query = sql.select([_TABLE]).where(_TABLE.c.state == 'archived')
+        files = flask.g.db_conn.execute(query).fetchall()
+        for file in files:
+            file_path = swift.build_file_path(user['team_id'], file['job_id'],
+                                              file['id'])
+            swift.delete(file_path)
+    except ClientException as e:
+        if e.http_status == 404:
+            pass
+        else:
+            raise e
+
     return base.purge_archived_resources(user, _TABLE)
