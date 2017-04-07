@@ -71,6 +71,24 @@
     },
     {
       "key": {
+        "uuid": "fa963961_f678c891",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 636,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-04-07T08:17:52Z",
+      "side": 1,
+      "message": "@Goneri: jobstate have no state field",
+      "parentUuid": "fa963961_856dc434",
+      "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fa963961_65c76046",
         "filename": "dci/api/v1/remotecis.py",
         "patchSetId": 4
@@ -99,6 +117,24 @@
       "writtenOn": "2017-04-04T14:02:40Z",
       "side": 1,
       "message": "there is also the jobstates.",
+      "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_d66dc4cd",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 192,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-04-07T08:17:52Z",
+      "side": 1,
+      "message": "jobstate has no state field",
+      "parentUuid": "fa963961_e564904a",
       "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -134,6 +170,24 @@
       "side": 1,
       "message": "Should we also delete the jobs associated to the files.",
       "parentUuid": "fa963961_25c1582f",
+      "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_363190ed",
+        "filename": "dci/api/v1/tests.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-04-07T08:17:52Z",
+      "side": 1,
+      "message": "Here I would say not.\n\nI have a job, running both \u0027tempest\u0027 and \u0027rally\u0027 tests. In addition to the result of those two tests, job has configuration files attached.\n\nNow, the admin of the platform decides that \u0027tempest\u0027 should be deleted.\n\nAll the \u0027tempest\u0027 result files should be archived, but not the job attached to this result as the other result and configuration are still meaningful.",
+      "parentUuid": "fa963961_c5598c90",
       "revId": "1ade4625df2d2a2d141300dad77e2594fbe32e82",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
