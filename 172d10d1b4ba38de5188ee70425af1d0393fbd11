@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa963961_9c13dd5c",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 242,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-04-10T18:48:56Z",
+      "side": 1,
+      "message": "You should list the exceptions here to avoid the case where a legit error is hidden.",
+      "revId": "172d10d1b4ba38de5188ee70425af1d0393fbd11",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_5c1d5565",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 264,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-04-10T18:48:56Z",
+      "side": 1,
+      "message": "Nice :D",
+      "revId": "172d10d1b4ba38de5188ee70425af1d0393fbd11",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_7c10194f",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 180,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-04-10T18:48:56Z",
+      "side": 1,
+      "message": "The same.",
+      "revId": "172d10d1b4ba38de5188ee70425af1d0393fbd11",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
