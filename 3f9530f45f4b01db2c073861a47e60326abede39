@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "fa963961_51065e21",
+        "filename": "dci/alembic/versions/0327fd239d3f_create_components_issues_table.py",
+        "patchSetId": 15
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-04-10T17:55:56Z",
+      "side": 1,
+      "message": "ack will do.",
+      "parentUuid": "fa963961_912506c4",
+      "revId": "3f9530f45f4b01db2c073861a47e60326abede39",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fa963961_712282bb",
         "filename": "dci/alembic/versions/0327fd239d3f_create_components_issues_table.py",
         "patchSetId": 15
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "fa963961_71096231",
+        "filename": "dci/alembic/versions/0327fd239d3f_create_components_issues_table.py",
+        "patchSetId": 15
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-04-10T17:55:56Z",
+      "side": 1,
+      "message": "Is this possible if nullable is set to False, and user_id is a FK?",
+      "parentUuid": "fa963961_712282bb",
+      "revId": "3f9530f45f4b01db2c073861a47e60326abede39",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fa963961_1118d683",
         "filename": "dci/api/v1/utils.py",
         "patchSetId": 15
@@ -47,6 +83,24 @@
       "writtenOn": "2017-04-10T17:34:27Z",
       "side": 1,
       "message": "Do we really need that?",
+      "revId": "3f9530f45f4b01db2c073861a47e60326abede39",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_3103da11",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 15
+      },
+      "lineNbr": 592,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-04-10T17:55:56Z",
+      "side": 1,
+      "message": "ahahs sorry left over :/",
+      "parentUuid": "fa963961_1118d683",
       "revId": "3f9530f45f4b01db2c073861a47e60326abede39",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
