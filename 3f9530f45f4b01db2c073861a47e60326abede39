@@ -33,6 +33,23 @@
       "revId": "3f9530f45f4b01db2c073861a47e60326abede39",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_1118d683",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 15
+      },
+      "lineNbr": 592,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-04-10T17:34:27Z",
+      "side": 1,
+      "message": "Do we really need that?",
+      "revId": "3f9530f45f4b01db2c073861a47e60326abede39",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
