@@ -37,7 +37,7 @@ def test_get_all_jobdefinitions(jobdefinition_id, jobdefinition_user_id,
     assert len(res.data['jobdefinitions']) == 1
 
 
-def test_get_all_jobdefinitions_with_id(admin, topic_id):
+def test_admin_get_all_jobdefinitions(admin, topic_id):
     data = {'name': 'pname1', 'topic_id': topic_id}
     jd_1 = admin.post('/api/v1/jobdefinitions', data=data).data
     jd_1_id = jd_1['jobdefinition']['id']
@@ -47,6 +47,25 @@ def test_get_all_jobdefinitions_with_id(admin, topic_id):
     jd_2_id = jd_2['jobdefinition']['id']
 
     db_all_jds = admin.get(
+        '/api/v1/topics/%s/jobdefinitions?sort=created_at' % topic_id).data
+    db_all_jds = db_all_jds['jobdefinitions']
+    db_all_jds_ids = [db_jd['id'] for db_jd in db_all_jds]
+
+    assert db_all_jds_ids == [jd_1_id, jd_2_id]
+
+
+def test_user_get_all_jobdefinitions(admin, user, team_user_id, topic_id):
+    data = {'name': 'pname1', 'topic_id': topic_id}
+    jd_1 = admin.post('/api/v1/jobdefinitions', data=data).data
+    jd_1_id = jd_1['jobdefinition']['id']
+
+    data = {'name': 'pname2', 'topic_id': topic_id}
+    jd_2 = admin.post('/api/v1/jobdefinitions', data=data).data
+    jd_2_id = jd_2['jobdefinition']['id']
+
+    admin.post('/api/v1/topics/%s/teams' % topic_id,
+               data={'team_id': team_user_id})
+    db_all_jds = user.get(
         '/api/v1/topics/%s/jobdefinitions?sort=created_at' % topic_id).data
     db_all_jds = db_all_jds['jobdefinitions']
     db_all_jds_ids = [db_jd['id'] for db_jd in db_all_jds]
