@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa963961_771dd20e",
+        "filename": "dci/api/v1/tests.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-04-11T14:42:22Z",
+      "side": 1,
+      "message": "/teams/\u003cuuid\u003e/tests?embed\u003dtopics\n - as an admin it returns an empty topic list (\"topics\": []) for each test.\nhttps://softwarefactory-project.io/paste/show/768/",
+      "range": {
+        "startLine": 92,
+        "startChar": 0,
+        "endLine": 108,
+        "endChar": 70
+      },
+      "revId": "4804c815b911d8aa339d93565229b2cf11030d82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_5703eeb8",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-04-11T14:42:22Z",
+      "side": 1,
+      "message": "/topics?embed\u003dteams\n  - it\u0027s working fine now",
+      "range": {
+        "startLine": 63,
+        "startChar": 0,
+        "endLine": 114,
+        "endChar": 71
+      },
+      "revId": "4804c815b911d8aa339d93565229b2cf11030d82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
