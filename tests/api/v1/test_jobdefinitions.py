@@ -26,28 +26,102 @@ def test_create_jobdefinitions(admin, topic_id):
     assert jd['jobdefinition']['name'] == 'pname'
 
 
-def test_get_all_jobdefinitions(jobdefinition_id, jobdefinition_user_id,
-                                admin, user):
+def test_admin_get_all_jobdefinitions(jobdefinition_id, jobdefinition_user_id,
+                                      admin):
+    topic_1 = admin.post('/api/v1/topics', data={'name': 'topic_1'}).data
+    topic_1_id = topic_1['topic']['id']
+
+    topic_2 = admin.post('/api/v1/topics', data={'name': 'topic_2'}).data
+    topic_2_id = topic_2['topic']['id']
+
+    data = {'name': 'jobdef_1', 'topic_id': topic_1_id}
+    admin.post('/api/v1/jobdefinitions', data=data).data
+
+    data = {'name': 'jobdef_2', 'topic_id': topic_1_id}
+    admin.post('/api/v1/jobdefinitions', data=data).data
+
+    data = {'name': 'jobdef_3', 'topic_id': topic_2_id}
+    admin.post('/api/v1/jobdefinitions', data=data).data
+
     res = admin.get('/api/v1/jobdefinitions')
-    assert res.data['_meta']['count'] == 2
-    assert len(res.data['jobdefinitions']) == 2
+    assert res.data['_meta']['count'] == 5
+    assert len(res.data['jobdefinitions']) == 5
+
+
+def test_user_get_all_jobdefinitions(jobdefinition_id, jobdefinition_user_id,
+                                     admin, user, team_user_id):
+    topic_1 = admin.post('/api/v1/topics', data={'name': 'topic_1'}).data
+    topic_1_id = topic_1['topic']['id']
+
+    topic_2 = admin.post('/api/v1/topics', data={'name': 'topic_2'}).data
+    topic_2_id = topic_2['topic']['id']
+
+    data = {'name': 'jobdef_1', 'topic_id': topic_1_id}
+    admin.post('/api/v1/jobdefinitions', data=data).data
+
+    data = {'name': 'jobdef_2', 'topic_id': topic_1_id}
+    admin.post('/api/v1/jobdefinitions', data=data).data
+
+    data = {'name': 'jobdef_3', 'topic_id': topic_2_id}
+    admin.post('/api/v1/jobdefinitions', data=data).data
+
+    admin.post('/api/v1/topics/%s/teams' % topic_1_id,
+               data={'team_id': team_user_id})
 
     res = user.get('/api/v1/jobdefinitions')
-    assert res.data['_meta']['count'] == 1
-    assert len(res.data['jobdefinitions']) == 1
+    assert res.data['_meta']['count'] == 3
+    assert len(res.data['jobdefinitions']) == 3
 
 
-def test_get_all_jobdefinitions_with_id(admin, topic_id):
-    data = {'name': 'pname1', 'topic_id': topic_id}
+def test_admin_get_all_jobdefinitions_with_topic_id(admin, topic_id):
+    topic_1 = admin.post('/api/v1/topics', data={'name': 'topic_1'}).data
+    topic_1_id = topic_1['topic']['id']
+
+    topic_2 = admin.post('/api/v1/topics', data={'name': 'topic_2'}).data
+    topic_2_id = topic_2['topic']['id']
+
+    data = {'name': 'jobdef_1', 'topic_id': topic_1_id}
     jd_1 = admin.post('/api/v1/jobdefinitions', data=data).data
     jd_1_id = jd_1['jobdefinition']['id']
 
-    data = {'name': 'pname2', 'topic_id': topic_id}
+    data = {'name': 'jobdef_2', 'topic_id': topic_1_id}
     jd_2 = admin.post('/api/v1/jobdefinitions', data=data).data
     jd_2_id = jd_2['jobdefinition']['id']
 
+    data = {'name': 'jobdef_3', 'topic_id': topic_2_id}
+    admin.post('/api/v1/jobdefinitions', data=data).data
+
     db_all_jds = admin.get(
-        '/api/v1/topics/%s/jobdefinitions?sort=created_at' % topic_id).data
+        '/api/v1/topics/%s/jobdefinitions?sort=created_at' % topic_1_id).data
+    db_all_jds = db_all_jds['jobdefinitions']
+    db_all_jds_ids = [db_jd['id'] for db_jd in db_all_jds]
+
+    assert db_all_jds_ids == [jd_1_id, jd_2_id]
+
+
+def test_user_get_all_jobdefinitions_with_topic_id(admin, user, team_user_id,
+                                                   topic_id):
+    topic_1 = admin.post('/api/v1/topics', data={'name': 'topic_1'}).data
+    topic_1_id = topic_1['topic']['id']
+
+    topic_2 = admin.post('/api/v1/topics', data={'name': 'topic_2'}).data
+    topic_2_id = topic_2['topic']['id']
+
+    data = {'name': 'jobdef_1', 'topic_id': topic_1_id}
+    jd_1 = admin.post('/api/v1/jobdefinitions', data=data).data
+    jd_1_id = jd_1['jobdefinition']['id']
+
+    data = {'name': 'jobdef_2', 'topic_id': topic_1_id}
+    jd_2 = admin.post('/api/v1/jobdefinitions', data=data).data
+    jd_2_id = jd_2['jobdefinition']['id']
+
+    data = {'name': 'jobdef_3', 'topic_id': topic_2_id}
+    admin.post('/api/v1/jobdefinitions', data=data).data
+
+    admin.post('/api/v1/topics/%s/teams' % topic_1_id,
+               data={'team_id': team_user_id})
+    db_all_jds = user.get(
+        '/api/v1/topics/%s/jobdefinitions?sort=created_at' % topic_1_id).data
     db_all_jds = db_all_jds['jobdefinitions']
     db_all_jds_ids = [db_jd['id'] for db_jd in db_all_jds]
 

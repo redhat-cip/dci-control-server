@@ -259,7 +259,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
 def get_all_jobdefinitions_by_topic(user, topic_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
-    return jobdefinitions.list_all_jobdefinitions(user, topic_id)
+    return jobdefinitions.list_jobdefinitions(user, [topic_id], by_topic=True)
 
 
 @api.route('/topics/<uuid:topic_id>/tests', methods=['GET'])
