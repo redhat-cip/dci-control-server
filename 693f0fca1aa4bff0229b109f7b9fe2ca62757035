@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa963961_37906aec",
+        "filename": "dci/auth.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-04-12T06:43:06Z",
+      "side": 1,
+      "message": "Can we create a new auth/ folder at the root of the project, as we have stores ?\n\nCreate a base class AuthMechanism, that defined def _is_valid(), and then create a BasicAuthMechanism that inherits it.\n\nThis way adding a new AuthMechanism would be only impelementing a new py file with the proper is_valid() function.",
+      "revId": "693f0fca1aa4bff0229b109f7b9fe2ca62757035",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_17bc466b",
+        "filename": "dci/auth.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-04-12T06:43:06Z",
+      "side": 1,
+      "message": "As agreed on IRC, let\u0027s remove that from now, and implement it when we do authZ",
+      "revId": "693f0fca1aa4bff0229b109f7b9fe2ca62757035",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
