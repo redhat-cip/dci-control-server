@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa963961_89095a34",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 241,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-04-12T21:12:47Z",
+      "side": 1,
+      "message": "Swift supports the deletion of several objects at the same time (bulk_delete).",
+      "revId": "78bdacaea3a576736c9678a336e8f72028550220",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
