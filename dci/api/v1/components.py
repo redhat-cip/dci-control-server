@@ -46,7 +46,8 @@ _EMBED_MANY = {
 
 
 @api.route('/components', methods=['POST'])
-@auth.requires_auth
+@auth.login_required
+@auth.admin_required
 def create_components(user):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
@@ -66,7 +67,8 @@ def create_components(user):
 
 
 @api.route('/components/<uuid:c_id>', methods=['PUT'])
-@auth.requires_auth
+@auth.login_required
+@auth.admin_required
 def update_components(user, c_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
@@ -119,7 +121,7 @@ def get_all_components(user, topic_id):
 
 
 @api.route('/components/<uuid:c_id>', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def get_component_by_id_or_name(user, c_id):
     args = schemas.args(flask.request.args.to_dict())
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
@@ -144,7 +146,8 @@ def get_component_by_id_or_name(user, c_id):
 
 
 @api.route('/components/<uuid:c_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.login_required
+@auth.admin_required
 def delete_component_by_id_or_name(user, c_id):
     # get If-Match header
     if not(auth.is_admin(user)):
@@ -167,19 +170,21 @@ def delete_component_by_id_or_name(user, c_id):
 
 
 @api.route('/components/purge', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
+@auth.admin_required
 def get_to_purge_archived_components(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/components/purge', methods=['POST'])
-@auth.requires_auth
+@auth.login_required
+@auth.admin_required
 def purge_archived_components(user):
     return base.purge_archived_resources(user, _TABLE)
 
 
 @api.route('/components/<uuid:c_id>/files', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def list_components_files(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     v1_utils.verify_team_in_topic(user, component['topic_id'])
@@ -199,7 +204,7 @@ def list_components_files(user, c_id):
 
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def list_component_file(user, c_id, f_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     auth.check_export_control(user, component)
@@ -222,7 +227,7 @@ def list_component_file(user, c_id, f_id):
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>/content',
            methods=['GET'])
-@auth.requires_auth
+@auth.login_required
 def download_component_file(user, c_id, f_id):
     swift = dci_config.get_store('components')
 
@@ -240,7 +245,8 @@ def download_component_file(user, c_id, f_id):
 
 
 @api.route('/components/<uuid:c_id>/files', methods=['POST'])
-@auth.requires_auth
+@auth.login_required
+@auth.admin_required
 def upload_component_file(user, c_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
@@ -278,7 +284,8 @@ def upload_component_file(user, c_id):
 
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['DELETE'])
-@auth.requires_auth
+@auth.login_required
+@auth.admin_required
 def delete_component_file(user, c_id, f_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED

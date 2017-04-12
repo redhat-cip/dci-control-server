@@ -43,14 +43,11 @@ def build_auth(username, password):
     t_j = sqlalchemy.join(
         models.USERS, models.TEAMS,
         models.USERS.c.team_id == models.TEAMS.c.id)
-    query_get_user = (sqlalchemy.sql
-                      .select([
-                          models.USERS,
-                          models.TEAMS.c.name.label('team_name'),
-                          models.TEAMS.c.country.label('team_country'),
-                      ])
-                      .select_from(t_j)
-                      .where(where_clause))
+    query_get_user = (sqlalchemy.sql.select([
+        models.USERS,
+        models.TEAMS.c.name.label('team_name'),
+        models.TEAMS.c.country.label('team_country'),
+    ]).select_from(t_j).where(where_clause))
 
     user = flask.g.db_conn.execute(query_get_user).fetchone()
     if user is None:
@@ -93,14 +90,40 @@ def check_export_control(user, component):
             raise UNAUTHORIZED
 
 
-def requires_auth(f):
+class BasicAuthMechanism(object):
+    def __init__(self, request):
+        self.request = request
+        self.identity = None
+
+    def is_valid(self):
+        auth = self.request.authorization
+        if not auth:
+            return False
+        user, is_authenticated = build_auth(auth.username, auth.password)
+        if not is_authenticated:
+            return False
+        self.identity = user
+        return True
+
+
+def login_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        for mechanism in [BasicAuthMechanism(flask.request)]:
+            if mechanism.is_valid():
+                return f(mechanism.identity, *args, **kwargs)
+        return reject()
+
+    return decorated
+
+
+def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         auth = flask.request.authorization
-        if not auth:
-            return reject()
         user, is_authenticated = build_auth(auth.username, auth.password)
-        if not is_authenticated:
-            return reject()
-        return f(user, *args, **kwargs)
+        if is_admin(user):
+            return f(*args, **kwargs)
+        return reject()
+
     return decorated
