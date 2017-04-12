@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fa963961_a9f9beca",
+        "filename": "dci/auth.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-04-12T14:19:22Z",
+      "side": 1,
+      "message": "\u0027build_auth\u0027 has  a meaning only in the context of \u0027BasicAuthMechanism\u0027 and should be called inside this class and removed from here I suppose.",
+      "revId": "3fd436581ec6039550c017d866f40609023bbfc8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa963961_89f6fad5",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-04-12T14:19:22Z",
+      "side": 1,
+      "message": "auth_method will be dependent of the implementation of \u0027is_valid\u0027, there\u0027s no point of injecting it here.",
+      "revId": "3fd436581ec6039550c017d866f40609023bbfc8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
