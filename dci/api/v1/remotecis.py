@@ -95,7 +95,7 @@ def get_all_remotecis(user, t_id=None):
 
 @api.route('/remotecis/<uuid:r_id>', methods=['GET'])
 @auth.requires_auth
-def get_remoteci_by_id_or_name(user, r_id):
+def get_remoteci_by_id(user, r_id):
 
     args = schemas.args(flask.request.args.to_dict())
 
@@ -161,7 +161,7 @@ def put_remoteci(user, r_id):
 
 @api.route('/remotecis/<uuid:remoteci_id>', methods=['DELETE'])
 @auth.requires_auth
-def delete_remoteci_by_id_or_name(user, remoteci_id):
+def delete_remoteci_by_id(user, remoteci_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 

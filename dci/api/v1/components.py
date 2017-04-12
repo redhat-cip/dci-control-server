@@ -120,7 +120,7 @@ def get_all_components(user, topic_id):
 
 @api.route('/components/<uuid:c_id>', methods=['GET'])
 @auth.requires_auth
-def get_component_by_id_or_name(user, c_id):
+def get_component_by_id(user, c_id):
     args = schemas.args(flask.request.args.to_dict())
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     v1_utils.verify_team_in_topic(user, component['topic_id'])
@@ -145,7 +145,7 @@ def get_component_by_id_or_name(user, c_id):
 
 @api.route('/components/<uuid:c_id>', methods=['DELETE'])
 @auth.requires_auth
-def delete_component_by_id_or_name(user, c_id):
+def delete_component_by_id(user, c_id):
     # get If-Match header
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED

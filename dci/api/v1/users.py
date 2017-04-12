@@ -186,7 +186,7 @@ def put_user(user, user_id):
 
 @api.route('/users/<uuid:user_id>', methods=['DELETE'])
 @auth.requires_auth
-def delete_user_by_id_or_name(user, user_id):
+def delete_user_by_id(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 

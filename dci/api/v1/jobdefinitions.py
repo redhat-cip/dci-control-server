@@ -90,7 +90,7 @@ def get_all_jobdefinitions(user):
 
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['GET'])
 @auth.requires_auth
-def get_jobdefinition_by_id_or_name(user, jd_id):
+def get_jobdefinition_by_id(user, jd_id):
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
 
@@ -145,7 +145,7 @@ def put_jobdefinition(user, jd_id):
 
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['DELETE'])
 @auth.requires_auth
-def delete_jobdefinition_by_id_or_name(user, jd_id):
+def delete_jobdefinition_by_id(user, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 

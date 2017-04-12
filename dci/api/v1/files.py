@@ -135,7 +135,7 @@ def get_all_files(user, j_id=None):
 
 @api.route('/files/<uuid:file_id>', methods=['GET'])
 @auth.requires_auth
-def get_file_by_id_or_name(user, file_id):
+def get_file_by_id(user, file_id):
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder2(_TABLE, args, _FILES_COLUMNS)

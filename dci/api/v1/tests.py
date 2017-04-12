@@ -113,7 +113,7 @@ def get_all_tests(user, team_id):
 
 @api.route('/tests/<uuid:t_id>', methods=['GET'])
 @auth.requires_auth
-def get_test_by_id_or_name(user, t_id):
+def get_test_by_id(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
     if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
         raise auth.UNAUTHORIZED
@@ -139,7 +139,7 @@ def get_remotecis_by_test(user, test_id):
 
 @api.route('/tests/<uuid:t_id>', methods=['DELETE'])
 @auth.requires_auth
-def delete_test_by_id_or_name(user, t_id):
+def delete_test_by_id(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
 
     if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):

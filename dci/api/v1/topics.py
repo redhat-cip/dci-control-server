@@ -149,7 +149,7 @@ def put_topic(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>', methods=['DELETE'])
 @auth.requires_auth
-def delete_topic_by_id_or_name(user, topic_id):
+def delete_topic_by_id(user, topic_id):
     if not(auth.is_admin(user)):
         raise auth.UNAUTHORIZED
 

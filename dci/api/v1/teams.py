@@ -86,7 +86,7 @@ def get_all_teams(user):
 
 @api.route('/teams/<uuid:t_id>', methods=['GET'])
 @auth.requires_auth
-def get_team_by_id_or_name(user, t_id):
+def get_team_by_id(user, t_id):
     args = schemas.args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder2(_TABLE, args, _T_COLUMNS)
@@ -157,7 +157,7 @@ def put_team(user, t_id):
 
 @api.route('/teams/<uuid:t_id>', methods=['DELETE'])
 @auth.requires_auth
-def delete_team_by_id_or_name(user, t_id):
+def delete_team_by_id(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
