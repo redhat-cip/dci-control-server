@@ -24,6 +24,7 @@ from sqlalchemy import sql
 from dci import dci_config
 from dci.api.v1 import api
 from dci.api.v1 import base
+from dci.api.v1 import issues
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci.common import exceptions as dci_exc
@@ -305,3 +306,24 @@ def delete_component_file(user, c_id, f_id):
     swift.delete(file_path)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/components/<c_id>/issues', methods=['GET'])
+@auth.requires_auth
+def retrieve_issues_from_component(user, c_id):
+    """Retrieve all issues attached to a component."""
+    return issues.get_all_issues(c_id, _TABLE)
+
+
+@api.route('/components/<c_id>/issues', methods=['POST'])
+@auth.requires_auth
+def attach_issue_to_component(user, c_id):
+    """Attach an issue to a component."""
+    return issues.attach_issue(c_id, _TABLE, user['id'])
+
+
+@api.route('/components/<c_id>/issues/<i_id>', methods=['DELETE'])
+@auth.requires_auth
+def unattach_issue_from_component(user, c_id, i_id):
+    """Unattach an issue to a component."""
+    return issues.unattach_issue(c_id, i_id, _TABLE)
