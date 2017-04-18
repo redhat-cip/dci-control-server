@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "da9b358b_e40934df",
+        "filename": "dci/api/v1/tests.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-04-18T11:30:06Z",
+      "side": 1,
+      "message": "It\u0027s actually because the tests are not associated to topics so the embed with topics is empty.",
+      "parentUuid": "fa963961_771dd20e",
+      "range": {
+        "startLine": 92,
+        "startChar": 0,
+        "endLine": 108,
+        "endChar": 70
+      },
+      "revId": "4804c815b911d8aa339d93565229b2cf11030d82",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fa963961_5703eeb8",
         "filename": "dci/api/v1/topics.py",
         "patchSetId": 6
