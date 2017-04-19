@@ -85,7 +85,8 @@ def test_schedule_job_recheck(admin, job_id, remoteci_id, topic_id):
     assert job_scheduled['id'] == job_rechecked['id']
 
 
-def test_schedule_job_with_new_topic(admin, remoteci_id, team_admin_id):
+def test_schedule_job_with_new_topic(admin, remoteci_id,
+                                     team_admin_id, component_factory):
     # create a new topic and schedule a new job
     data = {'name': 'new_topic'}
     pt = admin.post('/api/v1/topics', data=data).data
@@ -108,16 +109,14 @@ def test_schedule_job_with_new_topic(admin, remoteci_id, team_admin_id):
     assert job_scheduled.status_code == 412
 
     # Create a jobdefinition for this topic
-    data = {'topic_id': new_topic_id, 'name': 'name-ct', 'type': 'type_1',
-            'export_control': True}
-    cmpt = admin.post('/api/v1/components', data=data).data
+    cmpt_id = component_factory(new_topic_id, 'type_1')
 
     data = {'name': 'pname', 'topic_id': new_topic_id,
             'component_types': ['type_1']}
     jd = admin.post('/api/v1/jobdefinitions', data=data).data
     jd_id = jd['jobdefinition']['id']
 
-    data = {'component_id': cmpt['component']['id']}
+    data = {'component_id': cmpt_id}
     admin.post('/api/v1/jobdefinitions/%s/components' % jd_id, data=data)
 
     # now schedule a job on that new topic
@@ -209,7 +208,8 @@ def test_schedule_give_latest_components(admin, jobdefinition_factory,
     assert c1[0]['id'] != c2[0]['id']
 
 
-def test_schedule_job_with_export_control(admin, remoteci_id, team_admin_id):
+def test_schedule_job_with_export_control(admin, remoteci_id,
+                                          team_admin_id, component_factory):
     # create a new topic and schedule a new job
     data_topic = {'name': 'new_topic'}
     pt = admin.post('/api/v1/topics', data=data_topic).data
@@ -234,23 +234,18 @@ def test_schedule_job_with_export_control(admin, remoteci_id, team_admin_id):
     # Create a jobdefinition for this topic with two components:
     # - the first one is exported
     # - the second one is NOT exported
-    data_cmpt_1 = {'topic_id': new_topic_id, 'name': 'name-ct',
-                   'type': 'type_1', 'export_control': True}
-    cmpt_1 = admin.post('/api/v1/components', data=data_cmpt_1).data
-
-    data_cmpt_2 = {'topic_id': new_topic_id, 'name': 'name-ct2',
-                   'type': 'type_2', 'export_control': False}
-    cmpt_2 = admin.post('/api/v1/components', data=data_cmpt_2).data
+    cpt1_id = component_factory(new_topic_id, 'type_1')
+    cpt2_id = component_factory(new_topic_id, 'type_2', export_control=False)
 
     data = {'name': 'pname', 'topic_id': new_topic_id,
             'component_types': ['type_1', 'type_2']}
     jd = admin.post('/api/v1/jobdefinitions', data=data).data
     jd_id = jd['jobdefinition']['id']
 
-    data = {'component_id': cmpt_1['component']['id']}
+    data = {'component_id': cpt1_id}
     admin.post('/api/v1/jobdefinitions/%s/components' % jd_id, data=data)
 
-    data = {'component_id': cmpt_2['component']['id']}
+    data = {'component_id': cpt2_id}
     admin.post('/api/v1/jobdefinitions/%s/components' % jd_id, data=data)
 
     # now schedule a job
@@ -260,9 +255,7 @@ def test_schedule_job_with_export_control(admin, remoteci_id, team_admin_id):
     assert job_scheduled.status_code == 412
 
     # Add an exported component of type_2
-    data_cmpt_3 = {'topic_id': new_topic_id, 'name': 'name-ct3',
-                   'type': 'type_2', 'export_control': True}
-    admin.post('/api/v1/components', data=data_cmpt_3).data
+    component_factory(new_topic_id, 'type_2')
 
     job_scheduled = admin.post('/api/v1/jobs/schedule',
                                data={'remoteci_id': remoteci_id,
