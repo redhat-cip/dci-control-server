@@ -183,16 +183,40 @@ def remoteci_user_id(user, team_user_id):
     return str(remoteci['remoteci']['id'])
 
 
-def create_components(user, topic_id, component_types):
+def create_components(user, topic_id, component_types, export_control=True):
     component_ids = []
     for ct in component_types:
         data = {'topic_id': topic_id,
                 'name': 'name-' + str(uuid.uuid4()),
                 'type': ct,
-                'export_control': True}
+                'export_control': export_control}
         cmpt = user.post('/api/v1/components', data=data).data
         component_ids.append(str(cmpt['component']['id']))
+
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+        mockito = mock.MagicMock()
+        head_result = {
+            'etag': dci_utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 1
+        }
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        for cmpt_id in component_ids:
+            user.post('/api/v1/components/%s/files' % cmpt_id,
+                      'bob').data
     return component_ids
+
+
+@pytest.fixture
+def component_factory(admin):
+    def create(topic_id, component_type, export_control=True):
+        return create_components(
+            admin,
+            topic_id,
+            [component_type],
+            export_control)[0]
+    return create
 
 
 @pytest.fixture

@@ -189,7 +189,10 @@ def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
                                 models.COMPONENTS.c.export_control == True,
                                 models.COMPONENTS.c.state == 'active')  # noqa
         query = (sql.select([models.COMPONENTS.c.id])
+                 .select_from(models.COMPONENT_FILES.join(
+                     models.COMPONENTS))
                  .where(where_clause)
+
                  .order_by(sql.desc(models.COMPONENTS.c.created_at)))
         cmpt_id = flask.g.db_conn.execute(query).fetchone()
 
