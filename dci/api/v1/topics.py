@@ -63,32 +63,15 @@ def create_topics(user):
 @api.route('/topics/<uuid:topic_id>', methods=['GET'])
 @auth.login_required
 def get_topic_by_id(user, topic_id):
-
     args = schemas.args(flask.request.args.to_dict())
-    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
-
+    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    v1_utils.verify_team_in_topic(user, topic_id)
     if not auth.is_admin(user):
         if 'teams' in args['embed']:
             raise dci_exc.DCIException('embed=teams not authorized.',
                                        status_code=401)
 
-    v1_utils.verify_team_in_topic(user, topic_id)
-
-    query.add_extra_condition(
-        sql.and_(
-            _TABLE.c.state != 'archived',
-            _TABLE.c.id == topic_id
-        )
-    )
-
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-    if len(rows) != 1:
-        raise dci_exc.DCINotFound('Topic', topic_id)
-    topic = rows[0]
-
-    return flask.jsonify({'topic': topic})
+    return base.get_resource_by_id(user, topic, _TABLE, _EMBED_MANY)
 
 
 @api.route('/topics', methods=['GET'])

@@ -91,27 +91,8 @@ def get_all_jobdefinitions(user):
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['GET'])
 @auth.login_required
 def get_jobdefinition_by_id(user, jd_id):
-    # get the diverse parameters
-    args = schemas.args(flask.request.args.to_dict())
-
-    query = v1_utils.QueryBuilder(_TABLE, args, _JD_COLUMNS)
-    query.add_extra_condition(
-        sql.and_(
-            _TABLE.c.state != 'archived',
-            _TABLE.c.id == jd_id
-        )
-    )
-
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-    if len(rows) != 1:
-        raise dci_exc.DCINotFound('Jobdefinition', jd_id)
-    jobdefinition = rows[0]
-
-    res = flask.jsonify({'jobdefinition': jobdefinition})
-    res.headers.add_header('ETag', jobdefinition['etag'])
-    return res
+    jobdefinition = v1_utils.verify_existence_and_get(jd_id, _TABLE)
+    return base.get_resource_by_id(user, jobdefinition, _TABLE, _EMBED_MANY)
 
 
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['PUT'])

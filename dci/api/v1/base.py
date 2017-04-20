@@ -16,9 +16,42 @@
 
 import flask
 
-
 from dci import auth
 from sqlalchemy import sql
+from dci.api.v1 import utils as v1_utils
+from dci.common import exceptions as dci_exc
+from dci.common import schemas
+
+
+def get_resource_by_id(user, resource, table, embed_many):
+    args = schemas.args(flask.request.args.to_dict())
+    resource_name = table.name[0:-1]
+    resource_id = resource['id']
+    columns = v1_utils.get_columns_name_with_objects(table)
+
+    query = v1_utils.QueryBuilder(table, args, columns)
+
+    if not auth.is_admin(user) and 'team_id' in resource:
+        query.add_extra_condition(table.c.team_id == user['team_id'])
+
+    if 'state' in resource:
+        query.add_extra_condition(table.c.state != 'archived')
+
+    query.add_extra_condition(table.c.id == resource_id)
+
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, table.name, args['embed'], embed_many)
+
+    if len(rows) < 1:
+        raise dci_exc.DCINotFound(resource_name, resource_id)
+    resource = rows[0]
+
+    res = flask.jsonify({resource_name: resource})
+
+    if 'etag' in resource:
+        res.headers.add_header('ETag', resource['etag'])
+
+    return res
 
 
 def get_to_purge_archived_resources(user, table):

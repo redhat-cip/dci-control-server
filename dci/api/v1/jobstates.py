@@ -20,6 +20,7 @@ import flask
 from flask import json
 
 from dci.api.v1 import api
+from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci.common import exceptions as dci_exc
@@ -100,23 +101,8 @@ def get_all_jobstates(user, j_id=None):
 @api.route('/jobstates/<uuid:js_id>', methods=['GET'])
 @auth.login_required
 def get_jobstate_by_id(user, js_id):
-    args = schemas.args(flask.request.args.to_dict())
-
-    query = v1_utils.QueryBuilder(_TABLE, args, _JS_COLUMNS)
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
-
-    query.add_extra_condition(_TABLE.c.id == js_id)
-
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-    if len(rows) != 1:
-        raise dci_exc.DCINotFound('Jobstate', js_id)
-    jobstate = rows[0]
-
-    res = flask.jsonify({'jobstate': jobstate})
-    return res
+    jobstate = v1_utils.verify_existence_and_get(js_id, _TABLE)
+    return base.get_resource_by_id(user, jobstate, _TABLE, _EMBED_MANY)
 
 
 @api.route('/jobstates/<uuid:js_id>', methods=['DELETE'])

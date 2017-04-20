@@ -96,30 +96,8 @@ def get_all_remotecis(user, t_id=None):
 @api.route('/remotecis/<uuid:r_id>', methods=['GET'])
 @auth.login_required
 def get_remoteci_by_id(user, r_id):
-
-    args = schemas.args(flask.request.args.to_dict())
-
-    # build the query thanks to the QueryBuilder class
-    query = v1_utils.QueryBuilder(_TABLE, args, _R_COLUMNS)
-
-    # If it's not an admin then restrict the view to the team's file
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
-
-    query.add_extra_condition(_TABLE.c.id == r_id)
-
-    query.add_extra_condition(_TABLE.c.state != 'archived')
-
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-    if len(rows) != 1:
-        raise dci_exc.DCINotFound('Remoteci', r_id)
-
-    res = flask.jsonify({'remoteci': rows[0], '_meta': {'count': nb_rows}})
-    res.headers.add_header('ETag', rows[0]['etag'])
-    return res
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+    return base.get_resource_by_id(user, remoteci, _TABLE, _EMBED_MANY)
 
 
 @api.route('/remotecis/<uuid:r_id>', methods=['PUT'])

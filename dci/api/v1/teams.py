@@ -87,29 +87,10 @@ def get_all_teams(user):
 @api.route('/teams/<uuid:t_id>', methods=['GET'])
 @auth.login_required
 def get_team_by_id(user, t_id):
-    args = schemas.args(flask.request.args.to_dict())
-
-    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
-    query.add_extra_condition(
-        sql.and_(
-            _TABLE.c.state != 'archived',
-            _TABLE.c.id == t_id
-        )
-    )
-
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-    if len(rows) != 1:
-        raise dci_exc.DCINotFound('Team', t_id)
-    team = rows[0]
-
+    team = v1_utils.verify_existence_and_get(t_id, _TABLE)
     if not(auth.is_admin(user) or auth.is_in_team(user, team['id'])):
         raise auth.UNAUTHORIZED
-
-    res = flask.jsonify({'team': team})
-    res.headers.add_header('ETag', team['etag'])
-    return res
+    return base.get_resource_by_id(user, team, _TABLE, _EMBED_MANY)
 
 
 @api.route('/teams/<uuid:team_id>/remotecis', methods=['GET'])
