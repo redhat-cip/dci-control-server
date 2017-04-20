@@ -122,26 +122,9 @@ def get_all_components(user, topic_id):
 @api.route('/components/<uuid:c_id>', methods=['GET'])
 @auth.login_required
 def get_component_by_id(user, c_id):
-    args = schemas.args(flask.request.args.to_dict())
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     v1_utils.verify_team_in_topic(user, component['topic_id'])
-
-    query = v1_utils.QueryBuilder(_TABLE, args, _C_COLUMNS)
-
-    query.add_extra_condition(
-        sql.and_(
-            _TABLE.c.state != 'archived',
-            _TABLE.c.id == c_id))
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-    if len(rows) < 1:
-        raise dci_exc.DCINotFound('Component', c_id)
-    component = rows[0]
-    auth.check_export_control(user, component)
-
-    res = flask.jsonify({'component': component})
-    return res
+    return base.get_resource_by_id(user, component, _TABLE, _EMBED_MANY)
 
 
 @api.route('/components/<uuid:c_id>', methods=['DELETE'])
