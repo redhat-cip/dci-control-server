@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_15c7a413",
+        "filename": "dci/api/v1/base.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-04-20T11:52:24Z",
+      "side": 1,
+      "message": "check_export_control should stay in components.py\nThis is not get_resource_by_id responsability.",
+      "revId": "38e2dc9205c21e2317e63923aca0b480619dc3ed",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_f5cb201d",
+        "filename": "dci/api/v1/base.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-04-20T11:52:24Z",
+      "side": 1,
+      "message": "same here should stay in jobs.py",
+      "revId": "38e2dc9205c21e2317e63923aca0b480619dc3ed",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
