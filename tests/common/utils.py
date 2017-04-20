@@ -30,6 +30,8 @@ ID = 'id', uuid.uuid4()
 
 NAME = 'name', text_type
 TYPE = 'type', text_type
+DESCRIPTION = 'description', text_type
+LABEL = 'label', text_type
 ETAG = 'etag', text_type
 DATA = 'data', {'foo': 'bar'}
 PASSWORD = 'password', text_type
