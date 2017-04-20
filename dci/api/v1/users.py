@@ -113,31 +113,9 @@ def get_all_users(user, team_id=None):
 @api.route('/users/<uuid:user_id>', methods=['GET'])
 @auth.login_required
 def get_user_by_id(user, user_id):
-    args = schemas.args(flask.request.args.to_dict())
-
-    query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
-
-    # If it's not an admin, then get only the users of the caller's team
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
-
-    query.add_extra_condition(
-        sql.and_(
-            _TABLE.c.state != 'archived',
-            _TABLE.c.id == user_id
-        )
-    )
-
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-    if len(rows) != 1:
-        raise dci_exc.DCINotFound('Users', user_id)
-    guser = rows[0]
-
-    res = flask.jsonify({'user': guser})
-    res.headers.add_header('ETag', guser['etag'])
-    return res
+    user_res = v1_utils.verify_existence_and_get(user_id, _TABLE)
+    return base.get_resource_by_id(user, user_res, _TABLE, _EMBED_MANY,
+                                   ['password'])
 
 
 @api.route('/users/<uuid:user_id>', methods=['PUT'])

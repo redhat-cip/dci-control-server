@@ -431,15 +431,12 @@ def get_jobstates_by_job(user, j_id):
 @api.route('/jobs/<uuid:job_id>', methods=['GET'])
 @auth.login_required
 def get_job_by_id(user, job_id):
-    # get the diverse parameters
-    embed = schemas.args(flask.request.args.to_dict())['embed']
-    job, _ = _get_job(user, job_id, embed)
-    job['issues'] = (
-        json.loads(issues.get_all_issues(job_id, _TABLE).response[0])['issues']
-    )
-    res = flask.jsonify({'job': job})
-    res.headers.add_header('ETag', job['etag'])
-    return res
+    job = v1_utils.verify_existence_and_get(job_id, _TABLE)
+    job_dict = dict(job)
+    job_dict['issues'] = json.loads(
+        issues.get_all_issues(job_id, _TABLE).response[0]
+    )['issues']
+    return base.get_resource_by_id(user, job_dict, _TABLE, _EMBED_MANY)
 
 
 @api.route('/jobs/<uuid:job_id>', methods=['PUT'])

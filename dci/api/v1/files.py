@@ -19,8 +19,6 @@ import datetime
 import flask
 from flask import json
 
-from sqlalchemy import sql
-
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import transformations as tsfm
@@ -136,26 +134,8 @@ def get_all_files(user, j_id=None):
 @api.route('/files/<uuid:file_id>', methods=['GET'])
 @auth.login_required
 def get_file_by_id(user, file_id):
-    # get the diverse parameters
-    args = schemas.args(flask.request.args.to_dict())
-    query = v1_utils.QueryBuilder(_TABLE, args, _FILES_COLUMNS)
-
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
-
-    query.add_extra_condition(sql.and_(
-        _TABLE.c.state != 'archived',
-        _TABLE.c.id == file_id))
-
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-    if len(rows) != 1:
-        raise dci_exc.DCINotFound('File', file_id)
-    file_ = rows[0]
-
-    result = json.jsonify({'file': file_})
-    return result
+    file = v1_utils.verify_existence_and_get(file_id, _TABLE)
+    return base.get_resource_by_id(user, file, _TABLE, _EMBED_MANY)
 
 
 @api.route('/files/<uuid:file_id>/content', methods=['GET'])
