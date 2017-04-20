@@ -414,6 +414,36 @@ def file_job_junit_empty_user_id(user, job_user_id, team_user_id):
 
 
 @pytest.fixture
+def role(admin):
+    data = {
+        'name': 'Manager',
+        'description': 'A Manager role',
+    }
+    role = admin.post('/api/v1/roles', data=data).data
+    return role['role']
+
+
+@pytest.fixture
+def role_user_team(user_admin):
+    data = {
+        'name': 'Manager - (User Team)',
+        'description': 'A Manager role - (User Team)',
+    }
+    role = user_admin.post('/api/v1/roles', data=data).data
+    return role['role']
+
+
+@pytest.fixture
+def role_resu_team(resu_admin):
+    data = {
+        'name': 'Manager - (Resu Team)',
+        'description': 'A Manager role - (Resu Team)',
+    }
+    role = resu_admin.post('/api/v1/roles', data=data).data
+    return role['role']
+
+
+@pytest.fixture
 def es_clean(request):
     conn = es_engine.DCIESEngine(utils.conf)
     conn.cleanup()
