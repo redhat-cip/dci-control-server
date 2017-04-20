@@ -155,7 +155,6 @@ base = {
 
 
 componenttype = schema_factory(base)
-role = schema_factory(base)
 
 ###############################################################################
 #                                                                             #
@@ -457,3 +456,26 @@ meta_put = {
 }
 
 meta = DCISchema(schema_factory(meta).post, Schema(meta_put))
+
+###############################################################################
+#                                                                             #
+#                                Roles schemas                                #
+#                                                                             #
+###############################################################################
+
+role = {
+    'name': six.text_type,
+    v.Optional('label', default=None): six.text_type,
+    v.Optional('description', default=None): six.text_type,
+    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
+                                                 msg=INVALID_RESOURCE_STATE),
+}
+
+role_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('description'): six.text_type,
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
+}
+
+role = DCISchema(schema_factory(role).post, Schema(role_put))
