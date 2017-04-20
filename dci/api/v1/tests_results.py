@@ -29,3 +29,7 @@ def create_test_results(engine, test_results):
     with engine.begin():
         query = _TABLE.insert().values(**test_results)
         engine.execute(query)
+
+def get_dict_results(file_content):
+    dict_result = transformations.format_test_result(json.loads(transformations.junit2json(data)))
+    return dict_result
