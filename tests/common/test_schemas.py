@@ -111,8 +111,41 @@ class TestTeam(utils.SchemaTesting):
         super(TestTeam, self).test_put(self.data, self.data)
 
 
-class TestRole(BaseSchemaTesting):
+class TestRole(utils.SchemaTesting):
     schema = schemas.role
+    data = dict([utils.NAME, utils.STATE, utils.DESCRIPTION])
+    data_post = dict([utils.NAME, utils.STATE, utils.DESCRIPTION, utils.LABEL])
+
+    @staticmethod
+    def generate_invalids_and_errors():
+        invalids = dict([utils.INVALID_NAME])
+        errors = dict([utils.INVALID_NAME_ERROR])
+        return invalids, errors
+
+    def test_post_extra_data(self):
+        super(TestRole, self).test_post_extra_data(self.data)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name')
+        super(TestRole, self).test_post_missing_data(errors)
+
+    def test_post_invalid_data(self):
+        invalids, errors = TestRole.generate_invalids_and_errors()
+        super(TestRole, self).test_post_invalid_data(invalids, errors)
+
+    def test_post(self):
+        super(TestRole, self).test_post(self.data_post, self.data_post)
+
+    def test_put_extra_data(self):
+        invalids, errors = TestRole.generate_invalids_and_errors()
+        super(TestRole, self).test_put_extra_data(self.data)
+
+    def test_put_invalid_data(self):
+        invalids, errors = TestRole.generate_invalids_and_errors()
+        super(TestRole, self).test_put_invalid_data(invalids, errors)
+
+    def test_put(self):
+        super(TestRole, self).test_put(self.data, self.data)
 
 
 class TestTest(utils.SchemaTesting):
