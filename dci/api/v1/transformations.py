@@ -70,13 +70,13 @@ def format_test_result(test_result):
                 r[field] = int(test_result[field])
         r['success'] = (r['total'] - r['failures'] - r['errors'] - r['skips'])
         if 'time' in test_result and test_result['time']:
-            r['time'] = float(test_result['time'])
+            r['time'] = int(float(test_result['time']) * 1000)
     except Exception as e:
         LOG.exception(e)
+        LOG.debug(test_result)
     return r
 
 
-def junit2dict(filename):
-    with open(filename, 'r') as f:
-        data = f.read()
-    return format_test_result(json.loads(junit2json(data)))
+def junit2dict(content_file):
+    malformed_dict = json.loads(junit2json(content_file))
+    return format_test_result(malformed_dict)

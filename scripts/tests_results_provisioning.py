@@ -21,30 +21,32 @@ import pprint
 import logging
 import sys
 
+import datetime
 import six.moves
 from sqlalchemy import sql, func
 
 from dci import dci_config
-from dci.api.v1 import tests_results
+from dci.common import utils
 from dci.db import models
 from dci.api.v1 import transformations
-from dci.api.v1 import utils
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 conf = dci_config.generate_conf()
 engine = dci_config.get_engine(conf).connect()
+swift = dci_config.get_store('files')
 
 _TABLE = models.FILES
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
 
 
 def get_junit_results(file):
-    file_path = utils.build_file_path(
-        _FILES_FOLDER, file['team_id'], file['id'], create=False)
+    file_path = swift.build_file_path(file['team_id'], file['job_id'],
+                                      file['id'])
     logger.debug('get junit results for %s' % file_path)
-    return transformations.junit2dict(file_path)
+    content_file = swift.get(file_path)[1]
+    return transformations.junit2dict(content_file)
 
 
 def get_next_files_metadata(offset, limit):
@@ -80,11 +82,10 @@ def main(callback):
             file_dict = dict(file_meta)
             try:
                 junit_results = get_junit_results(file_dict)
-                test_result = transformations.format_test_result(junit_results)
-                test_result['created_at'] = file_dict['created_at']
-                test_result['file_id'] = file_dict['id']
-                test_result['job_id'] = file_dict['job_id']
-                callback(test_result)
+                junit_results['created_at'] = file_dict['created_at']
+                junit_results['file_id'] = file_dict['id']
+                junit_results['job_id'] = file_dict['job_id']
+                callback(junit_results)
             except Exception as e:
                 logger.exception(e)
                 logger.debug(file_dict)
@@ -100,7 +101,13 @@ def pretty_print(test_results):
 
 def create_test_results(test_results):
     pretty_print(test_results)
-    tests_results.create_test_results(engine, test_results)
+    test_results.update({
+        'id': utils.gen_uuid(),
+        'updated_at': datetime.datetime.utcnow().isoformat()
+    })
+    with engine.begin():
+        query = models.TESTS_RESULTS.insert().values(**test_results)
+        engine.execute(query)
     logger.debug('create test results for job_id: '
                  '%s' % str(test_results['job_id']))
 

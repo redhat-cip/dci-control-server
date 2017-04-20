@@ -31,7 +31,6 @@ from dci.db import embeds
 from dci.db import models
 from dci import dci_config
 
-
 _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
@@ -105,6 +104,20 @@ def create_files(user):
 
     flask.g.db_conn.execute(query)
     result = json.dumps({'file': values})
+
+    if values['mime'] == 'application/junit':
+        content_file = swift.get(file_path)[1]
+        test_results = tsfm.junit2dict(content_file)
+        test_results.update({
+            'id': utils.gen_uuid(),
+            'created_at': values['created_at'],
+            'updated_at': datetime.datetime.utcnow().isoformat(),
+            'file_id': file_id,
+            'job_id': values['job_id']
+        })
+        query = models.TESTS_RESULTS.insert().values(**test_results)
+        flask.g.db_conn.execute(query)
+
     return flask.Response(result, 201, content_type='application/json')
 
 

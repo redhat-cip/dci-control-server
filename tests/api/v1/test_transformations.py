@@ -14,12 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import dci.api.v1.transformations as transformations
-from dci.stores.swift import Swift
-import mock
-from dci.common import utils
-
 import json
+from uuid import UUID
+
+import mock
+from sqlalchemy import sql
+
+from dci.api.v1 import transformations
+from dci.db import models
+from dci.stores.swift import Swift
+from dci.common import utils
 
 SWIFT = 'dci.stores.swift.Swift'
 
@@ -93,12 +97,11 @@ def test_junit2json_valid():
 
 def test_retrieve_junit2json(admin, job_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
-
         mockito = mock.MagicMock()
 
         head_result = {
             'etag': utils.gen_etag(),
-            'content-type': "stream",
+            'content-type': 'stream',
             'content-length': 7
         }
 
@@ -113,20 +116,58 @@ def test_retrieve_junit2json(admin, job_id):
         }
 
         file = admin.post('/api/v1/files', headers=headers, data=JUNIT)
-        file = file.data['file']['id']
+        file_id = file.data['file']['id']
 
         # First retrieve file
-        res = admin.get('/api/v1/files/%s/content' % file)
+        res = admin.get('/api/v1/files/%s/content' % file_id)
 
         assert res.data == JUNIT
 
         # Now retrieve it through XHR
         headers = {'X-Requested-With': 'XMLHttpRequest'}
-        res = admin.get('/api/v1/files/%s/content' % file, headers=headers)
+        res = admin.get('/api/v1/files/%s/content' % file_id, headers=headers)
 
         assert (res.headers.get('Content-Disposition') ==
                 'attachment; filename=junit_file.xml')
         assert json.loads(res.data) == JSONUNIT
+
+
+def test_create_file_fill_tests_results_table(engine, admin, job_id):
+    with open('tests/data/tempest-results.xml', 'r') as f:
+        content_file = f.read()
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+        mockito = mock.MagicMock()
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': 'stream',
+            'content-length': 7
+        }
+        mockito.head.return_value = head_result
+        mockito.get.return_value = ['', content_file]
+        mock_swift.return_value = mockito
+
+        headers = {
+            'DCI-JOB-ID': job_id,
+            'DCI-NAME': 'tempest-results.xml',
+            'DCI-MIME': 'application/junit',
+            'Content-Disposition': 'attachment; filename=tempest-results.xml',
+            'Content-Type': 'application/junit'
+        }
+        admin.post('/api/v1/files', headers=headers, data=content_file)
+
+    query = sql.select([models.TESTS_RESULTS])
+    tests_results = engine.execute(query).fetchall()
+    test_result = dict(tests_results[0])
+
+    assert len(tests_results) == 1
+    assert UUID(str(test_result['id']), version=4)
+    assert test_result['name'] == ''
+    assert test_result['total'] == 130
+    assert test_result['skips'] == 0
+    assert test_result['failures'] == 0
+    assert test_result['errors'] == 0
+    assert test_result['success'] == 130
+    assert test_result['time'] == 996679
 
 
 def test_junit2json_invalid():
@@ -146,7 +187,9 @@ def test_junit2json_empty():
 
 
 def test_junit2dict_with_tempest_xml():
-    result = transformations.junit2dict('tests/data/tempest-results.xml')
+    with open('tests/data/tempest-results.xml', 'r') as f:
+        content_file = f.read()
+        result = transformations.junit2dict(content_file)
 
     assert result['name'] == ''
     assert result['total'] == 130
@@ -154,11 +197,13 @@ def test_junit2dict_with_tempest_xml():
     assert result['failures'] == 0
     assert result['errors'] == 0
     assert result['success'] == 130
-    assert result['time'] == 996.679
+    assert result['time'] == 996679
 
 
 def test_junit2dict_with_rally_xml():
-    result = transformations.junit2dict('tests/data/rally-results.xml')
+    with open('tests/data/rally-results.xml', 'r') as f:
+        content_file = f.read()
+        result = transformations.junit2dict(content_file)
 
     assert result['name'] == 'Rally test suite'
     assert result['total'] == 16
@@ -166,7 +211,35 @@ def test_junit2dict_with_rally_xml():
     assert result['failures'] == 0
     assert result['errors'] == 0
     assert result['success'] == 16
-    assert result['time'] == 1186.41
+    assert result['time'] == 1186410
+
+
+def test_junit2dict_with_no_tests():
+    no_tests = """<testsuite errors="0" failures="0" name="" tests="0"
+time="0.307"></testsuite>"""
+    result = transformations.junit2dict(no_tests)
+
+    assert result['name'] == ''
+    assert result['total'] == 0
+    assert result['skips'] == 0
+    assert result['failures'] == 0
+    assert result['errors'] == 0
+    assert result['success'] == 0
+    assert result['time'] == 307
+
+
+def test_junit2dict_partial():
+    partial_junit = """<testsuite errors="0" failures="0" name="pytest" skips="1"
+                       tests="3" time="46.050"></testsuite>"""
+    result = transformations.junit2dict(partial_junit)
+
+    assert result['name'] == 'pytest'
+    assert result['total'] == 3
+    assert result['skips'] == 1
+    assert result['failures'] == 0
+    assert result['errors'] == 0
+    assert result['success'] == 2
+    assert result['time'] == 46050
 
 
 def test_format_test_result_parse_numbers():
@@ -183,7 +256,7 @@ def test_format_test_result_parse_numbers():
     assert type(test_result['skips']) == int
     assert type(test_result['failures']) == int
     assert type(test_result['errors']) == int
-    assert type(test_result['time']) == float
+    assert type(test_result['time']) == int
 
 
 def test_format_test_result_calc_success():
@@ -228,4 +301,4 @@ def test_format_test_result_no_results():
     assert test_result['failures'] == 0
     assert test_result['errors'] == 0
     assert test_result['success'] == 0
-    assert test_result['time'] == 0.0
+    assert test_result['time'] == 0
