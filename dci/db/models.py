@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2016 Red Hat, Inc
+# Copyright (C) 2015-2017 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -25,7 +25,7 @@ from dci.common import utils
 metadata = sa.MetaData()
 
 USER_ROLES = ['user', 'admin']
-ROLES = sa.Enum(*USER_ROLES, name='roles')
+ROLES_ENUM = sa.Enum(*USER_ROLES, name='roles_enum')
 
 JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run',
                 'success', 'failure', 'killed', 'product-failure',
@@ -432,7 +432,7 @@ USERS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), nullable=False, unique=True),
     sa.Column('password', sa.Text, nullable=False),
-    sa.Column('role', ROLES, default=USER_ROLES[0], nullable=False),
+    sa.Column('role', ROLES_ENUM, default=USER_ROLES[0], nullable=False),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
@@ -477,3 +477,24 @@ ISSUES = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('url', sa.Text, unique=True),
     sa.Column('tracker', TRACKERS, nullable=False))
+
+ROLES = sa.Table(
+    'roles', metadata,
+    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), nullable=False),
+    sa.Column('label', sa.String(255), nullable=False),
+    sa.Column('description', sa.Text),
+    sa.Column('team_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=False),
+    sa.UniqueConstraint('label', 'team_id', name='roles_label_team_id_key'),
+    sa.Column('state', STATES, default='active')
+)
