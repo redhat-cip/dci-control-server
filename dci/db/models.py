@@ -24,9 +24,6 @@ from dci.common import utils
 
 metadata = sa.MetaData()
 
-USER_ROLES = ['user', 'admin']
-ROLES_ENUM = sa.Enum(*USER_ROLES, name='roles_enum')
-
 JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run',
                 'success', 'failure', 'killed', 'product-failure',
                 'deployment-failure']
@@ -76,9 +73,7 @@ JOIN_COMPONENTS_ISSUES = sa.Table(
               sa.ForeignKey('issues.id', ondelete='CASCADE'),
               nullable=False, primary_key=True),
     sa.Column('user_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('users.id'),
-              nullable=False),
-    sa.Index('components_issues_user_id_idx', 'user_id'))
+              sa.ForeignKey('users.id', ondelete='SET NULL')))
 
 
 TOPICS = sa.Table(
@@ -325,8 +320,7 @@ JOIN_JOBS_ISSUES = sa.Table(
               sa.ForeignKey('issues.id', ondelete='CASCADE'),
               nullable=False, primary_key=True),
     sa.Column('user_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('users.id')),
-    sa.Index('jobs_issues_user_id_idx', 'user_id'))
+              sa.ForeignKey('users.id', ondelete='SET NULL')))
 
 JOBSTATES = sa.Table(
     'jobstates', metadata,
@@ -414,7 +408,8 @@ USERS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), nullable=False, unique=True),
     sa.Column('password', sa.Text, nullable=False),
-    sa.Column('role', ROLES_ENUM, default=USER_ROLES[0], nullable=False),
+    sa.Column('role_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('roles.id', ondelete='SET NULL')),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
@@ -477,7 +472,7 @@ ROLES = sa.Table(
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
     sa.Column('user_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('users.id')),
+              sa.ForeignKey('users.id', ondelete='SET NULL')),
     sa.UniqueConstraint('name', 'team_id', name='roles_name_team_id_key'),
     sa.Column('state', STATES, default='active'),
 )

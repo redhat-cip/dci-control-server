@@ -32,7 +32,9 @@ _A_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 def get_logs(user):
     args = schemas.args(flask.request.args.to_dict())
 
-    if not auth.is_admin(user) and user['role'] != 'admin':
+    if not auth.is_admin(user) and \
+        user['role_id'] not in [auth.super_admin_role_id(),
+                                auth.admin_role_id()]:
         raise auth.UNAUTHORIZED
 
     if args['limit'] is None:

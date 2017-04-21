@@ -22,6 +22,8 @@ from passlib.apps import custom_app_context as pwd_context
 
 from dci.auth_mechanism import BasicAuthMechanism
 from dci.common import exceptions as exc
+from dci.db import models
+from sqlalchemy import sql
 
 UNAUTHORIZED = exc.DCIException('Operation not authorized.', status_code=401)
 
@@ -43,14 +45,37 @@ def reject():
                           content_type='application/json')
 
 
-def is_admin(user, super=False):
-    if super and user['role'] != 'admin':
-        return False
-    return user['team_name'] == 'admin'
+# This method should be deleted once permissions mechanism is
+# in place.
+def super_admin_role_id():
+    """Return Super Admin role id."""
+
+    query = sql.select([models.ROLES]).where(
+        models.ROLES.c.name == 'Super Admin'
+    )
+    result = flask.g.db_conn.execute(query).fetchone()
+    return result.id
+
+
+# This method should be deleted once permissions mechanism is
+# in place.
+def admin_role_id():
+    """Return Admin role id."""
+
+    query = sql.select([models.ROLES]).where(
+        models.ROLES.c.name == 'Admin'
+    )
+    result = flask.g.db_conn.execute(query).fetchone()
+    return result.id
+
+
+def is_admin(user):
+    return user['role_id'] == super_admin_role_id()
 
 
 def is_admin_user(user, team_id):
-    return str(user['team_id']) == str(team_id) and user['role'] == 'admin'
+    return str(user['team_id']) == str(team_id) and \
+        user['role_id'] in [super_admin_role_id(), admin_role_id()]
 
 
 def is_in_team(user, team_id):

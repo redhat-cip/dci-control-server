@@ -18,13 +18,29 @@ from __future__ import unicode_literals
 import uuid
 
 
-def test_create_users(admin, team_id):
+def test_create_users(admin, team_id, role_user):
     pu = admin.post('/api/v1/users',
                     data={'name': 'pname', 'password': 'ppass',
                           'team_id': team_id}).data
 
     pu_id = pu['user']['id']
-    assert pu['user']['role'] == 'user'
+    assert pu['user']['role_id'] == role_user['id']
+    gu = admin.get('/api/v1/users/%s' % pu_id).data
+    assert gu['user']['name'] == 'pname'
+
+
+def test_create_team_admin_user(admin, team_id, role_team_admin):
+    user = {
+        'name': 'pname',
+        'password': 'ppass',
+        'team_id': team_id,
+        'role_id': role_team_admin['id'],
+    }
+
+    pu = admin.post('/api/v1/users', data=user).data
+
+    pu_id = pu['user']['id']
+    assert pu['user']['role_id'] == role_team_admin['id']
     gu = admin.get('/api/v1/users/%s' % pu_id).data
     assert gu['user']['name'] == 'pname'
 
@@ -154,13 +170,11 @@ def test_get_all_users_with_sort(admin, team_id):
     user_1 = admin.post('/api/v1/users',
                         data={'name': 'pname1',
                               'password': 'ppass',
-                              'role': 'user',
                               'team_id': team_id}).data['user']
 
     user_2 = admin.post('/api/v1/users',
                         data={'name': 'pname2',
                               'password': 'ppass',
-                              'role': 'user',
                               'team_id': team_id}).data['user']
 
     gusers = admin.get('/api/v1/users?sort=created_at').data

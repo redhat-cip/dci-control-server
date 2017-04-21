@@ -19,7 +19,6 @@ from six.moves.urllib.parse import urlparse
 import collections
 import dci.common.exceptions as exceptions
 import dci.common.utils as utils
-import dci.db.models as models
 import six
 import uuid
 import voluptuous as v
@@ -58,6 +57,7 @@ INVALID_STRING = 'not a valid string'
 INVALID_URL = 'not a valid URL'
 INVALID_PRIORITY = 'not a valid priority integer (must be beetween 0 and 1000)'
 
+INVALID_ROLE = 'not a valid role id'
 INVALID_TEAM = 'not a valid team id'
 INVALID_TEST = 'not a valid test id'
 INVALID_TOPIC = 'not a valid topic id'
@@ -65,8 +65,6 @@ INVALID_JOB_DEFINITION = 'not a valid jobdefinition id'
 INVALID_REMOTE_CI = 'not a valid remoteci id'
 INVALID_JOB = 'not a valid job id'
 INVALID_JOB_STATE = 'not a valid jobstate id'
-INVALID_ROLE = ('not a valid role (must be %s)' %
-                ' or '.join(models.USER_ROLES))
 INVALID_OFFSET = 'not a valid offset integer (must be greater than 0)'
 INVALID_LIMIT = 'not a valid limit integer (must be greater than 0)'
 
@@ -195,8 +193,8 @@ test = schema_factory(test)
 
 user = utils.dict_merge(base, {
     'password': six.text_type,
-    v.Optional('role'): v.Any(*models.USER_ROLES, msg=INVALID_ROLE),
     'team_id': v.Any(UUID, msg=INVALID_TEAM),
+    v.Optional('role_id'): v.Any(UUID, msg=INVALID_ROLE),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 })

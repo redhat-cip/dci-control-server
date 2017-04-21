@@ -64,11 +64,20 @@ def create_users(user):
     if not(auth.is_admin(user) or auth.is_admin_user(user, values['team_id'])):
         raise auth.UNAUTHORIZED
 
+    if 'role_id' not in values:
+        query = sql.select([models.ROLES]).where(
+            models.ROLES.c.name == 'User'
+        )
+        result = flask.g.db_conn.execute(query).fetchone()
+        role_id = result.id
+    else:
+        role_id = values['role_id']
+
     password_hash = auth.hash_password(values.get('password'))
 
     values.update({
         'password': password_hash,
-        'role': values.get('role', 'user')
+        'role_id': role_id
     })
 
     query = _TABLE.insert().values(**values)
