@@ -344,6 +344,21 @@ def role(admin):
 
 
 @pytest.fixture
+def role_admin(admin):
+    return admin.get('/api/v1/roles?where=name:Super Admin').data['roles'][0]
+
+
+@pytest.fixture
+def role_team_admin(admin):
+    return admin.get('/api/v1/roles?where=name:Admin').data['roles'][0]
+
+
+@pytest.fixture
+def role_user(admin):
+    return admin.get('/api/v1/roles?where=name:User').data['roles'][0]
+
+
+@pytest.fixture
 def es_clean(request):
     conn = es_engine.DCIESEngine(utils.conf)
     conn.cleanup()
