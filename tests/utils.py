@@ -19,12 +19,14 @@ import collections
 import flask
 import shutil
 
+import mock
 import six
 
 import dci.auth as auth
 import dci.common.utils as utils
 import dci.db.models as models
 import dci.dci_config as config
+from dci.stores.swift import Swift
 
 # convenient alias
 memoized = utils.memoized
@@ -103,3 +105,30 @@ def provision(db_conn):
               role='admin',
               password=admin_pw_hash,
               team_id=team_admin_id)
+
+
+SWIFT = 'dci.stores.swift.Swift'
+
+FileDesc = collections.namedtuple('FileDesc', ['name', 'content'])
+
+
+def post_file(client, jobstate_id, file_desc):
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+        headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
+                   'Content-Type': 'text/plain'}
+        res = client.post('/api/v1/files',
+                          headers=headers,
+                          data=file_desc.content)
+
+        return res.data['file']['id']
