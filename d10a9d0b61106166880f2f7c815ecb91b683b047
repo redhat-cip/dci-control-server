@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_3bee17ed",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 21
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-04-21T12:36:02Z",
+      "side": 1,
+      "message": "you should not return false here. is_valid return false only if there is a token and token invalid.\n\nMecanism order is not important",
+      "revId": "d10a9d0b61106166880f2f7c815ecb91b683b047",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_1bba33e2",
+        "filename": "dci/common/token.py",
+        "patchSetId": 21
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-04-21T12:36:02Z",
+      "side": 1,
+      "message": "could be removed",
+      "revId": "d10a9d0b61106166880f2f7c815ecb91b683b047",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
