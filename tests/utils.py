@@ -79,11 +79,14 @@ def provision(db_conn):
 
     user_pw_hash = auth.hash_password('user')
     user_admin_pw_hash = auth.hash_password('user_admin')
+    resu_pw_hash = auth.hash_password('resu')
+    resu_admin_pw_hash = auth.hash_password('resu_admin')
     admin_pw_hash = auth.hash_password('admin')
 
     # Create teams
     team_admin_id = db_insert(models.TEAMS, name='admin')
     team_user_id = db_insert(models.TEAMS, name='user')
+    team_resu_id = db_insert(models.TEAMS, name='resu')
 
     # Create users
     db_insert(models.USERS,
@@ -97,6 +100,18 @@ def provision(db_conn):
               role='admin',
               password=user_admin_pw_hash,
               team_id=team_user_id)
+
+    db_insert(models.USERS,
+              name='resu',
+              role='user',
+              password=resu_pw_hash,
+              team_id=team_resu_id)
+
+    db_insert(models.USERS,
+              name='resu_admin',
+              role='admin',
+              password=resu_admin_pw_hash,
+              team_id=team_resu_id)
 
     db_insert(models.USERS,
               name='admin',

@@ -129,7 +129,7 @@ def test_get_all_users_with_pagination(admin, team_id):
                                       'password': 'ppass',
                                       'team_id': team_id})
     users = admin.get('/api/v1/users').data
-    assert users['_meta']['count'] == 7
+    assert users['_meta']['count'] == 9
 
     # verify limit and offset are working well
     users = admin.get('/api/v1/users?limit=2&offset=0').data

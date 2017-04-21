@@ -473,13 +473,20 @@ def test_create_remoteci_as_user(user, team_user_id, team_id):
     assert remoteci.status_code == 201
 
 
-@pytest.mark.usefixtures('remoteci_id', 'remoteci_user_id')
-def test_get_all_remotecis_as_user(user, team_user_id):
+@pytest.mark.usefixtures('remoteci_id', 'remoteci_user_id',
+                         'remoteci_resu_id')
+def test_get_all_remotecis_as_user(user, team_user_id, resu, team_resu_id):
     remotecis = user.get('/api/v1/remotecis')
     assert remotecis.status_code == 200
     assert remotecis.data['_meta']['count'] == 1
     for remoteci in remotecis.data['remotecis']:
         assert remoteci['team_id'] == team_user_id
+
+    remotecis = resu.get('/api/v1/remotecis')
+    assert remotecis.status_code == 200
+    assert remotecis.data['_meta']['count'] == 1
+    for remoteci in remotecis.data['remotecis']:
+        assert remoteci['team_id'] == team_resu_id
 
 
 def test_get_remoteci_as_user(user, team_user_id, remoteci_id):

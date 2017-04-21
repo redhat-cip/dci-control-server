@@ -112,6 +112,16 @@ def user_admin(app, db_provisioning):
 
 
 @pytest.fixture
+def resu(app, db_provisioning):
+    return utils.generate_client(app, ('resu', 'resu'))
+
+
+@pytest.fixture
+def resu_admin(app, db_provisioning):
+    return utils.generate_client(app, ('resu_admin', 'resu_admin'))
+
+
+@pytest.fixture
 def topic_id(admin, team_id):
     data = {'name': 'topic_name'}
     topic = admin.post('/api/v1/topics', data=data).data
@@ -152,6 +162,13 @@ def team_user_id(admin):
 
 
 @pytest.fixture
+def team_resu_id(admin):
+    team = admin.get('/api/v1/teams?where=name:resu')
+    team = admin.get('/api/v1/teams/%s' % team.data['teams'][0]['id']).data
+    return str(team['team']['id'])
+
+
+@pytest.fixture
 def team_admin_id(admin):
     team = admin.get('/api/v1/teams?where=name:admin')
     team = admin.get('/api/v1/teams/%s' % team.data['teams'][0]['id']).data
@@ -180,6 +197,14 @@ def remoteci_user_id(user, team_user_id):
     data = {'name': 'rname', 'team_id': team_user_id,
             'allow_upgrade_job': True}
     remoteci = user.post('/api/v1/remotecis', data=data).data
+    return str(remoteci['remoteci']['id'])
+
+
+@pytest.fixture
+def remoteci_resu_id(resu, team_resu_id):
+    data = {'name': 'rname', 'team_id': team_resu_id,
+            'allow_upgrade_job': True}
+    remoteci = resu.post('/api/v1/remotecis', data=data).data
     return str(remoteci['remoteci']['id'])
 
 
