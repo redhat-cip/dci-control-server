@@ -109,12 +109,12 @@ def test_success_update_role(admin, role):
     url = '/api/v1/roles/%s' % role_id
     assert role['name'] == 'Manager'
 
-    result = admin.put(url, data={'name': 'User'},
+    result = admin.put(url, data={'name': 'Random Role'},
                        headers={'If-match': role['etag']})
     assert result.status_code == 204
 
     role = admin.get(url).data
-    assert role['role']['name'] == 'User'
+    assert role['role']['name'] == 'Random Role'
     assert role['role']['description'] == 'A Manager role'
 
     result = admin.put(url, data={'description': 'new role'},
@@ -122,7 +122,7 @@ def test_success_update_role(admin, role):
     assert result.status_code == 204
 
     role = admin.get(url).data
-    assert role['role']['name'] == 'User'
+    assert role['role']['name'] == 'Random Role'
     assert role['role']['description'] == 'new role'
 
 
@@ -157,14 +157,14 @@ def test_success_get_all_roles_admin(admin, role):
     result = admin.get('/api/v1/roles')
 
     assert result.status_code == 200
-    assert len(result.data['roles']) == 1
+    assert len(result.data['roles']) == 4
 
 
 def test_success_get_all_roles_user(user, role):
     result = user.get('/api/v1/roles')
 
     assert result.status_code == 200
-    assert len(result.data['roles']) == 1
+    assert len(result.data['roles']) == 4
 
 
 def test_success_delete_role_admin(admin, role):
@@ -175,7 +175,7 @@ def test_success_delete_role_admin(admin, role):
 
     result = admin.get('/api/v1/roles')
 
-    assert len(result.data['roles']) == 0
+    assert len(result.data['roles']) == 3
 
 
 def test_fail_delete_role_user(user, role):
