@@ -575,6 +575,12 @@ def get_all_results_from_jobs(user, j_id):
     """Get all results from job.
     """
 
+    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
+
+    # If it's an admin or belongs to the same team
+    if not(auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+        raise auth.UNAUTHORIZED
+
     swift = dci_config.get_store('files')
     job_files = json.loads(files.get_all_files(j_id).response[0])['files']
     r_files = [file for file in job_files
@@ -582,7 +588,7 @@ def get_all_results_from_jobs(user, j_id):
 
     results = []
     for file in r_files:
-        file_path = swift.build_file_path(user['team_id'],
+        file_path = swift.build_file_path(file['team_id'],
                                           j_id,
                                           file['id'])
         data = ''.join(swift.get(file_path)[1])
