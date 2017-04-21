@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_5b767b3f",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-04-21T14:23:11Z",
+      "side": 1,
+      "message": "Could it be possible to reuse the flask stream there instead of downloading the file from swift ?",
+      "range": {
+        "startLine": 109,
+        "startChar": 8,
+        "endLine": 109,
+        "endChar": 46
+      },
+      "revId": "7847cc276be34ad363dcec6fe7ae7d6c5e776712",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
