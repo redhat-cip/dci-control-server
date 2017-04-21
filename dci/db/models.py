@@ -24,9 +24,6 @@ from dci.common import utils
 
 metadata = sa.MetaData()
 
-USER_ROLES = ['user', 'admin']
-ROLES_ENUM = sa.Enum(*USER_ROLES, name='roles_enum')
-
 JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run',
                 'success', 'failure', 'killed', 'product-failure',
                 'deployment-failure']
@@ -414,7 +411,6 @@ USERS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), nullable=False, unique=True),
     sa.Column('password', sa.Text, nullable=False),
-    sa.Column('role', ROLES_ENUM, default=USER_ROLES[0], nullable=False),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
@@ -481,4 +477,14 @@ ROLES = sa.Table(
               nullable=False),
     sa.UniqueConstraint('name', 'team_id', name='roles_name_team_id_key'),
     sa.Column('state', STATES, default='active'),
+)
+
+JOIN_USER_ROLES = sa.Table(
+    'user_roles', metadata,
+    sa.Column('user_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('users.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('role_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('roles.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True)
 )

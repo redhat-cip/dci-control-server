@@ -70,8 +70,38 @@ def init_db(db_conn, minimal, file):
 
     # Create a super admin
     team_admin = db_ins(models.TEAMS, name='admin')
-    db_ins(models.USERS, name='admin', role='admin', team_id=team_admin,
-           password=auth.hash_password('admin'))
+    user_admin = db_ins(models.USERS, name='admin', team_id=team_admin,
+                        password=auth.hash_password('admin'))
+
+    god_role = {
+        'name': 'God',
+        'description': 'Admin of the platform',
+        'system': True,
+        'team_id': team_admin,
+        'user_id': user_admin
+    }
+
+    admin_role = {
+        'name': 'Admin',
+        'description': 'Admin of a team',
+        'system': True,
+        'team_id': team_admin,
+        'user_id': user_admin
+    }
+
+    user_role = {
+        'name': 'User',
+        'description': 'User',
+        'system': True,
+        'team_id': team_admin,
+        'user_id': user_admin
+    }
+
+    admin_role_id = db_ins(models.ROLES, **admin_role)
+    user_role_id = db_ins(models.ROLES, **user_role)
+    god_role_id = db_ins(models.ROLES, **god_role)
+
+    db_ins(models.JOIN_USER_ROLES, user_id=user_admin, role_id=god_role_id)
 
     if minimal:
         return
@@ -81,17 +111,21 @@ def init_db(db_conn, minimal, file):
     team_dell = db_ins(models.TEAMS, name='dell')
 
     # Creates according users, 1 admin 1 user for other teams
-    db_ins(models.USERS, name='user_hp', role='user', team_id=team_hp,
-           password=auth.hash_password('password'))
+    user_hp = db_ins(models.USERS, name='user_hp', team_id=team_hp,
+                     password=auth.hash_password('password'))
+    db_ins(models.JOIN_USER_ROLES, user_id=user_hp, role_id=user_role_id)
 
-    db_ins(models.USERS, name='admin_hp', role='admin', team_id=team_hp,
-           password=auth.hash_password('password'))
+    admin_hp = db_ins(models.USERS, name='admin_hp', team_id=team_hp,
+                      password=auth.hash_password('password'))
+    db_ins(models.JOIN_USER_ROLES, user_id=admin_hp, role_id=admin_role_id)
 
-    db_ins(models.USERS, name='user_dell', role='user', team_id=team_dell,
-           password=auth.hash_password('password'))
+    user_dell = db_ins(models.USERS, name='user_dell', team_id=team_dell,
+                       password=auth.hash_password('password'))
+    db_ins(models.JOIN_USER_ROLES, user_id=user_dell, role_id=user_role_id)
 
-    db_ins(models.USERS, name='admin_dell', role='admin', team_id=team_dell,
-           password=auth.hash_password('password'))
+    admin_dell = db_ins(models.USERS, name='admin_dell', team_id=team_dell,
+                        password=auth.hash_password('password'))
+    db_ins(models.JOIN_USER_ROLES, user_id=admin_dell, role_id=admin_role_id)
 
     # Create 3 topics, 1 common and 2 scoped
     topic_common = db_ins(models.TOPICS, name='topic_common')
