@@ -1,0 +1,118 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_1bd3533a",
+        "filename": "tests/api/v1/test_roles.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-04-21T11:39:40Z",
+      "side": 1,
+      "message": "I\u0027m not a big fan of this implicit value.\nAn admin should be able to create a role for a partner.\nI prefer \n\nPOST {\n    \u0027name\u0027: \u0027Manager\u0027,\n    \u0027description\u0027: \u0027A Manager role\u0027,\n    \u0027system\u0027: True    \n}\n\n201 if admin\nelse 401",
+      "revId": "16a6b0048064cf3903485704e153f611112cd553",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_db25eb5c",
+        "filename": "tests/api/v1/test_roles.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-04-21T11:39:40Z",
+      "side": 1,
+      "message": "same as test_success_create_role_admin, it can be deleted",
+      "revId": "16a6b0048064cf3903485704e153f611112cd553",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_bb2a272b",
+        "filename": "tests/api/v1/test_roles.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-04-21T11:39:40Z",
+      "side": 1,
+      "message": "This is fine, but if the request crashes, this test may fail for the wrong reasons. It is better to test than the method that validates that a role is valid.",
+      "revId": "16a6b0048064cf3903485704e153f611112cd553",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_9b20834b",
+        "filename": "tests/api/v1/test_roles.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 93,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-04-21T11:39:40Z",
+      "side": 1,
+      "message": "suggestion:\n\ndef test_success_update_role(admin, role):\n    headers \u003d {\u0027If-match\u0027: role[\u0027etag\u0027]}\n    url \u003d \u0027/api/v1/roles/%s\u0027 % role[\u0027id\u0027]\n\n    assert role[\u0027role\u0027][\u0027name\u0027] \u003d\u003d \u0027Manager\u0027\n    result \u003d admin.put(url, data\u003d{\u0027name\u0027: \u0027User\u0027}, headers\u003dheaders)\n    assert result.status_code \u003d\u003d 204\n    assert role[\u0027role\u0027][\u0027name\u0027] \u003d\u003d \u0027User\u0027\n\n    assert role[\u0027role\u0027][\u0027description\u0027] \u003d\u003d \u0027A Manager role\u0027\n    result \u003d admin.put(url, data\u003d{\u0027description\u0027: \u0027new role\u0027}, headers\u003dheaders)\n    assert result.status_code \u003d\u003d 204\n    assert role[\u0027role\u0027][\u0027name\u0027] \u003d\u003d \u0027new role\u0027",
+      "revId": "16a6b0048064cf3903485704e153f611112cd553",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_7b1dbf0e",
+        "filename": "tests/api/v1/test_roles.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 147,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-04-21T11:39:40Z",
+      "side": 1,
+      "message": "success",
+      "range": {
+        "startLine": 147,
+        "startChar": 9,
+        "endLine": 147,
+        "endChar": 15
+      },
+      "revId": "16a6b0048064cf3903485704e153f611112cd553",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_5b1afb18",
+        "filename": "tests/api/v1/test_roles.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-04-21T11:39:40Z",
+      "side": 1,
+      "message": "success",
+      "range": {
+        "startLine": 159,
+        "startChar": 9,
+        "endLine": 159,
+        "endChar": 15
+      },
+      "revId": "16a6b0048064cf3903485704e153f611112cd553",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
