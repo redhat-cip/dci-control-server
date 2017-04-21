@@ -38,8 +38,8 @@ STATES = sa.Enum(*RESOURCE_STATES, name='states')
 ISSUE_TRACKERS = ['github', 'bugzilla']
 TRACKERS = sa.Enum(*ISSUE_TRACKERS, name='trackers')
 
-FILES_DELETE = 'delete'
 FILES_CREATE = 'create'
+FILES_DELETE = 'delete'
 FILES_ACTIONS = sa.Enum(FILES_CREATE, FILES_DELETE, name='files_actions')
 
 
