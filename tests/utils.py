@@ -111,6 +111,45 @@ def provision(db_conn):
     user_role_id = db_insert(models.ROLES, **user_role)
     super_admin_role_id = db_insert(models.ROLES, **super_admin_role)
 
+    # Create basic permissions
+    allrights_permission = {
+        'name': 'Allrights',
+        'label': 'ALLRIGHTS',
+        'description': 'Super Admin Permission',
+    }
+
+    admin_permission = {
+        'name': 'Admin Level',
+        'label': 'ADMIN_LEVEL_RIGHT',
+        'description': 'Admin Level Permission',
+    }
+
+    user_permission = {
+        'name': 'User Level',
+        'label': 'USER_LEVEL_RIGHT',
+        'description': 'User Level Permission',
+    }
+
+    allrights_permission_id = db_insert(models.PERMISSIONS,
+                                        **allrights_permission)
+    admin_permission_id = db_insert(models.PERMISSIONS, **admin_permission)
+    user_permission_id = db_insert(models.PERMISSIONS, **user_permission)
+
+    db_insert(models.JOIN_ROLE_PERMISSIONS, role_id=super_admin_role_id,
+              permission_id=allrights_permission_id)
+    db_insert(models.JOIN_ROLE_PERMISSIONS, role_id=super_admin_role_id,
+              permission_id=admin_permission_id)
+    db_insert(models.JOIN_ROLE_PERMISSIONS, role_id=super_admin_role_id,
+              permission_id=user_permission_id)
+
+    db_insert(models.JOIN_ROLE_PERMISSIONS, role_id=admin_role_id,
+              permission_id=admin_permission_id)
+    db_insert(models.JOIN_ROLE_PERMISSIONS, role_id=admin_role_id,
+              permission_id=user_permission_id)
+
+    db_insert(models.JOIN_ROLE_PERMISSIONS, role_id=user_role_id,
+              permission_id=user_permission_id)
+
     # Create users
     db_insert(models.USERS,
               name='user',

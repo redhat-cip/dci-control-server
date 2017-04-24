@@ -57,11 +57,12 @@ def _verify_existence_and_get_user(user_id):
 
 @api.route('/users', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def create_users(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.user.post(flask.request.json))
 
-    if not(auth.is_admin(user) or auth.is_admin_user(user, values['team_id'])):
+    if not auth.is_in_team(user, values['team_id']):
         raise auth.UNAUTHORIZED
 
     if 'role_id' not in values or not values['role_id']:
@@ -94,6 +95,7 @@ def create_users(user):
 
 @api.route('/users', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_users(user, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
@@ -117,6 +119,7 @@ def get_all_users(user, team_id=None):
 
 @api.route('/users/<uuid:user_id>', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_user_by_id(user, user_id):
     user_res = v1_utils.verify_existence_and_get(user_id, _TABLE)
     return base.get_resource_by_id(user, user_res, _TABLE, _EMBED_MANY,
@@ -125,6 +128,7 @@ def get_user_by_id(user, user_id):
 
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def put_user(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -162,14 +166,14 @@ def put_user(user, user_id):
 
 @api.route('/users/<uuid:user_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def delete_user_by_id(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     duser = _verify_existence_and_get_user(user_id)
 
-    if not(auth.is_admin(user) or
-           auth.is_admin_user(user, duser['team_id'])):
+    if not auth.is_in_team(user, duser['team_id']):
         raise auth.UNAUTHORIZED
 
     values = {'state': 'archived'}
@@ -189,11 +193,13 @@ def delete_user_by_id(user, user_id):
 
 @api.route('/users/purge', methods=['GET'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def get_to_purge_archived_users(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/users/purge', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def purge_archived_users(user):
     return base.purge_archived_resources(user, _TABLE)

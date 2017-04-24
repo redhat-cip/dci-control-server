@@ -35,17 +35,16 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {}
 
 
-@api.route('/roles', methods=['POST'])
-@audits.log
+@api.route('/permissions', methods=['POST'])
 @auth.login_required
 @auth.has_permission('ALLRIGHTS')
-def create_roles(user):
+@audits.log
+def create_permissions(user):
     values = v1_utils.common_values_dict(user)
-    values.update(schemas.role.post(flask.request.json))
-    values.update({'team_id': user['team_id']})
+    values.update(schemas.permission.post(flask.request.json))
 
-    if not values['label']:
-        values.update({'label': values['name'].upper()})
+    if 'value' not in values:
+        values.update({'value': values['name']})
 
     query = _TABLE.insert().values(**values)
 
@@ -55,96 +54,78 @@ def create_roles(user):
         raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
 
     return flask.Response(
-        json.dumps({'role': values}), 201,
+        json.dumps({'permission': values}), 201,
         headers={'ETag': values['etag']}, content_type='application/json'
     )
 
 
-@api.route('/roles/<uuid:role_id>', methods=['PUT'])
+@api.route('/permissions/<uuid:permission_id>', methods=['PUT'])
 @auth.login_required
 @auth.has_permission('ALLRIGHTS')
-def update_role(user, role_id):
+def update_permission(user, permission_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = schemas.role.put(flask.request.json)
-    v1_utils.verify_existence_and_get(role_id, _TABLE)
-
+    values = schemas.permission.put(flask.request.json)
+    v1_utils.verify_existence_and_get(permission_id, _TABLE)
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == role_id
+        _TABLE.c.id == permission_id
     )
     query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
-        raise dci_exc.DCIConflict('Role', role_id)
+        raise dci_exc.DCIConflict('Permission', permission_id)
 
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
 
 
-@api.route('/roles', methods=['GET'])
+@api.route('/permissions', methods=['GET'])
 @auth.login_required
-@auth.has_permission('USER_LEVEL_RIGHT')
-def get_all_roles(user):
-    args = schemas.args(flask.request.args.to_dict())
+@auth.has_permission('ALLRIGHTS')
+def get_all_permissions(user):
+    args = schemas.args(flask.request.args.t_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
-
-    query.add_extra_condition(_TABLE.c.state != 'archived')
-
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.label != 'SUPER_ADMIN')
 
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
 
-    return flask.jsonify({'roles': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'permissions': rows, '_meta': {'count': nb_rows}})
 
 
-@api.route('/roles/<uuid:role_id>', methods=['GET'])
-@auth.login_required
-@auth.has_permission('USER_LEVEL_RIGHT')
-def get_role_by_id(user, role_id):
-    role = v1_utils.verify_existence_and_get(role_id, _TABLE)
-    return base.get_resource_by_id(user, role, _TABLE, _EMBED_MANY)
-
-
-@api.route('/roles/<uuid:role_id>', methods=['DELETE'])
+@api.route('/permissions/<uuid:permission_id>', methods=['GET'])
 @auth.login_required
 @auth.has_permission('ALLRIGHTS')
-def delete_role_by_id(user, role_id):
+def get_permission_by_id(user, permission_id):
+    permission = v1_utils.verify_existence_and_get(permission_id, _TABLE)
+    return base.get_resource_by_id(user, permission, _TABLE, _EMBED_MANY)
+
+
+@api.route('/permissions/<uuid:permission_id>', methods=['DELETE'])
+@auth.login_required
+@auth.has_permission('ALLRIGHTS')
+def delete_permission_by_id(user, permission_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    v1_utils.verify_existence_and_get(role_id, _TABLE)
+    v1_utils.verify_existence_and_get(permission_id, _TABLE)
 
-    values = {'state': 'archived'}
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == role_id
+        _TABLE.c.id == permission_id
     )
-    query = _TABLE.update().where(where_clause).values(**values)
+
+    query = _TABLE.delete().where(where_clause)
+
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
-        raise dci_exc.DCIDeleteConflict('Role', role_id)
+        raise dci_exc.DCIConflict('Permission deletion conflict',
+                                  permission_id)
 
     return flask.Response(None, 204, content_type='application/json')
-
-
-@api.route('/roles/purge', methods=['GET'])
-@auth.login_required
-@auth.has_permission('ALLRIGHTS')
-def get_to_purge_archived_roles(user):
-    return base.get_to_purge_archived_resources(user, _TABLE)
-
-
-@api.route('/roles/purge', methods=['POST'])
-@auth.login_required
-@auth.has_permission('ALLRIGHTS')
-def purge_archived_roles(user):
-    return base.purge_archived_resources(user, _TABLE)

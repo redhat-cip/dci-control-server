@@ -46,6 +46,7 @@ _EMBED_MANY = {
 
 @api.route('/files', methods=['POST'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def create_files(user):
     # todo(yassine): use voluptuous for headers validation
     headers_values = v1_utils.flask_headers_to_dict(flask.request.headers)
@@ -123,6 +124,7 @@ def create_files(user):
 
 @api.route('/files', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_files(user, j_id=None):
     """Get all files.
     """
@@ -146,6 +148,7 @@ def get_all_files(user, j_id=None):
 
 @api.route('/files/<uuid:file_id>', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_file_by_id(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
     return base.get_resource_by_id(user, file, _TABLE, _EMBED_MANY)
@@ -153,6 +156,7 @@ def get_file_by_id(user, file_id):
 
 @api.route('/files/<uuid:file_id>/content', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_file_content(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
     swift = dci_config.get_store('files')
@@ -199,10 +203,11 @@ def get_file_content(user, file_id):
 
 @api.route('/files/<uuid:file_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def delete_file_by_id(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
-    if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
+    if not auth.is_in_team(user, file['team_id']):
         raise auth.UNAUTHORIZED
 
     values = {'state': 'archived'}
@@ -220,11 +225,13 @@ def delete_file_by_id(user, file_id):
 
 @api.route('/files/purge', methods=['GET'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def get_to_purge_archived_files(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/files/purge', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def purge_archived_files(user):
     return base.purge_archived_resources(user, _TABLE)

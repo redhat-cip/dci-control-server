@@ -41,10 +41,8 @@ _EMBED_MANY = {
 
 @api.route('/topics', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def create_topics(user):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     values = v1_utils.common_values_dict(user)
     values.update(schemas.topic.post(flask.request.json))
 
@@ -62,6 +60,7 @@ def create_topics(user):
 
 @api.route('/topics/<uuid:topic_id>', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_topic_by_id(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
@@ -76,6 +75,7 @@ def get_topic_by_id(user, topic_id):
 
 @api.route('/topics', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_topics(user):
     args = schemas.args(flask.request.args.to_dict())
     # if the user is an admin then he can get all the topics
@@ -99,14 +99,12 @@ def get_all_topics(user):
 
 @api.route('/topics/<uuid:topic_id>', methods=['PUT'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def put_topic(user, topic_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     values = schemas.topic.put(flask.request.json)
-
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
 
     def _verify_team_in_topic(user, topic_id):
         topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE,
@@ -138,10 +136,8 @@ def put_topic(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def delete_topic_by_id(user, topic_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
-
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
 
     with flask.g.db_conn.begin():
@@ -166,6 +162,7 @@ def delete_topic_by_id(user, topic_id):
 # components, jobdefinitions, tests GET
 @api.route('/topics/<uuid:topic_id>/components', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_components(user, topic_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
@@ -175,6 +172,7 @@ def get_all_components(user, topic_id):
 @api.route('/topics/<uuid:topic_id>/type/<type_id>/status',
            methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_jobs_status_from_components(user, topic_id, type_id):
 
     # List of job meaningfull job status for global overview
@@ -245,6 +243,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
 
 @api.route('/topics/<uuid:topic_id>/jobdefinitions', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_jobdefinitions_by_topic(user, topic_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
@@ -253,6 +252,7 @@ def get_all_jobdefinitions_by_topic(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>/tests', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_tests(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
     if not(auth.is_admin(user)):
@@ -289,9 +289,8 @@ def get_all_tests(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>/tests', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def add_test_to_topic(user, topic_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
     data_json = flask.request.json
     values = {'topic_id': topic_id,
               'test_id': data_json.get('test_id', None)}
@@ -310,6 +309,7 @@ def add_test_to_topic(user, topic_id):
 
 @api.route('/topics/<uuid:t_id>/tests/<uuid:test_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def delete_test_from_topic(user, t_id, test_id):
     if not auth.is_admin(user):
         v1_utils.verify_team_in_topic(user, t_id)
@@ -330,9 +330,8 @@ def delete_test_from_topic(user, t_id, test_id):
 # teams set apis
 @api.route('/topics/<uuid:topic_id>/teams', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def add_team_to_topic(user, topic_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
     # TODO(yassine): use voluptuous schema
     data_json = flask.request.json
     team_id = data_json.get('team_id')
@@ -356,9 +355,8 @@ def add_team_to_topic(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>/teams/<uuid:team_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def delete_team_from_topic(user, topic_id, team_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
                                                 get_id=True)
@@ -377,10 +375,8 @@ def delete_team_from_topic(user, topic_id, team_id):
 
 @api.route('/topics/<uuid:topic_id>/teams', methods=['GET'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def get_all_teams_from_topic(user, topic_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
 
     # Get all teams which belongs to a given topic
@@ -398,11 +394,13 @@ def get_all_teams_from_topic(user, topic_id):
 
 @api.route('/topics/purge', methods=['GET'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def get_to_purge_archived_topics(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/topics/purge', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def purge_archived_topics(user):
     return base.purge_archived_resources(user, _TABLE)

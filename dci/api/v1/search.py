@@ -24,6 +24,7 @@ from dci.common import schemas
 
 @api.route('/search', methods=['POST'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def search(user):
     values = schemas.search.post(flask.request.json)
 
@@ -42,6 +43,7 @@ def search(user):
 
 @api.route('/search/<uuid:id>', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get(user, id):
     if auth.is_admin(user):
         res = flask.g.es_conn.get(id)

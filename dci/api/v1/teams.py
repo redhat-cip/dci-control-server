@@ -43,13 +43,11 @@ _EMBED_MANY = {
 
 @api.route('/teams', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 @audits.log
 def create_teams(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.team.post(flask.request.json))
-
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
 
     query = _TABLE.insert().values(**values)
 
@@ -66,6 +64,7 @@ def create_teams(user):
 
 @api.route('/teams', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_teams(user):
     args = schemas.args(flask.request.args.to_dict())
 
@@ -86,15 +85,17 @@ def get_all_teams(user):
 
 @api.route('/teams/<uuid:t_id>', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_team_by_id(user, t_id):
     team = v1_utils.verify_existence_and_get(t_id, _TABLE)
-    if not(auth.is_admin(user) or auth.is_in_team(user, team['id'])):
+    if not auth.is_in_team(user, team['id']):
         raise auth.UNAUTHORIZED
     return base.get_resource_by_id(user, team, _TABLE, _EMBED_MANY)
 
 
 @api.route('/teams/<uuid:team_id>/remotecis', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_remotecis_by_team(user, team_id):
     team = v1_utils.verify_existence_and_get(team_id, _TABLE)
     return remotecis.get_all_remotecis(team['id'])
@@ -102,6 +103,7 @@ def get_remotecis_by_team(user, team_id):
 
 @api.route('/teams/<uuid:team_id>/tests', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_tests_by_team(user, team_id):
     team = v1_utils.verify_existence_and_get(team_id, _TABLE)
     return tests.get_all_tests(user, team['id'])
@@ -109,13 +111,14 @@ def get_tests_by_team(user, team_id):
 
 @api.route('/teams/<uuid:t_id>', methods=['PUT'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def put_team(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     values = schemas.team.put(flask.request.json)
 
-    if not(auth.is_admin(user) or auth.is_admin_user(user, t_id)):
+    if not auth.is_in_team(user, t_id):
         raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
@@ -138,12 +141,10 @@ def put_team(user, t_id):
 
 @api.route('/teams/<uuid:t_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def delete_team_by_id(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
 
@@ -171,11 +172,13 @@ def delete_team_by_id(user, t_id):
 
 @api.route('/teams/purge', methods=['GET'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def get_to_purge_archived_teams(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/teams/purge', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def purge_archived_teams(user):
     return base.purge_archived_resources(user, _TABLE)

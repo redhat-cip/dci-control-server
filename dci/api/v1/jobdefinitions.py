@@ -40,6 +40,7 @@ _EMBED_MANY = {
 
 @api.route('/jobdefinitions', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def create_jobdefinitions(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.jobdefinition.post(flask.request.json))
@@ -83,6 +84,7 @@ def list_jobdefinitions(user, topic_ids, by_topic):
 
 @api.route('/jobdefinitions')
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_jobdefinitions(user):
     topic_ids = v1_utils.user_topic_ids(user)
     return list_jobdefinitions(user, topic_ids, by_topic=False)
@@ -90,6 +92,7 @@ def get_all_jobdefinitions(user):
 
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_jobdefinition_by_id(user, jd_id):
     jobdefinition = v1_utils.verify_existence_and_get(jd_id, _TABLE)
     return base.get_resource_by_id(user, jobdefinition, _TABLE, _EMBED_MANY)
@@ -97,15 +100,11 @@ def get_jobdefinition_by_id(user, jd_id):
 
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['PUT'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def put_jobdefinition(user, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
     values = schemas.jobdefinition.put(flask.request.json)
-
-    if not(auth.is_admin(user) or auth.is_admin_user(user, jd_id)):
-        raise auth.UNAUTHORIZED
-
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
     values['etag'] = utils.gen_etag()
@@ -126,6 +125,7 @@ def put_jobdefinition(user, jd_id):
 
 @api.route('/jobdefinitions/<uuid:jd_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def delete_jobdefinition_by_id(user, jd_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -158,6 +158,7 @@ def delete_jobdefinition_by_id(user, jd_id):
 
 @api.route('/jobdefinitions/<uuid:jd_id>/tests', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def add_test_to_jobdefinitions(user, jd_id):
     data_json = flask.request.json
     values = {'jobdefinition_id': jd_id,
@@ -177,6 +178,7 @@ def add_test_to_jobdefinitions(user, jd_id):
 
 @api.route('/jobdefinitions/<uuid:jd_id>/tests', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_tests_from_jobdefinitions(user, jd_id):
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
@@ -196,6 +198,7 @@ def get_all_tests_from_jobdefinitions(user, jd_id):
 @api.route('/jobdefinitions/<uuid:jd_id>/tests/<uuid:t_id>',
            methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def delete_test_from_jobdefinition(user, jd_id, t_id):
     v1_utils.verify_existence_and_get(jd_id, _TABLE)
 
@@ -213,11 +216,13 @@ def delete_test_from_jobdefinition(user, jd_id, t_id):
 
 @api.route('/jobdefinitions/purge', methods=['GET'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def get_purge_archived_jobdefinitions(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/jobdefinitions/purge', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def purge_archived_jobdefinitions(user):
     return base.purge_archived_resources(user, _TABLE)

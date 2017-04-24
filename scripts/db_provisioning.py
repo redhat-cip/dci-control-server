@@ -101,6 +101,44 @@ def init_db(db_conn, minimal, file):
     db_ins(models.USERS, name='admin', role_id=super_admin_role_id,
            team_id=team_admin, password=auth.hash_password('admin'))
 
+    # Create basic permissions
+    allrights_permission = {
+        'name': 'Allrights',
+        'label': 'ALLRIGHTS',
+        'description': 'Super Admin Permission',
+    }
+
+    admin_permission = {
+        'name': 'Admin Level',
+        'label': 'ADMIN_LEVEL_RIGHT',
+        'description': 'Admin Level Permission',
+    }
+
+    user_permission = {
+        'name': 'User Level',
+        'label': 'USER_LEVEL_RIGHT',
+        'description': 'User Level Permission',
+    }
+    allrights_permission_id = db_ins(models.PERMISSIONS,
+                                     **allrights_permission)
+    admin_permission_id = db_ins(models.PERMISSIONS, **admin_permission)
+    user_permission_id = db_ins(models.PERMISSIONS, **user_permission)
+
+    db_ins(models.JOIN_ROLE_PERMISSIONS, role_id=super_admin_role_id,
+           permission_id=allrights_permission_id)
+    db_ins(models.JOIN_ROLE_PERMISSIONS, role_id=super_admin_role_id,
+           permission_id=admin_permission_id)
+    db_ins(models.JOIN_ROLE_PERMISSIONS, role_id=super_admin_role_id,
+           permission_id=user_permission_id)
+
+    db_ins(models.JOIN_ROLE_PERMISSIONS, role_id=admin_role_id,
+           permission_id=admin_permission_id)
+    db_ins(models.JOIN_ROLE_PERMISSIONS, role_id=admin_role_id,
+           permission_id=user_permission_id)
+
+    db_ins(models.JOIN_ROLE_PERMISSIONS, role_id=user_role_id,
+           permission_id=user_permission_id)
+
     if minimal:
         return
 

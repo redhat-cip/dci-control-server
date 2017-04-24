@@ -59,13 +59,14 @@ _EMBED_MANY = {
 
 @api.route('/jobs', methods=['POST'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def create_jobs(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.job.post(flask.request.json))
     components_ids = values.pop('components')
 
-    # If it's not a super admin nor belongs to the same team_id
-    if not(auth.is_admin(user) or auth.is_in_team(user, values['team_id'])):
+    # If it does not belongs to the same team_id
+    if not auth.is_in_team(user, values['team_id']):
         raise auth.UNAUTHORIZED
 
     values.update({
@@ -99,6 +100,7 @@ def create_jobs(user):
 
 @api.route('/jobs/search', methods=['POST'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def search_jobs(user):
     values = schemas.job_search.post(flask.request.json)
     jobdefinition_id = values.get('jobdefinition_id')
@@ -282,6 +284,7 @@ def _get_job(user, job_id, embed):
 
 @api.route('/jobs/schedule', methods=['POST'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def schedule_jobs(user):
     """Dispatch jobs to remotecis.
 
@@ -323,6 +326,7 @@ def schedule_jobs(user):
 
 @api.route('/jobs/upgrade', methods=['POST'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def upgrade_jobs(user):
     values = schemas.job_upgrade.post(flask.request.json)
 
@@ -379,6 +383,7 @@ def upgrade_jobs(user):
 
 @api.route('/jobs', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_jobs(user, jd_id=None):
     """Get all jobs.
 
@@ -415,6 +420,7 @@ def get_all_jobs(user, jd_id=None):
 
 @api.route('/jobs/<uuid:job_id>/components', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_components_from_job(user, job_id):
     job, nb_rows = _get_job(user, job_id, ['components'])
     return flask.jsonify({'components': job['components'],
@@ -423,6 +429,7 @@ def get_components_from_job(user, job_id):
 
 @api.route('/jobs/<uuid:j_id>/jobstates', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_jobstates_by_job(user, j_id):
     v1_utils.verify_existence_and_get(j_id, _TABLE)
     return jobstates.get_all_jobstates(j_id=j_id)
@@ -430,6 +437,7 @@ def get_jobstates_by_job(user, j_id):
 
 @api.route('/jobs/<uuid:job_id>', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_job_by_id(user, job_id):
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     job_dict = dict(job)
@@ -440,8 +448,9 @@ def get_job_by_id(user, job_id):
 
 
 @api.route('/jobs/<uuid:job_id>', methods=['PUT'])
-@auth.login_required
 @audits.log
+@auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def update_job_by_id(user, job_id):
     """Update a job
     """
@@ -453,8 +462,8 @@ def update_job_by_id(user, job_id):
 
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
 
-    # If it's an admin or belongs to the same team
-    if not(auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    # If it doesn't belong to the same team
+    if not auth.is_in_team(user, job['team_id']):
         raise auth.UNAUTHORIZED
 
     # Update jobstate if needed
@@ -494,11 +503,11 @@ def update_job_by_id(user, job_id):
 
 @api.route('/jobs/<uuid:j_id>/recheck', methods=['POST'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def job_recheck(user, j_id):
 
     job_to_recheck = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not (auth.is_admin(user) or
-            auth.is_in_team(user, job_to_recheck['team_id'])):
+    if not auth.is_in_team(user, job_to_recheck['team_id']):
         raise auth.UNAUTHORIZED
     etag = utils.gen_etag()
     values = utils.dict_merge(dict(job_to_recheck), {
@@ -532,6 +541,7 @@ def job_recheck(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>/files', methods=['POST'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def add_file_to_jobs(user, j_id):
     values = schemas.job.post(flask.request.json)
 
@@ -542,6 +552,7 @@ def add_file_to_jobs(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>/issues', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def retrieve_issues_from_job(user, j_id):
     """Retrieve all issues attached to a job."""
     return issues.get_all_issues(j_id, _TABLE)
@@ -549,6 +560,7 @@ def retrieve_issues_from_job(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>/issues', methods=['POST'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def attach_issue_to_jobs(user, j_id):
     """Attach an issue to a job."""
     return issues.attach_issue(j_id, _TABLE, user['id'])
@@ -556,6 +568,7 @@ def attach_issue_to_jobs(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>/issues/<uuid:i_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def unattach_issue_from_job(user, j_id, i_id):
     """Unattach an issue to a job."""
     return issues.unattach_issue(j_id, i_id, _TABLE)
@@ -563,6 +576,7 @@ def unattach_issue_from_job(user, j_id, i_id):
 
 @api.route('/jobs/<uuid:j_id>/files', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_files_from_jobs(user, j_id):
     """Get all files.
     """
@@ -571,6 +585,7 @@ def get_all_files_from_jobs(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>/results', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_results_from_jobs(user, j_id):
     """Get all results from job.
     """
@@ -578,7 +593,7 @@ def get_all_results_from_jobs(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
     # If it's an admin or belongs to the same team
-    if not(auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not auth.is_in_team(user, job['team_id']):
         raise auth.UNAUTHORIZED
 
     swift = dci_config.get_store('files')
@@ -614,13 +629,14 @@ def get_all_results_from_jobs(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def delete_job_by_id(user, j_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
-    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not auth.is_in_team(user, job['team_id']):
         raise auth.UNAUTHORIZED
 
     with flask.g.db_conn.begin():
@@ -647,56 +663,63 @@ def delete_job_by_id(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>/metas', methods=['POST'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def associate_meta(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not auth.is_in_team(user, job['team_id']):
         raise auth.UNAUTHORIZED
     return metas.create_meta(user, j_id)
 
 
 @api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_meta_by_id(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not auth.is_in_team(user, job['team_id']):
         raise auth.UNAUTHORIZED
     return metas.get_meta_by_id(m_id)
 
 
 @api.route('/jobs/<uuid:j_id>/metas', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_metas(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not auth.is_in_team(user, job['team_id']):
         raise auth.UNAUTHORIZED
     return metas.get_all_metas_from_job(j_id)
 
 
 @api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['PUT'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def put_meta(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not auth.is_in_team(user, job['team_id']):
         raise auth.UNAUTHORIZED
     return metas.put_meta(j_id, m_id)
 
 
 @api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def delete_meta(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not auth.is_in_team(user, job['team_id']):
         raise auth.UNAUTHORIZED
     return metas.delete_meta(j_id, m_id)
 
 
 @api.route('/jobs/purge', methods=['GET'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def get_to_purge_archived_jobs(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/jobs/purge', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def purge_archived_jobs(user):
     return base.purge_archived_resources(user, _TABLE)

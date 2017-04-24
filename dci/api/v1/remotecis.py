@@ -43,13 +43,13 @@ _EMBED_MANY = {
 
 @api.route('/remotecis', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def create_remotecis(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.remoteci.post(flask.request.json))
 
-    # If it's not a super admin nor belongs to the same team_id
-    if not(auth.is_admin(user) or
-           auth.is_in_team(user, values.get('team_id'))):
+    # If it doesn't belong to the same team_id
+    if not auth.is_in_team(user, values.get('team_id')):
         raise auth.UNAUTHORIZED
 
     values.update({
@@ -71,6 +71,7 @@ def create_remotecis(user):
 
 @api.route('/remotecis', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_remotecis(user, t_id=None):
     args = schemas.args(flask.request.args.to_dict())
 
@@ -95,6 +96,7 @@ def get_all_remotecis(user, t_id=None):
 
 @api.route('/remotecis/<uuid:r_id>', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_remoteci_by_id(user, r_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
     return base.get_resource_by_id(user, remoteci, _TABLE, _EMBED_MANY)
@@ -102,6 +104,7 @@ def get_remoteci_by_id(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>', methods=['PUT'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def put_remoteci(user, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -115,7 +118,7 @@ def put_remoteci(user, r_id):
         remoteci_data.update(values['data'])
         values['data'] = {k: v for k, v in remoteci_data.items() if v}
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+    if not auth.is_in_team(user, remoteci['team_id']):
         raise auth.UNAUTHORIZED
 
     values['etag'] = utils.gen_etag()
@@ -139,13 +142,14 @@ def put_remoteci(user, r_id):
 
 @api.route('/remotecis/<uuid:remoteci_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def delete_remoteci_by_id(user, remoteci_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     remoteci = v1_utils.verify_existence_and_get(remoteci_id, _TABLE)
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+    if not auth.is_in_team(user, remoteci['team_id']):
         raise auth.UNAUTHORIZED
 
     with flask.g.db_conn.begin():
@@ -171,6 +175,7 @@ def delete_remoteci_by_id(user, remoteci_id):
 
 @api.route('/remotecis/<uuid:r_id>/data', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_remoteci_data(user, r_id):
     remoteci_data = get_remoteci_data_json(user, r_id)
 
@@ -199,6 +204,7 @@ def get_remoteci_data_json(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>/tests', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def add_test_to_remoteci(user, r_id):
     data_json = flask.request.json
     values = {'remoteci_id': r_id,
@@ -218,6 +224,7 @@ def add_test_to_remoteci(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>/tests', methods=['GET'])
 @auth.login_required
+@auth.has_permission('USER_LEVEL_RIGHT')
 def get_all_tests_from_remotecis(user, r_id):
     v1_utils.verify_existence_and_get(r_id, _TABLE)
 
@@ -235,6 +242,7 @@ def get_all_tests_from_remotecis(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>/tests/<uuid:t_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission('ADMIN_LEVEL_RIGHT')
 def delete_test_from_remoteci(user, r_id, t_id):
     v1_utils.verify_existence_and_get(r_id, _TABLE)
 
@@ -252,11 +260,13 @@ def delete_test_from_remoteci(user, r_id, t_id):
 
 @api.route('/remotecis/purge', methods=['GET'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def get_to_purge_archived_remotecis(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/remotecis/purge', methods=['POST'])
 @auth.login_required
+@auth.has_permission('ALLRIGHTS')
 def purge_archived_remotecis(user):
     return base.purge_archived_resources(user, _TABLE)
