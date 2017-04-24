@@ -43,13 +43,11 @@ _EMBED_MANY = {
 
 @api.route('/teams', methods=['POST'])
 @auth.login_required
+@auth.has_permission(['SUPER_ADMIN'])
 @audits.log
 def create_teams(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.team.post(flask.request.json))
-
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
 
     query = _TABLE.insert().values(**values)
 
@@ -109,6 +107,7 @@ def get_tests_by_team(user, team_id):
 
 @api.route('/teams/<uuid:t_id>', methods=['PUT'])
 @auth.login_required
+@auth.has_permission(['ADMIN', 'SUPER_ADMIN'])
 def put_team(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -138,12 +137,10 @@ def put_team(user, t_id):
 
 @api.route('/teams/<uuid:t_id>', methods=['DELETE'])
 @auth.login_required
+@auth.has_permission(['SUPER_ADMIN'])
 def delete_team_by_id(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
 
@@ -171,11 +168,13 @@ def delete_team_by_id(user, t_id):
 
 @api.route('/teams/purge', methods=['GET'])
 @auth.login_required
+@auth.has_permission(['ADMIN'])
 def get_to_purge_archived_teams(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/teams/purge', methods=['POST'])
 @auth.login_required
+@auth.has_permission(['ADMIN'])
 def purge_archived_teams(user):
     return base.purge_archived_resources(user, _TABLE)

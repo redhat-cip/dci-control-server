@@ -36,6 +36,7 @@ import dci.api.v1.files  # noqa
 import dci.api.v1.jobdefinitions  # noqa
 import dci.api.v1.jobs  # noqa
 import dci.api.v1.jobstates  # noqa
+import dci.api.v1.permissions  # noqa
 import dci.api.v1.remotecis  # noqa
 import dci.api.v1.roles  # noqa
 import dci.api.v1.search  # noqa

@@ -97,3 +97,29 @@ def login_required(f):
         return reject()
 
     return decorated
+
+
+def has_permission(permissions):
+    """Check if the role the user belongs to has the proper permissions."""
+
+    def check_permissions(f):
+        @wraps(f)
+        def decorated(*args, **kwargs):
+            for mechanism in [BasicAuthMechanism(flask.request)]:
+                if mechanism.is_valid():
+
+                    join = sql.join(
+                        models.PERMISSIONS,
+                        models.JOIN_ROLE_PERMISSIONS,
+                        models.PERMISSIONS.c.id == models.JOIN_ROLE_PERMISSIONS.c.permission_id
+                    )
+                    query = sql.select([models.PERMISSIONS]).select_from(join).where(models.JOIN_ROLE_PERMISSIONS.c.role_id == str(mechanism.identity['role_id']))
+                    rows = flask.g.db_conn.execute(query)
+                    user_permissions = [dict(row)['value'] for row in rows]
+                    for permission in permissions:
+                        if permission in user_permissions:
+                            return f(*args, **kwargs)
+                    return reject()
+
+        return decorated
+    return check_permissions
