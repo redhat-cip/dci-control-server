@@ -437,6 +437,7 @@ def _format_level_2(rows, list_embeds, embed_many):
                     row_ids_to_embed_values[row['id']][embd] = _uniqify_list(embed_values)  # noqa
             else:
                 row_ids_to_embed_values[row['id']][embd] = {}
+                print embed_many
                 if embed_many[embd]:
                     row_ids_to_embed_values[row['id']][embd] = []
 

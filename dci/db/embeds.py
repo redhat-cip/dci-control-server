@@ -102,7 +102,11 @@ def jobs(root_select=models.JOBS):
         'team': [
             {'right': TEAM,
              'onclause': and_(root_select.c.team_id == TEAM.c.id,
-                              TEAM.c.state != 'archived')}]
+                              TEAM.c.state != 'archived')}],
+        'tests_results': [
+            {'right': models.TESTS_RESULTS,
+             'onclause': models.TESTS_RESULTS.c.job_id == root_select.c.id,
+             'isouter': True}]
     }
 
 
@@ -291,7 +295,8 @@ EMBED_STRING_TO_OBJECT = {
         'remoteci': REMOTECI,
         'remoteci.tests': REMOTECI_TESTS,
         'components': models.COMPONENTS,
-        'team': TEAM},
+        'team': TEAM,
+        'tests_results': models.TESTS_RESULTS},
     'remotecis': {
         'team': TEAM,
         'lastjob': LASTJOB_WITHOUT_CONFIGURATION,
