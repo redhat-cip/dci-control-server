@@ -343,11 +343,11 @@ def file_job_junit_user_id(user, job_user_id, team_user_id):
             'content-type': "stream",
             'content-length': 1
         }
-
-        mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
         JUNIT = """<testsuite errors="0" failures="0" name="pytest" skips="1"
                    tests="3" time="46.050"></testsuite>"""
+        mockito.head.return_value = head_result
+        mockito.get.return_value = ['', JUNIT]
+        mock_swift.return_value = mockito
         headers = {'DCI-JOB-ID': job_user_id,
                    'Content-Type': 'application/junit',
                    'DCI-MIME': 'application/junit',
@@ -371,11 +371,11 @@ def file_job_junit_empty_user_id(user, job_user_id, team_user_id):
             'content-type': "stream",
             'content-length': 1
         }
-
-        mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
         JUNIT = """<testsuite errors="0" failures="0" name="" tests="0"
                    time="0.307"> </testsuite>"""
+        mockito.head.return_value = head_result
+        mockito.get.return_value = ['', JUNIT]
+        mock_swift.return_value = mockito
         headers = {'DCI-JOB-ID': job_user_id,
                    'Content-Type': 'application/junit',
                    'DCI-MIME': 'application/junit',
