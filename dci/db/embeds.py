@@ -39,6 +39,9 @@ JOB = models.JOBS.alias('job')
 JOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(JOB, ['configuration'])  # noqa
 JOBS_WITHOUT_CONFIGURATION = ignore_columns_from_table(models.JOBS, ['configuration'])  # noqa
 
+
+TESTS_RESULTS = models.TESTS_RESULTS.alias('results')
+
 LASTJOB = models.JOBS.alias('lastjob')
 LASTJOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(LASTJOB, ['configuration'])  # noqa
 LASTJOB_COMPONENTS = models.COMPONENTS.alias('lastjob.components')
@@ -102,7 +105,11 @@ def jobs(root_select=models.JOBS):
         'team': [
             {'right': TEAM,
              'onclause': and_(root_select.c.team_id == TEAM.c.id,
-                              TEAM.c.state != 'archived')}]
+                              TEAM.c.state != 'archived')}],
+        'results': [
+            {'right': TESTS_RESULTS,
+             'onclause': TESTS_RESULTS.c.job_id == root_select.c.id,
+             'isouter': True}]
     }
 
 
@@ -291,7 +298,8 @@ EMBED_STRING_TO_OBJECT = {
         'remoteci': REMOTECI,
         'remoteci.tests': REMOTECI_TESTS,
         'components': models.COMPONENTS,
-        'team': TEAM},
+        'team': TEAM,
+        'results': TESTS_RESULTS},
     'remotecis': {
         'team': TEAM,
         'lastjob': LASTJOB_WITHOUT_CONFIGURATION,
