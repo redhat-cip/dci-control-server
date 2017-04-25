@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_eae7b6aa",
+        "filename": "dci/alembic/versions/61b68c2d66b5_adds_files_events_table.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-04-25T15:24:28Z",
+      "side": 1,
+      "message": "Could you add an index on this FK ?",
+      "range": {
+        "startLine": 47,
+        "startChar": 8,
+        "endLine": 49,
+        "endChar": 34
+      },
+      "revId": "e9c50b5ae6530162f2c55490676e41507053451f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_caecf291",
+        "filename": "dci/db/models.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 394,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-04-25T15:24:28Z",
+      "side": 1,
+      "message": "same here",
+      "range": {
+        "startLine": 392,
+        "startChar": 4,
+        "endLine": 394,
+        "endChar": 30
+      },
+      "revId": "e9c50b5ae6530162f2c55490676e41507053451f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
