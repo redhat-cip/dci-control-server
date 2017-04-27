@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_fea41809",
+        "filename": "scripts/tests_results_provisioning.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2017-04-27T15:07:05Z",
+      "side": 1,
+      "message": "Why not doing this directly in the get_full_content function ?",
+      "revId": "c82af0ce4f2568ecd61c87a83e110ce79ba7db9c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
