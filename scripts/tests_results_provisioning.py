@@ -41,11 +41,18 @@ _TABLE = models.FILES
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
 
 
+def get_full_content(swift_object):
+    for block in swift.get(swift_object)[1]:
+        yield block
+
+
 def get_junit_results(file):
     file_path = swift.build_file_path(file['team_id'], file['job_id'],
                                       file['id'])
     logger.debug('get junit results for %s' % file_path)
-    content_file = swift.get(file_path)[1]
+    content_file = ''
+    for part in get_full_content(file_path):
+        content_file += part
     return transformations.junit2dict(content_file)
 
 
