@@ -398,6 +398,32 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
         cur_set = set(i['id'] for i in job['components'])
         assert cur_set == set(components_ids)
 
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+            mockito = mock.MagicMock()
+            head_result = {
+                'etag': utils.gen_etag(),
+                'content-type': "stream",
+                'content-length': 7
+            }
+            mockito.head.return_value = head_result
+            mockito.get.return_value = ['', JUNIT]
+            mock_swift.return_value = mockito
+            query = ('/api/v1/jobs')
+            jobs = admin.get(query).data
+            for job in jobs['jobs']:
+                headers = {'DCI-JOB-ID': job['id'],
+                           'DCI-NAME': 'name1',
+                           'DCI-MIME': 'application/junit'}
+                admin.post('/api/v1/files',
+                           headers=headers,
+                           data=JUNIT).data
+    query_embed = ('/api/v1/jobs?embed=results')
+    jobs = admin.get(query_embed).data
+    assert jobs['_meta']['count'] == 2
+    assert len(jobs['jobs']) == 2
+    for job in jobs['jobs']:
+        assert len(job['results']) == 1
+
 
 def test_get_all_jobs_with_dup_embed(admin, jobdefinition_id, team_id,
                                      remoteci_id, components_ids):
