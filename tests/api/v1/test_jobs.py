@@ -166,7 +166,7 @@ def test_schedule_kill_old_jobs(admin, jobdefinition_factory, remoteci_id,
     r = admin.post('/api/v1/jobs/schedule',
                    data={'remoteci_id': remoteci_id,
                          'topic_id': topic_id})
-    r.status_code == 201
+    assert r.status_code == 201
     r = admin.post('/api/v1/jobs/schedule',
                    data={'remoteci_id': remoteci_id,
                          'topic_id': topic_id})
@@ -406,7 +406,7 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
                 'content-length': 7
             }
             mockito.head.return_value = head_result
-            mockito.get.return_value = ['', JUNIT]
+            mockito.get_object.return_value = JUNIT
             mock_swift.return_value = mockito
             query = ('/api/v1/jobs')
             jobs = admin.get(query).data
@@ -414,11 +414,8 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
                 headers = {'DCI-JOB-ID': job['id'],
                            'DCI-NAME': 'name1',
                            'DCI-MIME': 'application/junit'}
-                admin.post('/api/v1/files',
-                           headers=headers,
-                           data=JUNIT).data
-    query_embed = ('/api/v1/jobs?embed=results')
-    jobs = admin.get(query_embed).data
+                admin.post('/api/v1/files', headers=headers, data=JUNIT)
+    jobs = admin.get('/api/v1/jobs?embed=results').data
     assert jobs['_meta']['count'] == 2
     assert len(jobs['jobs']) == 2
     for job in jobs['jobs']:
@@ -896,6 +893,7 @@ def test_get_results_by_job_id(user, job_user_id):
                    tests="3" time="46.050"></testsuite>"""
         mockito.head.return_value = head_result
         mockito.get.return_value = ['', JUNIT]
+        mockito.get_object.return_value = JUNIT
         mock_swift.return_value = mockito
         headers = {'DCI-JOB-ID': job_user_id,
                    'Content-Type': 'application/junit',
@@ -923,6 +921,7 @@ def test_get_empty_results_by_job_id(user, job_user_id):
                    time="0.307"> </testsuite>"""
         mockito.head.return_value = head_result
         mockito.get.return_value = ['', JUNIT]
+        mockito.get_object.return_value = JUNIT
         mock_swift.return_value = mockito
         headers = {'DCI-JOB-ID': job_user_id,
                    'Content-Type': 'application/junit',

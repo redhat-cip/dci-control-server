@@ -107,6 +107,7 @@ def test_retrieve_junit2json(admin, job_id):
 
         mockito.head.return_value = head_result
         mockito.get.return_value = ['', JUNIT]
+        mockito.get_object.return_value = JUNIT
         mock_swift.return_value = mockito
         headers = {
             'DCI-NAME': 'junit_file.xml', 'DCI-JOB-ID': job_id,
@@ -143,7 +144,7 @@ def test_create_file_fill_tests_results_table(engine, admin, job_id):
             'content-length': 7
         }
         mockito.head.return_value = head_result
-        mockito.get.return_value = ['', content_file]
+        mockito.get_object.return_value = content_file
         mock_swift.return_value = mockito
 
         headers = {

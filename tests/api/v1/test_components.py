@@ -378,6 +378,7 @@ def test_download_file_from_component(admin, topic_id):
         mockito = mock.MagicMock()
 
         mockito.get.return_value = ["test", "lol lol lel".split(" ")]
+        mockito.get_object.return_value = "lollollel"
         head_result = {
             'etag': utils.gen_etag(),
             'content-type': "stream",
