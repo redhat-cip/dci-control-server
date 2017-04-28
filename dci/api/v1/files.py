@@ -106,7 +106,7 @@ def create_files(user):
     result = json.dumps({'file': values})
 
     if values['mime'] == 'application/junit':
-        content_file = swift.get(file_path)[1]
+        content_file = swift.get_object(file_path)
         test_results = tsfm.junit2dict(content_file)
         test_results.update({
             'id': utils.gen_uuid(),
