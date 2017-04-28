@@ -650,7 +650,7 @@ if __name__ == '__main__':
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
     minimal, force, file = False, False, False
 
-    opts, _ = getopt.getopt(sys.argv[1:], 'ym')
+    opts, _ = getopt.getopt(sys.argv[1:], 'ymf')
     for opt in opts:
         if opt == ('-y', ''):
             force = True

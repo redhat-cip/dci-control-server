@@ -45,7 +45,7 @@ def get_junit_results(file):
     file_path = swift.build_file_path(file['team_id'], file['job_id'],
                                       file['id'])
     logger.debug('get junit results for %s' % file_path)
-    content_file = swift.get(file_path)[1]
+    content_file = swift.get_object(file_path)
     return transformations.junit2dict(content_file)
 
 
