@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_79e5c2a6",
+        "filename": "scripts/db_provisioning.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 653,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-05-01T15:59:59Z",
+      "side": 1,
+      "message": "You should mention that in the commit message.",
+      "revId": "139eb6445172ef3bc5a8330ce06fc1e68332fce0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
