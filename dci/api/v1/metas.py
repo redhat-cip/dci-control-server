@@ -39,6 +39,13 @@ def create_meta(user, job_id):
     })
 
     with flask.g.db_conn.begin():
+        where_clause = sql.and_(
+            _TABLE.c.name == values['name'],
+            _TABLE.c.job_id == values['job_id'])
+        query = sql.select([_TABLE.c.id]).where(where_clause)
+        if flask.g.db_conn.execute(query).fetchone():
+            raise dci_exc.DCIConflict('Meta already exists', values['name'])
+
         # create the label/value row
         query = _TABLE.insert().values(**values)
         flask.g.db_conn.execute(query)

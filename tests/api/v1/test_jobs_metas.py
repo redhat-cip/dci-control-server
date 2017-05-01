@@ -64,3 +64,10 @@ def test_put_meta(user, job_user_id):
     assert all_metas['metas']
     assert all_metas['metas'][0]['name'] == 'kikoo2'
     assert all_metas['metas'][0]['value'] == 'lol2'
+
+
+def test_create_dup_meta(user, job_user_id):
+    data = {'name': 'kikoo', 'value': 'lol'}
+    meta = user.post('/api/v1/jobs/%s/metas' % job_user_id, data=data)
+    meta = user.post('/api/v1/jobs/%s/metas' % job_user_id, data=data)
+    assert meta.status_code == 409
