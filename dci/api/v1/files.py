@@ -111,15 +111,21 @@ def create_files(user):
 
         if values['mime'] == 'application/junit':
             content_file = swift.get_object(file_path)
-            test_results = tsfm.junit2dict(content_file)
-            test_results.update({
+            junit = tsfm.junit2dict(content_file)
+            query = models.TESTS_RESULTS.insert().values({
                 'id': utils.gen_uuid(),
                 'created_at': values['created_at'],
                 'updated_at': datetime.datetime.utcnow().isoformat(),
                 'file_id': file_id,
-                'job_id': values['job_id']
+                'job_id': values['job_id'],
+                'name': values['name'],
+                'success': junit['success'],
+                'failures': junit['failures'],
+                'errors': junit['errors'],
+                'skips': junit['skips'],
+                'total': junit['total'],
+                'time': junit['time']
             })
-            query = models.TESTS_RESULTS.insert().values(**test_results)
             flask.g.db_conn.execute(query)
         files_events.create_event(file_id, models.FILES_CREATE)
 
@@ -175,25 +181,24 @@ def get_file_content(user, file_id):
 
     # Check if file exist on the storage engine
     swift.head(file_path)
-
+    filename = file['name'].replace(' ', '_')
     if flask.request.is_xhr and file['mime'] == 'application/junit':
-        data = ''.join(swift.get(file_path)[1])
-        data = tsfm.junit2json(data)
+        content_file = swift.get_object(file_path)
+        data = tsfm.junit2dict(content_file)
+        data['name'] = filename
         headers = {
-            'Content-Length': len(data),
-            'Content-Disposition': 'attachment; filename=%s' %
-                                   file['name'].replace(' ', '_')
+            'Content-Length': len(str(data)),
+            'Content-Disposition': 'attachment; filename="%s"' % filename
         }
         return flask.Response(
-            data,
+            json.dumps(data),
             content_type=file['mime'],
             headers=headers
         )
     else:
         headers = {
             'Content-Length': file['size'],
-            'Content-Disposition': 'attachment; filename=%s' %
-                                   file['name'].replace(' ', '_')
+            'Content-Disposition': 'attachment; filename="%s"' % filename
         }
         return flask.Response(
             get_object(file_path),
