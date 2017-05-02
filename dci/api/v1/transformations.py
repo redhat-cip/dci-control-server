@@ -13,70 +13,68 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import json
 
-import dci
 import logging
-import lxml.etree as ET
-import os
-import pkg_resources
+from lxml import etree
+from datetime import timedelta
 
 LOG = logging.getLogger(__name__)
 
 
-def junit2json(string):
+def parse_testsuite(root):
+    return {
+        'name': root.attrib.get('name'),
+        'classname': root.attrib.get('classname'),
+        'time': float(root.attrib.get('time'))
+    }
+
+
+def parse_testcase(root):
+    classes = {
+        'failure': 'failures',
+        'error': 'errors',
+        'skipped': 'skips',
+    }
+    tag_element = root.tag
+    if tag_element in classes.keys():
+        return {
+            'message': root.attrib.get('message', ''),
+            'value': root.text,
+            'action': tag_element,
+            'type': classes[tag_element]
+        }
+
+
+def junit2dict(string):
     if not string:
-        return '{}'
-
-    xslt = ET.fromstring(pkg_resources.resource_string(
-        dci.__name__, os.path.join('data', 'junittojson.xsl')
-    ))
-    try:
-        dom = ET.fromstring(string)
-        for tc in dom.xpath('//testcase'):
-            if len(tc.xpath('child::*')) > 0:
-                to_clean_string = tc.xpath('child::*')[0].text or ''
-
-                # 1. Replace " by '
-                to_clean_string = to_clean_string.replace('"', "'")
-                # 2. Replace \n by \\n
-                to_clean_string = to_clean_string.replace('\n', '\\n')
-
-                tc.xpath('child::*')[0].text = to_clean_string
-
-        transform = ET.XSLT(xslt)
-        string = str(transform(dom))
-    except ET.XMLSyntaxError as e:
-        string = '{ "error": "XMLSyntaxError: %s " }' % str(e)
-        LOG.info('transformations.junittojson: XMLSyntaxError %s' % str(e))
-
-    return string
-
-
-def format_test_result(test_result):
-    r = {
-        'name': u'',
-        'total': 0,
-        'skips': 0,
-        'failures': 0,
-        'errors': 0,
+        return {}
+    results = {
         'success': 0,
-        'time': 0.0
+        'errors': 0,
+        'failures': 0,
+        'skips': 0,
+        'total': 0,
+        'testscases': []
     }
     try:
-        r['name'] = test_result['name']
-        for field in ['total', 'skips', 'failures', 'errors']:
-            if field in test_result and test_result[field]:
-                r[field] = int(test_result[field])
-        r['success'] = (r['total'] - r['failures'] - r['errors'] - r['skips'])
-        if 'time' in test_result and test_result['time']:
-            r['time'] = int(float(test_result['time']) * 1000)
-    except Exception as e:
-        LOG.exception(e)
-        LOG.debug(test_result)
-    return r
-
-
-def junit2dict(content_file):
-    malformed_dict = json.loads(junit2json(content_file))
-    return format_test_result(malformed_dict)
+        test_duration = timedelta(seconds=0)
+        root = etree.fromstring(string)
+        for subroot in root:
+            results['total'] = results['total'] + 1
+            testscase = parse_testsuite(subroot)
+            test_duration += timedelta(seconds=testscase['time'])
+            for el in subroot:
+                test_result = parse_testcase(el)
+                if test_result:
+                    results[test_result['type']] += 1
+                    testscase['result'] = test_result
+            results['testscases'].append(testscase)
+        results['success'] = (results['total'] -
+                              results['failures'] -
+                              results['errors'] -
+                              results['skips'])
+        results['time'] = int(test_duration.total_seconds() * 1000)
+    except etree.XMLSyntaxError as e:
+        results['error'] = "XMLSyntaxError: %s " % str(e)
+        LOG.error('XMLSyntaxError %s' % str(e))
+    return results

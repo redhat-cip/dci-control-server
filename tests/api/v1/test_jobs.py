@@ -881,62 +881,6 @@ def test_get_file_by_job_id(user, job_user_id):
     assert file_from_job.data['_meta']['count'] == 1
 
 
-def test_get_results_by_job_id(user, job_user_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
-        mockito = mock.MagicMock()
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 1
-        }
-        JUNIT = """<testsuite errors="0" failures="0" name="pytest" skips="1"
-                   tests="3" time="46.050"></testsuite>"""
-        mockito.head.return_value = head_result
-        mockito.get.return_value = ['', JUNIT]
-        mockito.get_object.return_value = JUNIT
-        mock_swift.return_value = mockito
-        headers = {'DCI-JOB-ID': job_user_id,
-                   'Content-Type': 'application/junit',
-                   'DCI-MIME': 'application/junit',
-                   'DCI-NAME': 'res_junit.xml'}
-
-        user.post('/api/v1/files', headers=headers, data=JUNIT)
-
-        # get file from job
-        file_from_job = user.get('/api/v1/jobs/%s/results' % job_user_id)
-        assert file_from_job.status_code == 200
-        assert file_from_job.data['_meta']['count'] == 1
-        assert file_from_job.data['results'][0]['total'] == '3'
-
-
-def test_get_empty_results_by_job_id(user, job_user_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
-        mockito = mock.MagicMock()
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 1
-        }
-        JUNIT = """<testsuite errors="0" failures="0" name="" tests="0"
-                   time="0.307"> </testsuite>"""
-        mockito.head.return_value = head_result
-        mockito.get.return_value = ['', JUNIT]
-        mockito.get_object.return_value = JUNIT
-        mock_swift.return_value = mockito
-        headers = {'DCI-JOB-ID': job_user_id,
-                   'Content-Type': 'application/junit',
-                   'DCI-MIME': 'application/junit',
-                   'DCI-NAME': 'res_junit.xml'}
-        user.post('/api/v1/files', headers=headers, data=JUNIT)
-        url = '/api/v1/jobs/%s/results' % job_user_id
-
-        # get file from job
-        file_from_job = user.get(url)
-        assert file_from_job.status_code == 200
-        assert file_from_job.data['_meta']['count'] == 1
-        assert file_from_job.data['results'][0]['total'] == '0'
-
-
 def test_job_search(user, jobdefinition_id, team_user_id, remoteci_id,
                     components_ids):
 

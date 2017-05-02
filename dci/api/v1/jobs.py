@@ -24,7 +24,6 @@ from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import base
-from dci.api.v1 import transformations as tsfm
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci.common import audits
@@ -568,49 +567,6 @@ def get_all_files_from_jobs(user, j_id):
     """Get all files.
     """
     return files.get_all_files(j_id)
-
-
-@api.route('/jobs/<uuid:j_id>/results', methods=['GET'])
-@auth.login_required
-def get_all_results_from_jobs(user, j_id):
-    """Get all results from job.
-    """
-
-    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-
-    # If it's an admin or belongs to the same team
-    if not(auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
-        raise auth.UNAUTHORIZED
-
-    swift = dci_config.get_store('files')
-    job_files = json.loads(files.get_all_files(j_id).response[0])['files']
-    r_files = [file for file in job_files
-               if file['mime'] == 'application/junit']
-
-    results = []
-    for file in r_files:
-        file_path = swift.build_file_path(file['team_id'],
-                                          j_id,
-                                          file['id'])
-        data = ''.join(swift.get(file_path)[1])
-        data = json.loads(tsfm.junit2json(data))
-
-        if not isinstance(data['skips'], int):
-            data['skips'] = 0
-
-        success = (int(data['total']) - int(data['failures']) -
-                   int(data['errors']) - int(data['skips']))
-        results.append({'filename': file['name'],
-                        'name': data['name'],
-                        'total': data['total'],
-                        'failures': data['failures'],
-                        'errors': data['errors'],
-                        'skips': data['skips'],
-                        'time': data['time'],
-                        'success': success})
-
-    return flask.jsonify({'results': results,
-                          '_meta': {'count': len(results)}})
 
 
 @api.route('/jobs/<uuid:j_id>', methods=['DELETE'])
