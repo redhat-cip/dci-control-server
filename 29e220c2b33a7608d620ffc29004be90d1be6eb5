@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_34d06153",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-05-02T13:35:45Z",
+      "side": 1,
+      "message": "Why \u0027DCI-Client-ID\u0027 is so complex? User should use two strings: \u0027DCI-Client-ID\u0027 and \u0027DCI-Auth-Signature\u0027. And we should not parse \u0027DCI-Client-ID\u0027, only get the value in the header.",
+      "revId": "29e220c2b33a7608d620ffc29004be90d1be6eb5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_14d55d42",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-05-02T13:35:45Z",
+      "side": 1,
+      "message": "Is valid should be:\n\n1/ GET \u0027DCI-Client-ID\u0027\n2/ return api_secret with \u0027DCI-Client-ID\u0027\n3/ build signature with api_secret and request object\n4/ compare signature with \u0027DCI-Auth-Signature\u0027",
+      "revId": "29e220c2b33a7608d620ffc29004be90d1be6eb5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_54e4053a",
+        "filename": "dci/common/token.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-05-02T13:35:45Z",
+      "side": 1,
+      "message": "docstring is not good anymore",
+      "revId": "29e220c2b33a7608d620ffc29004be90d1be6eb5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
