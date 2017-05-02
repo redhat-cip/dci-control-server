@@ -50,6 +50,23 @@
       "revId": "29e220c2b33a7608d620ffc29004be90d1be6eb5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_d4ced5b3",
+        "filename": "tests/test_token.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-05-02T13:41:41Z",
+      "side": 1,
+      "message": "named parameters is better\n\n    formatted \u003d token.get_string_based_request_content(\n        http_verb\u003d\u0027DELETE\u0027,\n        content_type\u003d\u0027application/json\u0027,\n        timestamp\u003ddatetime(2016, 5, 19, 13, 51, 59),\n        url\u003d\u0027/api/v1/boo/yah\u0027,\n        query_string\u003d\u0027param\u003dvalue\u0026foo\u003dbar\u0027,\n        payload_hash\u003d\u002741af286dc0b172ed2f1ca934fd2278de4a1192302ffa07087cea2682e7d372e3\u0027\n    )",
+      "revId": "29e220c2b33a7608d620ffc29004be90d1be6eb5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
