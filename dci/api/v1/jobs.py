@@ -592,22 +592,16 @@ def get_all_results_from_jobs(user, j_id):
         file_path = swift.build_file_path(file['team_id'],
                                           j_id,
                                           file['id'])
-        data = ''.join(swift.get(file_path)[1])
-        data = json.loads(tsfm.junit2json(data))
-
-        if not isinstance(data['skips'], int):
-            data['skips'] = 0
-
-        success = (int(data['total']) - int(data['failures']) -
-                   int(data['errors']) - int(data['skips']))
+        content_file = swift.get_object(file_path)
+        data = tsfm.junit2dict(content_file)
         results.append({'filename': file['name'],
-                        'name': data['name'],
+                        'name': file['name'],
                         'total': data['total'],
                         'failures': data['failures'],
                         'errors': data['errors'],
                         'skips': data['skips'],
                         'time': data['time'],
-                        'success': success})
+                        'success': data['success']})
 
     return flask.jsonify({'results': results,
                           '_meta': {'count': len(results)}})
