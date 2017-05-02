@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_5473e54d",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 25
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-05-02T18:05:13Z",
+      "side": 1,
+      "message": "since we only support doing query on uuid and not name anymore you should consider to enforce uuid type : \u003cuuid:r_id\u003e",
+      "range": {
+        "startLine": 269,
+        "startChar": 23,
+        "endLine": 269,
+        "endChar": 29
+      },
+      "revId": "ca724043472fec89f591654877e23ad4312b61af",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_348f4125",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 25
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-05-02T18:05:13Z",
+      "side": 1,
+      "message": "I guess this is not necessary anymore (see above)",
+      "range": {
+        "startLine": 282,
+        "startChar": 37,
+        "endLine": 282,
+        "endChar": 58
+      },
+      "revId": "ca724043472fec89f591654877e23ad4312b61af",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
