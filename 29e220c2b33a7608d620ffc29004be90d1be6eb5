@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "da9b358b_d4ba556e",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T10:17:11Z",
+      "side": 1,
+      "message": "We need the timestamp used by the client to compute its signature. We also need the client id.\n\nRenamed DCI-Client-ID to DCI-Client-Info for more clarity.",
+      "parentUuid": "da9b358b_34d06153",
+      "revId": "29e220c2b33a7608d620ffc29004be90d1be6eb5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9b358b_14d55d42",
         "filename": "dci/auth_mechanism.py",
         "patchSetId": 24
@@ -30,6 +48,24 @@
       "writtenOn": "2017-05-02T13:35:45Z",
       "side": 1,
       "message": "Is valid should be:\n\n1/ GET \u0027DCI-Client-ID\u0027\n2/ return api_secret with \u0027DCI-Client-ID\u0027\n3/ build signature with api_secret and request object\n4/ compare signature with \u0027DCI-Auth-Signature\u0027",
+      "revId": "29e220c2b33a7608d620ffc29004be90d1be6eb5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_b4b0f18c",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T10:17:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da9b358b_14d55d42",
       "revId": "29e220c2b33a7608d620ffc29004be90d1be6eb5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "da9b358b_94aded33",
+        "filename": "dci/common/token.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 102,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T10:17:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da9b358b_54e4053a",
+      "revId": "29e220c2b33a7608d620ffc29004be90d1be6eb5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9b358b_d4ced5b3",
         "filename": "tests/test_token.py",
         "patchSetId": 24
@@ -64,6 +118,24 @@
       "writtenOn": "2017-05-02T13:41:41Z",
       "side": 1,
       "message": "named parameters is better\n\n    formatted \u003d token.get_string_based_request_content(\n        http_verb\u003d\u0027DELETE\u0027,\n        content_type\u003d\u0027application/json\u0027,\n        timestamp\u003ddatetime(2016, 5, 19, 13, 51, 59),\n        url\u003d\u0027/api/v1/boo/yah\u0027,\n        query_string\u003d\u0027param\u003dvalue\u0026foo\u003dbar\u0027,\n        payload_hash\u003d\u002741af286dc0b172ed2f1ca934fd2278de4a1192302ffa07087cea2682e7d372e3\u0027\n    )",
+      "revId": "29e220c2b33a7608d620ffc29004be90d1be6eb5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_34bce16b",
+        "filename": "tests/test_token.py",
+        "patchSetId": 24
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T10:17:11Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da9b358b_d4ced5b3",
       "revId": "29e220c2b33a7608d620ffc29004be90d1be6eb5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
