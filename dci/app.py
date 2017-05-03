@@ -22,6 +22,7 @@ from dci.elasticsearch import engine as es_engine
 
 import flask
 import logging
+import time
 import zmq
 
 from sqlalchemy import exc as sa_exc
@@ -101,13 +102,26 @@ def create_app(conf):
 
     @dci_app.before_request
     def before_request():
-        flask.g.db_conn = dci_app.engine.connect()
+        for i in range(5):
+            try:
+                flask.g.db_conn = dci_app.engine.connect()
+                break
+            except:
+                logging.warning('failed to connect to the database, '
+                                'will retry in 1 second...')
+                time.sleep(1)
+                pass
+
         flask.g.es_conn = dci_app.es_engine
         flask.g.sender = dci_app.sender
 
     @dci_app.teardown_request
     def teardown_request(_):
-        flask.g.db_conn.close()
+        try:
+            flask.g.db_conn.close()
+        except:
+            logging.warning('disconnected from the database..')
+            pass
 
     # Registering REST error handler
     dci_app.register_error_handler(exceptions.DCIException,
