@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_5403e50f",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T11:23:03Z",
+      "side": 1,
+      "message": "This should be a list or a tuple or better a set.\n\nSame applies for all.\n\nOr you could check in the decorator if this is a string and then convert into a list.",
+      "range": {
+        "startLine": 51,
+        "startChar": 21,
+        "endLine": 51,
+        "endChar": 32
+      },
+      "revId": "5e098150e597d006ff0fb4a9863be8e1d4571354",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_d416d554",
+        "filename": "dci/auth.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T11:23:03Z",
+      "side": 1,
+      "message": "This should already have been done by the \"@login_required\" decorator. You should be able to find the \"identity\" variable as \"args[0]\" if I\u0027m not mistaken.",
+      "range": {
+        "startLine": 99,
+        "startChar": 0,
+        "endLine": 100,
+        "endChar": 40
+      },
+      "revId": "5e098150e597d006ff0fb4a9863be8e1d4571354",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_b40c7143",
+        "filename": "dci/auth.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T11:23:03Z",
+      "side": 1,
+      "message": "\"row.label\" ?",
+      "range": {
+        "startLine": 109,
+        "startChar": 40,
+        "endLine": 109,
+        "endChar": 59
+      },
+      "revId": "5e098150e597d006ff0fb4a9863be8e1d4571354",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_94096d34",
+        "filename": "dci/auth.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T11:23:03Z",
+      "side": 1,
+      "message": "You could use the length intersection of \"permissions\" and \"user_permissions\" rather than this nested loop:\n\n\"\"\"\n    if len(set(permissions) \u0026 set(user_permissions)):\n\"\"\"",
+      "range": {
+        "startLine": 109,
+        "startChar": 75,
+        "endLine": 111,
+        "endChar": 58
+      },
+      "revId": "5e098150e597d006ff0fb4a9863be8e1d4571354",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
