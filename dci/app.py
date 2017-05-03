@@ -101,13 +101,24 @@ def create_app(conf):
 
     @dci_app.before_request
     def before_request():
-        flask.g.db_conn = dci_app.engine.connect()
+        for i in range(5):
+            try:
+                flask.g.db_conn = dci_app.engine.connect()
+                break
+            except:
+                import time
+                time.sleep(1)
+                pass
+
         flask.g.es_conn = dci_app.es_engine
         flask.g.sender = dci_app.sender
 
     @dci_app.teardown_request
     def teardown_request(_):
-        flask.g.db_conn.close()
+        try:
+            flask.g.db_conn.close()
+        except:
+            pass
 
     # Registering REST error handler
     dci_app.register_error_handler(exceptions.DCIException,
