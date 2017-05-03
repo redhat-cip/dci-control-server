@@ -81,7 +81,7 @@ def handle_dbapi_exception(dbapi_exception):
 
 
 def create_app(conf):
-    dci_config.sanity_check()
+    dci_config.sanity_check(conf)
     dci_app = DciControlServer(conf)
     dci_app.url_map.converters['uuid'] = utils.UUIDConverter
 
