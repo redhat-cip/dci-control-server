@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "da9b358b_afe77811",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 26
+      },
+      "lineNbr": 81,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T15:04:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da9b358b_af13f85b",
+      "revId": "b455ebabc8ff0e22d83bf9a29d92577afd1e81a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9b358b_8f103450",
         "filename": "dci/auth_mechanism.py",
         "patchSetId": 26
@@ -30,6 +48,24 @@
       "writtenOn": "2017-05-03T11:34:30Z",
       "side": 1,
       "message": "request_digest equals remote_signature no?",
+      "revId": "b455ebabc8ff0e22d83bf9a29d92577afd1e81a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_4feeaced",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 26
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T15:04:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da9b358b_8f103450",
       "revId": "b455ebabc8ff0e22d83bf9a29d92577afd1e81a6",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -53,6 +89,24 @@
     },
     {
       "key": {
+        "uuid": "da9b358b_efb34009",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 26
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T15:04:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da9b358b_6f1df065",
+      "revId": "b455ebabc8ff0e22d83bf9a29d92577afd1e81a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9b358b_4f1a2c70",
         "filename": "dci/auth_mechanism.py",
         "patchSetId": 26
@@ -70,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "da9b358b_cfb87ce8",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 26
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T15:04:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da9b358b_4f1a2c70",
+      "revId": "b455ebabc8ff0e22d83bf9a29d92577afd1e81a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9b358b_ef1fc059",
         "filename": "dci/common/signature.py",
         "patchSetId": 26
@@ -81,6 +153,24 @@
       "writtenOn": "2017-05-03T11:34:30Z",
       "side": 1,
       "message": "you are in a file named now signature\nso I would have call this one is_valid\n\nsignature.is_valid(..) instead of signature.is_signature_valid(..)",
+      "revId": "b455ebabc8ff0e22d83bf9a29d92577afd1e81a6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_2fa128aa",
+        "filename": "dci/common/signature.py",
+        "patchSetId": 26
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T15:04:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da9b358b_ef1fc059",
       "revId": "b455ebabc8ff0e22d83bf9a29d92577afd1e81a6",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
