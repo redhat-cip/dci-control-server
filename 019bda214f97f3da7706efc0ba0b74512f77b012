@@ -1,0 +1,90 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_945bad54",
+        "filename": "dci/api/v1/audits.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T10:58:07Z",
+      "side": 1,
+      "message": "Should be \"auth.is_admin_user(user[\u0027team_id\u0027])\"",
+      "revId": "019bda214f97f3da7706efc0ba0b74512f77b012",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_14367d03",
+        "filename": "dci/auth.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T10:58:07Z",
+      "side": 1,
+      "message": "seamless ;)",
+      "range": {
+        "startLine": 51,
+        "startChar": 26,
+        "endLine": 51,
+        "endChar": 34
+      },
+      "revId": "019bda214f97f3da7706efc0ba0b74512f77b012",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_f43af9e6",
+        "filename": "dci/auth.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T10:58:07Z",
+      "side": 1,
+      "message": "Should changed to \"is_in_team(user, team_id)\"",
+      "range": {
+        "startLine": 68,
+        "startChar": 11,
+        "endLine": 68,
+        "endChar": 47
+      },
+      "revId": "019bda214f97f3da7706efc0ba0b74512f77b012",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_b42591c3",
+        "filename": "scripts/db_provisioning.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-03T10:58:07Z",
+      "side": 1,
+      "message": "Could this role be named \"team_admin\" or \"team_owner\" or something else which would clarify the separation from the \"Super Admin\" role ?",
+      "range": {
+        "startLine": 83,
+        "startChar": 0,
+        "endLine": 87,
+        "endChar": 5
+      },
+      "revId": "019bda214f97f3da7706efc0ba0b74512f77b012",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
