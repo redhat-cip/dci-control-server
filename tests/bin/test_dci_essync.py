@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright 2015-2016 Red Hat, Inc.
+# Copyright 2017 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,15 +14,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
-import uuid
 
-DEBUG = False
+from tests import utils
 
-LOG_FILE = '/dev/null'
 
-SQLALCHEMY_DATABASE_URI = "postgresql:///%s?host=%slol" % (
-    uuid.uuid4(), os.path.abspath(os.environ['DCI_DB_DIR'])
-)
+def test_essync_add_files(admin, user, jobstate_user_id, team_user_id):
+    for i in range(5):
+        utils.post_file(user, jobstate_user_id,
+                        utils.FileDesc('kikoolol', 'content'))
 
-FILES_UPLOAD_FOLDER = '/tmp/dci-control-server'
+    env = {'DCI_CS_URL': 'http://127.0.0.1:5000',
+           'DCI_LOGIN': 'admin',
+           'DCI_PASSWORD': 'admin'}
+    status = utils.run_bin('dci-essync', env=env)
+    assert status == 0
