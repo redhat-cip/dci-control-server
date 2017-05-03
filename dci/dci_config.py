@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
 import sys
 
 from dci.db import models
@@ -27,7 +26,6 @@ import sqlalchemy
 def generate_conf():
     conf = flask.Config('')
     conf.from_object('dci.settings')
-    conf.from_object(os.environ.get('DCI_SETTINGS_MODULE'))
     conf.from_envvar('DCI_SETTINGS_FILE', silent=True)
     return conf
 
@@ -59,11 +57,10 @@ def get_store(container):
     return stores_engine
 
 
-def sanity_check():
+def sanity_check(conf):
     query_team_admin_id = sqlalchemy.sql.select([models.TEAMS]).where(
         models.TEAMS.c.name == 'admin')
 
-    conf = generate_conf()
     db_conn = get_engine(conf).connect()
     row = db_conn.execute(query_team_admin_id).fetchone()
     db_conn.close()
