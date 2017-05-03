@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da9b358b_8f795432",
+        "filename": "tests/test_signature.py",
+        "patchSetId": 27
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-05-03T15:11:24Z",
+      "side": 1,
+      "message": "one assert per test is better\n\n4 tests will be better here, because when this test fails, you don\u0027t really know why.\n\ntest_signature_is_valid\ntest_signature_4min_old_is_valid\ntest_signature_6min_old_is_invalid\ntest_signature_bad_http_verd_is_invalid",
+      "revId": "a665efc64ac337486888895dfcf7a95f300f47e6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
