@@ -28,6 +28,7 @@ def generate_conf():
     conf = flask.Config('')
     conf.from_object('dci.settings')
     conf.from_object(os.environ.get('DCI_SETTINGS_MODULE'))
+    #print(os.environ.get('DCI_SETTINGS_FILE'))
     conf.from_envvar('DCI_SETTINGS_FILE', silent=True)
     return conf
 

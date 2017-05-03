@@ -15,5 +15,18 @@
 # under the License.
 
 
-def test_essync_add_files():
+from tests import utils
+
+
+def test_essync_add_files(engine, user, jobstate_user_id):
     pass
+    #for i in range(5):
+    #    utils.post_file(user, jobstate_user_id,
+    #                    utils.FileDesc('kikoolol', 'content'))
+
+    #env = {'DCI_CS_URL': 'http://127.0.0.1:5000',
+    #       'DCI_LOGIN': 'admin',
+    #       'DCI_PASSWORD': 'admin'}
+    #status = utils.run_bin('dci-essync', env=env)
+    #status.communicate()
+    #assert status.returncode == 0
