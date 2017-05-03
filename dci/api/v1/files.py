@@ -87,8 +87,8 @@ def create_files(user):
                                       values['job_id'],
                                       file_id)
 
-    swift.upload(file_path, flask.request.stream)
-    s_file = swift.head(file_path)
+    #swift.upload(file_path, flask.request.stream)
+    #s_file = swift.head(file_path)
 
     etag = utils.gen_etag()
     values.update({
@@ -97,7 +97,7 @@ def create_files(user):
         'updated_at': datetime.datetime.utcnow().isoformat(),
         'team_id': user['team_id'],
         'md5': None,
-        'size': s_file['content-length'],
+        'size': 123, #s_file['content-length'],
         'state': 'active',
         'etag': etag,
     })
