@@ -15,7 +15,6 @@
 # under the License.
 
 import os
-import uuid
 
 DEBUG = False
 
