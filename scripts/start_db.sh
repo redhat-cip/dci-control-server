@@ -13,7 +13,7 @@ DCI_DB_DIR="$(cd "$(dirname "$0")/.." && pwd)/$DCI_DB_DIR"
 type "pg_ctl"
 
 # checks if not already running
-pg_ctl status -D "$DCI_DB_DIR" &> /dev/null && pg_ctl stop -D "$DCI_DB_DIR"
+pg_ctl status -D "$DCI_DB_DIR" &> /dev/null && pg_ctl stop -m -D "$DCI_DB_DIR"
 
 [ -d "$DCI_DB_DIR" ] && rm -rf "$DCI_DB_DIR"
 
