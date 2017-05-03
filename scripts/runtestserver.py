@@ -19,6 +19,7 @@ from dci import app
 from dci import dci_config
 
 conf = dci_config.generate_conf()
+print(conf)
 dci_app = app.create_app(conf)
 
 dci_app.run(dci_app.config['HOST'],
