@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright 2015-2016 Red Hat, Inc.
+# Copyright 2017 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -15,5 +15,17 @@
 # under the License.
 
 
-def test_dci_essync():
-    pass
+from tests import utils
+
+
+def test_essync_add_files(user, jobstate_user_id):
+    for i in range(5):
+        utils.post_file(user, jobstate_user_id,
+                        utils.FileDesc('kikoolol', 'content'))
+
+    env = {'DCI_CS_URL': 'http://api:5000',
+           'DCI_LOGIN': 'admin',
+           'DCI_PASSWORD': 'admin'}
+    status = utils.run_bin('dci-essync', env=env)
+    status.communicate()
+    assert status.returncode == 0
