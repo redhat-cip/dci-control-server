@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "da9b358b_ef11005f",
+        "filename": "dci/alembic/versions/ad1134e557de_create_files_events_on_existing_datas.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-05-04T00:00:39Z",
+      "side": 1,
+      "message": "I don\u0027t see an obvious advantage using the bulk insert atm.",
+      "parentUuid": "da9b358b_8aff0a34",
+      "range": {
+        "startLine": 49,
+        "startChar": 4,
+        "endLine": 53,
+        "endChar": 41
+      },
+      "revId": "704d368d8b1cf850db525769bcfd5d49aa3da598",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9b358b_8dacc4ee",
         "filename": "dci/api/v1/files.py",
         "patchSetId": 2
@@ -36,6 +60,30 @@
       "writtenOn": "2017-04-25T19:57:28Z",
       "side": 1,
       "message": "the file is only archived there. Should we manage this case ? or move this code in the purge endpoint ?",
+      "range": {
+        "startLine": 216,
+        "startChar": 0,
+        "endLine": 224,
+        "endChar": 73
+      },
+      "revId": "704d368d8b1cf850db525769bcfd5d49aa3da598",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_0f1d4473",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-05-04T00:00:39Z",
+      "side": 1,
+      "message": "Yea, i created the file event from the archive action to be in the shoes of the user. So once he issued an http delete, then the logs should not be found within ES. Also, at the end they will be purged, so we can create the file event there imo.",
+      "parentUuid": "da9b358b_8dacc4ee",
       "range": {
         "startLine": 216,
         "startChar": 0,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "da9b358b_cf163c55",
+        "filename": "dci/api/v1/files_events.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-05-04T00:00:39Z",
+      "side": 1,
+      "message": "I think you are right.",
+      "parentUuid": "da9b358b_cd808c49",
+      "range": {
+        "startLine": 44,
+        "startChar": 8,
+        "endLine": 44,
+        "endChar": 37
+      },
+      "revId": "704d368d8b1cf850db525769bcfd5d49aa3da598",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9b358b_ed7b507a",
         "filename": "tests/api/v1/test_files_events.py",
         "patchSetId": 2
@@ -82,6 +154,30 @@
       "writtenOn": "2017-04-25T19:57:28Z",
       "side": 1,
       "message": "Maybe add a test as a user to see if we got an unauthorized/401 ?",
+      "range": {
+        "startLine": 21,
+        "startChar": 0,
+        "endLine": 42,
+        "endChar": 78
+      },
+      "revId": "704d368d8b1cf850db525769bcfd5d49aa3da598",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_8f095434",
+        "filename": "tests/api/v1/test_files_events.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-05-04T00:00:39Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "da9b358b_ed7b507a",
       "range": {
         "startLine": 21,
         "startChar": 0,
