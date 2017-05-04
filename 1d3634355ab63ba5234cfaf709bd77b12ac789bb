@@ -22,6 +22,30 @@
       "revId": "1d3634355ab63ba5234cfaf709bd77b12ac789bb",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da9b358b_2f9a4715",
+        "filename": "dci/api/v1/files_events.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-05-04T21:59:12Z",
+      "side": 1,
+      "message": "héhé yes",
+      "parentUuid": "da9b358b_af79b731",
+      "range": {
+        "startLine": 44,
+        "startChar": 8,
+        "endLine": 44,
+        "endChar": 37
+      },
+      "revId": "1d3634355ab63ba5234cfaf709bd77b12ac789bb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
