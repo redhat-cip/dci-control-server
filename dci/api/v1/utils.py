@@ -294,14 +294,13 @@ class QueryBuilder(object):
                 query = query.order_by(embed_sort)
 
         if not self._do_subquery():
-            query = self._add_sort_to_query(query)
             query = self._add_where_to_query(query)
 
             if self._limit:
                 query = query.limit(self._limit)
             if self._offset:
                 query = query.offset(self._offset)
-
+        query = self._add_sort_to_query(query)
         return query
 
     def get_number_of_rows(self, root_table=None, where=None):
