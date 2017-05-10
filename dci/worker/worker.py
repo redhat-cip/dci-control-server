@@ -36,7 +36,7 @@ def mail(job, mail):
     message = "Subject: %s\n"\
               "You are receiving this email because a DCI job has failed\n"\
               "For more information follow this link"\
-              ": https://www.distributed-ci.io/#/jobs/%s/results"\
+              ": https://www.distributed-ci.io/#!/jobs/%s/results"\
               % (SUBJECT, job)
 
     # Send the mail
