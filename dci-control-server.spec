@@ -5,8 +5,8 @@
 %endif
 
 Name:           dci
-Version:        0.0.VERS
-Release:        1%{?dist}
+Version:        0.2.0
+Release:        1.VERS%{?dist}
 Summary:        DCI control server
 License:        ASL 2.0
 URL:            https://github.com/redhat-cip/dci-control-server
@@ -178,5 +178,8 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %exclude %{python2_sitelib}/dci/settings.py?
 
 %changelog
+* Wed May 10 2017 Yanis Guenane <yguenane@redhat.com> 0.2.0-1
+- Bumping to 0.2.0 for CI purposes
+
 * Mon Nov 16 2015 Yanis Guenane <yguenane@redhat.com> 0.1-1
 - Initial commit
