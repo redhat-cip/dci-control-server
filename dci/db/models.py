@@ -38,6 +38,11 @@ STATES = sa.Enum(*RESOURCE_STATES, name='states')
 ISSUE_TRACKERS = ['github', 'bugzilla']
 TRACKERS = sa.Enum(*ISSUE_TRACKERS, name='trackers')
 
+FILES_DELETE = 'delete'
+FILES_CREATE = 'create'
+FILES_ACTIONS = sa.Enum(FILES_CREATE, FILES_DELETE, name='files_actions')
+
+
 COMPONENTS = sa.Table(
     'components', metadata,
     sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
@@ -376,6 +381,19 @@ FILES = sa.Table(
     sa.Column('state', STATES, default='active'),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
+)
+
+FILES_EVENTS = sa.Table(
+    'files_events', metadata,
+    sa.Column('id', sa.Integer, primary_key=True,
+              autoincrement=True),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('file_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('files.id'),
+              nullable=False),
+    sa.Column('action', FILES_ACTIONS, default=FILES_CREATE),
+    sa.Index('files_events_file_id_idx', 'file_id')
 )
 
 COMPONENT_FILES = sa.Table(
