@@ -21,6 +21,7 @@ from flask import json
 
 from dci.api.v1 import api
 from dci.api.v1 import base
+from dci.api.v1 import files_events
 from dci.api.v1 import transformations as tsfm
 from dci.api.v1 import utils as v1_utils
 from dci import auth
@@ -30,6 +31,7 @@ from dci.common import utils
 from dci.db import embeds
 from dci.db import models
 from dci import dci_config
+
 
 _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
@@ -102,21 +104,24 @@ def create_files(user):
 
     query = _TABLE.insert().values(**values)
 
-    flask.g.db_conn.execute(query)
-    result = json.dumps({'file': values})
+    with flask.g.db_conn.begin():
 
-    if values['mime'] == 'application/junit':
-        content_file = swift.get_object(file_path)
-        test_results = tsfm.junit2dict(content_file)
-        test_results.update({
-            'id': utils.gen_uuid(),
-            'created_at': values['created_at'],
-            'updated_at': datetime.datetime.utcnow().isoformat(),
-            'file_id': file_id,
-            'job_id': values['job_id']
-        })
-        query = models.TESTS_RESULTS.insert().values(**test_results)
         flask.g.db_conn.execute(query)
+        result = json.dumps({'file': values})
+
+        if values['mime'] == 'application/junit':
+            content_file = swift.get_object(file_path)
+            test_results = tsfm.junit2dict(content_file)
+            test_results.update({
+                'id': utils.gen_uuid(),
+                'created_at': values['created_at'],
+                'updated_at': datetime.datetime.utcnow().isoformat(),
+                'file_id': file_id,
+                'job_id': values['job_id']
+            })
+            query = models.TESTS_RESULTS.insert().values(**test_results)
+            flask.g.db_conn.execute(query)
+        files_events.create_event(file_id, models.FILES_CREATE)
 
     return flask.Response(result, 201, content_type='application/json')
 
@@ -208,14 +213,15 @@ def delete_file_by_id(user, file_id):
     values = {'state': 'archived'}
     where_clause = _TABLE.c.id == file_id
 
-    query = _TABLE.update().where(where_clause).values(**values)
+    with flask.g.db_conn.begin():
+        query = _TABLE.update().where(where_clause).values(**values)
+        result = flask.g.db_conn.execute(query)
 
-    result = flask.g.db_conn.execute(query)
+        if not result.rowcount:
+            raise dci_exc.DCIDeleteConflict('File', file_id)
+        files_events.create_event(file_id, models.FILES_DELETE)
 
-    if not result.rowcount:
-        raise dci_exc.DCIDeleteConflict('File', file_id)
-
-    return flask.Response(None, 204, content_type='application/json')
+        return flask.Response(None, 204, content_type='application/json')
 
 
 @api.route('/files/purge', methods=['GET'])

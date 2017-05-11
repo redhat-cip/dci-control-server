@@ -479,10 +479,10 @@ def _format_level_2(rows, list_embeds, embed_many):
     return result
 
 
-def format_result(rows, root_table_name, list_embeds, embed_many):
+def format_result(rows, root_table_name, list_embeds=None, embed_many=None):
     result_rows = _format_level_1(rows, root_table_name)
 
-    if list_embeds:
+    if list_embeds is not None and embed_many is not None:
         return _format_level_2(result_rows, list_embeds, embed_many)
     return result_rows
 
