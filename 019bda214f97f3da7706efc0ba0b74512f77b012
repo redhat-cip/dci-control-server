@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "da9b358b_a322f0b7",
+        "filename": "dci/alembic/versions/610286c2021b_replace_role_by_role_id.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-05-11T08:41:35Z",
+      "side": 1,
+      "message": "maybe you will need something like \n\nwith op.batch_alter_table(\"user\") as batch_op:\n    batch_op.drop_column(\u0027role\u0027)\n    batch_op.add_column(\u0027users\u0027, sa.Column(\u0027role_id\u0027, pg.UUID(as_uuid\u003dTrue),\n                  sa.ForeignKey(\u0027roles.id\u0027, ondelete\u003d\u0027SET NULL\u0027)))\n\nsee http://alembic.zzzcomputing.com/en/latest/ops.html#alembic.operations.Operations.batch_alter_table",
+      "revId": "019bda214f97f3da7706efc0ba0b74512f77b012",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "da9b358b_945bad54",
         "filename": "dci/api/v1/audits.py",
         "patchSetId": 7
