@@ -47,7 +47,7 @@ def upgrade():
     all_files_ids = db_conn.execute(query_all_files_ids).fetchall()
 
     for file_id in all_files_ids:
-        values = {'file_id': file_id,
+        values = {'file_id': file_id['id'],
                   'action': models.FILES_CREATE}
         q_add_file_event = models.FILES_EVENTS.insert().values(**values)
         db_conn.execute(q_add_file_event)
