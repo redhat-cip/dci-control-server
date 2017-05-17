@@ -40,7 +40,8 @@ def get_files_events_from_sequence(user, sequence):
 
     query = sql.select([models.FILES_EVENTS, models.FILES],
                        use_labels=True). \
-        select_from(models.FILES_EVENTS.join(models.FILES)). \
+        select_from(models.FILES_EVENTS.join(models.FILES,
+                    models.FILES.c.id == models.FILES_EVENTS.c.file_id)). \
         where(_TABLE.c.id >= sequence)
     sort_list = v1_utils.sort_query(args['sort'], _FILES_EVENTS_COLUMNS,
                                     default='created_at')

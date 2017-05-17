@@ -390,9 +390,7 @@ FILES_EVENTS = sa.Table(
               autoincrement=True),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('file_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('files.id'),
-              nullable=False),
+    sa.Column('file_id', pg.UUID(as_uuid=True), nullable=False),
     sa.Column('action', FILES_ACTIONS, default=FILES_CREATE),
     sa.Index('files_events_file_id_idx', 'file_id')
 )
