@@ -30,7 +30,7 @@ from dci.common import utils
 from dci.db import models
 from dci.api.v1 import transformations
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger(__name__)
 
 conf = dci_config.generate_conf()
@@ -39,14 +39,6 @@ swift = dci_config.get_store('files')
 
 _TABLE = models.FILES
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
-
-
-def get_junit_results(file):
-    file_path = swift.build_file_path(file['team_id'], file['job_id'],
-                                      file['id'])
-    logger.debug('get junit results for %s' % file_path)
-    content_file = swift.get_object(file_path)
-    return transformations.junit2dict(content_file)
 
 
 def get_next_files_metadata(offset, limit):
@@ -79,16 +71,21 @@ def main(callback):
     while offset < nb_row:
         files_meta = get_next_files_metadata(offset, limit=1000)
         for file_meta in files_meta:
-            file_dict = dict(file_meta)
+            file = dict(file_meta)
             try:
-                junit_results = get_junit_results(file_dict)
-                junit_results['created_at'] = file_dict['created_at']
-                junit_results['file_id'] = file_dict['id']
-                junit_results['job_id'] = file_dict['job_id']
+                file_path = swift.build_file_path(file['team_id'],
+                                                  file['job_id'], file['id'])
+                content_file = swift.get_object(file_path)
+                junit_results = transformations.junit2dict(content_file)
+                junit_results['created_at'] = file['created_at']
+                junit_results['file_id'] = file['id']
+                junit_results['name'] = file['name']
+                junit_results['job_id'] = file['job_id']
+                junit_results.pop('testscases', None)
                 callback(junit_results)
             except Exception as e:
                 logger.exception(e)
-                logger.debug(file_dict)
+                logger.debug(file)
         offset += files_meta.rowcount
 
 
@@ -100,7 +97,6 @@ def pretty_print(test_results):
 
 
 def create_test_results(test_results):
-    pretty_print(test_results)
     test_results.update({
         'id': utils.gen_uuid(),
         'updated_at': datetime.datetime.utcnow().isoformat()
@@ -108,8 +104,8 @@ def create_test_results(test_results):
     with engine.begin():
         query = models.TESTS_RESULTS.insert().values(**test_results)
         engine.execute(query)
-    logger.debug('create test results for job_id: '
-                 '%s' % str(test_results['job_id']))
+    print('create test results for job_id: '
+          '%s' % str(test_results['job_id']))
 
 
 if __name__ == '__main__':
