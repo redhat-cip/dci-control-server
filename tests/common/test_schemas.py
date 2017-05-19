@@ -370,7 +370,7 @@ class TestJob(utils.SchemaTesting):
 
     def test_post_missing_data(self):
         errors = utils.generate_errors('jobdefinition_id',
-                                       'remoteci_id', 'team_id', 'components')
+                                       'remoteci_id', 'components')
         super(TestJob, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
