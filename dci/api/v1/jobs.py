@@ -65,8 +65,14 @@ def create_jobs(user):
     values.update(schemas.job.post(flask.request.json))
     components_ids = values.pop('components')
 
-    # If it's not a super admin nor belongs to the same team_id
-    if not(auth.is_admin(user) or auth.is_in_team(user, values['team_id'])):
+    if 'team_id' not in values:
+        values.update({'team_id': user['team_id']})
+    # Only super admin can create job for other teams
+    elif auth.is_admin(user):
+        pass
+    elif auth.is_in_team(user, values['team_id']):
+        pass
+    else:
         raise auth.UNAUTHORIZED
 
     values.update({
