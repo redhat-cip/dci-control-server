@@ -42,6 +42,16 @@ def test_create_jobs(admin, jobdefinition_id, team_id, remoteci_id,
     assert job.data['job']['comment'] == 'kikoolol'
 
 
+def test_create_jobs_as_user_wrong_team_id(user, jobdefinition_id, team_id,
+                                           remoteci_id):
+    data = {'jobdefinition_id': jobdefinition_id,
+            'remoteci_id': remoteci_id, 'comment': 'kikoolol',
+            'team_id': team_id, 'components': []}
+    job = user.post('/api/v1/jobs', data=data)
+
+    assert job.status_code == 401
+
+
 def test_create_jobs_empty_comment(admin, jobdefinition_id, team_id,
                                    remoteci_id, components_ids):
     data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
@@ -773,6 +783,14 @@ def test_create_job_as_user(user, team_user_id, team_id, jobdefinition_id,
                           'remoteci_id': remoteci_user_id,
                           'components': components_ids})
     assert job.status_code == 201
+    assert job.data['job']['team_id'] == team_user_id
+
+    job = user.post('/api/v1/jobs',
+                    data={'jobdefinition_id': jobdefinition_id,
+                          'remoteci_id': remoteci_user_id,
+                          'components': components_ids})
+    assert job.status_code == 201
+    assert job.data['job']['team_id'] == team_user_id
 
 
 @pytest.mark.usefixtures('job_id', 'job_user_id')
