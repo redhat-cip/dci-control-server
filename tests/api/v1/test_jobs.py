@@ -42,6 +42,16 @@ def test_create_jobs(admin, jobdefinition_id, team_id, remoteci_id,
     assert job.data['job']['comment'] == 'kikoolol'
 
 
+def test_create_jobs_as_user(user, jobdefinition_id, team_id, remoteci_id):
+    data = {'jobdefinition_id': jobdefinition_id,
+            'remoteci_id': remoteci_id, 'comment': 'kikoolol',
+            'components': []}
+    job = user.post('/api/v1/jobs', data=data)
+
+    assert job.status_code == 201
+    assert job.data['job']['team_id'] == remoteci_id
+
+
 def test_create_jobs_empty_comment(admin, jobdefinition_id, team_id,
                                    remoteci_id, components_ids):
     data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
