@@ -28,6 +28,9 @@ import dci.db.models as models
 import dci.dci_config as config
 from dci.stores.swift import Swift
 
+import os
+import subprocess
+
 # convenient alias
 memoized = utils.memoized
 conf = config.generate_conf()
@@ -132,3 +135,10 @@ def post_file(client, jobstate_id, file_desc):
                           data=file_desc.content)
 
         return res.data['file']['id']
+
+
+def run_bin(bin_name, env):
+    env.update(os.environ.copy())
+    exec_path = os.path.abspath(__file__)
+    exec_path = os.path.abspath('%s/../../bin/%s' % (exec_path, bin_name))
+    return subprocess.Popen(exec_path, shell=True, env=env)
