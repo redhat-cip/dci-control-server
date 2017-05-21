@@ -3,3 +3,4 @@ pytest>=2.6.2
 pytest-cov>=1.8.0
 mock
 pylint==1.6.4
+git+https://github.com/redhat-cip/python-dciclient.git
