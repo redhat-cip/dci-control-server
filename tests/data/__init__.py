@@ -14,18 +14,16 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-JUNIT = """<testsuite errors="0" failures="0" name="pytest" skips="1"
-               tests="3" time="46.050">
-    <properties>
-      <property name="x" value="y" />
-      <property name="a" value="b" />
-    </properties>
-    <testcase classname="classname_1" name="test_1" time="0.0109479427338">
-        <failure>test failed</failure>
+JUNIT = """<testsuite errors="1" failures="1" name="pytest" skipped="1" tests="4" time="4.04239122">
+    <testcase classname="classname_1" name="test_1" time="0.02311568802">
+        <skipped message="skip message" type="skipped">test skipped</skipped>
     </testcase>
-    <testcase classname="classname_1" name="test_2" time="0.000">
-        <skipped message="skipped">test skipped</skipped>
+    <testcase classname="classname_1" name="test_2" time="0.91562318802">
+        <error message="error message" type="error">test in error</error>
     </testcase>
-    <testcase classname="classname_1" name="test_3" time="2.91562318802"/>
+    <testcase classname="classname_1" name="test_3" time="0.18802915623">
+        <failure message="failure message" type="failure">test in failure</failure>
+    </testcase>
+    <testcase classname="classname_1" name="test_4" time="2.91562318802"/>
 </testsuite>
-"""
+"""  # noqa

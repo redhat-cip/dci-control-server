@@ -901,7 +901,7 @@ def test_get_results_by_job_id(user, job_user_id):
         file_from_job = user.get('/api/v1/jobs/%s/results' % job_user_id)
         assert file_from_job.status_code == 200
         assert file_from_job.data['_meta']['count'] == 1
-        assert file_from_job.data['results'][0]['total'] == 3
+        assert file_from_job.data['results'][0]['total'] == 4
 
 
 def test_job_search(user, jobdefinition_id, team_user_id, remoteci_id,

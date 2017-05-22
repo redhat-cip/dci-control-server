@@ -29,41 +29,49 @@ from tests.data import JUNIT
 SWIFT = 'dci.stores.swift.Swift'
 
 JSONUNIT = {
-    'name': 'junit_file.xml',
     'success': 1,
     'failures': 1,
-    'errors': 0,
+    'errors': 1,
     'skips': 1,
-    'total': 3,
-    'time': 2926,
+    'total': 4,
+    'time': 4042,
     'testscases': [
         {
             'name': 'test_1',
             'classname': 'classname_1',
-            'time': 0.0109479427338,
-            'result': {
-                'message': '',
-                'value': 'test failed',
-                'type': 'failures',
-                'action': 'failure'
-            }
+            'time': 0.02311568802,
+            'action': 'skipped',
+            'message': 'skip message',
+            'type': 'skipped',
+            'value': 'test skipped'
         },
         {
             'name': 'test_2',
             'classname': 'classname_1',
-            'time': 0.0,
-            'result': {
-                'message': 'skipped',
-                'value': 'test skipped',
-                'type': 'skips',
-                'action': 'skipped'
-            }
+            'time': 0.91562318802,
+            'action': 'error',
+            'message': 'error message',
+            'type': 'error',
+            'value': 'test in error'
         },
         {
             'name': 'test_3',
             'classname': 'classname_1',
-            'time': 2.91562318802
-        }
+            'time': 0.18802915623,
+            'action': 'failure',
+            'message': 'failure message',
+            'type': 'failure',
+            'value': 'test in failure'
+        },
+        {
+            'name': 'test_4',
+            'classname': 'classname_1',
+            'time': 2.91562318802,
+            'action': 'passed',
+            'message': '',
+            'type': '',
+            'value': ''
+        },
     ]
 }
 
@@ -71,18 +79,7 @@ JSONUNIT = {
 def test_junit2dict():
     result = transformations.junit2dict(JUNIT)
 
-    assert result['success'] == 1
-    assert result['errors'] == 0
-    assert result['failures'] == 1
-    assert result['skips'] == 1
-    assert result['total'] == 3
-    assert result['time'] == 2926
-    assert len(result['testscases']) == 3
-    assert result['testscases'][0]['result']['message'] == ''
-    assert result['testscases'][0]['result']['action'] == 'failure'
-    assert result['testscases'][0]['result']['type'] == 'failures'
-    assert result['testscases'][0]['result']['value'] == 'test failed'
-    assert result['testscases'][1]['result']['action'] == 'skipped'
+    assert result == JSONUNIT
 
 
 def test_junit2dict_with_tempest_xml():
@@ -162,7 +159,9 @@ def test_retrieve_junit2dict(admin, job_id):
 
         assert (res.headers.get('Content-Disposition') ==
                 'attachment; filename="junit_file.xml"')
-        assert json.loads(res.data) == JSONUNIT
+        expect_data = JSONUNIT.copy()
+        expect_data['name'] = 'junit_file.xml'
+        assert json.loads(res.data) == expect_data
 
 
 def test_create_file_fill_tests_results_table(engine, admin, job_id):
