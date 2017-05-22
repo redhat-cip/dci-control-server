@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_da43a56b",
+        "filename": "dci/api/v1/roles.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-05-22T10:04:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "baa041b7_7ad819f0",
+      "revId": "90d42c6dcd379000049aa16b06d291a5e129193b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_dae725ab",
         "filename": "dci/api/v1/roles.py",
         "patchSetId": 13
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_ba48e188",
+        "filename": "dci/api/v1/roles.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-05-22T10:04:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "baa041b7_dae725ab",
+      "revId": "90d42c6dcd379000049aa16b06d291a5e129193b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_fa99c920",
         "filename": "dci/common/schemas.py",
         "patchSetId": 13
@@ -47,6 +83,24 @@
       "writtenOn": "2017-05-22T09:50:19Z",
       "side": 1,
       "message": "What\u0027s user_role for, I can\u0027t see it used anywhere ?",
+      "revId": "90d42c6dcd379000049aa16b06d291a5e129193b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_9a5e3d44",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 158,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-05-22T10:04:56Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "baa041b7_fa99c920",
       "revId": "90d42c6dcd379000049aa16b06d291a5e129193b",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
