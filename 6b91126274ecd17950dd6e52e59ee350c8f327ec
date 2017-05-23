@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_2a37e0b1",
+        "filename": "test-requirements.txt",
+        "patchSetId": 7
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-05-23T21:02:16Z",
+      "side": 1,
+      "message": "DCI client is on pypi. You don\u0027t need to use the git version.",
+      "revId": "6b91126274ecd17950dd6e52e59ee350c8f327ec",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
