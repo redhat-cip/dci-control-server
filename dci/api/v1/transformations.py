@@ -21,7 +21,7 @@ from datetime import timedelta
 LOG = logging.getLogger(__name__)
 
 
-def parse_testsuite(root):
+def parse_testcase(root):
     return {
         'name': root.attrib.get('name', ''),
         'classname': root.attrib.get('classname', ''),
@@ -29,20 +29,30 @@ def parse_testsuite(root):
     }
 
 
-def parse_testcase(root):
-    classes = {
-        'failure': 'failures',
-        'error': 'errors',
-        'skipped': 'skips',
+def parse_action(root):
+    return {
+        'message': root.get('message', ''),
+        'value': root.text,
+        'action': root.tag,
+        'type': root.get('type', '')
     }
-    tag_element = root.tag
-    if tag_element in classes.keys():
-        return {
-            'message': root.attrib.get('message', ''),
-            'value': root.text,
-            'action': tag_element,
-            'type': classes[tag_element]
+
+
+def parse_testscases(root):
+    testscases = []
+    for testcase in root.findall('testcase'):
+        testcase_dict = {
+            'action': 'passed',
+            'message': '',
+            'type': '',
+            'value': ''
         }
+        testcase_dict.update(parse_testcase(testcase))
+        if len(testcase) > 0:
+            action = parse_action(testcase[0])
+            testcase_dict.update(action)
+        testscases.append(testcase_dict)
+    return testscases
 
 
 def junit2dict(string):
@@ -57,19 +67,21 @@ def junit2dict(string):
         'testscases': []
     }
     try:
-        test_duration = timedelta(seconds=0)
         root = etree.fromstring(string)
-        for subroot in root:
-            if subroot.tag == 'testcase':
-                results['total'] = results['total'] + 1
-                testscases = parse_testsuite(subroot)
-                test_duration += timedelta(seconds=testscases['time'])
-                for el in subroot:
-                    test_result = parse_testcase(subroot[0])
-                    if test_result:
-                        results[test_result['type']] += 1
-                        testscases['result'] = test_result
-                results['testscases'].append(testscases)
+        testscases = parse_testscases(root)
+
+        test_duration = timedelta(seconds=0)
+        for testcase in testscases:
+            results['total'] += 1
+            test_duration += timedelta(seconds=float(testcase['time']))
+            if testcase['action'] == 'skipped':
+                results['skips'] += 1
+            if testcase['action'] == 'error':
+                results['errors'] += 1
+            if testcase['action'] == 'failure':
+                results['failures'] += 1
+
+        results['testscases'] = testscases
         results['success'] = (results['total'] -
                               results['failures'] -
                               results['errors'] -
