@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_dd083c2b",
+        "filename": "dci/alembic/versions/07630dc60809_database_initialization.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-05-24T14:24:20Z",
+      "side": 1,
+      "message": "This is because it was missing, and it should be in at the really beginning. Migration 0. Because we have it in dci-dbinit at the really beginning.",
+      "parentUuid": "baa041b7_aa4bf02a",
+      "revId": "50e8e2b6a1a71eac153ca1d1dad34f0b93c2200a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_8a482c2f",
         "filename": "dci/alembic/versions/07630dc60809_database_initialization.py",
         "patchSetId": 4
@@ -30,6 +48,24 @@
       "writtenOn": "2017-05-23T21:08:12Z",
       "side": 1,
       "message": "Looks like we create a security weakness.",
+      "revId": "50e8e2b6a1a71eac153ca1d1dad34f0b93c2200a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_fd03000c",
+        "filename": "dci/alembic/versions/07630dc60809_database_initialization.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 312,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-05-24T14:24:20Z",
+      "side": 1,
+      "message": "This is already what we are doing (we are sticking with what we do in dci-dbinit): \n\nhttps://github.com/redhat-cip/dci-control-server/blob/master/scripts/db_provisioning.py#L72-L74",
+      "parentUuid": "baa041b7_8a482c2f",
       "revId": "50e8e2b6a1a71eac153ca1d1dad34f0b93c2200a",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
