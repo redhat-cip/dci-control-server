@@ -95,7 +95,7 @@ def create_files(user):
         'id': file_id,
         'created_at': datetime.datetime.utcnow().isoformat(),
         'updated_at': datetime.datetime.utcnow().isoformat(),
-        'team_id': user['team_id'],
+        'team_id': str(user['team_id']),
         'md5': None,
         'size': s_file['content-length'],
         'state': 'active',
