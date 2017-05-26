@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_3d5f2810",
+        "filename": "dci/alembic/versions/07630dc60809_database_initialization.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-05-26T14:05:50Z",
+      "side": 1,
+      "message": "What prevent us to",
+      "parentUuid": "baa041b7_dd083c2b",
+      "revId": "50e8e2b6a1a71eac153ca1d1dad34f0b93c2200a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_8a482c2f",
         "filename": "dci/alembic/versions/07630dc60809_database_initialization.py",
         "patchSetId": 4
