@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import json
 from uuid import UUID
 
 import mock
@@ -139,7 +138,8 @@ def test_retrieve_junit2dict(admin, job_id):
         mockito.get_object.return_value = JUNIT
         mock_swift.return_value = mockito
         headers = {
-            'DCI-NAME': 'junit_file.xml', 'DCI-JOB-ID': job_id,
+            'DCI-NAME': 'junit_file.xml',
+            'DCI-JOB-ID': job_id,
             'DCI-MIME': 'application/junit',
             'Content-Disposition': 'attachment; filename=junit_file.xml',
             'Content-Type': 'application/junit'
@@ -153,15 +153,12 @@ def test_retrieve_junit2dict(admin, job_id):
 
         assert res.data == JUNIT
 
-        # Now retrieve it through XHR
+        # Non Regression Test: XHR doesn't modify content
         headers = {'X-Requested-With': 'XMLHttpRequest'}
         res = admin.get('/api/v1/files/%s/content' % file_id, headers=headers)
 
-        assert (res.headers.get('Content-Disposition') ==
-                'attachment; filename="junit_file.xml"')
-        expect_data = JSONUNIT.copy()
-        expect_data['name'] = 'junit_file.xml'
-        assert json.loads(res.data) == expect_data
+        assert res.data == JUNIT
+        assert res.headers['Content-Type'] == 'application/junit'
 
 
 def test_create_file_fill_tests_results_table(engine, admin, job_id):
