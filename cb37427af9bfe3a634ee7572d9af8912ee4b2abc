@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_51c53359",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-05-29T17:27:08Z",
+      "side": 1,
+      "message": "This will force the content type to text/plain for all files which can cause unexpected behaviour.\n\nYou should probably use something like :\n  \u0027Content-Type\u0027:  file[\u0027mime\u0027] or \u0027text/plain\u0027,\n\nor in the flask.response (as it was before) :\n  content_type\u003dfile[\u0027mime\u0027] or \u0027text/plain\u0027,",
+      "range": {
+        "startLine": 187,
+        "startChar": 8,
+        "endLine": 187,
+        "endChar": 36
+      },
+      "revId": "cb37427af9bfe3a634ee7572d9af8912ee4b2abc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
