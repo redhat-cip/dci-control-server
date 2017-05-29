@@ -122,7 +122,6 @@ class SignatureAuthMechanism(BaseMechanism):
         """
         where_clause = sqlalchemy.sql.expression.and_(
             models.REMOTECIS.c.id == ci_id,
-            models.REMOTECIS.c.active is True,
             models.REMOTECIS.c.state == 'active',
             models.TEAMS.c.state == 'active'
         )
@@ -148,11 +147,13 @@ class SignatureAuthMechanism(BaseMechanism):
         if remoteci.api_secret is None:
             return False
 
-        url = self.request.path.encode('utf-8')
-        query_string = self.request.query_string.encode('utf-8')
-
         return signature.is_valid(
-            their_signature,
-            remoteci.api_secret, self.request.method,
-            self.request.headers.get['Content-Type'], timestamp,
-            url, query_string, self.request.data)
+            their_signature=their_signature.encode('utf-8'),
+            secret=remoteci.api_secret.encode('utf-8'),
+            http_verb=self.request.method.encode('utf-8'),
+            content_type=(self.request.headers.get('Content-Type')
+                          .encode('utf-8')),
+            timestamp=timestamp,
+            url=self.request.path.encode('utf-8'),
+            query_string=self.request.query_string,
+            payload=self.request.data)
