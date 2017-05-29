@@ -38,7 +38,7 @@ def test_format_string_to_sign():
         query_string='param=value&foo=bar',
         payload_hash=payload_hash)
 
-    assert formated == '''DELETE
+    assert formated == b'''DELETE
 application/json
 2016-05-19 13:51:59Z
 /api/v1/boo/yah
@@ -58,6 +58,42 @@ def test_gen_signature():
         timestamp=timestamp,
         url='/api/v1/boo/yah',
         query_string='param=value&foo=bar',
+        payload='lala')
+
+    assert sig == \
+        '8b267071e9690457205811e8a4464de3f822c7c4e3f6abbdd7a4bfcfa8132ecb'
+
+
+def test_gen_signature_bytes():
+    timestamp = datetime(2016, 5, 19, 13, 51, 59)
+
+    secret = \
+        b'*}I)|u!)288|_WrH(C_^2\'#8,UMVpR:+lnd4Kt<TS;3~v)SQ%"s\'g[}<5C_c*\'{Z'
+    sig = signature.gen_signature(
+        secret=secret,
+        http_verb=b'DELETE',
+        content_type=b'application/json',
+        timestamp=timestamp,
+        url=b'/api/v1/boo/yah',
+        query_string=b'param=value&foo=bar',
+        payload=b'lala')
+
+    assert sig == \
+        '8b267071e9690457205811e8a4464de3f822c7c4e3f6abbdd7a4bfcfa8132ecb'
+
+
+def test_gen_signature_unicode():
+    timestamp = datetime(2016, 5, 19, 13, 51, 59)
+
+    secret = \
+        u'*}I)|u!)288|_WrH(C_^2\'#8,UMVpR:+lnd4Kt<TS;3~v)SQ%"s\'g[}<5C_c*\'{Z'
+    sig = signature.gen_signature(
+        secret=secret,
+        http_verb=u'DELETE',
+        content_type=u'application/json',
+        timestamp=timestamp,
+        url=u'/api/v1/boo/yah',
+        query_string=u'param=value&foo=bar',
         payload='lala')
 
     assert sig == \
@@ -136,3 +172,8 @@ def test_timestamp_is_not_in_bounds_later():
     assert not signature.is_timestamp_in_bounds(
         datetime(2016, 11, 11, 12, 55, 50),
         now=now)
+
+
+def test_compare_digest_mixed_types_succeeds():
+    signature.compare_digest(u"lala", b"lala")
+    signature.compare_digest(b"lala", u"lala")

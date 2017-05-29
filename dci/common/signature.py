@@ -19,6 +19,7 @@ import hashlib
 import hmac
 import random
 import string
+from werkzeug._compat import to_bytes
 
 
 def gen_secret(length=64):
@@ -34,18 +35,20 @@ def format_for_signature(http_verb, content_type, timestamp, url,
     """Returns the string used to generate the signature in a correctly
     formatter manner.
     """
-    return '\n'.join((http_verb,
-                      content_type,
-                      timestamp.strftime('%Y-%m-%d %H:%M:%SZ'),
-                      url,
-                      query_string,
-                      payload_hash))
+    return b'\n'.join((
+        to_bytes(http_verb, 'utf-8'),
+        to_bytes(content_type, 'utf-8'),
+        to_bytes(timestamp.strftime('%Y-%m-%d %H:%M:%SZ'), 'utf-8'),
+        to_bytes(url, 'utf-8'),
+        to_bytes(query_string, 'utf-8'),
+        to_bytes(payload_hash, 'utf-8'),
+    ))
 
 
 def gen_signature(secret, http_verb, content_type, timestamp, url,
                   query_string, payload):
     """Generates a signature compatible with DCI for the parameters passed"""
-    payload_hash = hashlib.sha256(payload.encode('utf-8')).hexdigest()
+    payload_hash = hashlib.sha256(to_bytes(payload, 'utf-8')).hexdigest()
     stringtosign = format_for_signature(
         http_verb=http_verb,
         content_type=content_type,
@@ -55,8 +58,8 @@ def gen_signature(secret, http_verb, content_type, timestamp, url,
         payload_hash=payload_hash
     )
 
-    return hmac.new(secret.encode('utf-8'),
-                    stringtosign.encode('utf-8'),
+    return hmac.new(to_bytes(secret, 'utf-8'),
+                    stringtosign,
                     hashlib.sha256).hexdigest()
 
 
@@ -65,6 +68,8 @@ def compare_digest(foo, bar):
     NOTE: this uses hmac.compare_digest() if possible, a simple == else.
           hmac.compare_digest is available only in python≥(2.7.7,3.3)"""
     f = getattr(hmac, 'compare_digest', lambda a, b: a == b)
+    foo = to_bytes(foo)
+    bar = to_bytes(bar)
     return f(foo, bar)
 
 
