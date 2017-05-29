@@ -34,18 +34,20 @@ def format_for_signature(http_verb, content_type, timestamp, url,
     """Returns the string used to generate the signature in a correctly
     formatter manner.
     """
-    return '\n'.join((http_verb,
-                      content_type,
-                      timestamp.strftime('%Y-%m-%d %H:%M:%SZ'),
-                      url,
-                      query_string,
-                      payload_hash))
+    return b'\n'.join((
+        http_verb,
+        content_type,
+        timestamp.strftime('%Y-%m-%d %H:%M:%SZ').encode('utf-8'),
+        url,
+        query_string,
+        payload_hash,
+    ))
 
 
 def gen_signature(secret, http_verb, content_type, timestamp, url,
                   query_string, payload):
     """Generates a signature compatible with DCI for the parameters passed"""
-    payload_hash = hashlib.sha256(payload.encode('utf-8')).hexdigest()
+    payload_hash = hashlib.sha256(payload).hexdigest().encode('utf-8')
     stringtosign = format_for_signature(
         http_verb=http_verb,
         content_type=content_type,
@@ -56,7 +58,7 @@ def gen_signature(secret, http_verb, content_type, timestamp, url,
     )
 
     return hmac.new(secret.encode('utf-8'),
-                    stringtosign.encode('utf-8'),
+                    stringtosign,
                     hashlib.sha256).hexdigest()
 
 
@@ -81,7 +83,7 @@ def is_valid(their_signature,
 
     Returns True if signature is valid and timestamp within defined bounds"""
     local_signature = gen_signature(secret, http_verb, content_type, timestamp,
-                                    url, query_string, payload)
+                                    url, query_string, payload).encode('utf-8')
 
     return is_timestamp_in_bounds(timestamp) and \
         compare_digest(their_signature, local_signature)

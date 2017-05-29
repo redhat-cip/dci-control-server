@@ -29,16 +29,16 @@ def test_format_string_to_sign():
     timestamp = datetime(2016, 5, 19, 13, 51, 59)
 
     payload_hash = \
-        '41af286dc0b172ed2f1ca934fd2278de4a1192302ffa07087cea2682e7d372e3'
+        b'41af286dc0b172ed2f1ca934fd2278de4a1192302ffa07087cea2682e7d372e3'
     formated = signature.format_for_signature(
-        http_verb='DELETE',
-        content_type='application/json',
+        http_verb=b'DELETE',
+        content_type=b'application/json',
         timestamp=timestamp,
-        url='/api/v1/boo/yah',
-        query_string='param=value&foo=bar',
+        url=b'/api/v1/boo/yah',
+        query_string=b'param=value&foo=bar',
         payload_hash=payload_hash)
 
-    assert formated == '''DELETE
+    assert formated == b'''DELETE
 application/json
 2016-05-19 13:51:59Z
 /api/v1/boo/yah
@@ -53,12 +53,12 @@ def test_gen_signature():
         '*}I)|u!)288|_WrH(C_^2\'#8,UMVpR:+lnd4Kt<TS;3~v)SQ%"s\'g[}<5C_c*\'{Z'
     sig = signature.gen_signature(
         secret=secret,
-        http_verb='DELETE',
-        content_type='application/json',
+        http_verb=b'DELETE',
+        content_type=b'application/json',
         timestamp=timestamp,
-        url='/api/v1/boo/yah',
-        query_string='param=value&foo=bar',
-        payload='lala')
+        url=b'/api/v1/boo/yah',
+        query_string=b'param=value&foo=bar',
+        payload=b'lala')
 
     assert sig == \
         '8b267071e9690457205811e8a4464de3f822c7c4e3f6abbdd7a4bfcfa8132ecb'
@@ -69,12 +69,12 @@ def signature_kwargs(delta_minutes=0):
         '*}I)|u!)288|_WrH(C_^2\'#8,UMVpR:+lnd4Kt<TS;3~v)SQ%"s\'g[}<5C_c*\'{Z'
     return {
         'secret': secret,
-        'http_verb': 'DELETE',
-        'content_type': 'application/json',
+        'http_verb': b'DELETE',
+        'content_type': b'application/json',
         'timestamp': datetime.utcnow() + timedelta(minutes=delta_minutes),
-        'url': '/api/v1/boo/yah',
-        'query_string': 'param=value&foo=bar',
-        'payload': 'lala'
+        'url': b'/api/v1/boo/yah',
+        'query_string': b'param=value&foo=bar',
+        'payload': b'lala'
     }
 
 
@@ -98,11 +98,11 @@ def test_signature_6min_old_is_invalid():
     assert not signature.is_valid(**kwargs)
 
 
-def test_signature_bad_http_berb_is_invalid():
+def test_signature_bad_http_verb_is_invalid():
     kwargs = signature_kwargs()
     kwargs['their_signature'] = signature.gen_signature(**kwargs)
     # Using a different verb than the one used for the signature
-    kwargs['http_verb'] = 'PUT'
+    kwargs['http_verb'] = b'PUT'
     assert not signature.is_valid(**kwargs)
 
 
