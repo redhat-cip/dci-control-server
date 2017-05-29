@@ -17,6 +17,7 @@ from datetime import datetime
 import flask
 import sqlalchemy.sql
 from passlib.apps import custom_app_context as pwd_context
+from werkzeug._compat import to_bytes
 
 from dci.db import models
 from dci.common import signature
@@ -122,7 +123,7 @@ class SignatureAuthMechanism(BaseMechanism):
         """
         where_clause = sqlalchemy.sql.expression.and_(
             models.REMOTECIS.c.id == ci_id,
-            models.REMOTECIS.c.active is True,
+            # models.REMOTECIS.c.active is True,
             models.REMOTECIS.c.state == 'active',
             models.TEAMS.c.state == 'active'
         )
@@ -148,11 +149,11 @@ class SignatureAuthMechanism(BaseMechanism):
         if remoteci.api_secret is None:
             return False
 
-        url = self.request.path.encode('utf-8')
-        query_string = self.request.query_string.encode('utf-8')
+        url = to_bytes(self.request.path, 'utf-8')
+        query_string = to_bytes(self.request.query_string, 'utf-8')
 
         return signature.is_valid(
             their_signature,
             remoteci.api_secret, self.request.method,
-            self.request.headers.get['Content-Type'], timestamp,
+            self.request.headers.get('Content-Type'), timestamp,
             url, query_string, self.request.data)
