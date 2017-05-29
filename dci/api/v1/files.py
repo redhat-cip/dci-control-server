@@ -182,29 +182,15 @@ def get_file_content(user, file_id):
     # Check if file exist on the storage engine
     swift.head(file_path)
     filename = file['name'].replace(' ', '_')
-    if flask.request.is_xhr and file['mime'] == 'application/junit':
-        content_file = swift.get_object(file_path)
-        data = tsfm.junit2dict(content_file)
-        data['name'] = filename
-        headers = {
-            'Content-Length': len(str(data)),
-            'Content-Disposition': 'attachment; filename="%s"' % filename
-        }
-        return flask.Response(
-            json.dumps(data),
-            content_type=file['mime'],
-            headers=headers
-        )
-    else:
-        headers = {
-            'Content-Length': file['size'],
-            'Content-Disposition': 'attachment; filename="%s"' % filename
-        }
-        return flask.Response(
-            get_object(file_path),
-            content_type=file['mime'] or 'text/plain',
-            headers=headers
-        )
+    headers = {
+        'Content-Length': file['size'],
+        'Content-Type': 'text/plain',
+        'Content-Disposition': 'attachment; filename="%s"' % filename
+    }
+    return flask.Response(
+        get_object(file_path),
+        headers=headers
+    )
 
 
 @api.route('/files/<uuid:file_id>', methods=['DELETE'])
