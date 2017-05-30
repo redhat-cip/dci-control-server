@@ -71,11 +71,36 @@ def init_db(db_conn):
     # Create team admin
     team_admin_id = db_insert_with_name(models.TEAMS, name='admin')
 
+    # Create the three mandatory roles
+    super_admin_role = {
+        'name': 'Super Admin',
+        'label': 'SUPER_ADMIN',
+        'description': 'Admin of the platform',
+    }
+
+    admin_role = {
+        'name': 'Admin',
+        'label': 'ADMIN',
+        'description': 'Admin of a team',
+    }
+
+    user_role = {
+        'name': 'User',
+        'label': 'USER',
+        'description': 'Regular User',
+    }
+
+    db_insert_with_name(models.ROLES, **admin_role)
+    db_insert_with_name(models.ROLES, **user_role)
+    super_admin_role_id = db_insert_with_name(models.ROLES,
+                                              **super_admin_role)
+
     # Create super admin user
     db_insert_with_name(models.USERS,
                         name=DCI_LOGIN,
                         password=DCI_PASSWORD_HASH,
                         role='admin',
+                        role_id=super_admin_role_id,
                         team_id=team_admin_id)
 
 
