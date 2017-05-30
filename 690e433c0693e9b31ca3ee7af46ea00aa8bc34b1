@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_1509d42c",
+        "filename": "test-requirements.txt",
+        "patchSetId": 8
+      },
+      "lineNbr": 6,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-05-30T20:34:17Z",
+      "side": 1,
+      "message": "for the record, I just pushed a v0.3 version. This should not be mandatory anymore:\n\ngit tag -s -am \"Adding v0.3 tag\" v0.3\ngit push origin v0.3",
+      "revId": "690e433c0693e9b31ca3ee7af46ea00aa8bc34b1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
