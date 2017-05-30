@@ -97,6 +97,9 @@ def get_all_roles(user):
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
+    if not auth.is_admin(user):
+        query.add_extra_condition(_TABLE.c.label != 'SUPER_ADMIN')
+
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
