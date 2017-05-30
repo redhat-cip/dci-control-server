@@ -66,9 +66,15 @@ def create_users(user):
 
     password_hash = auth.hash_password(values.get('password'))
 
+    if 'role_id' not in values or not values['role_id']:
+        role_id = auth.get_role_id('USER')
+    else:
+        role_id = values['role_id']
+
     values.update({
         'password': password_hash,
-        'role': values.get('role', 'user')
+        'role': values.get('role', 'user'),
+        'role_id': role_id
     })
 
     query = _TABLE.insert().values(**values)

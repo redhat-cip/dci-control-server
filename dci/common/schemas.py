@@ -194,6 +194,7 @@ test = schema_factory(test)
 
 user = utils.dict_merge(base, {
     'password': six.text_type,
+    v.Optional('role_id'): v.Any(UUID, msg=INVALID_UUID),
     v.Optional('role'): v.Any(*models.USER_ROLES, msg=INVALID_ROLE),
     'team_id': v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
