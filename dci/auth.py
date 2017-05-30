@@ -21,7 +21,9 @@ import flask
 from passlib.apps import custom_app_context as pwd_context
 
 from dci.auth_mechanism import BasicAuthMechanism, SignatureAuthMechanism
+from dci.db import models
 from dci.common import exceptions as exc
+from sqlalchemy import sql
 
 UNAUTHORIZED = exc.DCIException('Operation not authorized.', status_code=401)
 
@@ -41,6 +43,19 @@ def reject():
     headers = {'WWW-Authenticate': 'Basic realm="Login required"'}
     return flask.Response(auth_message, 401, headers=headers,
                           content_type='application/json')
+
+
+# This method should be deleted once permissions mechanism is
+# in place. Meanwhile, for the migration to be seamless, we
+# need to have this method around
+def get_role_id(label):
+    """Return role id based on role label."""
+
+    query = sql.select([models.ROLES]).where(
+        models.ROLES.c.label == label
+    )
+    result = flask.g.db_conn.execute(query).fetchone()
+    return result.id
 
 
 def is_admin(user, super=False):
