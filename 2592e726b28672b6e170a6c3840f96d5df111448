@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_2c2c9849",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-30T11:53:18Z",
+      "side": 1,
+      "message": "I preferred to use this rather than re-implementing it badly.\n\nWDYT ?",
+      "parentUuid": "baa041b7_31886f22",
+      "revId": "2592e726b28672b6e170a6c3840f96d5df111448",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_118d6b31",
         "filename": "dci/auth_mechanism.py",
         "patchSetId": 2
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "baa041b7_0c31d4a2",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-30T11:53:18Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "baa041b7_118d6b31",
+      "revId": "2592e726b28672b6e170a6c3840f96d5df111448",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_f181e7fc",
         "filename": "dci/auth_mechanism.py",
         "patchSetId": 2
@@ -47,6 +83,24 @@
       "writtenOn": "2017-05-29T18:43:33Z",
       "side": 1,
       "message": "Just curious, what was the kind of problem that you faced with this?",
+      "revId": "2592e726b28672b6e170a6c3840f96d5df111448",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_ac20a84a",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 152,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-30T11:53:18Z",
+      "side": 1,
+      "message": "In python2/vs/python3 the various request fields have different types that would not both have the \u0027encode\u0027 method.",
+      "parentUuid": "baa041b7_f181e7fc",
       "revId": "2592e726b28672b6e170a6c3840f96d5df111448",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
