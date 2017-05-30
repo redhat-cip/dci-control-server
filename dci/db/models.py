@@ -432,6 +432,8 @@ USERS = sa.Table(
     sa.Column('name', sa.String(255), nullable=False, unique=True),
     sa.Column('password', sa.Text, nullable=False),
     sa.Column('role', ROLES_ENUM, default=USER_ROLES[0], nullable=False),
+    sa.Column('role_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('roles.id', ondelete='SET NULL')),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
