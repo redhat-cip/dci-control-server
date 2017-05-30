@@ -41,7 +41,6 @@ _EMBED_MANY = {}
 def create_roles(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.role.post(flask.request.json))
-    values.update({'team_id': user['team_id']})
 
     if not values['label']:
         values.update({'label': values['name'].upper()})

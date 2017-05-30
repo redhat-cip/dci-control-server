@@ -488,9 +488,6 @@ ROLES = sa.Table(
     sa.Column('name', sa.String(255), nullable=False),
     sa.Column('label', sa.String(255), nullable=False),
     sa.Column('description', sa.Text),
-    sa.Column('team_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
-              nullable=False),
-    sa.UniqueConstraint('label', 'team_id', name='roles_label_team_id_key'),
+    sa.UniqueConstraint('label', name='roles_label_key'),
     sa.Column('state', STATES, default='active')
 )
