@@ -150,17 +150,22 @@ def test_get_all_users_with_sort(admin, team_id):
     db_users = admin.get('/api/v1/users?sort=created_at').data
     db_users = db_users['users']
 
+    user_role = admin.get('/api/v1/roles?where=label:USER').data
+    user_role_id = user_role['roles'][0]['id']
+
     # create 2 users ordered by created time
     user_1 = admin.post('/api/v1/users',
                         data={'name': 'pname1',
                               'password': 'ppass',
                               'role': 'user',
+                              'role_id': user_role_id,
                               'team_id': team_id}).data['user']
 
     user_2 = admin.post('/api/v1/users',
                         data={'name': 'pname2',
                               'password': 'ppass',
                               'role': 'user',
+                              'role_id': user_role_id,
                               'team_id': team_id}).data['user']
 
     gusers = admin.get('/api/v1/users?sort=created_at').data
