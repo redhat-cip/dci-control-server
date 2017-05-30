@@ -68,7 +68,6 @@ COMPONENTS = sa.Table(
     sa.UniqueConstraint('name', 'topic_id',
                         name='components_name_topic_id_key'),
     sa.Index('components_topic_id_idx', 'topic_id'),
-    sa.Column('active', sa.BOOLEAN, default=True),
     sa.Column('state', STATES, default='active')
 )
 
@@ -153,7 +152,6 @@ JOBDEFINITIONS = sa.Table(
               sa.ForeignKey('topics.id', ondelete='CASCADE'),
               nullable=True),
     sa.Index('jobdefinitions_topic_id_idx', 'topic_id'),
-    sa.Column('active', sa.BOOLEAN, default=True),
     sa.Column('comment', sa.Text),
     sa.Column('component_types', pg.JSON, default=[]),
     sa.Column('state', STATES, default='active')
@@ -222,7 +220,6 @@ REMOTECIS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255)),
     sa.Column('data', sa_utils.JSONType),
-    sa.Column('active', sa.BOOLEAN, default=True),
     sa.Column('api_secret', sa.String(64), default=signature.gen_secret),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
