@@ -97,6 +97,9 @@ def get_all_roles(user):
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
+    if not auth.is_admin(user):
+        query.add_extra_condition(_TABLE.c.label != 'SUPER_ADMIN')
+
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
@@ -109,6 +112,10 @@ def get_all_roles(user):
 @auth.login_required
 def get_role_by_id(user, role_id):
     role = v1_utils.verify_existence_and_get(role_id, _TABLE)
+
+    if not auth.is_admin(user) and auth.get_role_id('SUPER_ADMIN') == role_id:
+        raise auth.UNAUTHORIZED
+
     return base.get_resource_by_id(user, role, _TABLE, _EMBED_MANY)
 
 

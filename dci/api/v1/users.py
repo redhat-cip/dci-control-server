@@ -61,14 +61,18 @@ def create_users(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.user.post(flask.request.json))
 
-    if not(auth.is_admin(user) or auth.is_admin_user(user, values['team_id'])):
+    if not (auth.is_admin(user) or
+            auth.is_admin_user(user, values['team_id'])):
         raise auth.UNAUTHORIZED
 
-    password_hash = auth.hash_password(values.get('password'))
+    role_id = values.get('role_id', auth.get_role_id('USER'))
+    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+        raise auth.UNAUTHORIZED
 
     values.update({
-        'password': password_hash,
-        'role': values.get('role', 'user')
+        'password': auth.hash_password(values.get('password')),
+        'role': values.get('role', 'user'),
+        'role_id': role_id
     })
 
     query = _TABLE.insert().values(**values)
