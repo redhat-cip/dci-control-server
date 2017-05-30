@@ -1,0 +1,95 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_322bce84",
+        "filename": "dci/app.py",
+        "patchSetId": 27
+      },
+      "lineNbr": 109,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-05-30T15:48:58Z",
+      "side": 1,
+      "message": "Can you do the import at the beginning of the file?",
+      "revId": "cb4cdbc64c65073c98f2ed439464143190b5b219",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_1220ca9a",
+        "filename": "dci/app.py",
+        "patchSetId": 27
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-05-30T15:48:58Z",
+      "side": 1,
+      "message": "Could be nice to have a:\n\nfor blabla:\n    blabla\nexcept\n    tume.sleep(1)\nelse:\n    # log the failure \u003c----",
+      "revId": "cb4cdbc64c65073c98f2ed439464143190b5b219",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_1209ea2c",
+        "filename": "scripts/start_api.sh",
+        "patchSetId": 27
+      },
+      "lineNbr": 5,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-05-30T15:48:58Z",
+      "side": 1,
+      "message": "You can just do that to kill the running process:\n\nps aux |awk \u0027/runtestserver/ {print $2}\u0027|xargs -r kill",
+      "range": {
+        "startLine": 5,
+        "startChar": 56,
+        "endLine": 5,
+        "endChar": 57
+      },
+      "revId": "cb4cdbc64c65073c98f2ed439464143190b5b219",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_f20d6638",
+        "filename": "tests/bin/test_dci_essync.py",
+        "patchSetId": 27
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-05-30T15:48:58Z",
+      "side": 1,
+      "message": "debug pprint?",
+      "revId": "cb4cdbc64c65073c98f2ed439464143190b5b219",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_d213825b",
+        "filename": "tests/settings.py",
+        "patchSetId": 27
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-05-30T15:48:58Z",
+      "side": 1,
+      "message": "degaulle (2 L)",
+      "revId": "cb4cdbc64c65073c98f2ed439464143190b5b219",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
