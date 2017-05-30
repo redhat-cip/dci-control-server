@@ -64,11 +64,21 @@ def create_users(user):
     if not(auth.is_admin(user) or auth.is_admin_user(user, values['team_id'])):
         raise auth.UNAUTHORIZED
 
+    if not auth.is_admin(user) and 'role_id' in values and \
+            values['role_id'] == auth.get_role_id('SUPER_ADMIN'):
+        raise auth.UNAUTHORIZED
+
     password_hash = auth.hash_password(values.get('password'))
+
+    if 'role_id' not in values or not values['role_id']:
+        role_id = auth.get_role_id('USER')
+    else:
+        role_id = values['role_id']
 
     values.update({
         'password': password_hash,
-        'role': values.get('role', 'user')
+        'role': values.get('role', 'user'),
+        'role_id': role_id
     })
 
     query = _TABLE.insert().values(**values)
