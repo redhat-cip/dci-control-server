@@ -153,18 +153,18 @@ def test_success_get_role_by_id(admin, role):
     assert result.data['role']['name'] == 'Manager'
 
 
-def test_success_get_all_roles_admin(admin, role):
+def test_success_get_all_roles_admin(admin):
     result = admin.get('/api/v1/roles')
 
     assert result.status_code == 200
-    assert len(result.data['roles']) == 1
+    assert len(result.data['roles']) == 3
 
 
-def test_success_get_all_roles_user(user, role):
+def test_success_get_all_roles_user(user):
     result = user.get('/api/v1/roles')
 
     assert result.status_code == 200
-    assert len(result.data['roles']) == 1
+    assert len(result.data['roles']) == 3
 
 
 def test_success_delete_role_admin(admin, role):
@@ -175,7 +175,7 @@ def test_success_delete_role_admin(admin, role):
 
     result = admin.get('/api/v1/roles')
 
-    assert len(result.data['roles']) == 0
+    assert len(result.data['roles']) == 3
 
 
 def test_fail_delete_role_user(user, role):
