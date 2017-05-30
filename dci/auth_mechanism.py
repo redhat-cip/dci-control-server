@@ -122,7 +122,6 @@ class SignatureAuthMechanism(BaseMechanism):
         """
         where_clause = sqlalchemy.sql.expression.and_(
             models.REMOTECIS.c.id == ci_id,
-            models.REMOTECIS.c.active is True,
             models.REMOTECIS.c.state == 'active',
             models.TEAMS.c.state == 'active'
         )

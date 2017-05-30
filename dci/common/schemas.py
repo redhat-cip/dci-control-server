@@ -217,7 +217,6 @@ component = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('url', default=None): Url(),
     'type': six.text_type,
     'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
-    v.Optional('active', default=True): bool,
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 })
@@ -242,7 +241,6 @@ jobdefinition = utils.dict_merge(base, {
         v.Coerce(int), v.Range(min=0, max=1000), msg=INVALID_PRIORITY
     ),
     'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
-    v.Optional('active', default=True): bool,
     v.Optional('comment', default=None): six.text_type,
     v.Optional('component_types', default=[]): list,
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
@@ -255,7 +253,6 @@ jobdefinition_put = {
         v.Coerce(int), v.Range(min=0, max=1000), msg=INVALID_PRIORITY
     ),
     v.Optional('comment'): six.text_type,
-    v.Optional('active'): bool,
     v.Optional('component_types', default=[]): list,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
@@ -272,7 +269,6 @@ jobdefinition = DCISchema(schema_factory(jobdefinition).post,
 
 remoteci = utils.dict_merge(base, DATA_FIELD, {
     'team_id': v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('active', default=True): bool,
     v.Optional('allow_upgrade_job', default=False): bool,
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
@@ -282,7 +278,6 @@ remoteci_put = {
     v.Optional('name'): six.text_type,
     v.Optional('data'): dict,
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('active'): bool,
     v.Optional('allow_upgrade_job'): bool,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
