@@ -189,7 +189,6 @@ def get_all_tests_from_jobdefinitions(user, jd_id):
 
     res = flask.jsonify({'tests': rows,
                          '_meta': {'count': rows.rowcount}})
-    res.status_code = 201
     return res
 
 
