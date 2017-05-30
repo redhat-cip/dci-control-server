@@ -136,11 +136,11 @@ def test_fail_update_role_label(admin, role):
 
 
 def test_fail_update_role_unauthorized_fields(admin, role):
-    team_id = {
-        'team_id': 'a265e652-dcbc-4d99-9f74-e60988250403',
+    label = {
+        'label': 'NEW LABEL',
     }
 
-    result = admin.put('/api/v1/roles/%s' % role['id'], data=team_id,
+    result = admin.put('/api/v1/roles/%s' % role['id'], data=label,
                        headers={'If-match': role['etag']})
 
     assert result.status_code == 400
