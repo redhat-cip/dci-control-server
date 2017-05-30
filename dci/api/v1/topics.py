@@ -392,7 +392,6 @@ def get_all_teams_from_topic(user, topic_id):
 
     res = flask.jsonify({'teams': rows,
                          '_meta': {'count': rows.rowcount}})
-    res.status_code = 201
     return res
 
 

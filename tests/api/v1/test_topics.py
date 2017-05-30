@@ -322,9 +322,10 @@ def test_add_team_to_topic_and_get(admin):
     assert add_data['team_id'] == team_id
 
     # get teams from topic
-    team_from_topic = admin.get(url).data
-    assert team_from_topic['_meta']['count'] == 1
-    assert team_from_topic['teams'][0] == pc['team']
+    team_from_topic = admin.get(url)
+    assert team_from_topic.status_code == 200
+    assert team_from_topic.data['_meta']['count'] == 1
+    assert team_from_topic.data['teams'][0] == pc['team']
 
 
 # Tests for topics and teams management

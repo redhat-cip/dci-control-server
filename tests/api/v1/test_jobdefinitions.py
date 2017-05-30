@@ -365,14 +365,16 @@ def test_add_test_to_jobdefinitions_and_get(admin, test_id, topic_id):
 
     # attach a test to jobdefinition
     url = '/api/v1/jobdefinitions/%s/tests' % pjd_id
-    add_data = admin.post(url, data={'test_id': test_id}).data
-    assert add_data['jobdefinition_id'] == pjd_id
-    assert add_data['test_id'] == test_id
+    add_data = admin.post(url, data={'test_id': test_id})
+    assert add_data.status_code == 201
+    assert add_data.data['jobdefinition_id'] == pjd_id
+    assert add_data.data['test_id'] == test_id
 
     # get test from jobdefinition
-    test_from_jobdefinition = admin.get(url).data
-    assert test_from_jobdefinition['_meta']['count'] == 1
-    assert test_from_jobdefinition['tests'][0]['id'] == test_id
+    test_from_jobdefinition = admin.get(url)
+    assert test_from_jobdefinition.status_code == 200
+    assert test_from_jobdefinition.data['_meta']['count'] == 1
+    assert test_from_jobdefinition.data['tests'][0]['id'] == test_id
 
 
 def test_delete_test_from_jobdefinition(admin, test_id, topic_id):
