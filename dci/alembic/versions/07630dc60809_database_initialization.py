@@ -33,7 +33,41 @@ import alembic.op as op
 import sqlalchemy as sa
 import sqlalchemy_utils as sa_utils
 
+import dci.auth as auth
 import dci.common.utils as utils
+
+TEAMS = sa.Table(
+    'teams', sa.MetaData(),
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False,
+              default=utils.gen_etag, onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), unique=True, nullable=False)
+)
+
+USERS = sa.Table(
+    'users', sa.MetaData(),
+    sa.Column('id', sa.String(36), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False,
+              default=utils.gen_etag, onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255), unique=True, nullable=False),
+    sa.Column('password', sa.Text, nullable=False),
+    sa.Column('role', sa.String(255), default='user', nullable=False),
+    sa.Column('team_id', sa.String(36),
+              sa.ForeignKey('teams.id', ondelete="CASCADE"),
+              nullable=False)
+)
 
 
 def upgrade():
@@ -254,6 +288,30 @@ def upgrade():
                   nullable=False),
         sa.UniqueConstraint('user_id', 'remoteci_id')
     )
+
+    db_conn = op.get_bind()
+    team_id = utils.gen_uuid()
+    team_values = {
+        'id': team_id,
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': utils.gen_etag(),
+        'name': 'admin'
+    }
+    db_conn.execute(TEAMS.insert().values(**team_values))
+
+    user_id = utils.gen_uuid()
+    user_values = {
+        'id': user_id,
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': utils.gen_etag(),
+        'name': 'admin',
+        'role': 'admin',
+        'team_id': team_id,
+        'password': auth.hash_password('admin'),
+    }
+    db_conn.execute(USERS.insert().values(**user_values))
 
 
 def downgrade():
