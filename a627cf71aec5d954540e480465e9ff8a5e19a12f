@@ -16,6 +16,24 @@
       "revId": "a627cf71aec5d954540e480465e9ff8a5e19a12f",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_589553e2",
+        "filename": "scripts/start_api.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-05-31T14:18:52Z",
+      "side": 1,
+      "message": "I added | awk \u0027/!awk/\u0027 to avoid killing current process as well",
+      "parentUuid": "baa041b7_d5136c5b",
+      "revId": "a627cf71aec5d954540e480465e9ff8a5e19a12f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
