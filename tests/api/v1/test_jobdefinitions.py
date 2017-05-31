@@ -259,18 +259,6 @@ def test_put_jobdefinitions(admin, topic_id):
     assert gt['jobdefinition']['state'] == 'inactive'
     assert gt['jobdefinition']['comment'] == 'A comment'
 
-    # Update the 'priority' field
-    #
-    ppt = admin.put('/api/v1/jobdefinitions/%s' % jd_id,
-                    data={'priority': 10}, headers={'If-match': gt_etag})
-    assert ppt.status_code == 204
-    gt = admin.get('/api/v1/jobdefinitions/%s' % jd_id).data
-    gt_etag = gt['jobdefinition']['etag']
-    assert gt['jobdefinition']['name'] == 'pname'
-    assert gt['jobdefinition']['priority'] == 10
-    assert gt['jobdefinition']['comment'] == 'A comment'
-    assert gt['jobdefinition']['state'] == 'inactive'
-
     # Update the 'name' field
     #
     ppt = admin.put('/api/v1/jobdefinitions/%s' % jd_id,
@@ -278,7 +266,6 @@ def test_put_jobdefinitions(admin, topic_id):
     assert ppt.status_code == 204
     gt = admin.get('/api/v1/jobdefinitions/%s' % jd_id).data
     assert gt['jobdefinition']['name'] == 'newname'
-    assert gt['jobdefinition']['priority'] == 10
     assert gt['jobdefinition']['comment'] == 'A comment'
     assert gt['jobdefinition']['state'] == 'inactive'
 
@@ -327,27 +314,27 @@ def test_delete_jobdefinition_archive_dependencies(admin, jobdefinition_id,
 def test_get_all_jobdefinitions_with_sort(admin, topic_id):
     # create 4 jobdefinitions ordered by created time
     jd_1_1 = admin.post('/api/v1/jobdefinitions',
-                        data={'name': "pname1", 'priority': 0,
+                        data={'name': "pname1",
                               'topic_id': topic_id}).data['jobdefinition']
     jd_1_2 = admin.post('/api/v1/jobdefinitions',
-                        data={'name': "pname2", 'priority': 0,
+                        data={'name': "pname2",
                               'topic_id': topic_id}).data['jobdefinition']
     jd_2_1 = admin.post('/api/v1/jobdefinitions',
-                        data={'name': "pname3", 'priority': 1,
+                        data={'name': "pname3",
                               'topic_id': topic_id}).data['jobdefinition']
     jd_2_2 = admin.post('/api/v1/jobdefinitions',
-                        data={'name': "pname4", 'priority': 1,
+                        data={'name': "pname4",
                               'topic_id': topic_id}).data['jobdefinition']
 
     jds = admin.get(
         '/api/v1/topics/%s/jobdefinitions?sort=created_at' % topic_id).data
     assert jds['jobdefinitions'] == [jd_1_1, jd_1_2, jd_2_1, jd_2_2]
 
-    # sort by priority first and then reverse by created_at
+    # sort by reverse by created_at
     jds = admin.get(
-        '/api/v1/topics/%s/jobdefinitions?sort=priority,-created_at' %
+        '/api/v1/topics/%s/jobdefinitions?sort=-created_at' %
         topic_id).data
-    assert jds['jobdefinitions'] == [jd_1_2, jd_1_1, jd_2_2, jd_2_1]
+    assert jds['jobdefinitions'] == [jd_2_2, jd_2_1, jd_1_2, jd_1_1]
 
 
 def test_delete_jobdefinition_not_found(admin):
