@@ -12,7 +12,7 @@ DCI_ES_DIR="$(cd $(dirname "$0") && pwd)/$DCI_ES_DIR"
 # checks if not already running
 PROCESS=$(ps auxfw | grep elasticsearch | grep -v grep | awk '{print $2}')
 echo $PROCESS
-if [ "$PROCESS" != "" ]; then kill $PROCESS; fi
+if [ "$PROCESS" != "" ]; then sudo kill $PROCESS; fi
 
 [ -d "$DCI_ES_DIR" ] && rm -rf "$DCI_ES_DIR"
 
