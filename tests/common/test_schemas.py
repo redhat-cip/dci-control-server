@@ -292,15 +292,12 @@ class TestJobDefinition(utils.SchemaTesting):
 
     @staticmethod
     def generate_invalids_and_errors():
-        invalids = dict([utils.INVALID_NAME, ('priority', -1),
-                         utils.INVALID_TOPIC])
-        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_PRIORITY_ERROR,
-                       utils.INVALID_TOPIC_ERROR])
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_TOPIC])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_TOPIC_ERROR])
         return invalids, errors
 
     def test_post_extra_data(self):
-        data = utils.dict_merge(self.data, {'priority': 10})
-        super(TestJobDefinition, self).test_post_extra_data(data)
+        super(TestJobDefinition, self).test_post_extra_data(self.data)
 
     def test_post_missing_data(self):
         errors = utils.generate_errors('name', 'topic_id')
@@ -309,14 +306,12 @@ class TestJobDefinition(utils.SchemaTesting):
     def test_post_invalid_data(self):
         invalids, errors = TestJobDefinition.generate_invalids_and_errors()
         super(TestJobDefinition, self).test_post_invalid_data(invalids, errors)
-        invalids['priority'] = 1001
-        super(TestJobDefinition, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
         # add default values to voluptuous output
         data_expected = utils.dict_merge(
             self.data,
-            {'priority': 0, 'comment': None, 'component_types': []})
+            {'comment': None, 'component_types': []})
         super(TestJobDefinition, self).test_post(self.data, data_expected)
 
     def test_put_extra_data(self):

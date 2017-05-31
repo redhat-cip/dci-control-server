@@ -80,8 +80,6 @@ TOPIC = 'topic_id', ID[1]
 INVALID_TOPIC = 'topic_id', INVALID_ID
 INVALID_TOPIC_ERROR = 'topic_id', schemas.INVALID_TOPIC
 
-INVALID_PRIORITY_ERROR = 'priority', schemas.INVALID_PRIORITY
-
 JOB_DEFINITION = 'jobdefinition_id', ID[1]
 INVALID_JOB_DEFINITION = 'jobdefinition_id', INVALID_ID
 INVALID_JOB_DEFINITION_ERROR = ('jobdefinition_id',
