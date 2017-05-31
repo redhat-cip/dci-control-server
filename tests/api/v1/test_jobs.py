@@ -72,16 +72,6 @@ def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id,
     assert job['allow_upgrade_job'] is True
 
 
-def test_schedule_job_recheck(admin, job_id, remoteci_id, topic_id):
-    job_rechecked = admin.post('/api/v1/jobs/%s/recheck' % job_id).data['job']
-    job_scheduled = admin.post('/api/v1/jobs/schedule',
-                               data={'remoteci_id': remoteci_id,
-                                     'topic_id': topic_id})
-    assert job_scheduled.status_code == 201
-    job_scheduled = job_scheduled.data['job']
-    assert job_scheduled['id'] == job_rechecked['id']
-
-
 def test_schedule_job_with_new_topic(admin, remoteci_id, team_admin_id):
     # create a new topic and schedule a new job
     data = {'name': 'new_topic'}
@@ -167,24 +157,12 @@ def test_schedule_kill_old_jobs(admin, jobdefinition_factory, remoteci_id,
     r = admin.post('/api/v1/jobs/schedule',
                    data={'remoteci_id': remoteci_id,
                          'topic_id': topic_id})
-
-    # Create a bunch of recheck jobs
     assert r.status_code == 201
-    job_id = r.data['job']['id']
-    assert admin.post('/api/v1/jobs/%s/recheck' % job_id).status_code == 201
-    assert admin.post('/api/v1/jobs/%s/recheck' % job_id).status_code == 201
-
-    # Finally call the scheduler
-    assert admin.post('/api/v1/jobs/schedule',
-                      data={'remoteci_id': remoteci_id,
-                            'topic_id': topic_id}).status_code == 201
 
     # all the jobs but the last one should be killed
     jobs = admin.get('/api/v1/jobs?sort=created_at').data
     assert jobs['jobs'][0]['status'] == 'killed'
-    assert jobs['jobs'][1]['status'] == 'killed'
-    assert jobs['jobs'][2]['status'] == 'killed'
-    assert jobs['jobs'][3]['status'] == 'new'
+    assert jobs['jobs'][1]['status'] == 'new'
 
 
 def test_schedule_give_latest_components(admin, jobdefinition_factory,
@@ -678,16 +656,6 @@ def test_get_jobs_with_schedule(admin, topic_id, remoteci_id,
         assert component['component']['jobs'][0]['id'] == job_id
 
 
-def test_job_recheck(admin, job_id):
-    job_to_recheck = admin.get('/api/v1/jobs/%s' % job_id).data['job']
-    job_rechecked = admin.post('/api/v1/jobs/%s/recheck' % job_id).data['job']
-    assert job_rechecked['recheck'] is True
-    assert (job_rechecked['jobdefinition_id'] ==
-            job_to_recheck['jobdefinition_id'])
-    assert job_rechecked['remoteci_id'] == job_to_recheck['remoteci_id']
-    assert job_rechecked['team_id'] == job_rechecked['team_id']
-
-
 def test_job_with_conf(admin, job_id):
     data = {'configuration': {'foo': 'bar'}}
     job = admin.get('/api/v1/jobs/%s' % job_id).data['job']
@@ -695,8 +663,6 @@ def test_job_with_conf(admin, job_id):
               headers={'If-match': job['etag']})
     job_to_recheck = admin.get('/api/v1/jobs/%s' % job_id).data['job']
     assert job_to_recheck['configuration']
-    job_rechecked = admin.post('/api/v1/jobs/%s/recheck' % job_id).data['job']
-    assert not job_rechecked['configuration']
 
 
 def test_delete_job_by_id(admin, jobdefinition_id, team_id, remoteci_id,
@@ -797,22 +763,6 @@ def test_get_job_as_user(user, team_user_id, job_id, jobdefinition_id,
     job_id = job['job']['id']
     job = user.get('/api/v1/jobs/%s' % job_id)
     assert job.status_code == 200
-
-
-def test_job_recheck_as_user(user, job_id, remoteci_user_id, topic_user_id,
-                             jobdefinition_factory):
-    job = user.get('/api/v1/jobs/%s' % job_id)
-    assert job.status_code == 404
-
-    jobdefinition_factory(topic_id=topic_user_id)
-
-    data = {'remoteci_id': remoteci_user_id,
-            'topic_id': topic_user_id}
-    job = user.post('/api/v1/jobs/schedule', data=data).data
-    job_id = job['job']['id']
-    job = user.post('/api/v1/jobs/%s/recheck' % job_id)
-
-    assert job.status_code == 201
 
 
 def test_delete_job_as_user(user, team_user_id, admin, job_id,
