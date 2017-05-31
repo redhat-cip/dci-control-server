@@ -22,6 +22,30 @@
       "revId": "659d550e8bbdbdf5976f7c3f6f78c475c217983c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_3b796994",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-05-31T16:04:15Z",
+      "side": 1,
+      "message": "If a user create a job with its team_id the server will raise unauthorized.",
+      "parentUuid": "baa041b7_954e04c0",
+      "range": {
+        "startLine": 68,
+        "startChar": 0,
+        "endLine": 73,
+        "endChar": 51
+      },
+      "revId": "659d550e8bbdbdf5976f7c3f6f78c475c217983c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
