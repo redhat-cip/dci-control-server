@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_98ad1b8b",
+        "filename": "tests/test_signature.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-05-31T12:12:20Z",
+      "side": 1,
+      "message": "I don\u0027t understand this\nWhy do you have a secret bytes string here?",
+      "revId": "22a7995e80e361ab52ef393537d06f8dd9112607",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
