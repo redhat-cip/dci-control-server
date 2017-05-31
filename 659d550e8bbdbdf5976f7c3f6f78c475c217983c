@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_954e04c0",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-05-31T06:48:14Z",
+      "side": 1,
+      "message": "This is difficult to read. I would prefer something simpler like:\n\n# Only super admin can create job for other teams\nteam_id \u003d values.get(\u0027team_id\u0027)\nif team_id and not auth.is_admin(user):\n    raise auth.UNAUTHORIZED\nelse:\n    team_id \u003d user[\u0027team_id\u0027]\nvalues.update({\u0027team_id\u0027: team_id})",
+      "range": {
+        "startLine": 68,
+        "startChar": 0,
+        "endLine": 73,
+        "endChar": 51
+      },
+      "revId": "659d550e8bbdbdf5976f7c3f6f78c475c217983c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
