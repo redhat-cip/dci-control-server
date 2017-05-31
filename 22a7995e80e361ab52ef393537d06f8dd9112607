@@ -16,6 +16,24 @@
       "revId": "22a7995e80e361ab52ef393537d06f8dd9112607",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_18e8eb7b",
+        "filename": "tests/test_signature.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 71,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-05-31T14:10:31Z",
+      "side": 1,
+      "message": "Just to be sure that whatever the type passed as an input it still works. (eg: if one day the database layer decides to return bytes instead of unicode)",
+      "parentUuid": "baa041b7_98ad1b8b",
+      "revId": "22a7995e80e361ab52ef393537d06f8dd9112607",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
