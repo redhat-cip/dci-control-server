@@ -43,21 +43,18 @@ _EMBED_MANY = {
 @api.route('/tests', methods=['POST'])
 @auth.login_required
 def create_tests(user):
-    created_at, _ = utils.get_dates(user)
-    data_json = schemas.test.post(flask.request.json)
-    data_json.update({
-        'id': utils.gen_uuid(),
-        'created_at': created_at,
-    })
+    values = v1_utils.common_values_dict(user)
+    values.update(schemas.test.post(flask.request.json))
 
-    query = _TABLE.insert().values(**data_json)
+    query = _TABLE.insert().values(**values)
+
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError:
         raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
 
     return flask.Response(
-        json.dumps({'test': data_json}), 201,
+        json.dumps({'test': values}), 201,
         content_type='application/json'
     )
 
