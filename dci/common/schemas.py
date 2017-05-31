@@ -56,7 +56,6 @@ INVALID_UUID = 'not a valid uuid'
 INVALID_JSON = 'not a valid json'
 INVALID_STRING = 'not a valid string'
 INVALID_URL = 'not a valid URL'
-INVALID_PRIORITY = 'not a valid priority integer (must be beetween 0 and 1000)'
 
 INVALID_TEAM = 'not a valid team id'
 INVALID_TEST = 'not a valid test id'
@@ -237,9 +236,6 @@ component = DCISchema(schema_factory(component).post,
 ###############################################################################
 
 jobdefinition = utils.dict_merge(base, {
-    v.Optional('priority', default=0): v.All(
-        v.Coerce(int), v.Range(min=0, max=1000), msg=INVALID_PRIORITY
-    ),
     'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
     v.Optional('comment', default=None): six.text_type,
     v.Optional('component_types', default=[]): list,
@@ -249,9 +245,6 @@ jobdefinition = utils.dict_merge(base, {
 
 jobdefinition_put = {
     v.Optional('name'): six.text_type,
-    v.Optional('priority'): v.All(
-        v.Coerce(int), v.Range(min=0, max=1000), msg=INVALID_PRIORITY
-    ),
     v.Optional('comment'): six.text_type,
     v.Optional('component_types', default=[]): list,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
