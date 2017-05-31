@@ -70,7 +70,6 @@ def create_jobs(user):
         raise auth.UNAUTHORIZED
 
     values.update({
-        'recheck': values.get('recheck', False),
         'status': 'new',
         'configuration': {},
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
@@ -136,31 +135,6 @@ def search_jobs(user):
                                   _EMBED_MANY)
 
     return flask.jsonify({'jobs': rows, '_meta': {'count': nb_rows}})
-
-
-def _recheck_job(remoteci_id):
-    """Return a job to recheck if one exists."""
-    # First try to get some job to recheck
-    where_clause = sql.expression.and_(
-        _TABLE.c.recheck == True,  # noqa
-        _TABLE.c.remoteci_id == remoteci_id
-    )
-    return sql.select([_TABLE]).where(where_clause).limit(1)
-
-
-def _build_recheck(recheck_job, values):
-    recheck_job = dict(recheck_job)
-
-    # Reinit the pending as if it were new.
-    values.update({'id': recheck_job['id'], 'recheck': False})
-    recheck_job.update(values)
-
-    flask.g.db_conn.execute(
-        _TABLE.update()
-        .where(_TABLE.c.id == recheck_job['id'])
-        .values(recheck_job)
-    )
-    return recheck_job
 
 
 def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
@@ -236,7 +210,6 @@ def _validate_input(values, user):
         'created_at': datetime.datetime.utcnow().isoformat(),
         'updated_at': datetime.datetime.utcnow().isoformat(),
         'etag': utils.gen_etag(),
-        'recheck': values.get('recheck', False),
         'status': 'new'
     })
 
@@ -286,12 +259,8 @@ def _get_job(user, job_id, embed):
 def schedule_jobs(user):
     """Dispatch jobs to remotecis.
 
-    The remoteci can use this method to request a new job. The server will try
-    in the following order:
-    - to reuse an existing job associated to the remoteci if the recheck field
-      is True. In this case, the job is reinitialized as if it was a new job.
-    - or to search a jobdefinition that has not been proceeded yet and create
-      a fresh job associated to this jobdefinition and remoteci.
+    The remoteci can use this method to request a new job.
+
     Before a job is dispatched, the server will flag as 'killed' all the
     running jobs that were associated with the remoteci. This is because they
     will never be finished.
@@ -306,13 +275,7 @@ def schedule_jobs(user):
     })
     topic_id, remoteci = _validate_input(values, user)
 
-    # test if there is some job to recheck
-    query = _recheck_job(remoteci['id'])
-    recheck_job = flask.g.db_conn.execute(query).fetchone()
-    if recheck_job:
-        values = _build_recheck(recheck_job, values)
-    else:
-        values = _build_new_template(topic_id, remoteci, values)
+    values = _build_new_template(topic_id, remoteci, values)
 
     # add upgrade flag to the job result
     values.update({'allow_upgrade_job': remoteci['allow_upgrade_job']})
@@ -332,7 +295,6 @@ def upgrade_jobs(user):
         'created_at': datetime.datetime.utcnow().isoformat(),
         'updated_at': datetime.datetime.utcnow().isoformat(),
         'etag': utils.gen_etag(),
-        'recheck': False,
         'status': 'new'
     })
 
@@ -490,44 +452,6 @@ def update_job_by_id(user, job_id):
                        'job_id': str(job['id'])}
                 flask.g.sender.send_json(msg)
     return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
-
-
-@api.route('/jobs/<uuid:j_id>/recheck', methods=['POST'])
-@auth.login_required
-def job_recheck(user, j_id):
-
-    job_to_recheck = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not (auth.is_admin(user) or
-            auth.is_in_team(user, job_to_recheck['team_id'])):
-        raise auth.UNAUTHORIZED
-    etag = utils.gen_etag()
-    values = utils.dict_merge(dict(job_to_recheck), {
-        'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
-        'etag': etag,
-        'recheck': True,
-        'status': 'new',
-        'configuration': None,
-    })
-    query = _TABLE.insert().values(**values)
-    with flask.g.db_conn.begin():
-        flask.g.db_conn.execute(query)
-        # feed jobs_component table
-        JDC = models.JOIN_JOBS_COMPONENTS
-        query = (sql.select([models.COMPONENTS.c.id])
-                 .select_from(JDC.join(models.COMPONENTS))
-                 .where(JDC.c.job_id == j_id))
-        components_from_old_job = list(flask.g.db_conn.execute(query))
-        jobs_components_to_insert = [{'job_id': values['id'],
-                                      'component_id': cfjd[0]}
-                                     for cfjd in components_from_old_job]
-        flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
-                                jobs_components_to_insert)
-
-    return flask.Response(json.dumps({'job': values}), 201,
-                          headers={'ETag': etag},
                           content_type='application/json')
 
 

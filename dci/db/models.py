@@ -244,7 +244,6 @@ JOBS = sa.Table(
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
     sa.Column('comment', sa.Text),
-    sa.Column('recheck', sa.Boolean, default=False),
     sa.Column('status', STATUSES, default='new'),
     sa.Column('configuration', pg.JSON, default={}),
     sa.Column('jobdefinition_id', pg.UUID(as_uuid=True),
