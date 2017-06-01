@@ -239,7 +239,7 @@ class TestComponent(utils.SchemaTesting):
     def generate_optionals():
         return dict([('title', None), ('message', None), ('url', None),
                      ('data', {}), ('canonical_project_name', None),
-                     ('export_control', False), ('active', True),
+                     ('export_control', False),
                      ('state', 'active')])
 
     @staticmethod
@@ -316,8 +316,7 @@ class TestJobDefinition(utils.SchemaTesting):
         # add default values to voluptuous output
         data_expected = utils.dict_merge(
             self.data,
-            {'priority': 0, 'comment': None, 'active': True,
-             'component_types': []})
+            {'priority': 0, 'comment': None, 'component_types': []})
         super(TestJobDefinition, self).test_post(self.data, data_expected)
 
     def test_put_extra_data(self):
@@ -333,7 +332,7 @@ class TestJobDefinition(utils.SchemaTesting):
 class TestRemoteCI(utils.SchemaTesting):
     schema = schemas.remoteci
     data = dict([utils.NAME, utils.TEAM, utils.ALLOW_UPGRADE_JOB,
-                 utils.ACTIVE, utils.STATE])
+                 utils.STATE])
 
     @staticmethod
     def generate_invalids_and_errors():
