@@ -59,11 +59,10 @@ def get_store(container):
     return stores_engine
 
 
-def sanity_check():
+def sanity_check(conf):
     query_team_admin_id = sqlalchemy.sql.select([models.TEAMS]).where(
         models.TEAMS.c.name == 'admin')
 
-    conf = generate_conf()
     db_conn = get_engine(conf).connect()
     row = db_conn.execute(query_team_admin_id).fetchone()
     db_conn.close()
