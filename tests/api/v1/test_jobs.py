@@ -358,7 +358,7 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
 
     # verify embed with all embedded options
     query_embed = ('/api/v1/jobs?embed='
-                   'team,remoteci,jobdefinition')
+                   'team,remoteci,jobdefinition,jobstates')
     jobs = admin.get(query_embed).data
 
     for job in jobs['jobs']:
@@ -618,6 +618,12 @@ def test_get_jobstates_by_job_id(admin, job_id, team_id):
 
     found_jobstate_ids = set(i['id'] for i in jobstates)
     assert jobstate_ids == found_jobstate_ids
+
+    # verify embed with all embedded options
+    query_embed = ('/api/v1/jobs?embed='
+                   'team,remoteci,jobdefinition,jobstates')
+    jobstates = admin.get('/api/v1/jobs/%s/jobstates' % job_id)
+    assert len(jobstates.data['jobstates']) == len(found_jobstate_ids)
 
 
 def test_get_jobstates_by_job_id_with_embed(admin, job_id, team_id, jobstate_id):  # noqa
