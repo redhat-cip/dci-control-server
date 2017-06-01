@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_46b694dd",
+        "filename": "dci/api/v1/metrics.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-01T14:04:19Z",
+      "side": 1,
+      "message": "I think we will end up with different kind of metrics, could you use something like /metrics/by_topics (or anything else) instead.",
+      "revId": "7ff3de1a943428df848f72bcca9cfa2251c73578",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_06b08cdc",
+        "filename": "dci/api/v1/metrics.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-01T14:04:19Z",
+      "side": 1,
+      "message": "\u003d [] instead or \u003d list() is more Pythonic",
+      "revId": "7ff3de1a943428df848f72bcca9cfa2251c73578",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
