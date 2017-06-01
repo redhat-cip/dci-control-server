@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_066d2c04",
+        "filename": "dci/api/v1/metrics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-01T15:26:49Z",
+      "side": 1,
+      "message": "We should reuse the modules and topics modules to list the resource. But this is good enough for me.",
+      "revId": "968f34c04e47b53b60f700e561371b7353cba606",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_86aa5c18",
+        "filename": "dci/api/v1/metrics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-01T15:26:49Z",
+      "side": 1,
+      "message": "Could you add last_success too?",
+      "revId": "968f34c04e47b53b60f700e561371b7353cba606",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
