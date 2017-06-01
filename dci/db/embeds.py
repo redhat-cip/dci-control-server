@@ -74,6 +74,10 @@ def jobs(root_select=models.JOBS):
             {'right': JOBDEFINITION,
              'onclause': and_(root_select.c.jobdefinition_id == JOBDEFINITION.c.id,  # noqa
                               JOBDEFINITION.c.state != 'archived')}],
+        'jobstates': [
+            {'right': models.JOBSTATES,
+             'onclause': models.JOBSTATES.c.job_id == root_select.c.id,
+             'isouter': True}],
         'jobdefinition.tests': [
             {'right': models.JOIN_JOBDEFINITIONS_TESTS,
              'onclause': models.JOIN_JOBDEFINITIONS_TESTS.c.jobdefinition_id == JOBDEFINITION.c.id,  # noqa
@@ -295,6 +299,7 @@ EMBED_STRING_TO_OBJECT = {
         'metas': models.METAS,
         'jobdefinition': JOBDEFINITION,
         'jobdefinition.tests': JOBDEFINITION_TESTS,
+        'jobstates': models.JOBSTATES,
         'remoteci': REMOTECI,
         'remoteci.tests': REMOTECI_TESTS,
         'components': models.COMPONENTS,
