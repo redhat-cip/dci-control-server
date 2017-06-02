@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_8c34bdde",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-06-02T10:07:50Z",
+      "side": 1,
+      "message": "can we move this in verify_remoteci_auth_signature? transporting unicode is better",
+      "revId": "31b9d1a368b3db93491c2a536d45c92627f52181",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_6c3179ec",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-06-02T10:07:50Z",
+      "side": 1,
+      "message": "missing an encode(\u0027utf-8\u0027) ? actually remoteci is an unicode string with only ascii char but it could change in the future",
+      "revId": "31b9d1a368b3db93491c2a536d45c92627f52181",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
