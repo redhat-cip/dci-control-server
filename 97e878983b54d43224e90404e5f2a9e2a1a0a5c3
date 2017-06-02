@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_cc72c57c",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 72,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-06-02T12:31:21Z",
+      "side": 1,
+      "message": "This values[\u0027team_id\u0027] or user[\u0027team_id\u0027] doesn\u0027t make sense.\n\nNo matter the role of the user if \u0027team_id\u0027 is not in values it will enter the above if conditions. So once here, values[\u0027team_id\u0027] exists for sure. Then, why is the or needed ?\n\nThis can be simplified to:\n\n  if \u0027team_id\u0027: not in values:\n    values.update({\u0027team_id\u0027: user[\u0027team_id\u0027]})\n  elif auth.is_admin(user) or auth.is_in_team(user, values[\u0027team_id\u0027]):\n    values.update({\u0027team_id\u0027: values[\u0027team_id\u0027]})\n  else:\n    raise auth.UNAUTHORIZED",
+      "revId": "97e878983b54d43224e90404e5f2a9e2a1a0a5c3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
