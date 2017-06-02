@@ -33,6 +33,23 @@
       "revId": "31b9d1a368b3db93491c2a536d45c92627f52181",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_ac3e61b6",
+        "filename": "dci/common/signature.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-06-02T10:11:31Z",
+      "side": 1,
+      "message": "remove this and assume everything is a byte string when entering in is_valid",
+      "revId": "31b9d1a368b3db93491c2a536d45c92627f52181",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
