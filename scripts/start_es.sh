@@ -1,5 +1,5 @@
 #!/bin/sh
-set -x -e
+set -x
 
 DCI_ES_DIR=${DCI_ES_DIR:-".es_dir"}
 
@@ -21,6 +21,11 @@ mkdir -p ${DCI_ES_DIR}/config ${DCI_ES_DIR}/logs ${DCI_ES_DIR}/data
 cp -r /usr/share/elasticsearch/* $DCI_ES_DIR/
 echo "network.host: 0.0.0.0" > ${DCI_ES_DIR}/config/elasticsearch.yml
 ${DCI_ES_DIR}/bin/elasticsearch -d
-until $(netstat -lntp | grep -q ":9200 "); do
+while true; do
+    curl http://127.0.0.1:9200/_cluster/health
+    if [ $? -eq 0 ]; then
+        break
+    fi
     sleep 1
 done
+
