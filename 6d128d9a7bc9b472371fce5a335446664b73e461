@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_995f5a0e",
+        "filename": "scripts/start_es.sh",
+        "patchSetId": 2
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-06-05T14:38:12Z",
+      "side": 1,
+      "message": "I don\u0027t think curl with return code 0 is strong enough because even if the http code is not 200 curl will exit with 0.\nMaybe we can use the http return code instead ?\n\n$ curl -s -o /dev/null -w \u0027%{http_code}\u0027 http://127.0.0.1:9200/_cluster/health\n200\n\nWDYT ?",
+      "range": {
+        "startLine": 25,
+        "startChar": 4,
+        "endLine": 28,
+        "endChar": 6
+      },
+      "revId": "6d128d9a7bc9b472371fce5a335446664b73e461",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
