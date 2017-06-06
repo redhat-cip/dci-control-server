@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_d9096233",
+        "filename": "dci/common/signature.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-06-06T08:45:54Z",
+      "side": 1,
+      "message": "it could be also in verify_remoteci_auth_signature",
+      "revId": "c9c53f010a3d4a4778bb80f00b930894cef62b05",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
