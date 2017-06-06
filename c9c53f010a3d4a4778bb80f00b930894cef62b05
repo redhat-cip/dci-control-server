@@ -16,6 +16,24 @@
       "revId": "c9c53f010a3d4a4778bb80f00b930894cef62b05",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_dc3710e2",
+        "filename": "dci/common/signature.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-06-06T08:57:50Z",
+      "side": 1,
+      "message": "I\u0027d prefer format_for_signature to be responsible for formatting the timestamp as the format of the timestamp is part of the signature algorithm rather than just being a question of what kind of data should be passed to the signature algorithm.",
+      "parentUuid": "baa041b7_d9096233",
+      "revId": "c9c53f010a3d4a4778bb80f00b930894cef62b05",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
