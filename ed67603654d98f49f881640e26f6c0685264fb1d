@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "baa041b7_4f36a404",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-06-07T12:44:22Z",
+      "side": 1,
+      "message": "role_id \u003d values.get(\u0027role_id\u0027)\nif not auth.is_admin(user) and role_id and \\\n            values[\u0027role_id\u0027] \u003d\u003d auth.get_role_id(\u0027SUPER_ADMIN\u0027):\n        raise auth.UNAUTHORIZED\n\n...\n\nif not role_id:\n   role_id \u003d auth.get_role_id(\u0027USER\u0027)",
+      "range": {
+        "startLine": 67,
+        "startChar": 0,
+        "endLine": 69,
+        "endChar": 31
+      },
+      "revId": "ed67603654d98f49f881640e26f6c0685264fb1d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_cf5bd453",
         "filename": "dci/api/v1/users.py",
         "patchSetId": 11
