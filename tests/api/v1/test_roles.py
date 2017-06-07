@@ -166,6 +166,21 @@ def test_failure_get_super_admin_role_by_id(admin, user_admin, user):
     assert u_request.status_code == 401
 
 
+def test_failure_get_not_my_role_by_id(user, role):
+    result = user.get('/api/v1/roles/%s' % role['id'])
+
+    assert result.status_code == 401
+
+    result = user.get('/api/v1/roles?where=label:USER')
+
+    assert result.status_code == 200
+
+    my_role_id = result.data['roles'][0]['id']
+    result = user.get('/api/v1/roles/%s' % my_role_id)
+    assert result.status_code == 200
+    assert result.data['role']['label'] == 'USER'
+
+
 def test_success_get_all_roles_admin(admin):
     result = admin.get('/api/v1/roles')
 
@@ -182,6 +197,15 @@ def test_success_get_all_roles_user_admin(user_admin):
 
     roles = [r['label'] for r in result.data['roles']]
     assert ['ADMIN', 'USER'] == sorted(roles)
+
+
+def test_failure_get_all_roles_user(user):
+    result = user.get('/api/v1/roles')
+
+    assert result.status_code == 200
+
+    roles = [r['label'] for r in result.data['roles']]
+    assert ['USER'] == sorted(roles)
 
 
 def test_success_delete_role_admin(admin, role):
