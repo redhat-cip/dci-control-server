@@ -100,6 +100,10 @@ def get_all_roles(user):
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.label != 'SUPER_ADMIN')
 
+    if user['role_id'] not in [auth.get_role_id('ADMIN'),
+                               auth.get_role_id('SUPER_ADMIN')]:
+        query.add_extra_condition(_TABLE.c.id == user['role_id'])
+
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
@@ -113,6 +117,10 @@ def get_all_roles(user):
 def get_role_by_id(user, role_id):
     role = v1_utils.verify_existence_and_get(role_id, _TABLE)
 
+    if user['role_id'] != role_id and \
+        user['role_id'] not in [auth.get_role_id('ADMIN'),
+                                auth.get_role_id('SUPER_ADMIN')]:
+        raise auth.UNAUTHORIZED
     if not auth.is_admin(user) and auth.get_role_id('SUPER_ADMIN') == role_id:
         raise auth.UNAUTHORIZED
 
