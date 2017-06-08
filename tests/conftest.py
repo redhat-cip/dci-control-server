@@ -180,6 +180,16 @@ def remoteci_user_id(user, team_user_id):
     return str(remoteci['remoteci']['id'])
 
 
+@pytest.fixture
+def remoteci_flavor_user_id(user, remoteci_user_id, topic_user_id):
+    rc = user.post('/api/v1/remotecis/%s/flavors' % remoteci_user_id,
+                   data={'name': 'cname',
+                         'topic_id': topic_user_id,
+                         'component_types': ['kikoo', 'lol'],
+                         'data': {'lol': 'lol'}}).data
+    return str(rc['flavor']['id'])
+
+
 def create_components(user, topic_id, component_types):
     component_ids = []
     for ct in component_types:
