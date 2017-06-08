@@ -33,9 +33,16 @@ def provision(db_conn):
 
     team_admin_id = db_insert(models.TEAMS, name='admin')
 
+    super_admin_role = {
+        'name': 'Super Admin',
+        'label': 'SUPER_ADMIN',
+        'description': 'Admin of the platform',
+    }
+    super_admin_role_id = db_insert(models.ROLES, **super_admin_role)
+
     db_insert(models.USERS,
               name='admin',
-              role='admin',
+              role_id=super_admin_role_id,
               password=auth.hash_password('admin'),
               team_id=team_admin_id)
 
