@@ -21,6 +21,7 @@ import uuid
 def test_create_users(admin, team_id, role_user):
     pu = admin.post('/api/v1/users',
                     data={'name': 'pname', 'password': 'ppass',
+                          'fullname': 'P Name', 'email': 'pname@example.tld',
                           'team_id': team_id}).data
 
     pu_id = pu['user']['id']
@@ -30,7 +31,9 @@ def test_create_users(admin, team_id, role_user):
 
 
 def test_create_unique_user_against_teams(admin, team_admin_id, team_user_id):
-    data = {'name': 'foo', 'password': 'psswd', 'team_id': team_user_id}
+    data = {'name': 'foo', 'password': 'psswd', 'team_id': team_user_id,
+            'fullname': 'Foo Bar', 'email': 'foo@example.tld'}
+
     res = admin.post('/api/v1/users', data=data)
     assert res.status_code == 201
 
@@ -46,12 +49,16 @@ def test_create_users_already_exist(admin, team_id):
     pstatus_code = admin.post('/api/v1/users',
                               data={'name': 'pname',
                                     'password': 'ppass',
+                                    'fullname': 'P Name',
+                                    'email': 'pname@example.tld',
                                     'team_id': team_id}).status_code
     assert pstatus_code == 201
 
     pstatus_code = admin.post('/api/v1/users',
                               data={'name': 'pname',
                                     'password': 'ppass',
+                                    'fullname': 'P Name',
+                                    'email': 'pname@example.tld',
                                     'team_id': team_id}).status_code
     assert pstatus_code == 409
 
@@ -65,9 +72,13 @@ def test_get_all_users(admin, team_id):
 
     user_1 = admin.post('/api/v1/users', data={'name': 'pname1',
                                                'password': 'ppass',
+                                               'fullname': 'P Name',
+                                               'email': 'pname@example.tld',
                                                'team_id': team_id}).data
     user_2 = admin.post('/api/v1/users', data={'name': 'pname2',
                                                'password': 'ppass',
+                                               'fullname': 'Q Name',
+                                               'email': 'qname@example.tld',
                                                'team_id': team_id}).data
     db_users_ids.extend([user_1['user']['id'], user_2['user']['id']])
 
@@ -97,6 +108,8 @@ def test_get_all_users_with_role(admin):
 def test_get_all_users_with_where(admin, team_id):
     pu = admin.post('/api/v1/users', data={'name': 'pname1',
                                            'password': 'ppass',
+                                           'fullname': 'P Name',
+                                           'email': 'pname@example.tld',
                                            'team_id': team_id}).data
     pu_id = pu['user']['id']
 
@@ -126,15 +139,23 @@ def test_get_all_users_with_pagination(admin, team_id):
     # create 4 components types and check meta data count
     admin.post('/api/v1/users', data={'name': 'pname1',
                                       'password': 'ppass',
+                                      'fullname': 'P Name',
+                                      'email': 'pname@example.tld',
                                       'team_id': team_id})
     admin.post('/api/v1/users', data={'name': 'pname2',
                                       'password': 'ppass',
+                                      'fullname': 'Q Name',
+                                      'email': 'qname@example.tld',
                                       'team_id': team_id})
     admin.post('/api/v1/users', data={'name': 'pname3',
                                       'password': 'ppass',
+                                      'fullname': 'R Name',
+                                      'email': 'rname@example.tld',
                                       'team_id': team_id})
     admin.post('/api/v1/users', data={'name': 'pname4',
                                       'password': 'ppass',
+                                      'fullname': 'S Name',
+                                      'email': 'sname@example.tld',
                                       'team_id': team_id})
     users = admin.get('/api/v1/users').data
     assert users['_meta']['count'] == 7
@@ -162,11 +183,15 @@ def test_get_all_users_with_sort(admin, team_id):
     user_1 = admin.post('/api/v1/users',
                         data={'name': 'pname1',
                               'password': 'ppass',
+                              'fullname': 'P Name',
+                              'email': 'pname@example.tld',
                               'team_id': team_id}).data['user']
 
     user_2 = admin.post('/api/v1/users',
                         data={'name': 'pname2',
                               'password': 'ppass',
+                              'fullname': 'Q Name',
+                              'email': 'qname@example.tld',
                               'team_id': team_id}).data['user']
 
     gusers = admin.get('/api/v1/users?sort=created_at').data
@@ -183,6 +208,8 @@ def test_get_user_by_id(admin, team_id):
     puser = admin.post('/api/v1/users',
                        data={'name': 'pname',
                              'password': 'ppass',
+                             'fullname': 'P Name',
+                             'email': 'pname@example.tld',
                              'team_id': team_id}).data
     puser_id = puser['user']['id']
 
@@ -202,6 +229,8 @@ def test_get_user_not_found(admin):
 def test_put_users(admin, team_id):
     pu = admin.post('/api/v1/users', data={'name': 'pname',
                                            'password': 'ppass',
+                                           'fullname': 'P Name',
+                                           'email': 'pname@example.tld',
                                            'team_id': team_id})
     assert pu.status_code == 201
 
@@ -222,6 +251,8 @@ def test_put_users(admin, team_id):
 def test_change_user_state(admin, team_id):
     pu = admin.post('/api/v1/users', data={'name': 'pname',
                                            'password': 'ppass',
+                                           'fullname': 'P Name',
+                                           'email': 'pname@example.tld',
                                            'team_id': team_id})
     assert pu.status_code == 201
 
@@ -243,6 +274,8 @@ def test_change_user_state(admin, team_id):
 def test_change_user_to_invalid_state(admin, team_id):
     pu = admin.post('/api/v1/users', data={'name': 'pname',
                                            'password': 'ppass',
+                                           'fullname': 'P Name',
+                                           'email': 'pname@example.tld',
                                            'team_id': team_id})
     assert pu.status_code == 201
 
@@ -265,6 +298,8 @@ def test_delete_user_by_id(admin, team_id):
     pu = admin.post('/api/v1/users',
                     data={'name': 'pname',
                           'password': 'ppass',
+                          'fullname': 'P Name',
+                          'email': 'pname@example.tld',
                           'team_id': team_id})
     pu_etag = pu.headers.get("ETag")
     pu_id = pu.data['user']['id']
@@ -294,6 +329,8 @@ def test_create_user_as_user(user, user_admin, team_user_id):
     pu = user.post('/api/v1/users',
                    data={'name': 'pname',
                          'password': 'ppass',
+                         'fullname': 'P Name',
+                         'email': 'pname@example.tld',
                          'team_id': team_user_id})
     assert pu.status_code == 401
 
@@ -301,6 +338,8 @@ def test_create_user_as_user(user, user_admin, team_user_id):
     pu = user_admin.post('/api/v1/users',
                          data={'name': 'pname',
                                'password': 'ppass',
+                               'fullname': 'P Name',
+                               'email': 'pname@example.tld',
                                'team_id': team_user_id})
     assert pu.status_code == 201
 
