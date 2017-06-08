@@ -29,6 +29,7 @@ text_type = six.text_type()
 ID = 'id', uuid.uuid4()
 
 NAME = 'name', text_type
+FULLNAME = 'fullname', text_type
 TYPE = 'type', text_type
 DESCRIPTION = 'description', text_type
 LABEL = 'label', text_type
@@ -43,7 +44,7 @@ CONTENT = 'content', text_type
 LABEL = 'label', text_type
 NEXT_TOPIC = 'next_topic', uuid.uuid4()
 COUNTRY = 'country', text_type
-EMAIL = 'email', text_type
+EMAIL = 'email', 'foo@bar.org'
 NOTIF = 'notification', True
 VALUE = 'value', text_type
 ALLOW_UPGRADE_JOB = 'allow_upgrade_job', False
@@ -51,6 +52,9 @@ PREVIOUS_JOB_ID = 'previous_job_id', uuid.uuid4()
 
 INVALID_NAME = 'name', None
 INVALID_NAME_ERROR = 'name', schemas.INVALID_STRING
+
+INVALID_FULLNAME = 'fullname', None
+INVALID_FULLNAME_ERROR = 'fullname', schemas.INVALID_STRING
 
 INVALID_ID = 'id', None
 INVALID_ID_ERROR = 'id', schemas.INVALID_UUID
@@ -60,6 +64,9 @@ INVALID_DATA_ERROR = 'data', schemas.INVALID_JSON
 
 INVALID_PASSWORD = 'password', None
 INVALID_PASSWORD_ERROR = 'password', schemas.INVALID_STRING
+
+INVALID_EMAIL = 'email', 'lal@lolo'
+INVALID_EMAIL_ERROR = 'email', schemas.INVALID_EMAIL
 
 INVALID_URL = 'url', text_type
 INVALID_URL_ERROR = 'url', schemas.INVALID_URL
