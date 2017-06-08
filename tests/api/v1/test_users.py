@@ -406,6 +406,7 @@ def test_delete_as_user_admin(user, user_admin):
 def test_success_update_field_by_field(admin, team_id):
     user = admin.post('/api/v1/users',
                       data={'name': 'pname', 'password': 'ppass',
+                            'fullname': 'P Name', 'email': 'pname@example.org',
                             'team_id': team_id}).data['user']
 
     t = admin.get('/api/v1/users/%s' % user['id']).data['user']

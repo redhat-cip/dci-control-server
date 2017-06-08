@@ -76,11 +76,6 @@ def create_users(user):
         'fullname': values.get('fullname', values['name']),
     })
 
-    # TODO(spredzy): Will be removed in the next patchset,
-    # it is to ensure cross-depo tests passing
-    if 'email' not in values:
-        values.update({'email': None})
-
     query = _TABLE.insert().values(**values)
 
     try:
