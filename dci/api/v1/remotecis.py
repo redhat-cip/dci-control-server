@@ -16,7 +16,7 @@
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
-from sqlalchemy import sql
+from sqlalchemy import sql, func
 
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -41,6 +41,9 @@ _EMBED_MANY = {
     'currentjob': False,
     'currentjob.components': True
 }
+_RCONFIGURATIONS = models.REMOTECIS_RCONFIGURATIONS
+_RCONFIGURATIONS_COLUMNS = v1_utils.get_columns_name_with_objects(
+    _RCONFIGURATIONS)
 
 
 @api.route('/remotecis', methods=['POST'])
@@ -301,3 +304,113 @@ def put_api_secret(user, r_id):
                           'api_secret': values['api_secret']}))
     res.headers.add_header('ETag', values['etag'])
     return res
+
+# Remotecis configurations controllers
+
+
+@api.route('/remotecis/<uuid:r_id>/rconfigurations', methods=['POST'])
+@decorators.login_required
+def create_configuration(user, r_id):
+    values_configuration = v1_utils.common_values_dict(user)
+    # todo(yassine): add voluptuous checking
+    # values_configuration.update(
+    # schemas.remoteci_configuration.post(flask.request.json))
+    values_configuration.update(flask.request.json)
+
+    v1_utils.verify_existence_and_get(r_id, _TABLE)
+
+    rconfiguration_id = values_configuration.get('id')
+
+    with flask.g.db_conn.begin():
+        try:
+            # insert configuration
+            query = _RCONFIGURATIONS.insert().\
+                values(**values_configuration)
+            flask.g.db_conn.execute(query)
+            # insert join between rconfiguration and remoteci
+            values_join = {
+                'rconfiguration_id': rconfiguration_id,
+                'remoteci_id': r_id}
+            query = models.JOIN_REMOTECIS_RCONFIGURATIONS.insert().\
+                values(**values_join)
+            flask.g.db_conn.execute(query)
+        except sa_exc.IntegrityError as ie:
+            raise dci_exc.DCIException('Integrity Error: %s' % str(ie))
+
+    return flask.Response(
+        json.dumps({'rconfiguration': values_configuration}), 201,
+        headers={'ETag': values_configuration['etag']},
+        content_type='application/json'
+    )
+
+
+@api.route('/remotecis/<uuid:r_id>/rconfigurations', methods=['GET'])
+@decorators.login_required
+def get_all_configurations(user, r_id):
+    args = schemas.args(flask.request.args.to_dict())
+    v1_utils.verify_existence_and_get(r_id, _TABLE)
+    # todo(yassine): verify user team == remoteci team
+
+    query = sql.select([_RCONFIGURATIONS]). \
+        select_from(models.JOIN_REMOTECIS_RCONFIGURATIONS.
+                    join(_RCONFIGURATIONS)). \
+        where(models.JOIN_REMOTECIS_RCONFIGURATIONS.c.remoteci_id == r_id)
+
+    query = query.where(_RCONFIGURATIONS.c.state != 'archived')
+
+    sort_list = v1_utils.sort_query(args['sort'], _RCONFIGURATIONS_COLUMNS)
+    where_list = v1_utils.where_query(args['where'],
+                                      _RCONFIGURATIONS,
+                                      _RCONFIGURATIONS_COLUMNS)
+
+    query = v1_utils.add_sort_to_query(query, sort_list)
+    query = v1_utils.add_where_to_query(query, where_list)
+    if args.get('limit', None):
+        query = query.limit(args.get('limit'))
+    if args.get('offset', None):
+        query = query.offset(args.get('offset'))
+
+    rows = flask.g.db_conn.execute(query).fetchall()
+
+    query_nb_rows = sql.select([func.count(_RCONFIGURATIONS.c.id)]). \
+        select_from(models.JOIN_REMOTECIS_RCONFIGURATIONS.
+                    join(_RCONFIGURATIONS)). \
+        where(models.JOIN_REMOTECIS_RCONFIGURATIONS.c.remoteci_id == r_id). \
+        where(_RCONFIGURATIONS.c.state != 'archived')
+    nb_rows = flask.g.db_conn.execute(query_nb_rows).scalar()
+
+    res = flask.jsonify({'rconfigurations': rows,
+                         '_meta': {'count': nb_rows}})
+    res.status_code = 200
+    return res
+
+
+@api.route('/remotecis/<uuid:r_id>/rconfigurations/<uuid:c_id>',
+           methods=['GET'])
+@decorators.login_required
+def get_configuration_by_id(user, r_id, c_id):
+    v1_utils.verify_existence_and_get(r_id, _TABLE)
+    configuration = v1_utils.verify_existence_and_get(c_id, _RCONFIGURATIONS)
+    return base.get_resource_by_id(user, configuration, _RCONFIGURATIONS, None,
+                                   resource_name='rconfiguration')
+
+
+@api.route('/remotecis/<uuid:r_id>/rconfigurations/<uuid:c_id>',
+           methods=['DELETE'])
+@decorators.login_required
+def delete_configuration_by_id(user, r_id, c_id):
+    # todo(yassine): veryify user team == remoteci team
+    v1_utils.verify_existence_and_get(r_id, models.REMOTECIS)
+    v1_utils.verify_existence_and_get(c_id, _RCONFIGURATIONS)
+
+    with flask.g.db_conn.begin():
+        values = {'state': 'archived'}
+        query = _RCONFIGURATIONS.update().where(
+            _RCONFIGURATIONS.c.id == c_id).values(**values)
+
+        result = flask.g.db_conn.execute(query)
+
+        if not result.rowcount:
+            raise dci_exc.DCIDeleteConflict('rconfiguration', c_id)
+
+    return flask.Response(None, 204, content_type='application/json')
