@@ -116,6 +116,8 @@ def provision(db_conn):
               role='user',
               role_id=user_role_id,
               password=user_pw_hash,
+              fullname='User',
+              email='user@example.tld',
               team_id=team_user_id)
 
     db_insert(models.USERS,
@@ -123,6 +125,8 @@ def provision(db_conn):
               role='admin',
               role_id=admin_role_id,
               password=user_admin_pw_hash,
+              fullname='User Admin',
+              email='user_admin@example.tld',
               team_id=team_user_id)
 
     db_insert(models.USERS,
@@ -130,6 +134,8 @@ def provision(db_conn):
               role='admin',
               role_id=super_admin_role_id,
               password=admin_pw_hash,
+              fullname='Admin',
+              email='admin@example.tld',
               team_id=team_admin_id)
 
 

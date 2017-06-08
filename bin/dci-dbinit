@@ -101,7 +101,9 @@ def init_db(db_conn):
                         password=DCI_PASSWORD_HASH,
                         role='admin',
                         role_id=super_admin_role_id,
-                        team_id=team_admin_id)
+                        team_id=team_admin_id,
+                        fullname='Admin',
+                        email='admin@example.tld')
 
 
 def main():

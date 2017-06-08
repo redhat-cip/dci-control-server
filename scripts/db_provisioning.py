@@ -96,7 +96,8 @@ def init_db(db_conn, minimal, file):
 
     db_ins(models.USERS, name='admin', role='admin',
            role_id=super_admin_role_id, team_id=team_admin,
-           password=auth.hash_password('admin'))
+           password=auth.hash_password('admin'), fullname='admin',
+           email='admin@example.tld')
 
     if minimal:
         return
@@ -108,19 +109,23 @@ def init_db(db_conn, minimal, file):
     # Creates according users, 1 admin 1 user for other teams
     db_ins(models.USERS, name='user_hp', role='user',
            role_id=user_role_id, team_id=team_hp,
-           password=auth.hash_password('password'))
+           password=auth.hash_password('password'),
+           fullname='User HP', email='user_hp@example.tld')
 
     db_ins(models.USERS, name='admin_hp', role='admin',
            role_id=admin_role_id, team_id=team_hp,
-           password=auth.hash_password('password'))
+           password=auth.hash_password('password'),
+           fullname='Admin HP', email='admin_hp@example.tld')
 
     db_ins(models.USERS, name='user_dell', role='user',
            role_id=user_role_id, team_id=team_dell,
-           password=auth.hash_password('password'))
+           password=auth.hash_password('password'),
+           fullname='User Dell', email='user_dell@exampl.tld')
 
     db_ins(models.USERS, name='admin_dell', role='admin',
            role_id=admin_role_id, team_id=team_dell,
-           password=auth.hash_password('password'))
+           password=auth.hash_password('password'),
+           fullname='Admin Dell', email='admin_dell@example.tld')
 
     # Create 3 topics, 1 common and 2 scoped
     topic_common = db_ins(models.TOPICS, name='topic_common')
