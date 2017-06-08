@@ -99,7 +99,6 @@ def init_db(db_conn):
     db_insert_with_name(models.USERS,
                         name=DCI_LOGIN,
                         password=DCI_PASSWORD_HASH,
-                        role='admin',
                         role_id=super_admin_role_id,
                         team_id=team_admin_id)
 
