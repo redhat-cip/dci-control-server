@@ -41,7 +41,6 @@ from dci.common import utils
 def upgrade():
     states = pg.ENUM('active', 'inactive', 'archived',
                      name='states', create_type=False)
-
     op.create_table(
         'rconfigurations',
         sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
