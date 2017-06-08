@@ -16,6 +16,24 @@
       "revId": "deae6c9fae8d77cc4547222e8fce43704d5db105",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_ed2580c2",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 361,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-08T13:56:47Z",
+      "side": 1,
+      "message": "Meh! I don\u0027t think it hurt.",
+      "parentUuid": "baa041b7_cddabc78",
+      "revId": "deae6c9fae8d77cc4547222e8fce43704d5db105",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
