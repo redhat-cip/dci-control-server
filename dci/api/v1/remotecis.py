@@ -16,7 +16,7 @@
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
-from sqlalchemy import sql
+from sqlalchemy import sql, func
 
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -40,6 +40,8 @@ _EMBED_MANY = {
     'currentjob': False,
     'currentjob.components': True
 }
+_RFLAVORS = models.REMOTECIS_FLAVORS
+_RFLAVORS_COLUMNS = v1_utils.get_columns_name_with_objects(_RFLAVORS)
 
 
 @api.route('/remotecis', methods=['POST'])
@@ -300,3 +302,140 @@ def put_api_secret(user, r_id):
                           'api_secret': values['api_secret']}))
     res.headers.add_header('ETag', values['etag'])
     return res
+
+# Remotecis configurations controllers
+
+
+@api.route('/remotecis/<uuid:r_id>/flavors', methods=['POST'])
+@auth.login_required
+def create_flavor(user, r_id):
+    values_flavor = v1_utils.common_values_dict(user)
+    # todo(yassine): add voluptuous checking
+    # values_configuration.update(
+    # schemas.remoteci_configuration.post(flask.request.json))
+    values_flavor.update(flask.request.json)
+
+    v1_utils.verify_existence_and_get(r_id, _TABLE)
+
+    rflavor_id = values_flavor.get('id')
+
+    with flask.g.db_conn.begin():
+        try:
+            # insert configuration
+            query = _RFLAVORS.insert().\
+                values(**values_flavor)
+            flask.g.db_conn.execute(query)
+            # insert join between rconfiguration and remoteci
+            values_join = {
+                'rflavor_id': rflavor_id,
+                'remoteci_id': r_id}
+            query = models.JOIN_REMOTECIS_RFLAVORS.insert().\
+                values(**values_join)
+            flask.g.db_conn.execute(query)
+        except sa_exc.IntegrityError as ie:
+            raise dci_exc.DCIException('Integrity Error: %s' % str(ie))
+
+    return flask.Response(
+        json.dumps({'flavor': values_flavor}), 201,
+        headers={'ETag': values_flavor['etag']},
+        content_type='application/json'
+    )
+
+
+@api.route('/remotecis/<uuid:r_id>/flavors', methods=['GET'])
+@auth.login_required
+def get_all_flavors(user, r_id):
+    args = schemas.args(flask.request.args.to_dict())
+    v1_utils.verify_existence_and_get(r_id, _TABLE)
+    # todo(yassine): verify user team == remoteci team
+
+    query = sql.select([_RFLAVORS]). \
+        select_from(models.JOIN_REMOTECIS_RFLAVORS.
+                    join(_RFLAVORS)). \
+        where(models.JOIN_REMOTECIS_RFLAVORS.c.remoteci_id == r_id)
+
+    query = query.where(_RFLAVORS.c.state != 'archived')
+
+    sort_list = v1_utils.sort_query(args['sort'], _RFLAVORS_COLUMNS)
+    where_list = v1_utils.where_query(args['where'],
+                                      _RFLAVORS,
+                                      _RFLAVORS_COLUMNS)
+
+    query = v1_utils.add_sort_to_query(query, sort_list)
+    query = v1_utils.add_where_to_query(query, where_list)
+    if args.get('limit', None):
+        query = query.limit(args.get('limit'))
+    if args.get('offset', None):
+        query = query.offset(args.get('offset'))
+
+    rows = flask.g.db_conn.execute(query).fetchall()
+
+    query_nb_rows = sql.select([func.count(_RFLAVORS.c.id)]). \
+        select_from(models.JOIN_REMOTECIS_RFLAVORS.
+                    join(_RFLAVORS)). \
+        where(models.JOIN_REMOTECIS_RFLAVORS.c.remoteci_id == r_id). \
+        where(_RFLAVORS.c.state != 'archived')
+    nb_rows = flask.g.db_conn.execute(query_nb_rows).scalar()
+
+    res = flask.jsonify({'flavors': rows,
+                         '_meta': {'count': nb_rows}})
+    res.status_code = 200
+    return res
+
+
+@api.route('/remotecis/<uuid:r_id>/flavors/<uuid:c_id>',
+           methods=['GET'])
+@auth.login_required
+def get_flavor_by_id(user, r_id, c_id):
+    v1_utils.verify_existence_and_get(r_id, _TABLE)
+    configuration = v1_utils.verify_existence_and_get(c_id, _RFLAVORS)
+    return base.get_resource_by_id(user, configuration, _RFLAVORS, None,
+                                   resource_name='flavor')
+
+
+@api.route('/remotecis/<uuid:r_id>/flavors/<uuid:c_id>',
+           methods=['PUT'])
+@auth.login_required
+def put_flavor(user, r_id, c_id):
+    # get If-Match header
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    # todo(yassine): verify user team == remoteci team
+
+    # values = schemas.remoteci_configuration.put(flask.request.json)
+    values = flask.request.json
+
+    values['etag'] = utils.gen_etag()
+    where_clause = sql.and_(
+        _RFLAVORS.c.etag == if_match_etag,
+        _RFLAVORS.c.id == c_id
+    )
+    query = _RFLAVORS.update().where(where_clause).values(**values)
+
+    result = flask.g.db_conn.execute(query)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('flavor', c_id)
+
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
+                          content_type='application/json')
+
+
+@api.route('/remotecis/<uuid:r_id>/flavors/<uuid:c_id>',
+           methods=['DELETE'])
+@auth.login_required
+def delete_flavor_by_id(user, r_id, c_id):
+    # todo(yassine): veryify user team == remoteci team
+    v1_utils.verify_existence_and_get(r_id, models.REMOTECIS)
+    v1_utils.verify_existence_and_get(c_id, _RFLAVORS)
+
+    with flask.g.db_conn.begin():
+        values = {'state': 'archived'}
+        query = _RFLAVORS.update().where(
+            _RFLAVORS.c.id == c_id).values(**values)
+
+        result = flask.g.db_conn.execute(query)
+
+        if not result.rowcount:
+            raise dci_exc.DCIDeleteConflict('flavor', c_id)
+
+    return flask.Response(None, 204, content_type='application/json')
