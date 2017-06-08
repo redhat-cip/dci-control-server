@@ -95,8 +95,8 @@ def init_db(db_conn, minimal, file):
     super_admin_role_id = db_ins(models.ROLES, **super_admin_role)
 
     db_ins(models.USERS, name='admin', role_id=super_admin_role_id,
-           team_id=team_admin,
-           password=auth.hash_password('admin'))
+           team_id=team_admin, password=auth.hash_password('admin'),
+           fullname='admin', email='admin@example.org')
 
     if minimal:
         return
@@ -106,17 +106,25 @@ def init_db(db_conn, minimal, file):
     team_dell = db_ins(models.TEAMS, name='dell')
 
     # Creates according users, 1 admin 1 user for other teams
-    db_ins(models.USERS, name='user_hp', role_id=user_role_id,
-           team_id=team_hp, password=auth.hash_password('password'))
+    db_ins(models.USERS, name='user_hp',
+           role_id=user_role_id, team_id=team_hp,
+           password=auth.hash_password('password'),
+           fullname='User HP', email='user_hp@example.org')
 
-    db_ins(models.USERS, name='admin_hp', role_id=admin_role_id,
-           team_id=team_hp, password=auth.hash_password('password'))
+    db_ins(models.USERS, name='admin_hp',
+           role_id=admin_role_id, team_id=team_hp,
+           password=auth.hash_password('password'),
+           fullname='Admin HP', email='admin_hp@example.org')
 
-    db_ins(models.USERS, name='user_dell', role_id=user_role_id,
-           team_id=team_dell, password=auth.hash_password('password'))
+    db_ins(models.USERS, name='user_dell',
+           role_id=user_role_id, team_id=team_dell,
+           password=auth.hash_password('password'),
+           fullname='User Dell', email='user_dell@exampl.org')
 
-    db_ins(models.USERS, name='admin_dell', role_id=admin_role_id,
-           team_id=team_dell, password=auth.hash_password('password'))
+    db_ins(models.USERS, name='admin_dell',
+           role_id=admin_role_id, team_id=team_dell,
+           password=auth.hash_password('password'),
+           fullname='Admin Dell', email='admin_dell@example.org')
 
     # Create 3 topics, 1 common and 2 scoped
     topic_common = db_ins(models.TOPICS, name='topic_common')
