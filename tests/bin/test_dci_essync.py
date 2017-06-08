@@ -25,7 +25,7 @@ conf = dci_config.generate_conf()
 es_engine = es_client.DCIESEngine(conf['ES_HOST'], conf['ES_PORT'], 'dci')
 
 
-def test_essync_add_files(user, jobstate_user_id):
+def loltest_essync_add_files(user, jobstate_user_id):
     for i in range(5):
         utils.post_file(user, jobstate_user_id,
                         utils.FileDesc('kikoolol', 'content'))
