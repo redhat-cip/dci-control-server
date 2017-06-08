@@ -23,9 +23,10 @@ from dci.common import exceptions as dci_exc
 from dci.common import schemas
 
 
-def get_resource_by_id(user, resource, table, embed_many, ignore_columns=None):
+def get_resource_by_id(user, resource, table, embed_many, ignore_columns=None,
+                       resource_name=None):
     args = schemas.args(flask.request.args.to_dict())
-    resource_name = table.name[0:-1]
+    resource_name = resource_name or table.name[0:-1]
     resource_id = resource['id']
     columns = v1_utils.get_columns_name_with_objects(table)
 
