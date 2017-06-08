@@ -195,21 +195,26 @@ class TestTest(utils.SchemaTesting):
 
 class TestUser(utils.SchemaTesting):
     schema = schemas.user
-    data = dict([utils.NAME, utils.PASSWORD, utils.TEAM, utils.STATE])
+    data = dict([utils.NAME, utils.PASSWORD, utils.TEAM, utils.STATE,
+                 utils.FULLNAME, utils.EMAIL])
 
     @staticmethod
     def generate_invalids_and_errors():
         invalids = dict([utils.INVALID_NAME, utils.INVALID_PASSWORD,
-                         utils.INVALID_TEAM])
+                         utils.INVALID_TEAM, utils.INVALID_FULLNAME,
+                         utils.INVALID_EMAIL])
         errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_TEAM_ERROR,
-                       utils.INVALID_PASSWORD_ERROR])
+                       utils.INVALID_PASSWORD_ERROR,
+                       utils.INVALID_FULLNAME_ERROR,
+                       utils.INVALID_EMAIL_ERROR])
         return invalids, errors
 
     def test_post_extra_data(self):
         super(TestUser, self).test_post_extra_data(self.data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'password', 'team_id')
+        errors = utils.generate_errors('name', 'password', 'team_id',
+                                       'fullname', 'email')
         super(TestUser, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
