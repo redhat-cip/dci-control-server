@@ -64,7 +64,10 @@ class BasicAuthMechanism(BaseMechanism):
                 )
             ).where(
                 sql.and_(
-                    models.USERS.c.name == username,
+                    sql.or_(
+                        models.USERS.c.name == username,
+                        models.USERS.c.email == username
+                    ),
                     models.USERS.c.state == 'active',
                     models.TEAMS.c.state == 'active'
                 )
