@@ -24,9 +24,6 @@ from dci.common import signature, utils
 
 metadata = sa.MetaData()
 
-USER_ROLES = ['user', 'admin']
-ROLES_ENUM = sa.Enum(*USER_ROLES, name='roles_enum')
-
 JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run',
                 'success', 'failure', 'killed', 'product-failure',
                 'deployment-failure']
@@ -426,7 +423,6 @@ USERS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), nullable=False, unique=True),
     sa.Column('password', sa.Text, nullable=False),
-    sa.Column('role', ROLES_ENUM, default=USER_ROLES[0], nullable=False),
     sa.Column('role_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('roles.id', ondelete='SET NULL')),
     sa.Column('team_id', pg.UUID(as_uuid=True),

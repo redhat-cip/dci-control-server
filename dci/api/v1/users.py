@@ -71,7 +71,6 @@ def create_users(user):
 
     values.update({
         'password': auth.hash_password(values.get('password')),
-        'role': values.get('role', 'user'),
         'role_id': role_id
     })
 
