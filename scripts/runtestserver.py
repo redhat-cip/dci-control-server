@@ -43,6 +43,8 @@ def provision(db_conn):
     db_insert(models.USERS,
               name='admin',
               role_id=super_admin_role_id,
+              fullname='Admin',
+              email='admin@example.tld',
               password=auth.hash_password('admin'),
               team_id=team_admin_id)
 
