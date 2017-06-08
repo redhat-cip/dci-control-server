@@ -45,6 +45,15 @@ def UUID(value):
     except Exception:
         raise ValueError
 
+
+# TODO(spredzy): Implement email validator
+def Email(value):
+    try:
+        pass
+    except Exception:
+        raise ValueError
+
+
 VALID_STATUS_UPDATE = ['failure', 'success', 'killed', 'product-failure',
                        'deployment-failure']
 
@@ -55,6 +64,7 @@ INVALID_UUID = 'not a valid uuid'
 INVALID_JSON = 'not a valid json'
 INVALID_STRING = 'not a valid string'
 INVALID_URL = 'not a valid URL'
+INVALID_EMAIL = 'not a valid email'
 
 INVALID_TEAM = 'not a valid team id'
 INVALID_TEST = 'not a valid test id'
@@ -85,6 +95,7 @@ class Schema(v.Schema):
         'expected unicode': INVALID_STRING,
         'expected str': INVALID_STRING,
         'expected a URL': INVALID_URL,
+        'expected a valid email': INVALID_EMAIL,
         'expected a dictionary': INVALID_OBJECT,
         'expected list': INVALID_LIST
     }
@@ -190,8 +201,10 @@ test = schema_factory(test)
 
 user = utils.dict_merge(base, {
     'password': six.text_type,
+    v.Optional('fullname'): six.text_type,
     v.Optional('role_id'): v.Any(UUID, msg=INVALID_UUID),
     'team_id': v.Any(UUID, msg=INVALID_TEAM),
+    'email': six.text_type,
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 })
