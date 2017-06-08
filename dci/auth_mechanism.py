@@ -49,7 +49,10 @@ class BasicAuthMechanism(BaseMechanism):
         """
 
         where_clause = sqlalchemy.sql.expression.and_(
-            models.USERS.c.name == username,
+            sqlalchemy.sql.expression.or_(
+                models.USERS.c.name == username,
+                models.USERS.c.email == username
+            ),
             models.USERS.c.state == 'active',
             models.TEAMS.c.state == 'active'
         )
