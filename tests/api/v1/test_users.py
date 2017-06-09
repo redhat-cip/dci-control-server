@@ -86,6 +86,14 @@ def test_get_all_users_with_team(admin):
     assert db_users[0]['team']['id']
 
 
+def test_get_all_users_with_role(admin):
+    db_users = admin.get(
+        '/api/v1/users?embed=role&where=name:admin'
+    ).data['users']
+
+    assert db_users[0]['role']['label'] == 'SUPER_ADMIN'
+
+
 def test_get_all_users_with_where(admin, team_id):
     pu = admin.post('/api/v1/users', data={'name': 'pname1',
                                            'password': 'ppass',

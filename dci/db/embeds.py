@@ -58,6 +58,8 @@ JOBSTATEJOBS_WITHOUT_CONFIGURATION = ignore_columns_from_table(JOBSTATE_JOBS, ['
 
 TOPIC = models.TOPICS.alias('topic')
 
+ROLE = models.ROLES.alias('role')
+
 
 def jobs(root_select=models.JOBS):
     return {
@@ -288,7 +290,13 @@ def users(root_select=models.USERS):
             {'right': TEAM,
              'onclause': and_(TEAM.c.id == root_select.c.team_id,
                               TEAM.c.state != 'archived')}
-        ]}
+        ],
+        'role': [
+            {'right': ROLE,
+             'onclause': and_(ROLE.c.id == root_select.c.role_id,
+                              ROLE.c.state != 'archived')}
+        ],
+    }
 
 
 # associate the name table to the object table
@@ -338,7 +346,8 @@ EMBED_STRING_TO_OBJECT = {
         'teams': models.TEAMS
     },
     'users': {
-        'team': TEAM
+        'team': TEAM,
+        'role': ROLE,
     }
 }
 
