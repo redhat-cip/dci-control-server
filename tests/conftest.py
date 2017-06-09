@@ -39,15 +39,12 @@ def engine(request):
 
     engine = sqlalchemy.create_engine(db_uri)
 
-    def del_db():
-        if sqlalchemy_utils.functions.database_exists(db_uri):
-            sqlalchemy_utils.functions.drop_database(db_uri)
-
-    del_db()
-    request.addfinalizer(del_db)
-    sqlalchemy_utils.functions.create_database(db_uri)
-
-    models.metadata.create_all(engine)
+    if sqlalchemy_utils.functions.database_exists(db_uri):
+        for table in reversed(models.metadata.sorted_tables):
+            engine.execute(table.delete())
+    else:
+        sqlalchemy_utils.functions.create_database(db_uri)
+        models.metadata.create_all(engine)
     return engine
 
 
