@@ -169,7 +169,17 @@ team = utils.dict_merge(base, {
                                                  msg=INVALID_RESOURCE_STATE),
 })
 
-team = schema_factory(team)
+team_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('country'): six.text_type,
+    v.Optional('email'): six.text_type,
+    v.Optional('notification'): bool,
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
+}
+
+team = DCISchema(schema_factory(team).post,
+                 Schema(team_put))
 
 ###############################################################################
 #                                                                             #
@@ -183,7 +193,16 @@ test = utils.dict_merge(base, DATA_FIELD, {
                                                  msg=INVALID_RESOURCE_STATE),
 })
 
-test = schema_factory(test)
+test_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('data'): dict,
+    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
+}
+
+test = DCISchema(schema_factory(test).post,
+                 Schema(test_put))
 
 ###############################################################################
 #                                                                             #
@@ -200,7 +219,17 @@ user = utils.dict_merge(base, {
                                                  msg=INVALID_RESOURCE_STATE),
 })
 
-user = schema_factory(user)
+user_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('password'): six.text_type,
+    v.Optional('role_id'): v.Any(UUID, msg=INVALID_UUID),
+    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
+}
+
+user = DCISchema(schema_factory(user).post,
+                 Schema(user_put))
 
 ###############################################################################
 #                                                                             #
@@ -389,7 +418,16 @@ topic = utils.dict_merge(base, {
                                                  msg=INVALID_RESOURCE_STATE),
 })
 
-topic = schema_factory(topic)
+topic_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('label'): six.text_type,
+    v.Optional('next_topic'): v.Any(UUID, msg=INVALID_JOB),
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
+}
+
+topic = DCISchema(schema_factory(topic).post,
+                  Schema(topic_put))
 
 ###############################################################################
 #                                                                             #
