@@ -464,3 +464,20 @@ role_put = {
 }
 
 role = DCISchema(schema_factory(role).post, Schema(role_put))
+
+###############################################################################
+#                                                                             #
+#                       Remoteci Configuration schemas                        #
+#                                                                             #
+###############################################################################
+
+rflavor = utils.dict_merge(base, DATA_FIELD, {
+    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
+    v.Optional('component_types', default=[]): list
+})
+
+rflavor_put = utils.dict_merge(base, DATA_FIELD, {
+    v.Optional('component_types', default=[]): list
+})
+
+rflavor = DCISchema(schema_factory(rflavor).post, Schema(rflavor_put))

@@ -303,29 +303,31 @@ def put_api_secret(user, r_id):
     res.headers.add_header('ETag', values['etag'])
     return res
 
-# Remotecis configurations controllers
+# Remotecis flavor controllers
 
 
 @api.route('/remotecis/<uuid:r_id>/flavors', methods=['POST'])
 @auth.login_required
 def create_flavor(user, r_id):
     values_flavor = v1_utils.common_values_dict(user)
-    # todo(yassine): add voluptuous checking
-    # values_configuration.update(
-    # schemas.remoteci_configuration.post(flask.request.json))
+    values_flavor.update(
+        schemas.rflavor.post(flask.request.json))
     values_flavor.update(flask.request.json)
 
-    v1_utils.verify_existence_and_get(r_id, _TABLE)
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+
+    if not auth.is_admin(user):
+        v1_utils.verify_user_in_team(user, remoteci['team_id'])
 
     rflavor_id = values_flavor.get('id')
 
     with flask.g.db_conn.begin():
         try:
-            # insert configuration
+            # insert flavor
             query = _RFLAVORS.insert().\
                 values(**values_flavor)
             flask.g.db_conn.execute(query)
-            # insert join between rconfiguration and remoteci
+            # insert join between rflavor and remoteci
             values_join = {
                 'rflavor_id': rflavor_id,
                 'remoteci_id': r_id}
@@ -346,8 +348,10 @@ def create_flavor(user, r_id):
 @auth.login_required
 def get_all_flavors(user, r_id):
     args = schemas.args(flask.request.args.to_dict())
-    v1_utils.verify_existence_and_get(r_id, _TABLE)
-    # todo(yassine): verify user team == remoteci team
+
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+    if not auth.is_admin(user):
+        v1_utils.verify_user_in_team(user, remoteci['team_id'])
 
     query = sql.select([_RFLAVORS]). \
         select_from(models.JOIN_REMOTECIS_RFLAVORS.
@@ -387,9 +391,12 @@ def get_all_flavors(user, r_id):
            methods=['GET'])
 @auth.login_required
 def get_flavor_by_id(user, r_id, c_id):
-    v1_utils.verify_existence_and_get(r_id, _TABLE)
-    configuration = v1_utils.verify_existence_and_get(c_id, _RFLAVORS)
-    return base.get_resource_by_id(user, configuration, _RFLAVORS, None,
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+    if not auth.is_admin(user):
+        v1_utils.verify_user_in_team(user, remoteci['team_id'])
+
+    flavor = v1_utils.verify_existence_and_get(c_id, _RFLAVORS)
+    return base.get_resource_by_id(user, flavor, _RFLAVORS, None,
                                    resource_name='flavor')
 
 
@@ -400,10 +407,12 @@ def put_flavor(user, r_id, c_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    # todo(yassine): verify user team == remoteci team
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+    if not auth.is_admin(user):
+        v1_utils.verify_user_in_team(user, remoteci['team_id'])
 
-    # values = schemas.remoteci_configuration.put(flask.request.json)
-    values = flask.request.json
+    # values = schemas.remoteci_flavor.put(flask.request.json)
+    values = schemas.rflavor.put(flask.request.json)
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
@@ -425,8 +434,11 @@ def put_flavor(user, r_id, c_id):
 @auth.login_required
 def delete_flavor_by_id(user, r_id, c_id):
     # todo(yassine): veryify user team == remoteci team
-    v1_utils.verify_existence_and_get(r_id, models.REMOTECIS)
+    remoteci = v1_utils.verify_existence_and_get(r_id, models.REMOTECIS)
     v1_utils.verify_existence_and_get(c_id, _RFLAVORS)
+
+    if not auth.is_admin(user):
+        v1_utils.verify_user_in_team(user, remoteci['team_id'])
 
     with flask.g.db_conn.begin():
         values = {'state': 'archived'}
