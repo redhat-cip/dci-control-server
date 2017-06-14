@@ -510,6 +510,20 @@ role = DCISchema(schema_factory(role).post, Schema(role_put))
 
 ###############################################################################
 #                                                                             #
+#                       Remoteci Configuration schemas                        #
+#                                                                             #
+###############################################################################
+
+rconfiguration = utils.dict_merge(base, DATA_FIELD, {
+    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
+    v.Optional('component_types', default=[]): list
+})
+
+rconfiguration = schema_factory(rconfiguration)
+
+
+###############################################################################
+#                                                                             #
 #                          Permissions schemas                                #
 #                                                                             #
 ###############################################################################
