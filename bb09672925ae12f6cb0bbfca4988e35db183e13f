@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_3f038775",
+        "filename": "dci/alembic/versions/5874e497e4d8_add_remoteci_configurations.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-14T20:48:21Z",
+      "side": 1,
+      "message": "What about \"flavor\" instead?\n\nflavors:\n  OSP11+dellsc\n  OSP12+ha\n  OSP10+eqlx\n\netc",
+      "revId": "bb09672925ae12f6cb0bbfca4988e35db183e13f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
