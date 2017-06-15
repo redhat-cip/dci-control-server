@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_6520609c",
+        "filename": "dci/alembic/versions/9b80c710510c_add_fullname_email_user.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-15T18:19:34Z",
+      "side": 1,
+      "message": "Not sure we need this one.",
+      "revId": "4c4418c9e2dac4b835ce6fbbc9f6b9055ae2a447",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_45255ca9",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-15T18:19:34Z",
+      "side": 1,
+      "message": "what if we just want to update the password? e.g values\u003d{\u0027password\u0027: \u0027bob\u0027}.",
+      "revId": "4c4418c9e2dac4b835ce6fbbc9f6b9055ae2a447",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
