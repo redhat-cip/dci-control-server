@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "baa041b7_45731cb2",
+        "filename": "dci/api/v1/base.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 29,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-06-15T19:14:52Z",
+      "side": 1,
+      "message": "I thought we were not allowing to query with name but only id. Am I missing something there ?",
+      "range": {
+        "startLine": 26,
+        "startChar": 0,
+        "endLine": 29,
+        "endChar": 53
+      },
+      "revId": "fb7904af72a91f7e8414148b32c049f76fb4cab1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_c27e02ae",
         "filename": "dci/api/v1/remotecis.py",
         "patchSetId": 4
