@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_a54d4874",
+        "filename": "dci/alembic/versions/5874e497e4d8_add_remotecis_configuration.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-06-15T18:31:58Z",
+      "side": 1,
+      "message": "should be cba07e5d607d",
+      "range": {
+        "startLine": 19,
+        "startChar": 9,
+        "endLine": 19,
+        "endChar": 21
+      },
+      "revId": "61ca2806d23ac517af5d19788c2502afe6fedc34",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_85524412",
+        "filename": "dci/alembic/versions/5874e497e4d8_add_remotecis_configuration.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-06-15T18:31:58Z",
+      "side": 1,
+      "message": "you should add an index on that FK",
+      "range": {
+        "startLine": 57,
+        "startChar": 8,
+        "endLine": 59,
+        "endChar": 33
+      },
+      "revId": "61ca2806d23ac517af5d19788c2502afe6fedc34",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_65574003",
+        "filename": "dci/db/models.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 369,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-06-15T18:31:58Z",
+      "side": 1,
+      "message": "same as described in the alembic script.",
+      "range": {
+        "startLine": 367,
+        "startChar": 4,
+        "endLine": 369,
+        "endChar": 28
+      },
+      "revId": "61ca2806d23ac517af5d19788c2502afe6fedc34",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
