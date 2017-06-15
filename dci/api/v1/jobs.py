@@ -143,7 +143,10 @@ def search_jobs(user):
 def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
     # Get a jobdefinition
     q_jd = sql.select([models.JOBDEFINITIONS]).where(
-        models.JOBDEFINITIONS.c.topic_id == topic_id).order_by(
+        sql.and_(
+            models.JOBDEFINITIONS.c.topic_id == topic_id,
+            models.JOBDEFINITIONS.c.state == 'active'
+        )).order_by(
         sql.desc(models.JOBDEFINITIONS.c.created_at))
     jd_to_run = flask.g.db_conn.execute(q_jd).fetchone()
 
