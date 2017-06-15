@@ -16,7 +16,8 @@
 
 
 def test_purge_resource(admin):
-    data = {'name': 'tname'}
+    data = {'name': 'tname',
+            'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data)
     pt_id = pt.data['topic']['id']
     assert pt.status_code == 201
