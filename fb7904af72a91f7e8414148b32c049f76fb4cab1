@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_c27e02ae",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 340,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-15T16:24:18Z",
+      "side": 1,
+      "message": "What if we use rconfiguration? This would be more consistent.",
+      "revId": "fb7904af72a91f7e8414148b32c049f76fb4cab1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
