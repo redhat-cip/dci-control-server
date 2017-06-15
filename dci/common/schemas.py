@@ -418,6 +418,7 @@ topic = utils.dict_merge(base, {
                                                   msg=INVALID_TOPIC),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
+    v.Optional('component_types', default=[]): list
 })
 
 topic_put = {
@@ -426,6 +427,7 @@ topic_put = {
     v.Optional('next_topic'): v.Any(None, UUID, msg=INVALID_TOPIC),
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
+    v.Optional('component_types', default=[]): list
 }
 
 topic = DCISchema(schema_factory(topic).post, Schema(topic_put))

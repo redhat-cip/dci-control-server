@@ -74,7 +74,8 @@ def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id,
 
 def test_schedule_job_with_new_topic(admin, remoteci_id, team_admin_id):
     # create a new topic and schedule a new job
-    data = {'name': 'new_topic'}
+    data = {'name': 'new_topic',
+            'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data).data
     new_topic_id = pt['topic']['id']
 
@@ -186,7 +187,8 @@ def test_schedule_give_latest_components(admin, jobdefinition_factory,
 
 def test_schedule_job_with_export_control(admin, remoteci_id, team_admin_id):
     # create a new topic and schedule a new job
-    data_topic = {'name': 'new_topic'}
+    data_topic = {'name': 'new_topic',
+                  'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data_topic).data
     new_topic_id = pt['topic']['id']
 
