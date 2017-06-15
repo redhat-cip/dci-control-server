@@ -68,7 +68,7 @@ def update_tests(user, t_id):
     v1_utils.verify_existence_and_get(t_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    values = schemas.component.put(flask.request.json)
+    values = schemas.test.put(flask.request.json)
     values['etag'] = utils.gen_etag()
 
     where_clause = sql.and_(
