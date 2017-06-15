@@ -117,9 +117,8 @@ def put_topic(user, topic_id):
 
     topic_id = _verify_team_in_topic(user, topic_id)
 
-    next_topic = values['next_topic']
-    if next_topic:
-        _verify_team_in_topic(user, next_topic)
+    if 'next_topic' in values and values['next_topic']:
+        _verify_team_in_topic(user, values['next_topic'])
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
