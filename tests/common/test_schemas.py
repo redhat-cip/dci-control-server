@@ -722,7 +722,7 @@ class TestTopic(utils.SchemaTesting):
         return invalids, errors
 
     def test_post_extra_data(self):
-        super(TestTopic, self).test_post(self.data, self.data)
+        super(TestTopic, self).test_post_extra_data(self.data)
 
     def test_post_missing_data(self):
         errors = utils.generate_errors('name')
@@ -733,7 +733,8 @@ class TestTopic(utils.SchemaTesting):
         super(TestTopic, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
-        super(TestTopic, self).test_post(self.data, self.data)
+        expected = utils.dict_merge(self.data, {'component_types': []})
+        super(TestTopic, self).test_post(self.data, expected)
 
     def test_put_extra_data(self):
         pass
