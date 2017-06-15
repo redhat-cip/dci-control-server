@@ -474,3 +474,51 @@ def test_status_from_component_type_get_status(admin, topic_id, components_ids,
     assert status['jobs'][0]['job_status'] == 'failure'
     assert status['jobs'][0]['component_type'] == 'type_1'
     assert 'name-' in status['jobs'][0]['component_name']
+
+
+def test_remove_next_topic_from_topic(admin, topic_id):
+    request = admin.post('/api/v1/topics',
+                         data={'name': 'topic 1', 'next_topic': topic_id})
+    assert request.status_code == 201
+    new_topic_id = request.data['topic']['id']
+
+    t = admin.get('/api/v1/topics/%s' % new_topic_id).data['topic']
+    assert t['next_topic'] == topic_id
+
+    request2 = admin.put('/api/v1/topics/%s' % new_topic_id,
+                         data={'next_topic': None},
+                         headers={'If-match': request.headers.get("ETag")})
+    assert request2.status_code == 204
+
+    t = admin.get('/api/v1/topics/%s' % new_topic_id).data['topic']
+    assert t['next_topic'] is None
+
+    request3 = admin.put('/api/v1/topics/%s' % new_topic_id,
+                         data={'next_topic': topic_id},
+                         headers={'If-match': request2.headers.get("ETag")})
+    assert request3.status_code == 204
+
+    t = admin.get('/api/v1/topics/%s' % new_topic_id).data['topic']
+    assert t['next_topic'] == topic_id
+
+
+def test_component_success_update_field_by_field(admin, topic_id):
+    t = admin.get('/api/v1/topics/%s' % topic_id).data['topic']
+
+    admin.put('/api/v1/topics/%s' % topic_id,
+              data={'state': 'inactive'},
+              headers={'If-match': t['etag']})
+
+    t = admin.get('/api/v1/topics/%s' % topic_id).data['topic']
+
+    assert t['name'] == 'topic_name'
+    assert t['state'] == 'inactive'
+
+    admin.put('/api/v1/topics/%s' % topic_id,
+              data={'name': 'topic_name2'},
+              headers={'If-match': t['etag']})
+
+    t = admin.get('/api/v1/topics/%s' % t['id']).data['topic']
+
+    assert t['name'] == 'topic_name2'
+    assert t['state'] == 'inactive'

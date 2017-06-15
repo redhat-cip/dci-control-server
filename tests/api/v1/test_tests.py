@@ -362,3 +362,37 @@ def test_change_test_to_invalid_state(admin, test_id):
     current_test = admin.get('/api/v1/tests/' + test_id)
     assert current_test.status_code == 200
     assert current_test.data['test']['state'] == 'active'
+
+
+def test_success_update_field_by_field(admin, test_id):
+    t = admin.get('/api/v1/tests/%s' % test_id).data['test']
+
+    admin.put('/api/v1/tests/%s' % test_id,
+              data={'state': 'inactive'},
+              headers={'If-match': t['etag']})
+
+    t = admin.get('/api/v1/tests/%s' % test_id).data['test']
+
+    assert t['name'] == 'pname'
+    assert t['state'] == 'inactive'
+    assert t['data'] == {}
+
+    admin.put('/api/v1/tests/%s' % test_id,
+              data={'name': 'pname2'},
+              headers={'If-match': t['etag']})
+
+    t = admin.get('/api/v1/tests/%s' % test_id).data['test']
+
+    assert t['name'] == 'pname2'
+    assert t['state'] == 'inactive'
+    assert t['data'] == {}
+
+    admin.put('/api/v1/tests/%s' % test_id,
+              data={'data': {'test': 'toto'}},
+              headers={'If-match': t['etag']})
+
+    t = admin.get('/api/v1/tests/%s' % test_id).data['test']
+
+    assert t['name'] == 'pname2'
+    assert t['state'] == 'inactive'
+    assert t['data'] == {'test': 'toto'}

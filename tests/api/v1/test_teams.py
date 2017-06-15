@@ -349,3 +349,43 @@ def test_list_tests_by_team(admin, team_id, test_id):
     assert tests.data['_meta']['count'] == 1
     assert tests.data['tests'][0]['team_id'] == team_id
     assert tests.data['tests'][0]['id'] == test_id
+
+
+def test_success_update_field_by_field(admin, team_id):
+    t = admin.get('/api/v1/teams/%s' % team_id).data['team']
+
+    admin.put('/api/v1/teams/%s' % team_id,
+              data={'state': 'inactive'},
+              headers={'If-match': t['etag']})
+
+    t = admin.get('/api/v1/teams/%s' % team_id).data['team']
+
+    assert t['name'] == 'pname'
+    assert t['state'] == 'inactive'
+    assert t['country'] is None
+    assert t['email'] == 'dci@example.com'
+    assert t['notification'] is False
+
+    admin.put('/api/v1/teams/%s' % team_id,
+              data={'country': 'FR'},
+              headers={'If-match': t['etag']})
+
+    t = admin.get('/api/v1/teams/%s' % team_id).data['team']
+
+    assert t['name'] == 'pname'
+    assert t['state'] == 'inactive'
+    assert t['country'] == 'FR'
+    assert t['email'] == 'dci@example.com'
+    assert t['notification'] is False
+
+    admin.put('/api/v1/teams/%s' % team_id,
+              data={'notification': True},
+              headers={'If-match': t['etag']})
+
+    t = admin.get('/api/v1/teams/%s' % team_id).data['team']
+
+    assert t['name'] == 'pname'
+    assert t['state'] == 'inactive'
+    assert t['country'] == 'FR'
+    assert t['email'] == 'dci@example.com'
+    assert t['notification'] is True
