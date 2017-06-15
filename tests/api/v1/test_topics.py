@@ -19,7 +19,8 @@ import uuid
 
 
 def test_create_topics(admin):
-    data = {'name': 'tname'}
+    data = {'name': 'tname',
+            'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data).data
     pt_id = pt['topic']['id']
     gc = admin.get('/api/v1/topics/%s' % pt_id).data
@@ -27,20 +28,23 @@ def test_create_topics(admin):
 
 
 def test_create_topics_as_user(user):
-    data = {'name': 'tname'}
+    data = {'name': 'tname',
+            'component_types': ['type1', 'type2']}
     status_code = user.post('/api/v1/topics', data=data).status_code
     assert status_code == 401
 
 
 def test_update_topics_as_admin(admin, topic_id):
     t = admin.get('/api/v1/topics/' + topic_id).data['topic']
-    data = {'label': 'my comment'}
+    data = {'label': 'my comment',
+            'component_types': ['lol1', 'lol2']}
     r = admin.put('/api/v1/topics/' + topic_id,
                   data=data,
                   headers={'If-match': t['etag']})
     assert r.status_code == 204
     current_topic = admin.get('/api/v1/topics/' + topic_id).data['topic']
     assert current_topic['label'] == 'my comment'
+    assert current_topic['component_types'] == ['lol1', 'lol2']
 
 
 def test_change_topic_state(admin, topic_id):
