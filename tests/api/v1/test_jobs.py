@@ -134,7 +134,7 @@ def test_schedule_jobs_not_active(admin, jobdefinition_id, remoteci_id,
     """
     jd = admin.get('/api/v1/jobdefinitions/%s' % jobdefinition_id).data
     ppt = admin.put('/api/v1/jobdefinitions/%s' % jobdefinition_id,
-                    data={'state': 'inactive'},
+                    data={'state': 'inactive', 'component_types': ['type_1']},
                     headers={'If-match': jd['jobdefinition']['etag']})
     assert ppt.status_code == 204
     job = admin.post('/api/v1/jobs/schedule',
