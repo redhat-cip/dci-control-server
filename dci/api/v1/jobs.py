@@ -76,6 +76,7 @@ def create_jobs(user):
     values.update({
         'status': 'new',
         'configuration': {},
+        'rconfiguration_id': None,
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'
@@ -142,28 +143,75 @@ def search_jobs(user):
 
 
 def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
+
+    def _get_last_rconfiguration_id():
+        """Get the rconfiguration_id of the last job run by the remoteci."""
+        query = sql.select([_TABLE]). \
+            where(_TABLE.c.remoteci_id == remoteci['id']). \
+            order_by(sql.desc(_TABLE.c.created_at))
+        last_job = flask.g.db_conn.execute(query).fetchone()
+        if last_job is not None:
+            last_job = dict(last_job)
+            return last_job['rconfiguration_id']
+        else:
+            return None
+
+    def _get_remoteci_configuration(last_rconfiguration_id):
+        """Get a remoteci configuration. This will iterate over each
+        configuration in a round robin manner depending on the last
+        rconfiguration used by the remoteci."""
+
+        _RCONFIGURATIONS = models.REMOTECIS_RCONFIGURATIONS
+        _J_RCONFIGURATIONS = models.JOIN_REMOTECIS_RCONFIGURATIONS
+        query = sql.select([_RCONFIGURATIONS]). \
+            select_from(_J_RCONFIGURATIONS.
+                        join(_RCONFIGURATIONS)). \
+            where(_J_RCONFIGURATIONS.c.remoteci_id == remoteci['id'])
+        query = query.where(_RCONFIGURATIONS.c.state != 'archived')
+        query = query.order_by(sql.desc(_RCONFIGURATIONS.c.created_at))
+        all_rconfigurations = flask.g.db_conn.execute(query).fetchall()
+
+        if len(all_rconfigurations) > 0:
+            for i in range(len(all_rconfigurations)):
+                if all_rconfigurations[i]['id'] == last_rconfiguration_id:
+                    # if i==0, then indice -1 is the last element
+                    return all_rconfigurations[i - 1]
+            return all_rconfigurations[0]
+        else:
+            return None
+
+    def _get_component_types_from_topic():
+        query = sql.select([models.TOPICS]).\
+            where(models.TOPICS.c.id == topic_id)
+        topic = flask.g.db_conn.execute(query).fetchone()
+        topic = dict(topic)
+        return topic['component_types']
+
+    # jobdefinition will be removed, used here for not breaking jobs table FK
     # Get a jobdefinition
     q_jd = sql.select([models.JOBDEFINITIONS]).where(
-        sql.and_(
-            models.JOBDEFINITIONS.c.topic_id == topic_id,
-            models.JOBDEFINITIONS.c.state == 'active'
-        )).order_by(
+        sql.and_(models.JOBDEFINITIONS.c.topic_id == topic_id,
+                 models.JOBDEFINITIONS.c.state == 'active')).order_by(
         sql.desc(models.JOBDEFINITIONS.c.created_at))
     jd_to_run = flask.g.db_conn.execute(q_jd).fetchone()
-
     if jd_to_run is None:
         msg = 'No jobdefinition found in topic %s.' % topic_id
         raise dci_exc.DCIException(msg, status_code=412)
 
-    # Get the latest components according to the component_types of the
-    # jobdefinition.
-    component_types = tuple(jd_to_run['component_types'])
-    if not component_types:
-        msg = ('Jobdefinition "%s" malformed: no component types provided.' %
-               jd_to_run['id'])
-        raise dci_exc.DCIException(msg, status_code=412)
+    # get the last rconfiguration id of the remoteci to make the
+    # round robin
+    last_rconfiguration_id = _get_last_rconfiguration_id()
 
-    # TODO(yassine): use a tricky join/group by to remove the for clause
+    rconfiguration = _get_remoteci_configuration(last_rconfiguration_id)
+
+    # if there is no rconfiguration associated to the remoteci or no
+    # component types then use the topic's one.
+    if (rconfiguration is not None and
+            rconfiguration['component_types'] != []):
+        component_types = rconfiguration['component_types']
+    else:
+        component_types = _get_component_types_from_topic()
+
     schedule_components_ids = []
     for ct in component_types:
         where_clause = sql.and_(models.COMPONENTS.c.type == ct,
@@ -181,13 +229,14 @@ def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
 
         cmpt_id = cmpt_id[0]
         if cmpt_id in schedule_components_ids:
-            msg = ('Jobdefinition "%s" malformed: type "%s" duplicated.' %
-                   (jd_to_run['id'], ct))
+            msg = ('Component types %s malformed: type %s duplicated.' %
+                   (component_types, ct))
             raise dci_exc.DCIException(msg, status_code=412)
         schedule_components_ids.append(cmpt_id)
 
     values.update({
         'jobdefinition_id': jd_to_run['id'],
+        'rconfiguration_id': rconfiguration['id'] if rconfiguration else None,  # noqa
         'team_id': remoteci['team_id'],
         'previous_job_id': previous_job_id
     })
@@ -201,6 +250,7 @@ def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
             {'job_id': values['id'], 'component_id': sci}
             for sci in schedule_components_ids
         ]
+
         flask.g.db_conn.execute(
             models.JOIN_JOBS_COMPONENTS.insert(), job_components
         )
