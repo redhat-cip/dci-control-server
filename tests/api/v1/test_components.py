@@ -53,7 +53,9 @@ def test_create_components_with_same_name_on_different_topics(admin, topic_id):
     pstatus_code = admin.post('/api/v1/components', data=data).status_code
     assert pstatus_code == 201
 
-    topic2 = admin.post('/api/v1/topics', data={'name': 'tname'}).data
+    topic2 = admin.post('/api/v1/topics',
+                        data={'name': 'tname',
+                              'component_types': ['type1', 'type2']}).data
     topic_id2 = topic2['topic']['id']
 
     data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id2}
@@ -90,7 +92,9 @@ def test_get_all_components(admin, topic_id):
 
 
 def test_get_all_components_not_in_topic(admin, user):
-    topic = admin.post('/api/v1/topics', data={'name': 'topic_test'}).data
+    topic = admin.post('/api/v1/topics',
+                       data={'name': 'topic_test',
+                             'component_types': ['type1', 'type2']}).data
     topic_id = topic['topic']['id']
     status_code = user.get(
         '/api/v1/topics/%s/components' % topic_id).status_code
