@@ -16,6 +16,24 @@
       "revId": "bb09672925ae12f6cb0bbfca4988e35db183e13f",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_ff23df03",
+        "filename": "dci/alembic/versions/5874e497e4d8_add_remoteci_configurations.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-06-15T01:17:32Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "baa041b7_3f038775",
+      "revId": "bb09672925ae12f6cb0bbfca4988e35db183e13f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
