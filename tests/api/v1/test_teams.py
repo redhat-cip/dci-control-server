@@ -212,7 +212,9 @@ def test_delete_team_archive_dependencies(admin):
     remoteci_id = remoteci.data['remoteci']['id']
     assert remoteci.status_code == 201
 
-    topic = admin.post('/api/v1/topics', data={'name': 'topic_name'})
+    topic = admin.post('/api/v1/topics',
+                       data={'name': 'topic_name',
+                             'component_types': ['type1', 'type2']})
     topic_id = topic.data['topic']['id']
     assert topic.status_code == 201
 
