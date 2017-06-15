@@ -95,6 +95,7 @@ TOPICS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), unique=True, nullable=False),
     sa.Column('label', sa.Text),
+    sa.Column('component_types', pg.JSON, default=[]),
     sa.Column('next_topic', pg.UUID(as_uuid=True),
               sa.ForeignKey('topics.id'),
               nullable=True, default=None),
