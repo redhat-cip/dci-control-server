@@ -48,6 +48,10 @@ def create_topics(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.topic.post(flask.request.json))
 
+    # todo(yassine): enabled when client updated.
+    # if values['component_types'] == []:
+    #     raise dci_exc.DCIException('component_types should not be void')
+
     query = _TABLE.insert().values(**values)
 
     try:

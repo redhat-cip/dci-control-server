@@ -28,10 +28,14 @@ def test_create_jobdefinitions(admin, topic_id):
 
 def test_admin_get_all_jobdefinitions(jobdefinition_id, jobdefinition_user_id,
                                       admin):
-    topic_1 = admin.post('/api/v1/topics', data={'name': 'topic_1'}).data
+    topic_1 = admin.post('/api/v1/topics',
+                         data={'name': 'topic_1',
+                               'component_types': ['type1', 'type2']}).data
     topic_1_id = topic_1['topic']['id']
 
-    topic_2 = admin.post('/api/v1/topics', data={'name': 'topic_2'}).data
+    topic_2 = admin.post('/api/v1/topics',
+                         data={'name': 'topic_2',
+                               'component_types': ['type1', 'type2']}).data
     topic_2_id = topic_2['topic']['id']
 
     data = {'name': 'jobdef_1', 'topic_id': topic_1_id}
@@ -50,10 +54,14 @@ def test_admin_get_all_jobdefinitions(jobdefinition_id, jobdefinition_user_id,
 
 def test_user_get_all_jobdefinitions(jobdefinition_id, jobdefinition_user_id,
                                      admin, user, team_user_id):
-    topic_1 = admin.post('/api/v1/topics', data={'name': 'topic_1'}).data
+    topic_1 = admin.post('/api/v1/topics',
+                         data={'name': 'topic_1',
+                               'component_types': ['type1', 'type2']}).data
     topic_1_id = topic_1['topic']['id']
 
-    topic_2 = admin.post('/api/v1/topics', data={'name': 'topic_2'}).data
+    topic_2 = admin.post('/api/v1/topics',
+                         data={'name': 'topic_2',
+                               'component_types': ['type1', 'type2']}).data
     topic_2_id = topic_2['topic']['id']
 
     data = {'name': 'jobdef_1', 'topic_id': topic_1_id}
@@ -74,10 +82,14 @@ def test_user_get_all_jobdefinitions(jobdefinition_id, jobdefinition_user_id,
 
 
 def test_admin_get_all_jobdefinitions_with_topic_id(admin, topic_id):
-    topic_1 = admin.post('/api/v1/topics', data={'name': 'topic_1'}).data
+    topic_1 = admin.post('/api/v1/topics',
+                         data={'name': 'topic_1',
+                               'component_types': ['type1', 'type2']}).data
     topic_1_id = topic_1['topic']['id']
 
-    topic_2 = admin.post('/api/v1/topics', data={'name': 'topic_2'}).data
+    topic_2 = admin.post('/api/v1/topics',
+                         data={'name': 'topic_2',
+                               'component_types': ['type1', 'type2']}).data
     topic_2_id = topic_2['topic']['id']
 
     data = {'name': 'jobdef_1', 'topic_id': topic_1_id}
@@ -101,10 +113,14 @@ def test_admin_get_all_jobdefinitions_with_topic_id(admin, topic_id):
 
 def test_user_get_all_jobdefinitions_with_topic_id(admin, user, team_user_id,
                                                    topic_id):
-    topic_1 = admin.post('/api/v1/topics', data={'name': 'topic_1'}).data
+    topic_1 = admin.post('/api/v1/topics',
+                         data={'name': 'topic_1',
+                               'component_types': ['type1', 'type2']}).data
     topic_1_id = topic_1['topic']['id']
 
-    topic_2 = admin.post('/api/v1/topics', data={'name': 'topic_2'}).data
+    topic_2 = admin.post('/api/v1/topics',
+                         data={'name': 'topic_2',
+                               'component_types': ['type1', 'type2']}).data
     topic_2_id = topic_2['topic']['id']
 
     data = {'name': 'jobdef_1', 'topic_id': topic_1_id}
@@ -129,7 +145,9 @@ def test_user_get_all_jobdefinitions_with_topic_id(admin, user, team_user_id,
 
 
 def test_get_all_jobdefinitions_not_in_topic(admin, user):
-    topic = admin.post('/api/v1/topics', data={'name': 'topic_test'}).data
+    topic = admin.post('/api/v1/topics',
+                       data={'name': 'topic_test',
+                             'component_types': ['type1', 'type2']}).data
     topic_id = topic['topic']['id']
     status_code = user.get(
         '/api/v1/topics/%s/jobdefinitions' % topic_id).status_code
