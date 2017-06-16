@@ -33,6 +33,23 @@
       "revId": "4c4418c9e2dac4b835ce6fbbc9f6b9055ae2a447",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baa041b7_e5aa3019",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-16T18:19:45Z",
+      "side": 1,
+      "message": "If we do so, the email must be unique. Aslo what if email \u003d\u003d username \u003d\u003d \u0027\u0027?",
+      "revId": "4c4418c9e2dac4b835ce6fbbc9f6b9055ae2a447",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
