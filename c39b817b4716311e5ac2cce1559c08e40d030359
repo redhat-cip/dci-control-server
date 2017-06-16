@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "baa041b7_65b6208c",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 21,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-16T17:46:05Z",
+      "side": 1,
+      "message": "What you describe here is a side effect of the way the client work. It should not send all the keys every time like it does.\n\nYou want to set the country, only set the country key in the dict and POST it.",
+      "revId": "c39b817b4716311e5ac2cce1559c08e40d030359",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
