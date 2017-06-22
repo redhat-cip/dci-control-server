@@ -380,7 +380,7 @@ file = schema_factory(file)
 topic = utils.dict_merge(base, {
     v.Optional('label', default=None): six.text_type,
     v.Optional('next_topic', default=None): v.Any(UUID,
-                                                  msg=INVALID_JOB),
+                                                  msg=INVALID_TOPIC),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 })
