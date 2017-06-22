@@ -300,6 +300,17 @@ def test_put_topics(admin, topic_id):
     assert gt.data['topic']['name'] == 'nname'
 
 
+def test_remove_next_topic_from_topic(admin, topic_id):
+    request = admin.post('/api/v1/topics',
+                         data={'name': 'topic 1', 'next_topic': topic_id})
+    assert request.status_code == 201
+
+    request2 = admin.put('/api/v1/topics/%s' % request.data['topic']['id'],
+                         data={'name': 'topic 1', 'next_topic': ''},
+                         headers={'If-match': request.headers.get("ETag")})
+    assert request2.status_code == 201
+
+
 # Tests for topics and teams management
 def test_add_team_to_topic_and_get(admin):
     # create a topic
