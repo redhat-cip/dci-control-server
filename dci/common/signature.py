@@ -70,8 +70,9 @@ def compare_digest(foo, bar):
     return f(foo, bar)
 
 
-def is_timestamp_in_bounds(timestamp, max_drift=timedelta(minutes=5),
-                           now=datetime.utcnow()):
+def is_timestamp_in_bounds(timestamp, max_drift=timedelta(minutes=5), now=None):
+    if now is None:
+        now = datetime.utcnow()
     return abs(now - timestamp) < max_drift
 
 
