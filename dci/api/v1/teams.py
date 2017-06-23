@@ -37,7 +37,8 @@ _VALID_EMBED = embeds.teams()
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
     'remotecis': True,
-    'topics': True
+    'topics': True,
+    'permissions': True
 }
 
 
