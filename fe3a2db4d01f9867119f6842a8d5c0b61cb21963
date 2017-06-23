@@ -1,0 +1,136 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9aa53dc9_732288bb",
+        "filename": "dci/api/v1/permissions.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-06-23T12:21:42Z",
+      "side": 1,
+      "message": "\"Permission update error\" to be consistent with deletion ?",
+      "revId": "fe3a2db4d01f9867119f6842a8d5c0b61cb21963",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_93250cc4",
+        "filename": "dci/api/v1/permissions.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 132,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-06-23T12:21:42Z",
+      "side": 1,
+      "message": "conflict if rowcount \u003d\u003d 0 ?\n\n\"Permission deletion error\" no ?",
+      "range": {
+        "startLine": 132,
+        "startChar": 34,
+        "endLine": 132,
+        "endChar": 64
+      },
+      "revId": "fe3a2db4d01f9867119f6842a8d5c0b61cb21963",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_f33578f7",
+        "filename": "tests/api/v1/test_permissions.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-06-23T12:21:42Z",
+      "side": 1,
+      "message": "same as def test_success_create_permission(admin) no?",
+      "range": {
+        "startLine": 59,
+        "startChar": 0,
+        "endLine": 68,
+        "endChar": 36
+      },
+      "revId": "fe3a2db4d01f9867119f6842a8d5c0b61cb21963",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_d33a74e7",
+        "filename": "tests/api/v1/test_permissions.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 118,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-06-23T12:21:42Z",
+      "side": 1,
+      "message": "test_fail_update_permission_missing_fields ?\n\ncan\u0027t update label field ?",
+      "range": {
+        "startLine": 118,
+        "startChar": 4,
+        "endLine": 118,
+        "endChar": 51
+      },
+      "revId": "fe3a2db4d01f9867119f6842a8d5c0b61cb21963",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_b33ff0d5",
+        "filename": "tests/api/v1/test_roles.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 245,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-06-23T12:21:42Z",
+      "side": 1,
+      "message": "Maybe you can test that the array is not an array of \u0027id\u0027 and embed works as expected\n\n\n    assert len(result.data[\u0027role\u0027][\u0027permissions\u0027][0][\u0027label\u0027]) \u003d\u003d \u0027APERMISSION\u0027",
+      "range": {
+        "startLine": 245,
+        "startChar": 0,
+        "endLine": 245,
+        "endChar": 55
+      },
+      "revId": "fe3a2db4d01f9867119f6842a8d5c0b61cb21963",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_1331fc0b",
+        "filename": "tests/conftest.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 351,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-06-23T12:21:42Z",
+      "side": 1,
+      "message": "tiny improvement \n\n    data \u003d admin.post(\u0027/api/v1/permissions\u0027, data\u003ddata).data\n    return data[\u0027permission\u0027]\n\nor \n\n    return admin.post(\u0027/api/v1/permissions\u0027, data\u003ddata).data[\u0027permission\u0027]",
+      "range": {
+        "startLine": 350,
+        "startChar": 0,
+        "endLine": 351,
+        "endChar": 35
+      },
+      "revId": "fe3a2db4d01f9867119f6842a8d5c0b61cb21963",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
