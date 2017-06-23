@@ -32,7 +32,9 @@ from dci.db import models
 
 _TABLE = models.ROLES
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_EMBED_MANY = {}
+_EMBED_MANY = {
+    'permissions': True
+}
 
 
 @api.route('/roles', methods=['POST'])
@@ -162,3 +164,45 @@ def get_to_purge_archived_roles(user):
 @auth.login_required
 def purge_archived_roles(user):
     return base.purge_archived_resources(user, _TABLE)
+
+
+@api.route('/roles/<uuid:role_id>/permissions', methods=['POST'])
+@auth.login_required
+def add_permission_to_role(user, role_id):
+    if not auth.is_admin(user):
+        raise auth.UNAUTHORIZED
+
+    data_json = flask.request.json
+    values = {'role_id': role_id,
+              'permission_id': data_json.get('permission_id')}
+
+    v1_utils.verify_existence_and_get(role_id, _TABLE)
+
+    query = models.JOIN_ROLES_PERMISSIONS.insert().values(**values)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict(_TABLE.name,
+                                          'role_id, permission_id')
+    result = json.dumps(values)
+    return flask.Response(result, 201, content_type='application/json')
+
+
+@api.route('/roles/<uuid:role_id>/permissions/<uuid:permission_id>',
+           methods=['DELETE'])
+@auth.login_required
+def delete_permission_from_role(user, role_id, permission_id):
+    if not auth.is_admin(user):
+        raise auth.UNAUTHORIZED
+    v1_utils.verify_existence_and_get(role_id, _TABLE)
+
+    JRP = models.JOIN_ROLES_PERMISSIONS
+    where_clause = sql.and_(JRP.c.role_id == role_id,
+                            JRP.c.permission_id == permission_id)
+    query = JRP.delete().where(where_clause)
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Role', role_id)
+
+    return flask.Response(None, 204, content_type='application/json')
