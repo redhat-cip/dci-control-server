@@ -16,6 +16,24 @@
       "revId": "ab23d2ea9d274465cf282eb419f08441f55d6077",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_ae9d475b",
+        "filename": "dci/common/signature.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-23T18:37:59Z",
+      "side": 1,
+      "message": "Hum this was actually the original code. ahah.",
+      "parentUuid": "9aa53dc9_2e9c9768",
+      "revId": "ab23d2ea9d274465cf282eb419f08441f55d6077",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
