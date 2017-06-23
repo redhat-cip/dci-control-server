@@ -464,3 +464,26 @@ role_put = {
 }
 
 role = DCISchema(schema_factory(role).post, Schema(role_put))
+
+###############################################################################
+#                                                                             #
+#                          Permissions schemas                                #
+#                                                                             #
+###############################################################################
+
+permission = {
+    'name': six.text_type,
+    v.Optional('label', default=None): six.text_type,
+    v.Optional('description', default=None): six.text_type,
+    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
+                                                 msg=INVALID_RESOURCE_STATE),
+}
+
+permission_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('description'): six.text_type,
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
+}
+
+permission = DCISchema(schema_factory(permission).post, Schema(permission_put))
