@@ -54,6 +54,42 @@
     },
     {
       "key": {
+        "uuid": "9aa53dc9_eebeafd3",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-23T17:54:47Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "baa041b7_45255ca9",
+      "revId": "4c4418c9e2dac4b835ce6fbbc9f6b9055ae2a447",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_0ebaf3e1",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-23T17:54:47Z",
+      "side": 1,
+      "message": "Good point.",
+      "parentUuid": "9aa53dc9_eed7cf21",
+      "revId": "4c4418c9e2dac4b835ce6fbbc9f6b9055ae2a447",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baa041b7_e5aa3019",
         "filename": "dci/auth_mechanism.py",
         "patchSetId": 7
@@ -83,6 +119,24 @@
       "side": 1,
       "message": "I think this or_ is not needed.",
       "parentUuid": "baa041b7_e5aa3019",
+      "revId": "4c4418c9e2dac4b835ce6fbbc9f6b9055ae2a447",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_ceb3eb09",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-06-23T17:54:47Z",
+      "side": 1,
+      "message": "The more I think about it the more I would prefer we avoid this change for now. E.g: nothing prevent someone to \"steal\" the email from another person.",
+      "parentUuid": "9aa53dc9_cedc0b49",
       "revId": "4c4418c9e2dac4b835ce6fbbc9f6b9055ae2a447",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
