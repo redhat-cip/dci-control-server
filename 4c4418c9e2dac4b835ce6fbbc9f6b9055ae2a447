@@ -140,6 +140,24 @@
       "revId": "4c4418c9e2dac4b835ce6fbbc9f6b9055ae2a447",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_d91f335a",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-06-26T10:26:37Z",
+      "side": 1,
+      "message": "\u003e If we do so, the email must be unique.\n\nYes, which sounds reasonable. Not sure I understand the issue here.\n\n\u003e what if email \u003d\u003d username\n\nWell it\u0027s an or so both test will result in True, so it will succeed anyway. Not sure I understand the third \u0027\u003d\u003d \"\u0027 of the sentence\n\n\u003e The more I think about it the more I would prefer we avoid this change for now. E.g: nothing prevent someone to \"steal\" the email from another person.\n\nWell I\u0027d like to understand this point. I mean this is what every SaaS platforms do (Github, Twitter, Trello, ...). I don\u0027t get why this would be an issue in our case.",
+      "parentUuid": "9aa53dc9_ceb3eb09",
+      "revId": "4c4418c9e2dac4b835ce6fbbc9f6b9055ae2a447",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
