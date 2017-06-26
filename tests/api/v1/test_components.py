@@ -482,3 +482,42 @@ def test_change_component_to_invalid_state(admin, topic_id):
     current_component = admin.get('/api/v1/components/' + pc_id)
     assert current_component.status_code == 200
     assert current_component.data['component']['state'] == 'active'
+
+
+def test_component_success_update_field_by_field(admin, topic_id):
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'topic_id': topic_id
+    }
+    c = admin.post('/api/v1/components', data=data).data['component']
+
+    admin.put('/api/v1/components/%s' % c['id'],
+              data={'state': 'inactive'},
+              headers={'If-match': c['etag']})
+
+    c = admin.get('/api/v1/components/%s' % c['id']).data['component']
+
+    assert c['name'] == 'pname'
+    assert c['state'] == 'inactive'
+    assert c['title'] is None
+
+    admin.put('/api/v1/components/%s' % c['id'],
+              data={'name': 'pname2'},
+              headers={'If-match': c['etag']})
+
+    c = admin.get('/api/v1/components/%s' % c['id']).data['component']
+
+    assert c['name'] == 'pname2'
+    assert c['state'] == 'inactive'
+    assert c['title'] is None
+
+    admin.put('/api/v1/components/%s' % c['id'],
+              data={'title': 'a new title'},
+              headers={'If-match': c['etag']})
+
+    c = admin.get('/api/v1/components/%s' % c['id']).data['component']
+
+    assert c['name'] == 'pname2'
+    assert c['state'] == 'inactive'
+    assert c['title'] == 'a new title'

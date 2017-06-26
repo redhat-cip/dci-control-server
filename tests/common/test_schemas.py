@@ -150,7 +150,7 @@ class TestRole(utils.SchemaTesting):
 
 class TestTest(utils.SchemaTesting):
     schema = schemas.test
-    data = dict([utils.NAME, utils.TEAM, utils.STATE])
+    data = dict([utils.NAME, utils.TEAM, utils.STATE, utils.DATA])
 
     @staticmethod
     def generate_invalids_and_errors():
