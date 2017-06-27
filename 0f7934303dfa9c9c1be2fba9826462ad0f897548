@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "9aa53dc9_1960fb34",
+        "filename": "dci/api/v1/permissions.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 125,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-06-27T06:47:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9aa53dc9_ce6d2bce",
+      "range": {
+        "startLine": 122,
+        "startChar": 4,
+        "endLine": 125,
+        "endChar": 5
+      },
+      "revId": "0f7934303dfa9c9c1be2fba9826462ad0f897548",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9aa53dc9_ee78ef91",
         "filename": "dci/api/v1/permissions.py",
         "patchSetId": 3
@@ -36,6 +60,30 @@
       "writtenOn": "2017-06-23T13:50:59Z",
       "side": 1,
       "message": "_TABLE.update + .values(**values)",
+      "range": {
+        "startLine": 127,
+        "startChar": 12,
+        "endLine": 127,
+        "endChar": 47
+      },
+      "revId": "0f7934303dfa9c9c1be2fba9826462ad0f897548",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_f964374a",
+        "filename": "dci/api/v1/permissions.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-06-27T06:47:08Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9aa53dc9_ee78ef91",
       "range": {
         "startLine": 127,
         "startChar": 12,
