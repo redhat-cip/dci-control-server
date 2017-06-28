@@ -42,7 +42,7 @@ def test_bam_is_valid_false_if_not_authenticated():
         return {}, False
 
     basic_auth_mecanism = BasicAuthMechanism(MockRequest(AuthMock()))
-    basic_auth_mecanism.build_auth = return_is_authenticated
+    basic_auth_mecanism.get_user_and_check_auth = return_is_authenticated
     assert not basic_auth_mecanism.is_valid()
 
 
@@ -51,7 +51,7 @@ def test_bam_is_valid():
         return {}, True
 
     basic_auth_mecanism = BasicAuthMechanism(MockRequest(AuthMock()))
-    basic_auth_mecanism.build_auth = return_is_authenticated
+    basic_auth_mecanism.get_user_and_check_auth = return_is_authenticated
     assert basic_auth_mecanism.is_valid()
 
 

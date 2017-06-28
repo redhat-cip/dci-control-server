@@ -15,7 +15,7 @@
 # under the License.
 from datetime import datetime
 import flask
-import sqlalchemy.sql
+from sqlalchemy import sql
 from passlib.apps import custom_app_context as pwd_context
 
 from dci.db import models
@@ -37,30 +37,39 @@ class BasicAuthMechanism(BaseMechanism):
         auth = self.request.authorization
         if not auth:
             return False
-        user, is_authenticated = self.build_auth(auth.username, auth.password)
+        user, is_authenticated = \
+            self.get_user_and_check_auth(auth.username, auth.password)
         if not is_authenticated:
             return False
         self.identity = user
         return True
 
-    def build_auth(self, username, password):
+    def get_user_and_check_auth(self, username, password):
         """Check the combination username/password that is valid on the
         database.
         """
 
-        where_clause = sqlalchemy.sql.expression.and_(
-            models.USERS.c.name == username,
-            models.USERS.c.state == 'active',
-            models.TEAMS.c.state == 'active'
+        query_get_user = (
+            sql.select(
+                [
+                    models.USERS,
+                    models.TEAMS.c.name.label('team_name'),
+                    models.TEAMS.c.country.label('team_country'),
+                ]
+            ).select_from(
+                sql.join(
+                    models.USERS,
+                    models.TEAMS,
+                    models.USERS.c.team_id == models.TEAMS.c.id
+                )
+            ).where(
+                sql.and_(
+                    models.USERS.c.name == username,
+                    models.USERS.c.state == 'active',
+                    models.TEAMS.c.state == 'active'
+                )
+            )
         )
-        t_j = sqlalchemy.join(
-            models.USERS, models.TEAMS,
-            models.USERS.c.team_id == models.TEAMS.c.id)
-        query_get_user = (sqlalchemy.sql.select([
-            models.USERS,
-            models.TEAMS.c.name.label('team_name'),
-            models.TEAMS.c.country.label('team_country'),
-        ]).select_from(t_j).where(where_clause))
 
         user = flask.g.db_conn.execute(query_get_user).fetchone()
         if user is None:
@@ -120,24 +129,30 @@ class SignatureAuthMechanism(BaseMechanism):
     def get_remoteci(ci_id):
         """Get the remoteci including its API secret
         """
-        where_clause = sqlalchemy.sql.expression.and_(
-            models.REMOTECIS.c.id == ci_id,
-            models.REMOTECIS.c.state == 'active',
-            models.TEAMS.c.state == 'active'
+
+        query_get_remoteci = (
+            sql.select(
+                [
+                    models.REMOTECIS,
+                    models.TEAMS.c.name.label('team_name'),
+                    models.TEAMS.c.country.label('team_country'),
+                ]
+            ).select_from(
+                sql.join(
+                    models.REMOTECIS,
+                    models.TEAMS,
+                    models.REMOTECIS.c.team_id == models.TEAMS.c.id
+                )
+            ).where(
+                sql.and_(
+                    models.REMOTECIS.c.id == ci_id,
+                    models.REMOTECIS.c.state == 'active',
+                    models.TEAMS.c.state == 'active'
+                )
+            )
         )
-        join_clause = sqlalchemy.join(
-            models.REMOTECIS, models.TEAMS,
-            models.REMOTECIS.c.team_id == models.TEAMS.c.id
-        )
-        query = (sqlalchemy
-                 .select([
-                     models.REMOTECIS,
-                     models.TEAMS.c.name.label('team_name'),
-                     models.TEAMS.c.country.label('team_country'),
-                 ])
-                 .select_from(join_clause)
-                 .where(where_clause))
-        remoteci = flask.g.db_conn.execute(query).fetchone()
+
+        remoteci = flask.g.db_conn.execute(query_get_remoteci).fetchone()
         return remoteci
 
     def verify_remoteci_auth_signature(self, remoteci, timestamp,
