@@ -114,12 +114,22 @@ def get_all_users(user, team_id=None):
     return flask.jsonify({'users': rows, '_meta': {'count': nb_rows}})
 
 
+def user_by_id(user, user_id):
+    user_res = v1_utils.verify_existence_and_get(user_id, _TABLE)
+    return base.get_resource_by_id(user, user_res, _TABLE, _EMBED_MANY,
+                                   ignore_columns=['password'])
+
+
 @api.route('/users/<uuid:user_id>', methods=['GET'])
 @auth.login_required
 def get_user_by_id(user, user_id):
-    user_res = v1_utils.verify_existence_and_get(user_id, _TABLE)
-    return base.get_resource_by_id(user, user_res, _TABLE, _EMBED_MANY,
-                                   ['password'])
+    return user_by_id(user, user_id)
+
+
+@api.route('/users/me', methods=['GET'])
+@auth.login_required
+def get_current_user(user):
+    return user_by_id(user, user['id'])
 
 
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
