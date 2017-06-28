@@ -497,6 +497,11 @@ def flask_headers_to_dict(headers):
         if header.startswith('dci'):
             rv[header[4:]] = value
 
+    # Discard authentication headers
+    for key in ('auth_signature', 'client_info'):
+        if key in rv:
+            del rv[key]
+
     return rv
 
 
