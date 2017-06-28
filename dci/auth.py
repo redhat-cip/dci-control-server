@@ -14,13 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import json
-from functools import wraps
-
 import flask
 from passlib.apps import custom_app_context as pwd_context
 
-from dci.auth_mechanism import BasicAuthMechanism, SignatureAuthMechanism
 from dci.db import models
 from dci.common import exceptions as exc
 from sqlalchemy import sql
@@ -32,17 +28,8 @@ def hash_password(password):
     return pwd_context.encrypt(password)
 
 
-def reject():
-    """Sends a 401 reject response that enables basic auth."""
-
-    auth_message = ('Could not verify your access level for that URL.'
-                    'Please login with proper credentials.')
-    auth_message = json.dumps({'_status': 'Unauthorized',
-                               'message': auth_message})
-
-    headers = {'WWW-Authenticate': 'Basic realm="Login required"'}
-    return flask.Response(auth_message, 401, headers=headers,
-                          content_type='application/json')
+def check_passwords_equal(password, encrypted_password):
+    return pwd_context.verify(password, encrypted_password)
 
 
 # This method should be deleted once permissions mechanism is
@@ -77,15 +64,3 @@ def check_export_control(user, component):
     if not is_admin(user):
         if not component['export_control']:
             raise UNAUTHORIZED
-
-
-def login_required(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        for mechanism in [BasicAuthMechanism(flask.request),
-                          SignatureAuthMechanism(flask.request)]:
-            if mechanism.is_valid():
-                return f(mechanism.identity, *args, **kwargs)
-        return reject()
-
-    return decorated

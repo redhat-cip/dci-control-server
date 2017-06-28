@@ -21,6 +21,7 @@ from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
 from dci import auth
+from dci import decorators
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
@@ -36,7 +37,7 @@ _EMBED_MANY = {}
 
 
 @api.route('/permissions', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 @audits.log
 def create_permission(user):
     if not auth.is_admin(user):
@@ -62,7 +63,7 @@ def create_permission(user):
 
 
 @api.route('/permissions/<uuid:permission_id>', methods=['PUT'])
-@auth.login_required
+@decorators.login_required
 def update_permission(user, permission_id):
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
@@ -89,7 +90,7 @@ def update_permission(user, permission_id):
 
 
 @api.route('/permissions', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_all_permissions(user):
     args = schemas.args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
@@ -107,14 +108,14 @@ def get_all_permissions(user):
 
 
 @api.route('/permissions/<uuid:permission_id>', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_permission_by_id(user, permission_id):
     permission = v1_utils.verify_existence_and_get(permission_id, _TABLE)
     return base.get_resource_by_id(user, permission, _TABLE, _EMBED_MANY)
 
 
 @api.route('/permissions/<uuid:permission_id>', methods=['DELETE'])
-@auth.login_required
+@decorators.login_required
 def delete_permission_by_id(user, permission_id):
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
@@ -141,12 +142,12 @@ def delete_permission_by_id(user, permission_id):
 
 
 @api.route('/permissions/purge', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_to_purge_archived_permissions(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/permissions/purge', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def purge_archived_permissions(user):
     return base.purge_archived_resources(user, _TABLE)

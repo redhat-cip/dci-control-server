@@ -21,6 +21,7 @@ from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
 from dci import auth
+from dci import decorators
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
@@ -38,7 +39,7 @@ _EMBED_MANY = {
 
 
 @api.route('/roles', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 @audits.log
 def create_roles(user):
     values = v1_utils.common_values_dict(user)
@@ -64,7 +65,7 @@ def create_roles(user):
 
 
 @api.route('/roles/<uuid:role_id>', methods=['PUT'])
-@auth.login_required
+@decorators.login_required
 @audits.log
 def update_role(user, role_id):
     # get If-Match header
@@ -92,7 +93,7 @@ def update_role(user, role_id):
 
 
 @api.route('/roles', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_all_roles(user):
     args = schemas.args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
@@ -115,7 +116,7 @@ def get_all_roles(user):
 
 
 @api.route('/roles/<uuid:role_id>', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_role_by_id(user, role_id):
     role = v1_utils.verify_existence_and_get(role_id, _TABLE)
 
@@ -130,7 +131,7 @@ def get_role_by_id(user, role_id):
 
 
 @api.route('/roles/<uuid:role_id>', methods=['DELETE'])
-@auth.login_required
+@decorators.login_required
 @audits.log
 def delete_role_by_id(user, role_id):
     # get If-Match header
@@ -155,19 +156,19 @@ def delete_role_by_id(user, role_id):
 
 
 @api.route('/roles/purge', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_to_purge_archived_roles(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/roles/purge', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def purge_archived_roles(user):
     return base.purge_archived_resources(user, _TABLE)
 
 
 @api.route('/roles/<uuid:role_id>/permissions', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def add_permission_to_role(user, role_id):
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
@@ -190,7 +191,7 @@ def add_permission_to_role(user, role_id):
 
 @api.route('/roles/<uuid:role_id>/permissions/<uuid:permission_id>',
            methods=['DELETE'])
-@auth.login_required
+@decorators.login_required
 def delete_permission_from_role(user, role_id, permission_id):
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED

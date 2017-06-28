@@ -25,6 +25,7 @@ from dci.api.v1 import files_events
 from dci.api.v1 import transformations as tsfm
 from dci.api.v1 import utils as v1_utils
 from dci import auth
+from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
@@ -47,7 +48,7 @@ _EMBED_MANY = {
 
 
 @api.route('/files', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def create_files(user):
     # todo(yassine): use voluptuous for headers validation
     headers_values = v1_utils.flask_headers_to_dict(flask.request.headers)
@@ -141,7 +142,7 @@ def create_files(user):
 
 
 @api.route('/files', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_all_files(user, j_id=None):
     """Get all files.
     """
@@ -164,14 +165,14 @@ def get_all_files(user, j_id=None):
 
 
 @api.route('/files/<uuid:file_id>', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_file_by_id(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
     return base.get_resource_by_id(user, file, _TABLE, _EMBED_MANY)
 
 
 @api.route('/files/<uuid:file_id>/content', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_file_content(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
     swift = dci_config.get_store('files')
@@ -202,7 +203,7 @@ def get_file_content(user, file_id):
 
 
 @api.route('/files/<uuid:file_id>', methods=['DELETE'])
-@auth.login_required
+@decorators.login_required
 def delete_file_by_id(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
@@ -224,12 +225,12 @@ def delete_file_by_id(user, file_id):
 
 
 @api.route('/files/purge', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_to_purge_archived_files(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/files/purge', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def purge_archived_files(user):
     return base.purge_archived_resources(user, _TABLE)

@@ -22,6 +22,7 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
 from dci import auth
+from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
@@ -57,7 +58,7 @@ def _verify_existence_and_get_user(user_id):
 
 
 @api.route('/users', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def create_users(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.user.post(flask.request.json))
@@ -92,7 +93,7 @@ def create_users(user):
 
 
 @api.route('/users', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_all_users(user, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
@@ -121,19 +122,19 @@ def user_by_id(user, user_id):
 
 
 @api.route('/users/<uuid:user_id>', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_user_by_id(user, user_id):
     return user_by_id(user, user_id)
 
 
 @api.route('/users/me', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_current_user(user):
     return user_by_id(user, user['id'])
 
 
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
-@auth.login_required
+@decorators.login_required
 def put_user(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -170,7 +171,7 @@ def put_user(user, user_id):
 
 
 @api.route('/users/<uuid:user_id>', methods=['DELETE'])
-@auth.login_required
+@decorators.login_required
 def delete_user_by_id(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -197,12 +198,12 @@ def delete_user_by_id(user, user_id):
 
 
 @api.route('/users/purge', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_to_purge_archived_users(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/users/purge', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def purge_archived_users(user):
     return base.purge_archived_resources(user, _TABLE)

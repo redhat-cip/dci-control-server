@@ -24,6 +24,7 @@ from dci.api.v1 import remotecis
 from dci.api.v1 import tests
 from dci.api.v1 import utils as v1_utils
 from dci import auth
+from dci import decorators
 from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
@@ -42,7 +43,7 @@ _EMBED_MANY = {
 
 
 @api.route('/teams', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 @audits.log
 def create_teams(user):
     values = v1_utils.common_values_dict(user)
@@ -65,7 +66,7 @@ def create_teams(user):
 
 
 @api.route('/teams', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_all_teams(user):
     args = schemas.args(flask.request.args.to_dict())
 
@@ -85,7 +86,7 @@ def get_all_teams(user):
 
 
 @api.route('/teams/<uuid:t_id>', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_team_by_id(user, t_id):
     team = v1_utils.verify_existence_and_get(t_id, _TABLE)
     if not(auth.is_admin(user) or auth.is_in_team(user, team['id'])):
@@ -94,21 +95,21 @@ def get_team_by_id(user, t_id):
 
 
 @api.route('/teams/<uuid:team_id>/remotecis', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_remotecis_by_team(user, team_id):
     team = v1_utils.verify_existence_and_get(team_id, _TABLE)
     return remotecis.get_all_remotecis(team['id'])
 
 
 @api.route('/teams/<uuid:team_id>/tests', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_tests_by_team(user, team_id):
     team = v1_utils.verify_existence_and_get(team_id, _TABLE)
     return tests.get_all_tests(user, team['id'])
 
 
 @api.route('/teams/<uuid:t_id>', methods=['PUT'])
-@auth.login_required
+@decorators.login_required
 def put_team(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -137,7 +138,7 @@ def put_team(user, t_id):
 
 
 @api.route('/teams/<uuid:t_id>', methods=['DELETE'])
-@auth.login_required
+@decorators.login_required
 def delete_team_by_id(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -170,12 +171,12 @@ def delete_team_by_id(user, t_id):
 
 
 @api.route('/teams/purge', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_to_purge_archived_teams(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/teams/purge', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def purge_archived_teams(user):
     return base.purge_archived_resources(user, _TABLE)

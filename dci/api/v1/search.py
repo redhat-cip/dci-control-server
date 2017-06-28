@@ -19,11 +19,12 @@ from flask import json
 
 from dci.api.v1 import api
 from dci import auth
+from dci import decorators
 from dci.common import schemas
 
 
 @api.route('/search', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def search(user):
     values = schemas.search.post(flask.request.json)
 
@@ -41,7 +42,7 @@ def search(user):
 
 
 @api.route('/search/<uuid:id>', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get(user, id):
     if auth.is_admin(user):
         res = flask.g.es_conn.get(id)

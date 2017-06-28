@@ -27,6 +27,7 @@ from dci.api.v1 import base
 from dci.api.v1 import issues
 from dci.api.v1 import utils as v1_utils
 from dci import auth
+from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
@@ -47,7 +48,7 @@ _EMBED_MANY = {
 
 
 @api.route('/components', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def create_components(user):
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
@@ -67,7 +68,7 @@ def create_components(user):
 
 
 @api.route('/components/<uuid:c_id>', methods=['PUT'])
-@auth.login_required
+@decorators.login_required
 def update_components(user, c_id):
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
@@ -120,7 +121,7 @@ def get_all_components(user, topic_id):
 
 
 @api.route('/components/<uuid:c_id>', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     v1_utils.verify_team_in_topic(user, component['topic_id'])
@@ -129,7 +130,7 @@ def get_component_by_id(user, c_id):
 
 
 @api.route('/components/<uuid:c_id>', methods=['DELETE'])
-@auth.login_required
+@decorators.login_required
 def delete_component_by_id(user, c_id):
     # get If-Match header
     if not auth.is_admin(user):
@@ -152,19 +153,19 @@ def delete_component_by_id(user, c_id):
 
 
 @api.route('/components/purge', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_to_purge_archived_components(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/components/purge', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def purge_archived_components(user):
     return base.purge_archived_resources(user, _TABLE)
 
 
 @api.route('/components/<uuid:c_id>/files', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def list_components_files(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     v1_utils.verify_team_in_topic(user, component['topic_id'])
@@ -184,7 +185,7 @@ def list_components_files(user, c_id):
 
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def list_component_file(user, c_id, f_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     auth.check_export_control(user, component)
@@ -207,7 +208,7 @@ def list_component_file(user, c_id, f_id):
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>/content',
            methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def download_component_file(user, c_id, f_id):
     swift = dci_config.get_store('components')
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
@@ -223,7 +224,7 @@ def download_component_file(user, c_id, f_id):
 
 
 @api.route('/components/<uuid:c_id>/files', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def upload_component_file(user, c_id):
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
@@ -261,7 +262,7 @@ def upload_component_file(user, c_id):
 
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['DELETE'])
-@auth.login_required
+@decorators.login_required
 def delete_component_file(user, c_id, f_id):
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
@@ -287,21 +288,21 @@ def delete_component_file(user, c_id, f_id):
 
 
 @api.route('/components/<c_id>/issues', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def retrieve_issues_from_component(user, c_id):
     """Retrieve all issues attached to a component."""
     return issues.get_all_issues(c_id, _TABLE)
 
 
 @api.route('/components/<c_id>/issues', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def attach_issue_to_component(user, c_id):
     """Attach an issue to a component."""
     return issues.attach_issue(c_id, _TABLE, user['id'])
 
 
 @api.route('/components/<c_id>/issues/<i_id>', methods=['DELETE'])
-@auth.login_required
+@decorators.login_required
 def unattach_issue_from_component(user, c_id, i_id):
     """Unattach an issue to a component."""
     return issues.unattach_issue(c_id, i_id, _TABLE)
