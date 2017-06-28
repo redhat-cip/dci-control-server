@@ -54,7 +54,6 @@ class BasicAuthMechanism(BaseMechanism):
                 [
                     models.USERS,
                     models.TEAMS.c.name.label('team_name'),
-                    models.TEAMS.c.country.label('team_country'),
                 ]
             ).select_from(
                 sql.join(
@@ -138,7 +137,6 @@ class SignatureAuthMechanism(BaseMechanism):
                 [
                     models.REMOTECIS,
                     models.TEAMS.c.name.label('team_name'),
-                    models.TEAMS.c.country.label('team_country'),
                 ]
             ).select_from(
                 sql.join(
