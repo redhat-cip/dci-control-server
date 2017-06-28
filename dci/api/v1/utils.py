@@ -523,3 +523,7 @@ def common_values_dict(user):
     }
 
     return values
+
+
+def log():
+    return flask.current_app.logger

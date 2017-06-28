@@ -87,7 +87,15 @@ def create_files(user):
                                       values['job_id'],
                                       file_id)
 
-    swift.upload(file_path, flask.request.stream)
+    if flask.request.stream.tell():
+        v1_utils.log().info(
+            'Request stream already consumed. Storing file content '
+            'using in-memory data.')
+        swift.upload(file_path, flask.request.data)
+    else:
+        v1_utils.log().info(
+            'Storing file content using request stream.')
+        swift.upload(file_path, flask.request.stream)
     s_file = swift.head(file_path)
 
     etag = utils.gen_etag()
