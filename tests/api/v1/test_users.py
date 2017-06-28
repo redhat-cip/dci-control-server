@@ -388,3 +388,15 @@ def test_success_update_field_by_field(admin, team_id):
 
     assert t['name'] == 'newuser'
     assert t['state'] == 'inactive'
+
+
+def test_get_current_user(user):
+    request = user.get('/api/v1/users/me')
+    assert request.status_code == 200
+
+    me = request.data['user']
+    expected_user = user.get('/api/v1/users?where=name:user').data['users'][0]
+
+    assert me['id'] == expected_user['id']
+    for key in expected_user.keys():
+        assert me[key] == expected_user[key]
