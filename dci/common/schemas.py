@@ -228,6 +228,20 @@ user = DCISchema(schema_factory(user).post,
 
 ###############################################################################
 #                                                                             #
+#                            Current User schemas                             #
+#                                                                             #
+###############################################################################
+
+current_user_put = {
+    'current_password': six.text_type,
+    'new_password': six.text_type,
+}
+
+current_user = DCISchema(schema_factory({}).post, Schema(current_user_put))
+
+
+###############################################################################
+#                                                                             #
 #                              Component schemas                              #
 #                                                                             #
 ###############################################################################

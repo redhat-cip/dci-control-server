@@ -133,6 +133,37 @@ def get_current_user(user):
     return user_by_id(user, user['id'])
 
 
+@api.route('/users/me', methods=['PUT'])
+@decorators.login_required
+def put_current_user(user):
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+    values = schemas.current_user.put(flask.request.json)
+
+    current_password = values['current_password']
+    encrypted_password = user['password']
+    if not auth.check_passwords_equal(current_password, encrypted_password):
+        raise dci_exc.DCIException('current_password invalid')
+
+    user_id = user['id']
+    etag = utils.gen_etag()
+
+    query = _TABLE.update().where(sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        _TABLE.c.id == user_id
+    )).values({
+        'etag': etag,
+        'password': auth.hash_password(values['new_password'])
+    })
+
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('User', user_id)
+
+    return flask.Response(None, 204, headers={'ETag': etag},
+                          content_type='application/json')
+
+
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
 @decorators.login_required
 def put_user(user, user_id):
