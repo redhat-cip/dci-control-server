@@ -453,3 +453,41 @@ def test_get_current_user(user):
     assert me['id'] == expected_user['id']
     for key in expected_user.keys():
         assert me[key] == expected_user[key]
+
+
+def test_update_current_user(admin, user):
+    user_data, user_etag = get_user(admin, 'user')
+
+    assert user.get('/api/v1/users/me').status_code == 200
+
+    assert user.put(
+        '/api/v1/users/me',
+        data={'current_password': 'user', 'new_password': 'password'},
+        headers={'If-match': user_etag}
+    ).status_code == 204
+
+    assert user.get('/api/v1/users/me').status_code == 401
+
+    user_data, user_etag = get_user(admin, 'user')
+
+    assert admin.put(
+        '/api/v1/users/%s' % user_data['id'],
+        data={'password': 'user'},
+        headers={'If-match': user_etag}
+    ).status_code == 204
+
+    assert user.get('/api/v1/users/me').status_code == 200
+
+
+def test_update_current_user_current_password_wrong(admin, user):
+    user_data, user_etag = get_user(admin, 'user')
+
+    assert user.get('/api/v1/users/me').status_code == 200
+
+    assert user.put(
+        '/api/v1/users/me',
+        data={'current_password': 'wrong_password', 'new_password': ''},
+        headers={'If-match': user_etag}
+    ).status_code == 400
+
+    assert user.get('/api/v1/users/me').status_code == 200
