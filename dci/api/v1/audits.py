@@ -19,6 +19,7 @@ import flask
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
 from dci import auth
+from dci import decorators
 from dci.common import schemas
 from dci.db import models
 
@@ -28,7 +29,7 @@ _A_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
 @api.route('/audits', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_logs(user):
     args = schemas.args(flask.request.args.to_dict())
 
