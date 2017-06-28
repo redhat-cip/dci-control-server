@@ -24,6 +24,7 @@ from dci.api.v1 import jobdefinitions
 from dci.api.v1 import remotecis
 from dci.api.v1 import utils as v1_utils
 from dci import auth
+from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
@@ -41,7 +42,7 @@ _EMBED_MANY = {
 
 
 @api.route('/tests', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def create_tests(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.test.post(flask.request.json))
@@ -60,7 +61,7 @@ def create_tests(user):
 
 
 @api.route('/tests/<uuid:t_id>', methods=['PUT'])
-@auth.login_required
+@decorators.login_required
 def update_tests(user, t_id):
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
@@ -106,7 +107,7 @@ def get_all_tests(user, team_id):
 
 
 @api.route('/tests/<uuid:t_id>', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_test_by_id(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
     if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
@@ -116,7 +117,7 @@ def get_test_by_id(user, t_id):
 
 
 @api.route('/tests/<uuid:t_id>/jobdefinitions', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_jobdefinitions_by_test(user, test_id):
     test = v1_utils.verify_existence_and_get(test_id, _TABLE)
     if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
@@ -125,14 +126,14 @@ def get_jobdefinitions_by_test(user, test_id):
 
 
 @api.route('/tests/<uuid:t_id>/remotecis', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_remotecis_by_test(user, test_id):
     test = v1_utils.verify_existence_and_get(test_id, _TABLE)
     return remotecis.get_all_remotecis(test['id'])
 
 
 @api.route('/tests/<uuid:t_id>', methods=['DELETE'])
-@auth.login_required
+@decorators.login_required
 def delete_test_by_id(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
 
@@ -158,12 +159,12 @@ def delete_test_by_id(user, t_id):
 
 
 @api.route('/tests/purge', methods=['GET'])
-@auth.login_required
+@decorators.login_required
 def get_to_purge_archived_tests(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/tests/purge', methods=['POST'])
-@auth.login_required
+@decorators.login_required
 def purge_archived_tests(user):
     return base.purge_archived_resources(user, _TABLE)

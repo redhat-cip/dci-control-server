@@ -16,10 +16,10 @@
 from datetime import datetime
 import flask
 from sqlalchemy import sql
-from passlib.apps import custom_app_context as pwd_context
 
 from dci.db import models
 from dci.common import signature
+from dci import auth
 
 
 class BaseMechanism(object):
@@ -76,7 +76,7 @@ class BasicAuthMechanism(BaseMechanism):
             return None, False
         user = dict(user)
 
-        return user, pwd_context.verify(password, user.get('password'))
+        return user, auth.check_passwords_equal(password, user.get('password'))
 
 
 class SignatureAuthMechanism(BaseMechanism):
