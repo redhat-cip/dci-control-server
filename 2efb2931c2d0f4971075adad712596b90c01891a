@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9aa53dc9_e8c902ae",
+        "filename": "dci/decorators.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-06-28T13:12:53Z",
+      "side": 1,
+      "message": "I\u0027m feeling it should either be moved back to auth.py or converted into an exception like `DCITuRentresPasAvecTesBaskets`.",
+      "range": {
+        "startLine": 25,
+        "startChar": 0,
+        "endLine": 35,
+        "endChar": 58
+      },
+      "revId": "2efb2931c2d0f4971075adad712596b90c01891a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
