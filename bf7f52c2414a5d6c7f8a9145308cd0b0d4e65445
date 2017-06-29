@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9aa53dc9_e843426b",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-06-29T09:01:25Z",
+      "side": 1,
+      "message": "why can\u0027t we have:\n\ndef get_current_user(user):\n    return get_user_by_id(user, user[\u0027id\u0027])\n\nand leave get_user_by_id untouched? Since basically this method is a specialized version of it.",
+      "revId": "bf7f52c2414a5d6c7f8a9145308cd0b0d4e65445",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
