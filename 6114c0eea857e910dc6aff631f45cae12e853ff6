@@ -2,6 +2,46 @@
   "comments": [
     {
       "key": {
+        "uuid": "9aa53dc9_2bd3643a",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-06-29T13:50:13Z",
+      "side": 1,
+      "message": "I woul\u0027ve kept matchin only username, but whatever.",
+      "range": {
+        "startLine": 52,
+        "startChar": 0,
+        "endLine": 55,
+        "endChar": 14
+      },
+      "revId": "6114c0eea857e910dc6aff631f45cae12e853ff6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_0bd8a052",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-06-29T13:50:13Z",
+      "side": 1,
+      "message": "I would\u0027ve added the source of this regexp, for reference.",
+      "revId": "6114c0eea857e910dc6aff631f45cae12e853ff6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9aa53dc9_eb257c5c",
         "filename": "scripts/db_provisioning.py",
         "patchSetId": 10
