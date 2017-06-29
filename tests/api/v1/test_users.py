@@ -330,25 +330,39 @@ def test_get_user_as_user(user, admin):
     assert guser.status_code == 200
 
 
-# Only super admin and an admin of a team can update the user
-def test_put_user_as_user_admin(user, user_admin):
-
-    puser = user.get('/api/v1/users?where=name:user')
-    puser = user.get('/api/v1/users/%s' % puser.data['users'][0]['id'])
-    user_etag = puser.headers.get("ETag")
-
-    user_put = user.put('/api/v1/users/%s' % puser.data['user']['id'],
-                        data={'name': 'nname'},
-                        headers={'If-match': user_etag})
-    assert user_put.status_code == 401
-
-    user_put = user_admin.put('/api/v1/users/%s' % puser.data['user']['id'],
-                              data={'name': 'nname'},
-                              headers={'If-match': user_etag})
-    assert user_put.status_code == 204
+def get_user(flask_user, name):
+    get = flask_user.get('/api/v1/users?where=name:%s' % name)
+    get2 = flask_user.get('/api/v1/users/%s' % get.data['users'][0]['id'])
+    return get2.data['user'], get2.headers.get("ETag")
 
 
-# Only super admin can delete a team
+def test_admin_or_team_admin_can_update_another_user(admin, user_admin):
+    user, etag = get_user(admin, 'user')
+    assert admin.put(
+        '/api/v1/users/%s' % user['id'],
+        data={'name': 'new_name'},
+        headers={'If-match': etag}
+    ).status_code == 204
+
+    user, etag = get_user(admin, 'new_name')
+    assert user_admin.put(
+        '/api/v1/users/%s' % user['id'],
+        data={'name': 'user'},
+        headers={'If-match': etag}
+    ).status_code == 204
+
+
+def test_user_cant_update_him(admin, user):
+    user_data, user_etag = get_user(admin, 'user')
+
+    assert user.put(
+        '/api/v1/users/%s' % user_data['id'],
+        data={'name': 'new_name'},
+        headers={'If-match': user_etag}
+    ).status_code == 401
+
+
+# Only super admin can delete a user
 def test_delete_as_user_admin(user, user_admin):
     puser = user.get('/api/v1/users?where=name:user')
     puser = user.get('/api/v1/users/%s' % puser.data['users'][0]['id'])
