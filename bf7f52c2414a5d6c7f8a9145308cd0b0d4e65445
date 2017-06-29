@@ -16,6 +16,24 @@
       "revId": "bf7f52c2414a5d6c7f8a9145308cd0b0d4e65445",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_28312a0c",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-06-29T09:12:51Z",
+      "side": 1,
+      "message": "As per IRC convo: There will be no flask request object to be used for @auth.login_required when calling get_user_by_id. Hence externalizing the content of the get_user_by_id() method",
+      "parentUuid": "9aa53dc9_e843426b",
+      "revId": "bf7f52c2414a5d6c7f8a9145308cd0b0d4e65445",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
