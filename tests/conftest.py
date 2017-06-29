@@ -341,6 +341,16 @@ def role(admin):
 
 
 @pytest.fixture
+def permission(admin):
+    data = {
+        'name': 'A Permission',
+        'label': 'APERMISSION',
+        'description': 'This is a regular permission',
+    }
+    return admin.post('/api/v1/permissions', data=data).data['permission']
+
+
+@pytest.fixture
 def es_clean(request):
     conn = es_engine.DCIESEngine(utils.conf)
     conn.cleanup()
