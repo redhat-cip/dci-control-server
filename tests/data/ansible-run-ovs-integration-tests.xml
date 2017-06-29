@@ -1,0 +1,979 @@
+	<testsuite errors="0" failures="1" name="run_ovs_integration_tests" skipped="1" tests="9" time="3.53612208366">
+		<testcase classname="/var/lib/nodepool/run_ovs_integration_tests.yaml:8" name="[2e10a035-8fcd-468c-8087-6f2c074ad81c] ovs-xenial: raw _raw_params=test -e /usr/bin/python || apt-get -y update &amp;&amp; apt-get install -y python-minimal" time="0.544347">
+			<system-out>{
+    &quot;changed&quot;: true, 
+    &quot;failed&quot;: false, 
+    &quot;rc&quot;: 0, 
+    &quot;stderr&quot;: &quot;OpenSSH_6.6.1, OpenSSL 1.0.1e-fips 11 Feb 2013\r\ndebug1: Reading configuration data /etc/ssh/ssh_config\r\ndebug1: /etc/ssh/ssh_config line 56: Applying options for *\r\ndebug1: auto-mux: Trying existing master\r\ndebug1: Control socket \&quot;/var/lib/nodepool/.ansible/cp/39aa21ad54\&quot; does not exist\r\ndebug2: ssh_connect: needpriv 0\r\ndebug1: Connecting to 38.145.33.170 [38.145.33.170] port 22.\r\ndebug2: fd 3 setting O_NONBLOCK\r\ndebug1: fd 3 clearing O_NONBLOCK\r\ndebug1: Connection established.\r\ndebug3: timeout: 9999 ms remain after connect\r\ndebug3: Incorrect RSA1 identifier\r\ndebug3: Could not load \&quot;/var/lib/nodepool/.ssh/id_rsa\&quot; as a RSA1 public key\r\ndebug1: identity file /var/lib/nodepool/.ssh/id_rsa type 1\r\ndebug1: identity file /var/lib/nodepool/.ssh/id_rsa-cert type -1\r\ndebug1: identity file /var/lib/nodepool/.ssh/id_dsa type -1\r\ndebug1: identity file /var/lib/nodepool/.ssh/id_dsa-cert type -1\r\ndebug1: identity file /var/lib/nodepool/.ssh/id_ecdsa type -1\r\ndebug1: identity file /var/lib/nodepool/.ssh/id_ecdsa-cert type -1\r\ndebug1: identity file /var/lib/nodepool/.ssh/id_ed25519 type -1\r\ndebug1: identity file /var/lib/nodepool/.ssh/id_ed25519-cert type -1\r\ndebug1: Enabling compatibility mode for protocol 2.0\r\ndebug1: Local version string SSH-2.0-OpenSSH_6.6.1\r\ndebug1: Remote protocol version 2.0, remote software version OpenSSH_7.2p2 Ubuntu-4ubuntu2.2\r\ndebug1: match: OpenSSH_7.2p2 Ubuntu-4ubuntu2.2 pat OpenSSH* compat 0x04000000\r\ndebug2: fd 3 setting O_NONBLOCK\r\ndebug3: load_hostkeys: loading entries for host \&quot;38.145.33.170\&quot; from file \&quot;/var/lib/nodepool/.ssh/known_hosts\&quot;\r\ndebug3: load_hostkeys: found key type ECDSA in file /var/lib/nodepool/.ssh/known_hosts:26\r\ndebug3: load_hostkeys: loaded 1 keys\r\ndebug3: order_hostkeyalgs: prefer hostkeyalgs: ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521\r\ndebug1: SSH2_MSG_KEXINIT sent\r\ndebug1: SSH2_MSG_KEXINIT received\r\ndebug2: kex_parse_kexinit: curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group-exchange-sha1,diffie-hellman-group14-sha1,diffie-hellman-group1-sha1\r\ndebug2: kex_parse_kexinit: ecdsa-sha2-nistp256-cert-v01@openssh.com,ecdsa-sha2-nistp384-cert-v01@openssh.com,ecdsa-sha2-nistp521-cert-v01@openssh.com,ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521,ssh-ed25519-cert-v01@openssh.com,ssh-rsa-cert-v01@openssh.com,ssh-dss-cert-v01@openssh.com,ssh-rsa-cert-v00@openssh.com,ssh-dss-cert-v00@openssh.com,ssh-ed25519,ssh-rsa,ssh-dss\r\ndebug2: kex_parse_kexinit: aes128-ctr,aes192-ctr,aes256-ctr,arcfour256,arcfour128,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,aes192-cbc,aes256-cbc,arcfour,rijndael-cbc@lysator.liu.se\r\ndebug2: kex_parse_kexinit: aes128-ctr,aes192-ctr,aes256-ctr,arcfour256,arcfour128,aes128-gcm@openssh.com,aes256-gcm@openssh.com,chacha20-poly1305@openssh.com,aes128-cbc,3des-cbc,blowfish-cbc,cast128-cbc,aes192-cbc,aes256-cbc,arcfour,rijndael-cbc@lysator.liu.se\r\ndebug2: kex_parse_kexinit: hmac-md5-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-ripemd160-etm@openssh.com,hmac-sha1-96-etm@openssh.com,hmac-md5-96-etm@openssh.com,hmac-md5,hmac-sha1,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-ripemd160,hmac-ripemd160@openssh.com,hmac-sha1-96,hmac-md5-96\r\ndebug2: kex_parse_kexinit: hmac-md5-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-ripemd160-etm@openssh.com,hmac-sha1-96-etm@openssh.com,hmac-md5-96-etm@openssh.com,hmac-md5,hmac-sha1,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-ripemd160,hmac-ripemd160@openssh.com,hmac-sha1-96,hmac-md5-96\r\ndebug2: kex_parse_kexinit: zlib@openssh.com,zlib,none\r\ndebug2: kex_parse_kexinit: zlib@openssh.com,zlib,none\r\ndebug2: kex_parse_kexinit: \r\ndebug2: kex_parse_kexinit: \r\ndebug2: kex_parse_kexinit: first_kex_follows 0 \r\ndebug2: kex_parse_kexinit: reserved 0 \r\ndebug2: kex_parse_kexinit: curve25519-sha256@libssh.org,ecdh-sha2-nistp256,ecdh-sha2-nistp384,ecdh-sha2-nistp521,diffie-hellman-group-exchange-sha256,diffie-hellman-group14-sha1\r\ndebug2: kex_parse_kexinit: ssh-rsa,rsa-sha2-512,rsa-sha2-256,ecdsa-sha2-nistp256,ssh-ed25519\r\ndebug2: kex_parse_kexinit: chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com\r\ndebug2: kex_parse_kexinit: chacha20-poly1305@openssh.com,aes128-ctr,aes192-ctr,aes256-ctr,aes128-gcm@openssh.com,aes256-gcm@openssh.com\r\ndebug2: kex_parse_kexinit: umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1\r\ndebug2: kex_parse_kexinit: umac-64-etm@openssh.com,umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com,hmac-sha1-etm@openssh.com,umac-64@openssh.com,umac-128@openssh.com,hmac-sha2-256,hmac-sha2-512,hmac-sha1\r\ndebug2: kex_parse_kexinit: none,zlib@openssh.com\r\ndebug2: kex_parse_kexinit: none,zlib@openssh.com\r\ndebug2: kex_parse_kexinit: \r\ndebug2: kex_parse_kexinit: \r\ndebug2: kex_parse_kexinit: first_kex_follows 0 \r\ndebug2: kex_parse_kexinit: reserved 0 \r\ndebug2: mac_setup: setup hmac-sha1-etm@openssh.com\r\ndebug1: kex: server-&gt;client aes128-ctr hmac-sha1-etm@openssh.com zlib@openssh.com\r\ndebug2: mac_setup: setup hmac-sha1-etm@openssh.com\r\ndebug1: kex: client-&gt;server aes128-ctr hmac-sha1-etm@openssh.com zlib@openssh.com\r\ndebug1: kex: curve25519-sha256@libssh.org need=20 dh_need=20\r\ndebug1: kex: curve25519-sha256@libssh.org need=20 dh_need=20\r\ndebug1: sending SSH2_MSG_KEX_ECDH_INIT\r\ndebug1: expecting SSH2_MSG_KEX_ECDH_REPLY\r\ndebug1: Server host key: ECDSA e5:1b:cf:6f:7e:a5:2d:c8:f6:f0:f2:a1:1e:03:71:b8\r\ndebug3: load_hostkeys: loading entries for host \&quot;38.145.33.170\&quot; from file \&quot;/var/lib/nodepool/.ssh/known_hosts\&quot;\r\ndebug3: load_hostkeys: found key type ECDSA in file /var/lib/nodepool/.ssh/known_hosts:26\r\ndebug3: load_hostkeys: loaded 1 keys\r\ndebug1: Host '38.145.33.170' is known and matches the ECDSA host key.\r\ndebug1: Found key in /var/lib/nodepool/.ssh/known_hosts:26\r\ndebug1: ssh_ecdsa_verify: signature correct\r\ndebug2: kex_derive_keys\r\ndebug2: set_newkeys: mode 1\r\ndebug1: SSH2_MSG_NEWKEYS sent\r\ndebug1: expecting SSH2_MSG_NEWKEYS\r\ndebug2: set_newkeys: mode 0\r\ndebug1: SSH2_MSG_NEWKEYS received\r\ndebug1: SSH2_MSG_SERVICE_REQUEST sent\r\ndebug2: service_accept: ssh-userauth\r\ndebug1: SSH2_MSG_SERVICE_ACCEPT received\r\ndebug2: key: /var/lib/nodepool/.ssh/id_rsa (0x7ff7d41c1140),\r\ndebug2: key: /var/lib/nodepool/.ssh/id_dsa ((nil)),\r\ndebug2: key: /var/lib/nodepool/.ssh/id_ecdsa ((nil)),\r\ndebug2: key: /var/lib/nodepool/.ssh/id_ed25519 ((nil)),\r\ndebug1: Authentications that can continue: publickey\r\ndebug3: start over, passed a different list publickey\r\ndebug3: preferred gssapi-with-mic,gssapi-keyex,hostbased,publickey\r\ndebug3: authmethod_lookup publickey\r\ndebug3: remaining preferred: ,gssapi-keyex,hostbased,publickey\r\ndebug3: authmethod_is_enabled publickey\r\ndebug1: Next authentication method: publickey\r\ndebug1: Offering RSA public key: /var/lib/nodepool/.ssh/id_rsa\r\ndebug3: send_pubkey_test\r\ndebug2: we sent a publickey packet, wait for reply\r\ndebug1: Server accepts key: pkalg ssh-rsa blen 279\r\ndebug2: input_userauth_pk_ok: fp e3:e1:df:c3:c4:9b:46:cc:f6:1d:c1:36:13:9d:f0:21\r\ndebug3: sign_and_send_pubkey: RSA e3:e1:df:c3:c4:9b:46:cc:f6:1d:c1:36:13:9d:f0:21\r\ndebug1: key_parse_private2: missing begin marker\r\ndebug1: read PEM private key done: type RSA\r\ndebug1: Enabling compression at level 6.\r\ndebug1: Authentication succeeded (publickey).\r\nAuthenticated to 38.145.33.170 ([38.145.33.170]:22).\r\ndebug1: setting up multiplex master socket\r\ndebug3: muxserver_listen: temporary control path /var/lib/nodepool/.ansible/cp/39aa21ad54.2eWDDH7mJWRWuTQg\r\ndebug2: fd 4 setting O_NONBLOCK\r\ndebug3: fd 4 is O_NONBLOCK\r\ndebug3: fd 4 is O_NONBLOCK\r\ndebug1: channel 0: new [/var/lib/nodepool/.ansible/cp/39aa21ad54]\r\ndebug3: muxserver_listen: mux listener channel 0 fd 4\r\ndebug2: fd 3 setting TCP_NODELAY\r\ndebug3: packet_set_tos: set IP_TOS 0x08\r\ndebug1: control_persist_detach: backgrounding master process\r\ndebug2: control_persist_detach: background process is 5155\r\ndebug2: fd 4 setting O_NONBLOCK\r\ndebug1: forking to background\r\ndebug1: Entering interactive session.\r\ndebug2: set_control_persist_exit_time: schedule exit in 60 seconds\r\ndebug1: multiplexing control connection\r\ndebug2: fd 5 setting O_NONBLOCK\r\ndebug3: fd 5 is O_NONBLOCK\r\ndebug1: channel 1: new [mux-control]\r\ndebug3: channel_post_mux_listener: new mux channel 1 fd 5\r\ndebug3: mux_master_read_cb: channel 1: hello sent\r\ndebug2: set_control_persist_exit_time: cancel scheduled exit\r\ndebug3: mux_master_read_cb: channel 1 packet type 0x00000001 len 4\r\ndebug2: process_mux_master_hello: channel 1 slave version 4\r\ndebug2: mux_client_hello_exchange: master version 4\r\ndebug3: mux_client_forwards: request forwardings: 0 local, 0 remote\r\ndebug3: mux_client_request_session: entering\r\ndebug3: mux_client_request_alive: entering\r\ndebug3: mux_master_read_cb: channel 1 packet type 0x10000004 len 4\r\ndebug2: process_mux_alive_check: channel 1: alive check\r\ndebug3: mux_client_request_alive: done pid = 5157\r\ndebug3: mux_client_request_session: session request sent\r\ndebug3: mux_master_read_cb: channel 1 packet type 0x10000002 len 265\r\ndebug2: process_mux_new_session: channel 1: request tty 1, X 0, agent 0, subsys 0, term \&quot;screen-256color\&quot;, cmd \&quot;sudo -H -S -n -u root /bin/sh -c 'echo BECOME-SUCCESS-zlhjvozdfvdvhghqpcyxjwpxtenolngx; test -e /usr/bin/python || apt-get -y update &amp;&amp; apt-get install -y python-minimal'\&quot;, env 2\r\ndebug3: process_mux_new_session: got fds stdin 6, stdout 7, stderr 8\r\ndebug2: fd 7 setting O_NONBLOCK\r\ndebug2: fd 8 setting O_NONBLOCK\r\ndebug1: channel 2: new [client-session]\r\ndebug2: process_mux_new_session: channel_new: 2 linked to control channel 1\r\ndebug2: channel 2: send open\r\ndebug1: client_input_global_request: rtype hostkeys-00@openssh.com want_reply 0\r\ndebug2: callback start\r\ndebug2: client_session2_setup: id 2\r\ndebug2: channel 2: request pty-req confirm 1\r\ndebug1: Sending environment.\r\ndebug1: Sending env LANG = en_US.UTF-8\r\ndebug2: channel 2: request env confirm 0\r\ndebug1: Sending env LC_CTYPE = en_US.UTF-8\r\ndebug2: channel 2: request env confirm 0\r\ndebug1: Sending command: sudo -H -S -n -u root /bin/sh -c 'echo BECOME-SUCCESS-zlhjvozdfvdvhghqpcyxjwpxtenolngx; test -e /usr/bin/python || apt-get -y update &amp;&amp; apt-get install -y python-minimal'\r\ndebug2: channel 2: request exec confirm 1\r\ndebug3: mux_session_confirm: sending success reply\r\ndebug2: callback done\r\ndebug2: channel 2: open confirm rwindow 0 rmax 32768\r\ndebug1: mux_client_request_session: master session id: 2\r\ndebug2: channel_input_status_confirm: type 99 id 2\r\ndebug2: PTY allocation request accepted on channel 2\r\ndebug2: channel 2: rcvd adjust 2097152\r\ndebug2: channel_input_status_confirm: type 99 id 2\r\ndebug2: exec request accepted on channel 2\r\ndebug1: client_input_channel_req: channel 2 rtype exit-status reply 0\r\ndebug3: mux_exit_message: channel 2: exit message, exitval 0\r\ndebug1: client_input_channel_req: channel 2 rtype eow@openssh.com reply 0\r\ndebug2: channel 2: rcvd eow\r\ndebug2: channel 2: close_read\r\ndebug2: channel 2: input open -&gt; closed\r\ndebug2: channel 2: rcvd eof\r\ndebug2: channel 2: output open -&gt; drain\r\ndebug2: channel 2: obuf empty\r\ndebug2: channel 2: close_write\r\ndebug2: channel 2: output drain -&gt; closed\r\ndebug2: channel 2: rcvd close\r\ndebug3: channel 2: will not send data after close\r\ndebug2: channel 2: send close\r\ndebug2: channel 2: is dead\r\ndebug2: channel 2: gc: notify user\r\ndebug3: mux_master_session_cleanup_cb: entering for channel 2\r\ndebug2: channel 1: rcvd close\r\ndebug2: channel 1: output open -&gt; drain\r\ndebug2: channel 1: close_read\r\ndebug2: channel 1: input open -&gt; closed\r\ndebug2: channel 2: gc: user detached\r\ndebug2: channel 2: is dead\r\ndebug2: channel 2: garbage collecting\r\ndebug1: channel 2: free: client-session, nchannels 3\r\ndebug3: channel 2: status: The following connections are open:\r\n  #2 client-session (t4 r0 i3/0 o3/0 fd -1/-1 cc -1)\r\n\r\ndebug2: channel 1: obuf empty\r\ndebug2: channel 1: close_write\r\ndebug2: channel 1: output drain -&gt; closed\r\ndebug2: channel 1: is dead (local)\r\ndebug2: channel 1: gc: notify user\r\ndebug3: mux_master_control_cleanup_cb: entering for channel 1\r\ndebug2: channel 1: gc: user detached\r\ndebug2: channel 1: is dead (local)\r\ndebug2: channel 1: garbage collecting\r\ndebug1: channel 1: free: mux-control, nchannels 2\r\ndebug3: channel 1: status: The following connections are open:\r\n\r\ndebug2: set_control_persist_exit_time: schedule exit in 60 seconds\r\ndebug3: mux_client_read_packet: read header failed: Broken pipe\r\ndebug2: Received exit status from master 0\r\nShared connection to 38.145.33.170 closed.\r\n&quot;, 
+    &quot;stdout&quot;: &quot;sudo: unable to resolve host ovs-xenial-rdo-cloud-0000000168\r\n\rReading package lists... 0%\r\rReading package lists... 100%\r\rReading package lists... Done\r\r\n\rBuilding dependency tree... 0%\r\rBuilding dependency tree... 0%\r\rBuilding dependency tree... 50%\r\rBuilding dependency tree... 50%\r\rBuilding dependency tree       \r\r\n\rReading state information... 0%\r\rReading state information... 4%\r\rReading state information... Done\r\r\npython-minimal is already the newest version (2.7.11-1).\r\n0 upgraded, 0 newly installed, 0 to remove and 36 not upgraded.\r\n&quot;, 
+    &quot;stdout_lines&quot;: [
+        &quot;sudo: unable to resolve host ovs-xenial-rdo-cloud-0000000168&quot;, 
+        &quot;&quot;, 
+        &quot;Reading package lists... 0%&quot;, 
+        &quot;&quot;, 
+        &quot;Reading package lists... 100%&quot;, 
+        &quot;&quot;, 
+        &quot;Reading package lists... Done&quot;, 
+        &quot;&quot;, 
+        &quot;&quot;, 
+        &quot;Building dependency tree... 0%&quot;, 
+        &quot;&quot;, 
+        &quot;Building dependency tree... 0%&quot;, 
+        &quot;&quot;, 
+        &quot;Building dependency tree... 50%&quot;, 
+        &quot;&quot;, 
+        &quot;Building dependency tree... 50%&quot;, 
+        &quot;&quot;, 
+        &quot;Building dependency tree       &quot;, 
+        &quot;&quot;, 
+        &quot;&quot;, 
+        &quot;Reading state information... 0%&quot;, 
+        &quot;&quot;, 
+        &quot;Reading state information... 4%&quot;, 
+        &quot;&quot;, 
+        &quot;Reading state information... Done&quot;, 
+        &quot;&quot;, 
+        &quot;python-minimal is already the newest version (2.7.11-1).&quot;, 
+        &quot;0 upgraded, 0 newly installed, 0 to remove and 36 not upgraded.&quot;
+    ]
+}</system-out>
+		</testcase>
+		<testcase classname="/var/lib/nodepool/run_ovs_integration_tests.yaml:9" name="[2e10a035-8fcd-468c-8087-6f2c074ad81c] ovs-xenial: setup" time="0.641212">
+			<system-out>{
+    &quot;ansible_facts&quot;: {
+        &quot;ansible_all_ipv4_addresses&quot;: [
+            &quot;192.168.0.15&quot;
+        ], 
+        &quot;ansible_all_ipv6_addresses&quot;: [
+            &quot;fe80::f816:3eff:fe7b:7efb&quot;
+        ], 
+        &quot;ansible_apparmor&quot;: {
+            &quot;status&quot;: &quot;enabled&quot;
+        }, 
+        &quot;ansible_architecture&quot;: &quot;x86_64&quot;, 
+        &quot;ansible_bios_date&quot;: &quot;04/01/2014&quot;, 
+        &quot;ansible_bios_version&quot;: &quot;1.9.1-5.el7_3.2&quot;, 
+        &quot;ansible_br_test&quot;: {
+            &quot;active&quot;: false, 
+            &quot;device&quot;: &quot;br-test&quot;, 
+            &quot;features&quot;: {
+                &quot;busy_poll&quot;: &quot;off [fixed]&quot;, 
+                &quot;fcoe_mtu&quot;: &quot;off [fixed]&quot;, 
+                &quot;generic_receive_offload&quot;: &quot;on&quot;, 
+                &quot;generic_segmentation_offload&quot;: &quot;on&quot;, 
+                &quot;highdma&quot;: &quot;on&quot;, 
+                &quot;hw_tc_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;l2_fwd_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;large_receive_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;loopback&quot;: &quot;off [fixed]&quot;, 
+                &quot;netns_local&quot;: &quot;off [fixed]&quot;, 
+                &quot;ntuple_filters&quot;: &quot;off [fixed]&quot;, 
+                &quot;receive_hashing&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_all&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_checksumming&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_fcs&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_filter&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_stag_filter&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_stag_hw_parse&quot;: &quot;off [fixed]&quot;, 
+                &quot;scatter_gather&quot;: &quot;on&quot;, 
+                &quot;tcp_segmentation_offload&quot;: &quot;on&quot;, 
+                &quot;tx_checksum_fcoe_crc&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksum_ip_generic&quot;: &quot;on&quot;, 
+                &quot;tx_checksum_ipv4&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksum_ipv6&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksum_sctp&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksumming&quot;: &quot;on&quot;, 
+                &quot;tx_fcoe_segmentation&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_gre_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_gso_robust&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_ipip_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_lockless&quot;: &quot;on [fixed]&quot;, 
+                &quot;tx_nocache_copy&quot;: &quot;off&quot;, 
+                &quot;tx_scatter_gather&quot;: &quot;on&quot;, 
+                &quot;tx_scatter_gather_fraglist&quot;: &quot;on&quot;, 
+                &quot;tx_sit_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_tcp6_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_tcp_ecn_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_tcp_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_udp_tnl_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_vlan_offload&quot;: &quot;on&quot;, 
+                &quot;tx_vlan_stag_hw_insert&quot;: &quot;off [fixed]&quot;, 
+                &quot;udp_fragmentation_offload&quot;: &quot;on&quot;, 
+                &quot;vlan_challenged&quot;: &quot;off [fixed]&quot;
+            }, 
+            &quot;hw_timestamp_filters&quot;: [], 
+            &quot;macaddress&quot;: &quot;96:a5:fe:1d:94:47&quot;, 
+            &quot;mtu&quot;: 1500, 
+            &quot;promisc&quot;: true, 
+            &quot;timestamping&quot;: [
+                &quot;rx_software&quot;, 
+                &quot;software&quot;
+            ], 
+            &quot;type&quot;: &quot;ether&quot;
+        }, 
+        &quot;ansible_cmdline&quot;: {
+            &quot;BOOT_IMAGE&quot;: &quot;/boot/vmlinuz-4.4.0-78-generic&quot;, 
+            &quot;console&quot;: &quot;ttyS0&quot;, 
+            &quot;ro&quot;: true, 
+            &quot;root&quot;: &quot;LABEL=cloudimg-rootfs&quot;
+        }, 
+        &quot;ansible_date_time&quot;: {
+            &quot;date&quot;: &quot;2017-06-28&quot;, 
+            &quot;day&quot;: &quot;28&quot;, 
+            &quot;epoch&quot;: &quot;1498666711&quot;, 
+            &quot;hour&quot;: &quot;16&quot;, 
+            &quot;iso8601&quot;: &quot;2017-06-28T16:18:31Z&quot;, 
+            &quot;iso8601_basic&quot;: &quot;20170628T161831969953&quot;, 
+            &quot;iso8601_basic_short&quot;: &quot;20170628T161831&quot;, 
+            &quot;iso8601_micro&quot;: &quot;2017-06-28T16:18:31.970016Z&quot;, 
+            &quot;minute&quot;: &quot;18&quot;, 
+            &quot;month&quot;: &quot;06&quot;, 
+            &quot;second&quot;: &quot;31&quot;, 
+            &quot;time&quot;: &quot;16:18:31&quot;, 
+            &quot;tz&quot;: &quot;UTC&quot;, 
+            &quot;tz_offset&quot;: &quot;+0000&quot;, 
+            &quot;weekday&quot;: &quot;Wednesday&quot;, 
+            &quot;weekday_number&quot;: &quot;3&quot;, 
+            &quot;weeknumber&quot;: &quot;26&quot;, 
+            &quot;year&quot;: &quot;2017&quot;
+        }, 
+        &quot;ansible_default_ipv4&quot;: {
+            &quot;address&quot;: &quot;192.168.0.15&quot;, 
+            &quot;alias&quot;: &quot;ens3&quot;, 
+            &quot;broadcast&quot;: &quot;192.168.0.255&quot;, 
+            &quot;gateway&quot;: &quot;192.168.0.1&quot;, 
+            &quot;interface&quot;: &quot;ens3&quot;, 
+            &quot;macaddress&quot;: &quot;fa:16:3e:7b:7e:fb&quot;, 
+            &quot;mtu&quot;: 1450, 
+            &quot;netmask&quot;: &quot;255.255.255.0&quot;, 
+            &quot;network&quot;: &quot;192.168.0.0&quot;, 
+            &quot;type&quot;: &quot;ether&quot;
+        }, 
+        &quot;ansible_default_ipv6&quot;: {}, 
+        &quot;ansible_device_links&quot;: {
+            &quot;ids&quot;: {}, 
+            &quot;labels&quot;: {
+                &quot;vda1&quot;: [
+                    &quot;cloudimg-rootfs&quot;
+                ]
+            }, 
+            &quot;masters&quot;: {}, 
+            &quot;uuids&quot;: {
+                &quot;vda1&quot;: [
+                    &quot;e461d1ca-fbdd-4c8e-987f-0f190509cf4d&quot;
+                ]
+            }
+        }, 
+        &quot;ansible_devices&quot;: {
+            &quot;loop0&quot;: {
+                &quot;holders&quot;: [], 
+                &quot;host&quot;: &quot;&quot;, 
+                &quot;links&quot;: {
+                    &quot;ids&quot;: [], 
+                    &quot;labels&quot;: [], 
+                    &quot;masters&quot;: [], 
+                    &quot;uuids&quot;: []
+                }, 
+                &quot;model&quot;: null, 
+                &quot;partitions&quot;: {}, 
+                &quot;removable&quot;: &quot;0&quot;, 
+                &quot;rotational&quot;: &quot;1&quot;, 
+                &quot;sas_address&quot;: null, 
+                &quot;sas_device_handle&quot;: null, 
+                &quot;scheduler_mode&quot;: &quot;&quot;, 
+                &quot;sectors&quot;: &quot;0&quot;, 
+                &quot;sectorsize&quot;: &quot;512&quot;, 
+                &quot;size&quot;: &quot;0.00 Bytes&quot;, 
+                &quot;support_discard&quot;: &quot;0&quot;, 
+                &quot;vendor&quot;: null, 
+                &quot;virtual&quot;: 1
+            }, 
+            &quot;loop1&quot;: {
+                &quot;holders&quot;: [], 
+                &quot;host&quot;: &quot;&quot;, 
+                &quot;links&quot;: {
+                    &quot;ids&quot;: [], 
+                    &quot;labels&quot;: [], 
+                    &quot;masters&quot;: [], 
+                    &quot;uuids&quot;: []
+                }, 
+                &quot;model&quot;: null, 
+                &quot;partitions&quot;: {}, 
+                &quot;removable&quot;: &quot;0&quot;, 
+                &quot;rotational&quot;: &quot;1&quot;, 
+                &quot;sas_address&quot;: null, 
+                &quot;sas_device_handle&quot;: null, 
+                &quot;scheduler_mode&quot;: &quot;&quot;, 
+                &quot;sectors&quot;: &quot;0&quot;, 
+                &quot;sectorsize&quot;: &quot;512&quot;, 
+                &quot;size&quot;: &quot;0.00 Bytes&quot;, 
+                &quot;support_discard&quot;: &quot;0&quot;, 
+                &quot;vendor&quot;: null, 
+                &quot;virtual&quot;: 1
+            }, 
+            &quot;loop2&quot;: {
+                &quot;holders&quot;: [], 
+                &quot;host&quot;: &quot;&quot;, 
+                &quot;links&quot;: {
+                    &quot;ids&quot;: [], 
+                    &quot;labels&quot;: [], 
+                    &quot;masters&quot;: [], 
+                    &quot;uuids&quot;: []
+                }, 
+                &quot;model&quot;: null, 
+                &quot;partitions&quot;: {}, 
+                &quot;removable&quot;: &quot;0&quot;, 
+                &quot;rotational&quot;: &quot;1&quot;, 
+                &quot;sas_address&quot;: null, 
+                &quot;sas_device_handle&quot;: null, 
+                &quot;scheduler_mode&quot;: &quot;&quot;, 
+                &quot;sectors&quot;: &quot;0&quot;, 
+                &quot;sectorsize&quot;: &quot;512&quot;, 
+                &quot;size&quot;: &quot;0.00 Bytes&quot;, 
+                &quot;support_discard&quot;: &quot;0&quot;, 
+                &quot;vendor&quot;: null, 
+                &quot;virtual&quot;: 1
+            }, 
+            &quot;loop3&quot;: {
+                &quot;holders&quot;: [], 
+                &quot;host&quot;: &quot;&quot;, 
+                &quot;links&quot;: {
+                    &quot;ids&quot;: [], 
+                    &quot;labels&quot;: [], 
+                    &quot;masters&quot;: [], 
+                    &quot;uuids&quot;: []
+                }, 
+                &quot;model&quot;: null, 
+                &quot;partitions&quot;: {}, 
+                &quot;removable&quot;: &quot;0&quot;, 
+                &quot;rotational&quot;: &quot;1&quot;, 
+                &quot;sas_address&quot;: null, 
+                &quot;sas_device_handle&quot;: null, 
+                &quot;scheduler_mode&quot;: &quot;&quot;, 
+                &quot;sectors&quot;: &quot;0&quot;, 
+                &quot;sectorsize&quot;: &quot;512&quot;, 
+                &quot;size&quot;: &quot;0.00 Bytes&quot;, 
+                &quot;support_discard&quot;: &quot;0&quot;, 
+                &quot;vendor&quot;: null, 
+                &quot;virtual&quot;: 1
+            }, 
+            &quot;loop4&quot;: {
+                &quot;holders&quot;: [], 
+                &quot;host&quot;: &quot;&quot;, 
+                &quot;links&quot;: {
+                    &quot;ids&quot;: [], 
+                    &quot;labels&quot;: [], 
+                    &quot;masters&quot;: [], 
+                    &quot;uuids&quot;: []
+                }, 
+                &quot;model&quot;: null, 
+                &quot;partitions&quot;: {}, 
+                &quot;removable&quot;: &quot;0&quot;, 
+                &quot;rotational&quot;: &quot;1&quot;, 
+                &quot;sas_address&quot;: null, 
+                &quot;sas_device_handle&quot;: null, 
+                &quot;scheduler_mode&quot;: &quot;&quot;, 
+                &quot;sectors&quot;: &quot;0&quot;, 
+                &quot;sectorsize&quot;: &quot;512&quot;, 
+                &quot;size&quot;: &quot;0.00 Bytes&quot;, 
+                &quot;support_discard&quot;: &quot;0&quot;, 
+                &quot;vendor&quot;: null, 
+                &quot;virtual&quot;: 1
+            }, 
+            &quot;loop5&quot;: {
+                &quot;holders&quot;: [], 
+                &quot;host&quot;: &quot;&quot;, 
+                &quot;links&quot;: {
+                    &quot;ids&quot;: [], 
+                    &quot;labels&quot;: [], 
+                    &quot;masters&quot;: [], 
+                    &quot;uuids&quot;: []
+                }, 
+                &quot;model&quot;: null, 
+                &quot;partitions&quot;: {}, 
+                &quot;removable&quot;: &quot;0&quot;, 
+                &quot;rotational&quot;: &quot;1&quot;, 
+                &quot;sas_address&quot;: null, 
+                &quot;sas_device_handle&quot;: null, 
+                &quot;scheduler_mode&quot;: &quot;&quot;, 
+                &quot;sectors&quot;: &quot;0&quot;, 
+                &quot;sectorsize&quot;: &quot;512&quot;, 
+                &quot;size&quot;: &quot;0.00 Bytes&quot;, 
+                &quot;support_discard&quot;: &quot;0&quot;, 
+                &quot;vendor&quot;: null, 
+                &quot;virtual&quot;: 1
+            }, 
+            &quot;loop6&quot;: {
+                &quot;holders&quot;: [], 
+                &quot;host&quot;: &quot;&quot;, 
+                &quot;links&quot;: {
+                    &quot;ids&quot;: [], 
+                    &quot;labels&quot;: [], 
+                    &quot;masters&quot;: [], 
+                    &quot;uuids&quot;: []
+                }, 
+                &quot;model&quot;: null, 
+                &quot;partitions&quot;: {}, 
+                &quot;removable&quot;: &quot;0&quot;, 
+                &quot;rotational&quot;: &quot;1&quot;, 
+                &quot;sas_address&quot;: null, 
+                &quot;sas_device_handle&quot;: null, 
+                &quot;scheduler_mode&quot;: &quot;&quot;, 
+                &quot;sectors&quot;: &quot;0&quot;, 
+                &quot;sectorsize&quot;: &quot;512&quot;, 
+                &quot;size&quot;: &quot;0.00 Bytes&quot;, 
+                &quot;support_discard&quot;: &quot;0&quot;, 
+                &quot;vendor&quot;: null, 
+                &quot;virtual&quot;: 1
+            }, 
+            &quot;loop7&quot;: {
+                &quot;holders&quot;: [], 
+                &quot;host&quot;: &quot;&quot;, 
+                &quot;links&quot;: {
+                    &quot;ids&quot;: [], 
+                    &quot;labels&quot;: [], 
+                    &quot;masters&quot;: [], 
+                    &quot;uuids&quot;: []
+                }, 
+                &quot;model&quot;: null, 
+                &quot;partitions&quot;: {}, 
+                &quot;removable&quot;: &quot;0&quot;, 
+                &quot;rotational&quot;: &quot;1&quot;, 
+                &quot;sas_address&quot;: null, 
+                &quot;sas_device_handle&quot;: null, 
+                &quot;scheduler_mode&quot;: &quot;&quot;, 
+                &quot;sectors&quot;: &quot;0&quot;, 
+                &quot;sectorsize&quot;: &quot;512&quot;, 
+                &quot;size&quot;: &quot;0.00 Bytes&quot;, 
+                &quot;support_discard&quot;: &quot;0&quot;, 
+                &quot;vendor&quot;: null, 
+                &quot;virtual&quot;: 1
+            }, 
+            &quot;vda&quot;: {
+                &quot;holders&quot;: [], 
+                &quot;host&quot;: &quot;SCSI storage controller: Red Hat, Inc Virtio block device&quot;, 
+                &quot;links&quot;: {
+                    &quot;ids&quot;: [], 
+                    &quot;labels&quot;: [], 
+                    &quot;masters&quot;: [], 
+                    &quot;uuids&quot;: []
+                }, 
+                &quot;model&quot;: null, 
+                &quot;partitions&quot;: {
+                    &quot;vda1&quot;: {
+                        &quot;holders&quot;: [], 
+                        &quot;links&quot;: {
+                            &quot;ids&quot;: [], 
+                            &quot;labels&quot;: [
+                                &quot;cloudimg-rootfs&quot;
+                            ], 
+                            &quot;masters&quot;: [], 
+                            &quot;uuids&quot;: [
+                                &quot;e461d1ca-fbdd-4c8e-987f-0f190509cf4d&quot;
+                            ]
+                        }, 
+                        &quot;sectors&quot;: &quot;83883999&quot;, 
+                        &quot;sectorsize&quot;: 512, 
+                        &quot;size&quot;: &quot;40.00 GB&quot;, 
+                        &quot;start&quot;: &quot;2048&quot;, 
+                        &quot;uuid&quot;: &quot;e461d1ca-fbdd-4c8e-987f-0f190509cf4d&quot;
+                    }
+                }, 
+                &quot;removable&quot;: &quot;0&quot;, 
+                &quot;rotational&quot;: &quot;1&quot;, 
+                &quot;sas_address&quot;: null, 
+                &quot;sas_device_handle&quot;: null, 
+                &quot;scheduler_mode&quot;: &quot;&quot;, 
+                &quot;sectors&quot;: &quot;83886080&quot;, 
+                &quot;sectorsize&quot;: &quot;512&quot;, 
+                &quot;size&quot;: &quot;40.00 GB&quot;, 
+                &quot;support_discard&quot;: &quot;0&quot;, 
+                &quot;vendor&quot;: &quot;0x1af4&quot;, 
+                &quot;virtual&quot;: 1
+            }
+        }, 
+        &quot;ansible_distribution&quot;: &quot;Ubuntu&quot;, 
+        &quot;ansible_distribution_file_parsed&quot;: true, 
+        &quot;ansible_distribution_file_path&quot;: &quot;/etc/os-release&quot;, 
+        &quot;ansible_distribution_file_variety&quot;: &quot;Debian&quot;, 
+        &quot;ansible_distribution_major_version&quot;: &quot;16&quot;, 
+        &quot;ansible_distribution_release&quot;: &quot;xenial&quot;, 
+        &quot;ansible_distribution_version&quot;: &quot;16.04&quot;, 
+        &quot;ansible_dns&quot;: {
+            &quot;nameservers&quot;: [
+                &quot;192.168.0.2&quot;
+            ], 
+            &quot;search&quot;: [
+                &quot;openstacklocal&quot;
+            ]
+        }, 
+        &quot;ansible_domain&quot;: &quot;&quot;, 
+        &quot;ansible_effective_group_id&quot;: 0, 
+        &quot;ansible_effective_user_id&quot;: 0, 
+        &quot;ansible_ens3&quot;: {
+            &quot;active&quot;: true, 
+            &quot;device&quot;: &quot;ens3&quot;, 
+            &quot;features&quot;: {
+                &quot;busy_poll&quot;: &quot;on [fixed]&quot;, 
+                &quot;fcoe_mtu&quot;: &quot;off [fixed]&quot;, 
+                &quot;generic_receive_offload&quot;: &quot;on&quot;, 
+                &quot;generic_segmentation_offload&quot;: &quot;on&quot;, 
+                &quot;highdma&quot;: &quot;on [fixed]&quot;, 
+                &quot;hw_tc_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;l2_fwd_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;large_receive_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;loopback&quot;: &quot;off [fixed]&quot;, 
+                &quot;netns_local&quot;: &quot;off [fixed]&quot;, 
+                &quot;ntuple_filters&quot;: &quot;off [fixed]&quot;, 
+                &quot;receive_hashing&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_all&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_checksumming&quot;: &quot;on [fixed]&quot;, 
+                &quot;rx_fcs&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_filter&quot;: &quot;on [fixed]&quot;, 
+                &quot;rx_vlan_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_stag_filter&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_stag_hw_parse&quot;: &quot;off [fixed]&quot;, 
+                &quot;scatter_gather&quot;: &quot;on&quot;, 
+                &quot;tcp_segmentation_offload&quot;: &quot;on&quot;, 
+                &quot;tx_checksum_fcoe_crc&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksum_ip_generic&quot;: &quot;on&quot;, 
+                &quot;tx_checksum_ipv4&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksum_ipv6&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksum_sctp&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksumming&quot;: &quot;on&quot;, 
+                &quot;tx_fcoe_segmentation&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_gre_segmentation&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_gso_robust&quot;: &quot;on [fixed]&quot;, 
+                &quot;tx_ipip_segmentation&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_lockless&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_nocache_copy&quot;: &quot;off&quot;, 
+                &quot;tx_scatter_gather&quot;: &quot;on&quot;, 
+                &quot;tx_scatter_gather_fraglist&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_sit_segmentation&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_tcp6_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_tcp_ecn_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_tcp_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_udp_tnl_segmentation&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_vlan_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_vlan_stag_hw_insert&quot;: &quot;off [fixed]&quot;, 
+                &quot;udp_fragmentation_offload&quot;: &quot;on&quot;, 
+                &quot;vlan_challenged&quot;: &quot;off [fixed]&quot;
+            }, 
+            &quot;hw_timestamp_filters&quot;: [], 
+            &quot;ipv4&quot;: {
+                &quot;address&quot;: &quot;192.168.0.15&quot;, 
+                &quot;broadcast&quot;: &quot;192.168.0.255&quot;, 
+                &quot;netmask&quot;: &quot;255.255.255.0&quot;, 
+                &quot;network&quot;: &quot;192.168.0.0&quot;
+            }, 
+            &quot;ipv6&quot;: [
+                {
+                    &quot;address&quot;: &quot;fe80::f816:3eff:fe7b:7efb&quot;, 
+                    &quot;prefix&quot;: &quot;64&quot;, 
+                    &quot;scope&quot;: &quot;link&quot;
+                }
+            ], 
+            &quot;macaddress&quot;: &quot;fa:16:3e:7b:7e:fb&quot;, 
+            &quot;mtu&quot;: 1450, 
+            &quot;pciid&quot;: &quot;virtio0&quot;, 
+            &quot;promisc&quot;: false, 
+            &quot;speed&quot;: -1, 
+            &quot;timestamping&quot;: [
+                &quot;tx_software&quot;, 
+                &quot;rx_software&quot;, 
+                &quot;software&quot;
+            ], 
+            &quot;type&quot;: &quot;ether&quot;
+        }, 
+        &quot;ansible_env&quot;: {
+            &quot;HOME&quot;: &quot;/root&quot;, 
+            &quot;LANG&quot;: &quot;en_US.UTF-8&quot;, 
+            &quot;LC_CTYPE&quot;: &quot;en_US.UTF-8&quot;, 
+            &quot;LOGNAME&quot;: &quot;root&quot;, 
+            &quot;MAIL&quot;: &quot;/var/mail/root&quot;, 
+            &quot;PATH&quot;: &quot;/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/snap/bin&quot;, 
+            &quot;PWD&quot;: &quot;/home/ubuntu&quot;, 
+            &quot;SHELL&quot;: &quot;/bin/bash&quot;, 
+            &quot;SUDO_COMMAND&quot;: &quot;/bin/sh -c echo BECOME-SUCCESS-qlneosgednpnhmngshjvfmxoijjnzeea; /usr/bin/python /home/ubuntu/.ansible/tmp/ansible-tmp-1498666711.59-51040402018886/setup.py; rm -rf \&quot;/home/ubuntu/.ansible/tmp/ansible-tmp-1498666711.59-51040402018886/\&quot; &gt; /dev/null 2&gt;&amp;1&quot;, 
+            &quot;SUDO_GID&quot;: &quot;1000&quot;, 
+            &quot;SUDO_UID&quot;: &quot;1000&quot;, 
+            &quot;SUDO_USER&quot;: &quot;ubuntu&quot;, 
+            &quot;TERM&quot;: &quot;screen-256color&quot;, 
+            &quot;USER&quot;: &quot;root&quot;, 
+            &quot;USERNAME&quot;: &quot;root&quot;
+        }, 
+        &quot;ansible_fips&quot;: false, 
+        &quot;ansible_form_factor&quot;: &quot;Other&quot;, 
+        &quot;ansible_fqdn&quot;: &quot;ovs-xenial-rdo-cloud-0000000168&quot;, 
+        &quot;ansible_hostname&quot;: &quot;ovs-xenial-rdo-cloud-0000000168&quot;, 
+        &quot;ansible_interfaces&quot;: [
+            &quot;lo&quot;, 
+            &quot;ovs-system&quot;, 
+            &quot;br-test&quot;, 
+            &quot;ens3&quot;
+        ], 
+        &quot;ansible_kernel&quot;: &quot;4.4.0-78-generic&quot;, 
+        &quot;ansible_lo&quot;: {
+            &quot;active&quot;: true, 
+            &quot;device&quot;: &quot;lo&quot;, 
+            &quot;features&quot;: {
+                &quot;busy_poll&quot;: &quot;off [fixed]&quot;, 
+                &quot;fcoe_mtu&quot;: &quot;off [fixed]&quot;, 
+                &quot;generic_receive_offload&quot;: &quot;on&quot;, 
+                &quot;generic_segmentation_offload&quot;: &quot;on&quot;, 
+                &quot;highdma&quot;: &quot;on [fixed]&quot;, 
+                &quot;hw_tc_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;l2_fwd_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;large_receive_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;loopback&quot;: &quot;on [fixed]&quot;, 
+                &quot;netns_local&quot;: &quot;on [fixed]&quot;, 
+                &quot;ntuple_filters&quot;: &quot;off [fixed]&quot;, 
+                &quot;receive_hashing&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_all&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_checksumming&quot;: &quot;on [fixed]&quot;, 
+                &quot;rx_fcs&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_filter&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_stag_filter&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_stag_hw_parse&quot;: &quot;off [fixed]&quot;, 
+                &quot;scatter_gather&quot;: &quot;on&quot;, 
+                &quot;tcp_segmentation_offload&quot;: &quot;on&quot;, 
+                &quot;tx_checksum_fcoe_crc&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksum_ip_generic&quot;: &quot;on [fixed]&quot;, 
+                &quot;tx_checksum_ipv4&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksum_ipv6&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksum_sctp&quot;: &quot;on [fixed]&quot;, 
+                &quot;tx_checksumming&quot;: &quot;on&quot;, 
+                &quot;tx_fcoe_segmentation&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_gre_segmentation&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_gso_robust&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_ipip_segmentation&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_lockless&quot;: &quot;on [fixed]&quot;, 
+                &quot;tx_nocache_copy&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_scatter_gather&quot;: &quot;on [fixed]&quot;, 
+                &quot;tx_scatter_gather_fraglist&quot;: &quot;on [fixed]&quot;, 
+                &quot;tx_sit_segmentation&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_tcp6_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_tcp_ecn_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_tcp_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_udp_tnl_segmentation&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_vlan_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_vlan_stag_hw_insert&quot;: &quot;off [fixed]&quot;, 
+                &quot;udp_fragmentation_offload&quot;: &quot;on&quot;, 
+                &quot;vlan_challenged&quot;: &quot;on [fixed]&quot;
+            }, 
+            &quot;hw_timestamp_filters&quot;: [], 
+            &quot;ipv4&quot;: {
+                &quot;address&quot;: &quot;127.0.0.1&quot;, 
+                &quot;broadcast&quot;: &quot;host&quot;, 
+                &quot;netmask&quot;: &quot;255.0.0.0&quot;, 
+                &quot;network&quot;: &quot;127.0.0.0&quot;
+            }, 
+            &quot;ipv6&quot;: [
+                {
+                    &quot;address&quot;: &quot;::1&quot;, 
+                    &quot;prefix&quot;: &quot;128&quot;, 
+                    &quot;scope&quot;: &quot;host&quot;
+                }
+            ], 
+            &quot;mtu&quot;: 65536, 
+            &quot;promisc&quot;: false, 
+            &quot;timestamping&quot;: [
+                &quot;rx_software&quot;, 
+                &quot;software&quot;
+            ], 
+            &quot;type&quot;: &quot;loopback&quot;
+        }, 
+        &quot;ansible_local&quot;: {}, 
+        &quot;ansible_lsb&quot;: {
+            &quot;codename&quot;: &quot;xenial&quot;, 
+            &quot;description&quot;: &quot;Ubuntu 16.04.2 LTS&quot;, 
+            &quot;id&quot;: &quot;Ubuntu&quot;, 
+            &quot;major_release&quot;: &quot;16&quot;, 
+            &quot;release&quot;: &quot;16.04&quot;
+        }, 
+        &quot;ansible_lvm&quot;: {
+            &quot;lvs&quot;: {}, 
+            &quot;pvs&quot;: {}, 
+            &quot;vgs&quot;: {}
+        }, 
+        &quot;ansible_machine&quot;: &quot;x86_64&quot;, 
+        &quot;ansible_machine_id&quot;: &quot;2e10a0358fcd468c80876f2c074ad81c&quot;, 
+        &quot;ansible_memfree_mb&quot;: 3432, 
+        &quot;ansible_memory_mb&quot;: {
+            &quot;nocache&quot;: {
+                &quot;free&quot;: 3820, 
+                &quot;used&quot;: 131
+            }, 
+            &quot;real&quot;: {
+                &quot;free&quot;: 3432, 
+                &quot;total&quot;: 3951, 
+                &quot;used&quot;: 519
+            }, 
+            &quot;swap&quot;: {
+                &quot;cached&quot;: 0, 
+                &quot;free&quot;: 0, 
+                &quot;total&quot;: 0, 
+                &quot;used&quot;: 0
+            }
+        }, 
+        &quot;ansible_memtotal_mb&quot;: 3951, 
+        &quot;ansible_mounts&quot;: [
+            {
+                &quot;block_available&quot;: 9880025, 
+                &quot;block_size&quot;: 4096, 
+                &quot;block_total&quot;: 10148427, 
+                &quot;block_used&quot;: 268402, 
+                &quot;device&quot;: &quot;/dev/vda1&quot;, 
+                &quot;fstype&quot;: &quot;ext4&quot;, 
+                &quot;inode_available&quot;: 5057935, 
+                &quot;inode_total&quot;: 5120000, 
+                &quot;inode_used&quot;: 62065, 
+                &quot;mount&quot;: &quot;/&quot;, 
+                &quot;options&quot;: &quot;rw,relatime,data=ordered&quot;, 
+                &quot;size_available&quot;: 40468582400, 
+                &quot;size_total&quot;: 41567956992, 
+                &quot;uuid&quot;: &quot;e461d1ca-fbdd-4c8e-987f-0f190509cf4d&quot;
+            }
+        ], 
+        &quot;ansible_nodename&quot;: &quot;ovs-xenial-rdo-cloud-0000000168&quot;, 
+        &quot;ansible_os_family&quot;: &quot;Debian&quot;, 
+        &quot;ansible_ovs_system&quot;: {
+            &quot;active&quot;: false, 
+            &quot;device&quot;: &quot;ovs-system&quot;, 
+            &quot;features&quot;: {
+                &quot;busy_poll&quot;: &quot;off [fixed]&quot;, 
+                &quot;fcoe_mtu&quot;: &quot;off [fixed]&quot;, 
+                &quot;generic_receive_offload&quot;: &quot;on&quot;, 
+                &quot;generic_segmentation_offload&quot;: &quot;on&quot;, 
+                &quot;highdma&quot;: &quot;on&quot;, 
+                &quot;hw_tc_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;l2_fwd_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;large_receive_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;loopback&quot;: &quot;off [fixed]&quot;, 
+                &quot;netns_local&quot;: &quot;on [fixed]&quot;, 
+                &quot;ntuple_filters&quot;: &quot;off [fixed]&quot;, 
+                &quot;receive_hashing&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_all&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_checksumming&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_fcs&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_filter&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_offload&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_stag_filter&quot;: &quot;off [fixed]&quot;, 
+                &quot;rx_vlan_stag_hw_parse&quot;: &quot;off [fixed]&quot;, 
+                &quot;scatter_gather&quot;: &quot;on&quot;, 
+                &quot;tcp_segmentation_offload&quot;: &quot;on&quot;, 
+                &quot;tx_checksum_fcoe_crc&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksum_ip_generic&quot;: &quot;on&quot;, 
+                &quot;tx_checksum_ipv4&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksum_ipv6&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksum_sctp&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_checksumming&quot;: &quot;on&quot;, 
+                &quot;tx_fcoe_segmentation&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_gre_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_gso_robust&quot;: &quot;off [fixed]&quot;, 
+                &quot;tx_ipip_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_lockless&quot;: &quot;on [fixed]&quot;, 
+                &quot;tx_nocache_copy&quot;: &quot;off&quot;, 
+                &quot;tx_scatter_gather&quot;: &quot;on&quot;, 
+                &quot;tx_scatter_gather_fraglist&quot;: &quot;on&quot;, 
+                &quot;tx_sit_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_tcp6_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_tcp_ecn_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_tcp_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_udp_tnl_segmentation&quot;: &quot;on&quot;, 
+                &quot;tx_vlan_offload&quot;: &quot;on&quot;, 
+                &quot;tx_vlan_stag_hw_insert&quot;: &quot;off [fixed]&quot;, 
+                &quot;udp_fragmentation_offload&quot;: &quot;on&quot;, 
+                &quot;vlan_challenged&quot;: &quot;off [fixed]&quot;
+            }, 
+            &quot;hw_timestamp_filters&quot;: [], 
+            &quot;macaddress&quot;: &quot;56:96:7d:2e:b9:89&quot;, 
+            &quot;mtu&quot;: 1500, 
+            &quot;promisc&quot;: true, 
+            &quot;timestamping&quot;: [
+                &quot;rx_software&quot;, 
+                &quot;software&quot;
+            ], 
+            &quot;type&quot;: &quot;ether&quot;
+        }, 
+        &quot;ansible_pkg_mgr&quot;: &quot;apt&quot;, 
+        &quot;ansible_processor&quot;: [
+            &quot;GenuineIntel&quot;, 
+            &quot;Intel Core Processor (Broadwell)&quot;, 
+            &quot;GenuineIntel&quot;, 
+            &quot;Intel Core Processor (Broadwell)&quot;
+        ], 
+        &quot;ansible_processor_cores&quot;: 1, 
+        &quot;ansible_processor_count&quot;: 2, 
+        &quot;ansible_processor_threads_per_core&quot;: 1, 
+        &quot;ansible_processor_vcpus&quot;: 2, 
+        &quot;ansible_product_name&quot;: &quot;OpenStack Compute&quot;, 
+        &quot;ansible_product_serial&quot;: &quot;1fdaea0b-6281-5917-edf6-a61151e93387&quot;, 
+        &quot;ansible_product_uuid&quot;: &quot;2E10A035-8FCD-468C-8087-6F2C074AD81C&quot;, 
+        &quot;ansible_product_version&quot;: &quot;14.0.6-0.20170421215600.52a75c7.el7.centos&quot;, 
+        &quot;ansible_python&quot;: {
+            &quot;executable&quot;: &quot;/usr/bin/python&quot;, 
+            &quot;has_sslcontext&quot;: true, 
+            &quot;type&quot;: &quot;CPython&quot;, 
+            &quot;version&quot;: {
+                &quot;major&quot;: 2, 
+                &quot;micro&quot;: 12, 
+                &quot;minor&quot;: 7, 
+                &quot;releaselevel&quot;: &quot;final&quot;, 
+                &quot;serial&quot;: 0
+            }, 
+            &quot;version_info&quot;: [
+                2, 
+                7, 
+                12, 
+                &quot;final&quot;, 
+                0
+            ]
+        }, 
+        &quot;ansible_python_version&quot;: &quot;2.7.12&quot;, 
+        &quot;ansible_real_group_id&quot;: 0, 
+        &quot;ansible_real_user_id&quot;: 0, 
+        &quot;ansible_selinux&quot;: false, 
+        &quot;ansible_selinux_python_present&quot;: false, 
+        &quot;ansible_service_mgr&quot;: &quot;systemd&quot;, 
+        &quot;ansible_ssh_host_key_dsa_public&quot;: &quot;AAAAB3NzaC1kc3MAAACBAO2hovHBNCsJ2TQFrzGvGSE5rBoCbCJwbwZ5M7SiauFUfeAW3gPv1psnW9vMmnEOE/xkGiO6eYGsIRAxpw974dWOydySsESNY3qjTzcpx2nylQbsff+WM4V+V3kj+vpiyKYtyKM64bxWALZkS46oBMLey6HrzZLHJU3SqRB7YMuFAAAAFQDcXMbwNlttejx4T6g0QMPldOwPRwAAAIAHDpZ+sxogU9fldUqOpBuol0UXWTGxxA400ynQPCfwGAFAObCzab9c2B6mseIoCL/HuemFoKstJO3RS6K+clJ4E2bYA/TBoCTJ6lz75NZ4fBSTF7OejykV1x0hFbTuBq+335QWFSvTO0e+8oWz6Q0arO+Vlrevvj77KWzKPZ9ZyAAAAIBbXaTu7UpvDqVDW+vVS8kAZItnUTsPKLgZGf65ul+qZg0TZ3cUN5V+E43Uu8J3EU/T9FOiYe2b+WQ6LpYVZBxqzFsg+1Z2fAG4gUaRiCaLfxDLwsSNsfFvcl+FyJb/HgRugIuMJuQImKXDhY8dSzt+tDYb9QnpKbh/SNopXmO60w==&quot;, 
+        &quot;ansible_ssh_host_key_ecdsa_public&quot;: &quot;AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBPZ7xx/6aU6L+VYlOb4tsQPAOWGpyxEjvi33bcoxCFyLhqP0/nCc3XpQE/WsIGymZYAp9sxibpr3rRoBDYoNRQI=&quot;, 
+        &quot;ansible_ssh_host_key_ed25519_public&quot;: &quot;AAAAC3NzaC1lZDI1NTE5AAAAIFoX9snv0C13eSslXFEYts+WdZXYqcOxrzxC8pRDASnK&quot;, 
+        &quot;ansible_ssh_host_key_rsa_public&quot;: &quot;AAAAB3NzaC1yc2EAAAADAQABAAABAQDcQboGG0jzixnoWIj2v7N921FV9pMELCXjdrYJWS/iLTRtl+VVdk7vz2dT5M/4k3sOoJgpNU9e6HmtRb8QleWdf+O/YqvqtCjfnrECpm0nOj2aq7ucDOJN/V4zwpiVRN0ZRBtX1CtYIO96MrwDD1oUk7grjBjxXtmp0LRxCfrZkWDQFZSsagE2UNLSNJck3XOKnQdW1/VelOPvRfgGmr97clM+B/ZiSq2i5OdJLJXfpIW9lscxSBfeSLZu0Gd2hnbPWHyBrpkk3cDzaYKvK03jYRik5DZCoKemA7Ye+RgzxjJTpCFF17AM6J3lPgaR53OMu4JwLZGyElp5vdNgMN8x&quot;, 
+        &quot;ansible_swapfree_mb&quot;: 0, 
+        &quot;ansible_swaptotal_mb&quot;: 0, 
+        &quot;ansible_system&quot;: &quot;Linux&quot;, 
+        &quot;ansible_system_capabilities&quot;: [
+            &quot;cap_chown&quot;, 
+            &quot;cap_dac_override&quot;, 
+            &quot;cap_dac_read_search&quot;, 
+            &quot;cap_fowner&quot;, 
+            &quot;cap_fsetid&quot;, 
+            &quot;cap_kill&quot;, 
+            &quot;cap_setgid&quot;, 
+            &quot;cap_setuid&quot;, 
+            &quot;cap_setpcap&quot;, 
+            &quot;cap_linux_immutable&quot;, 
+            &quot;cap_net_bind_service&quot;, 
+            &quot;cap_net_broadcast&quot;, 
+            &quot;cap_net_admin&quot;, 
+            &quot;cap_net_raw&quot;, 
+            &quot;cap_ipc_lock&quot;, 
+            &quot;cap_ipc_owner&quot;, 
+            &quot;cap_sys_module&quot;, 
+            &quot;cap_sys_rawio&quot;, 
+            &quot;cap_sys_chroot&quot;, 
+            &quot;cap_sys_ptrace&quot;, 
+            &quot;cap_sys_pacct&quot;, 
+            &quot;cap_sys_admin&quot;, 
+            &quot;cap_sys_boot&quot;, 
+            &quot;cap_sys_nice&quot;, 
+            &quot;cap_sys_resource&quot;, 
+            &quot;cap_sys_time&quot;, 
+            &quot;cap_sys_tty_config&quot;, 
+            &quot;cap_mknod&quot;, 
+            &quot;cap_lease&quot;, 
+            &quot;cap_audit_write&quot;, 
+            &quot;cap_audit_control&quot;, 
+            &quot;cap_setfcap&quot;, 
+            &quot;cap_mac_override&quot;, 
+            &quot;cap_mac_admin&quot;, 
+            &quot;cap_syslog&quot;, 
+            &quot;cap_wake_alarm&quot;, 
+            &quot;cap_block_suspend&quot;, 
+            &quot;37+ep&quot;
+        ], 
+        &quot;ansible_system_capabilities_enforced&quot;: &quot;True&quot;, 
+        &quot;ansible_system_vendor&quot;: &quot;RDO&quot;, 
+        &quot;ansible_uptime_seconds&quot;: 4288, 
+        &quot;ansible_user_dir&quot;: &quot;/root&quot;, 
+        &quot;ansible_user_gecos&quot;: &quot;root&quot;, 
+        &quot;ansible_user_gid&quot;: 0, 
+        &quot;ansible_user_id&quot;: &quot;root&quot;, 
+        &quot;ansible_user_shell&quot;: &quot;/bin/bash&quot;, 
+        &quot;ansible_user_uid&quot;: 0, 
+        &quot;ansible_userspace_architecture&quot;: &quot;x86_64&quot;, 
+        &quot;ansible_userspace_bits&quot;: &quot;64&quot;, 
+        &quot;ansible_virtualization_role&quot;: &quot;host&quot;, 
+        &quot;ansible_virtualization_type&quot;: &quot;kvm&quot;, 
+        &quot;gather_subset&quot;: [
+            &quot;all&quot;
+        ], 
+        &quot;module_setup&quot;: true
+    }, 
+    &quot;changed&quot;: false, 
+    &quot;failed&quot;: false, 
+    &quot;invocation&quot;: {
+        &quot;module_args&quot;: {
+            &quot;fact_path&quot;: &quot;/etc/ansible/facts.d&quot;, 
+            &quot;filter&quot;: &quot;*&quot;, 
+            &quot;gather_subset&quot;: [
+                &quot;all&quot;
+            ], 
+            &quot;gather_timeout&quot;: 10
+        }
+    }
+}</system-out>
+		</testcase>
+		<testcase classname="/var/lib/nodepool/ansible/test/integration/targets/prepare_ovs_tests/tasks/main.yml:3" name="[2e10a035-8fcd-468c-8087-6f2c074ad81c] ovs: prepare_ovs_tests : Install openvswitch-switch package if we are on Ubuntu state=installed, update_cache=True, name=openvswitch-switch" time="1.747637">
+			<system-out>{
+    &quot;cache_update_time&quot;: 1498666713, 
+    &quot;cache_updated&quot;: true, 
+    &quot;changed&quot;: false, 
+    &quot;failed&quot;: false, 
+    &quot;invocation&quot;: {
+        &quot;module_args&quot;: {
+            &quot;allow_unauthenticated&quot;: false, 
+            &quot;autoclean&quot;: false, 
+            &quot;autoremove&quot;: false, 
+            &quot;cache_valid_time&quot;: 0, 
+            &quot;deb&quot;: null, 
+            &quot;default_release&quot;: null, 
+            &quot;dpkg_options&quot;: &quot;force-confdef,force-confold&quot;, 
+            &quot;force&quot;: false, 
+            &quot;install_recommends&quot;: null, 
+            &quot;name&quot;: &quot;openvswitch-switch&quot;, 
+            &quot;only_upgrade&quot;: false, 
+            &quot;package&quot;: [
+                &quot;openvswitch-switch&quot;
+            ], 
+            &quot;purge&quot;: false, 
+            &quot;state&quot;: &quot;present&quot;, 
+            &quot;update_cache&quot;: true, 
+            &quot;upgrade&quot;: null
+        }
+    }
+}</system-out>
+		</testcase>
+		<testcase classname="/var/lib/nodepool/ansible/test/integration/targets/prepare_ovs_tests/tasks/main.yml:10" name="[2e10a035-8fcd-468c-8087-6f2c074ad81c] ovs: prepare_ovs_tests : Install openvswitch package if we are on Fedora state=installed, update_cache=True, name=openvswitch" time="0.015292">
+			<skipped message="Conditional result was False" type="skipped"/>
+		</testcase>
+		<testcase classname="/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tasks/main.yml:3" name="[2e10a035-8fcd-468c-8087-6f2c074ad81c] ovs: openvswitch_db : collect all test cases paths={{ role_path }}/tests, patterns={{ testcase }}.yaml" time="0.242716">
+			<system-out>{
+    &quot;changed&quot;: false, 
+    &quot;examined&quot;: 1, 
+    &quot;failed&quot;: false, 
+    &quot;files&quot;: [
+        {
+            &quot;atime&quot;: 1498662025.2980127, 
+            &quot;ctime&quot;: 1497282620.9651656, 
+            &quot;dev&quot;: 64769, 
+            &quot;gid&quot;: 1001, 
+            &quot;inode&quot;: 13093614, 
+            &quot;isblk&quot;: false, 
+            &quot;ischr&quot;: false, 
+            &quot;isdir&quot;: false, 
+            &quot;isfifo&quot;: false, 
+            &quot;isgid&quot;: false, 
+            &quot;islnk&quot;: false, 
+            &quot;isreg&quot;: true, 
+            &quot;issock&quot;: false, 
+            &quot;isuid&quot;: false, 
+            &quot;mode&quot;: &quot;0664&quot;, 
+            &quot;mtime&quot;: 1497282620.9651656, 
+            &quot;nlink&quot;: 1, 
+            &quot;path&quot;: &quot;/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tests/basic.yaml&quot;, 
+            &quot;rgrp&quot;: true, 
+            &quot;roth&quot;: true, 
+            &quot;rusr&quot;: true, 
+            &quot;size&quot;: 1443, 
+            &quot;uid&quot;: 1001, 
+            &quot;wgrp&quot;: true, 
+            &quot;woth&quot;: false, 
+            &quot;wusr&quot;: true, 
+            &quot;xgrp&quot;: false, 
+            &quot;xoth&quot;: false, 
+            &quot;xusr&quot;: false
+        }
+    ], 
+    &quot;invocation&quot;: {
+        &quot;module_args&quot;: {
+            &quot;age&quot;: null, 
+            &quot;age_stamp&quot;: &quot;mtime&quot;, 
+            &quot;contains&quot;: null, 
+            &quot;file_type&quot;: &quot;file&quot;, 
+            &quot;follow&quot;: false, 
+            &quot;get_checksum&quot;: false, 
+            &quot;hidden&quot;: false, 
+            &quot;paths&quot;: [
+                &quot;/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tests&quot;
+            ], 
+            &quot;patterns&quot;: [
+                &quot;*.yaml&quot;
+            ], 
+            &quot;recurse&quot;: false, 
+            &quot;size&quot;: null, 
+            &quot;use_regex&quot;: false
+        }
+    }, 
+    &quot;matched&quot;: 1, 
+    &quot;msg&quot;: &quot;&quot;
+}</system-out>
+		</testcase>
+		<testcase classname="/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tasks/main.yml:10" name="[2e10a035-8fcd-468c-8087-6f2c074ad81c] ovs: openvswitch_db : set test_items test_items={{ test_cases.files | map(attribute='path') | list }}" time="0.020758">
+			<system-out>{
+    &quot;ansible_facts&quot;: {
+        &quot;test_items&quot;: [
+            &quot;/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tests/basic.yaml&quot;
+        ]
+    }, 
+    &quot;changed&quot;: false, 
+    &quot;failed&quot;: false
+}</system-out>
+		</testcase>
+		<testcase classname="/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tasks/main.yml:13" name="[2e10a035-8fcd-468c-8087-6f2c074ad81c] ovs: openvswitch_db : run test case _raw_params={{ test_case_to_run }}" time="0.018830">
+			<system-out>{
+    &quot;changed&quot;: false, 
+    &quot;msg&quot;: &quot;All items completed&quot;, 
+    &quot;results&quot;: [
+        {
+            &quot;_ansible_item_label&quot;: &quot;/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tests/basic.yaml&quot;, 
+            &quot;_ansible_item_result&quot;: true, 
+            &quot;include&quot;: &quot;/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tests/basic.yaml&quot;, 
+            &quot;include_variables&quot;: {
+                &quot;test_case_to_run&quot;: &quot;/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tests/basic.yaml&quot;
+            }, 
+            &quot;test_case_to_run&quot;: &quot;/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tests/basic.yaml&quot;
+        }
+    ]
+}</system-out>
+		</testcase>
+		<testcase classname="/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tasks/main.yml:13" name="[include] ovs: openvswitch_db : run test case _raw_params={{ test_case_to_run }}" time="0.040125">
+			<system-out>/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tests/basic.yaml ({u'test_case_to_run': u'/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tests/basic.yaml'}): [2e10a035-8fcd-468c-8087-6f2c074ad81c]</system-out>
+		</testcase>
+		<testcase classname="/var/lib/nodepool/ansible/test/integration/targets/openvswitch_db/tests/basic.yaml:3" name="[2e10a035-8fcd-468c-8087-6f2c074ad81c] ovs: openvswitch_db : command _raw_params=ovs-vsctl add-br br-test" time="0.265205">
+			<failure message="non-zero return code" type="failure">{
+    &quot;changed&quot;: true, 
+    &quot;cmd&quot;: [
+        &quot;ovs-vsctl&quot;, 
+        &quot;add-br&quot;, 
+        &quot;br-test&quot;
+    ], 
+    &quot;delta&quot;: &quot;0:00:00.003882&quot;, 
+    &quot;end&quot;: &quot;2017-06-28 16:18:34.363072&quot;, 
+    &quot;failed&quot;: true, 
+    &quot;invocation&quot;: {
+        &quot;module_args&quot;: {
+            &quot;_raw_params&quot;: &quot;ovs-vsctl add-br br-test&quot;, 
+            &quot;_uses_shell&quot;: false, 
+            &quot;chdir&quot;: null, 
+            &quot;creates&quot;: null, 
+            &quot;executable&quot;: null, 
+            &quot;removes&quot;: null, 
+            &quot;warn&quot;: true
+        }
+    }, 
+    &quot;msg&quot;: &quot;non-zero return code&quot;, 
+    &quot;rc&quot;: 1, 
+    &quot;start&quot;: &quot;2017-06-28 16:18:34.359190&quot;, 
+    &quot;stderr&quot;: &quot;ovs-vsctl: cannot create a bridge named br-test because a bridge named br-test already exists&quot;, 
+    &quot;stderr_lines&quot;: [
+        &quot;ovs-vsctl: cannot create a bridge named br-test because a bridge named br-test already exists&quot;
+    ], 
+    &quot;stdout&quot;: &quot;&quot;, 
+    &quot;stdout_lines&quot;: []
+}</failure>
+		</testcase>
+	</testsuite>
