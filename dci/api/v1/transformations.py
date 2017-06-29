@@ -33,7 +33,8 @@ def parse_action(root):
     return {
         'message': root.get('message', ''),
         'value': root.text,
-        'action': root.tag,
+        'action': root.tag if root.tag not in ['system-out', 'system-err']
+        else 'passed',
         'type': root.get('type', '')
     }
 

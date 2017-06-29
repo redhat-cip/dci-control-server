@@ -28,12 +28,12 @@ from tests.data import JUNIT
 SWIFT = 'dci.stores.swift.Swift'
 
 JSONUNIT = {
-    'success': 1,
+    'success': 3,
     'failures': 1,
     'errors': 1,
     'skips': 1,
-    'total': 4,
-    'time': 4042,
+    'total': 6,
+    'time': 9759,
     'testscases': [
         {
             'name': 'test_1',
@@ -71,6 +71,24 @@ JSONUNIT = {
             'type': '',
             'value': ''
         },
+        {
+            'name': 'test_5',
+            'classname': 'classname_1',
+            'time': 3.23423443444,
+            'action': 'passed',
+            'message': '',
+            'type': '',
+            'value': 'STDOUT'
+        },
+        {
+            'name': 'test_6',
+            'classname': 'classname_1',
+            'time': 2.48294832443,
+            'action': 'passed',
+            'message': '',
+            'type': '',
+            'value': 'STDERR'
+        },
     ]
 }
 
@@ -79,6 +97,20 @@ def test_junit2dict():
     result = transformations.junit2dict(JUNIT)
 
     assert result == JSONUNIT
+
+
+def test_junit2dict_with_ansible_run_ovs_integration_tests_xml():
+    with open('tests/data/ansible-run-ovs-integration-tests.xml', 'r') as f:
+        content_file = f.read()
+        result = transformations.junit2dict(content_file)
+
+    assert result['success'] == 7
+    assert result['errors'] == 0
+    assert result['failures'] == 1
+    assert result['skips'] == 1
+    assert result['total'] == 9
+    assert result['time'] == 3536
+    assert len(result['testscases']) == 9
 
 
 def test_junit2dict_with_tempest_xml():
