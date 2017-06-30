@@ -203,6 +203,8 @@ def test_delete_team_archive_dependencies(admin):
 
     user = admin.post('/api/v1/users',
                       data={'name': 'pname', 'password': 'ppass',
+                            'fullname': 'P Name',
+                            'email': 'pname@example.org',
                             'team_id': team_id})
     user_id = user.data['user']['id']
     assert user.status_code == 201

@@ -19,6 +19,7 @@ from six.moves.urllib.parse import urlparse
 import collections
 import dci.common.exceptions as exceptions
 import dci.common.utils as utils
+import re
 import six
 import uuid
 import voluptuous as v
@@ -45,6 +46,18 @@ def UUID(value):
     except Exception:
         raise ValueError
 
+
+# Source of the regexp: http://emailregex.com/
+def Email(value):
+    try:
+        pattern = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
+        if not re.match(pattern, value):
+            raise Exception
+        return value
+    except Exception:
+        raise ValueError
+
+
 VALID_STATUS_UPDATE = ['failure', 'success', 'killed', 'product-failure',
                        'deployment-failure']
 
@@ -55,6 +68,7 @@ INVALID_UUID = 'not a valid uuid'
 INVALID_JSON = 'not a valid json'
 INVALID_STRING = 'not a valid string'
 INVALID_URL = 'not a valid URL'
+INVALID_EMAIL = 'not a valid email'
 
 INVALID_TEAM = 'not a valid team id'
 INVALID_TEST = 'not a valid test id'
@@ -85,6 +99,7 @@ class Schema(v.Schema):
         'expected unicode': INVALID_STRING,
         'expected str': INVALID_STRING,
         'expected a URL': INVALID_URL,
+        'expected a valid email': INVALID_EMAIL,
         'expected a dictionary': INVALID_OBJECT,
         'expected list': INVALID_LIST
     }
@@ -208,6 +223,8 @@ test = DCISchema(schema_factory(test).post, Schema(test_put))
 
 user = utils.dict_merge(base, {
     'password': six.text_type,
+    v.Optional('fullname'): six.text_type,
+    v.Optional('email'): v.Any(Email, msg=INVALID_EMAIL),
     v.Optional('role_id'): v.Any(UUID, msg=INVALID_UUID),
     'team_id': v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
@@ -216,6 +233,8 @@ user = utils.dict_merge(base, {
 
 user_put = {
     v.Optional('name'): six.text_type,
+    v.Optional('fullname'): six.text_type,
+    v.Optional('email'): v.Any(Email, msg=INVALID_EMAIL),
     v.Optional('password'): six.text_type,
     v.Optional('role_id'): v.Any(UUID, msg=INVALID_UUID),
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
