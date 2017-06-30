@@ -185,28 +185,28 @@ def init_db(db_conn, minimal, file):
 
     # Create 2 components per topic
     component_common_1 = db_ins(
-        models.COMPONENTS, topic_id=topic_common, type='git', name='Khaleesi',
-        created_at=time[3][15]
+        models.COMPONENTS, topic_id=topic_common, type='git',
+        export_control=True, name='Khaleesi', created_at=time[3][15]
     )
     component_common_2 = db_ins(
         models.COMPONENTS, topic_id=topic_common, type='image',
-        name='RDO Manager', created_at=time[2][20]
+        export_control=True, name='RDO Manager', created_at=time[2][20]
     )
     component_hp_1 = db_ins(
         models.COMPONENTS, topic_id=topic_hp, type='package',
-        name='OSP director', created_at=time[3][5]
+        export_control=True, name='OSP director', created_at=time[3][5]
     )
     component_hp_2 = db_ins(
         models.COMPONENTS, topic_id=topic_hp, type='gerrit_review',
-        name='DCI-control-server', created_at=time[2][2]
+        export_control=True, name='DCI-control-server', created_at=time[2][2]
     )
 
     component_dell_1 = db_ins(
         models.COMPONENTS, topic_id=topic_dell, type='git', name='Khaleesi',
-        created_at=time[2][21]
+        export_control=True, created_at=time[2][21]
     )
     component_dell_2 = db_ins(
-        models.COMPONENTS, topic_id=topic_dell,
+        models.COMPONENTS, topic_id=topic_dell, export_control=True,
         type='package', name='OSP director', created_at=time[3][12]
     )
 
