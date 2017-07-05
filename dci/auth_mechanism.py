@@ -166,7 +166,7 @@ class SignatureAuthMechanism(BaseMechanism):
         return signature.is_valid(
             their_signature=their_signature.encode('utf-8'),
             secret=remoteci.api_secret.encode('utf-8'),
-            http_verb=self.request.method.encode('utf-8'),
+            http_verb=self.request.method.upper().encode('utf-8'),
             content_type=(self.request.headers.get('Content-Type')
                           .encode('utf-8')),
             timestamp=timestamp,
