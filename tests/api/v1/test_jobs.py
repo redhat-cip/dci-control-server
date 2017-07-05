@@ -630,6 +630,15 @@ def test_get_jobstates_by_job_id_with_embed(admin, job_id, jobstate_id):  # noqa
         assert jobstate['files'][1]['id'] == file1_id
 
 
+def test_embed_with_subkey_in_where(admin, job_id, topic_id):
+    jobstates = admin.get('/api/v1/jobs?embed=team&'
+                          'where=team.state:inactive')
+    assert jobstates.data['_meta']['count'] == 0
+    jobstates = admin.get('/api/v1/jobs?embed=team&'
+                          'where=team.state:active')
+    assert jobstates.data['_meta']['count'] > 0
+
+
 def test_get_job_not_found(admin):
     result = admin.get('/api/v1/jobs/%s' % uuid.uuid4())
     assert result.status_code == 404
