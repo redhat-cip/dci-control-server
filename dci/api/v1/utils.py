@@ -17,6 +17,7 @@
 import flask
 import six
 from sqlalchemy import sql, func
+import uuid
 
 from dci import auth
 from dci.common import exceptions as dci_exc
@@ -131,6 +132,26 @@ def add_sort_to_query(query, sort_list):
 def where_query(where, table, columns):
     where_conds = []
     err_msg = 'Invalid where key: "%s"'
+
+    def _get_column(table, columns, name):
+        payload = {'error': 'where key must have the following form '
+                   '"key:value"'}
+
+        if '.' in name:
+            subtable_name, name = name.split('.')
+            table_obj = embeds.EMBED_STRING_TO_OBJECT[table.name]
+            try:
+                table = table_obj[subtable_name]
+            except KeyError:
+                payload = {'valid_keys': list(table_obj.keys())}
+                raise dci_exc.DCIException(err_msg % name, payload=payload)
+            columns = get_columns_name_with_objects(table)
+
+        if name not in columns:
+            payload = {'valid_keys': list(columns.keys())}
+            raise dci_exc.DCIException(err_msg % name, payload=payload)
+        return getattr(table.c, name)
+
     for where_elem in where:
         try:
             name, value = where_elem.split(':', 1)
@@ -139,21 +160,17 @@ def where_query(where, table, columns):
                                 '"key:value"'}
             raise dci_exc.DCIException(err_msg % where_elem, payload=payload)
 
-        if name not in columns:
-            payload = {'valid_keys': list(columns.keys())}
-            raise dci_exc.DCIException(err_msg % name, payload=payload)
-
-        m_column = getattr(table.c, name)
+        m_column = _get_column(table, columns, name)
         # TODO(yassine): do the same for columns type different from string
         # if it's an Integer column, then try to cast the value
-        if str(m_column.type) == "UUID":
-            pass
-        elif m_column.type.python_type == int:
-            try:
+        try:
+            if str(m_column.type) == "UUID" and uuid.UUID(value):
+                pass
+            elif m_column.type.python_type == int:
                 value = int(value)
-            except ValueError:
-                payload = {name: 'not integer'}
-                raise dci_exc.DCIException(err_msg % name, payload=payload)
+        except ValueError:
+            payload = {name: '%s is not a %s' % (name, m_column.type)}
+            raise dci_exc.DCIException(err_msg % name, payload=payload)
 
         where_conds.append(m_column == value)
     return where_conds
