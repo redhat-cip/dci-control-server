@@ -19,6 +19,7 @@ from six.moves.urllib.parse import urlparse
 import collections
 import dci.common.exceptions as exceptions
 import dci.common.utils as utils
+import pytz
 import re
 import six
 import uuid
@@ -58,6 +59,14 @@ def Email(value):
         raise ValueError
 
 
+def Timezone(value):
+    try:
+        pytz.timezone(value)
+        return value
+    except Exception:
+        raise ValueError
+
+
 VALID_STATUS_UPDATE = ['failure', 'success', 'killed', 'product-failure',
                        'deployment-failure']
 
@@ -69,6 +78,7 @@ INVALID_JSON = 'not a valid json'
 INVALID_STRING = 'not a valid string'
 INVALID_URL = 'not a valid URL'
 INVALID_EMAIL = 'not a valid email'
+INVALID_TIMEZONE = 'not a valid timezone'
 
 INVALID_TEAM = 'not a valid team id'
 INVALID_TEST = 'not a valid test id'
@@ -101,7 +111,8 @@ class Schema(v.Schema):
         'expected a URL': INVALID_URL,
         'expected a valid email': INVALID_EMAIL,
         'expected a dictionary': INVALID_OBJECT,
-        'expected list': INVALID_LIST
+        'expected list': INVALID_LIST,
+        'expected a valid timezone': INVALID_TIMEZONE
     }
 
     def __call__(self, data):
@@ -225,6 +236,7 @@ user = utils.dict_merge(base, {
     'password': six.text_type,
     'fullname': six.text_type,
     'email': v.Any(Email, msg=INVALID_EMAIL),
+    v.Optional('timezone'): v.Any(Timezone, msg=INVALID_TIMEZONE),
     v.Optional('role_id'): v.Any(UUID, msg=INVALID_UUID),
     'team_id': v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
@@ -235,6 +247,7 @@ user_put = {
     v.Optional('name'): six.text_type,
     v.Optional('fullname'): six.text_type,
     v.Optional('email'): v.Any(Email, msg=INVALID_EMAIL),
+    v.Optional('timezone'): v.Any(Timezone, msg=INVALID_TIMEZONE),
     v.Optional('password'): six.text_type,
     v.Optional('role_id'): v.Any(UUID, msg=INVALID_UUID),
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
@@ -254,6 +267,7 @@ user = DCISchema(schema_factory(user).post,
 current_user_put = {
     'current_password': six.text_type,
     'new_password': six.text_type,
+    v.Optional('timezone'): v.Any(Timezone, msg=INVALID_TIMEZONE),
 }
 
 current_user = DCISchema(schema_factory({}).post, Schema(current_user_put))

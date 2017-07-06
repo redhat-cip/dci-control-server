@@ -33,6 +33,7 @@ FULLNAME = 'fullname', text_type
 TYPE = 'type', text_type
 DESCRIPTION = 'description', text_type
 LABEL = 'label', text_type
+TIMEZONE = 'timezone', 'Europe/Paris'
 ETAG = 'etag', text_type
 DATA = 'data', {'foo': 'bar'}
 PASSWORD = 'password', text_type
@@ -70,6 +71,9 @@ INVALID_EMAIL_ERROR = 'email', schemas.INVALID_EMAIL
 
 INVALID_URL = 'url', text_type
 INVALID_URL_ERROR = 'url', schemas.INVALID_URL
+
+INVALID_TIMEZONE = 'timezone', 'NonContinent/NonCity'
+INVALID_TIMEZONE_ERROR = 'timezone', schemas.INVALID_TIMEZONE
 
 TEAM = 'team_id', ID[1]
 INVALID_TEAM = 'team_id', INVALID_ID

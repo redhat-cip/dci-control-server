@@ -61,6 +61,7 @@ Requires:       python-voluptuous
 Requires:       python-werkzeug
 Requires:       python-zmq
 Requires:       python2-swiftclient
+Requires:       pytz
 
 %description -n dci-api
 The implementation of the DCI control server API.
@@ -102,6 +103,7 @@ Requires:       python3-flask-sqlalchemy
 Requires:       python3-lxml
 Requires:       python3-passlib
 Requires:       python3-psycopg2
+Requires:       python3-pytz
 Requires:       python3-requests
 Requires:       python3-six
 Requires:       python3-sqlalchemy-utils
