@@ -166,7 +166,11 @@ def post_file(client, jobstate_id, file_desc):
         return res.data['file']['id']
 
 
-def run_bin(bin_name, env):
+def run_bin(bin_name, env=None):
+    if env is None:
+        env = {'DCI_CS_URL': 'http://127.0.0.1:5000',
+               'DCI_LOGIN': 'admin',
+               'DCI_PASSWORD': 'admin'}
     env.update(os.environ.copy())
     exec_path = os.path.abspath(__file__)
     exec_path = os.path.abspath('%s/../../bin/%s' % (exec_path, bin_name))

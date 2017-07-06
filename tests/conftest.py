@@ -17,6 +17,7 @@
 import dci.app
 from dci.db import models
 from dci.elasticsearch import engine as es_engine
+from dci.elasticsearch import es_client
 from dci.stores.swift import Swift
 import tests.utils as utils
 from dci.common import utils as dci_utils
@@ -46,6 +47,12 @@ def engine(request):
         sqlalchemy_utils.functions.create_database(db_uri)
         models.metadata.create_all(engine)
     return engine
+
+
+@pytest.fixture(scope='session')
+def es_engine(request):
+    return es_client.DCIESEngine(utils.conf['ES_HOST'],
+                                 utils.conf['ES_PORT'], 'dci')
 
 
 @pytest.fixture
@@ -78,7 +85,6 @@ def fs_clean(request):
 def db_provisioning(db_clean, engine):
     with engine.begin() as conn:
         utils.provision(conn)
-
 
 @pytest.fixture
 def app(db_provisioning, engine, es_clean, fs_clean):
@@ -361,9 +367,8 @@ def permission(admin):
 
 
 @pytest.fixture
-def es_clean(request):
-    conn = es_engine.DCIESEngine(utils.conf)
-    conn.cleanup()
+def es_clean(request, es_engine):
+    es_engine._reset_index()
 
 
 @pytest.fixture
@@ -379,3 +384,9 @@ def role_admin(admin):
 @pytest.fixture
 def role_user(admin):
     return admin.get('/api/v1/roles?where=label:USER').data['roles'][0]
+
+@pytest.fixture
+def reset_files_event_pk(engine):
+    """Used to reset the primary key value betweens tests."""
+    with engine.begin() as conn:
+        conn.execute('ALTER SEQUENCE files_events_id_seq RESTART WITH 1;')

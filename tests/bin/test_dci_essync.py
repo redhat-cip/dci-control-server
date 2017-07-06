@@ -15,26 +15,40 @@
 # under the License.
 
 
-from dci import dci_config
-from dci.elasticsearch import es_client
-
 from tests import utils
 
-conf = dci_config.generate_conf()
 
-es_engine = es_client.DCIESEngine(conf['ES_HOST'], conf['ES_PORT'], 'dci')
-
-
-def test_essync_add_files(user, jobstate_user_id):
+def test_add_files(user, jobstate_user_id, db_clean, reset_files_event_pk,
+                   es_clean, es_engine):
     for i in range(5):
-        utils.post_file(user, jobstate_user_id,
+        f_id = utils.post_file(user, jobstate_user_id,
                         utils.FileDesc('kikoolol', 'content'))
 
-    env = {'DCI_CS_URL': 'http://127.0.0.1:5000',
-           'DCI_LOGIN': 'admin',
-           'DCI_PASSWORD': 'admin'}
-    status = utils.run_bin('dci-essync', env=env)
-    import pprint
-    pprint.pprint(status.communicate())
+    status = utils.run_bin('dci-essync')
+    status.communicate()
     assert status.returncode == 0
     assert es_engine.get_last_sequence(doc_type='logs') == 5
+    # 5 /logs  + 1 /logs/sequence = 6
+    with open('/tmp/kikoo', 'w') as f:
+        f.write(str(es_engine.get_all_logs()))
+    assert es_engine.get_all_logs()['hits'] == 6
+
+
+def test_deleted_files(user, jobstate_user_id, db_clean, reset_files_event_pk,
+                       es_clean, es_engine):
+    # create 5 files create events
+    files_ids = []
+    for i in range(5):
+        fc_id = utils.post_file(user, jobstate_user_id,
+                             utils.FileDesc('kikoolol', 'content'))
+        files_ids.append(fc_id)
+
+    # create 5 files delete events
+    for f_id in files_ids:
+        user.delete('/api/v1/files/%s' % f_id)
+
+    status = utils.run_bin('dci-essync')
+    status.communicate()
+    assert status.returncode == 0
+    assert es_engine.get_last_sequence(doc_type='logs') == 10
+
