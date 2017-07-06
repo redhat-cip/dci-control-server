@@ -421,3 +421,15 @@ def delete_configuration_by_id(user, r_id, c_id):
             raise dci_exc.DCIDeleteConflict('rconfiguration', c_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/remotecis/rconfigurations/purge', methods=['GET'])
+@decorators.login_required
+def get_to_purge_archived_rconfigurations(user):
+    return base.get_to_purge_archived_resources(user, _RCONFIGURATIONS)
+
+
+@api.route('/remotecis/rconfigurations/purge', methods=['POST'])
+@decorators.login_required
+def purge_archived_rconfigurations(user):
+    return base.purge_archived_resources(user, _RCONFIGURATIONS)

@@ -76,3 +76,25 @@ def test_delete_configuration_by_id(user, remoteci_user_id, topic_user_id):
                            remoteci_user_id).data
         # (i+1) since range(3) = 0,1,2
         assert all_rcs['_meta']['count'] == (3 - (i + 1))
+
+
+def test_purge(user, admin, remoteci_user_id, topic_user_id):
+    for i in range(3):
+        rc = user.post('/api/v1/remotecis/%s/rconfigurations' %
+                       remoteci_user_id,
+                       data={'name': 'cname%s' % i,
+                             'topic_id': topic_user_id,
+                             'data': {'lol': 'lol%s' % i}})
+        assert rc.status_code == 201
+        dr = user.delete('/api/v1/remotecis/%s/rconfigurations/%s' %
+                         (remoteci_user_id, rc.data['rconfiguration']['id']))
+        assert dr.status_code == 204
+
+    prg = admin.get('/api/v1/remotecis/rconfigurations/purge')
+    assert prg.data['_meta']['count'] == 3
+
+    prg = admin.post('/api/v1/remotecis/rconfigurations/purge')
+    assert prg.status_code == 204
+
+    prg = admin.get('/api/v1/remotecis/rconfigurations/purge')
+    assert prg.data['_meta']['count'] == 0
