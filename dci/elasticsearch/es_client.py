@@ -32,6 +32,15 @@ class DCIESEngine(object):
         session.headers.setdefault('Content-Type', 'application/json')
         return session
 
+    def _reset_index(self):
+        """ Reset an index, used mainly for the tests.
+
+        :param index:
+        :return:
+        """
+        self._session.delete('%s/%s' % (self._es_api, self._index))
+        return self._session.get('%s/%s' % (self._es_api, self._index))
+
     def index(self, document, doc_type='logs'):
         """
         :param document: dict with a 'sequence' key
@@ -76,3 +85,14 @@ class DCIESEngine(object):
             self.update_sequence(0, doc_type=doc_type)
             return 0
         return result['_source']['sequence']
+
+    def get_all_logs(self, doc_type='logs'):
+        """
+        Get the logs.
+
+        :param doc_type: the es type/mapping to retrieve the value from
+        :return: the logs
+        """
+        return self._session.get('%s/%s/%s/_search' % (self._es_api,
+                                                       self._index,
+                                                       doc_type)).json()

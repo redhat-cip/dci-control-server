@@ -28,7 +28,7 @@ import traceback
 
 dci_context = context.build_dci_context()
 conf = dci_config.generate_conf()
-es_engine = es_client.DCIESEngine(conf['ES_HOST'], conf['ES_PORT'], 'dci')
+es_engine = es_client.DCIESEngine(conf['ES_HOST'], conf['ES_PORT'])
 
 print('[*] Start Elasticsearch sync')
 
@@ -43,12 +43,16 @@ db_current_sequence = -1
 try:
     for f_event in files_events.iter(dci_context, sequence=last_sequence+1):
         db_file = f_event['file']
-        db_current_sequence = f_event['event']['id']
         if f_event['event']['action'] == 'create':
             file_content = file.content(dci_context, db_file['id'])
-            db_file['content'] = str(file_content.content)
-            es_engine.index(db_file)
-            print('[*] Index file id %s' % db_file['id'])
+            if file_content.status_code == 200:
+                db_current_sequence = f_event['event']['id']
+                db_file['content'] = str(file_content.content)
+                print(db_file)
+                es_engine.index(db_file)
+                print('[*] Index file id %s' % db_file['id'])
+            else:
+                print('beh no')
         elif f_event['event']['action'] == 'delete':
             es_engine.delete(db_file['id'])
             print('[*] Delete file id %s' % db_file['id'])
