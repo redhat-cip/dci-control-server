@@ -195,14 +195,16 @@ class TestTest(utils.SchemaTesting):
 
 class TestUser(utils.SchemaTesting):
     schema = schemas.user
-    data = dict([utils.NAME, utils.PASSWORD, utils.TEAM, utils.STATE])
+    data = dict([utils.NAME, utils.PASSWORD, utils.TEAM, utils.STATE,
+                 utils.TIMEZONE])
 
     @staticmethod
     def generate_invalids_and_errors():
         invalids = dict([utils.INVALID_NAME, utils.INVALID_PASSWORD,
-                         utils.INVALID_TEAM])
+                         utils.INVALID_TEAM, utils.INVALID_TIMEZONE])
         errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_TEAM_ERROR,
-                       utils.INVALID_PASSWORD_ERROR])
+                       utils.INVALID_PASSWORD_ERROR,
+                       utils.INVALID_TIMEZONE_ERROR])
         return invalids, errors
 
     def test_post_extra_data(self):

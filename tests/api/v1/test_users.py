@@ -28,6 +28,7 @@ def test_create_users(admin, team_id, role_user):
     assert pu['user']['role_id'] == role_user['id']
     gu = admin.get('/api/v1/users/%s' % pu_id).data
     assert gu['user']['name'] == 'pname'
+    assert gu['user']['timezone'] == 'UTC'
 
 
 def test_create_unique_user_against_teams(admin, team_admin_id, team_user_id):
@@ -230,6 +231,7 @@ def test_put_users(admin, team_id):
     pu = admin.post('/api/v1/users', data={'name': 'pname',
                                            'password': 'ppass',
                                            'fullname': 'P Name',
+                                           'timezone': 'Europe/Paris',
                                            'email': 'pname@example.org',
                                            'team_id': team_id})
     assert pu.status_code == 201
@@ -238,6 +240,7 @@ def test_put_users(admin, team_id):
 
     gu = admin.get('/api/v1/users/%s' % pu.data['user']['id'])
     assert gu.status_code == 200
+    assert gu.data['user']['timezone'] == 'Europe/Paris'
 
     ppu = admin.put('/api/v1/users/%s' % gu.data['user']['id'],
                     data={'name': 'nname'},

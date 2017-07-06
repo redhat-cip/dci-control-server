@@ -11,5 +11,6 @@ passlib
 setuptools
 Werkzeug
 pyzmq
+pytz
 lxml
 python-swiftclient
