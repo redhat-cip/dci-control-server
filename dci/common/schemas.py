@@ -253,7 +253,9 @@ user = DCISchema(schema_factory(user).post,
 
 current_user_put = {
     'current_password': six.text_type,
-    'new_password': six.text_type,
+    v.Optional('new_password'): six.text_type,
+    v.Optional('fullname'): six.text_type,
+    v.Optional('email'): v.Any(Email, msg=INVALID_EMAIL),
 }
 
 current_user = DCISchema(schema_factory({}).post, Schema(current_user_put))

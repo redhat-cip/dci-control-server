@@ -456,7 +456,7 @@ def test_get_current_user(user):
         assert me[key] == expected_user[key]
 
 
-def test_update_current_user(admin, user):
+def test_update_current_user_password(admin, user):
     user_data, user_etag = get_user(admin, 'user')
 
     assert user.get('/api/v1/users/me').status_code == 200
@@ -492,3 +492,38 @@ def test_update_current_user_current_password_wrong(admin, user):
     ).status_code == 400
 
     assert user.get('/api/v1/users/me').status_code == 200
+
+
+def test_update_current_user_new_password_empty(admin, user):
+    user_data, user_etag = get_user(admin, 'user')
+
+    assert user.get('/api/v1/users/me').status_code == 200
+
+    assert user.put(
+        '/api/v1/users/me',
+        data={'current_password': 'user', 'new_password': ''},
+        headers={'If-match': user_etag}
+    ).status_code == 204
+
+    assert user.get('/api/v1/users/me').status_code == 200
+
+
+def test_update_current_user(admin, user):
+    user_data, user_etag = get_user(admin, 'user')
+
+    assert user.get('/api/v1/users/me').status_code == 200
+
+    assert user.put(
+        '/api/v1/users/me',
+        data={'current_password': 'user', 'new_password': '',
+              'email': 'new_email@example.org', 'fullname': 'New Name'},
+        headers={'If-match': user_etag}
+    ).status_code == 204
+
+    request = user.get('/api/v1/users/me')
+    assert request.status_code == 200
+
+    me = request.data['user']
+
+    assert me['email'] == 'new_email@example.org'
+    assert me['fullname'] == 'New Name'

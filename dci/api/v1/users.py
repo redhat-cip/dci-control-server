@@ -145,22 +145,23 @@ def put_current_user(user):
     if not auth.check_passwords_equal(current_password, encrypted_password):
         raise dci_exc.DCIException('current_password invalid')
 
-    user_id = user['id']
+    new_password = values.get('new_password')
+    if new_password:
+        encrypted_password = auth.hash_password(new_password)
+
     etag = utils.gen_etag()
 
     query = _TABLE.update().where(sql.and_(
         _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == user_id
+        _TABLE.c.id == user['id']
     )).values({
         'etag': etag,
-        'password': auth.hash_password(values['new_password'])
+        'fullname': values.get('fullname') or user['fullname'],
+        'email': values.get('email') or user['email'],
+        'password': encrypted_password
     })
 
-    result = flask.g.db_conn.execute(query)
-
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('User', user_id)
-
+    flask.g.db_conn.execute(query)
     return flask.Response(None, 204, headers={'ETag': etag},
                           content_type='application/json')
 
