@@ -75,6 +75,7 @@ def create_users(user):
         'password': auth.hash_password(values.get('password')),
         'role_id': role_id,
         'fullname': values.get('fullname', values['name']),
+        'timezone': values.get('timezone', 'UTC'),
     })
 
     query = _TABLE.insert().values(**values)
