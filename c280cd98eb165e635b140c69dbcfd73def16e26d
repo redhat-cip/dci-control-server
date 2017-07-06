@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9aa53dc9_ad7c2421",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-07-06T12:29:19Z",
+      "side": 1,
+      "message": "If you update the schema, you should update value here or rebase onto https://softwarefactory-project.io/r/#/c/8826/",
+      "revId": "c280cd98eb165e635b140c69dbcfd73def16e26d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_cd864813",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 270,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-07-06T12:29:19Z",
+      "side": 1,
+      "message": "maybe to avoid conflict with https://softwarefactory-project.io/r/#/c/8826/ is it possible to do this modification after a rebase on 8826, or in another patch?",
+      "revId": "c280cd98eb165e635b140c69dbcfd73def16e26d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
