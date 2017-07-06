@@ -96,7 +96,9 @@ def test_get_all_tests(admin, user, team_user_id, topic_user_id):
 
 
 def test_get_all_tests_not_in_topic(admin, user):
-    topic = admin.post('/api/v1/topics', data={'name': 'topic_test'}).data
+    topic = admin.post('/api/v1/topics',
+                       data={'name': 'topic_test',
+                             'component_types': ['type1', 'type2']}).data
     topic_id = topic['topic']['id']
     status_code = user.get(
         '/api/v1/topics/%s/tests' % topic_id).status_code
@@ -250,9 +252,13 @@ def test_get_tests_from_topics(admin, user, team_user_id, team_id):
     test_id_2 = test_2['id']
 
     # Create two different topic
-    topic_1 = admin.post('/api/v1/topics', data={'name': 'topic_test_1'}).data
+    topic_1 = admin.post('/api/v1/topics',
+                         data={'name': 'topic_test_1',
+                               'component_types': ['type1', 'type2']}).data
     topic_id_1 = topic_1['topic']['id']
-    topic_2 = admin.post('/api/v1/topics', data={'name': 'topic_test_2'}).data
+    topic_2 = admin.post('/api/v1/topics',
+                         data={'name': 'topic_test_2',
+                               'component_types': ['type1', 'type2']}).data
     topic_id_2 = topic_2['topic']['id']
 
     # Attach the user's team to topic 1
