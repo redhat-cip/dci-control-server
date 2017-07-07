@@ -38,17 +38,16 @@ print('[*] Current last sequence number: %s' % last_sequence)
 
 db_current_sequence = -1
 
-#print(files_events.list(dci_context, sequence=0))
-
 try:
     for f_event in files_events.iter(dci_context, sequence=last_sequence+1):
         db_file = f_event['file']
-        db_current_sequence = f_event['event']['id']
         if f_event['event']['action'] == 'create':
             file_content = file.content(dci_context, db_file['id'])
-            db_file['content'] = str(file_content.content)
-            es_engine.index(db_file)
-            print('[*] Index file id %s' % db_file['id'])
+            if file_content.status_code == 200:
+                db_current_sequence = f_event['event']['id']
+                db_file['content'] = str(file_content.content)
+                es_engine.index(db_file)
+                print('[*] Index file id %s' % db_file['id'])
         elif f_event['event']['action'] == 'delete':
             es_engine.delete(db_file['id'])
             print('[*] Delete file id %s' % db_file['id'])
