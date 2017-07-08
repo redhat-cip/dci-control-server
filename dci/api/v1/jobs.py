@@ -50,8 +50,11 @@ _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
     'files': True,
     'metas': True,
+    # todo(yassine): will be removed when the client will not rely on
     'jobdefinition': False,
     'jobdefinition.tests': True,
+    'topic': False,
+    'topic.tests': True,
     'jobstates': True,
     'remoteci': False,
     'remoteci.tests': True,
@@ -76,6 +79,8 @@ def create_jobs(user):
     values.update({
         'status': 'new',
         'configuration': {},
+        # todo(yassine): add topic_id and rconfiguration_id in schemas
+        'topic_id': None,
         'rconfiguration_id': None,
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get(
@@ -235,6 +240,7 @@ def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
         schedule_components_ids.append(cmpt_id)
 
     values.update({
+        'topic_id': topic_id,
         'jobdefinition_id': jd_to_run['id'],
         'rconfiguration_id': rconfiguration['id'] if rconfiguration else None,  # noqa
         'team_id': remoteci['team_id'],
