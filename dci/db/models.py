@@ -246,7 +246,7 @@ JOBS = sa.Table(
               nullable=True),
     sa.Column('jobdefinition_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('jobdefinitions.id', ondelete='CASCADE'),
-              nullable=False),
+              nullable=True),
     sa.Index('jobs_jobdefinition_id_idx', 'jobdefinition_id'),
     sa.Column('remoteci_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('remotecis.id', ondelete='CASCADE'),
