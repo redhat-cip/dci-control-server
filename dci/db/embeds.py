@@ -31,6 +31,7 @@ JOBDEFINITION = models.JOBDEFINITIONS.alias('jobdefinition')
 
 REMOTECI_TESTS = models.TESTS.alias('remoteci.tests')
 JOBDEFINITION_TESTS = models.TESTS.alias('jobdefinition.tests')
+TOPIC_TESTS = models.TESTS.alias('topic.tests')
 TEAM = models.TEAMS.alias('team')
 REMOTECI = models.REMOTECIS.alias('remoteci')
 CFILES = models.COMPONENT_FILES.alias('files')
@@ -88,6 +89,19 @@ def jobs(root_select=models.JOBS):
              'onclause': and_(models.JOIN_JOBDEFINITIONS_TESTS.c.test_id == JOBDEFINITION_TESTS.c.id,  # noqa
                               JOBDEFINITION_TESTS.c.state != 'archived'),
              'isouter': True}],
+        'topic': [
+            {'right': TOPIC,
+             'onclause': and_(root_select.c.topic_id == TOPIC.c.id,
+                              TOPIC.c.state != 'archived')}],
+        'topic.tests': [
+            {'right': models.JOIN_TOPICS_TESTS,
+             'onclause': models.JOIN_TOPICS_TESTS.c.topic_id == TOPIC.c.id,
+             'isouter': True},
+            {'right': TOPIC_TESTS,
+             'onclause': and_(models.JOIN_TOPICS_TESTS.c.test_id == TOPIC_TESTS.c.id,  # noqa
+                              TOPIC_TESTS.c.state != 'archived'),
+             'isouter': True}
+        ],
         'remoteci': [
             {'right': REMOTECI,
              'onclause': and_(root_select.c.remoteci_id == REMOTECI.c.id,
@@ -326,8 +340,11 @@ EMBED_STRING_TO_OBJECT = {
     'jobs': {
         'files': models.FILES,
         'metas': models.METAS,
+        # todo(yassine): will be removed when the client will not rely on
         'jobdefinition': JOBDEFINITION,
         'jobdefinition.tests': JOBDEFINITION_TESTS,
+        'topic': TOPIC,
+        'topic.tests': TOPIC_TESTS,
         'jobstates': models.JOBSTATES,
         'remoteci': REMOTECI,
         'remoteci.tests': REMOTECI_TESTS,
