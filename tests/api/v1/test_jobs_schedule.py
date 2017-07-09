@@ -300,3 +300,46 @@ def test_schedule_jobs_with_rconfiguration_and_component_types(
     gcomponents = admin.get('/api/v1/jobs/%s/components' % job['job']['id']).data  # noqa
 
     assert len(gcomponents['components']) == 2
+
+
+def test_schedule_jobs_with_components_ids(admin, user, remoteci_user_id,
+                                           topic_user_id,
+                                           jobdefinition_user_id):
+    c_ids = _create_components(admin, topic_user_id,
+                               ['type_1', 'type_2', 'type_3'])
+    headers = {
+        'User-Agent': 'thisismyuseragent',
+        'Client-Version': 'python-dciclient_0.1.0'
+    }
+    job = user.post('/api/v1/jobs/schedule', headers=headers,
+                    data={'remoteci_id': remoteci_user_id,
+                          'topic_id': topic_user_id,
+                          'components_ids': c_ids}).data
+
+    gcomponents = user.get('/api/v1/jobs/%s/components' % job['job']['id']).data  # noqa
+    gcomponents_ids = [g['id'] for g in gcomponents['components']]
+    assert set(gcomponents_ids) == set(c_ids)
+
+
+def test_schedule_jobs_with_bad_components_ids(admin, user, remoteci_user_id,
+                                               topic_user_id,
+                                               jobdefinition_user_id):
+    c_ids = _create_components(admin, topic_user_id,
+                               ['type_1', 'type_2', 'type_3'])
+    headers = {
+        'User-Agent': 'thisismyuseragent',
+        'Client-Version': 'python-dciclient_0.1.0'
+    }
+    # missing one component
+    job = user.post('/api/v1/jobs/schedule', headers=headers,
+                    data={'remoteci_id': remoteci_user_id,
+                          'topic_id': topic_user_id,
+                          'components_ids': c_ids[0:1]})
+    assert job.status_code == 412
+
+    # duplicate components
+    job = user.post('/api/v1/jobs/schedule', headers=headers,
+                    data={'remoteci_id': remoteci_user_id,
+                          'topic_id': topic_user_id,
+                          'components_ids': [c_ids[0], c_ids[1], c_ids[1]]})
+    assert job.status_code == 412

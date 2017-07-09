@@ -115,6 +115,10 @@ COMPONENTS = 'components', []
 INVALID_COMPONENTS = 'components', list
 INVALID_COMPONENTS_ERROR = 'components', schemas.INVALID_LIST
 
+COMPONENTS_IDS = 'components_ids', []
+INVALID_COMPONENTS_IDS = 'components_ids', list
+INVALID_COMPONENTS_IDS_ERROR = 'components_ids', schemas.INVALID_LIST
+
 INVALID_VALUE = 'value', None
 INVALID_VALUE_ERROR = 'value', schemas.INVALID_STRING
 
