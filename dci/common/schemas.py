@@ -369,7 +369,7 @@ job = {
     'jobdefinition_id': v.Any(UUID, msg=INVALID_JOB_DEFINITION),
     'remoteci_id': v.Any(UUID, msg=INVALID_REMOTE_CI),
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
-    'components': list,
+    'components_ids': list,
     v.Optional('comment', default=None): six.text_type,
     v.Optional('previous_job_id', default=None): v.Any(UUID,
                                                        msg=INVALID_JOB),
@@ -390,7 +390,8 @@ job = DCISchema(schema_factory(job).post, Schema(job_put))
 
 job_schedule = {
     'remoteci_id': v.Any(UUID, msg=INVALID_REMOTE_CI),
-    'topic_id': v.Any(UUID, msg=INVALID_TOPIC)
+    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
+    v.Optional('components_ids', default=[]): list
 }
 
 job_schedule = schema_factory(job_schedule)

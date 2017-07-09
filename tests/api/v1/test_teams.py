@@ -238,7 +238,7 @@ def test_delete_team_archive_dependencies(admin):
 
     data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
             'remoteci_id': remoteci_id, 'comment': 'kikoolol',
-            'components': [component_id]}
+            'components_ids': [component_id]}
     job = admin.post('/api/v1/jobs', data=data)
     job_id = job.data['job']['id']
     assert job.status_code == 201

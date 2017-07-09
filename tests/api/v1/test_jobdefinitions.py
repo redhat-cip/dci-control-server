@@ -312,7 +312,7 @@ def test_delete_jobdefinition_archive_dependencies(admin, jobdefinition_id,
                                                    components_ids):
     data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
             'remoteci_id': remoteci_id, 'comment': 'kikoolol',
-            'components': components_ids}
+            'components_ids': components_ids}
     job = admin.post('/api/v1/jobs', data=data)
     assert job.status_code == 201
 

@@ -39,11 +39,11 @@ def test_metrics_admin(admin, remoteci_id, team_id):
     admin.post('/api/v1/jobs', data={'jobdefinition_id': jd_id,
                                      'team_id': team_id,
                                      'remoteci_id': remoteci_id,
-                                     'components': [c_id]})
+                                     'components_ids': [c_id]})
     admin.post('/api/v1/jobs', data={'jobdefinition_id': jd_id,
                                      'team_id': team_id,
                                      'remoteci_id': remoteci_id,
-                                     'components': [c_id]})
+                                     'components_ids': [c_id]})
     res = admin.get('/api/v1/metrics/topics')
     foo = res.data['topics']['foo']
     bar = res.data['topics']['bar']
