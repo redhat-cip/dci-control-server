@@ -247,7 +247,7 @@ def job_id(admin, topic_id, remoteci_id, jobdefinition_factory):
 def job_user_id(admin, jobdefinition_id, team_user_id, remoteci_user_id,
                 components_ids):
     data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_user_id,
-            'remoteci_id': remoteci_user_id, 'components': components_ids}
+            'remoteci_id': remoteci_user_id, 'components_ids': components_ids}
     job = admin.post('/api/v1/jobs', data=data).data
     return job['job']['id']
 

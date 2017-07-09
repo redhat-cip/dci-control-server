@@ -30,7 +30,7 @@ def test_create_jobs(admin, jobdefinition_id, remoteci_id,
                      components_ids):
     data = {'jobdefinition_id': jobdefinition_id,
             'remoteci_id': remoteci_id, 'comment': 'kikoolol',
-            'components': components_ids}
+            'components_ids': components_ids}
     job = admin.post('/api/v1/jobs', data=data)
     job_id = job.data['job']['id']
 
@@ -45,7 +45,7 @@ def test_create_jobs(admin, jobdefinition_id, remoteci_id,
 def test_create_jobs_empty_comment(admin, jobdefinition_id,
                                    remoteci_id, components_ids):
     data = {'jobdefinition_id': jobdefinition_id,
-            'remoteci_id': remoteci_id, 'components': components_ids}
+            'remoteci_id': remoteci_id, 'components_ids': components_ids}
     job = admin.post('/api/v1/jobs', data=data).data
     assert job['job']['comment'] is None
 
@@ -58,13 +58,13 @@ def test_get_all_jobs(admin, jobdefinition_id, remoteci_id,
     job_1 = admin.post('/api/v1/jobs',
                        data={'jobdefinition_id': jobdefinition_id,
                              'remoteci_id': remoteci_id,
-                             'components': components_ids})
+                             'components_ids': components_ids})
     job_1_id = job_1.data['job']['id']
 
     job_2 = admin.post('/api/v1/jobs',
                        data={'jobdefinition_id': jobdefinition_id,
                              'remoteci_id': remoteci_id,
-                             'components': components_ids})
+                             'components_ids': components_ids})
     job_2_id = job_2.data['job']['id']
 
     db_all_jobs = admin.get('/api/v1/jobs?sort=created_at').data
@@ -81,7 +81,7 @@ def test_get_all_jobs_order(admin, jobdefinition_id, remoteci_id,
         j = admin.post('/api/v1/jobs',
                        data={'jobdefinition_id': jobdefinition_id,
                              'remoteci_id': remoteci_id,
-                             'components': components_ids,
+                             'components_ids': components_ids,
                              'created_at': date}).data
         return j['job']['id']
 
@@ -105,7 +105,7 @@ def test_get_all_jobs_with_pagination(admin, jobdefinition_id, remoteci_id,
     # create 4 jobs and check meta count
     data = {'jobdefinition_id': jobdefinition_id,
             'remoteci_id': remoteci_id,
-            'components': components_ids}
+            'components_ids': components_ids}
     admin.post('/api/v1/jobs', data=data)
     admin.post('/api/v1/jobs', data=data)
     admin.post('/api/v1/jobs', data=data)
@@ -134,7 +134,7 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
     data = {'jobdefinition_id': jobdefinition_id,
             'team_id': team_id,
             'remoteci_id': remoteci_id,
-            'components': components_ids}
+            'components_ids': components_ids}
     admin.post('/api/v1/jobs', data=data)
     admin.post('/api/v1/jobs', data=data)
 
@@ -219,7 +219,7 @@ def test_get_all_jobs_with_dup_embed(admin, jobdefinition_id, team_id,
     data = {'jobdefinition_id': jobdefinition_id,
             'team_id': team_id,
             'remoteci_id': remoteci_id,
-            'components': components_ids}
+            'components_ids': components_ids}
 
     admin.post('/api/v1/jobs', data=data)
     query_embed = (('/api/v1/jobs?embed='
@@ -238,7 +238,7 @@ def test_get_all_jobs_with_embed_and_limit(admin, jobdefinition_id,
     # create 2 jobs and check meta data count
     data = {'jobdefinition_id': jobdefinition_id,
             'remoteci_id': remoteci_id,
-            'components': components_ids}
+            'components_ids': components_ids}
     admin.post('/api/v1/jobs', data=data)
     admin.post('/api/v1/jobs', data=data)
 
@@ -261,7 +261,7 @@ def test_update_job(admin, jobdefinition_id, remoteci_id,
         'jobdefinition_id': jobdefinition_id,
         'remoteci_id': remoteci_id,
         'comment': 'foo',
-        'components': components_ids
+        'components_ids': components_ids
     }
     job = admin.post('/api/v1/jobs', data=data)
     job = job.data['job']
@@ -295,7 +295,7 @@ def test_update_job_notification(app, admin, jobdefinition_id, team_id_notif,
             'team_id': team_id_notif,
             'remoteci_id': remoteci_id,
             'comment': 'foo',
-            'components': components_ids
+            'components_ids': components_ids
         }
         job = admin.post('/api/v1/jobs', data=data)
         job = job.data['job']
@@ -321,7 +321,7 @@ def test_get_all_jobs_with_where(admin, jobdefinition_id, team_admin_id,
     job = admin.post('/api/v1/jobs',
                      data={'jobdefinition_id': jobdefinition_id,
                            'remoteci_id': remoteci_id,
-                           'components': components_ids})
+                           'components_ids': components_ids})
     job_id = job.data['job']['id']
 
     db_job = admin.get('/api/v1/jobs?where=id:%s' % job_id).data
@@ -352,7 +352,7 @@ def test_get_all_jobs_with_sort(admin, jobdefinition_id, remoteci_id,
     # create 3 jobs ordered by created time
     data = {'jobdefinition_id': jobdefinition_id,
             'remoteci_id': remoteci_id,
-            'components': components_ids}
+            'components_ids': components_ids}
     job_1 = admin.post('/api/v1/jobs', data=data).data['job']
     job_2 = admin.post('/api/v1/jobs', data=data).data['job']
     job_3 = admin.post('/api/v1/jobs', data=data).data['job']
@@ -374,7 +374,7 @@ def test_get_job_by_id(admin, jobdefinition_id, remoteci_id,
     job = admin.post('/api/v1/jobs',
                      data={'jobdefinition_id': jobdefinition_id,
                            'remoteci_id': remoteci_id,
-                           'components': components_ids})
+                           'components_ids': components_ids})
     job_id = job.data['job']['id']
 
     job = admin.get('/api/v1/jobs/%s' % job_id)
@@ -474,7 +474,7 @@ def test_delete_job_by_id(admin, jobdefinition_id, remoteci_id,
     job = admin.post('/api/v1/jobs',
                      data={'jobdefinition_id': jobdefinition_id,
                            'remoteci_id': remoteci_id,
-                           'components': components_ids})
+                           'components_ids': components_ids})
     job_id = job.data['job']['id']
     job_etag = job.headers.get("ETag")
     assert job.status_code == 201
@@ -532,21 +532,21 @@ def test_create_job_as_user(user, team_id, team_user_id, jobdefinition_id,
                     data={'team_id': team_id,
                           'jobdefinition_id': jobdefinition_id,
                           'remoteci_id': remoteci_user_id,
-                          'components': components_ids})
+                          'components_ids': components_ids})
     assert job.status_code == 401
 
     job = user.post('/api/v1/jobs',
                     data={'team_id': team_user_id,
                           'jobdefinition_id': jobdefinition_id,
                           'remoteci_id': remoteci_user_id,
-                          'components': components_ids})
+                          'components_ids': components_ids})
     assert job.status_code == 201
     assert job.data['job']['team_id'] == team_user_id
 
     job = user.post('/api/v1/jobs',
                     data={'jobdefinition_id': jobdefinition_id,
                           'remoteci_id': remoteci_user_id,
-                          'components': components_ids})
+                          'components_ids': components_ids})
     assert job.status_code == 201
     assert job.data['job']['team_id'] == team_user_id
 
@@ -568,7 +568,7 @@ def test_get_job_as_user(user, job_id, jobdefinition_id,
     job = user.post('/api/v1/jobs',
                     data={'jobdefinition_id': jobdefinition_id,
                           'remoteci_id': remoteci_user_id,
-                          'components': components_ids}).data
+                          'components_ids': components_ids}).data
     job_id = job['job']['id']
     job = user.get('/api/v1/jobs/%s' % job_id)
     assert job.status_code == 200
@@ -580,7 +580,7 @@ def test_delete_job_as_user(user, admin, job_id,
     job = user.post('/api/v1/jobs',
                     data={'jobdefinition_id': jobdefinition_id,
                           'remoteci_id': remoteci_user_id,
-                          'components': components_ids}).data
+                          'components_ids': components_ids}).data
     job_user_id = job['job']['id']
     job = user.get('/api/v1/jobs/%s' % job_user_id)
     job_etag = job.headers.get("ETag")
@@ -612,7 +612,7 @@ def test_create_file_for_job_id(user, jobdefinition_id,
         job = user.post('/api/v1/jobs',
                         data={'jobdefinition_id': jobdefinition_id,
                               'remoteci_id': remoteci_id,
-                              'components': components_ids})
+                              'components_ids': components_ids})
         job_id = job.data['job']['id']
         assert job.status_code == 201
 
@@ -668,7 +668,7 @@ def test_job_search(user, jobdefinition_id, remoteci_id, components_ids):
     job = user.post('/api/v1/jobs',
                     data={'jobdefinition_id': jobdefinition_id,
                           'remoteci_id': remoteci_id,
-                          'components': components_ids})
+                          'components_ids': components_ids})
     job_id = job.data['job']['id']
     job_etag = job.data['job']['etag']
 

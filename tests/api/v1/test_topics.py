@@ -432,7 +432,7 @@ def test_status_from_component_type_last_component(admin, topic_id,
         'jobdefinition_id': jobdefinition_id,
         'team_id': team_id,
         'remoteci_id': remoteci_id,
-        'components': components_ids
+        'components_ids': components_ids
     }
     job = admin.post('/api/v1/jobs', data=data).data['job']
     data_update = {'status': 'success'}
@@ -472,7 +472,7 @@ def test_status_from_component_type_get_status(admin, topic_id, components_ids,
         'jobdefinition_id': jobdefinition_id,
         'team_id': team_id,
         'remoteci_id': remoteci_id,
-        'components': components_ids,
+        'components_ids': components_ids,
     }
     job = admin.post('/api/v1/jobs', data=data).data['job']
     data_update = {'status': 'success'}
