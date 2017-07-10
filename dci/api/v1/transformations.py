@@ -56,6 +56,15 @@ def parse_testscases(root):
     return testscases
 
 
+def parse_testssuites(root):
+    testssuites = []
+    for testsuite in root.findall('testsuite'):
+        testssuites.append(testsuite)
+    if not testssuites:
+        testssuites.append(root)
+    return testssuites
+
+
 def junit2dict(string):
     if not string:
         return {}
@@ -69,25 +78,28 @@ def junit2dict(string):
     }
     try:
         root = etree.fromstring(string)
-        testscases = parse_testscases(root)
+        testssuites = parse_testssuites(root)
 
-        test_duration = timedelta(seconds=0)
-        for testcase in testscases:
-            results['total'] += 1
-            test_duration += timedelta(seconds=float(testcase['time']))
-            if testcase['action'] == 'skipped':
-                results['skips'] += 1
-            if testcase['action'] == 'error':
-                results['errors'] += 1
-            if testcase['action'] == 'failure':
-                results['failures'] += 1
+        for testsuite in testssuites:
+            testscases = parse_testscases(testsuite)
 
-        results['testscases'] = testscases
-        results['success'] = (results['total'] -
-                              results['failures'] -
-                              results['errors'] -
-                              results['skips'])
-        results['time'] = int(test_duration.total_seconds() * 1000)
+            test_duration = timedelta(seconds=0)
+            for testcase in testscases:
+                results['total'] += 1
+                test_duration += timedelta(seconds=float(testcase['time']))
+                if testcase['action'] == 'skipped':
+                    results['skips'] += 1
+                if testcase['action'] == 'error':
+                    results['errors'] += 1
+                if testcase['action'] == 'failure':
+                    results['failures'] += 1
+
+            results['testscases'] = testscases
+            results['success'] = (results['total'] -
+                                  results['failures'] -
+                                  results['errors'] -
+                                  results['skips'])
+            results['time'] = int(test_duration.total_seconds() * 1000)
     except etree.XMLSyntaxError as e:
         results['error'] = "XMLSyntaxError: %s " % str(e)
         LOG.error('XMLSyntaxError %s' % str(e))
