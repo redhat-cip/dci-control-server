@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "9aa53dc9_778dc67a",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 142,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-07-10T19:49:35Z",
+      "side": 1,
+      "message": "you have to check if subtable_name is in embeds.EMBED_STRING_TO_OBJECT[table.name]\n\nif not \n\npayload \u003d {\u0027valid_keys\u0027: list(columns.keys())}\n            raise dci_exc.DCIException(err_msg % name, payload\u003dpayload)",
+      "revId": "e4f23e5aaf643edd74fca3785dcad1ecc434abc8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9aa53dc9_94904897",
         "filename": "dci/api/v1/utils.py",
         "patchSetId": 1
