@@ -519,7 +519,8 @@ def test_update_current_user(admin, user):
     assert user.put(
         '/api/v1/users/me',
         data={'current_password': 'user', 'new_password': '',
-              'email': 'new_email@example.org', 'fullname': 'New Name'},
+              'email': 'new_email@example.org', 'fullname': 'New Name',
+              'timezone': 'Europe/Paris'},
         headers={'If-match': user_etag}
     ).status_code == 204
 
@@ -530,3 +531,4 @@ def test_update_current_user(admin, user):
 
     assert me['email'] == 'new_email@example.org'
     assert me['fullname'] == 'New Name'
+    assert me['timezone'] == 'Europe/Paris'

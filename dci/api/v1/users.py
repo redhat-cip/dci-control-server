@@ -159,7 +159,8 @@ def put_current_user(user):
         'etag': etag,
         'fullname': values.get('fullname') or user['fullname'],
         'email': values.get('email') or user['email'],
-        'password': encrypted_password
+        'timezone': values.get('timezone') or user['timezone'],
+        'password': encrypted_password,
     })
 
     flask.g.db_conn.execute(query)
