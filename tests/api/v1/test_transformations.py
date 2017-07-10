@@ -104,13 +104,13 @@ def test_junit2dict_with_ansible_run_ovs_integration_tests_xml():
         content_file = f.read()
         result = transformations.junit2dict(content_file)
 
-    assert result['success'] == 7
+    assert result['success'] == 16
     assert result['errors'] == 0
-    assert result['failures'] == 1
+    assert result['failures'] == 0
     assert result['skips'] == 1
-    assert result['total'] == 9
-    assert result['time'] == 3536
-    assert len(result['testscases']) == 9
+    assert result['total'] == 17
+    assert result['time'] == 42321
+    assert len(result['testscases']) == 17
 
 
 def test_junit2dict_with_tempest_xml():
