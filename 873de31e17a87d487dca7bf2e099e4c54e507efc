@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "9aa53dc9_f7a3164e",
+        "filename": "dci/alembic/versions/491df8d6fb62_add_rconfiguration_id_in_jobs.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-07-11T15:26:53Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9aa53dc9_57c76212",
+      "range": {
+        "startLine": 36,
+        "startChar": 0,
+        "endLine": 38,
+        "endChar": 51
+      },
+      "revId": "873de31e17a87d487dca7bf2e099e4c54e507efc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9aa53dc9_774b86b1",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 11
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "9aa53dc9_97fcca3f",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-07-11T15:26:53Z",
+      "side": 1,
+      "message": "Currently the remoteci is not associated to the topic but the remoteci\u0027s team is associated to the topic.\n\nSo for now we assume that if the remoteci belongs to the topic then it means it\u0027s able to run jobs from this topic and have correct components_types.\n\nWe can create a card to have fine grained subscriptions.",
+      "parentUuid": "9aa53dc9_774b86b1",
+      "range": {
+        "startLine": 147,
+        "startChar": 0,
+        "endLine": 157,
+        "endChar": 23
+      },
+      "revId": "873de31e17a87d487dca7bf2e099e4c54e507efc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9aa53dc9_37ccde34",
         "filename": "dci/db/models.py",
         "patchSetId": 11
@@ -59,6 +107,30 @@
       "writtenOn": "2017-07-11T14:47:41Z",
       "side": 1,
       "message": "missing index",
+      "range": {
+        "startLine": 244,
+        "startChar": 0,
+        "endLine": 246,
+        "endChar": 29
+      },
+      "revId": "873de31e17a87d487dca7bf2e099e4c54e507efc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_d78932cc",
+        "filename": "dci/db/models.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 246,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-07-11T15:26:53Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9aa53dc9_37ccde34",
       "range": {
         "startLine": 244,
         "startChar": 0,
