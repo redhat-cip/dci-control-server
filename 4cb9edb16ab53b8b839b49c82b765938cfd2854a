@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9aa53dc9_fa0d3b38",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-07-11T18:16:43Z",
+      "side": 1,
+      "message": "The remoteci is not associated to a topic but the rconfiguration attached to a remoteci is.\nThat means you will be able to schedule a new job on a topic X with a rconfiguration on topic Y which is not expected.\n\ntopic:\n  id: x, name: foo\n  id: y, name: bar\n\nremoteci:\n  id: z, name: tchatcheur (team subscribed to topic x and y)\n\nrconfig:\n  id: a, name: vxlan, topic_id: x, remoteci_id: z\n  id: b, name: gre, topic_id: x, remoteci_id: z\n  id: c, name: contrail, topic_id: y, remoteci_id: z\n\njobs:\n  id: 1, remoteci_id: z, rconfig_id: a\n  id: 2, remoteci_id: z, rconfig_id: b\n  id: 3, remoteci_id: z, rconfig_id: c\n\nI want to schedule a new job on the remoteco tchatcheur (id: z) with topic foo (id: x).\nThe last jobs associated to remoteci tchatcheur (id: z) is the job id 3 so the rconfig is contrail (id: 3) but the topic for this one is bar (id: y) which is different from the initial request.",
+      "range": {
+        "startLine": 147,
+        "startChar": 0,
+        "endLine": 157,
+        "endChar": 23
+      },
+      "revId": "4cb9edb16ab53b8b839b49c82b765938cfd2854a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
