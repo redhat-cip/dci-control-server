@@ -147,8 +147,8 @@ def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
     def _get_last_rconfiguration_id():
         """Get the rconfiguration_id of the last job run by the remoteci."""
         query = sql.select([_TABLE]). \
-            where(_TABLE.c.remoteci_id == remoteci['id']). \
-            order_by(sql.desc(_TABLE.c.created_at))
+            select_from(_TABLE.join(models.JOBDEFINITIONS)).\
+            where(models.JOBDEFINITIONS.c.topic_id == topic_id)
         last_job = flask.g.db_conn.execute(query).fetchone()
         if last_job is not None:
             last_job = dict(last_job)
@@ -167,7 +167,8 @@ def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
             select_from(_J_RCONFIGURATIONS.
                         join(_RCONFIGURATIONS)). \
             where(_J_RCONFIGURATIONS.c.remoteci_id == remoteci['id'])
-        query = query.where(_RCONFIGURATIONS.c.state != 'archived')
+        query = query.where(sql.and_(_RCONFIGURATIONS.c.state != 'archived',
+                                     _RCONFIGURATIONS.c.topic_id == topic_id))
         query = query.order_by(sql.desc(_RCONFIGURATIONS.c.created_at))
         all_rconfigurations = flask.g.db_conn.execute(query).fetchall()
 

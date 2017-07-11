@@ -250,6 +250,7 @@ def test_schedule_jobs_with_rconfiguration(admin, remoteci_id, topic_id,
 
 
 def test_schedule_jobs_round_robin_rconfiguration(admin, remoteci_id, topic_id,
+                                                  topic_user_id,
                                                   jobdefinition_id):
 
     rconfiguration_1 = admin.post('/api/v1/remotecis/%s/rconfigurations' % remoteci_id,  # noqa
@@ -261,6 +262,11 @@ def test_schedule_jobs_round_robin_rconfiguration(admin, remoteci_id, topic_id,
                                   data={'name': 'rconfig2',
                                         'topic_id': topic_id})
     rconfiguration_id_2 = rconfiguration_2.data['rconfiguration']['id']
+
+    rconfiguration_3 = admin.post('/api/v1/remotecis/%s/rconfigurations' % remoteci_id,  # noqa
+                                  data={'name': 'rconfig2',
+                                        'topic_id': topic_user_id})
+    assert rconfiguration_3.status_code == 201
 
     headers = {
         'User-Agent': 'thisismyuseragent',
