@@ -22,6 +22,30 @@
       "revId": "dd4ce0b0be219f754859a8d3b1f7cbff151fcfc5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9aa53dc9_60c17e2e",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 200,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-07-13T14:56:04Z",
+      "side": 1,
+      "message": "This is what we do today and I 100% agree with you. This is not optimal. If someone create the component in the wrong order, s/he has to delete them and restart. Maybe we can introduce a new released_at (default\u003dNOW()) for that.",
+      "parentUuid": "9aa53dc9_7a7ecbaf",
+      "range": {
+        "startLine": 200,
+        "startChar": 0,
+        "endLine": 200,
+        "endChar": 73
+      },
+      "revId": "dd4ce0b0be219f754859a8d3b1f7cbff151fcfc5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
