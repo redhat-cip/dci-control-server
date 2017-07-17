@@ -176,6 +176,14 @@ def remoteci_id(admin, team_id):
 
 
 @pytest.fixture
+def remoteci_public_id(admin, team_id):
+    data = {'name': 'public_name', 'team_id': team_id,
+            'allow_upgrade_job': True, 'public': True}
+    remoteci = admin.post('/api/v1/remotecis', data=data).data
+    return str(remoteci['remoteci']['id'])
+
+
+@pytest.fixture
 def remoteci_user_id(user, team_user_id):
     data = {'name': 'rname', 'team_id': team_user_id,
             'allow_upgrade_job': True}
