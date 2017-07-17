@@ -59,6 +59,7 @@ JOBSTATEJOBS_WITHOUT_CONFIGURATION = ignore_columns_from_table(JOBSTATE_JOBS, ['
 TOPIC = models.TOPICS.alias('topic')
 
 ROLE = models.ROLES.alias('role')
+USER = models.USERS.alias('user')
 
 
 def jobs(root_select=models.JOBS):
@@ -126,6 +127,14 @@ def remotecis(root_select=models.REMOTECIS):
              'onclause': and_(TEAM.c.id == root_select.c.team_id,
                               TEAM.c.state != 'archived')}
         ],
+        'users': [
+            {'right': models.JOIN_USER_REMOTECIS,
+             'onclause': models.JOIN_USER_REMOTECIS.c.remoteci_id == root_select.c.id,  # noqa
+             'isouter': True},
+            {'right': models.USERS,
+             'onclause': and_(models.USERS.c.id == models.JOIN_USER_REMOTECIS.c.user_id,  # noqa
+                              models.USERS.c.state != 'archived'),
+             'isouter': True}],
         'lastjob': [
             {'right': LASTJOB,
              'onclause': and_(
@@ -328,6 +337,7 @@ EMBED_STRING_TO_OBJECT = {
         'results': TESTS_RESULTS},
     'remotecis': {
         'team': TEAM,
+        'users': USER,
         'lastjob': LASTJOB_WITHOUT_CONFIGURATION,
         'lastjob.components': LASTJOB_COMPONENTS,
         'currentjob': CURRENTJOB_WITHOUT_CONFIGURATION,
