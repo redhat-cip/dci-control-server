@@ -602,3 +602,103 @@ def test_change_remoteci_to_invalid_state(admin, remoteci_id):
     current_remoteci = admin.get('/api/v1/remotecis/' + remoteci_id)
     assert current_remoteci.status_code == 200
     assert current_remoteci.data['remoteci']['state'] == 'active'
+
+
+def test_success_attach_user_to_remoteci_in_team_as_admin(admin, user_id,
+                                                          remoteci_user_id):
+    data = {
+        'user_id': user_id
+    }
+    r = admin.post('/api/v1/remotecis/%s/users' % remoteci_user_id, data=data)
+
+    assert r.status_code == 201
+
+    r = admin.get('/api/v1/remotecis/%s?embed=users' % remoteci_user_id)
+
+    assert r.status_code == 200
+    assert r.data['remoteci']['users'][0]['name'] == 'user'
+
+
+def test_success_attach_myself_to_remoteci_in_team(user, user_id,
+                                                   remoteci_user_id):
+    data = {
+        'user_id': user_id
+    }
+    r = user.post('/api/v1/remotecis/%s/users' % remoteci_user_id, data=data)
+
+    assert r.status_code == 201
+
+    r = user.get('/api/v1/remotecis/%s?embed=users' % remoteci_user_id)
+
+    assert r.status_code == 200
+    assert r.data['remoteci']['users'][0]['name'] == 'user'
+
+
+def test_failure_attach_myself_to_remoteci_not_in_team(user, user_id,
+                                                       remoteci_id):
+    data = {
+        'user_id': user_id
+    }
+    r = user.post('/api/v1/remotecis/%s/users' % remoteci_id, data=data)
+
+    assert r.status_code == 401
+
+
+def test_failure_attach_user_to_remoteci_in_team_as_user(user, admin_id,
+                                                         remoteci_id):
+    data = {
+        'user_id': admin_id
+    }
+    r = user.post('/api/v1/remotecis/%s/users' % remoteci_id, data=data)
+
+    assert r.status_code == 401
+
+
+def test_success_detach_user_from_remoteci_in_team_as_admin(admin, user_id,
+                                                            remoteci_user_id):
+    data = {
+        'user_id': user_id
+    }
+    r = admin.post('/api/v1/remotecis/%s/users' % remoteci_user_id, data=data)
+
+    assert r.status_code == 201
+
+    r = admin.get('/api/v1/remotecis/%s?embed=users' % remoteci_user_id)
+
+    assert r.status_code == 200
+    assert r.data['remoteci']['users'][0]['name'] == 'user'
+
+    r = admin.delete('/api/v1/remotecis/%s/users/%s' % (remoteci_user_id,
+                                                        user_id))
+
+    assert r.status_code == 204
+
+    r = admin.get('/api/v1/remotecis/%s?embed=users' % remoteci_user_id)
+
+    assert r.status_code == 200
+    assert len(r.data['remoteci']['users']) == 0
+
+
+def test_success_detach_myself_from_remoteci_in_team(user, user_id,
+                                                     remoteci_user_id):
+    data = {
+        'user_id': user_id
+    }
+    r = user.post('/api/v1/remotecis/%s/users' % remoteci_user_id, data=data)
+
+    assert r.status_code == 201
+
+    r = user.get('/api/v1/remotecis/%s?embed=users' % remoteci_user_id)
+
+    assert r.status_code == 200
+    assert r.data['remoteci']['users'][0]['name'] == 'user'
+
+    r = user.delete('/api/v1/remotecis/%s/users/%s' % (remoteci_user_id,
+                                                       user_id))
+
+    assert r.status_code == 204
+
+    r = user.get('/api/v1/remotecis/%s?embed=users' % remoteci_user_id)
+
+    assert r.status_code == 200
+    assert len(r.data['remoteci']['users']) == 0
