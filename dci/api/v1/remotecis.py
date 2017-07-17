@@ -36,6 +36,7 @@ _VALID_EMBED = embeds.remotecis()
 _R_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
     'team': False,
+    'users': True,
     'lastjob': False,
     'lastjob.components': True,
     'currentjob': False,
@@ -203,6 +204,53 @@ def get_remoteci_data_json(user, r_id):
         raise dci_exc.DCINotFound('RemoteCI', r_id)
 
     return row['remotecis_data']
+
+
+@api.route('/remotecis/<uuid:r_id>/users', methods=['POST'])
+@decorators.login_required
+def add_user_to_remoteci(user, r_id):
+    values = schemas.remoteci_user.post(flask.request.json)
+    values['remoteci_id'] = r_id
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+    user_to_attach = v1_utils.verify_existence_and_get(values['user_id'],
+                                                       models.USERS)
+
+    if values['user_id'] != user['id'] and \
+       not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+        raise auth.UNAUTHORIZED
+
+    if user_to_attach['team_id'] != remoteci['team_id']:
+        raise auth.UNAUTHORIZED
+
+    query = models.JOIN_USER_REMOTECIS.insert().values(**values)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict(_TABLE.name,
+                                          'remoteci_id, user_id')
+    result = json.dumps(values)
+    return flask.Response(result, 201, content_type='application/json')
+
+
+@api.route('/remotecis/<uuid:r_id>/users/<uuid:u_id>', methods=['DELETE'])
+@decorators.login_required
+def delete_user_from_remoteci(user, r_id, u_id):
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+
+    if u_id != user['id'] and \
+       not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+        raise auth.UNAUTHORIZED
+
+    JUR = models.JOIN_USER_REMOTECIS
+    where_clause = sql.and_(JUR.c.remoteci_id == r_id,
+                            JUR.c.user_id == u_id)
+    query = JUR.delete().where(where_clause)
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('User', u_id)
+
+    return flask.Response(None, 204, content_type='application/json')
 
 
 @api.route('/remotecis/<uuid:r_id>/tests', methods=['POST'])
