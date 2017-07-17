@@ -94,6 +94,13 @@ def admin(app, db_provisioning):
 
 
 @pytest.fixture
+def admin_id(admin):
+    team = admin.get('/api/v1/users?where=name:admin')
+    team = admin.get('/api/v1/users/%s' % team.data['users'][0]['id']).data
+    return str(team['user']['id'])
+
+
+@pytest.fixture
 def unauthorized(app, db_provisioning):
     return utils.generate_client(app, ('admin', 'bob'))
 
@@ -104,8 +111,22 @@ def user(app, db_provisioning):
 
 
 @pytest.fixture
+def user_id(admin):
+    team = admin.get('/api/v1/users?where=name:user')
+    team = admin.get('/api/v1/users/%s' % team.data['users'][0]['id']).data
+    return str(team['user']['id'])
+
+
+@pytest.fixture
 def user_admin(app, db_provisioning):
     return utils.generate_client(app, ('user_admin', 'user_admin'))
+
+
+@pytest.fixture
+def user_admin_id(admin):
+    team = admin.get('/api/v1/users?where=name:user_admin')
+    team = admin.get('/api/v1/users/%s' % team.data['users'][0]['id']).data
+    return str(team['user']['id'])
 
 
 @pytest.fixture
