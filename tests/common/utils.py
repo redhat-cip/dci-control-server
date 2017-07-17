@@ -49,6 +49,7 @@ EMAIL = 'email', 'foo@bar.org'
 NOTIF = 'notification', True
 VALUE = 'value', text_type
 ALLOW_UPGRADE_JOB = 'allow_upgrade_job', False
+PUBLIC = 'public', False
 PREVIOUS_JOB_ID = 'previous_job_id', uuid.uuid4()
 
 INVALID_NAME = 'name', None

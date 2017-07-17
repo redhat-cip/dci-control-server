@@ -342,6 +342,7 @@ def test_put_remotecis(admin, team_id):
     pr = admin.post('/api/v1/remotecis', data={'name': 'pname',
                                                'team_id': team_id})
     assert pr.status_code == 201
+    assert pr.data['remoteci']['public'] is False
 
     pr_etag = pr.headers.get("ETag")
 
@@ -349,12 +350,13 @@ def test_put_remotecis(admin, team_id):
     assert gr.status_code == 200
 
     ppr = admin.put('/api/v1/remotecis/%s' % gr.data['remoteci']['id'],
-                    data={'name': 'nname'},
+                    data={'name': 'nname', 'public': True},
                     headers={'If-match': pr_etag})
     assert ppr.status_code == 204
 
     gr = admin.get('/api/v1/remotecis/%s' % gr.data['remoteci']['id'])
     assert gr.data['remoteci']['name'] == 'nname'
+    assert gr.data['remoteci']['public'] is True
 
 
 def test_put_remoteci_data(admin, team_id):
