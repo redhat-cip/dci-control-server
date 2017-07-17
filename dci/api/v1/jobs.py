@@ -450,10 +450,16 @@ def get_jobstates_by_job(user, j_id):
 
 
 @api.route('/jobs/<uuid:job_id>', methods=['GET'])
-@decorators.login_required
-def get_job_by_id(user, job_id):
+def get_job_by_id(job_id):
+    user = None
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     job_dict = dict(job)
+    remoteci = v1_utils.verify_existence_and_get(job_dict['remoteci_id'],
+                                                 models.REMOTECIS)
+
+    if not remoteci['public']:
+        user = decorators._login_required()
+
     job_dict['issues'] = json.loads(
         issues.get_all_issues(job_id, _TABLE).response[0]
     )['issues']
