@@ -224,6 +224,7 @@ REMOTECIS = sa.Table(
     sa.Index('remotecis_team_id_idx', 'team_id'),
     sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key'),
     sa.Column('allow_upgrade_job', sa.BOOLEAN, default=False),
+    sa.Column('public', sa.BOOLEAN, default=False, nullable=False),
     sa.Column('state', STATES, default='active'),
 )
 
