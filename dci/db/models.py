@@ -81,6 +81,16 @@ JOIN_COMPONENTS_ISSUES = sa.Table(
               nullable=False),
     sa.Index('components_issues_user_id_idx', 'user_id'))
 
+NOTIFICATIONS = sa.Table(
+    'notifications', metadata,
+    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('user_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('users.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('remoteci_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('remotecis.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True))
 
 TOPICS = sa.Table(
     'topics', metadata,

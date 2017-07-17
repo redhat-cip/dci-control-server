@@ -68,6 +68,8 @@ def create_jobstates(user):
 
     result = flask.g.db_conn.execute(query_update_job)
 
+    # If status updated from green to red send an email.
+
     if not result.rowcount:
         raise dci_exc.DCIConflict('Job', job_id)
 
