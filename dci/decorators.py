@@ -35,13 +35,21 @@ def reject():
                           content_type='application/json')
 
 
+def _login_required():
+    for mechanism in [BasicAuthMechanism(flask.request),
+                      SignatureAuthMechanism(flask.request)]:
+        if mechanism.is_valid():
+            return mechanism.identity
+
+    return None
+
+
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        for mechanism in [BasicAuthMechanism(flask.request),
-                          SignatureAuthMechanism(flask.request)]:
-            if mechanism.is_valid():
-                return f(mechanism.identity, *args, **kwargs)
+        identity = _login_required()
+        if identity:
+            return f(identity, *args, **kwargs)
         return reject()
 
     return decorated
