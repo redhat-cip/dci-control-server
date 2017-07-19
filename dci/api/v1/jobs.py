@@ -496,19 +496,7 @@ def update_job_by_id(user, job_id):
 
     if not result.rowcount:
         raise dci_exc.DCIConflict('Job', job_id)
-    if values.get('status') == "failure":
-        _TEAMS = models.TEAMS
-        where_clause = sql.expression.and_(
-            _TEAMS.c.id == job['team_id']
-        )
-        query = (sql.select([_TEAMS]).where(where_clause))
-        team_info = flask.g.db_conn.execute(query).fetchone()
-        if team_info['notification'] is True:
-            if team_info['email'] is not None:
-                msg = {'event': 'notification',
-                       'email': team_info['email'],
-                       'job_id': str(job['id'])}
-                flask.g.sender.send_json(msg)
+
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
 
@@ -666,6 +654,42 @@ def delete_meta(user, j_id, m_id):
     if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
         raise auth.UNAUTHORIZED
     return metas.delete_meta(j_id, m_id)
+
+
+@api.route('/jobs/<uuid:j_id>/notify', methods=['POST'])
+@decorators.login_required
+def notify(user, j_id):
+    _TABLE_URCIS = models.JOIN_USER_REMOTECIS
+    _TABLE_USERS = models.USERS
+
+    v1_utils.verify_existence_and_get(j_id, _TABLE)
+    job, nb_rows = _get_job(user, j_id, ['jobdefinition'])
+
+    values = schemas.job_notify.post(flask.request.json)
+
+    if not (auth.is_in_team(user, job['team_id']) or auth.is_admin(user)):
+        raise auth.UNAUTHORIZED
+
+    # Select all email user attach to this remoteci
+    query = (sql.select([_TABLE_USERS.c.email]).
+             select_from(_TABLE_USERS.join(_TABLE_URCIS)).
+             where(_TABLE_URCIS.c.remoteci_id == job['remoteci_id']))
+    result = flask.g.db_conn.execute(query).fetchall()
+
+    # For each email send a notification
+    email = [k['email'] for k in result]
+
+    if email:
+        msg = {'event': 'notification',
+               'email': email,
+               'job_id': str(job['id']),
+               'status': job['status'],
+               'topic_id': str(job['jobdefinition']['topic_id']),
+               'remoteci_id': str(job['remoteci_id']),
+               'mesg': values['mesg']}
+        flask.g.sender.send_json(msg)
+
+    return flask.Response(None, 204, content_type='application/json')
 
 
 @api.route('/jobs/purge', methods=['GET'])
