@@ -260,9 +260,10 @@ def job_id(admin, topic_id, remoteci_id, jobdefinition_factory):
 
 @pytest.fixture
 def job_user_id(admin, jobdefinition_id, team_user_id, remoteci_user_id,
-                components_ids):
+                components_ids, topic_user_id):
     data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_user_id,
-            'remoteci_id': remoteci_user_id, 'components': components_ids}
+            'remoteci_id': remoteci_user_id, 'components': components_ids,
+            'topic_id': topic_user_id}
     job = admin.post('/api/v1/jobs', data=data).data
     return job['job']['id']
 

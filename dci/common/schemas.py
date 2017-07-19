@@ -428,6 +428,12 @@ job_search = {
 
 job_search = schema_factory(job_search)
 
+job_notify = {
+    'mesg': six.text_type
+}
+
+job_notify = schema_factory(job_notify)
+
 ###############################################################################
 #                                                                             #
 #                             Job State schemas                               #
