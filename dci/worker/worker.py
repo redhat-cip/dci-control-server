@@ -28,19 +28,19 @@ receiver.bind('tcp://0.0.0.0:5557')
 stream = zmqstream.ZMQStream(receiver)
 
 
-def mail(job, mail):
+def mail(mesg):
     FROM = 'dci@distributed-ci.io'
-    TO = [mail]
+    TO = [mesg['email']]
     SUBJECT = "DCI Status Failure"
 
     message = "Subject: %s\n"\
               "You are receiving this email because a DCI job has failed\n"\
+              "on the Remote CI : %s\n"\
               "For more information follow this link"\
               ": https://www.distributed-ci.io/#!/jobs/%s/results"\
-              % (SUBJECT, job)
+              % (SUBJECT, mesg['remoteci_id'], mesg['job_id'])
 
     # Send the mail
-
     server = smtplib.SMTP('localhost')
     server.sendmail(FROM, TO, message)
     server.quit()
@@ -49,7 +49,8 @@ def mail(job, mail):
 def loop(msg):
     try:
         mesg = json.loads(msg[0])
-        mail(mesg['job_id'], mesg['email'])
+        if mesg['event'] == 'notification' :
+            mail(mesg)
     except:
         pass
 
