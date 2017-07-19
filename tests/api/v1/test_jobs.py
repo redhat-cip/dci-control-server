@@ -286,34 +286,30 @@ def test_update_job(admin, jobdefinition_id, remoteci_id,
     assert job['configuration'] == {'ha': 'enabled'}
 
 
-def test_update_job_notification(app, admin, jobdefinition_id, team_id_notif,
-                                 remoteci_id, components_ids):
+def test_job_notification(app, user, remoteci_user_id, user_id, job_user_id):
 
     with app.app_context():
-        data = {
-            'jobdefinition_id': jobdefinition_id,
-            'team_id': team_id_notif,
-            'remoteci_id': remoteci_id,
-            'comment': 'foo',
-            'components': components_ids
-        }
-        job = admin.post('/api/v1/jobs', data=data)
+        data = {'user_id': user_id}
+        user.post('/api/v1/remotecis/%s/users' % remoteci_user_id,
+                  data=data)
+
+        job = user.get('/api/v1/jobs/%s' % job_user_id)
         job = job.data['job']
 
-        assert job['comment'] == 'foo'
-        assert job['configuration'] == {}
-
-        data_update = {'status': 'failure', 'comment': 'bar',
-                       'configuration': {'ha': 'enabled'}}
+        data_post = {'mesg': 'test'}
 
         with mock.patch('dci.api.v1.jobs.flask.g.sender.send_json') as f_s:
-            res = admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
-                            headers={'If-match': job['etag']})
+            res = user.post('/api/v1/jobs/%s/notify' % job_user_id,
+                            data=data_post)
             assert res.status_code == 204
             f_s.assert_called_once_with(
                 {'event': 'notification',
-                 'email': 'dci@example.com',
-                 'job_id': job['id']})
+                 'email': 'user@example.org',
+                 'job_id': job_user_id,
+                 'remoteci_id': remoteci_user_id,
+                 'topic_id': job['topic_id'],
+                 'status': 'new',
+                 'mesg': 'test'})
 
 
 def test_get_all_jobs_with_where(admin, jobdefinition_id, team_admin_id,
