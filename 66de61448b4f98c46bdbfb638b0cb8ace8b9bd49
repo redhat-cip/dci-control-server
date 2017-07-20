@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5aa745d1_bd0e9fe3",
+        "filename": "dci/api/v1/base.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-07-20T19:25:42Z",
+      "side": 1,
+      "message": "If user\u003dNone, we drop the partitioned view. I\u0027ve the feeling this can be abused at some point to gain extra privilege. There is no way to know if a value is None on purpose, or if it\u0027s because of a bug.\n\nI would prefer to either:\n\n- we raise an error before if user is not defined\n- adjust is_admin() so it will return None if user is not defined. We should have a KeyError exception for the moment.\n\nupdate: I just saw you additional change, I think it\u0027s easier to have a generic \u0027public\u0027 user here.",
+      "revId": "66de61448b4f98c46bdbfb638b0cb8ace8b9bd49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_9d13e30d",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 459,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-07-20T19:25:42Z",
+      "side": 1,
+      "message": "I think we can avoid that if we have a decorator that return a \"public\" user:\n\n@decorators.public_user",
+      "revId": "66de61448b4f98c46bdbfb638b0cb8ace8b9bd49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
