@@ -340,6 +340,7 @@ def test_get_remoteci_data_specific_keys(admin, team_id):
 
 def test_put_remotecis(admin, team_id):
     pr = admin.post('/api/v1/remotecis', data={'name': 'pname',
+                                               'data': {'a': 1, 'b': 2},
                                                'team_id': team_id})
     assert pr.status_code == 201
     assert pr.data['remoteci']['public'] is False
@@ -350,42 +351,14 @@ def test_put_remotecis(admin, team_id):
     assert gr.status_code == 200
 
     ppr = admin.put('/api/v1/remotecis/%s' % gr.data['remoteci']['id'],
-                    data={'name': 'nname', 'public': True},
+                    data={'name': 'nname', 'public': True, 'data': {'c': 3}},
                     headers={'If-match': pr_etag})
     assert ppr.status_code == 204
 
     gr = admin.get('/api/v1/remotecis/%s' % gr.data['remoteci']['id'])
     assert gr.data['remoteci']['name'] == 'nname'
     assert gr.data['remoteci']['public'] is True
-
-
-def test_put_remoteci_data(admin, team_id):
-    data_data = {'key': 'value'}
-    data = {
-        'name': 'pname1',
-        'team_id': team_id,
-        'data': data_data
-    }
-
-    pr = admin.post('/api/v1/remotecis', data=data)
-
-    pr_etag = pr.headers.get("ETag")
-
-    # Check that data is what it is supposed to be
-    r_id = pr.data['remoteci']['id']
-
-    r_data = admin.get('/api/v1/remotecis/%s/data' % r_id).data
-    assert r_data == data_data
-
-    # Update the data that belong to this remoteci
-    new_data = {'key': 'new_value', 'new_key': 'another_value'}
-    ppr = admin.put('/api/v1/remotecis/%s' % r_id,
-                    data={'data': new_data},
-                    headers={'If-match': pr_etag})
-    assert ppr.status_code == 204
-
-    r_data = admin.get('/api/v1/remotecis/%s/data' % r_id).data
-    assert r_data == new_data
+    assert set(gr.data['remoteci']['data']) == set(['c'])
 
 
 def test_delete_remoteci_by_id(admin, team_id):
@@ -410,35 +383,6 @@ def test_delete_remoteci_not_found(admin):
     result = admin.delete('/api/v1/remotecis/%s' % uuid.uuid4(),
                           headers={'If-match': 'mdr'})
     assert result.status_code == 404
-
-
-def test_delete_remoteci_data(admin, team_id):
-    data_data = {'key': 'value'}
-    data = {
-        'name': 'pname1',
-        'team_id': team_id,
-        'data': data_data
-    }
-
-    pr = admin.post('/api/v1/remotecis', data=data)
-
-    pr_etag = pr.headers.get("ETag")
-
-    # Check that data is what it is supposed to be
-    r_id = pr.data['remoteci']['id']
-
-    r_data = admin.get('/api/v1/remotecis/%s/data' % r_id).data
-    assert r_data == data_data
-
-    # Remove the data that belongs to this remoteci
-    new_data = {'key': ''}
-    ppr = admin.put('/api/v1/remotecis/%s' % r_id,
-                    data={'data': new_data},
-                    headers={'If-match': pr_etag})
-    assert ppr.status_code == 204
-
-    r_data = admin.get('/api/v1/remotecis/%s/data' % r_id).data
-    assert r_data == {}
 
 
 def test_delete_remoteci_archive_dependencies(admin, jobdefinition_id,
