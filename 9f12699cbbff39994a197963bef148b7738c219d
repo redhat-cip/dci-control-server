@@ -1,0 +1,9 @@
+Code-Review+2: Dimitri Savineau <dsavinea@redhat.com>
+Code-Review+2: Gonéri Le Bouder <goneri@lebouder.net>
+Workflow+1: Gonéri Le Bouder <goneri@lebouder.net>
+Verified+2: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-by: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-at: Fri, 21 Jul 2017 16:53:45 +0000
+Reviewed-on: https://softwarefactory-project.io/r/8955
+Project: dci-control-server
+Branch: refs/heads/master
