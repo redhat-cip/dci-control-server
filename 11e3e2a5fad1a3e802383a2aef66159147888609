@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "5aa745d1_20f9444e",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 684,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-07-21T20:37:38Z",
+      "side": 1,
+      "message": "topic_id is not available in job table, you have to do join between jobs and jobdefinitions tables.",
+      "range": {
+        "startLine": 684,
+        "startChar": 27,
+        "endLine": 684,
+        "endChar": 42
+      },
+      "revId": "11e3e2a5fad1a3e802383a2aef66159147888609",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5aa745d1_00608834",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 8
