@@ -344,6 +344,7 @@ jobdefinition = DCISchema(schema_factory(jobdefinition).post,
 remoteci = utils.dict_merge(base, DATA_FIELD, {
     'team_id': v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('allow_upgrade_job', default=False): bool,
+    v.Optional('public', default=False): bool,
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 })
@@ -353,6 +354,7 @@ remoteci_put = {
     v.Optional('data'): dict,
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('allow_upgrade_job'): bool,
+    v.Optional('public'): bool,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
 }
