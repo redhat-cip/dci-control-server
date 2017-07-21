@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5aa745d1_00608834",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 687,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-07-21T15:52:39Z",
+      "side": 1,
+      "message": "Would it be possible to change this by a single email with multiple recipients ?\nIf we have 10 users attached to the remoteci we will send 10 time the email when we could send only one email will 10 recipients.\nWDYT ?",
+      "range": {
+        "startLine": 679,
+        "startChar": 0,
+        "endLine": 687,
+        "endChar": 37
+      },
+      "revId": "11e3e2a5fad1a3e802383a2aef66159147888609",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
