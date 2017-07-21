@@ -119,11 +119,6 @@ def put_remoteci(user, r_id):
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
-    if 'data' in values:
-        remoteci_data = get_remoteci_data_json(user, r_id)
-        remoteci_data.update(values['data'])
-        values['data'] = {k: v for k, v in remoteci_data.items() if v}
-
     if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
         raise auth.UNAUTHORIZED
 
