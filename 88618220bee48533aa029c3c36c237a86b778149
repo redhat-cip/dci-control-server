@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5aa745d1_23694e8c",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 677,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-07-24T16:09:28Z",
+      "side": 1,
+      "message": "What about the notification flag set to the remoteci ? because with this patch you will be able to send emails to all team users even if the flag is set to false.",
+      "range": {
+        "startLine": 673,
+        "startChar": 0,
+        "endLine": 677,
+        "endChar": 54
+      },
+      "revId": "88618220bee48533aa029c3c36c237a86b778149",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
