@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5aa745d1_633e36ba",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 665,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-07-24T13:34:49Z",
+      "side": 1,
+      "message": "We don\u0027t need job here, its not used anywhere else. Just the call to v1_utils.veritfy_existence_and_get()",
+      "revId": "9afc7702a182136d365293506d583ebcfa323179",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_8341423c",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 670,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-07-24T13:34:49Z",
+      "side": 1,
+      "message": "This won\u0027t work. We\u0027re migrating the agent to use a remoteci api key to authenticate. So, the object calling this endpoint won\u0027t be admin or team_admin.",
+      "revId": "9afc7702a182136d365293506d583ebcfa323179",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_434b3a5a",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 680,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-07-24T13:34:49Z",
+      "side": 1,
+      "message": "nit: email \u003d [k[\u0027email\u0027] for k in result]",
+      "revId": "9afc7702a182136d365293506d583ebcfa323179",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_e3780692",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-07-24T13:34:49Z",
+      "side": 1,
+      "message": "nit: FROM\u003d\u0027Distributed-CI \u003cdci@distributed-ci.io\u003e\u0027",
+      "revId": "9afc7702a182136d365293506d583ebcfa323179",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
