@@ -46,7 +46,6 @@ LABEL = 'label', text_type
 NEXT_TOPIC = 'next_topic', uuid.uuid4()
 COUNTRY = 'country', text_type
 EMAIL = 'email', 'foo@bar.org'
-NOTIF = 'notification', True
 VALUE = 'value', text_type
 ALLOW_UPGRADE_JOB = 'allow_upgrade_job', False
 PUBLIC = 'public', False
