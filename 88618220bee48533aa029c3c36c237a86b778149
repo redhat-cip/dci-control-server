@@ -22,6 +22,30 @@
       "revId": "88618220bee48533aa029c3c36c237a86b778149",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_2374aefb",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 677,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2017-07-25T09:27:54Z",
+      "side": 1,
+      "message": "That\u0027s the new way of working, you will be notified only if you subscribe to the remoteci. So now there is no need of flag the only way to be notified is to fullfill your email in your user profile and subscribe to specific remoteci.",
+      "parentUuid": "5aa745d1_23694e8c",
+      "range": {
+        "startLine": 673,
+        "startChar": 0,
+        "endLine": 677,
+        "endChar": 54
+      },
+      "revId": "88618220bee48533aa029c3c36c237a86b778149",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
