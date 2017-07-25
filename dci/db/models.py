@@ -202,8 +202,6 @@ TEAMS = sa.Table(
     sa.Column('name', sa.String(255), unique=True, nullable=False),
     # https://en.wikipedia.org/wiki/ISO_3166-1 Alpha-2 code
     sa.Column('country', sa.String(255), nullable=True),
-    sa.Column('email', sa.String(255), nullable=True),
-    sa.Column('notification', sa.BOOLEAN, default=False),
     sa.Column('state', STATES, default='active'),
     sa.Column('parent_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='SET NULL'),
