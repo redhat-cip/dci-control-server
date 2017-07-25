@@ -367,8 +367,6 @@ def test_success_update_field_by_field(admin, team_id):
     assert t['name'] == 'pname'
     assert t['state'] == 'inactive'
     assert t['country'] is None
-    assert t['email'] == 'dci@example.com'
-    assert t['notification'] is False
 
     admin.put('/api/v1/teams/%s' % team_id,
               data={'country': 'FR'},
@@ -379,17 +377,3 @@ def test_success_update_field_by_field(admin, team_id):
     assert t['name'] == 'pname'
     assert t['state'] == 'inactive'
     assert t['country'] == 'FR'
-    assert t['email'] == 'dci@example.com'
-    assert t['notification'] is False
-
-    admin.put('/api/v1/teams/%s' % team_id,
-              data={'notification': True},
-              headers={'If-match': t['etag']})
-
-    t = admin.get('/api/v1/teams/%s' % team_id).data['team']
-
-    assert t['name'] == 'pname'
-    assert t['state'] == 'inactive'
-    assert t['country'] == 'FR'
-    assert t['email'] == 'dci@example.com'
-    assert t['notification'] is True
