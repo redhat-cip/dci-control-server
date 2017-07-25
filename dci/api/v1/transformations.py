@@ -74,7 +74,8 @@ def junit2dict(string):
         'failures': 0,
         'skips': 0,
         'total': 0,
-        'testscases': []
+        'testscases': [],
+        'time': 0,
     }
     try:
         root = etree.fromstring(string)
@@ -93,13 +94,13 @@ def junit2dict(string):
                     results['errors'] += 1
                 if testcase['action'] == 'failure':
                     results['failures'] += 1
+                results['testscases'].append(testcase)
 
-            results['testscases'] = testscases
             results['success'] = (results['total'] -
                                   results['failures'] -
                                   results['errors'] -
                                   results['skips'])
-            results['time'] = int(test_duration.total_seconds() * 1000)
+            results['time'] += int(test_duration.total_seconds() * 1000)
     except etree.XMLSyntaxError as e:
         results['error'] = "XMLSyntaxError: %s " % str(e)
         LOG.error('XMLSyntaxError %s' % str(e))

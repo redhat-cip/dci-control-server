@@ -99,6 +99,20 @@ def test_junit2dict():
     assert result == JSONUNIT
 
 
+def test_junit2dict_with_ansible_run_vyos_integration_tests_xml():
+    with open('tests/data/ansible-run-vyos-integration-tests.xml', 'rb') as f:
+        content_file = f.read()
+        result = transformations.junit2dict(content_file)
+
+    assert result['success'] == 293
+    assert result['errors'] == 0
+    assert result['failures'] == 0
+    assert result['skips'] == 10
+    assert result['total'] == 303
+    assert result['time'] == 368717
+    assert len(result['testscases']) == 303
+
+
 def test_junit2dict_with_ansible_run_ovs_integration_tests_xml():
     with open('tests/data/ansible-run-ovs-integration-tests.xml', 'r') as f:
         content_file = f.read()
