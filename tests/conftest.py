@@ -144,17 +144,7 @@ def test_id(admin, team_id):
 
 @pytest.fixture
 def team_id(admin):
-    team = admin.post('/api/v1/teams', data={'name': 'pname',
-                                             'notification': False,
-                                             'email': 'dci@example.com'}).data
-    return str(team['team']['id'])
-
-
-@pytest.fixture
-def team_id_notif(admin):
-    team = admin.post('/api/v1/teams', data={'name': 'pname2',
-                                             'notification': True,
-                                             'email': 'dci@example.com'}).data
+    team = admin.post('/api/v1/teams', data={'name': 'pname'}).data
     return str(team['team']['id'])
 
 
