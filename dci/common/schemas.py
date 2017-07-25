@@ -186,8 +186,6 @@ componenttype = schema_factory(base)
 
 team = utils.dict_merge(base, {
     v.Optional('country', default=None): six.text_type,
-    v.Optional('email', default=None): six.text_type,
-    v.Optional('notification', default=False): bool,
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 })
@@ -195,8 +193,6 @@ team = utils.dict_merge(base, {
 team_put = {
     v.Optional('name'): six.text_type,
     v.Optional('country'): six.text_type,
-    v.Optional('email'): six.text_type,
-    v.Optional('notification'): bool,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
 }
