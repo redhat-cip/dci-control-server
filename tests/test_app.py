@@ -46,7 +46,7 @@ def test_cors_headers(admin):
     assert resp.headers['Access-Control-Allow-Origin'] == '*'
 
 
-def test_sample_db_provisionning(engine, db_clean):
+def test_sample_db_provisionning(engine, teardown_db_clean):
     """Test the sample init_db method, to be sure it will
     not be broken when updating
     """
@@ -57,7 +57,7 @@ def test_sample_db_provisionning(engine, db_clean):
         db_provisioning.init_db(db_conn, False, False)
 
 
-def test_db_migration(engine, clean_all, db_clean):
+def test_db_migration(engine, delete_db):
     config = dci.alembic.utils.generate_conf()
     context = alembic.context
     script = alembic.script.ScriptDirectory.from_config(config)

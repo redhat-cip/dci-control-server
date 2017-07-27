@@ -36,6 +36,11 @@ memoized = utils.memoized
 conf = config.generate_conf()
 
 
+def restore_db(engine):
+    models.metadata.drop_all(engine)
+    models.metadata.create_all(engine)
+
+
 def rm_upload_folder():
     shutil.rmtree(conf['FILES_UPLOAD_FOLDER'], ignore_errors=True)
 
