@@ -1,4 +1,4 @@
-Distributed CI control server
+guitsDistributed CI control server
 =============================
 
 This repository is used for the development of the API of Distributed CI.
