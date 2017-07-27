@@ -57,7 +57,7 @@ def test_sample_db_provisionning(engine, db_clean):
         db_provisioning.init_db(db_conn, False, False)
 
 
-def test_db_migration(engine, clean_all, db_clean):
+def test_db_migration(engine, clean_all):
     config = dci.alembic.utils.generate_conf()
     context = alembic.context
     script = alembic.script.ScriptDirectory.from_config(config)

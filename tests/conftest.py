@@ -40,18 +40,17 @@ def engine(request):
     engine = sqlalchemy.create_engine(db_uri)
 
     if sqlalchemy_utils.functions.database_exists(db_uri):
-        for table in reversed(models.metadata.sorted_tables):
-            engine.execute(table.delete())
+        models.metadata.drop_all(engine)
     else:
         sqlalchemy_utils.functions.create_database(db_uri)
-        models.metadata.create_all(engine)
+    models.metadata.create_all(engine)
     return engine
 
 
 @pytest.fixture
-def clean_all(request, engine):
+def clean_all(request, engine, db_clean):
     models.metadata.drop_all(engine)
-    request.addfinalizer(lambda: models.metadata.create_all(engine))
+    engine.execute("DROP TABLE IF EXISTS alembic_version")
 
 
 @pytest.fixture(scope='session', autouse=True)
@@ -63,8 +62,8 @@ def memoize_password_hash():
 @pytest.fixture
 def db_clean(request, engine):
     def fin():
-        for table in reversed(models.metadata.sorted_tables):
-            engine.execute(table.delete())
+        models.metadata.drop_all(engine)
+        models.metadata.create_all(engine)
     request.addfinalizer(fin)
 
 
@@ -102,7 +101,7 @@ def admin_id(admin):
 
 @pytest.fixture
 def unauthorized(app, db_provisioning):
-    return utils.generate_client(app, ('admin', 'bob'))
+    return utils.generate_client(app, ('bob', 'bob'))
 
 
 @pytest.fixture
