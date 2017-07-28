@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "5aa745d1_17ffac02",
+        "filename": "dci/api/v1/base.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-07-28T12:37:07Z",
+      "side": 1,
+      "message": "Assuming reject turn to an exception, this is not needed anymore.",
+      "parentUuid": "5aa745d1_bd0e9fe3",
+      "revId": "66de61448b4f98c46bdbfb638b0cb8ace8b9bd49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5aa745d1_9d13e30d",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 3
@@ -30,6 +48,58 @@
       "writtenOn": "2017-07-20T19:25:42Z",
       "side": 1,
       "message": "I think we can avoid that if we have a decorator that return a \"public\" user:\n\n@decorators.public_user",
+      "revId": "66de61448b4f98c46bdbfb638b0cb8ace8b9bd49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_4c06c721",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 459,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-07-28T12:37:07Z",
+      "side": 1,
+      "message": "I don\u0027t see how a public user can implement this feature since it depends on the public flag of the remoteci.",
+      "parentUuid": "5aa745d1_9d13e30d",
+      "revId": "66de61448b4f98c46bdbfb638b0cb8ace8b9bd49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_2c037b11",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 461,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-07-28T12:37:07Z",
+      "side": 1,
+      "message": "user  \u003d decorators.authenticate()",
+      "revId": "66de61448b4f98c46bdbfb638b0cb8ace8b9bd49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_6c098331",
+        "filename": "dci/decorators.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-07-28T12:37:07Z",
+      "side": 1,
+      "message": "def authenticate():\n    for mechanism in [BasicAuthMechanism(flask.request),\n                      SignatureAuthMechanism(flask.request)]:\n        if mechanism.is_valid():\n            return mechanism.identity\n\n    raise DciRejectException\n\n\ndef login_required(f):\n    @wraps(f)\n    def decorated(*args, **kwargs):\n        identity \u003d authenticate()\n        return f(identity, *args, **kwargs)\n\n    return decorated",
       "revId": "66de61448b4f98c46bdbfb638b0cb8ace8b9bd49",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
