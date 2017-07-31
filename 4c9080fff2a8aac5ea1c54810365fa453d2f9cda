@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5aa745d1_97e73c12",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 154,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-07-31T20:13:16Z",
+      "side": 1,
+      "message": "Me being annoying. Would you select only the required column as you don\u0027t need anything else than rconfiguration_id ?",
+      "range": {
+        "startLine": 154,
+        "startChar": 27,
+        "endLine": 154,
+        "endChar": 35
+      },
+      "revId": "4c9080fff2a8aac5ea1c54810365fa453d2f9cda",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
