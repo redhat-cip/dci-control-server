@@ -113,7 +113,7 @@ def create_jobs(user):
 @decorators.login_required
 def search_jobs(user):
     values = schemas.job_search.post(flask.request.json)
-    jobdefinition_id = values.get('jobdefinition_id')
+    topic_id = values.get('topic_id')
     configuration = values.get('configuration')
     config_op = configuration.pop('_op', 'and')
 
@@ -125,8 +125,8 @@ def search_jobs(user):
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
-    if jobdefinition_id is not None:
-        query.add_extra_condition(_TABLE.c.jobdefinition_id == jobdefinition_id)  # noqa
+    if topic_id is not None:
+        query.add_extra_condition(_TABLE.c.topic_id == topic_id)  # noqa
 
     if config_op == 'and':
         sa_op = sql.expression.and_
@@ -154,13 +154,14 @@ def _build_new_template(topic_id, remoteci, components_ids, values,
 
     def _get_last_rconfiguration_id():
         """Get the rconfiguration_id of the last job run by the remoteci."""
-        query = sql.select([_TABLE]). \
-            select_from(_TABLE.join(models.JOBDEFINITIONS)).\
-            where(models.JOBDEFINITIONS.c.topic_id == topic_id)
-        last_job = flask.g.db_conn.execute(query).fetchone()
-        if last_job is not None:
-            last_job = dict(last_job)
-            return last_job['rconfiguration_id']
+        query = sql.select([_TABLE.c.rconfiguration_id]). \
+            order_by(sql.desc(_TABLE.c.created_at)). \
+            where(sql.and_(_TABLE.c.topic_id == topic_id,
+                           _TABLE.c.remoteci_id == remoteci['id'])). \
+            limit(1)
+        rconfiguration_id = flask.g.db_conn.execute(query).fetchone()
+        if rconfiguration_id is not None:
+            return str(rconfiguration_id[0])
         else:
             return None
 
@@ -178,11 +179,12 @@ def _build_new_template(topic_id, remoteci, components_ids, values,
         query = query.where(sql.and_(_RCONFIGURATIONS.c.state != 'archived',
                                      _RCONFIGURATIONS.c.topic_id == topic_id))
         query = query.order_by(sql.desc(_RCONFIGURATIONS.c.created_at))
+        query = query.order_by(sql.asc(_RCONFIGURATIONS.c.name))
         all_rconfigurations = flask.g.db_conn.execute(query).fetchall()
 
         if len(all_rconfigurations) > 0:
             for i in range(len(all_rconfigurations)):
-                if all_rconfigurations[i]['id'] == last_rconfiguration_id:
+                if str(all_rconfigurations[i]['id']) == last_rconfiguration_id:
                     # if i==0, then indice -1 is the last element
                     return all_rconfigurations[i - 1]
             return all_rconfigurations[0]
@@ -255,17 +257,6 @@ def _build_new_template(topic_id, remoteci, components_ids, values,
             schedule_component_types.add(cmpt['type'])
         return components_ids
 
-    # jobdefinition will be removed, used here for not breaking jobs table FK
-    # Get a jobdefinition
-    q_jd = sql.select([models.JOBDEFINITIONS]).where(
-        sql.and_(models.JOBDEFINITIONS.c.topic_id == topic_id,
-                 models.JOBDEFINITIONS.c.state == 'active')).order_by(
-        sql.desc(models.JOBDEFINITIONS.c.created_at))
-    jd_to_run = flask.g.db_conn.execute(q_jd).fetchone()
-    if jd_to_run is None:
-        msg = 'No jobdefinition found in topic %s.' % topic_id
-        raise dci_exc.DCIException(msg, status_code=412)
-
     # get the last rconfiguration id of the remoteci to make the
     # round robin
     last_rconfiguration_id = _get_last_rconfiguration_id()
@@ -291,7 +282,6 @@ def _build_new_template(topic_id, remoteci, components_ids, values,
 
     values.update({
         'topic_id': topic_id,
-        'jobdefinition_id': jd_to_run['id'],
         'rconfiguration_id': rconfiguration['id'] if rconfiguration else None,  # noqa
         'team_id': remoteci['team_id'],
         'previous_job_id': previous_job_id
@@ -328,9 +318,14 @@ def _validate_input(values, user):
     })
 
     remoteci = v1_utils.verify_existence_and_get(remoteci_id, models.REMOTECIS)
-    v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
 
-    # let's kill existing running jobs for the remoteci
+    if topic['state'] != 'active':
+        msg = 'Topic %s:%s not active.' % (topic['id'], topic['name'])
+        raise dci_exc.DCIException(msg, status_code=412)
+
+
+# let's kill existing running jobs for the remoteci
     where_clause = sql.expression.and_(
         _TABLE.c.remoteci_id == remoteci_id,
         _TABLE.c.status.in_(('new', 'pre-run', 'running', 'post-run'))
@@ -423,13 +418,8 @@ def upgrade_jobs(user):
                                                  models.REMOTECIS)
     values.update({'remoteci_id': remoteci_id})
 
-    # get the jobdefinition
-    jobdefinition_id = str(original_job['jobdefinition_id'])
-    jobdefinition = v1_utils.verify_existence_and_get(jobdefinition_id,
-                                                      models.JOBDEFINITIONS)
-
     # get the associated topic
-    topic_id = str(jobdefinition['topic_id'])
+    topic_id = str(original_job['topic_id'])
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
 
     values.update({
@@ -446,6 +436,7 @@ def upgrade_jobs(user):
             "topic %s does not contains a next topic" % topic_id)
 
     # instantiate a new job in the next_topic_id
+    # todo(yassine): make possible the upgrade to choose specific components
     values = _build_new_template(next_topic_id, remoteci, [], values,
                                  previous_job_id=original_job_id)
 
@@ -456,11 +447,11 @@ def upgrade_jobs(user):
 
 @api.route('/jobs', methods=['GET'])
 @decorators.login_required
-def get_all_jobs(user, jd_id=None):
+def get_all_jobs(user, topic_id=None):
     """Get all jobs.
 
-    If jd_id is not None, then return all the jobs with a jobdefinition
-    pointed by jd_id.
+    If topic_id is not None, then return all the jobs with a topic
+    pointed by topic_id.
     """
     # get the diverse parameters
     args = schemas.args(flask.request.args.to_dict())
@@ -475,9 +466,9 @@ def get_all_jobs(user, jd_id=None):
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
-    # # If jd_id not None, then filter by jobdefinition_id
-    if jd_id is not None:
-        query.add_extra_condition(_TABLE.c.jobdefinition_id == jd_id)
+    # # If topic_id not None, then filter by topic_id
+    if topic_id is not None:
+        query.add_extra_condition(_TABLE.c.topic_id == topic_id)
 
     # # Get only the non archived jobs
     query.add_extra_condition(_TABLE.c.state != 'archived')
@@ -552,7 +543,19 @@ def update_job_by_id(user, job_id):
 
     if not result.rowcount:
         raise dci_exc.DCIConflict('Job', job_id)
-
+    if values.get('status') == "failure":
+        _TEAMS = models.TEAMS
+        where_clause = sql.expression.and_(
+            _TEAMS.c.id == job['team_id']
+        )
+        query = (sql.select([_TEAMS]).where(where_clause))
+        team_info = flask.g.db_conn.execute(query).fetchone()
+        if team_info['notification'] is True:
+            if team_info['email'] is not None:
+                msg = {'event': 'notification',
+                       'email': team_info['email'],
+                       'job_id': str(job['id'])}
+                flask.g.sender.send_json(msg)
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
 
