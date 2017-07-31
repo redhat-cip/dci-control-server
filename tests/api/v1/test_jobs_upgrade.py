@@ -19,7 +19,7 @@ from __future__ import unicode_literals
 
 
 def test_job_upgrade(admin, job_id, remoteci_id, topic_id, topic_user_id,
-                     jobdefinition_user_id):
+                     components_ids, components_user_ids):
     job_upgraded = admin.post('/api/v1/jobs/upgrade',
                               data={'job_id': job_id})
     # the topic 'topic_id' does not contains a 'next_topic' field
@@ -39,4 +39,4 @@ def test_job_upgrade(admin, job_id, remoteci_id, topic_id, topic_user_id,
 
     assert job_upgraded.status_code == 201
     assert job_upgraded.data['job']['previous_job_id'] == job_id
-    # job_upgraded is a job against the next version of jobdefinition
+    # job_upgraded is a job against the next version of topic

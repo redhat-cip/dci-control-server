@@ -239,6 +239,12 @@ def components_ids(admin, topic_id):
 
 
 @pytest.fixture
+def components_user_ids(admin, topic_user_id):
+    component_types = ['type_1', 'type_2', 'type_3']
+    return create_components(admin, topic_user_id, component_types)
+
+
+@pytest.fixture
 def jobdefinition_id(jobdefinition_factory):
     jd = jobdefinition_factory()
     return str(jd['jobdefinition']['id'])
