@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5aa745d1_3703c811",
+        "filename": "tests/api/v1/test_remotecis.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 390,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-08-01T17:13:59Z",
+      "side": 1,
+      "message": "this can be removed, test_put_remotecis(admin, team_id) do the same",
+      "range": {
+        "startLine": 364,
+        "startChar": 0,
+        "endLine": 390,
+        "endChar": 29
+      },
+      "revId": "b8143e7e27026af04ffd9609e557679ab35550be",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_12ffba02",
+        "filename": "tests/api/v1/test_remotecis.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 443,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-08-01T17:13:59Z",
+      "side": 1,
+      "message": "same We can delete this test too",
+      "range": {
+        "startLine": 417,
+        "startChar": 0,
+        "endLine": 443,
+        "endChar": 23
+      },
+      "revId": "b8143e7e27026af04ffd9609e557679ab35550be",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
