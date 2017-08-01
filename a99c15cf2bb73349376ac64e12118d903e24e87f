@@ -1,0 +1,89 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5aa745d1_72371ee4",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 680,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-08-01T17:25:58Z",
+      "side": 1,
+      "message": "s/email/emails",
+      "revId": "a99c15cf2bb73349376ac64e12118d903e24e87f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_323196ed",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 684,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-08-01T17:25:58Z",
+      "side": 1,
+      "message": "s/email/emails",
+      "revId": "a99c15cf2bb73349376ac64e12118d903e24e87f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_b22486af",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 687,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-08-01T17:25:58Z",
+      "side": 1,
+      "message": "use directly job[\u0027topic_id\u0027]",
+      "revId": "a99c15cf2bb73349376ac64e12118d903e24e87f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_b25b662e",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-08-01T17:25:58Z",
+      "side": 1,
+      "message": "s/mesg[\u0027email\u0027]/mesg[\u0027emails\u0027]",
+      "revId": "a99c15cf2bb73349376ac64e12118d903e24e87f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_d256f205",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-08-01T17:25:58Z",
+      "side": 1,
+      "message": "\u0027notification\u0027 should be a constant shared by worker.py and jobs.py",
+      "revId": "a99c15cf2bb73349376ac64e12118d903e24e87f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
