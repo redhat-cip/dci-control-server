@@ -624,8 +624,32 @@ feeder_put = {
     v.Optional('name'): six.text_type,
     v.Optional('data'): dict,
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
+}
+
+feeder = DCISchema(schema_factory(feeder).post, Schema(feeder_put))
+
+###############################################################################
+#                                                                             #
+#                          Fingerprints schemas                               #
+#                                                                             #
+###############################################################################
+
+fingerprint = utils.dict_merge(base, {
+    'fingerprint': dict,
+    'actions': dict,
+    'description': six.text_type,
+    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
+})
+
+fingerprint_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('fingerprint'): dict,
+    v.Optional('actions'): dict,
+    v.Optional('description'): six.text_type,
+    v.Optional('topic_id'): v.Any(UUID, msg=INVALID_TOPIC),
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
 }
 
-feeder = DCISchema(schema_factory(feeder).post, Schema(feeder_put))
+fingerprint = DCISchema(schema_factory(fingerprint).post,
+                        Schema(fingerprint_put))
