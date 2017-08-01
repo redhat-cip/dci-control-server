@@ -605,3 +605,30 @@ product_put = {
 }
 
 product = DCISchema(schema_factory(product).post, Schema(product_put))
+
+###############################################################################
+#                          Fingerprints schemas                               #
+#                                                                             #
+###############################################################################
+
+fingerprint = utils.dict_merge(base, {
+    'fingerprint': dict,
+    'actions': dict,
+    'description': six.text_type,
+    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
+    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
+                                                 msg=INVALID_RESOURCE_STATE),
+})
+
+fingerprint_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('fingerprint'): dict,
+    v.Optional('actions'): dict,
+    v.Optional('description'): six.text_type,
+    v.Optional('topic_id'): v.Any(UUID, msg=INVALID_TOPIC),
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
+}
+
+fingerprint = DCISchema(schema_factory(fingerprint).post,
+                        Schema(fingerprint_put))
