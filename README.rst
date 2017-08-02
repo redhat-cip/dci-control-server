@@ -4,6 +4,8 @@ Distributed CI control server
 This repository is used for the development of the API of Distributed CI.
 It contains the source code, tests, development and building scripts.
 
+TEST
+
 Getting started
 ---------------
 If you are using the development environment provided
