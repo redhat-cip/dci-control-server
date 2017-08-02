@@ -47,7 +47,7 @@ def upgrade():
         return row.topic_id
 
     db_conn = op.get_bind()
-    with db_conn.begin() as conn:
+    with db_conn.begin():
         op.add_column('jobs',
                       sa.Column('topic_id', pg.UUID(as_uuid=True),
                                 sa.ForeignKey('topics.id', ondelete='CASCADE'),
@@ -62,7 +62,7 @@ def upgrade():
 
         for j in all_jobs:
             job = dict(j)
-            topic_id = _get_topic_id_from_jobdefinition(conn,
+            topic_id = _get_topic_id_from_jobdefinition(db_conn,
                                                         job['jobdefinition_id'])  # noqa
             values = {'topic_id': topic_id}
             query = _JOBS.update().where(_JOBS.c.id == job['id']). \
