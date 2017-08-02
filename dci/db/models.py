@@ -497,7 +497,6 @@ LOGS = sa.Table(
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('user_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('users.id', ondelete='CASCADE'),
               nullable=False),
     sa.Index('logs_user_id_idx', 'user_id'),
     sa.Column('team_id', pg.UUID(as_uuid=True),
