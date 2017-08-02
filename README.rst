@@ -290,3 +290,14 @@ Jobs priorities
 Each jobdefinition contains a 'priority' attribute which is used to weight it.
 When an agent requests a new job then the server will sort the jobdefinition
 by using the 'priority' attribute in order to select one.
+
+License
+-------
+
+Apache 2.0
+
+
+Author Information
+------------------
+
+Distributed-CI Team  <distributed-ci@redhat.com>
