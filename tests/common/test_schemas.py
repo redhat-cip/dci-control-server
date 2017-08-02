@@ -473,13 +473,15 @@ class TestJob(utils.SchemaTesting):
 
 class TestJobSchedule(utils.SchemaTesting):
     schema = schemas.job_schedule
-    data = dict([utils.REMOTE_CI, utils.TOPIC])
+    data = dict([utils.REMOTE_CI, utils.TOPIC, utils.COMPONENTS_IDS])
 
     @staticmethod
     def generate_invalids_and_errors():
-        invalids = dict([utils.INVALID_REMOTE_CI, utils.INVALID_TOPIC])
+        invalids = dict([utils.INVALID_REMOTE_CI, utils.INVALID_TOPIC,
+                         utils.INVALID_COMPONENTS_IDS])
         errors = dict([utils.INVALID_REMOTE_CI_ERROR,
-                       utils.INVALID_TOPIC_ERROR])
+                       utils.INVALID_TOPIC_ERROR,
+                       utils.INVALID_COMPONENTS_IDS_ERROR])
         return invalids, errors
 
     def test_post_extra_data(self):

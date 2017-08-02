@@ -147,7 +147,8 @@ def search_jobs(user):
     return flask.jsonify({'jobs': rows, '_meta': {'count': nb_rows}})
 
 
-def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
+def _build_new_template(topic_id, remoteci, components_ids, values,
+                        previous_job_id=None):
 
     def _get_last_rconfiguration_id():
         """Get the rconfiguration_id of the last job run by the remoteci."""
@@ -193,6 +194,65 @@ def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
         topic = dict(topic)
         return topic['component_types']
 
+    def _get_last_components(component_types, topic_id):
+        schedule_components_ids = []
+        for ct in component_types:
+            where_clause = sql.and_(models.COMPONENTS.c.type == ct,
+                                    models.COMPONENTS.c.topic_id == topic_id,
+                                    models.COMPONENTS.c.export_control == True,
+                                    models.COMPONENTS.c.state == 'active')  # noqa
+            query = (sql.select([models.COMPONENTS.c.id])
+                     .where(where_clause)
+                     .order_by(sql.desc(models.COMPONENTS.c.created_at)))
+            cmpt_id = flask.g.db_conn.execute(query).fetchone()
+
+            if cmpt_id is None:
+                msg = 'Component of type "%s" not found or not exported.' % ct
+                raise dci_exc.DCIException(msg, status_code=412)
+
+            cmpt_id = cmpt_id[0]
+            if cmpt_id in schedule_components_ids:
+                msg = ('Component types %s malformed: type %s duplicated.' %
+                       (component_types, ct))
+                raise dci_exc.DCIException(msg, status_code=412)
+            schedule_components_ids.append(cmpt_id)
+        return schedule_components_ids
+
+    def _get_components_from_ids(topic_id, rconfiguration, components_ids,
+                                 component_types):
+        # used for error message
+        source = ' topic %s' % topic_id
+        if (rconfiguration is not None and
+                rconfiguration['component_types'] != []):
+            source = ' rconfiguration %s' % rconfiguration['id']
+        if len(components_ids) != len(component_types):
+            msg = 'The number of component ids does not match the number ' \
+                  'of component types of %s' % source
+            raise dci_exc.DCIException(msg, status_code=412)
+
+        # get the components from their ids
+        schedule_component_types = set()
+        for c_id in components_ids:
+            where_clause = sql.and_(models.COMPONENTS.c.id == c_id,
+                                    models.COMPONENTS.c.topic_id == topic_id,
+                                    models.COMPONENTS.c.export_control == True,  # noqa
+                                    models.COMPONENTS.c.state == 'active')
+            query = (sql.select([models.COMPONENTS])
+                     .where(where_clause))
+            cmpt = flask.g.db_conn.execute(query).fetchone()
+
+            if cmpt is None:
+                msg = 'Component id %s not found or not exported' % c_id
+                raise dci_exc.DCIException(msg, status_code=412)
+            cmpt = dict(cmpt)
+
+            if cmpt['type'] in schedule_component_types:
+                msg = ('Component types malformed: type %s duplicated.' %
+                       cmpt['type'])
+                raise dci_exc.DCIException(msg, status_code=412)
+            schedule_component_types.add(cmpt['type'])
+        return components_ids
+
     # jobdefinition will be removed, used here for not breaking jobs table FK
     # Get a jobdefinition
     q_jd = sql.select([models.JOBDEFINITIONS]).where(
@@ -218,27 +278,14 @@ def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
     else:
         component_types = _get_component_types_from_topic()
 
-    schedule_components_ids = []
-    for ct in component_types:
-        where_clause = sql.and_(models.COMPONENTS.c.type == ct,
-                                models.COMPONENTS.c.topic_id == topic_id,
-                                models.COMPONENTS.c.export_control == True,
-                                models.COMPONENTS.c.state == 'active')  # noqa
-        query = (sql.select([models.COMPONENTS.c.id])
-                 .where(where_clause)
-                 .order_by(sql.desc(models.COMPONENTS.c.created_at)))
-        cmpt_id = flask.g.db_conn.execute(query).fetchone()
-
-        if cmpt_id is None:
-            msg = 'Component of type "%s" not found or not exported.' % ct
-            raise dci_exc.DCIException(msg, status_code=412)
-
-        cmpt_id = cmpt_id[0]
-        if cmpt_id in schedule_components_ids:
-            msg = ('Component types %s malformed: type %s duplicated.' %
-                   (component_types, ct))
-            raise dci_exc.DCIException(msg, status_code=412)
-        schedule_components_ids.append(cmpt_id)
+    if components_ids == []:
+        schedule_components_ids = _get_last_components(component_types,
+                                                       topic_id)
+    else:
+        schedule_components_ids = _get_components_from_ids(topic_id,
+                                                           rconfiguration,
+                                                           components_ids,
+                                                           component_types)
 
     values.update({
         'topic_id': topic_id,
@@ -268,6 +315,7 @@ def _build_new_template(topic_id, remoteci, values, previous_job_id=None):
 def _validate_input(values, user):
     topic_id = values.pop('topic_id')
     remoteci_id = values.get('remoteci_id')
+    components_ids = values.pop('components_ids')
 
     values.update({
         'id': utils.gen_uuid(),
@@ -294,7 +342,7 @@ def _validate_input(values, user):
 
     # The user belongs to the topic then we can start the scheduling
     v1_utils.verify_team_in_topic(user, topic_id)
-    return topic_id, remoteci
+    return topic_id, remoteci, components_ids
 
 
 def _get_job(user, job_id, embed):
@@ -337,9 +385,9 @@ def schedule_jobs(user):
             'HTTP_CLIENT_VERSION'
         ),
     })
-    topic_id, remoteci = _validate_input(values, user)
+    topic_id, remoteci, components_ids = _validate_input(values, user)
 
-    values = _build_new_template(topic_id, remoteci, values)
+    values = _build_new_template(topic_id, remoteci, components_ids, values)
 
     # add upgrade flag to the job result
     values.update({'allow_upgrade_job': remoteci['allow_upgrade_job']})
@@ -396,7 +444,7 @@ def upgrade_jobs(user):
             "topic %s does not contains a next topic" % topic_id)
 
     # instantiate a new job in the next_topic_id
-    values = _build_new_template(next_topic_id, remoteci, values,
+    values = _build_new_template(next_topic_id, remoteci, [], values,
                                  previous_job_id=original_job_id)
 
     return flask.Response(json.dumps({'job': values}), 201,

@@ -398,7 +398,8 @@ job = DCISchema(schema_factory(job).post, Schema(job_put))
 
 job_schedule = {
     'remoteci_id': v.Any(UUID, msg=INVALID_REMOTE_CI),
-    'topic_id': v.Any(UUID, msg=INVALID_TOPIC)
+    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
+    v.Optional('components_ids', default=[]): list
 }
 
 job_schedule = schema_factory(job_schedule)
