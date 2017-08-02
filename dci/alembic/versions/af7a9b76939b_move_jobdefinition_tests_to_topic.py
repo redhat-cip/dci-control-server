@@ -58,11 +58,11 @@ def upgrade():
         # associated topic
         for j in all_jobdefinitions:
             jd = dict(j)
-            tests_ids = _get_all_jobdefinitions_tests_ids(conn, jd['id'])
+            tests_ids = _get_all_jobdefinitions_tests_ids(db_conn, jd['id'])
             for t_id in tests_ids:
                 values = {'topic_id': jd['topic_id'],
-                          'test_id': t_id}
-                _JTT.insert().values(**values)
+                          'test_id': t_id['id']}
+                db_conn.execute(_JTT.insert().values(**values))
 
     op.alter_column('jobs', 'jobdefinition_id', nullable=True)
 

@@ -62,7 +62,7 @@ def upgrade():
 
         for j in all_jobs:
             job = dict(j)
-            topic_id = _get_topic_id_from_jobdefinition(conn,
+            topic_id = _get_topic_id_from_jobdefinition(db_conn,
                                                         job['jobdefinition_id'])  # noqa
             values = {'topic_id': topic_id}
             query = _JOBS.update().where(_JOBS.c.id == job['id']). \
