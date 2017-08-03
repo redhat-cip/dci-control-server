@@ -46,6 +46,30 @@
       "revId": "fb6a981d5cf80911fcf7d47bdf95cb17e015eac1",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_c92ac42c",
+        "filename": "dci/db/models.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 496,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-08-03T14:45:55Z",
+      "side": 1,
+      "message": "you\u0027re right I guess that I made a confusion on logs_user_id_fkey / logs_user_id_idx",
+      "parentUuid": "5aa745d1_6903b0b9",
+      "range": {
+        "startLine": 496,
+        "startChar": 4,
+        "endLine": 496,
+        "endChar": 44
+      },
+      "revId": "fb6a981d5cf80911fcf7d47bdf95cb17e015eac1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
