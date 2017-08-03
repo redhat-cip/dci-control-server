@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5aa745d1_896f1c92",
+        "filename": "dci/db/models.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 496,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-08-03T14:09:44Z",
+      "side": 1,
+      "message": "you forgot to remove the index here.",
+      "range": {
+        "startLine": 496,
+        "startChar": 4,
+        "endLine": 496,
+        "endChar": 44
+      },
+      "revId": "fb6a981d5cf80911fcf7d47bdf95cb17e015eac1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
