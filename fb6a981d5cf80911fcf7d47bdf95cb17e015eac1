@@ -22,6 +22,30 @@
       "revId": "fb6a981d5cf80911fcf7d47bdf95cb17e015eac1",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5aa745d1_6903b0b9",
+        "filename": "dci/db/models.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 496,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-08-03T14:31:04Z",
+      "side": 1,
+      "message": "Why we should remove it ?\nWe may still want to find logs based on the \u0027user_id\u0027 column. No ?",
+      "parentUuid": "5aa745d1_896f1c92",
+      "range": {
+        "startLine": 496,
+        "startChar": 4,
+        "endLine": 496,
+        "endChar": 44
+      },
+      "revId": "fb6a981d5cf80911fcf7d47bdf95cb17e015eac1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
