@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5aa745d1_c648738a",
+        "filename": "dci/alembic/versions/5d48174e4f24_add_topic_id_column_in_jobs.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-08-03T12:37:53Z",
+      "side": 1,
+      "message": "query \u003d sql.select([models.JOBS.c.id, models.JOBS.c.jobdefinition_id])",
+      "revId": "351e50723999ed545561eb490e3b7b155a4e28b5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
