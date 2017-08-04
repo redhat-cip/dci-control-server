@@ -76,12 +76,14 @@ def create_jobs(user):
         if not auth.is_in_team(user, values['team_id']):
             raise auth.UNAUTHORIZED
 
+    if values['topic_id'] is not None:
+        v1_utils.verify_team_in_topic(user, values['topic_id'])
+
     values.update({
         'status': 'new',
         'configuration': {},
-        # todo(yassine): add topic_id and rconfiguration_id in schemas
-        'topic_id': None,
-        'rconfiguration_id': None,
+        'topic_id': values['topic_id'],
+        'rconfiguration_id': values['rconfiguration_id'],
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'

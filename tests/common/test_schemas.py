@@ -420,7 +420,8 @@ class TestRemoteciRconfigurations(utils.SchemaTesting):
 class TestJob(utils.SchemaTesting):
     schema = schemas.job
     data = dict([utils.JOB_DEFINITION, utils.REMOTE_CI, utils.TEAM,
-                 utils.COMPONENTS, utils.PREVIOUS_JOB_ID, utils.STATE])
+                 utils.COMPONENTS, utils.PREVIOUS_JOB_ID, utils.STATE,
+                 utils.TOPIC, utils.RCONFIGURATION])
     data_put = dict([('status', 'success'), utils.COMMENT,
                      utils.CONFIGURATION])
 
@@ -428,11 +429,15 @@ class TestJob(utils.SchemaTesting):
     def generate_invalids_and_errors():
         invalids = dict([utils.INVALID_JOB_DEFINITION,
                          utils.INVALID_REMOTE_CI, utils.INVALID_TEAM,
-                         utils.INVALID_COMPONENTS])
+                         utils.INVALID_COMPONENTS,
+                         utils.INVALID_TOPIC,
+                         utils.INVALID_RCONFIGURATION])
         errors = dict([utils.INVALID_REMOTE_CI_ERROR,
                        utils.INVALID_JOB_DEFINITION_ERROR,
                        utils.INVALID_TEAM_ERROR,
-                       utils.INVALID_COMPONENTS_ERROR])
+                       utils.INVALID_COMPONENTS_ERROR,
+                       utils.INVALID_TOPIC_ERROR,
+                       utils.INVALID_RCONFIGURATION_ERROR])
         return invalids, errors
 
     @staticmethod
