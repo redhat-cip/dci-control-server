@@ -93,6 +93,10 @@ INVALID_JOB_DEFINITION = 'jobdefinition_id', INVALID_ID
 INVALID_JOB_DEFINITION_ERROR = ('jobdefinition_id',
                                 schemas.INVALID_JOB_DEFINITION)
 
+RCONFIGURATION = 'rconfiguration_id', ID[1]
+INVALID_RCONFIGURATION = 'topic_id', INVALID_ID
+INVALID_RCONFIGURATION_ERROR = 'topic_id', schemas.INVALID_TOPIC
+
 REMOTE_CI = 'remoteci_id', ID[1]
 INVALID_REMOTE_CI = 'remoteci_id', INVALID_ID
 INVALID_REMOTE_CI_ERROR = 'remoteci_id', schemas.INVALID_REMOTE_CI

@@ -79,9 +79,8 @@ def create_jobs(user):
     values.update({
         'status': 'new',
         'configuration': {},
-        # todo(yassine): add topic_id and rconfiguration_id in schemas
-        'topic_id': None,
-        'rconfiguration_id': None,
+        'topic_id': values['topic_id'],
+        'rconfiguration_id': values['rconfiguration_id'],
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'

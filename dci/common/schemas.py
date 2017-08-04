@@ -85,6 +85,7 @@ INVALID_TEST = 'not a valid test id'
 INVALID_TOPIC = 'not a valid topic id'
 INVALID_JOB_DEFINITION = 'not a valid jobdefinition id'
 INVALID_REMOTE_CI = 'not a valid remoteci id'
+INVALID_RCONFIGURATION = 'not a valid rconfiguration'
 INVALID_JOB = 'not a valid job id'
 INVALID_JOB_STATE = 'not a valid jobstate id'
 INVALID_OFFSET = 'not a valid offset integer (must be greater than 0)'
@@ -383,6 +384,9 @@ job = {
                                                        msg=INVALID_JOB),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
+    v.Optional('topic_id', default=None): v.Any(UUID, msg=INVALID_TOPIC),
+    v.Optional('rconfiguration_id', default=None): v.Any(UUID,
+                                                         msg=INVALID_RCONFIGURATION)  # noqa
 }
 
 job_put = {
