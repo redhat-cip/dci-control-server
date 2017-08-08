@@ -102,8 +102,8 @@ def init_db(db_conn, minimal, file):
         return
 
     # Create two other teams
-    team_hp = db_ins(models.TEAMS, name='hp')
-    team_dell = db_ins(models.TEAMS, name='dell')
+    team_hp = db_ins(models.TEAMS, name='hp', parent_id=team_admin)
+    team_dell = db_ins(models.TEAMS, name='dell', parent_id=team_admin)
 
     # Creates according users, 1 admin 1 user for other teams
     db_ins(models.USERS, name='user_hp',
