@@ -33,7 +33,9 @@ from dci.db import models
 
 _TABLE = models.PRODUCTS
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_EMBED_MANY = {}
+_EMBED_MANY = {
+    'topics': True
+}
 
 
 @api.route('/products', methods=['POST'])
