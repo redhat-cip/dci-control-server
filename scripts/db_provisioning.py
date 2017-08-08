@@ -126,11 +126,16 @@ def init_db(db_conn, minimal, file):
            password=auth.hash_password('password'),
            fullname='Admin Dell', email='admin_dell@example.org')
 
-    # Create 3 topics, 1 common and 2 scoped
-    topic_common = db_ins(models.TOPICS, name='topic_common')
+    # Create a product
+    product_id = db_ins(models.PRODUCTS, name='OpenStack', label='OPENSTACK')
 
-    topic_hp = db_ins(models.TOPICS, name='topic_HP')
-    topic_dell = db_ins(models.TOPICS, name='topic_DELL')
+    # Create 3 topics, 1 common and 2 scoped
+    topic_common = db_ins(models.TOPICS, name='topic_common',
+                          product_id=product_id)
+
+    topic_hp = db_ins(models.TOPICS, name='topic_HP', product_id=product_id)
+    topic_dell = db_ins(models.TOPICS, name='topic_DELL',
+                        product_id=product_id)
 
     # Attach teams to topics
     db_ins(models.JOINS_TOPICS_TEAMS, topic_id=topic_common,
