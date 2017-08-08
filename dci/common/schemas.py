@@ -80,6 +80,7 @@ INVALID_URL = 'not a valid URL'
 INVALID_EMAIL = 'not a valid email'
 INVALID_TIMEZONE = 'not a valid timezone'
 
+INVALID_PRODUCT = 'not a valid product id'
 INVALID_TEAM = 'not a valid team id'
 INVALID_TEST = 'not a valid test id'
 INVALID_TOPIC = 'not a valid topic id'
@@ -481,18 +482,20 @@ file = schema_factory(file)
 ###############################################################################
 
 topic = utils.dict_merge(base, {
+    v.Optional('product_id', default=None): v.Any(UUID, msg=INVALID_PRODUCT),
     v.Optional('label', default=None): six.text_type,
     v.Optional('next_topic', default=None): v.Any(UUID,
                                                   msg=INVALID_TOPIC),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
-    v.Optional('component_types', default=[]): list
+    v.Optional('component_types', default=[]): list,
 })
 
 topic_put = {
     v.Optional('name'): six.text_type,
     v.Optional('label'): six.text_type,
     v.Optional('next_topic'): v.Any(None, UUID, msg=INVALID_TOPIC),
+    v.Optional('product_id'): v.Any(UUID, msg=INVALID_PRODUCT),
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
     v.Optional('component_types'): list

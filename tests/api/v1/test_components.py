@@ -48,13 +48,14 @@ def test_create_components_already_exist(admin, topic_id):
     assert pstatus_code == 409
 
 
-def test_create_components_with_same_name_on_different_topics(admin, topic_id):
+def test_create_components_with_same_name_on_different_topics(admin, topic_id,
+                                                              product):
     data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
     pstatus_code = admin.post('/api/v1/components', data=data).status_code
     assert pstatus_code == 201
 
     topic2 = admin.post('/api/v1/topics',
-                        data={'name': 'tname',
+                        data={'name': 'tname', 'product_id': product['id'],
                               'component_types': ['type1', 'type2']}).data
     topic_id2 = topic2['topic']['id']
 
@@ -91,9 +92,10 @@ def test_get_all_components(admin, topic_id):
     assert db_all_cs_ids == created_c_ids
 
 
-def test_get_all_components_not_in_topic(admin, user):
+def test_get_all_components_not_in_topic(admin, user, product):
     topic = admin.post('/api/v1/topics',
                        data={'name': 'topic_test',
+                             'product_id': product['id'],
                              'component_types': ['type1', 'type2']}).data
     topic_id = topic['topic']['id']
     status_code = user.get(
