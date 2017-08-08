@@ -726,19 +726,20 @@ class LolTestFile(utils.SchemaTesting):
 
 class TestTopic(utils.SchemaTesting):
     schema = schemas.topic
-    data = dict([utils.NAME, utils.LABEL, utils.NEXT_TOPIC, utils.STATE])
+    data = dict([utils.NAME, utils.LABEL, utils.NEXT_TOPIC, utils.STATE,
+                 utils.PRODUCT])
 
     @staticmethod
     def generate_invalids_and_errors():
-        invalids = dict([utils.INVALID_NAME])
-        errors = dict([utils.INVALID_NAME_ERROR])
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_PRODUCT])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_PRODUCT_ERROR])
         return invalids, errors
 
     def test_post_extra_data(self):
         super(TestTopic, self).test_post_extra_data(self.data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name')
+        errors = utils.generate_errors('name', 'product_id')
         super(TestTopic, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):

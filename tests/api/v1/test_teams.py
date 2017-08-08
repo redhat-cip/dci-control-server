@@ -190,7 +190,7 @@ def test_delete_team_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_team_archive_dependencies(admin):
+def test_delete_team_archive_dependencies(admin, product):
     team = admin.post('/api/v1/teams', data={'name': 'team_name'})
     team_id = team.data['team']['id']
     team_etag = team.data['team']['etag']
@@ -216,6 +216,7 @@ def test_delete_team_archive_dependencies(admin):
 
     topic = admin.post('/api/v1/topics',
                        data={'name': 'topic_name',
+                             'product_id': product['id'],
                              'component_types': ['type1', 'type2']})
     topic_id = topic.data['topic']['id']
     assert topic.status_code == 201
