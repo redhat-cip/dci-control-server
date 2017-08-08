@@ -380,6 +380,16 @@ def permission(admin):
 
 
 @pytest.fixture
+def product(admin):
+    data = {
+        'name': 'OpenStack',
+        'label': 'OPENSTACK',
+        'description': 'Red Hat OpenStack Platform',
+    }
+    return admin.post('/api/v1/products', data=data).data['product']
+
+
+@pytest.fixture
 def es_clean(request):
     conn = es_engine.DCIESEngine(utils.conf)
     conn.cleanup()
