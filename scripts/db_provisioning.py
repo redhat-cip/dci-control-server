@@ -127,7 +127,8 @@ def init_db(db_conn, minimal, file):
            fullname='Admin Dell', email='admin_dell@example.org')
 
     # Create a product
-    product_id = db_ins(models.PRODUCTS, name='OpenStack', label='OPENSTACK')
+    product_id = db_ins(models.PRODUCTS, name='OpenStack', label='OPENSTACK',
+                        team_id=team_admin)
 
     # Create 3 topics, 1 common and 2 scoped
     topic_common = db_ins(models.TOPICS, name='topic_common',
