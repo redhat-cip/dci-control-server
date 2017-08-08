@@ -52,6 +52,9 @@ def create_teams(user):
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
 
+    if not values['parent_id']:
+        values['parent_id'] = user['team_id']
+
     query = _TABLE.insert().values(**values)
 
     try:
