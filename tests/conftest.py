@@ -380,11 +380,12 @@ def permission(admin):
 
 
 @pytest.fixture
-def product(admin):
+def product(admin, team_id):
     data = {
         'name': 'OpenStack',
         'label': 'OPENSTACK',
         'description': 'Red Hat OpenStack Platform',
+        'team_id': team_id
     }
     return admin.post('/api/v1/products', data=data).data['product']
 

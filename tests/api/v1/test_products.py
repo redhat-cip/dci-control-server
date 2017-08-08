@@ -17,11 +17,12 @@
 from __future__ import unicode_literals
 
 
-def test_success_create_product(admin):
+def test_success_create_product(admin, team_id):
     data = {
         'name': 'OpenStack',
         'label': 'OPENSTACK',
         'description': 'Red Hat OpenStack Platform',
+        'team_id': team_id
     }
 
     result = admin.post('/api/v1/products', data=data)
@@ -30,13 +31,15 @@ def test_success_create_product(admin):
     assert result.data['product']['name'] == data['name']
     assert result.data['product']['label'] == data['label']
     assert result.data['product']['description'] == data['description']
+    assert result.data['product']['team_id'] == data['team_id']
 
 
-def test_fail_create_permission_user(user):
+def test_fail_create_permission_user(user, team_id):
     data = {
         'name': 'OpenStack',
         'label': 'OPENSTACK',
         'description': 'Red Hat OpenStack Platform',
+        'team_id': team_id
     }
 
     result = user.post('/api/v1/products', data=data)
@@ -46,7 +49,7 @@ def test_fail_create_permission_user(user):
 
 def test_fail_ensure_payload_content_is_checked(admin):
     data = {
-        'description': 'name is missing',
+        'description': 'name and team_id are missing',
     }
 
     result = admin.post('/api/v1/products', data=data)
@@ -54,11 +57,12 @@ def test_fail_ensure_payload_content_is_checked(admin):
     assert result.status_code == 400
 
 
-def test_fail_create_product_already_exists(admin):
+def test_fail_create_product_already_exists(admin, team_id):
     data = {
         'name': 'OpenStack',
         'label': 'OPENSTACK',
         'description': 'Red Hat OpenStack Platform',
+        'team_id': team_id
     }
 
     result = admin.post('/api/v1/products', data=data)
