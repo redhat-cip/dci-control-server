@@ -192,6 +192,7 @@ team = utils.dict_merge(base, {
     v.Optional('notification', default=False): bool,
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
+    v.Optional('parent_id', default=None): v.Any(UUID, msg=INVALID_TEAM),
 })
 
 team_put = {
@@ -201,6 +202,7 @@ team_put = {
     v.Optional('notification'): bool,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
+    v.Optional('parent_id'): v.Any(UUID, msg=INVALID_TEAM),
 }
 
 team = DCISchema(schema_factory(team).post,

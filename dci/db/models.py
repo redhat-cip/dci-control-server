@@ -204,7 +204,10 @@ TEAMS = sa.Table(
     sa.Column('country', sa.String(255), nullable=True),
     sa.Column('email', sa.String(255), nullable=True),
     sa.Column('notification', sa.BOOLEAN, default=False),
-    sa.Column('state', STATES, default='active')
+    sa.Column('state', STATES, default='active'),
+    sa.Column('parent_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('teams.id', ondelete='SET NULL'),
+              nullable=True)
 )
 
 

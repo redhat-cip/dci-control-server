@@ -76,6 +76,10 @@ INVALID_URL_ERROR = 'url', schemas.INVALID_URL
 INVALID_TIMEZONE = 'timezone', 'NonContinent/NonCity'
 INVALID_TIMEZONE_ERROR = 'timezone', schemas.INVALID_TIMEZONE
 
+PARENT = 'parent_id', ID[1]
+INVALID_PARENT = 'parent_id', INVALID_ID
+INVALID_PARENT_ERROR = 'parent_id', schemas.INVALID_TEAM
+
 TEAM = 'team_id', ID[1]
 INVALID_TEAM = 'team_id', INVALID_ID
 INVALID_TEAM_ERROR = 'team_id', schemas.INVALID_TEAM
