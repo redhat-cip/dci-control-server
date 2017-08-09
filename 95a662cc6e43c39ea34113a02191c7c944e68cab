@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3ab451fb_e2a5a2b5",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 2
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-08-09T18:49:48Z",
+      "side": 1,
+      "message": "scope",
+      "range": {
+        "startLine": 12,
+        "startChar": 28,
+        "endLine": 12,
+        "endChar": 32
+      },
+      "revId": "95a662cc6e43c39ea34113a02191c7c944e68cab",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ab451fb_c2aaa685",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 626,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-08-09T18:49:48Z",
+      "side": 1,
+      "message": "not possible to update the label ?",
+      "range": {
+        "startLine": 626,
+        "startChar": 4,
+        "endLine": 626,
+        "endChar": 53
+      },
+      "revId": "95a662cc6e43c39ea34113a02191c7c944e68cab",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ab451fb_a2af9a93",
+        "filename": "dci/db/models.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 572,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-08-09T18:49:48Z",
+      "side": 1,
+      "message": "wondering why the unique constraint is on label instead of name ?",
+      "range": {
+        "startLine": 571,
+        "startChar": 4,
+        "endLine": 572,
+        "endChar": 68
+      },
+      "revId": "95a662cc6e43c39ea34113a02191c7c944e68cab",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
