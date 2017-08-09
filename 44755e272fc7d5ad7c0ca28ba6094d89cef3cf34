@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3ab451fb_6292b259",
+        "filename": "dci/alembic/versions/f381f939cd0b_add_product_id_to_topic.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-08-09T19:00:18Z",
+      "side": 1,
+      "message": "missing index on the FK",
+      "range": {
+        "startLine": 36,
+        "startChar": 0,
+        "endLine": 38,
+        "endChar": 53
+      },
+      "revId": "44755e272fc7d5ad7c0ca28ba6094d89cef3cf34",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ab451fb_429fb65f",
+        "filename": "dci/db/models.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2017-08-09T19:00:18Z",
+      "side": 1,
+      "message": "missing index on the FK",
+      "range": {
+        "startLine": 99,
+        "startChar": 0,
+        "endLine": 99,
+        "endChar": 1
+      },
+      "revId": "44755e272fc7d5ad7c0ca28ba6094d89cef3cf34",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
