@@ -37,6 +37,7 @@ _USERS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
     'team': False,
     'role': False,
+    'remotecis': False,
 }
 
 # select without the password column for security reasons
