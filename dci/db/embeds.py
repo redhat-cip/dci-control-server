@@ -331,6 +331,14 @@ def users(root_select=models.USERS):
              'onclause': and_(ROLE.c.id == root_select.c.role_id,
                               ROLE.c.state != 'archived')}
         ],
+        'remoteci' : [
+            {'right': models.JOIN_USER_REMOTECIS,
+             'onclause': models.JOIN_USER_REMOTECIS.c.user_id == root_select.c.id,  # noqa
+             'isouter': True},
+            {'right': models.REMOTECIS,
+             'onclause': and_(models.REMOTECIS.c.id == models.JOIN_USER_REMOTECIS.c.remoteci_id,  # noqa
+                              models.REMOTECIS.c.state != 'archived'),
+             'isouter': True}]
     }
 
 
