@@ -44,6 +44,12 @@ class DCIESEngine(object):
                                                    doc_type, doc_id),
                                   data=json.dumps(document))
 
+    # SEARCH TODO
+    def search(self, regex, doc_type='logs'):
+        return self._session.post('%s/%s/search/%s/%s' % (self._es_api, self._index,
+                                                   doc_type, doc_id),
+                                  data=json.dumps(document))
+
     def delete(self, doc_id, doc_type='logs'):
         """
         Delete a document.
