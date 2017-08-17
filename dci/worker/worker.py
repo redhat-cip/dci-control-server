@@ -20,12 +20,21 @@ import json
 import smtplib
 
 from zmq.eventloop import ioloop, zmqstream
+from dci.elasticsearch import es_client
+
 ioloop.install()
 
 context = zmq.Context()
 receiver = context.socket(zmq.PULL)
 receiver.bind('tcp://0.0.0.0:5557')
 stream = zmqstream.ZMQStream(receiver)
+dci_context = context.build_dci_context()
+conf = dci_config.generate_conf()
+es_engine = es_client.DCIESEngine(conf['ES_HOST'], conf['ES_PORT'], 'dci')  
+
+
+def fingerprints(mesg):
+
 
 
 def mail(mesg):
@@ -57,6 +66,8 @@ def loop(msg):
         mesg = json.loads(msg[0])
         if mesg['event'] == 'notification':
             mail(mesg)
+        elif mesg['event'] == 'fingerprints':
+            fingerprints(mesg)
     except:
         pass
 

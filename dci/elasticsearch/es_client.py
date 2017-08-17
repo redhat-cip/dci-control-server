@@ -44,6 +44,23 @@ class DCIESEngine(object):
                                                    doc_type, doc_id),
                                   data=json.dumps(document))
 
+    # SEARCH TODO
+    def search(self, regex, doc_type='logs'):
+        data={"query" : {"term" : { "content" : regex }}, "fields" : ["job_id"]}
+        return self._session.post('%s/%s/_search' % (self._es_api, self._index),
+                                  data=json.dumps(data)).json()
+
+    def search_by_id(self, regex, job_id, doc_type='logs'):
+        data={"query" :
+                {
+                 "match" : { "content" : regex },
+                 "match" : {"job_id": str(job_id)}
+                },
+                "fields" : ["job_id"]
+             }
+        return self._session.post('%s/%s/_search?size=1000' % (self._es_api, self._index),
+                                  data=json.dumps(data)).json()
+
     def delete(self, doc_id, doc_type='logs'):
         """
         Delete a document.
