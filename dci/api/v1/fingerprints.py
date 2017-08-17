@@ -27,6 +27,7 @@ from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
 from dci.db import models
+from dci.elasticsearch import es_client
 
 
 _TABLE = models.FINGERPRINTS
@@ -132,6 +133,77 @@ def delete_fingerprint_by_id(user, fp_id):
             raise dci_exc.DCIDeleteConflict('Fingerprint', fp_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/fingerprints/<uuid:fp_id>/jobs', methods=['GET'])
+@decorators.login_required
+def get_job_by_fingerprint_by_id(user, fp_id):
+    """ Retrieve all the jobs that matches a specific fingerprint.
+    """
+
+    fp = v1_utils.verify_existence_and_get(fp_id, _TABLE)
+
+
+
+    return flask.Response(None, 204, headers={'ETag': values['etag']},
+                          content_type='application/json')
+
+
+@api.route('/fingerprints/<uuid:fp_id>/jobs', methods=['GET'])
+@decorators.login_required
+def get_job_by_fingerprint_by_id(user, fp_id):
+    """ Do the action attached to a fingerprint to all the jobs that matches.
+    """
+
+
+@api.route('/fingerprints/<uuid:fp_id>/jobs', methods=['POST'])
+@decorators.login_required
+def run_fingerprint_on_jobs(user, fp_id):
+    """ Check if a all job matches a specific fingerprint or any fingerprint.
+    """
+
+    msg = {'event': 'notification',
+           'emails': emails,
+           'job_id': str(job['id']),
+           'status': job['status'],
+           'topic_id': str(job['topic_id']),
+           'remoteci_id': str(job['remoteci_id']),
+           'mesg': values['mesg']}
+    flask.g.sender.send_json(msg)
+
+@api.route('/fingerprints/<uuid:fp_id>/jobs/<uuid:job_id>', methods=['GET'])
+@decorators.login_required
+def run_fingerprint_on_jobs(user, fp_id):
+    """ Check if a specific job matches a specific fingerprint or any fingerprint.
+    """
+
+
+@api.route('/fingerprints/jobs/<uuid:job_id>', methods=['GET'])
+@decorators.login_required
+def run_fingerprint_on_jobs(user, fp_id):
+    """ Check if a specific job matches a specific fingerprint or any fingerprint.
+    """
+
+
+@api.route('/fingerprints/<uuid:fp_id>/jobs/<uuid:job_id>', methods=['POST'])
+@decorators.login_required
+def run_fingerprint_on_jobs(user, fp_id):
+    """ Check if a specific job matches a specific fingerprint or any fingerprint.
+    """
+
+
+@api.route('/fingerprints/jobs/<uuid:job_id>', methods=['POST'])
+@decorators.login_required
+def run_fingerprint_on_jobs(user, fp_id):
+    """ Do the action attached to all fingerprints a job matches.
+    """
+
+
+@api.route('/fingerprints/jobs', methods=['POST'])
+@decorators.login_required
+def run_fingerprint_on_jobs(user, fp_id):
+    """ Finally the initial bulk tagging would look like.
+    """
 
 
 @api.route('/fingerprints/purge', methods=['GET'])
