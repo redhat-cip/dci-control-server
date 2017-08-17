@@ -18,14 +18,42 @@
 import zmq
 import json
 import smtplib
+import sys
 
 from zmq.eventloop import ioloop, zmqstream
+from dci.elasticsearch import es_client
+from dci.db import models
+from dci import dci_config
+from dciclient.v1.api import context
+from dciclient.v1.api import job
+from dciclient.v1.api import fingerprint
+
 ioloop.install()
 
-context = zmq.Context()
-receiver = context.socket(zmq.PULL)
+zmqcontext = zmq.Context()
+receiver = zmqcontext.socket(zmq.PULL)
 receiver.bind('tcp://0.0.0.0:5557')
 stream = zmqstream.ZMQStream(receiver)
+dci_context = context.build_dci_context()
+conf = dci_config.generate_conf()
+engine = dci_config.get_engine(conf)
+es_engine = es_client.DCIESEngine(conf['ES_HOST'], conf['ES_PORT'], 'dci')
+
+
+def fingerprints(mesg):
+    if 'fingerprint_id' in mesg.keys():
+        fps = [fingerprint.get(dci_context, mesg['fingerprint_id']).json()]
+    else:
+        fps = fingerprint.list(dci_context, mesg['topic_id'])
+    for fp in fps:
+        if 'job_id' in mesg.keys():
+            if es_engine.search_by_id(fp.fingerprint['regexp'], job_id)['match']:
+                job.set_meta(dci_context, mesg['job_id'], "fingerprint", fp['fingerprint']['id'])
+                # do Actions
+        else:
+            results = es_engine.search(fp.fingerprint['regexp'])
+            for result in results['match_job']:
+                print('todo action')
 
 
 def mail(mesg):
@@ -57,8 +85,12 @@ def loop(msg):
         mesg = json.loads(msg[0])
         if mesg['event'] == 'notification':
             mail(mesg)
+        elif mesg['event'] == 'fingerprints':
+            print('test')
+            fingerprints(mesg)
     except:
         pass
 
 stream.on_recv(loop)
-ioloop.IOLoop.instance().start()
+instance = ioloop.IOLoop.instance()
+instance.start()
