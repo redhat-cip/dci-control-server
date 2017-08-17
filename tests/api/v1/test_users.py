@@ -532,3 +532,15 @@ def test_update_current_user(admin, user):
     assert me['email'] == 'new_email@example.org'
     assert me['fullname'] == 'New Name'
     assert me['timezone'] == 'Europe/Paris'
+
+
+def test_get_embed_remotecis(admin, user, remoteci_user_id, user_id):
+    data = {
+        'user_id': user_id
+    }
+    r = admin.post('/api/v1/remotecis/%s/users' % remoteci_user_id, data=data)
+
+    assert r.status_code == 201
+
+    me = user.get('/api/v1/users/me?embed=remotecis').data['user']
+    assert me['remotecis'][0]['id'] == remoteci_user_id
