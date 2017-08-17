@@ -27,6 +27,7 @@ from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
 from dci.db import models
+from dci.elasticsearch import es_client
 
 
 _TABLE = models.FINGERPRINTS
@@ -39,6 +40,10 @@ _EMBED_MANY = {}
 def create_fingerprint(user):
     """Create Fingerprint.
     """
+
+    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+        raise auth.UNAUTHORIZED
+
     values = v1_utils.common_values_dict(user)
     values.update(schemas.fingerprint.post(flask.request.json))
 
@@ -84,6 +89,10 @@ def get_fingerprint_by_id(user, fp_id):
 def modify_fingerprint(user, fp_id):
     """Modify a Fingerprint.
     """
+
+    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+        raise auth.UNAUTHORIZED
+
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     values = schemas.fingerprint.put(flask.request.json)
@@ -112,6 +121,9 @@ def delete_fingerprint_by_id(user, fp_id):
     """... Fingerprint.
     """
 
+    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+        raise auth.UNAUTHORIZED
+
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     if not auth.is_admin(user):
@@ -132,6 +144,138 @@ def delete_fingerprint_by_id(user, fp_id):
             raise dci_exc.DCIDeleteConflict('Fingerprint', fp_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/fingerprints/<uuid:fp_id>/jobs', methods=['GET'])
+@decorators.login_required
+def get_jobs_by_fingerprint(user, fp_id):
+    """ Retrieve all the jobs that matches a specific fingerprint.
+    """
+
+    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+        raise auth.UNAUTHORIZED
+
+    fp = v1_utils.verify_existence_and_get(fp_id, _TABLE)
+
+    result = flask.g.es_client.search(fp.fingerprint['regexp'])
+    array = []
+    if "error" not in result.keys():
+        for found in result['hits']['hits']:
+            array.append(found['fields']['job_id'][0])
+    else:
+        return flask.Response("{'error': 'elasticsearch not available'}", 500,
+                              content_type='application/json')
+    return flask.jsonify({'job_match': array })
+
+
+@api.route('/fingerprints/<uuid:fp_id>/jobs', methods=['POST'])
+@decorators.login_required
+def run_fingerprint_on_jobs(user, fp_id):
+    """ Check if a all job matches a specific fingerprint or any fingerprint.
+    """
+
+    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+        raise auth.UNAUTHORIZED
+
+    fp = v1_utils.verify_existence_and_get(fp_id, _TABLE)
+
+    msg = {'event': 'fingerprints',
+           'topic_id': str(fp['topic_id']),
+           'fingerprint_id': str(fp_id)}
+    flask.g.sender.send_json(msg)
+    return flask.Response(None, 204,
+                          content_type='application/json')
+
+@api.route('/fingerprints/<uuid:fp_id>/jobs/<uuid:job_id>', methods=['GET'])
+@decorators.login_required
+def get_fingerprint_on_job(user, fp_id, job_id):
+    """ Check if a specific job matches a specific fingerprint or any fingerprint.
+    """
+
+    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+        raise auth.UNAUTHORIZED
+
+    fp = v1_utils.verify_existence_and_get(fp_id, _TABLE)
+    job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
+
+    result = flask.g.es_client.search_by_id(fp.fingerprint['regexp'], job_id)
+    array = []
+    if result['hits']['hits'][0]['fields']['job_id'][0]:
+        return flask.jsonify({'job_match': 'true' })
+    else:
+        return flask.jsonify({'job_match': 'false' })
+
+
+@api.route('/fingerprints/jobs/<uuid:job_id>', methods=['GET'])
+@decorators.login_required
+def get_fingerprints_on_job(user, fp_id):
+    """ Check if a specific job matches a specific fingerprint or any fingerprint.
+    """
+    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+        raise auth.UNAUTHORIZED
+
+    job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
+
+    result = flask.g.es_client.search_by_id(fp.fingerprint['regexp'], job_id)
+    array = []
+    if result['hits']['hits'][0]['fields']['job_id'][0]:
+        return flask.jsonify({'job_match': 'true' })
+    else:
+        return flask.jsonify({'fingerprint_match': 'false' })
+
+
+@api.route('/fingerprints/<uuid:fp_id>/jobs/<uuid:job_id>', methods=['POST'])
+@decorators.login_required
+def run_fingerprint_on_job(user, fp_id, job_id):
+    """ Check if a specific job matches a specific fingerprint or any fingerprint.
+    """
+
+    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+        raise auth.UNAUTHORIZED
+
+    fp = v1_utils.verify_existence_and_get(fp_id, _TABLE)
+
+    msg = {'event': 'fingerprints',
+           'topic_id': str(fp['topic_id']),
+           'fingerprint_id': str(fp_id),
+           'job_id': str(job_id)}
+    flask.g.sender.send_json(msg)
+    return flask.Response(None, 204,
+                          content_type='application/json')
+
+
+@api.route('/fingerprints/jobs/<uuid:job_id>', methods=['POST'])
+@decorators.login_required
+def run_fingerprints_on_job(user, fp_id):
+    """ Do the action attached to all fingerprints a job matches.
+    """
+
+    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+        raise auth.UNAUTHORIZED
+
+    fp = v1_utils.verify_existence_and_get(fp_id, _TABLE)
+
+    msg = {'event': 'fingerprints',
+           'topic_id': str(fp['topic_id']),
+           'job_id': str(job_id)}
+    flask.g.sender.send_json(msg)
+    return flask.Response(None, 204,
+                          content_type='application/json')
+
+@api.route('/fingerprints/jobs', methods=['POST'])
+@decorators.login_required
+def run_fingerprints_on_jobs(user):
+    """ Finally the initial bulk tagging would look like.
+    """
+
+    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+        raise auth.UNAUTHORIZED
+
+    msg = {'event': 'fingerprints',
+           'topic_id': str(fp['topic_id'])}
+    flask.g.sender.send_json(msg)
+    return flask.Response(None, 204,
+                          content_type='application/json')
 
 
 @api.route('/fingerprints/purge', methods=['GET'])
