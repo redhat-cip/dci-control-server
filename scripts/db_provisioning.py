@@ -711,6 +711,12 @@ def init_db(db_conn, minimal, file):
         file_path = swift.build_file_path(team_dell, job_dell_12, f_id)
         swift.upload(file_path, 'some other content')
 
+    # Fingerprint
+    db_ins(
+        models.FINGERPRINTS, name='test', fingerprint={"regexp": "test"},
+        topic_id=topic_dell, actions={}, description="test"
+    )
+
 
 if __name__ == '__main__':
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
