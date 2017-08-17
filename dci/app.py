@@ -19,6 +19,7 @@ from dci.api import v1 as api_v1
 from dci.common import exceptions
 from dci.common import utils
 from dci.elasticsearch import engine as es_engine
+from dci.elasticsearch import es_client
 
 import flask
 import logging
@@ -39,6 +40,9 @@ class DciControlServer(flask.Flask):
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
         self.es_engine = es_engine.DCIESEngine(conf)
+        self.es_client = es_client.DCIESEngine(conf['ES_HOST'],
+                                               conf['ES_PORT'],
+                                               'dci')
         self.sender = self._get_zmq_sender(conf['ZMQ_CONN'])
 
     def _get_zmq_sender(self, zmq_conn):
@@ -113,6 +117,7 @@ def create_app(conf):
                 pass
 
         flask.g.es_conn = dci_app.es_engine
+        flask.g.es_client = dci_app.es_client
         flask.g.sender = dci_app.sender
 
     @dci_app.teardown_request
