@@ -52,12 +52,37 @@ def is_admin(user, super=False):
 
 
 def is_admin_user(user, team_id):
-    return str(user['team_id']) == str(team_id) and \
+    return is_in_team(user, team_id) and \
         user['role_id'] == get_role_id('ADMIN')
 
 
+def is_in_parent_team(user, team_id, user_team_id):
+    query = sql.select([models.TEAMS]).where(
+        sql.and_(
+            models.TEAMS.c.id == team_id,
+            models.TEAMS.c.parent_id == user_team_id
+        )
+    )
+    result = flask.g.db_conn.execute(query).fetchone()
+    return result.id
+
+
 def is_in_team(user, team_id):
-    return str(user['team_id']) == str(team_id)
+    return str(user['team_id']) == str(team_id) or \
+        is_in_parent_team(user, team_id, user['team_id'])
+
+
+def is_product_admin(user, team_id=None):
+    return is_product_member(user) and \
+        user['role_id'] == get_role_id('ADMIN')
+
+
+def is_product_member(user):
+    query = sql.select([models.PRODUCTS]).where(
+        models.PRODUCTS.c.team_id == user['team_id']
+    )
+    result = flask.g.db_conn.execute(query).fetchone()
+    return result.id
 
 
 def check_export_control(user, component):
