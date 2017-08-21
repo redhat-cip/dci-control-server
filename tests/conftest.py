@@ -124,8 +124,8 @@ def user_admin_id(admin):
 
 
 @pytest.fixture
-def topic_id(admin, team_id):
-    data = {'name': 'topic_name',
+def topic_id(admin, team_id, product):
+    data = {'name': 'topic_name', 'product_id': product['id'],
             'component_types': ['type_1', 'type_2', 'type_3']}
     topic = admin.post('/api/v1/topics', data=data).data
     t_id = topic['topic']['id']
@@ -173,8 +173,8 @@ def team_admin_id(admin):
 
 
 @pytest.fixture
-def topic_user_id(admin, user, team_user_id):
-    data = {'name': 'topic_user_name',
+def topic_user_id(admin, user, team_user_id, product):
+    data = {'name': 'topic_user_name', 'product_id': product['id'],
             'component_types': ['type_1', 'type_2', 'type_3']}
     topic = admin.post('/api/v1/topics', data=data).data
     t_id = topic['topic']['id']

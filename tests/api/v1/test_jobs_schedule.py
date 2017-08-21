@@ -52,10 +52,11 @@ def _create_components(user, topic_id, component_types):
     return component_ids
 
 
-def test_schedule_jobs_with_new_topic(admin, remoteci_id, team_admin_id):
+def test_schedule_jobs_with_new_topic(admin, remoteci_id, team_admin_id,
+                                      product):
 
     # create a new topic and schedule a new job
-    data = {'name': 'new_topic',
+    data = {'name': 'new_topic', 'product_id': product['id'],
             'component_types': ['type_1', 'type_2']}
     pt = admin.post('/api/v1/topics', data=data).data
     new_topic_id = pt['topic']['id']
@@ -167,9 +168,10 @@ def test_schedule_give_latest_components(admin, jobdefinition_factory,
     assert c1[0]['id'] != c2[0]['id']
 
 
-def test_schedule_job_with_export_control(admin, remoteci_id, team_admin_id):
+def test_schedule_job_with_export_control(admin, remoteci_id, team_admin_id,
+                                          product):
     # create a new topic and schedule a new job
-    data_topic = {'name': 'new_topic',
+    data_topic = {'name': 'new_topic', 'product_id': product['id'],
                   'component_types': ['type_1', 'type_2']}
     pt = admin.post('/api/v1/topics', data=data_topic).data
     new_topic_id = pt['topic']['id']

@@ -95,9 +95,9 @@ def test_get_all_tests(admin, user, team_user_id, topic_user_id):
                                     test_2['test']['id']])
 
 
-def test_get_all_tests_not_in_topic(admin, user):
+def test_get_all_tests_not_in_topic(admin, user, product):
     topic = admin.post('/api/v1/topics',
-                       data={'name': 'topic_test',
+                       data={'name': 'topic_test', 'product_id': product['id'],
                              'component_types': ['type1', 'type2']}).data
     topic_id = topic['topic']['id']
     status_code = user.get(
@@ -240,7 +240,8 @@ def test_get_tests_from_remotecis(admin, user, team_user_id, team_id):
     assert t_tests.status_code == 404
 
 
-def test_get_tests_from_topics(admin, user, team_user_id, team_id):
+def test_get_tests_from_topics(admin, user, team_user_id, team_id,
+                               product):
     # Create two test 1 for each team
     test_1 = admin.post('/api/v1/tests',
                         data={'name': 'pname1',
@@ -254,10 +255,12 @@ def test_get_tests_from_topics(admin, user, team_user_id, team_id):
     # Create two different topic
     topic_1 = admin.post('/api/v1/topics',
                          data={'name': 'topic_test_1',
+                               'product_id': product['id'],
                                'component_types': ['type1', 'type2']}).data
     topic_id_1 = topic_1['topic']['id']
     topic_2 = admin.post('/api/v1/topics',
                          data={'name': 'topic_test_2',
+                               'product_id': product['id'],
                                'component_types': ['type1', 'type2']}).data
     topic_id_2 = topic_2['topic']['id']
 

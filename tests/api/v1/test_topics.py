@@ -18,8 +18,8 @@ from __future__ import unicode_literals
 import uuid
 
 
-def test_create_topics(admin):
-    data = {'name': 'tname',
+def test_create_topics(admin, product):
+    data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data).data
     pt_id = pt['topic']['id']
@@ -28,8 +28,8 @@ def test_create_topics(admin):
     assert gc['topic']['component_types'] == ['type1', 'type2']
 
 
-def test_create_topics_as_user(user):
-    data = {'name': 'tname',
+def test_create_topics_as_user(user, product):
+    data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     status_code = user.post('/api/v1/topics', data=data).status_code
     assert status_code == 401
@@ -72,23 +72,24 @@ def test_change_topic_to_invalid_state(admin, topic_id):
     assert current_topic.data['topic']['state'] == 'active'
 
 
-def test_create_topics_already_exist(admin):
-    data = {'name': 'tname',
+def test_create_topics_already_exist(admin, product):
+    data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     pstatus_code = admin.post('/api/v1/topics', data=data).status_code
     assert pstatus_code == 201
 
-    data = {'name': 'tname',
+    data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     pstatus_code = admin.post('/api/v1/topics', data=data).status_code
     assert pstatus_code == 409
 
 
-def test_get_all_topics_by_admin(admin):
+def test_get_all_topics_by_admin(admin, product):
     created_topics_ids = []
     for i in range(5):
         pc = admin.post('/api/v1/topics',
                         data={'name': 'tname%s' % uuid.uuid4(),
+                              'product_id': product['id'],
                               'component_types': ['type1', 'type2']}).data
         created_topics_ids.append(pc['topic']['id'])
     created_topics_ids.sort()
@@ -101,11 +102,12 @@ def test_get_all_topics_by_admin(admin):
     assert db_all_cs_ids == created_topics_ids
 
 
-def test_get_all_topics_with_pagination(admin):
+def test_get_all_topics_with_pagination(admin, product):
     # create 20 topic types and check meta data count
     for i in range(20):
         admin.post('/api/v1/topics',
                    data={'name': 'tname%s' % uuid.uuid4(),
+                         'product_id': product['id'],
                          'component_types': ['type1', 'type2']})
     cs = admin.get('/api/v1/topics').data
     assert cs['_meta']['count'] == 20
@@ -122,13 +124,14 @@ def test_get_all_topics_with_pagination(admin):
     assert cs.data['topics'] == []
 
 
-def test_get_all_topics_with_where(admin):
+def test_get_all_topics_with_where(admin, product):
     # create 20 topic types and check meta data count
     topics = {}
     for i in range(20):
         t_name = str(uuid.uuid4())
         r = admin.post('/api/v1/topics',
                        data={'name': t_name,
+                             'product_id': product['id'],
                              'component_types': ['type1', 'type2']}).data
         topics[t_name] = r['topic']['id']
 
@@ -138,8 +141,8 @@ def test_get_all_topics_with_where(admin):
         assert r['topics'][0]['id'] == t_id
 
 
-def test_get_topics_of_user(admin, user, team_user_id):
-    data = {'name': 'test_name',
+def test_get_topics_of_user(admin, user, team_user_id, product):
+    data = {'name': 'test_name', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     topic = admin.post('/api/v1/topics', data=data).data['topic']
     topic_id = topic['id']
@@ -148,6 +151,7 @@ def test_get_topics_of_user(admin, user, team_user_id):
     for i in range(5):
         admin.post('/api/v1/topics',
                    data={'name': 'tname%s' % uuid.uuid4(),
+                         'product_id': product['id'],
                          'component_types': ['type1', 'type2']})
     topics_user = user.get('/api/v1/topics').data
     assert topic == topics_user['topics'][0]
@@ -162,8 +166,9 @@ def test_get_topics_by_with_embed_authorization(admin, user):
     assert topics_user.status_code == 401
 
 
-def test_get_topic_by_id(admin, user, team_user_id):
+def test_get_topic_by_id(admin, user, team_user_id, product):
     data = {'name': 'tname',
+            'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data).data
     pt_id = pt['topic']['id']
@@ -192,8 +197,8 @@ def test_get_topic_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_topic_by_id(admin):
-    data = {'name': 'tname',
+def test_delete_topic_by_id(admin, product):
+    data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data)
     pt_id = pt.data['topic']['id']
@@ -209,8 +214,8 @@ def test_delete_topic_by_id(admin):
     assert gct.status_code == 404
 
 
-def test_delete_topic_by_id_as_user(admin, user):
-    data = {'name': 'tname',
+def test_delete_topic_by_id_as_user(admin, user, product):
+    data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data)
     pt_id = pt.data['topic']['id']
@@ -223,9 +228,9 @@ def test_delete_topic_by_id_as_user(admin, user):
     assert deleted_ct.status_code == 401
 
 
-def test_delete_topic_archive_dependencies(admin):
+def test_delete_topic_archive_dependencies(admin, product):
     topic = admin.post('/api/v1/topics',
-                       data={'name': 'topic_name',
+                       data={'name': 'topic_name', 'product_id': product['id'],
                              'component_types': ['type1', 'type2']})
     topic_id = topic.data['topic']['id']
     assert topic.status_code == 201
@@ -258,8 +263,8 @@ def test_delete_topic_archive_dependencies(admin):
     assert deleted_component.status_code == 404
 
 
-def test_purge_topic(admin):
-    data = {'name': 'tname',
+def test_purge_topic(admin, product):
+    data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data)
     pt_id = pt.data['topic']['id']
@@ -269,18 +274,22 @@ def test_purge_topic(admin):
     assert ppt.status_code == 204
 
 
-def test_get_all_topics_with_sort(admin):
+def test_get_all_topics_with_sort(admin, product):
     # create 4 topics ordered by created time
     data = {'name': "tname3", 'created_at': '2015-01-01',
+            'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     ct_2_1 = admin.post('/api/v1/topics', data=data).data['topic']['id']
     data = {'name': "tname4", 'created_at': '2016-01-01',
+            'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     ct_2_2 = admin.post('/api/v1/topics', data=data).data['topic']['id']
     data = {'name': "tname1", 'created_at': '2010-01-01',
+            'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     ct_1_1 = admin.post('/api/v1/topics', data=data).data['topic']['id']
     data = {'name': "tname2", 'created_at': '2011-01-01',
+            'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     ct_1_2 = admin.post('/api/v1/topics', data=data).data['topic']['id']
 
@@ -303,9 +312,9 @@ def test_delete_topic_not_found(admin):
     assert result.status_code == 404
 
 
-def test_put_topics(admin, topic_id):
+def test_put_topics(admin, topic_id, product):
     pt = admin.post('/api/v1/topics',
-                    data={'name': 'pname',
+                    data={'name': 'pname', 'product_id': product['id'],
                           'component_types': ['type1', 'type2']})
     assert pt.status_code == 201
 
@@ -326,9 +335,9 @@ def test_put_topics(admin, topic_id):
 
 
 # Tests for topics and teams management
-def test_add_team_to_topic_and_get(admin):
+def test_add_team_to_topic_and_get(admin, product):
     # create a topic
-    data = {'name': 'tname',
+    data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data).data
     pt_id = pt['topic']['id']
@@ -355,9 +364,9 @@ def test_add_team_to_topic_and_get(admin):
 
 
 # Tests for topics and teams management
-def test_add_team_to_topic_and_get_as_user(admin, user):
+def test_add_team_to_topic_and_get_as_user(admin, user, product):
     # create a topic
-    data = {'name': 'tname',
+    data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data).data
     pt_id = pt['topic']['id']
@@ -374,9 +383,9 @@ def test_add_team_to_topic_and_get_as_user(admin, user):
     assert status_code == 401
 
 
-def test_delete_team_from_topic(admin):
+def test_delete_team_from_topic(admin, product):
     # create a topic
-    data = {'name': 'tname',
+    data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data).data
     pt_id = pt['topic']['id']
@@ -401,9 +410,9 @@ def test_delete_team_from_topic(admin):
     assert c.status_code == 200
 
 
-def test_delete_team_from_topic_as_user(admin, user):
+def test_delete_team_from_topic_as_user(admin, user, product):
     # create a topic
-    data = {'name': 'tname',
+    data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data).data
     pt_id = pt['topic']['id']
@@ -505,9 +514,10 @@ def test_status_from_component_type_get_status(admin, topic_id, components_ids,
     assert 'name-' in status['jobs'][0]['component_name']
 
 
-def test_remove_next_topic_from_topic(admin, topic_id):
+def test_remove_next_topic_from_topic(admin, topic_id, product):
     request = admin.post('/api/v1/topics',
-                         data={'name': 'topic 1', 'next_topic': topic_id})
+                         data={'name': 'topic 1', 'next_topic': topic_id,
+                               'product_id': product['id']})
     assert request.status_code == 201
     new_topic_id = request.data['topic']['id']
 

@@ -88,6 +88,10 @@ TOPIC = 'topic_id', ID[1]
 INVALID_TOPIC = 'topic_id', INVALID_ID
 INVALID_TOPIC_ERROR = 'topic_id', schemas.INVALID_TOPIC
 
+PRODUCT = 'product_id', ID[1]
+INVALID_PRODUCT = 'product_id', INVALID_ID
+INVALID_PRODUCT_ERROR = 'product_id', schemas.INVALID_PRODUCT
+
 JOB_DEFINITION = 'jobdefinition_id', ID[1]
 INVALID_JOB_DEFINITION = 'jobdefinition_id', INVALID_ID
 INVALID_JOB_DEFINITION_ERROR = ('jobdefinition_id',

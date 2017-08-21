@@ -293,6 +293,16 @@ def tests(root_select=models.TESTS):
     }
 
 
+def products(root_select=models.PRODUCTS):
+    return {
+        'topics': [
+            {'right': models.TOPICS,
+             'onclause': and_(models.TOPICS.c.product_id == root_select.c.id,
+                              models.TOPICS.c.state != 'archived'),
+             'isouter': True}],
+    }
+
+
 def roles(root_select=models.ROLES):
     return {
         'permissions': [
@@ -382,6 +392,9 @@ EMBED_STRING_TO_OBJECT = {
         'job': JOB_WITHOUT_CONFIGURATION,
         'team': TEAM
     },
+    'products': {
+        'topics': models.TOPICS,
+    },
     'roles': {
         'permissions': models.PERMISSIONS,
     },
@@ -411,6 +424,7 @@ EMBED_JOINS = {
     'files': files,
     'jobdefinitions': jobdefinitions,
     'jobstates': jobstates,
+    'products': products,
     'roles': roles,
     'teams': teams,
     'tests': tests,

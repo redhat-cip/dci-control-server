@@ -96,9 +96,13 @@ TOPICS = sa.Table(
     sa.Column('name', sa.String(255), unique=True, nullable=False),
     sa.Column('label', sa.Text),
     sa.Column('component_types', pg.JSON, default=[]),
+    sa.Column('product_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('products.id'),
+              nullable=True),
     sa.Column('next_topic', pg.UUID(as_uuid=True),
               sa.ForeignKey('topics.id'),
               nullable=True, default=None),
+    sa.Index('topics_product_id_idx', 'product_id'),
     sa.Index('topics_next_topic_idx', 'next_topic'),
     sa.Column('state', STATES, default='active')
 )

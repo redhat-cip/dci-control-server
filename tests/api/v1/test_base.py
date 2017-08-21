@@ -15,8 +15,8 @@
 # under the License.
 
 
-def test_purge_resource(admin):
-    data = {'name': 'tname',
+def test_purge_resource(admin, product):
+    data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     pt = admin.post('/api/v1/topics', data=data)
     pt_id = pt.data['topic']['id']
