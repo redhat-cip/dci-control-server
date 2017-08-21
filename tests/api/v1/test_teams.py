@@ -388,3 +388,84 @@ def test_success_update_field_by_field(admin, team_id):
     assert t['name'] == 'pname'
     assert t['state'] == 'inactive'
     assert t['country'] == 'FR'
+
+
+# Test for PRODUCT_OWNER role
+# The following test suite tests permissions
+
+def test_success_create_team_as_product_owner(product_owner, team_product_id):
+    pt = product_owner.post('/api/v1/teams',
+                            data={'name': 'pname'}).data
+    pt_id = pt['team']['id']
+    gt = product_owner.get('/api/v1/teams/%s' % pt_id).data
+    assert gt['team']['name'] == 'pname'
+    assert gt['team']['parent_id'] == team_product_id
+
+
+def test_success_get_teams_as_product_owner(product_owner):
+    result = product_owner.get('/api/v1/teams')
+
+    teams = [r['name'] for r in result.data['teams']]
+    assert 'admin' not in teams
+    assert ['product', 'user'] == sorted(teams)
+
+
+def test_success_update_team_as_product_onwer(product_owner, team_user_id):
+    team = product_owner.get('/api/v1/teams/%s' % team_user_id)
+    team_etag = team.headers.get("ETag")
+
+    team_put = product_owner.put('/api/v1/teams/%s' % team_user_id,
+                                 data={'name': 'new_name'},
+                                 headers={'If-match': team_etag})
+    assert team_put.status_code == 204
+
+    team = product_owner.get('/api/v1/teams/%s' % team_user_id).data
+    assert team['team']['name'] == 'new_name'
+
+
+def test_success_delete_team_as_product_owner(product_owner, team_user_id):
+    team = product_owner.get('/api/v1/teams/%s' % team_user_id)
+    team_etag = team.headers.get("ETag")
+    result = product_owner.delete('/api/v1/teams/%s' % team_user_id,
+                                  headers={'If-match': team_etag})
+    assert result.status_code == 204
+
+    result = product_owner.get('/api/v1/teams')
+    teams = [r['name'] for r in result.data['teams']]
+    assert 'user' not in teams
+
+
+def test_create_team_as_product_owner_with_different_parentid(product_owner,
+                                                              team_product_id,
+                                                              admin,
+                                                              team_admin_id):
+    # The team is created with a different parent_id, we should ensure that
+    # parent id is product_owner team id nonetheless.
+    team = product_owner.post('/api/v1/teams',
+                              data={'name': 'pname',
+                                    'parent_id': team_admin_id}).data
+
+    assert team['team']['parent_id'] == team_product_id
+
+
+def test_failure_update_not_my_team_as_product_owner(product_owner, admin):
+    team = admin.post('/api/v1/teams', data={'name': 'pname'}).data
+    team_to_update_id = team['team']['id']
+    team_to_update_etag = team['team']['etag']
+
+    result = product_owner.put('/api/v1/teams/%s' % team_to_update_id,
+                               data={'name': 'new_name'},
+                               headers={'If-match': team_to_update_etag})
+
+    assert result.status_code == 401
+
+
+def test_failure_delete_not_my_team_as_product_owner(product_owner, admin):
+    team = admin.post('/api/v1/teams', data={'name': 'pname'}).data
+    team_to_delete_id = team['team']['id']
+    team_to_delete_etag = team['team']['etag']
+
+    result = product_owner.delete('/api/v1/teams/%s' % team_to_delete_id,
+                                  headers={'If-match': team_to_delete_etag})
+
+    assert result.status_code == 401
