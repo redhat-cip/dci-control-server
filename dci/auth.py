@@ -45,6 +45,13 @@ def get_role_id(label):
     return result.id
 
 
+def user_role_in(user, roles=[]):
+    """Return True if the user belongs to one of the roles."""
+
+    role_ids = [get_role_id(label) for label in roles]
+    return user['role_id'] in role_ids
+
+
 def is_admin(user, super=False):
     if super and user['role_id'] == get_role_id('ADMIN'):
         return False
@@ -52,12 +59,24 @@ def is_admin(user, super=False):
 
 
 def is_admin_user(user, team_id):
-    return str(user['team_id']) == str(team_id) and \
+    return is_in_team(user, team_id) and \
         user['role_id'] == get_role_id('ADMIN')
 
 
+def is_in_parent_team(user, team_id, user_team_id):
+    query = sql.select([models.TEAMS]).where(
+        sql.and_(
+            models.TEAMS.c.id == team_id,
+            models.TEAMS.c.parent_id == user_team_id
+        )
+    )
+    result = flask.g.db_conn.execute(query).fetchone()
+    return result.id
+
+
 def is_in_team(user, team_id):
-    return str(user['team_id']) == str(team_id)
+    return str(user['team_id']) == str(team_id) or \
+        is_in_parent_team(user, team_id, user['team_id'])
 
 
 def check_export_control(user, component):

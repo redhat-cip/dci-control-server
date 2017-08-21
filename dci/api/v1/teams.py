@@ -49,10 +49,12 @@ def create_teams(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.team.post(flask.request.json))
 
-    if not auth.is_admin(user):
+    if not auth.user_role_in(user, ['SUPER_ADMIN', 'PRODUCT_OWNER']):
         raise auth.UNAUTHORIZED
 
-    if not values['parent_id']:
+    if not values['parent_id'] or \
+       (auth.user_role_in(user, ['PRODUCT_OWNER']) and
+            values['parent_id'] != user['team_id']):
         values['parent_id'] = user['team_id']
 
     query = _TABLE.insert().values(**values)
@@ -75,8 +77,15 @@ def get_all_teams(user):
 
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
-    if not auth.is_admin(user):
+    if not auth.user_role_in(user, ['SUPER_ADMIN', 'PRODUCT_OWNER']):
         query.add_extra_condition(_TABLE.c.id == user['team_id'])
+
+    if auth.user_role_in(user, ['PRODUCT_OWNER']):
+        where_clause = sql.or_(
+            _TABLE.c.parent_id == user['team_id'],
+            _TABLE.c.id == user['team_id']
+        )
+        query.add_extra_condition(where_clause)
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
@@ -119,7 +128,9 @@ def put_team(user, t_id):
 
     values = schemas.team.put(flask.request.json)
 
-    if not(auth.is_admin(user) or auth.is_admin_user(user, t_id)):
+    if not(auth.is_admin(user) or
+           (auth.user_role_in(user, ['PRODUCT_OWNER', 'ADMIN']) and
+            auth.is_in_team(user, t_id))):
         raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
@@ -146,7 +157,9 @@ def delete_team_by_id(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    if not auth.is_admin(user):
+    if not (auth.is_admin(user) or
+            (auth.user_role_in(user, ['PRODUCT_OWNER']) and
+            auth.is_in_team(user, t_id))):
         raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
