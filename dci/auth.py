@@ -52,12 +52,40 @@ def is_admin(user, super=False):
 
 
 def is_admin_user(user, team_id):
-    return str(user['team_id']) == str(team_id) and \
+    return is_in_team(user, team_id) and \
         user['role_id'] == get_role_id('ADMIN')
 
 
+def is_in_parent_team(user, team_id, user_team_id):
+    """Return True if the user is in the parent team.
+
+    is_in_parent_team() allows one to know if the user
+    making the request is in the parent team of a specific
+    team.
+
+    By parent team it is understood, either its product team
+    or the SUPER_ADMIN user.
+    """
+
+    in_parent_team = False
+
+    query = sql.select([models.TEAMS]).where(
+        sql.and_(
+            models.TEAMS.c.id == team_id,
+            models.TEAMS.c.parent_id == user_team_id
+        )
+    )
+    result = flask.g.db_conn.execute(query).fetchone()
+
+    if result or user['role_id'] == get_role_id('SUPER_ADMIN'):
+        in_parent_team = True
+
+    return in_parent_team
+
+
 def is_in_team(user, team_id):
-    return str(user['team_id']) == str(team_id)
+    return str(user['team_id']) == str(team_id) or \
+        is_in_parent_team(user, team_id, user['team_id'])
 
 
 def check_export_control(user, component):

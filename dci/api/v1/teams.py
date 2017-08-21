@@ -49,10 +49,13 @@ def create_teams(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.team.post(flask.request.json))
 
-    if not auth.is_admin(user):
+    if user['role_id'] not in [auth.get_role_id('SUPER_ADMIN'),
+                               auth.get_role_id('PRODUCT_OWNER')]:
         raise auth.UNAUTHORIZED
 
-    if not values['parent_id']:
+    if not values['parent_id'] or \
+       (user['role_id'] == auth.get_role_id('PRODUCT_OWNER') and
+            values['parent_id'] != user['team_id']):
         values['parent_id'] = user['team_id']
 
     query = _TABLE.insert().values(**values)
@@ -75,8 +78,16 @@ def get_all_teams(user):
 
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
-    if not auth.is_admin(user):
+    if user['role_id'] not in [auth.get_role_id('SUPER_ADMIN'),
+                               auth.get_role_id('PRODUCT_OWNER')]:
         query.add_extra_condition(_TABLE.c.id == user['team_id'])
+
+    if user['role_id'] == auth.get_role_id('PRODUCT_OWNER'):
+        where_clause = sql.or_(
+            _TABLE.c.parent_id == user['team_id'],
+            _TABLE.c.id == user['team_id']
+        )
+        query.add_extra_condition(where_clause)
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
@@ -119,7 +130,8 @@ def put_team(user, t_id):
 
     values = schemas.team.put(flask.request.json)
 
-    if not(auth.is_admin(user) or auth.is_admin_user(user, t_id)):
+    if user['role_id'] == auth.get_role_id('USER') or \
+       not auth.is_in_team(user, t_id):
         raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
@@ -146,7 +158,9 @@ def delete_team_by_id(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    if not auth.is_admin(user):
+    if not (user['role_id'] in [auth.get_role_id('SUPER_ADMIN'),
+                                auth.get_role_id('PRODUCT_OWNER')] and
+       auth.is_in_team(user, t_id)):
         raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
