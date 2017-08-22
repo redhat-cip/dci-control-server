@@ -6,7 +6,11 @@ TIMEOUT=${TIMEOUT:-60}
 # kill the running server if it exists
 ps aux | awk '!/awk/' | awk '/runtestserver/ {print $2}'| xargs -r kill
 
-python ./scripts/runtestserver.py provision &
+# init db
+DCI_LOGIN='admin' DCI_PASSWORD='admin' python ./bin/dci-dbinit
+
+# run test server
+python ./bin/dci-runtestserver &
 
 i=1
 while [ $i -lt $TIMEOUT ]; do
