@@ -22,7 +22,7 @@ To run the api in development mode follow those steps:
 4. install the python requirements: ``pip install -r requirements.txt``
 5. provision the database: ``./scripts/db_provisioning.py``
    (BEWARE: it will erase the previous db)
-6. run the dev server: ``./scripts/runtestserver.py``
+6. run the dev server: ``./bin/dci-runtestserver``
 
 Database installation
 ---------------------
