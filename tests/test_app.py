@@ -50,11 +50,11 @@ def test_sample_db_provisionning(engine, teardown_db_clean):
     """Test the sample init_db method, to be sure it will
     not be broken when updating
     """
-    db_provisioning = imp.load_source(
-        'db_provisioning', 'scripts/db_provisioning.py'
+    dbinit = imp.load_source(
+        'dbinit', 'bin/dci-dbinit'
     )
     with engine.begin() as db_conn:
-        db_provisioning.init_db(db_conn, False, False)
+        dbinit.init_db(db_conn)
 
 
 def test_db_migration(engine, delete_db):
