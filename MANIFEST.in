@@ -7,8 +7,8 @@ include scripts/start_db.sh
 include scripts/data
 include scripts/data/tripleo-stack-dump-sample.json
 include scripts/db_provisioning.py
-include scripts/runtestserver.py
 include scripts/start_es.sh
+include bin/dci-runtestserver
 include dci/data/junittojson.xsl
 include dci/alembic/alembic.ini
 include dci/systemd/dci-worker.service
