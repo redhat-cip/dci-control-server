@@ -140,3 +140,10 @@ def test_fail_delete_product_user(user, product):
                          headers={'If-match': product['etag']})
 
     assert result.status_code == 401
+
+
+def test_success_get_products_embed(admin, product):
+    result = admin.get('/api/v1/products/%s/?embed=team' % product['id'])
+
+    assert result.status_code == 200
+    assert 'team' in result.data['product'].keys()
