@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import os
 import imp
 
 import alembic.autogenerate
@@ -22,6 +23,15 @@ import alembic.script
 
 import dci.alembic.utils
 import dci.db.models as models
+
+
+def test_dbinit():
+    os.environ['DCI_LOGIN'] = 'admin'
+    os.environ['DCI_PASSWORD'] = 'admin'
+    dbinit = imp.load_source(
+        'dbinit', 'bin/dci-dbinit'
+    )
+    dbinit.main()
 
 
 def test_cors_preflight(admin):
@@ -44,17 +54,6 @@ def test_cors_preflight(admin):
 def test_cors_headers(admin):
     resp = admin.get('/api/v1/jobs')
     assert resp.headers['Access-Control-Allow-Origin'] == '*'
-
-
-def test_sample_db_provisionning(engine, teardown_db_clean):
-    """Test the sample init_db method, to be sure it will
-    not be broken when updating
-    """
-    db_provisioning = imp.load_source(
-        'db_provisioning', 'scripts/db_provisioning.py'
-    )
-    with engine.begin() as db_conn:
-        db_provisioning.init_db(db_conn, False, False)
 
 
 def test_db_migration(engine, delete_db):
