@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1ab14d0d_de64c14a",
+        "filename": "bin/dci-runtestserver",
+        "patchSetId": 2
+      },
+      "lineNbr": 4,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-08-23T09:44:23Z",
+      "side": 1,
+      "message": "2017",
+      "revId": "86cdc9b187e9f927513fda2cc7bbc9f2617870af",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
