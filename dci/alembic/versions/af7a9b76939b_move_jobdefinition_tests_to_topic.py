@@ -50,7 +50,7 @@ def upgrade():
         else:
             return []
 
-    with db_conn.begin() as conn:
+    with db_conn.begin():
         # get all jobdefinitions
         query = sql.select([models.JOBDEFINITIONS])
         all_jobdefinitions = db_conn.execute(query).fetchall()
@@ -58,11 +58,11 @@ def upgrade():
         # associated topic
         for j in all_jobdefinitions:
             jd = dict(j)
-            tests_ids = _get_all_jobdefinitions_tests_ids(conn, jd['id'])
+            tests_ids = _get_all_jobdefinitions_tests_ids(db_conn, jd['id'])
             for t_id in tests_ids:
                 values = {'topic_id': jd['topic_id'],
-                          'test_id': t_id}
-                _JTT.insert().values(**values)
+                          'test_id': t_id['id']}
+                db_conn.execute(_JTT.insert().values(**values))
 
     op.alter_column('jobs', 'jobdefinition_id', nullable=True)
 
