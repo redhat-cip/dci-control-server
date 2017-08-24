@@ -78,6 +78,12 @@ def init_db(db_conn, minimal, file):
         'description': 'Admin of the platform',
     }
 
+    product_owner_role = {
+        'name': 'Product Owner',
+        'label': 'PRODUCT_OWNER',
+        'description': 'Product Owner',
+    }
+
     admin_role = {
         'name': 'Admin',
         'label': 'ADMIN',
@@ -93,6 +99,7 @@ def init_db(db_conn, minimal, file):
     admin_role_id = db_ins(models.ROLES, **admin_role)
     user_role_id = db_ins(models.ROLES, **user_role)
     super_admin_role_id = db_ins(models.ROLES, **super_admin_role)
+    db_ins(models.ROLES, **product_owner_role)
 
     db_ins(models.USERS, name='admin', role_id=super_admin_role_id,
            team_id=team_admin, password=auth.hash_password('admin'),
