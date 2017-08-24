@@ -75,6 +75,12 @@ def init_db(db_conn):
         'description': 'Admin of the platform',
     }
 
+    product_owner_role = {
+        'name': 'Product Owner',
+        'label': 'PRODUCT OWNER',
+        'description': 'Product Owner',
+    }
+
     admin_role = {
         'name': 'Admin',
         'label': 'ADMIN',
@@ -87,6 +93,7 @@ def init_db(db_conn):
         'description': 'Regular User',
     }
 
+    db_insert_with_name(models.ROLES, **product_owner_role)
     db_insert_with_name(models.ROLES, **admin_role)
     db_insert_with_name(models.ROLES, **user_role)
     super_admin_role_id = db_insert_with_name(models.ROLES,

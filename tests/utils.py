@@ -102,6 +102,12 @@ def provision(db_conn):
         'description': 'Admin of the platform',
     }
 
+    product_owner_role = {
+        'name': 'Product Owner',
+        'label': 'PRODUCT OWNER',
+        'description': 'Product Owner',
+    }
+
     admin_role = {
         'name': 'Admin',
         'label': 'ADMIN',
@@ -117,6 +123,7 @@ def provision(db_conn):
     admin_role_id = db_insert(models.ROLES, **admin_role)
     user_role_id = db_insert(models.ROLES, **user_role)
     super_admin_role_id = db_insert(models.ROLES, **super_admin_role)
+    db_insert(models.ROLES, **product_owner_role)
 
     # Create users
     db_insert(models.USERS,
