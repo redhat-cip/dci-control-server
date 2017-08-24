@@ -33,6 +33,7 @@ REMOTECI_TESTS = models.TESTS.alias('remoteci.tests')
 JOBDEFINITION_TESTS = models.TESTS.alias('jobdefinition.tests')
 TOPIC_TESTS = models.TESTS.alias('topic.tests')
 TEAM = models.TEAMS.alias('team')
+PRODUCT = models.PRODUCTS.alias('product')
 REMOTECI = models.REMOTECIS.alias('remoteci')
 CFILES = models.COMPONENT_FILES.alias('files')
 
@@ -330,7 +331,12 @@ def topics(root_select=models.TOPICS):
             {'right': models.TEAMS,
              'onclause': and_(models.TEAMS.c.id == models.JOINS_TOPICS_TEAMS.c.team_id,  # noqa
                               models.TEAMS.c.state != 'archived'),
-             'isouter': True}]
+             'isouter': True}],
+        'product': [
+            {'right': PRODUCT,
+             'onclause': and_(PRODUCT.c.id == root_select.c.product_id,
+                              PRODUCT.c.state != 'archived')}
+        ],
     }
 
 
@@ -412,7 +418,8 @@ EMBED_STRING_TO_OBJECT = {
         'topics': models.TOPICS
     },
     'topics': {
-        'teams': models.TEAMS
+        'teams': models.TEAMS,
+        'product': PRODUCT
     },
     'users': {
         'team': TEAM,
