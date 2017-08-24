@@ -402,6 +402,13 @@ def role_super_admin(admin):
 
 
 @pytest.fixture
+def role_product_owner(admin):
+    return admin.get(
+        '/api/v1/roles?where=label:PRODUCT OWNER'
+    ).data['roles'][0]
+
+
+@pytest.fixture
 def role_admin(admin):
     return admin.get('/api/v1/roles?where=label:ADMIN').data['roles'][0]
 

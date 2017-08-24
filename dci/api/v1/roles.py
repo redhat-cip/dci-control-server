@@ -103,7 +103,12 @@ def get_all_roles(user):
     if not auth.is_admin(user):
         query.add_extra_condition(_TABLE.c.label != 'SUPER_ADMIN')
 
+    if not (auth.is_admin(user) or
+            user['role_id'] == auth.get_role_id('PRODUCT OWNER')):
+        query.add_extra_condition(_TABLE.c.label != 'PRODUCT OWNER')
+
     if user['role_id'] not in [auth.get_role_id('ADMIN'),
+                               auth.get_role_id('PRODUCT OWNER'),
                                auth.get_role_id('SUPER_ADMIN')]:
         query.add_extra_condition(_TABLE.c.id == user['role_id'])
 
@@ -122,6 +127,7 @@ def get_role_by_id(user, role_id):
 
     if user['role_id'] != role_id and \
         user['role_id'] not in [auth.get_role_id('ADMIN'),
+                                auth.get_role_id('PRODUCT OWNER'),
                                 auth.get_role_id('SUPER_ADMIN')]:
         raise auth.UNAUTHORIZED
     if not auth.is_admin(user) and auth.get_role_id('SUPER_ADMIN') == role_id:
