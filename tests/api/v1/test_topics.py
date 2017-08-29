@@ -568,3 +568,9 @@ def test_success_get_topics_embed(admin, topic_id):
 
     assert result.status_code == 200
     assert 'product' in result.data['topic'].keys()
+
+    request = admin.post('/api/v1/topics',
+                         data={'name': 'topic_without_product'})
+
+    result = admin.get('/api/v1/topics')
+    assert request.data['topic'] == result.data['topics'][0]

@@ -335,7 +335,8 @@ def topics(root_select=models.TOPICS):
         'product': [
             {'right': PRODUCT,
              'onclause': and_(PRODUCT.c.id == root_select.c.product_id,
-                              PRODUCT.c.state != 'archived')}
+                              PRODUCT.c.state != 'archived'),
+             'isouter': True}
         ],
     }
 
