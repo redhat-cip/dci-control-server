@@ -76,7 +76,7 @@ class TestComponentType(BaseSchemaTesting):
 
 class TestTeam(utils.SchemaTesting):
     schema = schemas.team
-    data = dict([utils.NAME, utils.COUNTRY, utils.EMAIL, utils.NOTIF,
+    data = dict([utils.NAME, utils.COUNTRY,
                  utils.STATE, utils.PARENT])
 
     @staticmethod
