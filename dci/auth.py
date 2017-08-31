@@ -15,6 +15,7 @@
 # under the License.
 
 import flask
+import jwt
 from passlib.apps import custom_app_context as pwd_context
 
 from dci.db import models
@@ -30,6 +31,11 @@ def hash_password(password):
 
 def check_passwords_equal(password, encrypted_password):
     return pwd_context.verify(password, encrypted_password)
+
+
+def decode_jwt(access_token, pem_public_key, audience):
+    return jwt.decode(access_token, verify=True, key=pem_public_key,
+                      audience=audience, algorithms=['RS256'])
 
 
 # This method should be deleted once permissions mechanism is

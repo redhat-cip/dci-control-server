@@ -41,6 +41,7 @@ BuildRequires:  python-tornado
 BuildRequires:  python-voluptuous
 BuildRequires:  python-werkzeug
 BuildRequires:  python-zmq
+BuildRequires:  python-jwt
 BuildRequires:  python2-pytest
 BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
@@ -60,6 +61,7 @@ Requires:       python-tornado
 Requires:       python-voluptuous
 Requires:       python-werkzeug
 Requires:       python-zmq
+Requires:       python-jwt
 Requires:       python2-swiftclient
 Requires:       pytz
 
@@ -94,6 +96,7 @@ BuildRequires:  python3-swiftclient
 BuildRequires:  python3-voluptuous
 BuildRequires:  python3-werkzeug
 BuildRequires:  python3-zmq
+BuildRequires:  python-jwt
 BuildRequires:  systemd
 BuildRequires:  systemd-units
 Requires:       python3-alembic
@@ -111,6 +114,7 @@ Requires:       python3-swiftclient
 Requires:       python3-voluptuous
 Requires:       python3-werkzeug
 Requires:       python3-zmq
+Requires:       python-jwt
 
 %description -n dci-api-python3
 The implementation of the DCI control server API.
