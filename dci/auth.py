@@ -14,7 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import base64
+from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import serialization
 import flask
+import jwt
 from passlib.apps import custom_app_context as pwd_context
 
 from dci.db import models
@@ -30,6 +35,26 @@ def hash_password(password):
 
 def check_passwords_equal(password, encrypted_password):
     return pwd_context.verify(password, encrypted_password)
+
+
+def get_pem_public_key_from_modulus_exponent(n, e):
+    def _b64decode(data):
+        # padding to have multiple of 4 characters
+        if len(data) % 4:
+            data = data + '=' * (len(data) % 4)
+        data = data.encode('ascii')
+        data = bytes(data)
+        return long(base64.urlsafe_b64decode(data).encode('hex'), 16)
+    modulus = _b64decode(n)
+    exponent = _b64decode(e)
+    numbers = RSAPublicNumbers(exponent, modulus)
+    public_key = numbers.public_key(backend=default_backend())
+    return public_key.public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo)
+
+def decode_jwt(access_token, pem_public_key, audience):
+    return jwt.decode(access_token, key=pem_public_key, audience=audience)
 
 
 # This method should be deleted once permissions mechanism is
