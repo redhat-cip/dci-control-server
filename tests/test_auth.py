@@ -14,6 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from dci import auth
+from dci import dci_config
+
+import mock
+import datetime
+
 
 def test_api_with_unauthorized_credentials(unauthorized, topic_id):
     assert unauthorized.get(
@@ -36,3 +42,16 @@ def test_admin_required_success_when_admin(admin):
 
 def test_admin_required_fail_when_not_admin(user):
     assert user.post('/api/v1/teams', data={'name': 'team'}).status_code == 401
+
+
+# mock datetime so that the token is now considered as expired
+@mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
+def test_decode_jwt(m_datetime, access_token):
+    pubkey = dci_config.generate_conf()['SSO_PUBLIC_KEY']
+    m_utcnow = mock.MagicMock()
+    m_utcnow.utctimetuple.return_value = datetime.datetime.\
+        fromtimestamp(1505564918).timetuple()
+    m_datetime.utcnow.return_value = m_utcnow
+    decoded_jwt = auth.decode_jwt(access_token, pubkey, 'dci-cs')
+    assert decoded_jwt['username'] == 'dci'
+    assert decoded_jwt['email'] == 'dci@distributed-ci.io'
