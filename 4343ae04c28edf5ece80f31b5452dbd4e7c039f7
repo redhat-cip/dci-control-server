@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dac4157f_39818f90",
+        "filename": "dci/db/models.py",
+        "patchSetId": 15
+      },
+      "lineNbr": 590,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-09-01T07:43:06Z",
+      "side": 1,
+      "message": "are you sure about the unicity on name field?\n\ndifferent products can lead to the same name for a fingerprint",
+      "revId": "4343ae04c28edf5ece80f31b5452dbd4e7c039f7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
