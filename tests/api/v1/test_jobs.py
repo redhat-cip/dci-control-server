@@ -286,6 +286,27 @@ def test_update_job(admin, jobdefinition_id, remoteci_id,
     assert job['configuration'] == {'ha': 'enabled'}
 
 
+def test_success_update_job_status(admin, job_id):
+    job = admin.get('/api/v1/jobs/%s' % job_id)
+    job = job.data['job']
+
+    assert job['status'] == 'new'
+
+    data_update = {'status': 'pre-run'}
+    job = admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
+                    headers={'If-match': job['etag']})
+
+    assert job.status_code == 204
+    assert job['status'] == 'pre-run'
+
+    data_update = {'status': 'failure'}
+    job = admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
+                    headers={'If-match': job['etag']})
+
+    assert job.status_code == 204
+    assert job['status'] == 'failure'
+
+
 def test_job_notification(app, user, remoteci_user_id, user_id, job_user_id):
 
     with app.app_context():
