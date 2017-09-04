@@ -574,3 +574,25 @@ def test_success_get_topics_embed(admin, topic_id):
 
     result = admin.get('/api/v1/topics')
     assert request.data['topic'] == result.data['topics'][0]
+
+
+def test_add_test_to_topic(admin, topic_id, test_id):
+    t = admin.get('/api/v1/topics/%s/tests' % topic_id).data['tests']
+    assert len(t) == 0
+
+    admin.post('/api/v1/topics/%s/tests' % topic_id,
+               data={'test_id': test_id})
+    t = admin.get('/api/v1/topics/%s/tests' % topic_id).data['tests']
+    assert len(t) == 1
+    assert t[0]['id'] == test_id
+
+
+def test_delete_test_from_topic(admin, topic_id, test_id):
+    admin.post('/api/v1/topics/%s/tests' % topic_id,
+               data={'test_id': test_id})
+    t = admin.get('/api/v1/topics/%s/tests' % topic_id).data['tests']
+    assert len(t) == 1
+
+    admin.delete('/api/v1/topics/%s/tests/%s' % (topic_id, test_id))
+    t = admin.get('/api/v1/topics/%s/tests' % topic_id).data['tests']
+    assert len(t) == 0
