@@ -67,7 +67,8 @@ def Timezone(value):
         raise ValueError
 
 
-VALID_STATUS_UPDATE = ['failure', 'success', 'killed', 'product-failure',
+VALID_STATUS_UPDATE = ['new', 'pre-run', 'running', 'post-run',
+                       'success', 'failure', 'killed', 'product-failure',
                        'deployment-failure']
 
 VALID_RESOURCE_STATE = ['active', 'inactive', 'archived']
