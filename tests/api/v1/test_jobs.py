@@ -23,6 +23,7 @@ from dci.stores.swift import Swift
 from dci.common import utils
 from tests.data import JUNIT
 
+
 SWIFT = 'dci.stores.swift.Swift'
 
 
@@ -135,12 +136,25 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
             'team_id': team_id,
             'remoteci_id': remoteci_id,
             'components': components_ids}
-    admin.post('/api/v1/jobs', data=data)
-    admin.post('/api/v1/jobs', data=data)
+    job_1 = admin.post('/api/v1/jobs', data=data)
+    job_2 = admin.post('/api/v1/jobs', data=data)
+
+    # Create two ISSUES
+    data = {
+        'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
+    }
+    issue_1 = admin.post('/api/v1/jobs/%s/issues' % job_1.data['job']['id'],
+               data=data).data
+    data = {
+        'url': 'https://github.com/redhat-cip/dci-control-server/issues/2'
+    }
+    issue_2 = admin.post('/api/v1/jobs/%s/issues' % job_2.data['job']['id'],
+               data=data).data
 
     # verify embed with all embedded options
     query_embed = ('/api/v1/jobs?embed='
-                   'team,remoteci,jobdefinition,jobstates,rconfiguration')
+                   'team,remoteci,jobdefinition,jobstates'
+                   ',issues,rconfiguration')
     jobs = admin.get(query_embed).data
 
     for job in jobs['jobs']:
@@ -151,9 +165,13 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
         assert job['jobdefinition']['id'] == jobdefinition_id
         assert job['jobdefinition_id'] == job['jobdefinition']['id']
         assert 'remoteci' in job
+        assert 'issues' in job
         assert job['remoteci']['id'] == remoteci_id
         assert job['remoteci_id'] == job['remoteci']['id']
         assert job['rconfiguration'] == {}
+
+    assert jobs['jobs'][1]['issues'][0]['id'] == issue_1['issue']['id']
+    assert jobs['jobs'][0]['issues'][0]['id'] == issue_2['issue']['id']
 
     # verify embed with jobdefinition.tests nested
     query_embed = ('/api/v1/jobs?embed=jobdefinition.tests')
