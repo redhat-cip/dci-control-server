@@ -375,7 +375,8 @@ remoteci_user = schema_factory(remoteci_user)
 ###############################################################################
 
 job = {
-    'jobdefinition_id': v.Any(UUID, msg=INVALID_JOB_DEFINITION),
+    v.Optional('jobdefinition_id', default=None): v.Any(UUID,
+                                                        msg=INVALID_JOB_DEFINITION),  # noqa
     'remoteci_id': v.Any(UUID, msg=INVALID_REMOTE_CI),
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     'components': list,
