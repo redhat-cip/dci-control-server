@@ -55,6 +55,7 @@ _EMBED_MANY = {
     'jobdefinition.tests': True,
     'topic': False,
     'topic.tests': True,
+    'issues': True,
     'jobstates': True,
     'remoteci': False,
     'remoteci.tests': True,
