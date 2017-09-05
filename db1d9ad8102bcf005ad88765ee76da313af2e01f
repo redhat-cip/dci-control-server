@@ -1,0 +1,8 @@
+Code-Review+2: Dimitri Savineau <dsavinea@redhat.com>
+Workflow+1: Dimitri Savineau <dsavinea@redhat.com>
+Verified+2: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-by: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-at: Tue, 05 Sep 2017 20:13:41 +0000
+Reviewed-on: https://softwarefactory-project.io/r/9587
+Project: dci-control-server
+Branch: refs/heads/master
