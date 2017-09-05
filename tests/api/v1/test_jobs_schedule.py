@@ -19,8 +19,8 @@ from __future__ import unicode_literals
 import uuid
 
 
-def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id,
-                       topic_id):
+def test_schedule_jobs(admin, team_id, remoteci_id,
+                       topic_id, components_ids):
     headers = {
         'User-Agent': 'thisismyuseragent',
         'Client-Version': 'python-dciclient_0.1.0'
@@ -31,7 +31,7 @@ def test_schedule_jobs(admin, jobdefinition_id, team_id, remoteci_id,
 
     assert job.status_code == 201
     job = job.data['job']
-    assert job['jobdefinition_id'] == jobdefinition_id
+    assert job['topic_id'] == topic_id
     assert job['team_id'] == team_id
     assert job['remoteci_id'] == remoteci_id
     assert job['user_agent'] == headers['User-Agent']
@@ -52,8 +52,8 @@ def _create_components(user, topic_id, component_types):
     return component_ids
 
 
-def test_schedule_jobs_with_new_topic(admin, remoteci_id, team_admin_id,
-                                      product):
+def test_schedule_jobs_with_new_topic(admin, user, remoteci_user_id,
+                                      team_user_id, product):
 
     # create a new topic and schedule a new job
     data = {'name': 'new_topic', 'product_id': product['id'],
@@ -63,41 +63,22 @@ def test_schedule_jobs_with_new_topic(admin, remoteci_id, team_admin_id,
     _create_components(admin, new_topic_id, ['type_1', 'type_2'])
 
     # The team does not belongs to topic yet
-    job_scheduled = admin.post('/api/v1/jobs/schedule',
-                               data={'remoteci_id': remoteci_id,
-                                     'topic_id': new_topic_id})
+    job_scheduled = user.post('/api/v1/jobs/schedule',
+                              data={'remoteci_id': remoteci_user_id,
+                                    'topic_id': new_topic_id})
     assert job_scheduled.status_code == 412
 
     # Add the team to the topic
     admin.post('/api/v1/topics/%s/teams' % new_topic_id,
-               data={'team_id': team_admin_id})
-
-    # There is no jobdefinition for this topic yet
-    job_scheduled = admin.post('/api/v1/jobs/schedule',
-                               data={'remoteci_id': remoteci_id,
-                                     'topic_id': new_topic_id})
-    assert job_scheduled.status_code == 412
-
-    # Create a jobdefinition for this topic
-    data = {'topic_id': new_topic_id, 'name': 'name-ct', 'type': 'type_1',
-            'export_control': True}
-    cmpt = admin.post('/api/v1/components', data=data).data
-
-    data = {'name': 'pname', 'topic_id': new_topic_id,
-            'component_types': ['type_1']}
-    jd = admin.post('/api/v1/jobdefinitions', data=data).data
-    jd_id = jd['jobdefinition']['id']
-
-    data = {'component_id': cmpt['component']['id']}
-    admin.post('/api/v1/jobdefinitions/%s/components' % jd_id, data=data)
+               data={'team_id': team_user_id})
 
     # now schedule a job on that new topic
     job_scheduled = admin.post('/api/v1/jobs/schedule',
-                               data={'remoteci_id': remoteci_id,
+                               data={'remoteci_id': remoteci_user_id,
                                      'topic_id': new_topic_id})
     assert job_scheduled.status_code == 201
     job = job_scheduled.data['job']
-    assert job['jobdefinition_id'] == jd_id
+    assert job['topic_id'] == new_topic_id
 
 
 def test_schedule_job_with_remoteci_deactivated(admin, remoteci_id, topic_id):
@@ -108,19 +89,18 @@ def test_schedule_job_with_remoteci_deactivated(admin, remoteci_id, topic_id):
     assert job_scheduled.status_code == 412
 
 
-def test_schedule_jobs_not_active(admin, jobdefinition_id, remoteci_id,
-                                  topic_id):
-    """No active jobdefinition
+def test_schedule_jobs_topic_not_active(admin, remoteci_id, topic_id):
+    """No active topic
 
-    Only one inactive jobdefinition, scheduler should return::
+    Inactive topic, scheduler should return::
 
         No jobs available for run (412).
     """
-    jd = admin.get('/api/v1/jobdefinitions/%s' % jobdefinition_id).data
-    ppt = admin.put('/api/v1/jobdefinitions/%s' % jobdefinition_id,
+    tp = admin.get('/api/v1/topics/%s' % topic_id).data
+    ptp = admin.put('/api/v1/topics/%s' % topic_id,
                     data={'state': 'inactive'},
-                    headers={'If-match': jd['jobdefinition']['etag']})
-    assert ppt.status_code == 204
+                    headers={'If-match': tp['topic']['etag']})
+    assert ptp.status_code == 204
     job = admin.post('/api/v1/jobs/schedule',
                      data={'remoteci_id': remoteci_id,
                            'topic_id': topic_id})
@@ -252,8 +232,8 @@ def test_schedule_jobs_with_rconfiguration(admin, remoteci_id, topic_id,
 
 
 def test_schedule_jobs_round_robin_rconfiguration(admin, remoteci_id, topic_id,
-                                                  topic_user_id,
-                                                  jobdefinition_id):
+                                                  components_ids,
+                                                  topic_user_id):
 
     rconfiguration_1 = admin.post('/api/v1/remotecis/%s/rconfigurations' % remoteci_id,  # noqa
                                 data={'name': 'rconfig1',
@@ -266,7 +246,7 @@ def test_schedule_jobs_round_robin_rconfiguration(admin, remoteci_id, topic_id,
     rconfiguration_id_2 = rconfiguration_2.data['rconfiguration']['id']
 
     rconfiguration_3 = admin.post('/api/v1/remotecis/%s/rconfigurations' % remoteci_id,  # noqa
-                                  data={'name': 'rconfig2',
+                                  data={'name': 'rconfig3',
                                         'topic_id': topic_user_id})
     assert rconfiguration_3.status_code == 201
 
@@ -276,7 +256,18 @@ def test_schedule_jobs_round_robin_rconfiguration(admin, remoteci_id, topic_id,
     }
 
     # check round robin
-    for i in [rconfiguration_id_2, rconfiguration_id_1, rconfiguration_id_2]:
+    list_round_robin = [rconfiguration_id_1, rconfiguration_id_2]
+    # get the first rconfiguration id
+    job = admin.post('/api/v1/jobs/schedule', headers=headers,
+                     data={'remoteci_id': remoteci_id,
+                           'topic_id': topic_id})
+    assert job.status_code == 201
+    job = job.data
+    # if its the first rconfiguration then inverse list_round_robin
+    if job['job']['rconfiguration_id'] == rconfiguration_id_1:
+        list_round_robin = [rconfiguration_id_2, rconfiguration_id_1]
+
+    for i in list_round_robin:
         job = admin.post('/api/v1/jobs/schedule', headers=headers,
                          data={'remoteci_id': remoteci_id,
                                'topic_id': topic_id})
