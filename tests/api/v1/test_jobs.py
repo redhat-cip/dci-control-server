@@ -18,11 +18,14 @@ from __future__ import unicode_literals
 import mock
 import pytest
 import uuid
+import requests
 
 from dci.stores.swift import Swift
 from dci.common import utils
 from tests.data import JUNIT
 
+
+GITHUB_TRACKER = 'dci.trackers.github.requests'
 SWIFT = 'dci.stores.swift.Swift'
 
 
@@ -135,13 +138,42 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
             'team_id': team_id,
             'remoteci_id': remoteci_id,
             'components': components_ids}
-    admin.post('/api/v1/jobs', data=data)
-    admin.post('/api/v1/jobs', data=data)
+    job_1 = admin.post('/api/v1/jobs', data=data)
+    job_2 = admin.post('/api/v1/jobs', data=data)
+
+    # Create two ISSUES
+    with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
+
+        mock_github_result = mock.Mock()
+        mock_github_request.get.return_value = mock_github_result
+
+        mock_github_result.status_code = 200
+        mock_github_result.json.return_value = {
+            'number': 1,  # issue_id
+            'title': 'Create a GET handler for /componenttype/<ct_name>',
+            'user': {'login': 'Spredzy'},  # reporter
+            'assignee': None,
+            'state': 'closed',  # status
+            'product': 'redhat-cip',
+            'component': 'dci-control-server',
+            'created_at': '2015-12-09T09:29:26Z',
+            'updated_at': '2015-12-18T15:19:41Z',
+            'closed_at': '2015-12-18T15:19:41Z',
+        }
+
+        data = {
+            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
+        }
+        admin.post('/api/v1/jobs/%s/issues' % job_1.data['job']['id'],
+                   data=data).data
+        admin.post('/api/v1/jobs/%s/issues' % job_2.data['job']['id'],
+                   data=data).data
 
     # verify embed with all embedded options
     query_embed = ('/api/v1/jobs?embed='
-                   'team,remoteci,jobdefinition,jobstates')
+                   'team,remoteci,jobdefinition,jobstates,issues')
     jobs = admin.get(query_embed).data
+
 
     for job in jobs['jobs']:
         assert 'team' in job
@@ -151,6 +183,7 @@ def test_get_all_jobs_with_embed(admin, jobdefinition_id, team_id,
         assert job['jobdefinition']['id'] == jobdefinition_id
         assert job['jobdefinition_id'] == job['jobdefinition']['id']
         assert 'remoteci' in job
+        assert 'issues' in job
         assert job['remoteci']['id'] == remoteci_id
         assert job['remoteci_id'] == job['remoteci']['id']
 
