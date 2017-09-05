@@ -452,8 +452,7 @@ class TestJob(utils.SchemaTesting):
         super(TestJob, self).test_post_extra_data(data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('jobdefinition_id',
-                                       'remoteci_id', 'components')
+        errors = utils.generate_errors('remoteci_id', 'components')
         super(TestJob, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
