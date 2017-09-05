@@ -60,7 +60,9 @@ _EMBED_MANY = {
     'remoteci.tests': True,
     'components': True,
     'team': False,
-    'results': True}
+    'results': True,
+    'rconfiguration': False,
+}
 
 
 @api.route('/jobs', methods=['POST'])

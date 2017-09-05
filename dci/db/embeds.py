@@ -36,6 +36,7 @@ TEAM = models.TEAMS.alias('team')
 PRODUCT = models.PRODUCTS.alias('product')
 REMOTECI = models.REMOTECIS.alias('remoteci')
 CFILES = models.COMPONENT_FILES.alias('files')
+RCONFIGURATION = models.REMOTECIS_RCONFIGURATIONS.alias('rconfiguration')
 
 JOB = models.JOBS.alias('job')
 JOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(JOB, ['configuration'])  # noqa
@@ -130,7 +131,12 @@ def jobs(root_select=models.JOBS):
         'results': [
             {'right': TESTS_RESULTS,
              'onclause': TESTS_RESULTS.c.job_id == root_select.c.id,
-             'isouter': True}]
+             'isouter': True}],
+        'rconfiguration': [
+            {'right': RCONFIGURATION,
+             'onclause': and_(root_select.c.rconfiguration_id == RCONFIGURATION.c.id,  # noqa
+                              RCONFIGURATION.c.state != 'archived'),
+             'isouter': True}],
     }
 
 
@@ -380,7 +386,9 @@ EMBED_STRING_TO_OBJECT = {
         'remoteci.tests': REMOTECI_TESTS,
         'components': models.COMPONENTS,
         'team': TEAM,
-        'results': TESTS_RESULTS},
+        'results': TESTS_RESULTS,
+        'rconfiguration': RCONFIGURATION,
+    },
     'remotecis': {
         'team': TEAM,
         'users': models.USERS,
