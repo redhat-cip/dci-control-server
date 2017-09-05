@@ -50,9 +50,6 @@ _EMBED_MANY = {
 @api.route('/components', methods=['POST'])
 @decorators.login_required
 def create_components(user):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     values = v1_utils.common_values_dict(user)
     values.update(schemas.component.post(flask.request.json))
 
