@@ -130,6 +130,13 @@ def jobs(root_select=models.JOBS):
         'results': [
             {'right': TESTS_RESULTS,
              'onclause': TESTS_RESULTS.c.job_id == root_select.c.id,
+             'isouter': True}],
+        'issues': [
+            {'right': models.JOIN_JOBS_ISSUES,
+             'onclause': models.JOIN_JOBS_ISSUES.c.job_id == root_select.c.id,  # noqa
+             'isouter': True},
+            {'right': models.ISSUES,
+             'onclause': and_(models.ISSUES.c.id == models.JOIN_JOBS_ISSUES.c.issue_id),  # noqa
              'isouter': True}]
     }
 
@@ -375,6 +382,7 @@ EMBED_STRING_TO_OBJECT = {
         'jobdefinition.tests': JOBDEFINITION_TESTS,
         'topic': TOPIC,
         'topic.tests': TOPIC_TESTS,
+        'issues': models.ISSUES,
         'jobstates': models.JOBSTATES,
         'remoteci': REMOTECI,
         'remoteci.tests': REMOTECI_TESTS,
