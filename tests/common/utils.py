@@ -95,11 +95,6 @@ PRODUCT = 'product_id', ID[1]
 INVALID_PRODUCT = 'product_id', INVALID_ID
 INVALID_PRODUCT_ERROR = 'product_id', schemas.INVALID_PRODUCT
 
-JOB_DEFINITION = 'jobdefinition_id', ID[1]
-INVALID_JOB_DEFINITION = 'jobdefinition_id', INVALID_ID
-INVALID_JOB_DEFINITION_ERROR = ('jobdefinition_id',
-                                schemas.INVALID_JOB_DEFINITION)
-
 RCONFIGURATION = 'rconfiguration_id', ID[1]
 INVALID_RCONFIGURATION = 'topic_id', INVALID_ID
 INVALID_RCONFIGURATION_ERROR = 'topic_id', schemas.INVALID_TOPIC

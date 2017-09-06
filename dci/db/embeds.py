@@ -27,10 +27,7 @@ def ignore_columns_from_table(table, ignored_columns):
 # These functions should be called by v1_utils.QueryBuilder
 
 # Create necessary aliases
-JOBDEFINITION = models.JOBDEFINITIONS.alias('jobdefinition')
-
 REMOTECI_TESTS = models.TESTS.alias('remoteci.tests')
-JOBDEFINITION_TESTS = models.TESTS.alias('jobdefinition.tests')
 TOPIC_TESTS = models.TESTS.alias('topic.tests')
 TEAM = models.TEAMS.alias('team')
 PRODUCT = models.PRODUCTS.alias('product')
@@ -75,21 +72,9 @@ def jobs(root_select=models.JOBS):
             {'right': models.METAS,
              'onclause': models.METAS.c.job_id == root_select.c.id,
              'isouter': True}],
-        'jobdefinition': [
-            {'right': JOBDEFINITION,
-             'onclause': and_(root_select.c.jobdefinition_id == JOBDEFINITION.c.id,  # noqa
-                              JOBDEFINITION.c.state != 'archived')}],
         'jobstates': [
             {'right': models.JOBSTATES,
              'onclause': models.JOBSTATES.c.job_id == root_select.c.id,
-             'isouter': True}],
-        'jobdefinition.tests': [
-            {'right': models.JOIN_JOBDEFINITIONS_TESTS,
-             'onclause': models.JOIN_JOBDEFINITIONS_TESTS.c.jobdefinition_id == JOBDEFINITION.c.id,  # noqa
-             'isouter': True},
-            {'right': JOBDEFINITION_TESTS,
-             'onclause': and_(models.JOIN_JOBDEFINITIONS_TESTS.c.test_id == JOBDEFINITION_TESTS.c.id,  # noqa
-                              JOBDEFINITION_TESTS.c.state != 'archived'),
              'isouter': True}],
         'topic': [
             {'right': TOPIC,
@@ -241,15 +226,6 @@ def files(root_select=models.FILES):
     }
 
 
-def jobdefinitions(root_select=models.JOBDEFINITIONS):
-    return {
-        'topic': [
-            {'right': TOPIC,
-             'onclause': root_select.c.topic_id == TOPIC.c.id}
-        ]
-    }
-
-
 def jobstates(root_select=models.JOBSTATES):
     return {
         'files': [
@@ -376,9 +352,6 @@ EMBED_STRING_TO_OBJECT = {
     'jobs': {
         'files': models.FILES,
         'metas': models.METAS,
-        # todo(yassine): will be removed when the client will not rely on
-        'jobdefinition': JOBDEFINITION,
-        'jobdefinition.tests': JOBDEFINITION_TESTS,
         'topic': TOPIC,
         'topic.tests': TOPIC_TESTS,
         'jobstates': models.JOBSTATES,
@@ -404,9 +377,6 @@ EMBED_STRING_TO_OBJECT = {
         'jobstate.job': JOBSTATEJOBS_WITHOUT_CONFIGURATION,
         'job': JOB_WITHOUT_CONFIGURATION,
         'team': TEAM},
-    'jobdefinitions': {
-        'topic': TOPIC
-    },
     'jobstates': {
         'files': models.FILES,
         'job': JOB_WITHOUT_CONFIGURATION,
@@ -444,7 +414,6 @@ EMBED_JOINS = {
     'remotecis': remotecis,
     'components': components,
     'files': files,
-    'jobdefinitions': jobdefinitions,
     'jobstates': jobstates,
     'products': products,
     'roles': roles,

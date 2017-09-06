@@ -54,7 +54,7 @@ gcontext = dci_context.build_dci_context(
 # and get the first status to have the last status of a remoteci.
 print("[*] Get all jobs")
 ljobs = [r for r in base.iter(gcontext, 'jobs', sort='-created_at',
-                              embed='components,jobdefinition', limit=128)]
+                              embed='components', limit=128)]
 
 # get all topics to get the association topic_id -> topic_name
 # which will be used below
@@ -86,7 +86,7 @@ for current_remoteci in lremotecis:
 results = {}
 
 for current_job in ljobs:
-    topic_id = current_job['jobdefinition']['topic_id']
+    topic_id = current_job['topic_id']
     if topic_id not in results:
         results[topic_id] = {}
 
