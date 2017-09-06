@@ -230,11 +230,6 @@ def test_delete_team_archive_dependencies(admin, product):
     topic_id = topic.data['topic']['id']
     assert topic.status_code == 201
 
-    jd = admin.post('/api/v1/jobdefinitions',
-                    data={'name': 'pname', 'topic_id': topic_id})
-    jobdefinition_id = jd.data['jobdefinition']['id']
-    assert jd.status_code == 201
-
     data = {
         'name': 'pname',
         'type': 'gerrit_review',
@@ -246,7 +241,7 @@ def test_delete_team_archive_dependencies(admin, product):
     component_id = component.data['component']['id']
     assert component.status_code == 201
 
-    data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
+    data = {'team_id': team_id,
             'remoteci_id': remoteci_id, 'comment': 'kikoolol',
             'components': [component_id]}
     job = admin.post('/api/v1/jobs', data=data)
