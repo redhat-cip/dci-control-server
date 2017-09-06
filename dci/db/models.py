@@ -257,7 +257,7 @@ JOBS = sa.Table(
     sa.Index('jobs_jobdefinition_id_idx', 'jobdefinition_id'),
     sa.Column('topic_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('topics.id', ondelete='CASCADE'),
-              # Will be False when jobdefinition will be removed
+              # todo(yassine): nullable=False
               nullable=True),
     sa.Index('jobs_topic_id_idx', 'topic_id'),
     sa.Column('remoteci_id', pg.UUID(as_uuid=True),
