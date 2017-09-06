@@ -50,9 +50,6 @@ _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
     'files': True,
     'metas': True,
-    # todo(yassine): will be removed when the client will not rely on
-    'jobdefinition': False,
-    'jobdefinition.tests': True,
     'topic': False,
     'topic.tests': True,
     'jobstates': True,
@@ -84,6 +81,9 @@ def create_jobs(user):
     values.update({
         'status': 'new',
         'configuration': {},
+        # todo(yassine): will be removed once jobdefinition is removed from
+        # the db model
+        'jobdefinition_id': None,
         'topic_id': values['topic_id'],
         'rconfiguration_id': values['rconfiguration_id'],
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
@@ -233,7 +233,7 @@ def _build_new_template(topic_id, remoteci, components_ids, values,
             source = ' rconfiguration %s' % rconfiguration['id']
         if len(components_ids) != len(component_types):
             msg = 'The number of component ids does not match the number ' \
-                  'of component types of %s' % source
+                  'of component types of %s %s %s' % (source, len(components_ids), len(component_types))
             raise dci_exc.DCIException(msg, status_code=412)
 
         # get the components from their ids

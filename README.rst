@@ -284,12 +284,6 @@ resource url: ``/api/v1/components/<component_id>``
 
   * response: 204
 
-Jobs priorities
-~~~~~~~~~~~~~~~
-
-Each jobdefinition contains a 'priority' attribute which is used to weight it.
-When an agent requests a new job then the server will sort the jobdefinition
-by using the 'priority' attribute in order to select one.
 
 License
 -------

@@ -85,7 +85,6 @@ INVALID_PRODUCT = 'not a valid product id'
 INVALID_TEAM = 'not a valid team id'
 INVALID_TEST = 'not a valid test id'
 INVALID_TOPIC = 'not a valid topic id'
-INVALID_JOB_DEFINITION = 'not a valid jobdefinition id'
 INVALID_REMOTE_CI = 'not a valid remoteci id'
 INVALID_RCONFIGURATION = 'not a valid rconfiguration'
 INVALID_JOB = 'not a valid job id'
@@ -313,31 +312,6 @@ component = DCISchema(schema_factory(component).post,
 
 ###############################################################################
 #                                                                             #
-#                           Job Definition schemas                            #
-#                                                                             #
-###############################################################################
-
-jobdefinition = utils.dict_merge(base, {
-    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
-    v.Optional('comment', default=None): six.text_type,
-    v.Optional('component_types', default=[]): list,
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-})
-
-jobdefinition_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('comment'): six.text_type,
-    v.Optional('component_types'): list,
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
-}
-
-jobdefinition = DCISchema(schema_factory(jobdefinition).post,
-                          Schema(jobdefinition_put))
-
-###############################################################################
-#                                                                             #
 #                             Remote CI schemas                               #
 #                                                                             #
 ###############################################################################
@@ -375,7 +349,6 @@ remoteci_user = schema_factory(remoteci_user)
 ###############################################################################
 
 job = {
-    'jobdefinition_id': v.Any(UUID, msg=INVALID_JOB_DEFINITION),
     'remoteci_id': v.Any(UUID, msg=INVALID_REMOTE_CI),
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     'components': list,
@@ -425,7 +398,6 @@ job_schedule_template = {
 job_schedule_template = schema_factory(job_schedule_template)
 
 job_search = {
-    'jobdefinition_id': v.Any(UUID, msg=INVALID_JOB_DEFINITION),
     # todo(yassine): validate configuration structure
     'configuration': dict
 }

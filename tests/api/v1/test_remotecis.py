@@ -89,9 +89,6 @@ def test_get_all_remotecis_with_last_job(admin, team_id, remoteci_id,
     idle_remoteci_id = idle_remoteci['remoteci']['id']
     admin.post('/api/v1/topics/%s/teams' % topic_id,
                data={'team_id': team_id})
-    data = {'name': 'foo', 'topic_id': topic_id,
-            'component_types': ['type_1', 'type_2', 'type_3']}
-    admin.post('/api/v1/jobdefinitions', data=data).data
     remotecis = admin.get((
         '/api/v1/remotecis?embed='
         'team,'
@@ -385,11 +382,11 @@ def test_delete_remoteci_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_remoteci_archive_dependencies(admin, jobdefinition_id,
-                                              team_id, remoteci_id,
+def test_delete_remoteci_archive_dependencies(admin, team_id, remoteci_id,
                                               components_ids):
-    data = {'jobdefinition_id': jobdefinition_id, 'team_id': team_id,
-            'remoteci_id': remoteci_id, 'comment': 'kikoolol',
+    data = {'team_id': team_id,
+            'remoteci_id': remoteci_id,
+            'comment': 'kikoolol',
             'components': components_ids}
     job = admin.post('/api/v1/jobs', data=data)
     assert job.status_code == 201
@@ -505,19 +502,19 @@ def test_add_test_to_remoteci_and_get(admin, test_id, team_user_id):
 
 
 def test_delete_test_from_remoteci(admin, test_id, team_user_id):
-    # create a jobdefinition
+    # create a remoteci
     data = {'name': 'pname', 'team_id': team_user_id}
     pr = admin.post('/api/v1/remotecis', data=data).data
     pr_id = pr['remoteci']['id']
 
-    # check that the jobdefinition a as test attached
+    # check that the remoteci has tests attached
     url = '/api/v1/remotecis/%s/tests' % pr_id
     admin.post(url, data={'test_id': test_id})
     test_from_remoteci = admin.get(
         '/api/v1/remotecis/%s/tests' % pr_id).data
     assert test_from_remoteci['_meta']['count'] == 1
 
-    # unattach test from jobdefinition
+    # unattach test from remoteci
     admin.delete('/api/v1/remotecis/%s/tests/%s' % (pr_id, test_id))
     test_from_remoteci = admin.get(url).data
     assert test_from_remoteci['_meta']['count'] == 0

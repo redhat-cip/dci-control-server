@@ -261,7 +261,7 @@ class QueryBuilder(object):
             left = embed_elem.split('.')[0]
             if embed_elem not in valid_embed:
                 raise dci_exc.DCIException(
-                    'Invalid embed list',
+                    'Invalid embed element %s' % embed_elem,
                     payload={'Valid elements': valid_embed}
                 )
             if left not in embed_list:
