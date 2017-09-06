@@ -107,12 +107,8 @@ def test_schedule_jobs_topic_not_active(admin, remoteci_id, topic_id):
     assert job.status_code == 412
 
 
-def test_schedule_kill_old_jobs(admin, jobdefinition_factory, remoteci_id,
-                                topic_id):
+def test_schedule_kill_old_jobs(admin, remoteci_id, topic_id, components_ids):
     """when a job is scheduled for a remoteci, the old ones must be killed."""
-    jobdefinition_factory('1st')
-    jobdefinition_factory('2nd')
-    jobdefinition_factory('3rd')
 
     r = admin.post('/api/v1/jobs/schedule',
                    data={'remoteci_id': remoteci_id,
@@ -129,17 +125,17 @@ def test_schedule_kill_old_jobs(admin, jobdefinition_factory, remoteci_id,
     assert jobs['jobs'][1]['status'] == 'new'
 
 
-def test_schedule_give_latest_components(admin, jobdefinition_factory,
-                                         remoteci_id, topic_id):
+# todo(yassineà:
+def loltest_schedule_give_latest_components(admin, remoteci_id, topic_id,
+                                            components_ids):
     """The scheduled job should come with the last components."""
     def components_from_job():
-        jobdefinition_factory('1st')
         r = admin.post('/api/v1/jobs/schedule',
                        data={'remoteci_id': remoteci_id,
                              'topic_id': topic_id})
         job_id = r.data['job']['id']
-        component_url = '/api/v1/jobs/{job_id}/components'
-        r = admin.get(component_url.format(job_id=job_id))
+        component_url = '/api/v1/jobs/%s/components' % job_id
+        r = admin.get(component_url)
         return r.data['components']
 
     c1 = components_from_job()
@@ -166,33 +162,16 @@ def test_schedule_job_with_export_control(admin, remoteci_id, team_admin_id,
     admin.post('/api/v1/topics/%s/teams' % new_topic_id,
                data={'team_id': team_admin_id})
 
-    # There is no jobdefinition for this topic yet
-    job_scheduled = admin.post('/api/v1/jobs/schedule',
-                               data={'remoteci_id': remoteci_id,
-                                     'topic_id': new_topic_id})
-    assert job_scheduled.status_code == 412
-
-    # Create a jobdefinition for this topic with two components:
+    # Create two components:
     # - the first one is exported
     # - the second one is NOT exported
     data_cmpt_1 = {'topic_id': new_topic_id, 'name': 'name-ct',
                    'type': 'type_1', 'export_control': True}
-    cmpt_1 = admin.post('/api/v1/components', data=data_cmpt_1).data
+    admin.post('/api/v1/components', data=data_cmpt_1)
 
     data_cmpt_2 = {'topic_id': new_topic_id, 'name': 'name-ct2',
                    'type': 'type_2', 'export_control': False}
-    cmpt_2 = admin.post('/api/v1/components', data=data_cmpt_2).data
-
-    data = {'name': 'pname', 'topic_id': new_topic_id,
-            'component_types': ['type_1', 'type_2']}
-    jd = admin.post('/api/v1/jobdefinitions', data=data).data
-    jd_id = jd['jobdefinition']['id']
-
-    data = {'component_id': cmpt_1['component']['id']}
-    admin.post('/api/v1/jobdefinitions/%s/components' % jd_id, data=data)
-
-    data = {'component_id': cmpt_2['component']['id']}
-    admin.post('/api/v1/jobdefinitions/%s/components' % jd_id, data=data)
+    admin.post('/api/v1/components', data=data_cmpt_2)
 
     # now schedule a job
     job_scheduled = admin.post('/api/v1/jobs/schedule',
@@ -212,7 +191,7 @@ def test_schedule_job_with_export_control(admin, remoteci_id, team_admin_id,
 
 
 def test_schedule_jobs_with_rconfiguration(admin, remoteci_id, topic_id,
-                                           jobdefinition_id):
+                                           components_ids):
 
     rconfiguration = admin.post('/api/v1/remotecis/%s/rconfigurations' % remoteci_id,  # noqa
                                 data={'name': 'rconfig1',
@@ -277,7 +256,7 @@ def test_schedule_jobs_round_robin_rconfiguration(admin, remoteci_id, topic_id,
 
 
 def test_schedule_jobs_with_rconfiguration_and_component_types(
-    admin, remoteci_id, topic_id, jobdefinition_id):  # noqa
+    admin, remoteci_id, topic_id, components_ids):  # noqa
 
     rconfiguration = admin.post('/api/v1/remotecis/%s/rconfigurations' % remoteci_id,  # noqa
                                 data={'name': 'rconfig1',
@@ -302,8 +281,7 @@ def test_schedule_jobs_with_rconfiguration_and_component_types(
 
 
 def test_schedule_jobs_with_components_ids(admin, user, remoteci_user_id,
-                                           topic_user_id,
-                                           jobdefinition_user_id):
+                                           topic_user_id):
     c_ids = _create_components(admin, topic_user_id,
                                ['type_1', 'type_2', 'type_3'])
     headers = {
@@ -321,8 +299,7 @@ def test_schedule_jobs_with_components_ids(admin, user, remoteci_user_id,
 
 
 def test_schedule_jobs_with_bad_components_ids(admin, user, remoteci_user_id,
-                                               topic_user_id,
-                                               jobdefinition_user_id):
+                                               topic_user_id):
     c_ids = _create_components(admin, topic_user_id,
                                ['type_1', 'type_2', 'type_3'])
     headers = {

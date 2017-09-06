@@ -194,7 +194,7 @@ def test_get_file_with_embed(admin, jobstate_id, team_admin_id):
         assert file == file_embed
 
 
-def test_get_jobdefinition_with_embed_not_valid(admin, jobstate_id):
+def test_get_file_with_embed_not_valid(admin, jobstate_id):
     file_id = post_file(admin, jobstate_id, FileDesc('name', ''))
     file = admin.get('/api/v1/files/%s?embed=mdr' % file_id)
     assert file.status_code == 400

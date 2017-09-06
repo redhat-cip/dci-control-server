@@ -20,10 +20,6 @@ def test_metrics_admin(admin, remoteci_id, team_id, product):
                    data={'name': 'foo', 'product_id': product['id'],
                          'component_types': ['type1', 'type2']}).data
     t_id = t['topic']['id']
-    jd = admin.post('/api/v1/jobdefinitions',
-                    data={'name': 'jd_foo',
-                          'topic_id': t_id}).data
-    jd_id = jd['jobdefinition']['id']
     admin.post('/api/v1/components',
                data={'name': '2017-05-27.1',
                      'type': 'type_1',
@@ -36,12 +32,10 @@ def test_metrics_admin(admin, remoteci_id, team_id, product):
     admin.post('/api/v1/topics',
                data={'name': 'bar', 'product_id': product['id'],
                      'component_types': ['type1', 'type2']})
-    admin.post('/api/v1/jobs', data={'jobdefinition_id': jd_id,
-                                     'team_id': team_id,
+    admin.post('/api/v1/jobs', data={'team_id': team_id,
                                      'remoteci_id': remoteci_id,
                                      'components': [c_id]})
-    admin.post('/api/v1/jobs', data={'jobdefinition_id': jd_id,
-                                     'team_id': team_id,
+    admin.post('/api/v1/jobs', data={'team_id': team_id,
                                      'remoteci_id': remoteci_id,
                                      'components': [c_id]})
     res = admin.get('/api/v1/metrics/topics')
