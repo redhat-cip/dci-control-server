@@ -21,7 +21,6 @@ from sqlalchemy import sql, func
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import components
-from dci.api.v1 import jobdefinitions
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci import decorators
@@ -159,16 +158,14 @@ def delete_topic_by_id(user, topic_id):
         if not result.rowcount:
             raise dci_exc.DCIDeleteConflict('Topic', topic_id)
 
-        for model in [models.COMPONENTS, models.JOBDEFINITIONS]:
-            query = model.update().where(model.c.topic_id == topic_id).values(
-                **values
-            )
-            flask.g.db_conn.execute(query)
+        query = models.COMPONENTS.update().where(
+            models.COMPONENTS.c.topic_id == topic_id).values(**values)
+        flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
 
 
-# components, jobdefinitions, tests GET
+# components, tests GET
 @api.route('/topics/<uuid:topic_id>/components', methods=['GET'])
 @decorators.login_required
 def get_all_components(user, topic_id):
@@ -246,14 +243,6 @@ def get_jobs_status_from_components(user, topic_id, type_id):
 
     return flask.jsonify({'jobs': rcs,
                           '_meta': {'count': nb_row}})
-
-
-@api.route('/topics/<uuid:topic_id>/jobdefinitions', methods=['GET'])
-@decorators.login_required
-def get_all_jobdefinitions_by_topic(user, topic_id):
-    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
-    v1_utils.verify_team_in_topic(user, topic_id)
-    return jobdefinitions.list_jobdefinitions(user, [topic_id], by_topic=True)
 
 
 @api.route('/topics/<uuid:topic_id>/tests', methods=['GET'])

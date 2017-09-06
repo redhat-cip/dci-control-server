@@ -34,7 +34,6 @@ import dci.api.v1.base  # noqa
 import dci.api.v1.components  # noqa
 import dci.api.v1.files  # noqa
 import dci.api.v1.files_events  # noqa
-import dci.api.v1.jobdefinitions  # noqa
 import dci.api.v1.jobs  # noqa
 import dci.api.v1.jobstates  # noqa
 import dci.api.v1.metrics  # noqa

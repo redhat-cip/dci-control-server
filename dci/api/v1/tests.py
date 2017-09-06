@@ -20,7 +20,6 @@ from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import base
-from dci.api.v1 import jobdefinitions
 from dci.api.v1 import remotecis
 from dci.api.v1 import utils as v1_utils
 from dci import auth
@@ -114,15 +113,6 @@ def get_test_by_id(user, t_id):
         raise auth.UNAUTHORIZED
     res = flask.jsonify({'test': test})
     return res
-
-
-@api.route('/tests/<uuid:t_id>/jobdefinitions', methods=['GET'])
-@decorators.login_required
-def get_jobdefinitions_by_test(user, test_id):
-    test = v1_utils.verify_existence_and_get(test_id, _TABLE)
-    if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
-        raise auth.UNAUTHORIZED
-    return jobdefinitions.get_all_jobdefinitions(test['id'])
 
 
 @api.route('/tests/<uuid:t_id>/remotecis', methods=['GET'])
