@@ -1,0 +1,9 @@
+Code-Review+2: Cédric Lecomte <ced.lecomte@gmail.com>
+Code-Review+2: Dimitri Savineau <dsavinea@redhat.com>
+Workflow+1: Dimitri Savineau <dsavinea@redhat.com>
+Verified+2: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-by: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-at: Thu, 07 Sep 2017 15:36:30 +0000
+Reviewed-on: https://softwarefactory-project.io/r/9171
+Project: dci-control-server
+Branch: refs/heads/master
