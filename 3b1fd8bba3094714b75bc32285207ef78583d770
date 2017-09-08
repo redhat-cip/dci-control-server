@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_ba6d8dce",
+        "filename": "dci/api/v1/fingerprints.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 145,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-09-08T19:45:12Z",
+      "side": 1,
+      "message": "Could we move the search part in /jobs? I would love to be able to do things like:\n\ndcictl job-search \u0027mError.*ironic\u0027",
+      "revId": "3b1fd8bba3094714b75bc32285207ef78583d770",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_9a72c9ac",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-09-08T19:45:12Z",
+      "side": 1,
+      "message": "I\u0027m afraid we will flood the job list with all these internal meta data. Just some ideas, could we:\n\n- have some hidden meta, e.g: the ones starting with a _ or with a hidden\u003d\u003dTrue flag\n- use a new table to trace the information\n- use the journal table to trace the information, like what Yassine did for the DCI-\u003eES sync\n\nThis being said, I don\u0027t think this is a block at this point.",
+      "revId": "3b1fd8bba3094714b75bc32285207ef78583d770",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
