@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_fddc1f1a",
+        "filename": "dci/api/v1/fingerprints.py",
+        "patchSetId": 19
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-09-11T13:38:28Z",
+      "side": 1,
+      "message": "Looks like it\u0027s more interesting to have \n/topics/\u003ctopic-id\u003e/fingerprint instead of getting all fingerprints since a fingerprint belongs to a topic.\n\nwdyt ?",
+      "revId": "bb96c4b7dff91dca67e8ed931f07541622a8c217",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
