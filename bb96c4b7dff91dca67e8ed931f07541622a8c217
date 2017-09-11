@@ -16,6 +16,23 @@
       "revId": "bb96c4b7dff91dca67e8ed931f07541622a8c217",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_fd2adfe6",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 19
+      },
+      "lineNbr": 661,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-09-11T14:00:00Z",
+      "side": 1,
+      "message": "It seems that fingerprint must be provided with a specific field https://softwarefactory-project.io/r/#/c/9261/13/dci/api/v1/fingerprints.py@156\n\nCould you enforce or at least add a TODO to enforce this structure.",
+      "revId": "bb96c4b7dff91dca67e8ed931f07541622a8c217",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
