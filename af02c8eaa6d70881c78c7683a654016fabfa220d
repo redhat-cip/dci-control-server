@@ -22,6 +22,29 @@
       "revId": "af02c8eaa6d70881c78c7683a654016fabfa220d",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_c09e1407",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-09-12T13:56:51Z",
+      "side": 1,
+      "message": "What about?\n\n    if auth.is_product_owner(user):\n        where_clause \u003d sql.or_(\n            _TABLE.c.parent_id \u003d\u003d user[\u0027team_id\u0027],\n            _TABLE.c.id \u003d\u003d user[\u0027team_id\u0027]\n        )\n        query.add_extra_condition(where_clause)\n    if auth.is_admin_or_user(user):\n        query.add_extra_condition(_TABLE.c.id \u003d\u003d user[\u0027team_id\u0027])",
+      "range": {
+        "startLine": 74,
+        "startChar": 0,
+        "endLine": 82,
+        "endChar": 65
+      },
+      "revId": "af02c8eaa6d70881c78c7683a654016fabfa220d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
