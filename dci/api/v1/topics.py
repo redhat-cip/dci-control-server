@@ -297,6 +297,7 @@ def get_all_tests(user, topic_id):
 def add_test_to_topic(user, topic_id):
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
+    # todo(yassine): enforce test_id presence in the data
     data_json = flask.request.json
     values = {'topic_id': topic_id,
               'test_id': data_json.get('test_id', None)}
@@ -318,12 +319,12 @@ def add_test_to_topic(user, topic_id):
 def delete_test_from_topic(user, t_id, test_id):
     if not auth.is_admin(user):
         v1_utils.verify_team_in_topic(user, t_id)
-    v1_utils.verify_existence_and_get(test_id, _TABLE)
+    v1_utils.verify_existence_and_get(test_id, models.TESTS)
 
-    JDC = models.JOIN_REMOTECIS_TESTS
-    where_clause = sql.and_(JDC.c.topic_id == t_id,
-                            JDC.c.test_id == test_id)
-    query = JDC.delete().where(where_clause)
+    JTT = models.JOIN_TOPICS_TESTS
+    where_clause = sql.and_(JTT.c.topic_id == t_id,
+                            JTT.c.test_id == test_id)
+    query = JTT.delete().where(where_clause)
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
