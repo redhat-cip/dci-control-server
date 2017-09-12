@@ -22,6 +22,8 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import components
 from dci.api.v1 import jobdefinitions
+from dci.api.v1 import products
+from dci.api.v1 import teams
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci import decorators
@@ -44,7 +46,8 @@ _EMBED_MANY = {
 @api.route('/topics', methods=['POST'])
 @decorators.login_required
 def create_topics(user):
-    if not auth.is_admin(user):
+    if user['role_id'] not in [auth.get_role_id('SUPER_ADMIN'),
+                               auth.get_role_id('PRODUCT_OWNER')]:
         raise auth.UNAUTHORIZED
 
     values = v1_utils.common_values_dict(user)
@@ -71,13 +74,19 @@ def create_topics(user):
 def get_topic_by_id(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
-    v1_utils.verify_team_in_topic(user, topic_id)
-    if not auth.is_admin(user):
+    product_id = products._get_all_products(user)[0][0]
+    if str(topic[7]) != str(product_id):
+        raise auth.UNAUTHORIZED
+
+    if user['role_id'] not in [auth.get_role_id('SUPER_ADMIN'),
+                               auth.get_role_id('PRODUCT_OWNER')]:
         if 'teams' in args['embed']:
             raise dci_exc.DCIException('embed=teams not authorized.',
                                        status_code=401)
 
-    return base.get_resource_by_id(user, topic, _TABLE, _EMBED_MANY)
+    allowed_teams = [str(item[0]) for item in teams._get_all_teams(user)]
+    return base.get_resource_by_id(user, topic, _TABLE, _EMBED_MANY,
+                                   allowed_teams=allowed_teams)
 
 
 @api.route('/topics', methods=['GET'])
@@ -87,11 +96,15 @@ def get_all_topics(user):
     # if the user is an admin then he can get all the topics
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
-    if not auth.is_admin(user):
+    product_id = products._get_all_products(user)[0][0]
+
+    if user['role_id'] not in [auth.get_role_id('SUPER_ADMIN'),
+                               auth.get_role_id('PRODUCT_OWNER')]:
         if 'teams' in args['embed']:
             raise dci_exc.DCIException('embed=teams not authorized.',
                                        status_code=401)
-        query.add_extra_condition(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))  # noqa
+
+    query.add_extra_condition(_TABLE.c.product_id == product_id)
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
     # get the number of rows for the '_meta' section
@@ -111,20 +124,19 @@ def put_topic(user, topic_id):
 
     values = schemas.topic.put(flask.request.json)
 
-    if not auth.is_admin(user):
+    if user['role_id'] not in [auth.get_role_id('SUPER_ADMIN'),
+                               auth.get_role_id('PRODUCT_OWNER')]:
         raise auth.UNAUTHORIZED
 
-    def _verify_team_in_topic(user, topic_id):
-        topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE,
-                                                     get_id=True)
-        # verify user's team in the topic
-        v1_utils.verify_team_in_topic(user, topic_id)
-        return topic_id
-
-    topic_id = _verify_team_in_topic(user, topic_id)
+    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    product_id = products._get_all_products(user)[0][0]
+    if str(topic[7]) != str(product_id):
+        raise auth.UNAUTHORIZED
 
     if 'next_topic' in values and values['next_topic']:
-        _verify_team_in_topic(user, values['next_topic'])
+        topic = v1_utils.verify_existence_and_get(values['next_topic'], _TABLE)
+        if str(topic[7]) != str(product_id):
+            raise auth.UNAUTHORIZED
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
@@ -144,23 +156,24 @@ def put_topic(user, topic_id):
 @api.route('/topics/<uuid:topic_id>', methods=['DELETE'])
 @decorators.login_required
 def delete_topic_by_id(user, topic_id):
-    if not(auth.is_admin(user)):
-        raise auth.UNAUTHORIZED
+    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    product_id = products._get_all_products(user)[0][0]
 
-    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
+    if not (user['role_id'] == auth.get_role_id('SUPER_ADMIN') or (user['role_id'] == auth.get_role_id('PRODUCT_OWNER') and str(topic[7]) == str(product_id))):
+        raise auth.UNAUTHORIZED
 
     with flask.g.db_conn.begin():
         values = {'state': 'archived'}
-        where_clause = sql.and_(_TABLE.c.id == topic_id)
+        where_clause = sql.and_(_TABLE.c.id == topic.id)
         query = _TABLE.update().where(where_clause).values(**values)
 
         result = flask.g.db_conn.execute(query)
 
         if not result.rowcount:
-            raise dci_exc.DCIDeleteConflict('Topic', topic_id)
+            raise dci_exc.DCIDeleteConflict('Topic', topic.id)
 
         for model in [models.COMPONENTS, models.JOBDEFINITIONS]:
-            query = model.update().where(model.c.topic_id == topic_id).values(
+            query = model.update().where(model.c.topic_id == topic.id).values(
                 **values
             )
             flask.g.db_conn.execute(query)
@@ -336,11 +349,15 @@ def delete_test_from_topic(user, t_id, test_id):
 @api.route('/topics/<uuid:topic_id>/teams', methods=['POST'])
 @decorators.login_required
 def add_team_to_topic(user, topic_id):
-    if not auth.is_admin(user):
+    if user['role_id'] not in [auth.get_role_id('SUPER_ADMIN'),
+                               auth.get_role_id('PRODUCT_OWNER')]:
         raise auth.UNAUTHORIZED
     # TODO(yassine): use voluptuous schema
     data_json = flask.request.json
     team_id = data_json.get('team_id')
+
+    # TODO(spredzy)
+    # Ensure team_id belong to user teams and topic_id belong to user product
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
@@ -362,11 +379,15 @@ def add_team_to_topic(user, topic_id):
 @api.route('/topics/<uuid:topic_id>/teams/<uuid:team_id>', methods=['DELETE'])
 @decorators.login_required
 def delete_team_from_topic(user, topic_id, team_id):
-    if not auth.is_admin(user):
+    if user['role_id'] not in [auth.get_role_id('SUPER_ADMIN'),
+                               auth.get_role_id('PRODUCT_OWNER')]:
         raise auth.UNAUTHORIZED
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
                                                 get_id=True)
+
+    # TODO(spredzy)
+    # Ensure team_id belong to user teams and topic_id belong to user product
 
     JTT = models.JOINS_TOPICS_TEAMS
     where_clause = sql.and_(JTT.c.topic_id == topic_id,
