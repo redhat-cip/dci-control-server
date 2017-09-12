@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_20f9504e",
+        "filename": "dci/api/v1/base.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-09-12T13:46:03Z",
+      "side": 1,
+      "message": "if not auth.is_super_admin(user) and \u0027team_id\u0027 in resource:\n    if not allowed_teams:\n        allowed_teams \u003d [user[\u0027team_id\u0027]]",
+      "range": {
+        "startLine": 35,
+        "startChar": 0,
+        "endLine": 39,
+        "endChar": 58
+      },
+      "revId": "af02c8eaa6d70881c78c7683a654016fabfa220d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
