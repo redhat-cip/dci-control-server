@@ -68,24 +68,33 @@ def create_teams(user):
     )
 
 
-@api.route('/teams', methods=['GET'])
-@decorators.login_required
-def get_all_teams(user):
-    args = schemas.args(flask.request.args.to_dict())
-
+def _get_all_teams(user, args={}):
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
-    if not auth.is_admin(user):
+    if user['role_id'] == auth.get_role_id('PRODUCT_OWNER'):
+        where_clause = sql.or_(
+            _TABLE.c.parent_id == user['team_id'],
+            _TABLE.c.id == user['team_id']
+        )
+        query.add_extra_condition(where_clause)
+    elif user['role_id'] in [auth.get_role_id('ADMIN'),
+                             auth.get_role_id('USER')]:
         query.add_extra_condition(_TABLE.c.id == user['team_id'])
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
+    return query.execute(fetchall=True)
+
+
+@api.route('/teams', methods=['GET'])
+@decorators.login_required
+def get_all_teams(user):
+    args = schemas.args(flask.request.args.to_dict())
+    rows = _get_all_teams(user, args)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
 
-    return flask.jsonify({'teams': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'teams': rows, '_meta': {'count': len(rows)}})
 
 
 @api.route('/teams/<uuid:t_id>', methods=['GET'])

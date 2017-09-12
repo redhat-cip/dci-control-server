@@ -24,7 +24,7 @@ from dci.common import schemas
 
 
 def get_resource_by_id(user, resource, table, embed_many, ignore_columns=None,
-                       resource_name=None):
+                       resource_name=None, allowed_teams=[]):
     args = schemas.args(flask.request.args.to_dict())
     resource_name = resource_name or table.name[0:-1]
     resource_id = resource['id']
@@ -32,8 +32,12 @@ def get_resource_by_id(user, resource, table, embed_many, ignore_columns=None,
 
     query = v1_utils.QueryBuilder(table, args, columns, ignore_columns)
 
-    if not auth.is_admin(user) and 'team_id' in resource:
-        query.add_extra_condition(table.c.team_id == user['team_id'])
+    if not allowed_teams:
+        allowed_teams = [user['team_id']]
+
+    if 'team_id' in resource and \
+       user['role_id'] != auth.get_role_id('SUPER_ADMIN'):
+        query.add_extra_condition(table.c.team_id.in_(allowed_teams))
 
     if 'state' in resource:
         query.add_extra_condition(table.c.state != 'archived')
