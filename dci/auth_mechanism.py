@@ -54,6 +54,7 @@ class BasicAuthMechanism(BaseMechanism):
                 [
                     models.USERS,
                     models.TEAMS.c.name.label('team_name'),
+                    models.TEAMS.c.parent_id.label('parent_id'),
                 ]
             ).select_from(
                 sql.join(

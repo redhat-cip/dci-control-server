@@ -24,6 +24,7 @@ from dci import auth
 from dci import decorators
 from dci.api.v1 import api
 from dci.api.v1 import base
+from dci.api.v1 import teams
 from dci.api.v1 import utils as v1_utils
 from dci.common import audits
 from dci.common import exceptions as dci_exc
@@ -92,29 +93,40 @@ def update_product(user, product_id):
                           content_type='application/json')
 
 
+def _get_all_products(user, args={}):
+    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
+
+    if user['role_id'] != auth.get_role_id('SUPER_ADMIN'):
+        query.add_extra_condition(
+            sql.or_(
+                _TABLE.c.team_id == user['team_id'],
+                _TABLE.c.team_id == user['parent_id']
+            )
+        )
+
+    query.add_extra_condition(_TABLE.c.state != 'archived')
+
+    return query.execute(fetchall=True)
+
+
 @api.route('/products', methods=['GET'])
 @decorators.login_required
 def get_all_products(user):
     args = schemas.args(flask.request.args.to_dict())
-    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
-
-    query.add_extra_condition(
-        _TABLE.c.state != 'archived'
-    )
-
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
+    rows = _get_all_products(user, args)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
 
-    return flask.jsonify({'products': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'products': rows, '_meta': {'count': len(rows)}})
 
 
 @api.route('/products/<uuid:product_id>', methods=['GET'])
 @decorators.login_required
 def get_product_by_id(user, product_id):
     product = v1_utils.verify_existence_and_get(product_id, _TABLE)
-    return base.get_resource_by_id(user, product, _TABLE, _EMBED_MANY)
+    allowed_teams = [str(item[0]) for item in teams._get_all_teams(user)]
+    return base.get_resource_by_id(user, product, _TABLE, _EMBED_MANY,
+                                   allowed_teams=allowed_teams)
 
 
 @api.route('/products/<uuid:product_id>', methods=['DELETE'])
