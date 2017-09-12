@@ -546,3 +546,9 @@ def test_get_embed_remotecis(admin, user, remoteci_user_id, user_id):
 
     me = user.get('/api/v1/users/me?embed=remotecis').data['user']
     assert me['remotecis'][0]['id'] == remoteci_user_id
+
+
+# def test_get_users_as_product_owner(product_owner):
+#    users = product_owner.get('/api/v1/users').data
+#
+#    assert len(users['users']) == 1

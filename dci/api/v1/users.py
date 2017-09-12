@@ -20,6 +20,7 @@ from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import base
+from dci.api.v1 import teams
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci import decorators
@@ -64,17 +65,12 @@ def create_users(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.user.post(flask.request.json))
 
-    if not (auth.is_admin(user) or
-            auth.is_admin_user(user, values['team_id'])):
-        raise auth.UNAUTHORIZED
-
-    role_id = values.get('role_id', auth.get_role_id('USER'))
-    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+    if user['role_id'] == auth.get_role_id('USER'):
         raise auth.UNAUTHORIZED
 
     values.update({
         'password': auth.hash_password(values.get('password')),
-        'role_id': role_id,
+        'role_id': user['role_id'],
         'fullname': values.get('fullname', values['name']),
         'timezone': values.get('timezone', 'UTC'),
     })
@@ -98,10 +94,15 @@ def create_users(user):
 @api.route('/users', methods=['GET'])
 @decorators.login_required
 def get_all_users(user, team_id=None):
+
     args = schemas.args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
-    # If it's not an admin, then get only the users of the caller's team
-    if not auth.is_admin(user):
+
+    if user['role_id'] == auth.get_role_id('PRODUCT_OWNER'):
+        po_teams = [str(item[0]) for item in teams._get_all_teams(user)]
+        query.add_extra_condition(_TABLE.c.team_id.in_(po_teams))
+    elif user['role_id'] in [auth.get_role_id('ADMIN'),
+                             auth.get_role_id('USER')]:
         query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
 
     if team_id is not None:
@@ -120,8 +121,10 @@ def get_all_users(user, team_id=None):
 
 def user_by_id(user, user_id):
     user_res = v1_utils.verify_existence_and_get(user_id, _TABLE)
+    allowed_teams = [str(item[0]) for item in teams._get_all_teams(user)]
     return base.get_resource_by_id(user, user_res, _TABLE, _EMBED_MANY,
-                                   ignore_columns=['password'])
+                                   ignore_columns=['password'],
+                                   allowed_teams=allowed_teams)
 
 
 @api.route('/users/<uuid:user_id>', methods=['GET'])
@@ -179,8 +182,9 @@ def put_user(user, user_id):
     puser = dict(_verify_existence_and_get_user(user_id))
 
     if puser['id'] != str(user_id):
-        if not(auth.is_admin(user) or
-               auth.is_admin_user(user, puser['team_id'])):
+        if user['role_id'] not in [auth.get_role_id('SUPER_ADMIN'),
+                                   auth.get_role_id('PRODUCT_OWNER')] and \
+           not auth.is_in_team(user, puser['team_id']):
             raise auth.UNAUTHORIZED
 
     # TODO(yassine): if the user wants to change the team, then check its done
@@ -214,8 +218,9 @@ def delete_user_by_id(user, user_id):
 
     duser = _verify_existence_and_get_user(user_id)
 
-    if not(auth.is_admin(user) or
-           auth.is_admin_user(user, duser['team_id'])):
+    if user['role_id'] not in [auth.get_role_id('SUPER_ADMIN'),
+                               auth.get_role_id('PRODUCT_OWNER')] and \
+       not auth.is_in_team(user, duser['team_id']):
         raise auth.UNAUTHORIZED
 
     values = {'state': 'archived'}
