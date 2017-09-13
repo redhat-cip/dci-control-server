@@ -1,0 +1,272 @@
+# !/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2015-2016 Red Hat, Inc
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+import time
+
+import os
+
+import requests
+
+DCI_LOGIN = os.environ.get('DCI_LOGIN', 'admin')
+DCI_PASSWORD = os.environ.get('DCI_PASSWORD', 'admin')
+API_URL = os.environ.get('API_URL', 'http://localhost:5000')
+
+
+def get(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
+    return requests.get('%s/api/v1/%s' % (API_URL, endpoint), auth=user)
+
+
+def post(endpoint, json, user=(DCI_LOGIN, DCI_PASSWORD,)):
+    return requests.post('%s/api/v1/%s' % (API_URL, endpoint),
+                         json=json, auth=user)
+
+
+def delete(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
+    return requests.delete('%s/api/v1/%s' % (API_URL, endpoint), auth=user)
+
+
+def get_teams():
+    teams = {}
+    for team in get('teams').json()['teams']:
+        teams[team['name']] = team
+    return teams
+
+
+def create_team(name, parent_team):
+    r = post('teams', {'name': name, 'parent_id': parent_team['id']})
+    return r.json()['team']
+
+
+def create_teams():
+    team_admin = get_teams()['admin']
+    openstack = create_team('OpenStack', team_admin)
+    ansible = create_team('Ansible', team_admin)
+    return {
+        'OpenStack': openstack,
+        'Dell': create_team('Dell', openstack),
+        'HP': create_team('HP', openstack),
+        'Ansible': ansible,
+        'Cisco': create_team('Cisco', ansible),
+    }
+
+
+def create_user(name, fullname, team_id, role):
+    r = post('users', {
+        'name': name,
+        'fullname': fullname,
+        'email': '%s@example.org' % name,
+        'team_id': team_id,
+        'role_id': role['id'],
+        'password': name
+    })
+    return r.json()['user']
+
+
+def get_roles():
+    roles = {}
+    for role in get('roles').json()['roles']:
+        roles[role['label']] = role
+    return roles
+
+
+def create_users(teams):
+    roles = get_roles()
+    return {
+        'ansible_po': create_user('ansible_po', 'Ansible PO', teams['Ansible']['id'], roles['PRODUCT_OWNER']),
+        'openstack_po': create_user('openstack_po', 'OpenStack PO', teams['OpenStack']['id'], roles['PRODUCT_OWNER']),
+        'admin_cisco': create_user('admin_cisco', 'Admin Cisco', teams['Cisco']['id'], roles['ADMIN']),
+        'admin_hp': create_user('admin_hp', 'Admin HP', teams['HP']['id'], roles['ADMIN']),
+        'admin_dell': create_user('admin_dell', 'Admin Dell', teams['Dell']['id'], roles['ADMIN']),
+        'user_cisco': create_user('user_cisco', 'User Cisco', teams['Cisco']['id'], roles['USER']),
+        'user_hp': create_user('user_hp', 'User HP', teams['HP']['id'], roles['USER']),
+        'user_dell': create_user('user_dell', 'User Dell', teams['Dell']['id'], roles['USER'])
+    }
+
+
+def create_product(product, team_id):
+    r = post('products', {
+        'name': product,
+        'label': product.upper(),
+        'description': 'description for %s' % product,
+        'team_id': team_id
+    })
+    return r.json()['product']
+
+
+def create_products(teams):
+    return {
+        'OpenStack': create_product('OpenStack', teams['OpenStack']['id']),
+        'Ansible': create_product('Ansible', teams['Ansible']['id'])
+    }
+
+
+def create_topic(name, component_types, next_topic=None):
+    t = {'name': name, 'component_types': component_types}
+    if next_topic:
+        t['next_topic'] = next_topic['id']
+    r = post('topics', t)
+    return r.json()['topic']
+
+
+def create_topics():
+    osp10 = create_topic('OSP10', ['puddle'])
+    osp11 = create_topic('OSP11', ['puddle'], osp10)
+    ansible24 = create_topic('ansible-2.4', ['snapshot_ansible'])
+    return {
+        'OSP10': osp10,
+        'OSP11': osp11,
+        'OSP12': create_topic('OSP12', ['puddle'], osp11),
+        'ansible-2.4': ansible24,
+        'ansible-devel': create_topic('ansible-devel', ['snapshot_ansible'], ansible24),
+    }
+
+
+def associate_topics_to_teams(topics, teams):
+    for topic, topic_value in topics.items():
+        for team, team_value in teams.items():
+            post('topics/%s/teams' % topic_value['id'], {'team_id': team_value['id']})
+
+
+def create_component(name, topic):
+    r = post('components', {
+        'name': name,
+        'type': topic['component_types'][0],
+        'topic_id': topic['id'],
+        'export_control': True
+    })
+    return r.json()['component']
+
+
+def create_components(topics):
+    components = {}
+    for component in [
+        {'name': 'RH7-RHOS-10.0 2016-10-28.1', 'topic_name': 'OSP10'},
+        {'name': 'RH7-RHOS-11.0 2016-11-11.1', 'topic_name': 'OSP11'},
+        {'name': 'RH7-RHOS-12.0 2016-11-12.1', 'topic_name': 'OSP12'},
+        {'name': 'RH7-RHOS-12.0 2016-11-12.2', 'topic_name': 'OSP12'},
+        {'name': 'Ansible devel', 'topic_name': 'ansible-devel'},
+        {'name': 'Ansible 2.4', 'topic_name': 'ansible-2.4'},
+    ]:
+        c = create_component(component['name'], topics[component['topic_name']])
+        components[c['topic_id']] = c
+    return components
+
+
+def create_remotecis(teams):
+    remotecis = {}
+    for team, value in teams.items():
+        name = 'Remoteci %s' % team
+        r = post('remotecis', {'name': name, 'team_id': value['id'], 'allow_upgrade_job': True})
+        remotecis[team] = r.json()['remoteci']
+    return remotecis
+
+
+def create_jobs(topics, remotecis, teams, components):
+    osp10_component_id = components[topics['OSP10']['id']]['id']
+    osp11_component_id = components[topics['OSP11']['id']]['id']
+    osp12_component_id = components[topics['OSP12']['id']]['id']
+
+    jobs = [
+        {
+            'team_id': teams['Dell']['id'],
+            'remoteci_id': remotecis['Dell']['id'],
+            'topic_id': topics['OSP10']['id'],
+            'components': [osp10_component_id]
+        },
+        {
+            'team_id': teams['Dell']['id'],
+            'remoteci_id': remotecis['Dell']['id'],
+            'topic_id': topics['OSP10']['id'],
+            'components': [osp10_component_id]
+        },
+        {
+            'team_id': teams['Dell']['id'],
+            'remoteci_id': remotecis['Dell']['id'],
+            'topic_id': topics['OSP11']['id'],
+            'components': [osp11_component_id]
+        },
+        {
+            'team_id': teams['Dell']['id'],
+            'remoteci_id': remotecis['Dell']['id'],
+            'topic_id': topics['OSP12']['id'],
+            'components': [osp12_component_id]
+        },
+    ]
+    for job in jobs:
+        post('jobs', job, ('admin_dell', 'admin_dell',))
+
+    return get('jobs', ('admin_dell', 'admin_dell',)).json()['jobs']
+
+
+def create_job_states(jobs):
+    jobstates = [
+        {'job_id': jobs[0]['id'], 'status': 'running'},
+        {'job_id': jobs[1]['id'], 'status': 'success'},
+        {'job_id': jobs[2]['id'], 'status': 'success'},
+        {'job_id': jobs[3]['id'], 'status': 'failure'},
+    ]
+    for jobstate in jobstates:
+        post('jobstates', jobstate, ('admin_dell', 'admin_dell',))
+
+
+def create_file(job_id, file_name, file_path, user):
+    file_path = os.path.join(file_path)
+    data = open(file_path).read()
+    headers = {'DCI-JOB-ID': job_id, 'DCI-NAME': file_name, 'DCI-MIME': 'application/junit',
+               'Content-Disposition': 'attachment; filename=%s' % os.path.basename(file_path),
+               'Content-Type': 'application/junit'}
+    return requests.post(
+        '%s/api/v1/files' % API_URL,
+        data=data,
+        headers=headers,
+        auth=user
+    )
+
+
+def create_files(jobs):
+    create_file(jobs[2]['id'], 'Tempest', 'tests/data/tempest-results.xml', ('admin_dell', 'admin_dell',))
+    create_file(jobs[2]['id'], 'Rally', 'tests/data/rally-results.xml', ('admin_dell', 'admin_dell',))
+
+
+def wait_db_ready():
+    r = get('users/me')
+    while r.status_code != 200:
+        time.sleep(1)
+        r = get('users/me')
+
+
+def delete_default_topic():
+    default_topic = get('topics').json()['topics'][0]
+    delete('topics/%s' % default_topic['id'])
+
+
+def main():
+    wait_db_ready()
+    teams = create_teams()
+    create_users(teams)
+    create_products(teams)
+    delete_default_topic()
+    topics = create_topics()
+    associate_topics_to_teams(topics, teams)
+    components = create_components(topics)
+    remotecis = create_remotecis(teams)
+    jobs = create_jobs(topics, remotecis, teams, components)
+    create_job_states(jobs)
+    create_files(jobs)
+
+
+if __name__ == '__main__':
+    main()
