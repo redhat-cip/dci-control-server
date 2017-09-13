@@ -223,48 +223,14 @@ def init_db(db_conn, minimal, file):
         type='package', name='OSP director', created_at=time[3][12]
     )
 
-    # Create 2 jobdefinitions per topic
-    jobdef_common_1 = db_ins(models.JOBDEFINITIONS, topic_id=topic_common,
-                             name='Common tox v0.8', component_types=['git'])
-    jobdef_common_2 = db_ins(models.JOBDEFINITIONS, topic_id=topic_common,
-                             name='Common tox v2.1.1', component_types=['git'])
-
-    jobdef_hp_1 = db_ins(models.JOBDEFINITIONS, topic_id=topic_hp,
-                         name='HP tempest v0.4.2',
-                         component_types=['OSP director'])
-    jobdef_hp_2 = db_ins(models.JOBDEFINITIONS, topic_id=topic_hp,
-                         name='HP tempest v1.1',
-                         component_types=['package', 'gerrit_review'])
-
-    jobdef_dell_1 = db_ins(models.JOBDEFINITIONS, topic_id=topic_dell,
-                           name='Dell khaleesi-tempest v0.8',
-                           component_types=['git'])
-    jobdef_dell_2 = db_ins(models.JOBDEFINITIONS, topic_id=topic_dell,
-                           name='Dell khaleesi-tempest v1.2.15',
-                           component_types=['git', 'package'])
-
     # Creates 3 tests type
-    test_common = db_ins(models.TESTS, name='tox', team_id=team_admin)
-    test_hp = db_ins(models.TESTS, name='tempest', team_id=team_hp)
-    test_dell = db_ins(models.TESTS, name='khaleesi-tempest',
-                       team_id=team_dell)
+    db_ins(models.TESTS, name='tox', team_id=team_admin)
+    db_ins(models.TESTS, name='tempest', team_id=team_hp)
+    db_ins(models.TESTS, name='khaleesi-tempest', team_id=team_dell)
 
-    db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_common_1,
-           test_id=test_common)
-    db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_common_2,
-           test_id=test_common)
-    db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_hp_1,
-           test_id=test_hp)
-    db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_hp_2,
-           test_id=test_hp)
-    db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_dell_1,
-           test_id=test_dell)
-    db_ins(models.JOIN_JOBDEFINITIONS_TESTS, jobdefinition_id=jobdef_dell_2,
-           test_id=test_dell)
-
-    # Creates 4 jobs for each jobdefinition (4*6=24 in total for pagination)
+    # Creates 4 jobs for each topic (4*6=24 in total for pagination)
     job_id = db_ins(
-        models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
+        models.JOBS, status='new',
         topic_id=topic_common,
         remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][1],
         updated_at=time[0][1], user_agent='python-dciclient_0.1.0'
@@ -274,7 +240,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_common_1
     )
     job_id = db_ins(
-        models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
+        models.JOBS, status='new',
         topic_id=topic_common,
         remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[0][2],
         updated_at=time[0][2], user_agent='python-dciclient_0.1.0'
@@ -284,7 +250,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_common_1
     )
     job_id = db_ins(
-        models.JOBS, status='pre-run', jobdefinition_id=jobdef_common_1,
+        models.JOBS, status='pre-run',
         topic_id=topic_common, remoteci_id=remoteci_hp_1, team_id=team_hp,
         created_at=time[0][2], updated_at=time[0][1],
         user_agent='python-dciclient_0.1.0'
@@ -294,7 +260,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_common_1
     )
     job_id = db_ins(
-        models.JOBS, status='pre-run', jobdefinition_id=jobdef_common_2,
+        models.JOBS, status='pre-run',
         topic_id=topic_common, remoteci_id=remoteci_hp_1, team_id=team_hp,
         created_at=time[0][3], updated_at=time[0][1],
         user_agent='python-dciclient_0.1.0'
@@ -304,7 +270,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_common_2
     )
     job_id = db_ins(
-        models.JOBS, status='running', jobdefinition_id=jobdef_common_2,
+        models.JOBS, status='running',
         topic_id=topic_common, remoteci_id=remoteci_hp_1, team_id=team_hp,
         created_at=time[0][10], updated_at=time[0][3],
         user_agent='python-dciclient_0.1.0'
@@ -314,7 +280,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_common_2
     )
     job_id = db_ins(
-        models.JOBS, status='running', jobdefinition_id=jobdef_common_2,
+        models.JOBS, status='running',
         topic_id=topic_common, remoteci_id=remoteci_hp_1, team_id=team_hp,
         created_at=time[0][14], updated_at=time[0][7],
         user_agent='python-dciclient_0.1.0'
@@ -324,7 +290,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_common_2
     )
     job_id = db_ins(
-        models.JOBS, status='post-run', jobdefinition_id=jobdef_hp_1,
+        models.JOBS, status='post-run',
         topic_id=topic_hp, remoteci_id=remoteci_hp_2, team_id=team_hp,
         created_at=time[1][0], updated_at=time[0][10],
         user_agent='python-dciclient_0.1.0'
@@ -334,7 +300,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_hp_1
     )
     job_id = db_ins(
-        models.JOBS, status='post-run', jobdefinition_id=jobdef_hp_1,
+        models.JOBS, status='post-run',
         topic_id=topic_hp, remoteci_id=remoteci_hp_2, team_id=team_hp,
         created_at=time[0][20], updated_at=time[0][2],
         user_agent='python-dciclient_0.1.0'
@@ -344,7 +310,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_hp_1
     )
     job_id = db_ins(
-        models.JOBS, status='failure', jobdefinition_id=jobdef_hp_1,
+        models.JOBS, status='failure',
         topic_id=topic_hp, remoteci_id=remoteci_hp_2, team_id=team_hp,
         created_at=time[2][10], updated_at=time[1][3],
         user_agent='python-dciclient_0.1.0'
@@ -354,7 +320,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_hp_1
     )
     job_id = db_ins(
-        models.JOBS, status='failure', jobdefinition_id=jobdef_hp_2,
+        models.JOBS, status='failure',
         topic_id=topic_hp, remoteci_id=remoteci_hp_2, team_id=team_hp,
         created_at=time[1][1], updated_at=time[0][0],
         user_agent='python-dciclient_0.1.0'
@@ -364,7 +330,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_hp_2
     )
     job_id = db_ins(
-        models.JOBS, status='success', jobdefinition_id=jobdef_hp_2,
+        models.JOBS, status='success',
         topic_id=topic_hp, remoteci_id=remoteci_hp_2, team_id=team_hp,
         created_at=time[3][12], updated_at=time[2][20],
         user_agent='python-dciclient_0.1.0'
@@ -374,7 +340,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_hp_2
     )
     job_id = db_ins(
-        models.JOBS, status='success', jobdefinition_id=jobdef_hp_2,
+        models.JOBS, status='success',
         topic_id=topic_hp, remoteci_id=remoteci_hp_2, team_id=team_hp,
         created_at=time[3][20], updated_at=time[0][6],
         user_agent='python-dciclient_0.1.0'
@@ -384,7 +350,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_hp_2
     )
     job_id = db_ins(
-        models.JOBS, status='killed', jobdefinition_id=jobdef_hp_2,
+        models.JOBS, status='killed',
         remoteci_id=remoteci_hp_1, team_id=team_hp, created_at=time[1][8],
         updated_at=time[0][1], user_agent='python-dciclient_0.1.0'
     )
@@ -393,7 +359,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_hp_2
     )
     job_id = db_ins(
-        models.JOBS, status='killed', jobdefinition_id=jobdef_hp_2,
+        models.JOBS, status='killed',
         topic_id=topic_hp,
         remoteci_id=remoteci_hp_2, team_id=team_hp, created_at=time[2][12],
         updated_at=time[1][6], user_agent='python-dciclient_0.1.0'
@@ -403,7 +369,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_hp_2
     )
     job_id = db_ins(
-        models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
+        models.JOBS, status='new',
         topic_id=topic_common,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][1],
         updated_at=time[0][1], user_agent='python-dciclient_0.1.0'
@@ -413,7 +379,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_common_1
     )
     job_id = db_ins(
-        models.JOBS, status='new', jobdefinition_id=jobdef_common_1,
+        models.JOBS, status='new',
         topic_id=topic_common,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][2],
         updated_at=time[0][2], user_agent='python-dciclient_0.1.0'
@@ -423,7 +389,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_common_1
     )
     job_id = db_ins(
-        models.JOBS, status='pre-run', jobdefinition_id=jobdef_common_1,
+        models.JOBS, status='pre-run',
         topic_id=topic_common,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][2],
         updated_at=time[0][1], user_agent='python-dciclient_0.1.0'
@@ -433,7 +399,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_common_1
     )
     job_id = db_ins(
-        models.JOBS, status='pre-run', jobdefinition_id=jobdef_common_2,
+        models.JOBS, status='pre-run',
         topic_id=topic_common,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][3],
         updated_at=time[0][1], user_agent='python-dciclient_0.1.0'
@@ -443,7 +409,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_common_2
     )
     job_id = db_ins(
-        models.JOBS, status='running', jobdefinition_id=jobdef_common_2,
+        models.JOBS, status='running',
         topic_id=topic_common,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][10],
         updated_at=time[0][3], user_agent='python-dciclient_0.1.0'
@@ -453,7 +419,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_common_2
     )
     job_id = db_ins(
-        models.JOBS, status='running', jobdefinition_id=jobdef_common_2,
+        models.JOBS, status='running',
         topic_id=topic_common,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[0][14],
         updated_at=time[0][7], user_agent='python-dciclient_0.1.0'
@@ -463,7 +429,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_common_2
     )
     job_id = db_ins(
-        models.JOBS, status='post-run', jobdefinition_id=jobdef_dell_1,
+        models.JOBS, status='post-run',
         topic_id=topic_dell,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[1][0],
         updated_at=time[0][10], user_agent='python-dciclient_0.1.0'
@@ -473,7 +439,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_dell_1
     )
     job_id = db_ins(
-        models.JOBS, status='post-run', jobdefinition_id=jobdef_dell_1,
+        models.JOBS, status='post-run',
         topic_id=topic_dell,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[0][20],
         updated_at=time[0][2], user_agent='python-dciclient_0.1.0'
@@ -483,7 +449,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_dell_1
     )
     job_dell_9 = db_ins(
-        models.JOBS, status='failure', jobdefinition_id=jobdef_dell_1,
+        models.JOBS, status='failure',
         topic_id=topic_dell,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[2][10],
         updated_at=time[1][3], user_agent='python-dciclient_0.1.0'
@@ -493,7 +459,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_dell_1
     )
     job_dell_10 = db_ins(
-        models.JOBS, status='failure', jobdefinition_id=jobdef_dell_2,
+        models.JOBS, status='failure',
         topic_id=topic_dell,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[1][1],
         updated_at=time[0][0], user_agent='python-dciclient_0.1.0'
@@ -503,7 +469,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_dell_2
     )
     job_dell_11 = db_ins(
-        models.JOBS, status='success', jobdefinition_id=jobdef_dell_2,
+        models.JOBS, status='success',
         topic_id=topic_dell,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[3][12],
         updated_at=time[2][20], user_agent='python-dciclient_0.1.0'
@@ -513,7 +479,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_dell_2
     )
     job_dell_12 = db_ins(
-        models.JOBS, status='success', jobdefinition_id=jobdef_dell_2,
+        models.JOBS, status='success',
         topic_id=topic_dell,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[3][20],
         updated_at=time[0][0], configuration=STACK_DETAILS,
@@ -524,7 +490,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_dell_2
     )
     job_id = db_ins(
-        models.JOBS, status='killed', jobdefinition_id=jobdef_dell_2,
+        models.JOBS, status='killed',
         topic_id=topic_dell,
         remoteci_id=remoteci_dell_1, team_id=team_dell, created_at=time[1][4],
         updated_at=time[0][3], user_agent='python-dciclient_0.1.0'
@@ -534,7 +500,7 @@ def init_db(db_conn, minimal, file):
         component_id=component_dell_2
     )
     job_id = db_ins(
-        models.JOBS, status='killed', jobdefinition_id=jobdef_dell_2,
+        models.JOBS, status='killed',
         topic_id=topic_dell,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[2][8],
         updated_at=time[1][2], user_agent='python-dciclient_0.1.0'

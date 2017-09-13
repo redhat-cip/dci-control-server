@@ -235,12 +235,6 @@ def test_delete_topic_archive_dependencies(admin, product):
     topic_id = topic.data['topic']['id']
     assert topic.status_code == 201
 
-    jd = admin.post('/api/v1/jobdefinitions',
-                    data={'name': 'pname',
-                          'topic_id': topic_id})
-    jd_id = jd.data['jobdefinition']['id']
-    assert jd.status_code == 201
-
     data = {
         'name': 'pname',
         'type': 'gerrit_review',
@@ -255,9 +249,6 @@ def test_delete_topic_archive_dependencies(admin, product):
     url = '/api/v1/topics/%s' % topic_id
     deleted_topic = admin.delete(url)
     assert deleted_topic.status_code == 204
-
-    deleted_jd = admin.get('/api/v1/jobdefinitions/%s' % jd_id)
-    assert deleted_jd.status_code == 404
 
     deleted_component = admin.get('/api/v1/component/%s' % component_id)
     assert deleted_component.status_code == 404
@@ -436,9 +427,8 @@ def test_delete_team_from_topic_as_user(admin, user, product):
 def test_status_from_component_type_last_component(admin, topic_id,
                                                    components_ids,
                                                    remoteci_id,
-                                                   jobdefinition_id, team_id):
+                                                   team_id):
     data = {
-        'jobdefinition_id': jobdefinition_id,
         'team_id': team_id,
         'remoteci_id': remoteci_id,
         'components': components_ids
@@ -475,10 +465,8 @@ def test_status_from_component_type_last_component(admin, topic_id,
 
 
 def test_status_from_component_type_get_status(admin, topic_id, components_ids,
-                                               remoteci_id, jobdefinition_id,
-                                               team_id):
+                                               remoteci_id, team_id):
     data = {
-        'jobdefinition_id': jobdefinition_id,
         'team_id': team_id,
         'remoteci_id': remoteci_id,
         'components': components_ids,
