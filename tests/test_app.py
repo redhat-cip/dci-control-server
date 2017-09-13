@@ -46,17 +46,6 @@ def test_cors_headers(admin):
     assert resp.headers['Access-Control-Allow-Origin'] == '*'
 
 
-def test_sample_db_provisionning(engine, teardown_db_clean):
-    """Test the sample init_db method, to be sure it will
-    not be broken when updating
-    """
-    db_provisioning = imp.load_source(
-        'db_provisioning', 'scripts/db_provisioning.py'
-    )
-    with engine.begin() as db_conn:
-        db_provisioning.init_db(db_conn, False, False)
-
-
 def test_db_migration(engine, delete_db):
     config = dci.alembic.utils.generate_conf()
     context = alembic.context
