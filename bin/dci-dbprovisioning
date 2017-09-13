@@ -14,29 +14,40 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import time
-
+import json
 import os
+import time
 
 import requests
 
 DCI_LOGIN = os.environ.get('DCI_LOGIN', 'admin')
 DCI_PASSWORD = os.environ.get('DCI_PASSWORD', 'admin')
-API_URL = os.environ.get('API_URL', 'http://localhost:5000')
+DCI_CS_URL = os.environ.get('DCI_CS_URL', 'http://localhost:5000')
+
+
+def get_url(endpoint):
+    return '%s/api/v1/%s' % (DCI_CS_URL, endpoint)
 
 
 def get(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
-    return requests.get('%s/api/v1/%s' % (API_URL, endpoint), auth=user)
+    url = get_url(endpoint)
+    print('-------------')
+    print('GET %s' % url)
+    return requests.get(url, auth=user)
 
 
-def post(endpoint, json, user=(DCI_LOGIN, DCI_PASSWORD,)):
-    return requests.post('%s/api/v1/%s' % (API_URL, endpoint),
-                         json=json, auth=user)
+def post(endpoint, data, user=(DCI_LOGIN, DCI_PASSWORD,)):
+    url = get_url(endpoint)
+    print('-------------')
+    print('POST %s' % url)
+    print(json.dumps(data, indent=2))
+    return requests.post(url, json=data, auth=user)
 
 
 def delete(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
-    return requests.delete('%s/api/v1/%s' % (API_URL, endpoint), auth=user)
+    url = get_url(endpoint)
+    print('DELETE %s' % url)
+    return requests.delete(url, auth=user)
 
 
 def get_teams():
@@ -231,7 +242,7 @@ def create_file(job_id, file_name, file_path, user):
                'Content-Disposition': 'attachment; filename=%s' % os.path.basename(file_path),
                'Content-Type': 'application/junit'}
     return requests.post(
-        '%s/api/v1/files' % API_URL,
+        '%s/api/v1/files' % DCI_CS_URL,
         data=data,
         headers=headers,
         auth=user
@@ -239,15 +250,21 @@ def create_file(job_id, file_name, file_path, user):
 
 
 def create_files(jobs):
-    create_file(jobs[2]['id'], 'Tempest', 'tests/data/tempest-results.xml', ('admin_dell', 'admin_dell',))
-    create_file(jobs[2]['id'], 'Rally', 'tests/data/rally-results.xml', ('admin_dell', 'admin_dell',))
+    user_dell = ('admin_dell', 'admin_dell',)
+    create_file(jobs[2]['id'], 'Tempest', 'tests/data/tempest-results.xml', user_dell)
+    create_file(jobs[2]['id'], 'Rally', 'tests/data/rally-results.xml', user_dell)
 
 
 def wait_db_ready():
-    r = get('users/me')
-    while r.status_code != 200:
-        time.sleep(1)
-        r = get('users/me')
+    while True:
+        try:
+            r = get('users/me')
+            if r.status_code == 200:
+                break
+        except requests.exceptions.ConnectionError:
+            continue
+        finally:
+            time.sleep(1)
 
 
 def delete_default_topic():
