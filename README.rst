@@ -20,9 +20,9 @@ To run the api in development mode follow those steps:
    defined in the ``src/settings.py`` (if no elastic search is running see
    `elastic search installation`_)
 4. install the python requirements: ``pip install -r requirements.txt``
-5. provision the database: ``./scripts/db_provisioning.py``
+5. run the dev server: ``./bin/dci-runtestserver``
+6. provision the database: ``python bin/dci-dbprovisioning``
    (BEWARE: it will erase the previous db)
-6. run the dev server: ``./bin/dci-runtestserver``
 
 Database installation
 ---------------------
