@@ -1,0 +1,9 @@
+Code-Review+2: Yanis Guenane <yguenane@gmail.com>
+Code-Review+2: Guillaume Vincent <gvincent@redhat.com>
+Workflow+1: Guillaume Vincent <gvincent@redhat.com>
+Verified+2: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-by: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-at: Wed, 13 Sep 2017 11:49:34 +0000
+Reviewed-on: https://softwarefactory-project.io/r/9678
+Project: dci-control-server
+Branch: refs/heads/master
