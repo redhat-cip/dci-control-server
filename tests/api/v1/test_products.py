@@ -112,17 +112,20 @@ def test_success_get_all_products_admin(admin, product):
     assert result.status_code == 200
 
     products = [r['label'] for r in result.data['products']]
-    assert ['OPENSTACK'] == sorted(products)
+    assert ['AWSM', 'OPENSTACK'] == sorted(products)
 
 
 def test_success_delete_product_admin(admin, product):
+    result = admin.get('/api/v1/products')
+    current_products = len(result.data['products'])
+
     result = admin.delete('/api/v1/products/%s' % product['id'],
                           headers={'If-match': product['etag']})
 
     assert result.status_code == 204
 
     result = admin.get('/api/v1/products')
-    assert len(result.data['products']) == 0
+    assert len(result.data['products']) == current_products - 1
 
     result = admin.get('/api/v1/products/purge')
     assert len(result.data['products']) == 1

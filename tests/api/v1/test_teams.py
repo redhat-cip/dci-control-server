@@ -90,14 +90,15 @@ def test_where_invalid(admin):
 
 
 def test_get_all_teams_with_pagination(admin):
+    ts = admin.get('/api/v1/teams').data
+    current_teams = ts['_meta']['count']
     # create 4 components types and check meta data count
     admin.post('/api/v1/teams', data={'name': 'pname1'})
     admin.post('/api/v1/teams', data={'name': 'pname2'})
     admin.post('/api/v1/teams', data={'name': 'pname3'})
     admin.post('/api/v1/teams', data={'name': 'pname4'})
     ts = admin.get('/api/v1/teams').data
-    # TODO(yassine): 2 teams was already created in the db
-    assert ts['_meta']['count'] == 6
+    assert ts['_meta']['count'] == current_teams + 4
 
     # verify limit and offset are working well
     ts = admin.get('/api/v1/teams?limit=2&offset=0').data

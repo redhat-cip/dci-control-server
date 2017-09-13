@@ -124,6 +124,18 @@ def user_admin_id(admin):
 
 
 @pytest.fixture
+def product_owner(app, db_provisioning):
+    return utils.generate_client(app, ('product_owner', 'product_owner'))
+
+
+@pytest.fixture
+def product_owner_id(admin):
+    team = admin.get('/api/v1/users?where=name:product_owner')
+    team = admin.get('/api/v1/users/%s' % team.data['users'][0]['id']).data
+    return str(team['user']['id'])
+
+
+@pytest.fixture
 def topic_id(admin, team_id, product):
     data = {'name': 'topic_name', 'product_id': product['id'],
             'component_types': ['type_1', 'type_2', 'type_3']}
@@ -145,6 +157,13 @@ def test_id(admin, team_id):
 @pytest.fixture
 def team_id(admin):
     team = admin.post('/api/v1/teams', data={'name': 'pname'}).data
+    return str(team['team']['id'])
+
+
+@pytest.fixture
+def team_product_id(admin):
+    team = admin.get('/api/v1/teams?where=name:product')
+    team = admin.get('/api/v1/teams/%s' % team.data['teams'][0]['id']).data
     return str(team['team']['id'])
 
 
