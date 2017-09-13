@@ -32,11 +32,8 @@ from dci.db import models
 from dci import dci_config
 from dci.alembic import utils as dci_alembic
 
-
 if not os.environ.get('DCI_LOGIN') or not os.environ.get('DCI_PASSWORD'):
-    print("Environment variables missing: DCI_LOGIN='%s', DCI_PASSWORD='%s'" %
-          (os.environ.get('DCI_LOGIN', ''),
-           os.environ.get('DCI_PASSWORD', '')))
+    print("Environment variables missing: DCI_LOGIN='', DCI_PASSWORD=''")
     sys.exit(1)
 
 DCI_LOGIN = os.environ.get('DCI_LOGIN')
@@ -123,6 +120,7 @@ def main():
     engine = sqlalchemy.create_engine(db_uri)
     with engine.begin() as conn:
         init_db(conn)
+
 
 if __name__ == '__main__':
     main()
