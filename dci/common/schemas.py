@@ -366,7 +366,6 @@ job_put = {
     v.Optional('comment'): six.text_type,
     v.Optional('status'): v.Any(*VALID_STATUS_UPDATE,
                                 msg=INVALID_STATUS_UPDATE),
-    v.Optional('configuration'): dict,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
 }
@@ -396,13 +395,6 @@ job_schedule_template = {
 }
 
 job_schedule_template = schema_factory(job_schedule_template)
-
-job_search = {
-    # todo(yassine): validate configuration structure
-    'configuration': dict
-}
-
-job_search = schema_factory(job_search)
 
 job_notify = {
     'mesg': six.text_type

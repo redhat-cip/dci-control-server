@@ -50,7 +50,6 @@ def write(file_path, content):
 
 JUNIT_TEMPEST = open('tests/data/tempest-results.xml', 'r').read()
 JUNIT_RALLY = open('tests/data/rally-results.xml', 'r').read()
-STACK_DETAILS = open('scripts/data/tripleo-stack-dump-sample.json', 'r').read()
 
 
 def db_insert(db_conn, model_item, **kwargs):
@@ -482,8 +481,7 @@ def init_db(db_conn, minimal, file):
         models.JOBS, status='success',
         topic_id=topic_dell,
         remoteci_id=remoteci_dell_2, team_id=team_dell, created_at=time[3][20],
-        updated_at=time[0][0], configuration=STACK_DETAILS,
-        user_agent='python-dciclient_0.1.0'
+        updated_at=time[0][0], user_agent='python-dciclient_0.1.0'
     )
     db_ins(
         models.JOIN_JOBS_COMPONENTS, job_id=job_dell_12,
