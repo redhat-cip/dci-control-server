@@ -64,7 +64,6 @@ def test_get_all_jobs(admin, remoteci_id, components_ids):
     db_all_jobs = db_all_jobs['jobs']
     db_all_jobs_ids = [db_job['id'] for db_job in db_all_jobs]
 
-    assert 'configuration' not in db_all_jobs[0]
     assert db_all_jobs_ids == [job_1_id, job_2_id]
 
 
@@ -251,10 +250,8 @@ def test_update_job(admin, remoteci_id, components_ids):
     job = job.data['job']
 
     assert job['comment'] == 'foo'
-    assert job['configuration'] == {}
 
-    data_update = {'status': 'failure', 'comment': 'bar',
-                   'configuration': {'ha': 'enabled'}}
+    data_update = {'status': 'failure', 'comment': 'bar'}
 
     res = admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
                     headers={'If-match': job['etag']})
@@ -267,7 +264,6 @@ def test_update_job(admin, remoteci_id, components_ids):
     assert res.status_code == 200
     assert job['status'] == 'failure'
     assert job['comment'] == 'bar'
-    assert job['configuration'] == {'ha': 'enabled'}
 
 
 def test_success_update_job_status(admin, job_id):
@@ -354,10 +350,6 @@ def test_get_all_jobs_with_sort(admin, remoteci_id, components_ids):
     job_1 = admin.post('/api/v1/jobs', data=data).data['job']
     job_2 = admin.post('/api/v1/jobs', data=data).data['job']
     job_3 = admin.post('/api/v1/jobs', data=data).data['job']
-
-    del job_1['configuration']
-    del job_2['configuration']
-    del job_3['configuration']
 
     jobs = admin.get('/api/v1/jobs?sort=created_at').data
     assert jobs['jobs'] == [job_1, job_2, job_3]
@@ -473,15 +465,6 @@ def test_get_jobs_with_schedule(admin, topic_id, remoteci_id, components_ids):
         url = '/api/v1/components/%s?embed=jobs' % c['id']
         component = admin.get(url).data
         assert component['component']['jobs'][0]['id'] == job_id
-
-
-def test_job_with_conf(admin, job_id):
-    data = {'configuration': {'foo': 'bar'}}
-    job = admin.get('/api/v1/jobs/%s' % job_id).data['job']
-    admin.put('/api/v1/jobs/%s' % job['id'], data=data,
-              headers={'If-match': job['etag']})
-    job_to_recheck = admin.get('/api/v1/jobs/%s' % job_id).data['job']
-    assert job_to_recheck['configuration']
 
 
 def test_delete_job_by_id(admin, remoteci_id, components_ids):
@@ -665,40 +648,3 @@ def test_get_results_by_job_id(user, job_user_id):
         assert file_from_job.data['_meta']['count'] == 1
         assert file_from_job.data['results'][0]['total'] == 6
         assert len(file_from_job.data['results'][0]['testscases']) > 0
-
-
-def test_job_search(user, remoteci_id, components_ids):
-
-    # create a job
-    job = user.post('/api/v1/jobs',
-                    data={'remoteci_id': remoteci_id,
-                          'components': components_ids})
-    job_id = job.data['job']['id']
-    job_etag = job.data['job']['etag']
-
-    # update the configuration of a job
-    data = {'configuration': {'ha': 'enabled', 'type': {'hw': 'baremetal'}}}
-    user.put('/api/v1/jobs/%s' % job_id,
-             data=data,
-             headers={'If-match': job_etag})
-    job_search_url = '/api/v1/jobs/search'
-
-    # search with two values matching
-    jobs_filtered = user.post(job_search_url,
-                              data={'configuration': {'ha': 'enabled',
-                                                      'type.hw': 'baremetal'}})
-    assert jobs_filtered.data['_meta']['count'] == 1
-
-    # search with two values not matched
-    jobs_filtered = user.post(job_search_url,
-                              data={'configuration': {'_op': 'and',
-                                                      'ha': 'enabledd',
-                                                      'type.hw': 'baremetal'}})
-    assert jobs_filtered.data['_meta']['count'] == 0
-
-    # search with at least one value matching
-    jobs_filtered = user.post(job_search_url,
-                              data={'configuration': {'_op': 'or',
-                                                      'ha': 'enabledd',
-                                                      'type.hw': 'baremetal'}})
-    assert jobs_filtered.data['_meta']['count'] == 1

@@ -366,7 +366,6 @@ job_put = {
     v.Optional('comment'): six.text_type,
     v.Optional('status'): v.Any(*VALID_STATUS_UPDATE,
                                 msg=INVALID_STATUS_UPDATE),
-    v.Optional('configuration'): dict,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
 }
