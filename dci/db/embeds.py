@@ -35,26 +35,19 @@ REMOTECI = models.REMOTECIS.alias('remoteci')
 CFILES = models.COMPONENT_FILES.alias('files')
 RCONFIGURATION = models.REMOTECIS_RCONFIGURATIONS.alias('rconfiguration')
 
-JOB = models.JOBS.alias('job')
-JOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(JOB, ['configuration'])  # noqa
-JOBS_WITHOUT_CONFIGURATION = ignore_columns_from_table(models.JOBS, ['configuration'])  # noqa
-
-
 TESTS_RESULTS = models.TESTS_RESULTS.alias('results')
 
+JOB = models.JOBS.alias('job')
 LASTJOB = models.JOBS.alias('lastjob')
-LASTJOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(LASTJOB, ['configuration'])  # noqa
 LASTJOB_COMPONENTS = models.COMPONENTS.alias('lastjob.components')
 LASTJOB_JOIN_COMPONENTS = models.JOIN_JOBS_COMPONENTS.alias('lastjob.jobcomponents')  # noqa
 
 CURRENTJOB = models.JOBS.alias('currentjob')
-CURRENTJOB_WITHOUT_CONFIGURATION = ignore_columns_from_table(CURRENTJOB, ['configuration'])  # noqa
 CURRENTJOB_COMPONENTS = models.COMPONENTS.alias('currentjob.components')
 CURRENTJOB_JOIN_COMPONENTS = models.JOIN_JOBS_COMPONENTS.alias('currentjob.jobcomponents')  # noqa
 
 JOBSTATE = models.JOBSTATES.alias('jobstate')
 JOBSTATE_JOBS = models.JOBS.alias('jobstate.job')
-JOBSTATEJOBS_WITHOUT_CONFIGURATION = ignore_columns_from_table(JOBSTATE_JOBS, ['configuration'])  # noqa
 
 TOPIC = models.TOPICS.alias('topic')
 
@@ -373,21 +366,21 @@ EMBED_STRING_TO_OBJECT = {
     'remotecis': {
         'team': TEAM,
         'users': models.USERS,
-        'lastjob': LASTJOB_WITHOUT_CONFIGURATION,
+        'lastjob': LASTJOB,
         'lastjob.components': LASTJOB_COMPONENTS,
-        'currentjob': CURRENTJOB_WITHOUT_CONFIGURATION,
+        'currentjob': CURRENTJOB,
         'currentjob.components': CURRENTJOB_COMPONENTS},
     'components': {
         'files': CFILES,
-        'jobs': JOBS_WITHOUT_CONFIGURATION},
+        'jobs': models.JOBS},
     'files': {
         'jobstate': JOBSTATE,
-        'jobstate.job': JOBSTATEJOBS_WITHOUT_CONFIGURATION,
-        'job': JOB_WITHOUT_CONFIGURATION,
+        'jobstate.job': JOBSTATE_JOBS,
+        'job': JOB,
         'team': TEAM},
     'jobstates': {
         'files': models.FILES,
-        'job': JOB_WITHOUT_CONFIGURATION,
+        'job': JOB,
         'team': TEAM
     },
     'products': {

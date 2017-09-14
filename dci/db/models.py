@@ -246,7 +246,6 @@ JOBS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('comment', sa.Text),
     sa.Column('status', STATUSES, default='new'),
-    sa.Column('configuration', pg.JSON, default={}),
     sa.Column('rconfiguration_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('rconfigurations.id'),
               nullable=True),

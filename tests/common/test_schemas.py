@@ -384,8 +384,7 @@ class TestJob(utils.SchemaTesting):
     data = dict([utils.REMOTE_CI, utils.TEAM,
                  utils.COMPONENTS, utils.PREVIOUS_JOB_ID, utils.STATE,
                  utils.TOPIC, utils.RCONFIGURATION])
-    data_put = dict([('status', 'success'), utils.COMMENT,
-                     utils.CONFIGURATION])
+    data_put = dict([('status', 'success'), utils.COMMENT])
 
     @staticmethod
     def generate_invalids_and_errors():
@@ -461,40 +460,6 @@ class TestJobSchedule(utils.SchemaTesting):
 
     def test_post(self):
         super(TestJobSchedule, self).test_post(self.data, self.data)
-
-    def test_put_extra_data(self):
-        pass
-
-    def test_put_invalid_data(self):
-        pass
-
-    def test_put(self):
-        pass
-
-
-class TestJobSearch(utils.SchemaTesting):
-    schema = schemas.job_search
-    data = dict([utils.CONFIGURATION])
-
-    @staticmethod
-    def generate_invalids_and_errors():
-        invalids = dict([utils.INVALID_CONFIGURATION])
-        errors = dict([utils.INVALID_CONFIGURATION_ERROR])
-        return invalids, errors
-
-    def test_post_extra_data(self):
-        super(TestJobSearch, self).test_post(self.data, self.data)
-
-    def test_post_missing_data(self):
-        errors = utils.generate_errors('configuration')
-        super(TestJobSearch, self).test_post_missing_data(errors)
-
-    def test_post_invalid_data(self):
-        invalids, errors = TestJobSearch.generate_invalids_and_errors()
-        super(TestJobSearch, self).test_post_invalid_data(invalids, errors)
-
-    def test_post(self):
-        super(TestJobSearch, self).test_post(self.data, self.data)
 
     def test_put_extra_data(self):
         pass
