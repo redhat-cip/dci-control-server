@@ -119,8 +119,8 @@ def create_files(user):
         result = json.dumps({'file': values})
 
         if values['mime'] == 'application/junit':
-            content_file = swift.get_object(file_path)
-            junit = tsfm.junit2dict(content_file)
+            _, file_descriptor = swift.get(file_path)
+            junit = tsfm.junit2dict(file_descriptor.read())
             query = models.TESTS_RESULTS.insert().values({
                 'id': utils.gen_uuid(),
                 'created_at': values['created_at'],
@@ -177,10 +177,6 @@ def get_file_content(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
     swift = dci_config.get_store('files')
 
-    def get_object(swift_object):
-        for block in swift.get(swift_object)[1]:
-            yield block
-
     if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
         raise auth.UNAUTHORIZED
 
@@ -190,15 +186,12 @@ def get_file_content(user, file_id):
 
     # Check if file exist on the storage engine
     swift.head(file_path)
-    filename = file['name'].replace(' ', '_')
-    headers = {
-        'Content-Length': file['size'],
-        'Content-Disposition': 'attachment; filename="%s"' % filename
-    }
-    return flask.Response(
-        get_object(file_path),
-        content_type=file['mime'] or 'text/plain',
-        headers=headers
+    _, file_descriptor = swift.get(file_path)
+    return flask.send_file(
+        file_descriptor,
+        mimetype=file['mime'] or 'text/plain',
+        as_attachment=True,
+        attachment_filename=file['name'].replace(' ', '_')
     )
 
 

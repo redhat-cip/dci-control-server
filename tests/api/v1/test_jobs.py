@@ -17,6 +17,7 @@
 from __future__ import unicode_literals
 import mock
 import pytest
+import six
 import uuid
 
 from dci.stores.swift import Swift
@@ -171,8 +172,12 @@ def test_get_all_jobs_with_embed(admin, team_id, remoteci_id, components_ids,
                 'content-type': "stream",
                 'content-length': 7
             }
+
+            def get(a):
+                return True, six.StringIO(JUNIT),
+
             mockito.head.return_value = head_result
-            mockito.get_object.return_value = JUNIT
+            mockito.get = get
             mock_swift.return_value = mockito
             query = ('/api/v1/jobs')
             jobs = admin.get(query).data
@@ -632,7 +637,7 @@ def test_get_results_by_job_id(user, job_user_id):
             'content-length': 1
         }
         mockito.head.return_value = head_result
-        mockito.get.return_value = ['', JUNIT]
+        mockito.get.return_value = [True, six.StringIO(JUNIT)]
         mockito.get_object.return_value = JUNIT
         mock_swift.return_value = mockito
         headers = {'DCI-JOB-ID': job_user_id,
