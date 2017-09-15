@@ -220,7 +220,8 @@ def download_component_file(user, c_id, f_id):
     # Check if file exist on the storage engine
     swift.head(file_path)
 
-    return flask.Response(swift.get_object(file_path))
+    _, fd = swift.get(file_path)
+    return flask.send_file(fd)
 
 
 @api.route('/components/<uuid:c_id>/files', methods=['POST'])
