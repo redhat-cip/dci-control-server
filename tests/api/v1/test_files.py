@@ -17,6 +17,7 @@
 from __future__ import unicode_literals
 import pytest
 import mock
+import six
 
 from dci.stores.swift import Swift
 from dci.common import utils
@@ -295,7 +296,8 @@ def test_get_file_content(admin, jobstate_id):
         }
 
         mockito.head.return_value = head_result
-        mockito.get.return_value = ['', "azertyuiop1234567890"]
+        mockito.get.return_value = [
+            head_result, six.StringIO("azertyuiop1234567890")]
         mock_swift.return_value = mockito
         data = "azertyuiop1234567890"
         file_id = post_file(admin, jobstate_id, FileDesc('foo', data))
@@ -321,6 +323,8 @@ def test_get_file_content_as_user(user, file_id, file_user_id):
         }
 
         mockito.head.return_value = head_result
+        mockito.get.return_value = [
+            head_result, six.StringIO("azertyuiop1234567890")]
         mock_swift.return_value = mockito
         assert user.get(url % file_user_id).status_code == 200
 
