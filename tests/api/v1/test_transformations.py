@@ -17,6 +17,7 @@
 from uuid import UUID
 
 import mock
+import six
 from sqlalchemy import sql
 
 from dci.api.v1 import transformations
@@ -178,10 +179,11 @@ def test_retrieve_junit2dict(admin, job_id):
             'content-type': 'stream',
             'content-length': 7
         }
-
         mockito.head.return_value = head_result
-        mockito.get.return_value = ['', JUNIT]
-        mockito.get_object.return_value = JUNIT
+        def get(a):
+            return True, six.StringIO(JUNIT),
+
+        mockito.get = get
         mock_swift.return_value = mockito
         headers = {
             'DCI-NAME': 'junit_file.xml',
@@ -218,7 +220,7 @@ def test_create_file_fill_tests_results_table(engine, admin, job_id):
             'content-length': 7
         }
         mockito.head.return_value = head_result
-        mockito.get_object.return_value = content_file
+        mockito.get.return_value = [True, six.StringIO(content_file)]
         mock_swift.return_value = mockito
 
         headers = {
