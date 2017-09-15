@@ -213,14 +213,15 @@ def download_component_file(user, c_id, f_id):
     swift = dci_config.get_store('components')
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     v1_utils.verify_team_in_topic(user, component['topic_id'])
-    v1_utils.verify_existence_and_get(f_id, models.COMPONENT_FILES)
+    f = v1_utils.verify_existence_and_get(f_id, models.COMPONENT_FILES)
     auth.check_export_control(user, component)
     file_path = swift.build_file_path(component['topic_id'], c_id, f_id)
 
     # Check if file exist on the storage engine
     swift.head(file_path)
 
-    return flask.Response(swift.get_object(file_path))
+    _, fd = swift.get(file_path)
+    return flask.send_file(fd, f['mime'])
 
 
 @api.route('/components/<uuid:c_id>/files', methods=['POST'])
