@@ -16,6 +16,7 @@
 
 from __future__ import unicode_literals
 import mock
+import six
 import uuid
 from dci.stores.swift import Swift
 from dci.common import utils
@@ -383,8 +384,7 @@ def test_download_file_from_component(admin, topic_id):
 
         mockito = mock.MagicMock()
 
-        mockito.get.return_value = ["test", "lol lol lel".split(" ")]
-        mockito.get_object.return_value = "lollollel"
+        mockito.get.return_value = ["test", six.StringIO("lollollel")]
         head_result = {
             'etag': utils.gen_etag(),
             'content-type': "stream",
