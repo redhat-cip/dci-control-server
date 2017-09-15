@@ -52,12 +52,6 @@ class Swift(stores.Store):
         return self.connection.get_object(self.container, filename,
                                           resp_chunk_size=65535)
 
-    def get_object(self, swift_object):
-        content = ""
-        for block in self.get(swift_object)[1]:
-            content += block
-        return content
-
     def head(self, filename):
         try:
             return self.connection.head_object(self.container, filename)
