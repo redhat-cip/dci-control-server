@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_f11688a6",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 216,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-09-18T07:51:39Z",
+      "side": 1,
+      "message": "use file instead",
+      "range": {
+        "startLine": 216,
+        "startChar": 4,
+        "endLine": 216,
+        "endChar": 5
+      },
+      "revId": "e6e9da6f5efe6fbdf387e707e026ff77e3d86f49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_d10b847c",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-09-18T07:51:39Z",
+      "side": 1,
+      "message": "file_descriptor \u003d swift.get(file_path)[1]\nreturn flask.send_file(file_descriptor, f[\u0027mime\u0027])",
+      "range": {
+        "startLine": 223,
+        "startChar": 0,
+        "endLine": 224,
+        "endChar": 41
+      },
+      "revId": "e6e9da6f5efe6fbdf387e707e026ff77e3d86f49",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
