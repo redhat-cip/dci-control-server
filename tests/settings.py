@@ -25,3 +25,8 @@ SQLALCHEMY_DATABASE_URI = "postgresql:///%s?host=%s" % (
 )
 
 FILES_UPLOAD_FOLDER = '/tmp/dci-control-server'
+
+SSO_URL = 'http://localhost:8180'
+SSO_REALM = 'dci-test'
+SSO_CLIENT_ID = 'dci'
+SSO_REDIRECT = 'http://localhost:5000/rh-partner'

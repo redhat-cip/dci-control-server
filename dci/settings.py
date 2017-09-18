@@ -80,3 +80,8 @@ X_HEADERS = 'Authorization, Content-Type, If-Match, ETag, X-Requested-With'
 MAX_CONTENT_LENGTH = 20 * 1024 * 1024
 
 FILES_UPLOAD_FOLDER = '/var/lib/dci-control-server/files'
+
+SSO_URL = 'https://sso.stage.redhat.com'
+SSO_REALM = 'redhat-external'
+SSO_CLIENT_ID = 'dci'
+SSO_REDIRECT = 'https://www.distributed-ci.io/rh-partner'
