@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9abe1de1_ac9d575b",
+        "filename": "README.md",
+        "patchSetId": 2
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-09-19T13:03:57Z",
+      "side": 1,
+      "message": "In the current README.rst these are separate paragraphs and I think it makes it easier to read too.\n\nRemoving the empty line will make it one big paragraph to read.",
+      "parentUuid": "9abe1de1_2c5267de",
+      "revId": "bb968f0de899eb83c357e0d11777aa4ad4a45aee",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9abe1de1_0c5e83e9",
         "filename": "README.md",
         "patchSetId": 2
