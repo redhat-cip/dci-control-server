@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_a320c54a",
+        "filename": "dci-control-server.spec",
+        "patchSetId": 6
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-09-22T06:19:58Z",
+      "side": 1,
+      "message": "I don\u0027t know how it works, but it is strange to mix py3 and py2 libraries",
+      "range": {
+        "startLine": 99,
+        "startChar": 0,
+        "endLine": 99,
+        "endChar": 26
+      },
+      "revId": "177cb0987a7ae95576e238544c10bda8805224fb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
