@@ -101,7 +101,12 @@ def unauthorized(app, db_provisioning):
 
 @pytest.fixture
 def user(app, db_provisioning):
-    return utils.generate_client(app, ('user', 'user'))
+    return utils.generate_client(app, ('dci', 'dci'))
+
+
+@pytest.fixture
+def user_sso(app, db_provisioning, access_token):
+    return utils.generate_client(app, access_token=access_token)
 
 
 @pytest.fixture
