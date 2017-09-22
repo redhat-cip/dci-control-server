@@ -105,6 +105,11 @@ def user(app, db_provisioning):
 
 
 @pytest.fixture
+def user_sso(app, db_provisioning, access_token):
+    return utils.generate_client(app, access_token=access_token)
+
+
+@pytest.fixture
 def user_id(admin):
     team = admin.get('/api/v1/users?where=name:user')
     team = admin.get('/api/v1/users/%s' % team.data['users'][0]['id']).data
