@@ -364,7 +364,7 @@ def test_get_user_as_user(user, admin):
     padmin = admin.get('/api/v1/users?where=name:admin')
     padmin = admin.get('/api/v1/users/%s' % padmin.data['users'][0]['id'])
 
-    puser = user.get('/api/v1/users?where=name:user')
+    puser = user.get('/api/v1/users?where=name:dci')
     puser = user.get('/api/v1/users/%s' % puser.data['users'][0]['id'])
 
     guser = user.get('/api/v1/users/%s' % padmin.data['user']['id'])
@@ -381,7 +381,7 @@ def get_user(flask_user, name):
 
 
 def test_admin_or_team_admin_can_update_another_user(admin, user_admin):
-    user, etag = get_user(admin, 'user')
+    user, etag = get_user(admin, 'dci')
     assert admin.put(
         '/api/v1/users/%s' % user['id'],
         data={'name': 'new_name'},
@@ -391,13 +391,13 @@ def test_admin_or_team_admin_can_update_another_user(admin, user_admin):
     user, etag = get_user(admin, 'new_name')
     assert user_admin.put(
         '/api/v1/users/%s' % user['id'],
-        data={'name': 'user'},
+        data={'name': 'dci'},
         headers={'If-match': etag}
     ).status_code == 204
 
 
 def test_user_cant_update_him(admin, user):
-    user_data, user_etag = get_user(admin, 'user')
+    user_data, user_etag = get_user(admin, 'dci')
 
     assert user.put(
         '/api/v1/users/%s' % user_data['id'],
@@ -408,7 +408,7 @@ def test_user_cant_update_him(admin, user):
 
 # Only super admin can delete a user
 def test_delete_as_user_admin(user, user_admin):
-    puser = user.get('/api/v1/users?where=name:user')
+    puser = user.get('/api/v1/users?where=name:dci')
     puser = user.get('/api/v1/users/%s' % puser.data['users'][0]['id'])
     user_etag = puser.headers.get("ETag")
 
@@ -454,7 +454,7 @@ def test_get_current_user(user):
     assert request.status_code == 200
 
     me = request.data['user']
-    expected_user = user.get('/api/v1/users?where=name:user').data['users'][0]
+    expected_user = user.get('/api/v1/users?where=name:dci').data['users'][0]
 
     assert me['id'] == expected_user['id']
     for key in expected_user.keys():
@@ -462,23 +462,23 @@ def test_get_current_user(user):
 
 
 def test_update_current_user_password(admin, user):
-    user_data, user_etag = get_user(admin, 'user')
+    user_data, user_etag = get_user(admin, 'dci')
 
     assert user.get('/api/v1/users/me').status_code == 200
 
     assert user.put(
         '/api/v1/users/me',
-        data={'current_password': 'user', 'new_password': 'password'},
+        data={'current_password': 'dci', 'new_password': 'password'},
         headers={'If-match': user_etag}
     ).status_code == 204
 
     assert user.get('/api/v1/users/me').status_code == 401
 
-    user_data, user_etag = get_user(admin, 'user')
+    user_data, user_etag = get_user(admin, 'dci')
 
     assert admin.put(
         '/api/v1/users/%s' % user_data['id'],
-        data={'password': 'user'},
+        data={'password': 'dci'},
         headers={'If-match': user_etag}
     ).status_code == 204
 
@@ -486,7 +486,7 @@ def test_update_current_user_password(admin, user):
 
 
 def test_update_current_user_current_password_wrong(admin, user):
-    user_data, user_etag = get_user(admin, 'user')
+    user_data, user_etag = get_user(admin, 'dci')
 
     assert user.get('/api/v1/users/me').status_code == 200
 
@@ -500,13 +500,13 @@ def test_update_current_user_current_password_wrong(admin, user):
 
 
 def test_update_current_user_new_password_empty(admin, user):
-    user_data, user_etag = get_user(admin, 'user')
+    user_data, user_etag = get_user(admin, 'dci')
 
     assert user.get('/api/v1/users/me').status_code == 200
 
     assert user.put(
         '/api/v1/users/me',
-        data={'current_password': 'user', 'new_password': ''},
+        data={'current_password': 'dci', 'new_password': ''},
         headers={'If-match': user_etag}
     ).status_code == 204
 
@@ -514,13 +514,13 @@ def test_update_current_user_new_password_empty(admin, user):
 
 
 def test_update_current_user(admin, user):
-    user_data, user_etag = get_user(admin, 'user')
+    user_data, user_etag = get_user(admin, 'dci')
 
     assert user.get('/api/v1/users/me').status_code == 200
 
     assert user.put(
         '/api/v1/users/me',
-        data={'current_password': 'user', 'new_password': '',
+        data={'current_password': 'dci', 'new_password': '',
               'email': 'new_email@example.org', 'fullname': 'New Name',
               'timezone': 'Europe/Paris'},
         headers={'If-match': user_etag}
