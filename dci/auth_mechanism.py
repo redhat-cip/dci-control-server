@@ -15,11 +15,14 @@
 # under the License.
 from datetime import datetime
 import flask
+from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
-from dci.db import models
-from dci.common import signature
 from dci import auth
+from dci.common import exceptions as dci_exc
+from dci.common import signature
+from dci.db import models
+from dci import dci_config
 
 
 class BaseMechanism(object):
@@ -173,3 +176,69 @@ class SignatureAuthMechanism(BaseMechanism):
             url=self.request.path.encode('utf-8'),
             query_string=self.request.query_string,
             payload=self.request.data)
+
+
+class OpenIDCAuth(BaseMechanism):
+    def is_valid(self):
+        auth_header = self.request.headers.get('Authorization').split(' ')
+        if len(auth_header) != 2:
+            return False
+        bearer, token = auth_header
+
+        if bearer != 'Bearer':
+            return False
+
+        conf = dci_config.generate_conf()
+        try:
+            decoded_token = auth.decode_jwt(token,
+                                            conf['SSO_PUBLIC_KEY'],
+                                            'dci-cs')
+        except Exception:
+            return False
+
+        sso_username = decoded_token['username']
+        self.identity = self._get_user_from_sso_username(sso_username)
+
+        if self.identity is None:
+            self.identity = self._create_user_and_get(decoded_token)
+
+        return True
+
+    def _get_user_from_sso_username(self, sso_username):
+        """Given the sso's username, get the associated user."""
+
+        query_get_user = (
+            sql.select(
+                [models.USERS]
+            ).where(
+                models.USERS.c.sso_username == sso_username
+            )
+        )
+
+        user = flask.g.db_conn.execute(query_get_user).fetchone()
+        if user is None:
+            return None
+        return dict(user)
+
+    def _create_user_and_get(self, decoded_token):
+        """Create the user according to the token, this function assume that
+        the token has been verified."""
+
+        user_values = {
+            'role_id': auth.get_role_id('USER'),
+            'fullname': decoded_token.get('fullname', 'kikoo'),
+            'name': decoded_token.get('username', 'lol'),
+            'sso_username': decoded_token.get('username'),
+            'team_id': None,
+            'email': 'mesteaks@distributed-ci.io',
+            'timezone': 'UTC',
+        }
+
+        query = models.USERS.insert().values(user_values)
+
+        try:
+            flask.g.db_conn.execute(query)
+        except sa_exc.IntegrityError:
+            raise dci_exc.DCICreationConflict(models.USERS.name, 'username')
+
+        return self._get_user_from_sso_username(decoded_token.get('username'))

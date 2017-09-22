@@ -19,7 +19,7 @@ from functools import wraps
 
 import flask
 
-from dci.auth_mechanism import BasicAuthMechanism, SignatureAuthMechanism
+import dci.auth_mechanism as am
 
 
 def reject():
@@ -38,8 +38,9 @@ def reject():
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        for mechanism in [BasicAuthMechanism(flask.request),
-                          SignatureAuthMechanism(flask.request)]:
+        for mechanism in [am.BasicAuthMechanism(flask.request),
+                          am.SignatureAuthMechanism(flask.request),
+                          am.OpenIDCAuth(flask.request)]:
             if mechanism.is_valid():
                 return f(mechanism.identity, *args, **kwargs)
         return reject()
