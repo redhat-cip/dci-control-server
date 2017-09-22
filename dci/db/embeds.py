@@ -333,7 +333,8 @@ def users(root_select=models.USERS):
         'team': [
             {'right': TEAM,
              'onclause': and_(TEAM.c.id == root_select.c.team_id,
-                              TEAM.c.state != 'archived')}
+                              TEAM.c.state != 'archived'),
+             'isouter': True}
         ],
         'role': [
             {'right': ROLE,

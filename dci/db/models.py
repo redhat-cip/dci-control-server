@@ -467,6 +467,7 @@ USERS = sa.Table(
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), nullable=False, unique=True),
+    sa.Column('sso_username', sa.String(255), nullable=True, unique=True),
     sa.Column('fullname', sa.String(255), nullable=False),
     sa.Column('email', sa.String(255), nullable=False, unique=True),
     sa.Column('password', sa.Text, nullable=True),

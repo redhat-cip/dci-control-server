@@ -79,6 +79,7 @@ def create_users(user):
         'role_id': role_id,
         'fullname': values.get('fullname', values['name']),
         'timezone': values.get('timezone', 'UTC'),
+        'sso_username': None
     })
 
     query = _TABLE.insert().values(**values)
