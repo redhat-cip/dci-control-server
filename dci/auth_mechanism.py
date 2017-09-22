@@ -15,11 +15,14 @@
 # under the License.
 from datetime import datetime
 import flask
+from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
-from dci.db import models
-from dci.common import signature
 from dci import auth
+from dci.common import exceptions as dci_exc
+from dci.common import signature
+from dci.db import models
+from dci import dci_config
 from dci.identity import Identity
 
 
@@ -31,20 +34,6 @@ class BaseMechanism(object):
     def is_valid(self):
         """Test if the user is a valid user."""
         pass
-
-
-class BasicAuthMechanism(BaseMechanism):
-    def is_valid(self):
-        auth = self.request.authorization
-        if not auth:
-            return False
-        user, is_authenticated = \
-            self.get_user_and_check_auth(auth.username, auth.password)
-        if not is_authenticated:
-            return False
-        teams = self.get_user_teams(user)
-        self.identity = Identity(user, teams)
-        return True
 
     def get_user_teams(self, user):
         """Retrieve all the teams that belongs to a user.
@@ -72,6 +61,20 @@ class BasicAuthMechanism(BaseMechanism):
             teams = [row[models.TEAMS.c.id] for row in result]
 
         return teams
+
+
+class BasicAuthMechanism(BaseMechanism):
+    def is_valid(self):
+        auth = self.request.authorization
+        if not auth:
+            return False
+        user, is_authenticated = \
+            self.get_user_and_check_auth(auth.username, auth.password)
+        if not is_authenticated:
+            return False
+        teams = self.get_user_teams(user)
+        self.identity = Identity(user, teams)
+        return True
 
     def get_user_and_check_auth(self, username, password):
         """Check the combination username/password that is valid on the
@@ -232,3 +235,102 @@ class SignatureAuthMechanism(BaseMechanism):
             url=self.request.path.encode('utf-8'),
             query_string=self.request.query_string,
             payload=self.request.data)
+
+
+class OpenIDCAuth(BaseMechanism):
+    def is_valid(self):
+        if 'Authorization' not in self.request.headers:
+            return False
+        auth_header = self.request.headers.get('Authorization').split(' ')
+        if len(auth_header) != 2:
+            return False
+        bearer, token = auth_header
+
+        if bearer != 'Bearer':
+            return False
+
+        conf = dci_config.generate_conf()
+        try:
+            decoded_token = auth.decode_jwt(token,
+                                            conf['SSO_PUBLIC_KEY'],
+                                            'dci-cs')
+        except Exception:
+            return False
+
+        sso_username = decoded_token['username']
+        user_from_sso_username = self._get_user_from_sso_username(sso_username)
+        if user_from_sso_username is None:
+            new_user = self._create_user_and_get(decoded_token)
+            self.identity = Identity(new_user, [])
+        else:
+            user_teams = self.get_user_teams(user_from_sso_username)
+            self.identity = Identity(user_from_sso_username, user_teams)
+
+        return True
+
+    def _get_user_from_sso_username(self, sso_username):
+        """Given the sso's username, get the associated user."""
+
+        partner_team = models.TEAMS.alias('partner_team')
+        product_team = models.TEAMS.alias('product_team')
+
+        query_get_user = (
+            sql.select(
+                [
+                    models.USERS,
+                    partner_team.c.name.label('team_name'),
+                    models.PRODUCTS.c.id.label('product_id'),
+                    models.ROLES.c.label.label('role_label')
+                ]
+            ).select_from(
+                models.USERS.outerjoin(
+                    partner_team,
+                    models.USERS.c.team_id == partner_team.c.id
+                ).outerjoin(
+                    product_team,
+                    partner_team.c.parent_id == product_team.c.id
+                ).outerjoin(
+                    models.PRODUCTS,
+                    models.PRODUCTS.c.team_id.in_([partner_team.c.id,
+                                                   product_team.c.id])
+                ).join(
+                    models.ROLES,
+                    models.USERS.c.role_id == models.ROLES.c.id
+                )
+            ).where(
+                sql.and_(
+                    sql.or_(
+                        models.USERS.c.sso_username == sso_username,
+                        models.USERS.c.email == sso_username
+                    ),
+                    models.USERS.c.state == 'active'
+                )
+            )
+        )
+
+        user = flask.g.db_conn.execute(query_get_user).fetchone()
+
+        return user and dict(user)
+
+    def _create_user_and_get(self, decoded_token):
+        """Create the user according to the token, this function assume that
+        the token has been verified."""
+
+        user_values = {
+            'role_id': auth.get_role_id('USER'),
+            'name': decoded_token.get('username'),
+            'fullname': decoded_token.get('username'),
+            'sso_username': decoded_token.get('username'),
+            'team_id': None,
+            'email': decoded_token.get('email'),
+            'timezone': 'UTC',
+        }
+
+        query = models.USERS.insert().values(user_values)
+
+        try:
+            flask.g.db_conn.execute(query)
+        except sa_exc.IntegrityError:
+            raise dci_exc.DCICreationConflict(models.USERS.name, 'username')
+
+        return self._get_user_from_sso_username(decoded_token.get('username'))

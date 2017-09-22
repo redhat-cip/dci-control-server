@@ -14,12 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from datetime import datetime
+import datetime
+
+import dci.auth_mechanism as authm
+
+import flask
+import mock
 import pytest
 import uuid
-
-from dci.auth_mechanism import BasicAuthMechanism
-from dci.auth_mechanism import SignatureAuthMechanism
 
 
 class MockRequest(object):
@@ -34,7 +36,7 @@ class AuthMock(object):
 
 
 def test_basic_auth_mecanism_is_valid_false_if_no_auth():
-    basic_auth_mecanism = BasicAuthMechanism(MockRequest())
+    basic_auth_mecanism = authm.BasicAuthMechanism(MockRequest())
     assert not basic_auth_mecanism.is_valid()
 
 
@@ -42,7 +44,7 @@ def test_bam_is_valid_false_if_not_authenticated():
     def return_is_authenticated(*args):
         return {}, False
 
-    basic_auth_mecanism = BasicAuthMechanism(MockRequest(AuthMock()))
+    basic_auth_mecanism = authm.BasicAuthMechanism(MockRequest(AuthMock()))
     basic_auth_mecanism.get_user_and_check_auth = return_is_authenticated
     assert not basic_auth_mecanism.is_valid()
 
@@ -54,7 +56,7 @@ def test_bam_is_valid():
     def return_get_user_teams(*args):
         return []
 
-    basic_auth_mecanism = BasicAuthMechanism(MockRequest(AuthMock()))
+    basic_auth_mecanism = authm.BasicAuthMechanism(MockRequest(AuthMock()))
     basic_auth_mecanism.get_user_and_check_auth = return_is_authenticated
     basic_auth_mecanism.get_user_teams = return_get_user_teams
     assert basic_auth_mecanism.is_valid()
@@ -86,7 +88,7 @@ def return_get_remoteci(*args):
 
 
 def _test_client_info_value(client_info_value):
-    mech = SignatureAuthMechanism(
+    mech = authm.SignatureAuthMechanism(
         MockSignedRequest({
             'DCI-Client-Info': client_info_value,
             'DCI-Auth-Signature': None,
@@ -125,7 +127,7 @@ def test_get_client_info_bad():
 
 def test_get_client_info_good():
     expected = {
-        'timestamp': datetime(2016, 3, 21, 15, 37, 59),
+        'timestamp': datetime.datetime(2016, 3, 21, 15, 37, 59),
         'type': 'foo',
         'id': '12890-abcdef',
     }
@@ -135,7 +137,7 @@ def test_get_client_info_good():
 
 
 def test_sam_is_valid_false_if_no_signature():
-    mech = SignatureAuthMechanism(MockSignedRequest())
+    mech = authm.SignatureAuthMechanism(MockSignedRequest())
     assert not mech.is_valid()
 
 
@@ -143,7 +145,7 @@ def test_sam_is_valid_false_if_not_authenticated():
     def return_is_authenticated(*args):
         return False
 
-    mech = SignatureAuthMechanism(MockSignedRequest(sam_headers))
+    mech = authm.SignatureAuthMechanism(MockSignedRequest(sam_headers))
     mech.verify_remoteci_auth_signature = return_is_authenticated
     mech.get_remoteci = return_get_remoteci
     assert not mech.is_valid()
@@ -153,7 +155,60 @@ def test_sam_is_valid():
     def return_is_authenticated(*args):
         return True
 
-    mech = SignatureAuthMechanism(MockSignedRequest(sam_headers))
+    mech = authm.SignatureAuthMechanism(MockSignedRequest(sam_headers))
     mech.verify_remoteci_auth_signature = return_is_authenticated
     mech.get_remoteci = return_get_remoteci
     assert mech.is_valid()
+
+
+@mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
+def test_sso_auth_verified(m_datetime, admin, app, engine, access_token):
+    m_utcnow = mock.MagicMock()
+    m_utcnow.utctimetuple.return_value = datetime.datetime. \
+        fromtimestamp(1505564918).timetuple()
+    m_datetime.utcnow.return_value = m_utcnow
+    sso_headers = mock.Mock
+    sso_headers.headers = {'Authorization': 'Bearer %s' % access_token}
+    nb_users = len(admin.get('/api/v1/users').data['users'])
+    with app.app_context():
+        flask.g.db_conn = engine.connect()
+        mech = authm.OpenIDCAuth(sso_headers)
+        assert mech.is_valid()
+        assert mech.identity['team_id'] is None
+        assert mech.identity['name'] == 'dci'
+        assert mech.identity['sso_username'] == 'dci'
+        assert mech.identity['email'] == 'dci@distributed-ci.io'
+        nb_users_after_sso = len(admin.get('/api/v1/users').data['users'])
+        assert (nb_users + 1) == nb_users_after_sso
+
+
+@mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
+def test_sso_auth_not_verified(m_datetime, admin, app, engine, access_token):
+    m_utcnow = mock.MagicMock()
+    m_utcnow.utctimetuple.return_value = datetime.datetime. \
+        fromtimestamp(1505564918).timetuple()
+    m_datetime.utcnow.return_value = m_utcnow
+    # corrupt access_token
+    access_token = access_token + 'lol'
+    sso_headers = mock.Mock
+    sso_headers.headers = {'Authorization': 'Bearer %s' % access_token}
+    nb_users = len(admin.get('/api/v1/users').data['users'])
+    with app.app_context():
+        flask.g.db_conn = engine.connect()
+        mech = authm.OpenIDCAuth(sso_headers)
+        assert not mech.is_valid()
+        assert mech.identity is None
+        nb_users_after_sso = len(admin.get('/api/v1/users').data['users'])
+        assert nb_users == nb_users_after_sso
+
+
+@mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
+def test_sso_auth_get_users(m_datetime, user_sso, app, engine):
+    m_utcnow = mock.MagicMock()
+    m_utcnow.utctimetuple.return_value = datetime.datetime. \
+        fromtimestamp(1505564918).timetuple()
+    m_datetime.utcnow.return_value = m_utcnow
+    with app.app_context():
+        flask.g.db_conn = engine.connect()
+        gusers = user_sso.get('/api/v1/users')
+        assert gusers.status_code == 200

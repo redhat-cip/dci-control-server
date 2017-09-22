@@ -45,16 +45,22 @@ def rm_upload_folder():
     shutil.rmtree(conf['FILES_UPLOAD_FOLDER'], ignore_errors=True)
 
 
-def generate_client(app, credentials):
+def generate_client(app, credentials=None, access_token=None):
     attrs = ['status_code', 'data', 'headers']
     Response = collections.namedtuple('Response', attrs)
 
-    token = (base64.b64encode(('%s:%s' % credentials).encode('utf8'))
-             .decode('utf8'))
-    headers = {
-        'Authorization': 'Basic ' + token,
-        'Content-Type': 'application/json'
-    }
+    if credentials:
+        token = (base64.b64encode(('%s:%s' % credentials).encode('utf8'))
+                 .decode('utf8'))
+        headers = {
+            'Authorization': 'Basic ' + token,
+            'Content-Type': 'application/json'
+        }
+    elif access_token:
+        headers = {
+            'Authorization': 'Bearer ' + access_token,
+            'Content-Type': 'application/json'
+        }
 
     def client_open_decorator(func):
         def wrapper(*args, **kwargs):
@@ -131,6 +137,7 @@ def provision(db_conn):
     # Create users
     db_insert(models.USERS,
               name='user',
+              sso_username='user',
               role_id=user_role_id,
               password=user_pw_hash,
               fullname='User',
@@ -139,6 +146,7 @@ def provision(db_conn):
 
     db_insert(models.USERS,
               name='user_admin',
+              sso_username='user_admin',
               role_id=admin_role_id,
               password=user_admin_pw_hash,
               fullname='User Admin',
@@ -147,6 +155,7 @@ def provision(db_conn):
 
     db_insert(models.USERS,
               name='product_owner',
+              sso_username='product_owner',
               role_id=product_owner_role_id,
               password=product_owner_pw_hash,
               fullname='Product Owner',
@@ -155,6 +164,7 @@ def provision(db_conn):
 
     db_insert(models.USERS,
               name='admin',
+              sso_username='admin',
               role_id=super_admin_role_id,
               password=admin_pw_hash,
               fullname='Admin',
