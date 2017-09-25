@@ -214,8 +214,7 @@ class TestUser(utils.SchemaTesting):
         super(TestUser, self).test_post_extra_data(self.data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'password', 'team_id',
-                                       'fullname', 'email')
+        errors = utils.generate_errors('name', 'fullname', 'email')
         super(TestUser, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
