@@ -469,13 +469,13 @@ USERS = sa.Table(
     sa.Column('name', sa.String(255), nullable=False, unique=True),
     sa.Column('fullname', sa.String(255), nullable=False),
     sa.Column('email', sa.String(255), nullable=False, unique=True),
-    sa.Column('password', sa.Text, nullable=False),
+    sa.Column('password', sa.Text, nullable=True),
     sa.Column('timezone', sa.String(255), nullable=False, default='UTC'),
     sa.Column('role_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('roles.id', ondelete='SET NULL')),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
-              nullable=False),
+              nullable=True),
     sa.Index('users_team_id_idx', 'team_id'),
     sa.Column('state', STATES, default='active')
 )

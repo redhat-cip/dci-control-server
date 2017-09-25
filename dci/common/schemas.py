@@ -233,12 +233,12 @@ test = DCISchema(schema_factory(test).post, Schema(test_put))
 ###############################################################################
 
 user = utils.dict_merge(base, {
-    'password': six.text_type,
+    v.Optional('password'): six.text_type,
     'fullname': six.text_type,
     'email': v.Any(Email, msg=INVALID_EMAIL),
     v.Optional('timezone'): v.Any(Timezone, msg=INVALID_TIMEZONE),
     v.Optional('role_id'): v.Any(UUID, msg=INVALID_UUID),
-    'team_id': v.Any(UUID, msg=INVALID_TEAM),
+    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 })
