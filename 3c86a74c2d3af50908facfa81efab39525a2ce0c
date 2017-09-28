@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_f440b109",
+        "filename": "tests/settings.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-09-28T16:43:01Z",
+      "side": 1,
+      "message": "You should get SSO_PUBLIC_KEY from env variable and fallback to the default public key.\nActually, this doesn\u0027t work with dci-dev-env\n\nIn the entrypoint you should generate it with `./bin/dci-gen-pem-ks-key.py http://keycloak:8180 dci-test`",
+      "range": {
+        "startLine": 29,
+        "startChar": 0,
+        "endLine": 38,
+        "endChar": 3
+      },
+      "revId": "3c86a74c2d3af50908facfa81efab39525a2ce0c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
