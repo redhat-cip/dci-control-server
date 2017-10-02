@@ -18,6 +18,7 @@ import flask
 
 from dci.db import models
 from sqlalchemy import sql
+from dci.api.v1 import utils as v1_utils
 
 
 class Identity:
@@ -62,16 +63,6 @@ class Identity:
 
         return teams
 
-    def _get_role_id(self, label):
-        """Return role id based on role label."""
-
-        query = sql.select([models.ROLES]).where(
-            models.ROLES.c.label == label
-        )
-        result = flask.g.db_conn.execute(query).fetchone()
-
-        return result.id
-
     def is_in_team(self, team_id):
         """Ensure the user is in the specified team."""
 
@@ -80,19 +71,19 @@ class Identity:
     def is_super_admin(self):
         """Ensure the user has the role SUPER_ADMIN."""
 
-        return self.role_id == self._get_role_id('SUPER_ADMIN')
+        return self.role_id == v1_utils.get_role_id('SUPER_ADMIN')
 
     def is_product_owner(self):
         """Ensure the user has the role PRODUCT_OWNER."""
 
-        return self.role_id == self._get_role_id('PRODUCT_OWNER')
+        return self.role_id == v1_utils.get_role_id('PRODUCT_OWNER')
 
     def is_admin(self):
         """Ensure ther user has the role ADMIN."""
 
-        return self.role_id == self._get_role_id('ADMIN')
+        return self.role_id == v1_utils.get_role_id('ADMIN')
 
     def is_regular_user(self):
         """Ensure ther user has the role USER."""
 
-        return self.role_id == self._get_role_id('USER')
+        return self.role_id == v1_utils.get_role_id('USER')
