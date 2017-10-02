@@ -20,6 +20,7 @@ from sqlalchemy import sql
 from dci.db import models
 from dci.common import signature
 from dci import auth
+from dci.identity import Identity
 
 
 class BaseMechanism(object):
@@ -41,7 +42,7 @@ class BasicAuthMechanism(BaseMechanism):
             self.get_user_and_check_auth(auth.username, auth.password)
         if not is_authenticated:
             return False
-        self.identity = user
+        self.identity = Identity(user)
         return True
 
     def get_user_and_check_auth(self, username, password):
@@ -49,17 +50,27 @@ class BasicAuthMechanism(BaseMechanism):
         database.
         """
 
+        partner_team = models.TEAMS.alias('partner_team')
+        product_team = models.TEAMS.alias('product_team')
+
         query_get_user = (
             sql.select(
                 [
                     models.USERS,
-                    models.TEAMS.c.name.label('team_name'),
+                    partner_team.c.name.label('team_name'),
+                    models.PRODUCTS.c.id.label('product_id'),
                 ]
             ).select_from(
                 sql.join(
                     models.USERS,
-                    models.TEAMS,
-                    models.USERS.c.team_id == models.TEAMS.c.id
+                    partner_team,
+                    models.USERS.c.team_id == partner_team.c.id
+                ).outerjoin(
+                    product_team,
+                    partner_team.c.parent_id == product_team.c.id
+                ).outerjoin(
+                    models.PRODUCTS,
+                    models.PRODUCTS.c.team_id.in_([partner_team.c.id, product_team.c.id])
                 )
             ).where(
                 sql.and_(
@@ -68,7 +79,7 @@ class BasicAuthMechanism(BaseMechanism):
                         models.USERS.c.email == username
                     ),
                     models.USERS.c.state == 'active',
-                    models.TEAMS.c.state == 'active'
+                    partner_team.c.state == 'active'
                 )
             )
         )
@@ -98,10 +109,11 @@ class SignatureAuthMechanism(BaseMechanism):
         remoteci = self.get_remoteci(client_info['id'])
         if remoteci is None:
             return False
-        self.identity = dict(remoteci)
+        dict_remoteci = dict(remoteci)
         # NOTE(fc): role assignment should be done in another place
         #           but this should do the job for now.
-        self.identity['role'] = 'remoteci'
+        dict_remoteci['role'] = 'remoteci'
+        self.identity = Identity(remoteci)
 
         return self.verify_remoteci_auth_signature(
             remoteci, client_info['timestamp'], their_signature)
@@ -132,23 +144,33 @@ class SignatureAuthMechanism(BaseMechanism):
         """Get the remoteci including its API secret
         """
 
+        partner_team = models.TEAMS.alias('partner_team')
+        product_team = models.TEAMS.alias('product_team')
+
         query_get_remoteci = (
             sql.select(
                 [
                     models.REMOTECIS,
-                    models.TEAMS.c.name.label('team_name'),
+                    partner_team.c.name.label('team_name'),
+                    models.PRODUCTS.c.id.label('product_id'),
                 ]
             ).select_from(
                 sql.join(
                     models.REMOTECIS,
-                    models.TEAMS,
-                    models.REMOTECIS.c.team_id == models.TEAMS.c.id
+                    partner_team,
+                    models.REMOTECIS.c.team_id == partner_team.c.id
+                ).outerjoin(
+                    product_team,
+                    partner_team.c.parent_id == product_team.c.id
+                ).outerjoin(
+                    models.PRODUCTS,
+                    models.PRODUCTS.c.team_id.in_([partner_team.c.id, product_team.c.id])
                 )
             ).where(
                 sql.and_(
                     models.REMOTECIS.c.id == ci_id,
                     models.REMOTECIS.c.state == 'active',
-                    models.TEAMS.c.state == 'active'
+                    partner_team.c.state == 'active'
                 )
             )
         )
