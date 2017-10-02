@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2016 Red Hat, Inc
+# Copyright (C) 2015-2017 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -49,11 +49,12 @@ def create_teams(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.team.post(flask.request.json))
 
-    if not auth.is_admin(user):
+    if not user.is_super_admin_or_product_owner():
         raise auth.UNAUTHORIZED
 
-    if not values['parent_id']:
-        values['parent_id'] = user['team_id']
+    if not values['parent_id'] or \
+       (user.is_product_owner() and values['parent_id'] != user.team_id):
+        values['parent_id'] = user.team_id
 
     query = _TABLE.insert().values(**values)
 
@@ -75,8 +76,8 @@ def get_all_teams(user):
 
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.id == user['team_id'])
+    if not user.is_super_admin():
+        query.add_extra_condition(_TABLE.c.id.in_(user.teams))
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
@@ -92,7 +93,7 @@ def get_all_teams(user):
 @decorators.login_required
 def get_team_by_id(user, t_id):
     team = v1_utils.verify_existence_and_get(t_id, _TABLE)
-    if not(auth.is_admin(user) or auth.is_in_team(user, team['id'])):
+    if t_id not in user.teams:
         raise auth.UNAUTHORIZED
     return base.get_resource_by_id(user, team, _TABLE, _EMBED_MANY)
 
@@ -119,7 +120,7 @@ def put_team(user, t_id):
 
     values = schemas.team.put(flask.request.json)
 
-    if not(auth.is_admin(user) or auth.is_admin_user(user, t_id)):
+    if user.is_regular_user() or t_id not in user.teams:
         raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
@@ -146,7 +147,8 @@ def delete_team_by_id(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    if not auth.is_admin(user):
+    if not (user.is_super_admin() or
+            (user.is_product_owner() and t_id in user.teams)):
         raise auth.UNAUTHORIZED
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
