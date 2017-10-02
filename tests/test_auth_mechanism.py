@@ -19,6 +19,7 @@ import pytest
 
 from dci.auth_mechanism import BasicAuthMechanism
 from dci.auth_mechanism import SignatureAuthMechanism
+from dci.identity import Identity
 
 
 class MockRequest(object):
@@ -50,6 +51,7 @@ def test_bam_is_valid():
     def return_is_authenticated(*args):
         return {}, True
 
+    Identity._get_user_teams = return_get_user_teams
     basic_auth_mecanism = BasicAuthMechanism(MockRequest(AuthMock()))
     basic_auth_mecanism.get_user_and_check_auth = return_is_authenticated
     assert basic_auth_mecanism.is_valid()
@@ -73,6 +75,10 @@ sam_headers = {
     'DCI-Client-Info': '2016-12-12 03:03:03Z/remoteci/Morbo',
     'DCI-Auth-Signature': 'DOOOOOOOM!!!',
 }
+
+
+def return_get_user_teams(*args):
+    return []
 
 
 def return_get_remoteci(*args):
