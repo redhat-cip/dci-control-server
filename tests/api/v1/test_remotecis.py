@@ -645,3 +645,92 @@ def test_success_detach_myself_from_remoteci_in_team(user, user_id,
 
     assert r.status_code == 200
     assert len(r.data['remoteci']['users']) == 0
+
+# Test for PRODUCT_OWNER role
+# The following test suite tests permissions
+
+
+def test_success_create_rci_subteam_as_product_owner(product_owner,
+                                                     team_user_id,
+                                                     team_product_id):
+
+    rci_id = product_owner.post('/api/v1/remotecis',
+                                data={'name': 'pname',
+                                      'team_id': team_user_id}
+                                ).data['remoteci']['id']
+
+    remoteci = product_owner.get('/api/v1/remotecis/%s' % rci_id).data
+
+    assert remoteci['remoteci']['team_id'] == team_user_id
+    assert team_user_id != team_product_id
+
+
+def test_success_get_all_rci_subteam_as_product_owner(product_owner,
+                                                      team_user_id,
+                                                      team_product_id):
+
+    rcis = product_owner.get('/api/v1/remotecis')
+    current_rcis = rcis.data['_meta']['count']
+
+    data = [{'name': 'rci1', 'team_id': team_user_id},
+            {'name': 'rci2', 'team_id': team_product_id}]
+
+    for d in data:
+        product_owner.post('/api/v1/remotecis', data=d)
+
+    rcis = product_owner.get('/api/v1/remotecis')
+    assert rcis.data['_meta']['count'] == current_rcis + 2
+
+
+def test_success_update_user_subteam_as_product_owner(product_owner,
+                                                      team_user_id,
+                                                      team_product_id):
+
+    rci = product_owner.post('/api/v1/remotecis',
+                             data={'name': 'pname',
+                                   'team_id': team_user_id})
+
+    rci_etag = rci.headers.get("ETag")
+
+    l_rci = product_owner.get(
+        '/api/v1/remotecis/%s' % rci.data['remoteci']['id']
+    )
+    assert l_rci.data['remoteci']['team_id'] == team_user_id
+
+    u_rci = product_owner.put(
+        '/api/v1/remotecis/%s' % l_rci.data['remoteci']['id'],
+        data={'name': 'nname'}, headers={'If-match': rci_etag}
+    )
+    assert u_rci.status_code == 204
+
+    remoteci = product_owner.get(
+        '/api/v1/remotecis/%s' % l_rci.data['remoteci']['id']
+    )
+    assert remoteci.data['remoteci']['name'] == 'nname'
+
+
+def test_success_delete_user_subteam_as_product_owner(product_owner,
+                                                      team_user_id,
+                                                      team_product_id):
+
+    rci = product_owner.post('/api/v1/remotecis',
+                             data={'name': 'pname',
+                                   'team_id': team_user_id})
+
+    rci_etag = rci.headers.get("ETag")
+
+    l_rci = product_owner.get(
+        '/api/v1/remotecis/%s' % rci.data['remoteci']['id']
+    )
+    assert l_rci.data['remoteci']['team_id'] == team_user_id
+
+    deleted_rci = product_owner.delete(
+        '/api/v1/remotecis/%s' % l_rci.data['remoteci']['id'],
+        headers={'If-match': rci_etag}
+    )
+    assert deleted_rci.status_code == 204
+
+    l_rci = product_owner.get(
+        '/api/v1/remotecis/%s' % rci.data['remoteci']['id']
+    )
+    assert l_rci.status_code == 404
