@@ -33,3 +33,44 @@ def test_purge_resource(admin, product):
 
     to_purge = admin.get('/api/v1/topics/purge').data
     assert len(to_purge['topics']) == 0
+
+
+def test_success_get_my_team_resource_as_team_member(user_admin,
+                                                     team_user_id):
+
+    data = {
+        'name': 'foo', 'password': 'psswd', 'team_id': team_user_id,
+        'fullname': 'Foo Bar', 'email': 'foo@example.org'
+    }
+
+    user_id = user_admin.post('/api/v1/users', data=data).data['user']['id']
+    user = user_admin.get('/api/v1/users/%s' % user_id).data['user']
+    assert user['name'] == 'foo'
+
+
+def test_success_get_subteam_resource_as_product_owner(user_admin,
+                                                       team_user_id,
+                                                       product_owner):
+
+    data = {
+        'name': 'foo', 'password': 'psswd', 'team_id': team_user_id,
+        'fullname': 'Foo Bar', 'email': 'foo@example.org'
+    }
+
+    user_id = user_admin.post('/api/v1/users', data=data).data['user']['id']
+    user = product_owner.get('/api/v1/users/%s' % user_id).data['user']
+    assert user['name'] == 'foo'
+
+
+def test_success_get_anyteam_resource_as_super_admin(user_admin,
+                                                     team_user_id,
+                                                     admin):
+
+    data = {
+        'name': 'foo', 'password': 'psswd', 'team_id': team_user_id,
+        'fullname': 'Foo Bar', 'email': 'foo@example.org'
+    }
+
+    user_id = user_admin.post('/api/v1/users', data=data).data['user']['id']
+    user = admin.get('/api/v1/users/%s' % user_id).data['user']
+    assert user['name'] == 'foo'
