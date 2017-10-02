@@ -50,8 +50,12 @@ def test_bam_is_valid():
     def return_is_authenticated(*args):
         return {}, True
 
+    def return_get_user_teams(*args):
+        return []
+
     basic_auth_mecanism = BasicAuthMechanism(MockRequest(AuthMock()))
     basic_auth_mecanism.get_user_and_check_auth = return_is_authenticated
+    basic_auth_mecanism.get_user_teams = return_get_user_teams
     assert basic_auth_mecanism.is_valid()
 
 
@@ -61,12 +65,14 @@ class MockSignedRequest(object):
 
 
 class RemoteCiMock(object):
-    def __init__(self, id, api_secret='dummy'):
+    def __init__(self, id, api_secret='dummy',
+                 team_id='90b89be5-141d-4866-bb4d-248694d95445'):
         self.id = id
         self.api_secret = api_secret
+        self.team_id = team_id
 
     def __iter__(self):
-        yield '', ''
+        yield 'team_id', self.team_id
 
 
 sam_headers = {
