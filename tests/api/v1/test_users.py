@@ -546,3 +546,102 @@ def test_get_embed_remotecis(admin, user, remoteci_user_id, user_id):
 
     me = user.get('/api/v1/users/me?embed=remotecis').data['user']
     assert me['remotecis'][0]['id'] == remoteci_user_id
+
+# Test for PRODUCT_OWNER role
+# The following test suite tests permissions
+
+
+def test_success_create_user_subteam_as_product_owner(product_owner,
+                                                      team_user_id,
+                                                      team_product_id):
+
+    data = {
+        'name': 'pname', 'password': 'ppass',
+        'fullname': 'P Name', 'email': 'pname@example.org',
+        'team_id': team_user_id
+    }
+
+    user_id = product_owner.post('/api/v1/users', data=data).data['user']['id']
+    user = product_owner.get('/api/v1/users/%s' % user_id).data['user']
+    assert user['name'] == 'pname'
+    assert user['team_id'] == team_user_id
+    assert team_user_id != team_product_id
+
+
+def test_success_get_all_user_subteam_as_product_owner(product_owner,
+                                                       team_user_id,
+                                                       team_product_id):
+
+    users = product_owner.get('/api/v1/users')
+    current_users = users.data['_meta']['count']
+
+    data = [{
+        'name': 'pname', 'password': 'ppass',
+        'fullname': 'P Name', 'email': 'pname@example.org',
+        'team_id': team_user_id
+    }, {
+        'name': 'pname2', 'password': 'ppass2',
+        'fullname': 'P Name 2', 'email': 'pname2@example.org',
+        'team_id': team_user_id
+    }, {
+        'name': 'pname3', 'password': 'ppass3',
+        'fullname': 'P Name 3', 'email': 'pname3@example.org',
+        'team_id': team_product_id
+    }]
+
+    for d in data:
+        product_owner.post('/api/v1/users', data=d).data['user']['id']
+
+    users = product_owner.get('/api/v1/users')
+    assert users.data['_meta']['count'] == current_users + 3
+
+
+def test_success_update_user_subteam_as_product_owner(product_owner,
+                                                      team_user_id,
+                                                      team_product_id):
+
+    data = {
+        'name': 'pname', 'password': 'ppass',
+        'fullname': 'P Name', 'email': 'pname@example.org',
+        'team_id': team_user_id
+    }
+
+    user = product_owner.post('/api/v1/users', data=data)
+    user_etag = user.headers.get("ETag")
+
+    l_user = product_owner.get('/api/v1/users/%s' % user.data['user']['id'])
+    assert l_user.data['user']['team_id'] == team_user_id
+
+    u_user = product_owner.put('/api/v1/users/%s' % l_user.data['user']['id'],
+                               data={'name': 'nname'},
+                               headers={'If-match': user_etag})
+    assert u_user.status_code == 204
+
+    user = product_owner.get('/api/v1/users/%s' % l_user.data['user']['id'])
+    assert user.data['user']['name'] == 'nname'
+
+
+def test_success_delete_user_subteam_as_product_owner(product_owner,
+                                                      team_user_id,
+                                                      team_product_id):
+
+    data = {
+        'name': 'pname', 'password': 'ppass',
+        'fullname': 'P Name', 'email': 'pname@example.org',
+        'team_id': team_user_id
+    }
+
+    user = product_owner.post('/api/v1/users', data=data)
+    user_etag = user.headers.get("ETag")
+
+    l_user = product_owner.get('/api/v1/users/%s' % user.data['user']['id'])
+    assert l_user.data['user']['team_id'] == team_user_id
+
+    deleted_user = product_owner.delete(
+        '/api/v1/users/%s' % user.data['user']['id'],
+        headers={'If-match': user_etag}
+    )
+    assert deleted_user.status_code == 204
+
+    l_user = product_owner.get('/api/v1/users/%s' % user.data['user']['id'])
+    assert l_user.status_code == 404
