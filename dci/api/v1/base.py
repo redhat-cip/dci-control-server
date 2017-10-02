@@ -32,8 +32,8 @@ def get_resource_by_id(user, resource, table, embed_many, ignore_columns=None,
 
     query = v1_utils.QueryBuilder(table, args, columns, ignore_columns)
 
-    if not auth.is_admin(user) and 'team_id' in resource:
-        query.add_extra_condition(table.c.team_id == user['team_id'])
+    if not user.is_super_admin() and 'team_id' in resource:
+        query.add_extra_condition(table.c.team_id.in_(user.teams))
 
     if 'state' in resource:
         query.add_extra_condition(table.c.state != 'archived')
