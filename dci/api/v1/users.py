@@ -64,12 +64,12 @@ def create_users(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.user.post(flask.request.json))
 
-    if not (auth.is_admin(user) or
-            auth.is_admin_user(user, values['team_id'])):
+    if user.is_regular_user() or not user.is_in_team(values['team_id']):
         raise auth.UNAUTHORIZED
 
-    role_id = values.get('role_id', auth.get_role_id('USER'))
-    if not auth.is_admin(user) and role_id == auth.get_role_id('SUPER_ADMIN'):
+    role_id = values.get('role_id', v1_utils.get_role_id('USER'))
+    if not user.is_super_admin() and \
+       role_id == v1_utils.get_role_id('SUPER_ADMIN'):
         raise auth.UNAUTHORIZED
 
     values.update({
@@ -100,9 +100,9 @@ def create_users(user):
 def get_all_users(user, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
-    # If it's not an admin, then get only the users of the caller's team
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
+
+    if not user.is_super_admin():
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     if team_id is not None:
         query.add_extra_condition(_TABLE.c.team_id == team_id)
@@ -179,8 +179,7 @@ def put_user(user, user_id):
     puser = dict(_verify_existence_and_get_user(user_id))
 
     if puser['id'] != str(user_id):
-        if not(auth.is_admin(user) or
-               auth.is_admin_user(user, puser['team_id'])):
+        if user.is_regular_user() or not user.is_in_team(puser['team_id']):
             raise auth.UNAUTHORIZED
 
     # TODO(yassine): if the user wants to change the team, then check its done
@@ -214,8 +213,7 @@ def delete_user_by_id(user, user_id):
 
     duser = _verify_existence_and_get_user(user_id)
 
-    if not(auth.is_admin(user) or
-           auth.is_admin_user(user, duser['team_id'])):
+    if user.is_regular_user() or not user.is_in_team(duser['team_id']):
         raise auth.UNAUTHORIZED
 
     values = {'state': 'archived'}
