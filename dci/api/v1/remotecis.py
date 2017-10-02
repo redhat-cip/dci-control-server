@@ -53,9 +53,7 @@ def create_remotecis(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.remoteci.post(flask.request.json))
 
-    # If it's not a super admin nor belongs to the same team_id
-    if not(auth.is_admin(user) or
-           auth.is_in_team(user, values.get('team_id'))):
+    if not user.is_in_team(values['team_id']):
         raise auth.UNAUTHORIZED
 
     values.update({
@@ -86,9 +84,8 @@ def get_all_remotecis(user, t_id=None):
     # build the query thanks to the QueryBuilder class
     query = v1_utils.QueryBuilder(_TABLE, args, _R_COLUMNS)
 
-    # If it's not an admin then restrict the view to the team's file
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
+    if not user.is_super_admin():
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     if t_id is not None:
         query.add_extra_condition(_TABLE.c.team_id == t_id)
@@ -119,7 +116,7 @@ def put_remoteci(user, r_id):
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+    if not user.is_in_team(remoteci['team_id']):
         raise auth.UNAUTHORIZED
 
     values['etag'] = utils.gen_etag()
@@ -149,7 +146,7 @@ def delete_remoteci_by_id(user, remoteci_id):
 
     remoteci = v1_utils.verify_existence_and_get(remoteci_id, _TABLE)
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+    if not user.is_in_team(remoteci['team_id']):
         raise auth.UNAUTHORIZED
 
     with flask.g.db_conn.begin():
@@ -189,8 +186,8 @@ def get_remoteci_data(user, r_id):
 def get_remoteci_data_json(user, r_id):
     query = v1_utils.QueryBuilder(_TABLE, {}, _R_COLUMNS)
 
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
+    if not user.is_super_admin():
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     query.add_extra_condition(_TABLE.c.id == r_id)
     row = query.execute(fetchone=True)
@@ -211,7 +208,9 @@ def add_user_to_remoteci(user, r_id):
                                                        models.USERS)
 
     if values['user_id'] != user['id'] and \
-       not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+       not user.is_super_admin() and \
+       not user.is_team_product_owner(remoteci['team_id']) and \
+       not user.is_team_admin(remoteci['team_id']):
         raise auth.UNAUTHORIZED
 
     if user_to_attach['team_id'] != remoteci['team_id']:
@@ -249,7 +248,7 @@ def delete_user_from_remoteci(user, r_id, u_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
     if u_id != user['id'] and \
-       not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+       (user.is_regular_user() or not user.is_in_team(remoteci['team_id'])):
         raise auth.UNAUTHORIZED
 
     JUR = models.JOIN_USER_REMOTECIS
@@ -337,7 +336,7 @@ def put_api_secret(user, r_id):
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, remoteci['team_id'])):
+    if not user.is_in_team(remoteci['team_id']):
         raise auth.UNAUTHORIZED
 
     where_clause = sql.and_(
