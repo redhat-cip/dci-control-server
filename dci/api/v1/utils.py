@@ -544,3 +544,14 @@ def common_values_dict(user):
 
 def log():
     return flask.current_app.logger
+
+
+def get_role_id(label):
+    """Return role id based on role label."""
+
+    query = sql.select([models.ROLES]).where(
+        models.ROLES.c.label == label
+    )
+    result = flask.g.db_conn.execute(query).fetchone()
+
+    return result.id
