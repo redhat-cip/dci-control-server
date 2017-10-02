@@ -15,6 +15,7 @@
 # under the License.
 
 from datetime import datetime
+import mock
 import pytest
 
 from dci.auth_mechanism import BasicAuthMechanism
@@ -46,7 +47,8 @@ def test_bam_is_valid_false_if_not_authenticated():
     assert not basic_auth_mecanism.is_valid()
 
 
-def test_bam_is_valid():
+@mock.patch('dci.identity.Identity._get_user_teams', return_value=[])
+def test_bam_is_valid(m_gut):
     def return_is_authenticated(*args):
         return {}, True
 
@@ -133,7 +135,8 @@ def test_sam_is_valid_false_if_no_signature():
     assert not mech.is_valid()
 
 
-def test_sam_is_valid_false_if_not_authenticated():
+@mock.patch('dci.identity.Identity._get_user_teams', return_value=[])
+def test_sam_is_valid_false_if_not_authenticated(m_gut):
     def return_is_authenticated(*args):
         return False
 
@@ -143,7 +146,8 @@ def test_sam_is_valid_false_if_not_authenticated():
     assert not mech.is_valid()
 
 
-def test_sam_is_valid():
+@mock.patch('dci.identity.Identity._get_user_teams', return_value=[])
+def test_sam_is_valid(m_gut):
     def return_is_authenticated(*args):
         return True
 
