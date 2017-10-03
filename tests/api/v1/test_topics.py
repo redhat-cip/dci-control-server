@@ -584,3 +584,62 @@ def test_delete_test_from_topic(admin, topic_id, test_id):
     admin.delete('/api/v1/topics/%s/tests/%s' % (topic_id, test_id))
     t = admin.get('/api/v1/topics/%s/tests' % topic_id).data['tests']
     assert len(t) == 0
+
+
+def test_success_create_topics_as_product_owner(product_awsm, product_owner):
+    data = {'name': 'tname', 'component_types': ['type1', 'type2'],
+            'product_id': product_awsm['id']}
+    topic_id = product_owner.post('/api/v1/topics',
+                                  data=data).data['topic']['id']
+    topic = product_owner.get('/api/v1/topics/%s' % topic_id).data['topic']
+
+    assert topic['name'] == 'tname'
+
+
+def test_success_get_all_topics_as_product_owner(product_awsm, product_owner):
+    data = {'name': 'tname', 'component_types': ['type1', 'type2'],
+            'product_id': product_awsm['id']}
+    product_owner.post('/api/v1/topics', data=data)
+    topics = product_owner.get('/api/v1/topics').data
+
+    assert topics['_meta']['count'] == 1
+
+
+def test_success_update_topics_as_product_owner(product_awsm, product_owner):
+    data = {'name': 'tname', 'component_types': ['type1', 'type2'],
+            'product_id': product_awsm['id']}
+    topic = product_owner.post('/api/v1/topics', data=data)
+    topic_etag = topic.headers.get('ETag')
+
+    topic = product_owner.get('/api/v1/topics/%s' % topic.data['topic']['id'])
+    assert topic.data['topic']['name'] == 'tname'
+
+    u_topic = product_owner.put(
+        '/api/v1/topics/%s' % topic.data['topic']['id'],
+        data={'name': 'new_name'}, headers={'If-match': topic_etag}
+    )
+    assert u_topic.status_code == 204
+
+    topic = product_owner.get('/api/v1/topics/%s' % topic.data['topic']['id'])
+    assert topic.data['topic']['name'] == 'new_name'
+
+
+def test_success_delete_topics_as_product_owner(product_awsm, product_owner):
+    data = {'name': 'tname', 'component_types': ['type1', 'type2'],
+            'product_id': product_awsm['id']}
+    topic = product_owner.post('/api/v1/topics', data=data)
+    topic_etag = topic.headers.get('ETag')
+
+    topic = product_owner.get(
+        '/api/v1/topics/%s' % topic.data['topic']['id']
+    ).data['topic']
+
+    assert topic['name'] == 'tname'
+
+    d_topic = product_owner.delete(
+        '/api/v1/topics/%s' % topic['id'], headers={'If-match': topic_etag}
+    )
+    assert d_topic.status_code == 204
+
+    topic = product_owner.get('/api/v1/topics/%s' % topic['id'])
+    assert topic.status_code == 404
