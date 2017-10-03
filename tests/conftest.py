@@ -376,7 +376,7 @@ def permission(admin):
 
 
 @pytest.fixture
-def product(admin, team_id):
+def product_openstack(admin, team_id):
     data = {
         'name': 'OpenStack',
         'label': 'OPENSTACK',
@@ -384,6 +384,11 @@ def product(admin, team_id):
         'team_id': team_id
     }
     return admin.post('/api/v1/products', data=data).data['product']
+
+
+@pytest.fixture
+def product(admin):
+    return admin.get('/api/v1/products?where=label:AWSM').data['products'][0]
 
 
 @pytest.fixture
