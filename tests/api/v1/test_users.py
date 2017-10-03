@@ -546,3 +546,25 @@ def test_get_embed_remotecis(admin, user, remoteci_user_id, user_id):
 
     me = user.get('/api/v1/users/me?embed=remotecis').data['user']
     assert me['remotecis'][0]['id'] == remoteci_user_id
+
+
+def test_user_cannot_update_team(user, user_id, team_admin_id):
+    guser = user.get('/api/v1/users/%s' % user_id)
+    etag = guser.data['user']['etag']
+    data = {'team_id': team_admin_id}
+    r = user.put('/api/v1/users/%s' % user_id, data=data,
+                 headers={'If-match': etag})
+    assert r.status_code == 401
+
+    guser = user.get('/api/v1/users/%s' % user_id)
+    assert guser.data['user']['team_id'] != team_admin_id
+
+
+def test_team_admin_user_cannot_update_team(user_admin, user, user_id,
+                                            team_admin_id):
+    guser = user.get('/api/v1/users/%s' % user_id)
+    etag = guser.data['user']['etag']
+    data = {'team_id': team_admin_id}
+    r = user_admin.put('/api/v1/users/%s' % user_id, data=data,
+                       headers={'If-match': etag})
+    assert r.status_code == 401

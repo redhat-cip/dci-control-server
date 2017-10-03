@@ -176,15 +176,23 @@ def put_user(user, user_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.user.put(flask.request.json)
 
-    puser = dict(_verify_existence_and_get_user(user_id))
-
-    if puser['id'] != str(user_id):
-        if not(auth.is_admin(user) or
-               auth.is_admin_user(user, puser['team_id'])):
+    # if the user wants to update another user then they should be in the
+    # same team and the issuer must be an admin of the team.
+    # if the user wants to update another user which doesn't belong to the
+    # same team then the issuer must be a super admin.
+    if str(user['id']) != str(user_id):
+        puser = dict(_verify_existence_and_get_user(user_id))
+        if str(user['team_id']) != puser['team_id']:
+            if not auth.is_admin(user):
+                raise auth.UNAUTHORIZED
+        elif not auth.is_admin_user(user, user['team_id']):
             raise auth.UNAUTHORIZED
 
-    # TODO(yassine): if the user wants to change the team, then check its done
-    # by a super admin. ie. team_name='admin'
+    # if a user wants to update its team_id then it must be done by a super
+    # admin
+    if 'team_id' in values:
+        if not auth.is_admin(user):
+            raise auth.UNAUTHORIZED
 
     values['etag'] = utils.gen_etag()
 
