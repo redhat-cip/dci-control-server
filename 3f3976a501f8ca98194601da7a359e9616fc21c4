@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_8a794e32",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-03T12:35:26Z",
+      "side": 1,
+      "message": "could you use \u0027partner_team\u0027 instead of \u0027team_1\u0027 ? this would be easier to read later rather than having to remember that 1 is partner and 2 is product (same for team2",
+      "range": {
+        "startLine": 53,
+        "startChar": 8,
+        "endLine": 53,
+        "endChar": 14
+      },
+      "revId": "3f3976a501f8ca98194601da7a359e9616fc21c4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
