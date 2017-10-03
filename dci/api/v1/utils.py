@@ -63,7 +63,7 @@ def verify_team_in_topic(user, topic_id):
     """Verify that the user's team does belongs to the given topic. If
     the user is an admin then it belongs to all topics.
     """
-    if auth.is_admin(user):
+    if user.is_super_admin():
         return
     if str(topic_id) not in user_topic_ids(user):
         raise dci_exc.DCIException('User team does not belongs to topic %s.'

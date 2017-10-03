@@ -95,9 +95,10 @@ def test_get_all_tests(admin, user, team_user_id, topic_user_id):
                                     test_2['test']['id']])
 
 
-def test_get_all_tests_not_in_topic(admin, user, product):
+def test_get_all_tests_not_in_topic(admin, user, product_openstack):
     topic = admin.post('/api/v1/topics',
-                       data={'name': 'topic_test', 'product_id': product['id'],
+                       data={'name': 'topic_test',
+                             'product_id': product_openstack['id'],
                              'component_types': ['type1', 'type2']}).data
     topic_id = topic['topic']['id']
     status_code = user.get(

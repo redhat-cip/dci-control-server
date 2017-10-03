@@ -71,14 +71,14 @@ def test_fail_create_product_already_exists(admin, team_id):
     assert result.status_code == 409
 
 
-def test_success_update_product(admin, product):
-    product_id = product['id']
+def test_success_update_product(admin, product_openstack):
+    product_id = product_openstack['id']
 
     url = '/api/v1/products/%s' % product_id
-    assert product['name'] == 'OpenStack'
+    assert product_openstack['name'] == 'OpenStack'
 
     result = admin.put(url, data={'name': 'New OpenStack'},
-                       headers={'If-match': product['etag']})
+                       headers={'If-match': product_openstack['etag']})
     assert result.status_code == 204
 
     product = admin.get(url).data
@@ -106,7 +106,7 @@ def test_fail_update_product_unauthorized_fields(admin, product):
     assert result.status_code == 400
 
 
-def test_success_get_all_products_admin(admin, product):
+def test_success_get_all_products_admin(admin, product, product_openstack):
     result = admin.get('/api/v1/products')
 
     assert result.status_code == 200

@@ -93,10 +93,10 @@ def test_get_all_components(admin, topic_id):
     assert db_all_cs_ids == created_c_ids
 
 
-def test_get_all_components_not_in_topic(admin, user, product):
+def test_get_all_components_not_in_topic(admin, user, product_openstack):
     topic = admin.post('/api/v1/topics',
                        data={'name': 'topic_test',
-                             'product_id': product['id'],
+                             'product_id': product_openstack['id'],
                              'component_types': ['type1', 'type2']}).data
     topic_id = topic['topic']['id']
     status_code = user.get(
