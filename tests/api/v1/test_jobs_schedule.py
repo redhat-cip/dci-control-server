@@ -53,10 +53,10 @@ def _create_components(user, topic_id, component_types):
 
 
 def test_schedule_jobs_with_new_topic(admin, user, remoteci_user_id,
-                                      team_user_id, product):
+                                      team_user_id, product_openstack):
 
     # create a new topic and schedule a new job
-    data = {'name': 'new_topic', 'product_id': product['id'],
+    data = {'name': 'new_topic', 'product_id': product_openstack['id'],
             'component_types': ['type_1', 'type_2']}
     pt = admin.post('/api/v1/topics', data=data).data
     new_topic_id = pt['topic']['id']
