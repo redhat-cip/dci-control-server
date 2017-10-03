@@ -382,6 +382,11 @@ def product(admin, team_id):
 
 
 @pytest.fixture
+def product_awsm(admin):
+    return admin.get('/api/v1/products?where=label:AWSM').data['products'][0]
+
+
+@pytest.fixture
 def es_clean(request):
     conn = es_engine.DCIESEngine(utils.conf)
     conn.cleanup()
