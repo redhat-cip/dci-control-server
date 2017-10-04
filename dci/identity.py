@@ -75,3 +75,8 @@ class Identity:
         """Ensure ther resource has the role REMOTECI."""
 
         return self.role_label == 'REMOTECI'
+
+    def is_feeder(self):
+        """Ensure ther resource has the role FEEDER."""
+
+        return self.role_label == 'FEEDER'

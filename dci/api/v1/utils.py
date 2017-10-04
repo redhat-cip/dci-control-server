@@ -49,11 +49,20 @@ def verify_existence_and_get(id, table, get_id=False):
 
 
 def user_topic_ids(user):
-    query = (
-        sql.select([
-            models.JOINS_TOPICS_TEAMS.c.topic_id,
-        ]).select_from(models.JOINS_TOPICS_TEAMS)
-        .where(models.JOINS_TOPICS_TEAMS.c.team_id == user['team_id']))
+    """Retrieve the list of topics IDs a user has access to."""
+
+    if user.is_super_admin():
+        query = sql.select([models.TOPICS])
+    elif user.is_product_owner() or user.is_feeder():
+        query = sql.select([models.TOPICS]).where(
+            models.TOPICS.c.product_id == user.product_id
+        )
+    else:
+        query = (
+            sql.select([
+                models.JOINS_TOPICS_TEAMS.c.topic_id,
+            ]).select_from(models.JOINS_TOPICS_TEAMS)
+            .where(models.JOINS_TOPICS_TEAMS.c.team_id == user.team_id))
 
     rows = flask.g.db_conn.execute(query).fetchall()
     return [str(row[0]) for row in rows]
