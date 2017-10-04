@@ -527,3 +527,80 @@ def test_component_success_update_field_by_field(admin, topic_id):
     assert c['name'] == 'pname2'
     assert c['state'] == 'inactive'
     assert c['title'] == 'a new title'
+
+
+def test_success_create_component_as_product_owner(product_awsm,
+                                                   product_owner):
+    data = {'name': 'tname', 'component_types': ['type1', 'type2'],
+            'product_id': product_awsm['id']}
+    topic_id = product_owner.post('/api/v1/topics',
+                                  data=data).data['topic']['id']
+    topic = product_owner.get('/api/v1/topics/%s' % topic_id).data['topic']
+
+    assert topic['name'] == 'tname'
+
+    data = {'name': 'pname', 'type': 'gerrit_review',
+            'url': 'http://example.com/', 'topic_id': topic['id'],
+            'export_control': True, 'state': 'active'}
+    component = product_owner.post(
+        '/api/v1/components', data=data
+    ).data
+    component_id = component['component']['id']
+    component = product_owner.get(
+        '/api/v1/components/%s' % component_id
+    ).data
+    assert component['component']['name'] == 'pname'
+    assert component['component']['type'] == 'gerrit_review'
+
+
+def test_success_get_all_component_as_product_owner(product_awsm,
+                                                    product_owner):
+    data = {'name': 'tname', 'component_types': ['type1', 'type2'],
+            'product_id': product_awsm['id']}
+    topic_id = product_owner.post('/api/v1/topics',
+                                  data=data).data['topic']['id']
+    topic = product_owner.get('/api/v1/topics/%s' % topic_id).data['topic']
+
+    assert topic['name'] == 'tname'
+
+    data = [{'name': 'pname', 'type': 'gerrit_review',
+             'url': 'http://example.com/', 'topic_id': topic['id'],
+             'export_control': True, 'state': 'active'},
+            {'name': 'pname2', 'type': 'gerrit_review',
+             'url': 'http://example2.com/', 'topic_id': topic['id'],
+             'export_control': True, 'state': 'active'}]
+    for d in data:
+        product_owner.post('/api/v1/components', data=d)
+
+    components = product_owner.get(
+        '/api/v1/topics/%s/components' % topic['id']
+    )
+
+    assert components.data['_meta']['count'] == 2
+
+
+def test_success_delete_component_as_product_owner(product_awsm,
+                                                   product_owner):
+    data = {'name': 'tname', 'component_types': ['type1', 'type2'],
+            'product_id': product_awsm['id']}
+    topic_id = product_owner.post('/api/v1/topics',
+                                  data=data).data['topic']['id']
+    topic = product_owner.get('/api/v1/topics/%s' % topic_id).data['topic']
+
+    data = {'name': 'pname', 'type': 'gerrit_review',
+            'url': 'http://example.com/', 'topic_id': topic['id'],
+            'export_control': True, 'state': 'active'}
+    component = product_owner.post(
+        '/api/v1/components', data=data
+    ).data
+    component_id = component['component']['id']
+    component = product_owner.get(
+        '/api/v1/components/%s' % component_id
+    ).data
+    assert component['component']['name'] == 'pname'
+
+    d_component = product_owner.delete('/api/v1/components/%s' % component_id)
+    assert d_component.status_code == 204
+
+    d_component = product_owner.get('/api/v1/components/%s' % component_id)
+    assert d_component.status_code == 404
