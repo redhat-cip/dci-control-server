@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_85238105",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 231,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T19:19:54Z",
+      "side": 1,
+      "message": "or just:\n\n  return user and dict(user)",
+      "revId": "27e27e91e9f45b9480c6c24d62423fed148ef40a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_451d69bc",
+        "filename": "tests/test_auth_mechanism.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T19:19:54Z",
+      "side": 1,
+      "message": "\u0027am\u0027 is a bit cryptic. I would prefer auth_mechanism instead, maybe authm?",
+      "revId": "27e27e91e9f45b9480c6c24d62423fed148ef40a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_257955fd",
+        "filename": "tests/utils.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T19:19:54Z",
+      "side": 1,
+      "message": "or just:\n\n  if credentials:",
+      "revId": "27e27e91e9f45b9480c6c24d62423fed148ef40a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_057e51e4",
+        "filename": "tests/utils.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T19:19:54Z",
+      "side": 1,
+      "message": "or just:\n\n  elif access_token:",
+      "revId": "27e27e91e9f45b9480c6c24d62423fed148ef40a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
