@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_2505d5c1",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 67,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-04T15:37:56Z",
+      "side": 1,
+      "message": "You should explicitly test for allowed roles rather than excluding some.\n\nTrying to guess who can have access here requires reading all roles.",
+      "range": {
+        "startLine": 67,
+        "startChar": 7,
+        "endLine": 67,
+        "endChar": 29
+      },
+      "revId": "364e5ddbd1ef775c7d3a1de076309dff57cd0231",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_e50ebde4",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-04T15:37:56Z",
+      "side": 1,
+      "message": "not user.is_super_admin() or not …",
+      "range": {
+        "startLine": 182,
+        "startChar": 11,
+        "endLine": 182,
+        "endChar": 33
+      },
+      "revId": "364e5ddbd1ef775c7d3a1de076309dff57cd0231",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_c513b90c",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 216,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-04T15:37:56Z",
+      "side": 1,
+      "message": "same here",
+      "range": {
+        "startLine": 216,
+        "startChar": 7,
+        "endLine": 216,
+        "endChar": 29
+      },
+      "revId": "364e5ddbd1ef775c7d3a1de076309dff57cd0231",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
