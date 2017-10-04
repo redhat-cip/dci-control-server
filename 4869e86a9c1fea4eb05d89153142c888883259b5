@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_45d8c91d",
+        "filename": "dci/identity.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T18:02:14Z",
+      "side": 1,
+      "message": "I would prefer a flat list of the attribute here:\n\n- it\u0027s easier to navigate in the code if the attribute are clearly listed\n- we can have some side effects if user structure is not what we expect.",
+      "revId": "4869e86a9c1fea4eb05d89153142c888883259b5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_e5fd9d6f",
+        "filename": "dci/identity.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T18:02:14Z",
+      "side": 1,
+      "message": "I\u0027m fine with that as soon as this is a temporary situation.",
+      "revId": "4869e86a9c1fea4eb05d89153142c888883259b5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_c502996f",
+        "filename": "dci/identity.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T18:02:14Z",
+      "side": 1,
+      "message": "Just a matter of style, you can avoid the else and the teams variable with:\n\nif not self.is_super_admin_or_product_owner():\n    return [self.team_id]\n\n# drop the else\nquery \u003d sql.select([models.TEAMS.c.id])\nblabla\nreturn [row[models.TEAMS.c.id] for row in result]",
+      "revId": "4869e86a9c1fea4eb05d89153142c888883259b5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
