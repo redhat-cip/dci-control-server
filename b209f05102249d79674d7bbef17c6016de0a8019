@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_05653144",
+        "filename": "bin/dci-gen-pem-ks-key.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T19:32:07Z",
+      "side": 1,
+      "message": "Could you also mention that the secret is stored in the configuration file.",
+      "revId": "b209f05102249d79674d7bbef17c6016de0a8019",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_856a6119",
+        "filename": "dci/settings.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T19:32:07Z",
+      "side": 1,
+      "message": "I understand you used bin/dci-gen-pem-ks-key.py to generate this cert. Could you add a comment about that and explain how to regenerate the key.",
+      "revId": "b209f05102249d79674d7bbef17c6016de0a8019",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_65774d03",
+        "filename": "tests/conftest.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 456,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T19:32:07Z",
+      "side": 1,
+      "message": "The same here.",
+      "revId": "b209f05102249d79674d7bbef17c6016de0a8019",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_457449fc",
+        "filename": "tests/settings.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T19:32:07Z",
+      "side": 1,
+      "message": "The same",
+      "revId": "b209f05102249d79674d7bbef17c6016de0a8019",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
