@@ -48,7 +48,8 @@ def test_bam_is_valid_false_if_not_authenticated():
 
 
 @mock.patch('dci.identity.Identity._get_user_teams', return_value=[])
-def test_bam_is_valid(m_gut):
+@mock.patch('dci.identity.Identity._get_user_topics', return_value=[])
+def test_bam_is_valid(m_get_user_teams, m_get_user_topics):
     def return_is_authenticated(*args):
         return {}, True
 
@@ -136,7 +137,9 @@ def test_sam_is_valid_false_if_no_signature():
 
 
 @mock.patch('dci.identity.Identity._get_user_teams', return_value=[])
-def test_sam_is_valid_false_if_not_authenticated(m_gut):
+@mock.patch('dci.identity.Identity._get_user_topics', return_value=[])
+def test_sam_is_valid_false_if_not_authenticated(m_get_user_teams,
+                                                 m_get_user_topics):
     def return_is_authenticated(*args):
         return False
 
@@ -147,7 +150,8 @@ def test_sam_is_valid_false_if_not_authenticated(m_gut):
 
 
 @mock.patch('dci.identity.Identity._get_user_teams', return_value=[])
-def test_sam_is_valid(m_gut):
+@mock.patch('dci.identity.Identity._get_user_topics', return_value=[])
+def test_sam_is_valid(m_get_user_teams, m_get_user_topics):
     def return_is_authenticated(*args):
         return True
 
