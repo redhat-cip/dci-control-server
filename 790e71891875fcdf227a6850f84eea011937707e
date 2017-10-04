@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_e540fd09",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-04T15:30:28Z",
+      "side": 1,
+      "message": "user.is_super_admin() or user.is_product_owner()",
+      "range": {
+        "startLine": 52,
+        "startChar": 11,
+        "endLine": 52,
+        "endChar": 49
+      },
+      "revId": "790e71891875fcdf227a6850f84eea011937707e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
