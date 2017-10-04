@@ -50,6 +50,23 @@
       "revId": "4869e86a9c1fea4eb05d89153142c888883259b5",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_252b95ed",
+        "filename": "dci/identity.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 100,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T18:11:20Z",
+      "side": 1,
+      "message": "this one is really overkill. it\u0027s just a method to avoid a \u0027or\u0027.",
+      "revId": "4869e86a9c1fea4eb05d89153142c888883259b5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
