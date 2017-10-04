@@ -15,6 +15,7 @@
 # under the License.
 
 from datetime import datetime
+import mock
 import pytest
 import uuid
 
@@ -47,16 +48,16 @@ def test_bam_is_valid_false_if_not_authenticated():
     assert not basic_auth_mecanism.is_valid()
 
 
-def test_bam_is_valid():
+@mock.patch('dci.auth_mechanism.BaseMechanism.get_resource_topics',
+            return_value=[])
+@mock.patch('dci.auth_mechanism.BasicAuthMechanism.get_user_teams',
+            return_value=[])
+def test_bam_is_valid(grt, gut):
     def return_is_authenticated(*args):
         return {}, True
 
-    def return_get_user_teams(*args):
-        return []
-
     basic_auth_mecanism = BasicAuthMechanism(MockRequest(AuthMock()))
     basic_auth_mecanism.get_user_and_check_auth = return_is_authenticated
-    basic_auth_mecanism.get_user_teams = return_get_user_teams
     assert basic_auth_mecanism.is_valid()
 
 
@@ -139,7 +140,9 @@ def test_sam_is_valid_false_if_no_signature():
     assert not mech.is_valid()
 
 
-def test_sam_is_valid_false_if_not_authenticated():
+@mock.patch('dci.auth_mechanism.BaseMechanism.get_resource_topics',
+            return_value=[])
+def test_sam_is_valid_false_if_not_authenticated(grt):
     def return_is_authenticated(*args):
         return False
 
@@ -149,7 +152,9 @@ def test_sam_is_valid_false_if_not_authenticated():
     assert not mech.is_valid()
 
 
-def test_sam_is_valid():
+@mock.patch('dci.auth_mechanism.BaseMechanism.get_resource_topics',
+            return_value=[])
+def test_sam_is_valid(grt):
     def return_is_authenticated(*args):
         return True
 

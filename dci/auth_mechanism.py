@@ -32,6 +32,32 @@ class BaseMechanism(object):
         """Test if the user is a valid user."""
         pass
 
+    def get_resource_topics(self, resource):
+        """Retrieve all the topics that a user has acces to.
+        """
+
+        query = sql.select([models.TOPICS.c.id])
+        if not resource['role_label'] == 'SUPER_ADMIN' and \
+           not resource['role_label'] == 'PRODUCT_OWNER':
+            query = query.select_from(
+                sql.join(
+                    models.TOPICS,
+                    models.JOINS_TOPICS_TEAMS,
+                    models.TOPICS.c.id == models.JOINS_TOPICS_TEAMS.c.topic_id
+                )
+            ).where(models.JOINS_TOPICS_TEAMS.c.team_id == resource['team_id'])
+        elif resource['role_label'] == 'PRODUCT_OWNER':
+            query = query.where(
+                models.TOPICS.c.product_id == resource['product_id']
+            )
+
+        result = flask.g.db_conn.execute(query).fetchall()
+        topics = []
+        if result:
+            topics = [row[models.TOPICS.c.id] for row in result]
+
+        return topics
+
 
 class BasicAuthMechanism(BaseMechanism):
     def is_valid(self):
@@ -43,7 +69,8 @@ class BasicAuthMechanism(BaseMechanism):
         if not is_authenticated:
             return False
         teams = self.get_user_teams(user)
-        self.identity = Identity(user, teams)
+        topics = self.get_resource_topics(user)
+        self.identity = Identity(user, teams, topics)
         return True
 
     def get_user_teams(self, user):
@@ -149,7 +176,9 @@ class SignatureAuthMechanism(BaseMechanism):
         # TODO(spredzy): Remove once the REMOTECI role has been merged
         dict_remoteci['role_id'] = 'remoteci'
         dict_remoteci['role_label'] = 'REMOTECI'
-        self.identity = Identity(dict_remoteci, [dict_remoteci['team_id']])
+        topics = self.get_resource_topics(dict_remoteci)
+        self.identity = Identity(dict_remoteci, [dict_remoteci['team_id']],
+                                 topics)
 
         return self.verify_remoteci_auth_signature(
             remoteci, client_info['timestamp'], their_signature)

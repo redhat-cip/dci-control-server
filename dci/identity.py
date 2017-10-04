@@ -19,11 +19,12 @@ class Identity:
     """Class that offers helper methods to simplify permission management
     """
 
-    def __init__(self, user, teams):
+    def __init__(self, user, teams, topics):
         for key in user.keys():
             setattr(self, key, user[key])
 
         self.teams = teams
+        self.topics = topics
 
     # TODO(spredzy): In order to avoid a huge refactor patch, the __getitem__
     # function is overloaded so it behaves like a dict and the code in place
