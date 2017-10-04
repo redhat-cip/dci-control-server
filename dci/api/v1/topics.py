@@ -204,7 +204,6 @@ def delete_topic_by_id(user, topic_id):
 @decorators.login_required
 def get_all_components(user, topic_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
-    v1_utils.verify_team_in_topic(user, topic_id)
     return components.get_all_components(user, topic_id=topic_id)
 
 
