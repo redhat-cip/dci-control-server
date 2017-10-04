@@ -50,11 +50,13 @@ _EMBED_MANY = {
 @api.route('/components', methods=['POST'])
 @decorators.login_required
 def create_components(user):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     values = v1_utils.common_values_dict(user)
     values.update(schemas.component.post(flask.request.json))
+
+    if not user.is_super_admin() and \
+       not (user.is_product_owner() and
+            values['topic_id'] in v1_utils.get_topics(user)):
+        raise auth.UNAUTHORIZED
 
     query = _TABLE.insert().values(**values)
 
@@ -70,11 +72,13 @@ def create_components(user):
 @api.route('/components/<uuid:c_id>', methods=['PUT'])
 @decorators.login_required
 def update_components(user, c_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
-    v1_utils.verify_existence_and_get(c_id, _TABLE)
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    if not user.is_super_admin() and \
+       not (user.is_product_owner() and
+            component['topic_id'] in v1_utils.get_topics(user)):
+        raise auth.UNAUTHORIZED
 
     values = schemas.component.put(flask.request.json)
     values['etag'] = utils.gen_etag()
@@ -99,7 +103,13 @@ def get_all_components(user, topic_id):
 
     args = schemas.args(flask.request.args.to_dict())
 
-    v1_utils.verify_team_in_topic(user, topic_id)
+    if not user.is_super_admin() and not user.is_product_owner():
+        v1_utils.verify_team_in_topic(user, topic_id)
+
+    if user.is_product_owner():
+        topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+        if user.product_id != topic['product_id']:
+            raise auth.UNAUTHORIZED
 
     query = v1_utils.QueryBuilder(_TABLE, args, _C_COLUMNS)
 
@@ -124,7 +134,9 @@ def get_all_components(user, topic_id):
 @decorators.login_required
 def get_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    v1_utils.verify_team_in_topic(user, component['topic_id'])
+    if not user.is_super_admin() and \
+       component['topic_id'] not in v1_utils.get_topics(user):
+        raise auth.UNAUTHORIZED
     auth.check_export_control(user, component)
     return base.get_resource_by_id(user, component, _TABLE, _EMBED_MANY)
 
@@ -132,11 +144,12 @@ def get_component_by_id(user, c_id):
 @api.route('/components/<uuid:c_id>', methods=['DELETE'])
 @decorators.login_required
 def delete_component_by_id(user, c_id):
-    # get If-Match header
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
 
-    v1_utils.verify_existence_and_get(c_id, _TABLE)
+    if not user.is_super_admin() and \
+       not (user.is_product_owner() and
+            component['topic_id'] in v1_utils.get_topics(user)):
+        raise auth.UNAUTHORIZED
 
     values = {'state': 'archived'}
     where_clause = sql.and_(
@@ -170,7 +183,9 @@ def purge_archived_components(user):
 @decorators.login_required
 def list_components_files(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    v1_utils.verify_team_in_topic(user, component['topic_id'])
+    if not user.is_super_admin() and \
+       component['topic_id'] not in v1_utils.get_topics(user):
+        raise auth.UNAUTHORIZED
 
     args = schemas.args(flask.request.args.to_dict())
 
@@ -191,7 +206,9 @@ def list_components_files(user, c_id):
 def list_component_file(user, c_id, f_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     auth.check_export_control(user, component)
-    v1_utils.verify_team_in_topic(user, component['topic_id'])
+    if not user.is_super_admin() and \
+       component['topic_id'] not in v1_utils.get_topics(user):
+        raise auth.UNAUTHORIZED
 
     COMPONENT_FILES = models.COMPONENT_FILES
     where_clause = sql.and_(COMPONENT_FILES.c.id == f_id,
@@ -214,6 +231,9 @@ def list_component_file(user, c_id, f_id):
 def download_component_file(user, c_id, f_id):
     swift = dci_config.get_store('components')
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    if not user.is_super_admin() and \
+       component['topic_id'] not in v1_utils.get_topics(user):
+        raise auth.UNAUTHORIZED
     v1_utils.verify_team_in_topic(user, component['topic_id'])
     component_file = v1_utils.verify_existence_and_get(
         f_id, models.COMPONENT_FILES)
@@ -230,12 +250,13 @@ def download_component_file(user, c_id, f_id):
 @api.route('/components/<uuid:c_id>/files', methods=['POST'])
 @decorators.login_required
 def upload_component_file(user, c_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     COMPONENT_FILES = models.COMPONENT_FILES
 
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    if not user.is_super_admin() and \
+       not (user.is_product_owner() and
+            component['topic_id'] in v1_utils.get_topics(user)):
+        raise auth.UNAUTHORIZED
 
     swift = dci_config.get_store('components')
 
@@ -268,11 +289,12 @@ def upload_component_file(user, c_id):
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['DELETE'])
 @decorators.login_required
 def delete_component_file(user, c_id, f_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     COMPONENT_FILES = models.COMPONENT_FILES
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    if not user.is_super_admin() and \
+       not (user.is_product_owner() and
+            component['topic_id'] in v1_utils.get_topics(user)):
+        raise auth.UNAUTHORIZED
     v1_utils.verify_existence_and_get(f_id, COMPONENT_FILES)
 
     where_clause = COMPONENT_FILES.c.id == f_id
