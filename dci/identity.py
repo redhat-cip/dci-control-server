@@ -30,6 +30,7 @@ class Identity:
             setattr(self, key, user[key])
 
         self.teams = self._get_user_teams()
+        self.topics = self._get_user_topics()
 
     # TODO(spredzy): In order to avoid a huge refactor patch, the __getitem__
     # function is overloaded so it behaves like a dict and the code in place
@@ -62,6 +63,29 @@ class Identity:
             teams = [row[models.TEAMS.c.id] for row in result]
 
         return teams
+
+    def _get_user_topics(self):
+        """Retrieve all the topics that a user has acces to.
+        """
+
+        query = sql.select([models.TOPICS.c.id])
+        if not self.is_super_admin_or_product_owner():
+            query = query.select_from(
+                sql.join(
+                    models.TOPICS,
+                    models.JOINS_TOPICS_TEAMS,
+                    models.TOPICS.c.id == models.JOINS_TOPICS_TEAMS.c.topic_id
+                )
+            ).where(models.JOINS_TOPICS_TEAMS.c.team_id == self.team_id)
+        elif self.is_product_owner():
+            query = query.where(models.TOPICS.c.product_id == self.product_id)
+
+        result = flask.g.db_conn.execute(query).fetchall()
+        topics = []
+        if result:
+            topics = [row[models.TOPICS.c.id] for row in result]
+
+        return topics
 
     def is_in_team(self, team_id):
         """Ensure the user is in the specified team."""
