@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9abe1de1_a57c4521",
+        "filename": "dci/api/v1/fingerprints.py",
+        "patchSetId": 19
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T17:22:09Z",
+      "side": 1,
+      "message": "I would prefer we avoid that. It\u0027s quite common to have the same pattern with different topics.",
+      "parentUuid": "9abe1de1_fddc1f1a",
+      "revId": "bb96c4b7dff91dca67e8ed931f07541622a8c217",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9abe1de1_fd2adfe6",
         "filename": "dci/common/schemas.py",
         "patchSetId": 19
