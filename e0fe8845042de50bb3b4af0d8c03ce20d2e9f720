@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_053c1192",
+        "filename": "tests/test_auth_mechanism.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 17,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-04T15:36:14Z",
+      "side": 1,
+      "message": "import mock",
+      "revId": "e0fe8845042de50bb3b4af0d8c03ce20d2e9f720",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_656ced9c",
+        "filename": "tests/test_auth_mechanism.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 49,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-04T15:36:14Z",
+      "side": 1,
+      "message": "@mock.patch(\u0027dci.identity.Identity._get_user_teams\u0027, return_value\u003d[])",
+      "revId": "e0fe8845042de50bb3b4af0d8c03ce20d2e9f720",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_4569e98a",
+        "filename": "tests/test_auth_mechanism.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-04T15:36:14Z",
+      "side": 1,
+      "message": "def test_bam_is_valid(m_gut):",
+      "revId": "e0fe8845042de50bb3b4af0d8c03ce20d2e9f720",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_255ef5e9",
+        "filename": "tests/test_auth_mechanism.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-04T15:36:14Z",
+      "side": 1,
+      "message": "This is called monkey patching and it\u0027s a very bad pattern extensively used by Openstack.\n\nOnce this test is executed, all tests which depends on the Identity class will be affected and then broken. Because overriding the method like that is at global scope.\n\nWhat you want to do is to override the _get_user_teams() in the scope of the test so that it will not affect the others. This is the purpose of the mock above.\n\nThus you can remove this line \\o/.",
+      "revId": "e0fe8845042de50bb3b4af0d8c03ce20d2e9f720",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
