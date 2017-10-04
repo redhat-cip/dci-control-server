@@ -1,0 +1,188 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_a54b252b",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-04T15:32:36Z",
+      "side": 1,
+      "message": "user.is_super_admin() or user.is_product_owner()",
+      "range": {
+        "startLine": 46,
+        "startChar": 11,
+        "endLine": 46,
+        "endChar": 49
+      },
+      "revId": "f3c432f14a7b4db74e1a428f445c5212776671f1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_8548212f",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 74,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-04T15:32:36Z",
+      "side": 1,
+      "message": "user.is_super_admin() or user.is_product_owner()",
+      "range": {
+        "startLine": 74,
+        "startChar": 11,
+        "endLine": 74,
+        "endChar": 49
+      },
+      "revId": "f3c432f14a7b4db74e1a428f445c5212776671f1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_65550dc5",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-04T15:32:36Z",
+      "side": 1,
+      "message": "user.is_super_admin() or user.is_product_owner()",
+      "range": {
+        "startLine": 96,
+        "startChar": 11,
+        "endLine": 96,
+        "endChar": 49
+      },
+      "revId": "f3c432f14a7b4db74e1a428f445c5212776671f1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_455209df",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 124,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-04T15:32:36Z",
+      "side": 1,
+      "message": "user.is_super_admin() or user.is_product_owner()",
+      "range": {
+        "startLine": 124,
+        "startChar": 11,
+        "endLine": 124,
+        "endChar": 49
+      },
+      "revId": "f3c432f14a7b4db74e1a428f445c5212776671f1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_0563f1b2",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-04T15:32:36Z",
+      "side": 1,
+      "message": "user.is_super_admin() or user.is_product_owner()",
+      "range": {
+        "startLine": 143,
+        "startChar": 11,
+        "endLine": 143,
+        "endChar": 49
+      },
+      "revId": "f3c432f14a7b4db74e1a428f445c5212776671f1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_e557ddc8",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 360,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-04T15:32:36Z",
+      "side": 1,
+      "message": "user.is_super_admin() or user.is_product_owner()",
+      "range": {
+        "startLine": 360,
+        "startChar": 11,
+        "endLine": 360,
+        "endChar": 49
+      },
+      "revId": "f3c432f14a7b4db74e1a428f445c5212776671f1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_c55cd9ef",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 386,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-04T15:32:36Z",
+      "side": 1,
+      "message": "user.is_super_admin() or user.is_product_owner()",
+      "range": {
+        "startLine": 386,
+        "startChar": 11,
+        "endLine": 386,
+        "endChar": 49
+      },
+      "revId": "f3c432f14a7b4db74e1a428f445c5212776671f1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_a572057b",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 407,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-04T15:32:36Z",
+      "side": 1,
+      "message": "user.is_super_admin() or user.is_product_owner()",
+      "range": {
+        "startLine": 407,
+        "startChar": 11,
+        "endLine": 407,
+        "endChar": 49
+      },
+      "revId": "f3c432f14a7b4db74e1a428f445c5212776671f1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
