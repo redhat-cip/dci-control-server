@@ -544,3 +544,17 @@ def common_values_dict(user):
 
 def log():
     return flask.current_app.logger
+
+
+def get_topics(user):
+    """Retrieve the list of topics a user has access to."""
+
+    _T_COLUMNS = get_columns_name_with_objects(models.TOPICS)
+
+    query = QueryBuilder(models.TOPICS, {}, _T_COLUMNS)
+    query.add_extra_condition(models.TOPICS.c.id.in_(user_topic_ids(user)))
+    query.add_extra_condition(models.TOPICS.c.state != 'archived')
+
+    rows = query.execute(fetchall=True)
+    rows = format_result(rows, models.TOPICS.name, {}, {})
+    return [row['id'] for row in rows]
