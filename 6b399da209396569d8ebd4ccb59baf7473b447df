@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_85c70145",
+        "filename": "docs/administration.md",
+        "patchSetId": 4
+      },
+      "lineNbr": 39,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-10-04T17:30:04Z",
+      "side": 1,
+      "message": "I\u0027ve just pasted the tables in https://dillinger.io/. The syntax does not sound right.\nSee: https://help.github.com/articles/organizing-information-with-tables/#creating-a-table\n\nYou should at least replace the + with |",
+      "revId": "6b399da209396569d8ebd4ccb59baf7473b447df",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
