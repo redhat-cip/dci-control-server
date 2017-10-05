@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9abe1de1_494d8371",
+        "filename": "dci/identity.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-10-05T08:37:30Z",
+      "side": 1,
+      "message": "Currently we can\u0027t. Purpose of this class is to be a drop-in replacement for current usage.\n\nAs of today user is either an actual user (models.USERS)[1] or a remoteci (models.REMOTECI)[2] (and will eventually be a feeder).\n\nStructure of the different models are different and do provide different values.\n\nSince I don\u0027t want this patch to be a refactor of all our code base neither do I want this patch to change anything in the api/v1/* code I went for this solution instead.\n\n\nThey are currently an effort (fc__ and I) to standardize models.USERS, models.REMOTECIS and models.FEEDERS, once this effort will be complete, this section can switch to a flat list.",
+      "parentUuid": "9abe1de1_45d8c91d",
+      "revId": "4869e86a9c1fea4eb05d89153142c888883259b5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9abe1de1_e5fd9d6f",
         "filename": "dci/identity.py",
         "patchSetId": 6
