@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "9abe1de1_691a8770",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-10-05T08:25:37Z",
+      "side": 1,
+      "message": "The left conditiion is: is_admin() or is_in_team()\n\nThe is_admin() check is to overcome the fact that admin can create remotecis for team that is not his. is_in_team() will return true for any user (doesn\u0027t matter the credentials level) that belongs to values[\u0027team_id\u0027]\n\nuser.teams (that is the values that is checks during user.is_in_team) variable contains all the teams of the platform for a super admin, making this admin check useless",
+      "parentUuid": "9abe1de1_85c14183",
+      "revId": "e4bf56bf74de31bde9c6d8ad6bf6c31094f8f2ce",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9abe1de1_65be2d01",
         "filename": "dci/api/v1/remotecis.py",
         "patchSetId": 3
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "9abe1de1_4926a3bb",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 149,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-10-05T08:25:37Z",
+      "side": 1,
+      "message": "ditto",
+      "parentUuid": "9abe1de1_65be2d01",
+      "revId": "e4bf56bf74de31bde9c6d8ad6bf6c31094f8f2ce",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9abe1de1_45bb290f",
         "filename": "dci/api/v1/remotecis.py",
         "patchSetId": 3
@@ -47,6 +83,24 @@
       "writtenOn": "2017-10-04T15:25:35Z",
       "side": 1,
       "message": "Only team admins were supposed to be able to reset a remoteci api secret",
+      "revId": "e4bf56bf74de31bde9c6d8ad6bf6c31094f8f2ce",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_292b6f84",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 337,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-10-05T08:25:37Z",
+      "side": 1,
+      "message": "ditto",
+      "parentUuid": "9abe1de1_45bb290f",
       "revId": "e4bf56bf74de31bde9c6d8ad6bf6c31094f8f2ce",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
