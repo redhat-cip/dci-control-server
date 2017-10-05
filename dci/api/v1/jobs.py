@@ -569,8 +569,8 @@ def get_all_results_from_jobs(user, j_id):
         file_path = swift.build_file_path(file['team_id'],
                                           j_id,
                                           file['id'])
-        content_file = swift.get_object(file_path)
-        data = tsfm.junit2dict(content_file)
+        _, file_descriptor = swift.get(file_path)
+        data = tsfm.junit2dict(file_descriptor.read())
         results.append({'filename': file['name'],
                         'name': file['name'],
                         'total': data['total'],
