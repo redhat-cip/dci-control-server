@@ -54,7 +54,7 @@ class Identity:
             self.is_in_team(team_id)
 
     def is_admin(self):
-        """Ensure ther user has the role ADMIN."""
+        """Ensure the user has the role ADMIN."""
 
         return self.role_label == 'ADMIN'
 
@@ -64,6 +64,11 @@ class Identity:
         return self.role_label == 'ADMIN' and self.is_in_team(team_id)
 
     def is_regular_user(self):
-        """Ensure ther user has the role USER."""
+        """Ensure the user has the role USER."""
 
         return self.role_label == 'USER'
+
+    def is_remoteci(self):
+        """Ensure ther resource has the role REMOTECI."""
+
+        return self.role_label == 'REMOTECI'
