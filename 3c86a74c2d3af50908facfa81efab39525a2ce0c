@@ -22,6 +22,30 @@
       "revId": "3c86a74c2d3af50908facfa81efab39525a2ce0c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_896cbb9d",
+        "filename": "tests/settings.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-05T12:08:05Z",
+      "side": 1,
+      "message": "This is the settings for the tests, i think you are talking about the settings of the production setup. This value will be actually set by dci-infra playbook.\n\ndci-dev-env has it\u0027s own settings.py file, i\u0027ll update it.",
+      "parentUuid": "9abe1de1_f440b109",
+      "range": {
+        "startLine": 29,
+        "startChar": 0,
+        "endLine": 38,
+        "endChar": 3
+      },
+      "revId": "3c86a74c2d3af50908facfa81efab39525a2ce0c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
