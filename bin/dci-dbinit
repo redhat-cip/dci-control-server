@@ -93,9 +93,16 @@ def init_db(db_conn):
         'description': 'Regular User',
     }
 
+    remoteci_role = {
+        'name': 'RemoteCI',
+        'label': 'REMOTECI',
+        'description': 'A RemoteCI',
+    }
+
     db_insert_with_name(models.ROLES, **product_owner_role)
     db_insert_with_name(models.ROLES, **admin_role)
     db_insert_with_name(models.ROLES, **user_role)
+    db_insert_with_name(models.ROLES, **remoteci_role)
     super_admin_role_id = db_insert_with_name(models.ROLES,
                                               **super_admin_role)
 
