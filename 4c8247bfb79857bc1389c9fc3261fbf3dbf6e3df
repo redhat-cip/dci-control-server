@@ -1,0 +1,174 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_2cc13de5",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:53:02Z",
+      "side": 1,
+      "message": "I think topic.product_id must not be nullable in the database schema.\n\n1. if the caller is a super_admin then it must provide a valid product_id value\n\n2. if the caller is a product owner, then the topic is assigned to it\u0027s product_id.",
+      "revId": "4c8247bfb79857bc1389c9fc3261fbf3dbf6e3df",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_0cb6798a",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 82,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:53:02Z",
+      "side": 1,
+      "message": "you can use the topic above",
+      "revId": "4c8247bfb79857bc1389c9fc3261fbf3dbf6e3df",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_ccb0818e",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:53:02Z",
+      "side": 1,
+      "message": "v1_utils.verify_existence_and_get(topic_id, _TABLE)",
+      "revId": "4c8247bfb79857bc1389c9fc3261fbf3dbf6e3df",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_acad4d33",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:53:02Z",
+      "side": 1,
+      "message": "v1_utils.verify_existence_and_get(values[\u0027next_topic\u0027], _TABLE)",
+      "revId": "4c8247bfb79857bc1389c9fc3261fbf3dbf6e3df",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_8caa8918",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 140,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:53:02Z",
+      "side": 1,
+      "message": "topic_npid useless",
+      "revId": "4c8247bfb79857bc1389c9fc3261fbf3dbf6e3df",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_6ca73550",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 143,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:53:02Z",
+      "side": 1,
+      "message": "this statement will never be executed since you already did the same above L124 and raise unauthorized. maybe i missed something ?",
+      "revId": "4c8247bfb79857bc1389c9fc3261fbf3dbf6e3df",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_4c63511b",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 179,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:53:02Z",
+      "side": 1,
+      "message": "v1_utils.verify_existence_and_get(topic_id, _TABLE)",
+      "revId": "4c8247bfb79857bc1389c9fc3261fbf3dbf6e3df",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_2c681df5",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 361,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:53:02Z",
+      "side": 1,
+      "message": "if the caller is a product owner then it should verify that the parent_id of the team to add is equals to product_owner[\u0027team_id\u0027]",
+      "revId": "4c8247bfb79857bc1389c9fc3261fbf3dbf6e3df",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_0c6d5904",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 387,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:53:02Z",
+      "side": 1,
+      "message": "ditto for PO",
+      "revId": "4c8247bfb79857bc1389c9fc3261fbf3dbf6e3df",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_ec7105e2",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 417,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:53:02Z",
+      "side": 1,
+      "message": "For the PO, must check that the topic[\u0027product_id\u0027] \u003d\u003d PO.product_id. And then add a where models.TEAMS.parent_id \u003d PO[\u0027team_id\u0027]",
+      "revId": "4c8247bfb79857bc1389c9fc3261fbf3dbf6e3df",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
