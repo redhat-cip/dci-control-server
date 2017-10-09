@@ -410,6 +410,11 @@ def role_user(admin):
 
 
 @pytest.fixture
+def role_remoteci(admin):
+    return admin.get('/api/v1/roles?where=label:REMOTECI').data['roles'][0]
+
+
+@pytest.fixture
 def access_token():
     """
 {
