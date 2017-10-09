@@ -19,12 +19,13 @@ import pytest
 import uuid
 
 
-def test_create_remotecis(admin, team_id):
+def test_create_remotecis(admin, team_id, role_remoteci):
     pr = admin.post('/api/v1/remotecis',
                     data={'name': 'pname', 'team_id': team_id}).data
     pr_id = pr['remoteci']['id']
     gr = admin.get('/api/v1/remotecis/%s' % pr_id).data
     assert gr['remoteci']['name'] == 'pname'
+    assert gr['remoteci']['role_id'] == role_remoteci['id']
 
 
 def test_create_remotecis_already_exist(admin, team_id):
