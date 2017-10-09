@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_ccdd2172",
+        "filename": "tests/api/v1/test_base.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-10-09T08:01:19Z",
+      "side": 1,
+      "message": "Here you are testing that user_admin can create a user, and get this user.\n\nThis is already tested somewhere else (in teams tests)\n\nAlso the test name is not clear",
+      "range": {
+        "startLine": 38,
+        "startChar": 4,
+        "endLine": 38,
+        "endChar": 52
+      },
+      "revId": "0a299bf35f86c4376af5e313d32b23b76fac2380",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_acdaed76",
+        "filename": "tests/api/v1/test_base.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-10-09T08:01:19Z",
+      "side": 1,
+      "message": "You are creating 3 times the user foo. Maybe this can be in a factory",
+      "range": {
+        "startLine": 55,
+        "startChar": 0,
+        "endLine": 60,
+        "endChar": 76
+      },
+      "revId": "0a299bf35f86c4376af5e313d32b23b76fac2380",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
