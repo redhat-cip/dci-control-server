@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_6cc1752e",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T12:20:07Z",
+      "side": 1,
+      "message": "If the caller is a product owner then you have to get all the teams with parent_id \u003d\u003d product_owner[\u0027team_id\u0027]",
+      "revId": "cef3a6cb68fb6a67ba7ea36bd3e1a7950c94f8a4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
