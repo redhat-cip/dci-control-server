@@ -16,6 +16,24 @@
       "revId": "cef3a6cb68fb6a67ba7ea36bd3e1a7950c94f8a4",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_2ce25dd6",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-10-09T12:25:30Z",
+      "side": 1,
+      "message": "Its already the case if you look at how user.teams is created for product owners[1] in get_user_teams()\n\n[1] https://softwarefactory-project.io/r/#/c/9802/15/dci/auth_mechanism.py",
+      "parentUuid": "9abe1de1_6cc1752e",
+      "revId": "cef3a6cb68fb6a67ba7ea36bd3e1a7950c94f8a4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
