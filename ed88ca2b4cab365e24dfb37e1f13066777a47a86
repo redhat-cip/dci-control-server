@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_ac742dcf",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:55:38Z",
+      "side": 1,
+      "message": "v1_utils.verify_existence_and_get(topic_id, models.TOPICS)",
+      "revId": "ed88ca2b4cab365e24dfb37e1f13066777a47a86",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_8c816992",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 206,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:55:38Z",
+      "side": 1,
+      "message": "Is it on purpose ?",
+      "revId": "ed88ca2b4cab365e24dfb37e1f13066777a47a86",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_6c7e15b0",
+        "filename": "tests/test_auth_mechanism.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:55:38Z",
+      "side": 1,
+      "message": "i\u0027m so proud of you",
+      "revId": "ed88ca2b4cab365e24dfb37e1f13066777a47a86",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
