@@ -16,6 +16,23 @@
       "revId": "e13ed139d670f56bd53e3ea15620909acb8b64fa",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_cc7761d3",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 193,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-09T22:53:39Z",
+      "side": 1,
+      "message": "s/puser[\u0027team_id\u0027]/values[\u0027team_id\u0027]",
+      "revId": "e13ed139d670f56bd53e3ea15620909acb8b64fa",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
