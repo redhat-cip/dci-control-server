@@ -146,9 +146,6 @@ class SignatureAuthMechanism(BaseMechanism):
         # NOTE(fc): role assignment should be done in another place
         #           but this should do the job for now.
         dict_remoteci['role'] = 'remoteci'
-        # TODO(spredzy): Remove once the REMOTECI role has been merged
-        dict_remoteci['role_id'] = 'remoteci'
-        dict_remoteci['role_label'] = 'REMOTECI'
         self.identity = Identity(dict_remoteci, [dict_remoteci['team_id']])
 
         return self.verify_remoteci_auth_signature(
@@ -189,6 +186,7 @@ class SignatureAuthMechanism(BaseMechanism):
                     models.REMOTECIS,
                     partner_team.c.name.label('team_name'),
                     models.PRODUCTS.c.id.label('product_id'),
+                    models.ROLES.c.label.label('role_label')
                 ]
             ).select_from(
                 sql.join(
@@ -202,6 +200,9 @@ class SignatureAuthMechanism(BaseMechanism):
                     models.PRODUCTS,
                     models.PRODUCTS.c.team_id.in_([partner_team.c.id,
                                                    product_team.c.id])
+                ).join(
+                    models.ROLES,
+                    models.REMOTECIS.c.role_id == models.ROLES.c.id
                 )
             ).where(
                 sql.and_(

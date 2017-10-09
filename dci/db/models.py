@@ -226,6 +226,8 @@ REMOTECIS = sa.Table(
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
+    sa.Column('role_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('roles.id', ondelete='SET NULL')),
     sa.Index('remotecis_team_id_idx', 'team_id'),
     sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key'),
     sa.Column('allow_upgrade_job', sa.BOOLEAN, default=False),
