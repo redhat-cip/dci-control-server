@@ -139,17 +139,14 @@ class SignatureAuthMechanism(BaseMechanism):
         except ValueError:
             return False
 
-        remoteci = self.get_remoteci(client_info['id'])
-        if remoteci is None:
+        client = self.get_client(client_info['type'], client_info['id'])
+        if client is None:
             return False
-        dict_remoteci = dict(remoteci)
-        # NOTE(fc): role assignment should be done in another place
-        #           but this should do the job for now.
-        dict_remoteci['role'] = 'remoteci'
-        self.identity = Identity(dict_remoteci, [dict_remoteci['team_id']])
+        dict_client = dict(client)
+        self.identity = Identity(dict_client, [dict_client['team_id']])
 
-        return self.verify_remoteci_auth_signature(
-            remoteci, client_info['timestamp'], their_signature)
+        return self.verify_auth_signature(
+            client, client_info['timestamp'], their_signature)
 
     def get_client_info(self):
         """Extracts timestamp, client type and client id from a
@@ -173,26 +170,34 @@ class SignatureAuthMechanism(BaseMechanism):
         }
 
     @staticmethod
-    def get_remoteci(ci_id):
-        """Get the remoteci including its API secret
+    def get_client(client_type, client_id):
+        """Get a client including its API secret
         """
+        allowed_types_model = {
+            'remoteci': models.REMOTECIS,
+            'feeder': models.FEEDERS,
+        }
+
+        client_model = allowed_types_model.get(client_type, None)
+        if client_model is None:
+            return None
 
         partner_team = models.TEAMS.alias('partner_team')
         product_team = models.TEAMS.alias('product_team')
 
-        query_get_remoteci = (
+        query_get_client = (
             sql.select(
                 [
-                    models.REMOTECIS,
+                    client_model,
                     partner_team.c.name.label('team_name'),
                     models.PRODUCTS.c.id.label('product_id'),
                     models.ROLES.c.label.label('role_label')
                 ]
             ).select_from(
                 sql.join(
-                    models.REMOTECIS,
+                    client_model,
                     partner_team,
-                    models.REMOTECIS.c.team_id == partner_team.c.id
+                    client_model.c.team_id == partner_team.c.id
                 ).outerjoin(
                     product_team,
                     partner_team.c.parent_id == product_team.c.id
@@ -202,30 +207,30 @@ class SignatureAuthMechanism(BaseMechanism):
                                                    product_team.c.id])
                 ).join(
                     models.ROLES,
-                    models.REMOTECIS.c.role_id == models.ROLES.c.id
+                    client_model.c.role_id == models.ROLES.c.id
                 )
             ).where(
                 sql.and_(
-                    models.REMOTECIS.c.id == ci_id,
-                    models.REMOTECIS.c.state == 'active',
+                    client_model.c.id == client_id,
+                    client_model.c.state == 'active',
                     partner_team.c.state == 'active'
                 )
             )
         )
 
-        remoteci = flask.g.db_conn.execute(query_get_remoteci).fetchone()
-        return remoteci
+        client = flask.g.db_conn.execute(query_get_client).fetchone()
+        return client
 
-    def verify_remoteci_auth_signature(self, remoteci, timestamp,
-                                       their_signature):
+    def verify_auth_signature(self, client, timestamp,
+                              their_signature):
         """Extract the values from the request, and pass them to the signature
         verification method."""
-        if remoteci.api_secret is None:
+        if client.api_secret is None:
             return False
 
         return signature.is_valid(
             their_signature=their_signature.encode('utf-8'),
-            secret=remoteci.api_secret.encode('utf-8'),
+            secret=client.api_secret.encode('utf-8'),
             http_verb=self.request.method.upper().encode('utf-8'),
             content_type=(self.request.headers.get('Content-Type')
                           .encode('utf-8')),
