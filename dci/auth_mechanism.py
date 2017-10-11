@@ -38,7 +38,57 @@ class BaseMechanism(object):
         method must raise an exception with proper error message."""
         pass
 
-    def get_user_teams(self, user):
+    def identity_from_db(self, model_cls, model_constraint):
+        partner_team = models.TEAMS.alias('partner_team')
+        product_team = models.TEAMS.alias('product_team')
+
+        query_get_identity = (
+            sql.select(
+                [
+                    model_cls,
+                    partner_team.c.name.label('team_name'),
+                    models.PRODUCTS.c.id.label('product_id'),
+                    models.ROLES.c.label.label('role_label'),
+                    partner_team.c.state.label('partner_team_state'),
+                ]
+            ).select_from(
+                model_cls.outerjoin(
+                    partner_team,
+                    model_cls.c.team_id == partner_team.c.id
+                ).outerjoin(
+                    product_team,
+                    partner_team.c.parent_id == product_team.c.id
+                ).outerjoin(
+                    models.PRODUCTS,
+                    models.PRODUCTS.c.team_id.in_([partner_team.c.id,
+                                                   product_team.c.id])
+                ).join(
+                    models.ROLES,
+                    model_cls.c.role_id == models.ROLES.c.id
+                )
+            ).where(
+                sql.and_(
+                    model_constraint,
+                    model_cls.c.state == 'active',
+                    sql.or_(
+                        partner_team.c.state == 'active',
+                        partner_team.c.state == None  # noqa
+                    )
+                )
+            )
+        )
+
+        identity = flask.g.db_conn.execute(query_get_identity).fetchone()
+        if identity is None:
+            return None
+
+        identity = dict(identity)
+        teams = self._teams_from_db(identity['team_id'],
+                                    identity['role_label'])
+
+        return Identity(identity, teams)
+
+    def _teams_from_db(self, team_id, role_label):
         """Retrieve all the teams that belongs to a user.
 
         SUPER_ADMIN own all teams.
@@ -47,16 +97,16 @@ class BaseMechanism(object):
         """
 
         teams = []
-        if not user['role_label'] == 'SUPER_ADMIN' and \
-           not user['role_label'] == 'PRODUCT_OWNER':
-            teams = [user['team_id']]
+        if role_label != 'SUPER_ADMIN' and \
+           role_label != 'PRODUCT_OWNER':
+            teams = [team_id]
         else:
             query = sql.select([models.TEAMS.c.id])
-            if user['role_label'] == 'PRODUCT_OWNER':
+            if role_label == 'PRODUCT_OWNER':
                 query = query.where(
                     sql.or_(
-                        models.TEAMS.c.parent_id == user['team_id'],
-                        models.TEAMS.c.id == user['team_id']
+                        models.TEAMS.c.parent_id == team_id,
+                        models.TEAMS.c.id == team_id
                     )
                 )
 
@@ -77,61 +127,24 @@ class BasicAuthMechanism(BaseMechanism):
         if not is_authenticated:
             raise dci_exc.DCIException('Invalid user credentials',
                                        status_code=401)
-        teams = self.get_user_teams(user)
-        self.identity = Identity(user, teams)
+        self.identity = user
         return True
 
     def get_user_and_check_auth(self, username, password):
         """Check the combination username/password that is valid on the
         database.
         """
-
-        partner_team = models.TEAMS.alias('partner_team')
-        product_team = models.TEAMS.alias('product_team')
-
-        query_get_user = (
-            sql.select(
-                [
-                    models.USERS,
-                    partner_team.c.name.label('team_name'),
-                    models.PRODUCTS.c.id.label('product_id'),
-                    models.ROLES.c.label.label('role_label')
-                ]
-            ).select_from(
-                sql.join(
-                    models.USERS,
-                    partner_team,
-                    models.USERS.c.team_id == partner_team.c.id
-                ).outerjoin(
-                    product_team,
-                    partner_team.c.parent_id == product_team.c.id
-                ).outerjoin(
-                    models.PRODUCTS,
-                    models.PRODUCTS.c.team_id.in_([partner_team.c.id,
-                                                   product_team.c.id])
-                ).join(
-                    models.ROLES,
-                    models.USERS.c.role_id == models.ROLES.c.id
-                )
-            ).where(
-                sql.and_(
-                    sql.or_(
-                        models.USERS.c.name == username,
-                        models.USERS.c.email == username
-                    ),
-                    models.USERS.c.state == 'active',
-                    partner_team.c.state == 'active'
-                )
-            )
+        constraint = sql.or_(
+            models.USERS.c.name == username,
+            models.USERS.c.email == username
         )
 
-        user = flask.g.db_conn.execute(query_get_user).fetchone()
+        user = self.identity_from_db(models.USERS, constraint)
         if user is None:
             raise dci_exc.DCIException('User %s does not exists.' % username,
                                        status_code=401)
-        user = dict(user)
 
-        return user, auth.check_passwords_equal(password, user.get('password'))
+        return user, auth.check_passwords_equal(password, user.password)
 
 
 class SignatureAuthMechanism(BaseMechanism):
@@ -145,21 +158,34 @@ class SignatureAuthMechanism(BaseMechanism):
         client_info = self.get_client_info()
         their_signature = self.request.headers.get('DCI-Auth-Signature')
 
-        remoteci = self.get_remoteci(client_info['id'])
-        if remoteci is None:
+        identity = self.get_identity(client_info['type'], client_info['id'])
+        if identity is None:
             raise dci_exc.DCIException(
-                'RemoteCI %s does not exist' % client_info['id'],
+                'Client %(type)s/%(id)s does not exist' % client_info,
                 status_code=401)
-        dict_remoteci = dict(remoteci)
-        # NOTE(fc): role assignment should be done in another place
-        #           but this should do the job for now.
-        dict_remoteci['role'] = 'remoteci'
-        self.identity = Identity(dict_remoteci, [dict_remoteci['team_id']])
+        self.identity = identity
 
-        if not self.verify_remoteci_auth_signature(
-           remoteci, client_info['timestamp'], their_signature):
-            raise dci_exc.DCIException('Invalid remotecI credentials.',
-                                       status_code=401)
+        if not self.verify_auth_signature(identity, client_info['timestamp'],
+                                          their_signature):
+            raise dci_exc.DCIException('Invalid signature.', status_code=401)
+        return True
+
+    def get_identity(self, client_type, client_id):
+        """Get an identity including its API secret
+        """
+        allowed_types_model = {
+            'remoteci': models.REMOTECIS,
+            'feeder': models.FEEDERS,
+        }
+
+        identity_model = allowed_types_model.get(client_type, None)
+        if identity_model is None:
+            return None
+
+        constraint = identity_model.c.id == client_id
+
+        identity = self.identity_from_db(identity_model, constraint)
+        return identity
 
     def get_client_info(self):
         """Extracts timestamp, client type and client id from a
@@ -189,62 +215,18 @@ class SignatureAuthMechanism(BaseMechanism):
             raise dci_exc.DCIException('Bad date format in DCI-Client-Info',
                                        '401')
 
-    @staticmethod
-    def get_remoteci(ci_id):
-        """Get the remoteci including its API secret
-        """
-
-        partner_team = models.TEAMS.alias('partner_team')
-        product_team = models.TEAMS.alias('product_team')
-
-        query_get_remoteci = (
-            sql.select(
-                [
-                    models.REMOTECIS,
-                    partner_team.c.name.label('team_name'),
-                    models.PRODUCTS.c.id.label('product_id'),
-                    models.ROLES.c.label.label('role_label')
-                ]
-            ).select_from(
-                sql.join(
-                    models.REMOTECIS,
-                    partner_team,
-                    models.REMOTECIS.c.team_id == partner_team.c.id
-                ).outerjoin(
-                    product_team,
-                    partner_team.c.parent_id == product_team.c.id
-                ).outerjoin(
-                    models.PRODUCTS,
-                    models.PRODUCTS.c.team_id.in_([partner_team.c.id,
-                                                   product_team.c.id])
-                ).join(
-                    models.ROLES,
-                    models.REMOTECIS.c.role_id == models.ROLES.c.id
-                )
-            ).where(
-                sql.and_(
-                    models.REMOTECIS.c.id == ci_id,
-                    models.REMOTECIS.c.state == 'active',
-                    partner_team.c.state == 'active'
-                )
-            )
-        )
-
-        remoteci = flask.g.db_conn.execute(query_get_remoteci).fetchone()
-        return remoteci
-
-    def verify_remoteci_auth_signature(self, remoteci, timestamp,
-                                       their_signature):
+    def verify_auth_signature(self, identity, timestamp,
+                              their_signature):
         """Extract the values from the request, and pass them to the signature
         verification method."""
-        if remoteci.api_secret is None:
-            raise dci_exc.DCIException('RemoteCI %s does not have an API'
-                                       'secret set' % remoteci['id'],
+        if identity.api_secret is None:
+            raise dci_exc.DCIException('Client %(type)s/%(id)s does not have'
+                                       ' an API secret set' % identity,
                                        status_code=401)
 
         return signature.is_valid(
             their_signature=their_signature.encode('utf-8'),
-            secret=remoteci.api_secret.encode('utf-8'),
+            secret=identity.api_secret.encode('utf-8'),
             http_verb=self.request.method.upper().encode('utf-8'),
             content_type=(self.request.headers.get('Content-Type')
                           .encode('utf-8')),
@@ -273,57 +255,21 @@ class OpenIDCAuth(BaseMechanism):
                                        status_code=401)
 
         sso_username = decoded_token['username']
-        user_from_sso_username = self._get_user_from_sso_username(sso_username)
-        if user_from_sso_username is None:
-            new_user = self._create_user_and_get(decoded_token)
-            self.identity = Identity(new_user, [])
-        else:
-            user_teams = self.get_user_teams(user_from_sso_username)
-            self.identity = Identity(user_from_sso_username, user_teams)
+        self.identity = self._get_user_from_sso_username(sso_username)
+        if self.identity is None:
+            self.identity = self._create_user_and_get(decoded_token)
+            if self.identity is None:
+                return False
 
     def _get_user_from_sso_username(self, sso_username):
         """Given the sso's username, get the associated user."""
-
-        partner_team = models.TEAMS.alias('partner_team')
-        product_team = models.TEAMS.alias('product_team')
-
-        query_get_user = (
-            sql.select(
-                [
-                    models.USERS,
-                    partner_team.c.name.label('team_name'),
-                    models.PRODUCTS.c.id.label('product_id'),
-                    models.ROLES.c.label.label('role_label')
-                ]
-            ).select_from(
-                models.USERS.outerjoin(
-                    partner_team,
-                    models.USERS.c.team_id == partner_team.c.id
-                ).outerjoin(
-                    product_team,
-                    partner_team.c.parent_id == product_team.c.id
-                ).outerjoin(
-                    models.PRODUCTS,
-                    models.PRODUCTS.c.team_id.in_([partner_team.c.id,
-                                                   product_team.c.id])
-                ).join(
-                    models.ROLES,
-                    models.USERS.c.role_id == models.ROLES.c.id
-                )
-            ).where(
-                sql.and_(
-                    sql.or_(
-                        models.USERS.c.sso_username == sso_username,
-                        models.USERS.c.email == sso_username
-                    ),
-                    models.USERS.c.state == 'active'
-                )
-            )
+        constraint = sql.or_(
+            models.USERS.c.sso_username == sso_username,
+            models.USERS.c.email == sso_username
         )
 
-        user = flask.g.db_conn.execute(query_get_user).fetchone()
-
-        return user and dict(user)
+        identity = self.identity_from_db(models.USERS, constraint)
+        return identity
 
     def _create_user_and_get(self, decoded_token):
         """Create the user according to the token, this function assume that
