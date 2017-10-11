@@ -212,3 +212,15 @@ def test_sso_auth_get_users(m_datetime, user_sso, app, engine):
         flask.g.db_conn = engine.connect()
         gusers = user_sso.get('/api/v1/users')
         assert gusers.status_code == 200
+
+
+@mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
+def test_sso_auth_get_user(m_datetime, user_sso, app, engine):
+    m_utcnow = mock.MagicMock()
+    m_utcnow.utctimetuple.return_value = datetime.datetime. \
+        fromtimestamp(1505564918).timetuple()
+    m_datetime.utcnow.return_value = m_utcnow
+    with app.app_context():
+        flask.g.db_conn = engine.connect()
+        request = user_sso.get('/api/v1/users/me?embed=team,role')
+        assert request.status_code == 200
