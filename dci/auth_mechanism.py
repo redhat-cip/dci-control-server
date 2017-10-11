@@ -32,6 +32,80 @@ class BaseMechanism(object):
         """Test if the user is a valid user."""
         pass
 
+    def identity_from_db(self, model_cls, model_constraint):
+        partner_team = models.TEAMS.alias('partner_team')
+        product_team = models.TEAMS.alias('product_team')
+
+        query_get_identity = (
+            sql.select(
+                [
+                    model_cls,
+                    partner_team.c.name.label('team_name'),
+                    models.PRODUCTS.c.id.label('product_id'),
+                    models.ROLES.c.label.label('role_label')
+                ]
+            ).select_from(
+                sql.join(
+                    model_cls,
+                    partner_team,
+                    model_cls.c.team_id == partner_team.c.id
+                ).outerjoin(
+                    product_team,
+                    partner_team.c.parent_id == product_team.c.id
+                ).outerjoin(
+                    models.PRODUCTS,
+                    models.PRODUCTS.c.team_id.in_([partner_team.c.id,
+                                                   product_team.c.id])
+                ).join(
+                    models.ROLES,
+                    model_cls.c.role_id == models.ROLES.c.id
+                )
+            ).where(
+                sql.and_(
+                    model_constraint,
+                    model_cls.c.state == 'active',
+                    partner_team.c.state == 'active'
+                )
+            )
+        )
+
+        identity = flask.g.db_conn.execute(query_get_identity).fetchone()
+        if identity is None:
+            return None
+
+        identity = dict(identity)
+        teams = self._teams_from_db(identity['team_id'],
+                                    identity['role_label'])
+
+        return Identity(identity, teams)
+
+    def _teams_from_db(self, team_id, role_label):
+        """Retrieve all the teams that belongs to a user.
+
+        SUPER_ADMIN own all teams.
+        PRODUCT_OWNER own all teams attached to a product.
+        ADMIN/USER own their own team
+        """
+
+        teams = []
+        if role_label != 'SUPER_ADMIN' and \
+           role_label != 'PRODUCT_OWNER':
+            teams = [team_id]
+        else:
+            query = sql.select([models.TEAMS.c.id])
+            if role_label == 'PRODUCT_OWNER':
+                query = query.where(
+                    sql.or_(
+                        models.TEAMS.c.parent_id == team_id,
+                        models.TEAMS.c.id == team_id
+                    )
+                )
+
+            result = flask.g.db_conn.execute(query).fetchall()
+            teams = [row[models.TEAMS.c.id] for row in result]
+
+        return teams
+
 
 class BasicAuthMechanism(BaseMechanism):
     def is_valid(self):
@@ -42,87 +116,23 @@ class BasicAuthMechanism(BaseMechanism):
             self.get_user_and_check_auth(auth.username, auth.password)
         if not is_authenticated:
             return False
-        teams = self.get_user_teams(user)
-        self.identity = Identity(user, teams)
+        self.identity = user
         return True
-
-    def get_user_teams(self, user):
-        """Retrieve all the teams that belongs to a user.
-
-        SUPER_ADMIN own all teams.
-        PRODUCT_OWNER own all teams attached to a product.
-        ADMIN/USER own their own team
-        """
-
-        teams = []
-        if not user['role_label'] == 'SUPER_ADMIN' and \
-           not user['role_label'] == 'PRODUCT_OWNER':
-            teams = [user['team_id']]
-        else:
-            query = sql.select([models.TEAMS.c.id])
-            if user['role_label'] == 'PRODUCT_OWNER':
-                query = query.where(
-                    sql.or_(
-                        models.TEAMS.c.parent_id == user['team_id'],
-                        models.TEAMS.c.id == user['team_id']
-                    )
-                )
-
-            result = flask.g.db_conn.execute(query).fetchall()
-            teams = [row[models.TEAMS.c.id] for row in result]
-
-        return teams
 
     def get_user_and_check_auth(self, username, password):
         """Check the combination username/password that is valid on the
         database.
         """
-
-        partner_team = models.TEAMS.alias('partner_team')
-        product_team = models.TEAMS.alias('product_team')
-
-        query_get_user = (
-            sql.select(
-                [
-                    models.USERS,
-                    partner_team.c.name.label('team_name'),
-                    models.PRODUCTS.c.id.label('product_id'),
-                    models.ROLES.c.label.label('role_label')
-                ]
-            ).select_from(
-                sql.join(
-                    models.USERS,
-                    partner_team,
-                    models.USERS.c.team_id == partner_team.c.id
-                ).outerjoin(
-                    product_team,
-                    partner_team.c.parent_id == product_team.c.id
-                ).outerjoin(
-                    models.PRODUCTS,
-                    models.PRODUCTS.c.team_id.in_([partner_team.c.id,
-                                                   product_team.c.id])
-                ).join(
-                    models.ROLES,
-                    models.USERS.c.role_id == models.ROLES.c.id
-                )
-            ).where(
-                sql.and_(
-                    sql.or_(
-                        models.USERS.c.name == username,
-                        models.USERS.c.email == username
-                    ),
-                    models.USERS.c.state == 'active',
-                    partner_team.c.state == 'active'
-                )
-            )
+        constraint = sql.or_(
+            models.USERS.c.name == username,
+            models.USERS.c.email == username
         )
 
-        user = flask.g.db_conn.execute(query_get_user).fetchone()
+        user = self.identity_from_db(models.USERS, constraint)
         if user is None:
             return None, False
-        user = dict(user)
 
-        return user, auth.check_passwords_equal(password, user.get('password'))
+        return user, auth.check_passwords_equal(password, user.password)
 
 
 class SignatureAuthMechanism(BaseMechanism):
@@ -139,17 +149,30 @@ class SignatureAuthMechanism(BaseMechanism):
         except ValueError:
             return False
 
-        remoteci = self.get_remoteci(client_info['id'])
-        if remoteci is None:
+        identity = self.get_identity(client_info['type'], client_info['id'])
+        if identity is None:
             return False
-        dict_remoteci = dict(remoteci)
-        # NOTE(fc): role assignment should be done in another place
-        #           but this should do the job for now.
-        dict_remoteci['role'] = 'remoteci'
-        self.identity = Identity(dict_remoteci, [dict_remoteci['team_id']])
+        self.identity = identity
 
-        return self.verify_remoteci_auth_signature(
-            remoteci, client_info['timestamp'], their_signature)
+        return self.verify_auth_signature(
+            identity, client_info['timestamp'], their_signature)
+
+    def get_identity(self, client_type, client_id):
+        """Get an identity including its API secret
+        """
+        allowed_types_model = {
+            'remoteci': models.REMOTECIS,
+            'feeder': models.FEEDERS,
+        }
+
+        identity_model = allowed_types_model.get(client_type, None)
+        if identity_model is None:
+            return None
+
+        constraint = identity_model.c.id == client_id
+
+        identity = self.identity_from_db(identity_model, constraint)
+        return identity
 
     def get_client_info(self):
         """Extracts timestamp, client type and client id from a
@@ -172,60 +195,16 @@ class SignatureAuthMechanism(BaseMechanism):
             'id': client_info[2],
         }
 
-    @staticmethod
-    def get_remoteci(ci_id):
-        """Get the remoteci including its API secret
-        """
-
-        partner_team = models.TEAMS.alias('partner_team')
-        product_team = models.TEAMS.alias('product_team')
-
-        query_get_remoteci = (
-            sql.select(
-                [
-                    models.REMOTECIS,
-                    partner_team.c.name.label('team_name'),
-                    models.PRODUCTS.c.id.label('product_id'),
-                    models.ROLES.c.label.label('role_label')
-                ]
-            ).select_from(
-                sql.join(
-                    models.REMOTECIS,
-                    partner_team,
-                    models.REMOTECIS.c.team_id == partner_team.c.id
-                ).outerjoin(
-                    product_team,
-                    partner_team.c.parent_id == product_team.c.id
-                ).outerjoin(
-                    models.PRODUCTS,
-                    models.PRODUCTS.c.team_id.in_([partner_team.c.id,
-                                                   product_team.c.id])
-                ).join(
-                    models.ROLES,
-                    models.REMOTECIS.c.role_id == models.ROLES.c.id
-                )
-            ).where(
-                sql.and_(
-                    models.REMOTECIS.c.id == ci_id,
-                    models.REMOTECIS.c.state == 'active',
-                    partner_team.c.state == 'active'
-                )
-            )
-        )
-
-        remoteci = flask.g.db_conn.execute(query_get_remoteci).fetchone()
-        return remoteci
-
-    def verify_remoteci_auth_signature(self, remoteci, timestamp,
-                                       their_signature):
+    def verify_auth_signature(self, identity, timestamp,
+                              their_signature):
         """Extract the values from the request, and pass them to the signature
         verification method."""
-        if remoteci.api_secret is None:
+        if identity.api_secret is None:
             return False
 
         return signature.is_valid(
             their_signature=their_signature.encode('utf-8'),
-            secret=remoteci.api_secret.encode('utf-8'),
+            secret=identity.api_secret.encode('utf-8'),
             http_verb=self.request.method.upper().encode('utf-8'),
             content_type=(self.request.headers.get('Content-Type')
                           .encode('utf-8')),
