@@ -51,12 +51,8 @@ def test_bam_is_valid():
     def return_is_authenticated(*args):
         return {}, True
 
-    def return_get_user_teams(*args):
-        return []
-
     basic_auth_mecanism = BasicAuthMechanism(MockRequest(AuthMock()))
     basic_auth_mecanism.get_user_and_check_auth = return_is_authenticated
-    basic_auth_mecanism.get_user_teams = return_get_user_teams
     assert basic_auth_mecanism.is_valid()
 
 
@@ -70,6 +66,7 @@ class RemoteCiMock(object):
         self.id = id
         self.api_secret = api_secret
         self.team_id = uuid.uuid4()
+        self.role_label = 'REMOTECI'
 
     def __iter__(self):
         yield 'team_id', self.team_id
@@ -81,7 +78,7 @@ sam_headers = {
 }
 
 
-def return_get_remoteci(*args):
+def return_get_identity(*args):
     return RemoteCiMock(args[0])
 
 
@@ -134,6 +131,21 @@ def test_get_client_info_good():
     assert _test_client_info_value(client_info_value) == expected
 
 
+def test_get_identity_allowed():
+    def mock_identity_from_db(*args):
+        return True
+
+    mech = SignatureAuthMechanism(MockSignedRequest(sam_headers))
+    mech.identity_from_db = mock_identity_from_db
+    assert mech.get_identity('remoteci', 'Starsky') is not None
+    assert mech.get_identity('feeder', 'Hutch') is not None
+
+
+def test_get_identity_forbidden():
+    mech = SignatureAuthMechanism(MockSignedRequest(sam_headers))
+    assert mech.get_identity('telltale', 'Huggy Bear') is None
+
+
 def test_sam_is_valid_false_if_no_signature():
     mech = SignatureAuthMechanism(MockSignedRequest())
     assert not mech.is_valid()
@@ -144,8 +156,8 @@ def test_sam_is_valid_false_if_not_authenticated():
         return False
 
     mech = SignatureAuthMechanism(MockSignedRequest(sam_headers))
-    mech.verify_remoteci_auth_signature = return_is_authenticated
-    mech.get_remoteci = return_get_remoteci
+    mech.verify_auth_signature = return_is_authenticated
+    mech.get_identity = return_get_identity
     assert not mech.is_valid()
 
 
@@ -154,6 +166,6 @@ def test_sam_is_valid():
         return True
 
     mech = SignatureAuthMechanism(MockSignedRequest(sam_headers))
-    mech.verify_remoteci_auth_signature = return_is_authenticated
-    mech.get_remoteci = return_get_remoteci
+    mech.verify_auth_signature = return_is_authenticated
+    mech.get_identity = return_get_identity
     assert mech.is_valid()
