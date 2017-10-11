@@ -14,16 +14,90 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import flask
+from sqlalchemy import sql
+
+from dci.db import models
+
 
 class Identity:
     """Class that offers helper methods to simplify permission management
     """
 
-    def __init__(self, user, teams):
+    def __init__(self, user):
         for key in user.keys():
             setattr(self, key, user[key])
 
-        self.teams = teams
+        self._teams_from_db()
+
+    @classmethod
+    def from_db(cls, model_cls, model_constraint):
+        partner_team = models.TEAMS.alias('partner_team')
+        product_team = models.TEAMS.alias('product_team')
+
+        query_get_identity = (
+            sql.select(
+                [
+                    model_cls,
+                    partner_team.c.name.label('team_name'),
+                    models.PRODUCTS.c.id.label('product_id'),
+                    models.ROLES.c.label.label('role_label')
+                ]
+            ).select_from(
+                sql.join(
+                    model_cls,
+                    partner_team,
+                    model_cls.c.team_id == partner_team.c.id
+                ).outerjoin(
+                    product_team,
+                    partner_team.c.parent_id == product_team.c.id
+                ).outerjoin(
+                    models.PRODUCTS,
+                    models.PRODUCTS.c.team_id.in_([partner_team.c.id,
+                                                   product_team.c.id])
+                ).join(
+                    models.ROLES,
+                    model_cls.c.role_id == models.ROLES.c.id
+                )
+            ).where(
+                sql.and_(
+                    model_constraint,
+                    model_cls.c.state == 'active',
+                    partner_team.c.state == 'active'
+                )
+            )
+        )
+
+        identity = flask.g.db_conn.execute(query_get_identity).fetchone()
+        if identity is None:
+            return None
+
+        identity = dict(identity)
+        return cls(identity)
+
+    def _teams_from_db(self):
+        """Retrieve all the teams that belongs to a user.
+
+        SUPER_ADMIN own all teams.
+        PRODUCT_OWNER own all teams attached to a product.
+        ADMIN/USER own their own team
+        """
+
+        if not self.role_label == 'SUPER_ADMIN' and \
+           not self.role_label == 'PRODUCT_OWNER':
+            self.teams = [self.team_id]
+        else:
+            query = sql.select([models.TEAMS.c.id])
+            if self.role_label == 'PRODUCT_OWNER':
+                query = query.where(
+                    sql.or_(
+                        models.TEAMS.c.parent_id == self.team_id,
+                        models.TEAMS.c.id == self.team_id
+                    )
+                )
+
+            result = flask.g.db_conn.execute(query).fetchall()
+            self.teams = [row[models.TEAMS.c.id] for row in result]
 
     # TODO(spredzy): In order to avoid a huge refactor patch, the __getitem__
     # function is overloaded so it behaves like a dict and the code in place
