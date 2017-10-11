@@ -21,21 +21,27 @@ from dci.identity import Identity
 
 
 def test_identity():
-
     teams = [uuid.uuid4()]
 
+    def set_teams(obj):
+        obj.teams = teams
+    teams_from_db = Identity._teams_from_db
+    Identity._teams_from_db = set_teams
+
     super_admin_user = {'role_label': 'SUPER_ADMIN'}
-    assert Identity(super_admin_user, []).is_super_admin() is True
+    assert Identity(super_admin_user).is_super_admin() is True
 
     product_owner_user = {'role_label': 'PRODUCT_OWNER'}
-    assert Identity(product_owner_user, []).is_product_owner() is True
-    assert Identity(product_owner_user, teams). \
+    assert Identity(product_owner_user).is_product_owner() is True
+    assert Identity(product_owner_user). \
         is_team_product_owner(teams[0]) is True
 
     admin_user = {'role_label': 'ADMIN'}
-    assert Identity(admin_user, []).is_admin() is True
-    assert Identity(admin_user, teams).is_team_admin(teams[0]) is True
+    assert Identity(admin_user).is_admin() is True
+    assert Identity(admin_user).is_team_admin(teams[0]) is True
 
     user = {'role_label': 'USER'}
-    assert Identity(user, []).is_regular_user() is True
-    assert Identity(user, teams).is_in_team(teams[0]) is True
+    assert Identity(user).is_regular_user() is True
+    assert Identity(user).is_in_team(teams[0]) is True
+
+    Identity._teams_from_db = teams_from_db
