@@ -332,37 +332,13 @@ def purge_archived_remotecis(user):
 @api.route('/remotecis/<uuid:r_id>/api_secret', methods=['PUT'])
 @decorators.login_required
 def put_api_secret(user, r_id):
-    # get If-Match header
-    if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
+    utils.check_and_get_etag(flask.request.headers)
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
     if not user.is_in_team(remoteci['team_id']):
         raise auth.UNAUTHORIZED
 
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == r_id,
-    )
-    values = {
-        'api_secret': signature.gen_secret(),
-        'etag': utils.gen_etag()
-    }
-
-    query = (_TABLE
-             .update()
-             .where(where_clause)
-             .values(**values))
-
-    result = flask.g.db_conn.execute(query)
-
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('RemoteCI', r_id)
-
-    res = flask.jsonify(({'id': r_id, 'etag': values['etag'],
-                          'api_secret': values['api_secret']}))
-    res.headers.add_header('ETag', values['etag'])
-    return res
+    return base.refresh_api_secret(user, remoteci, _TABLE)
 
 # Remotecis configurations controllers
 

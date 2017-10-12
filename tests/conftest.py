@@ -366,6 +366,16 @@ def role(admin):
 
 
 @pytest.fixture
+def feeder(admin, team_product_id):
+    data = {
+        'name': 'random-name-feeder',
+        'team_id': team_product_id,
+    }
+    feeder = admin.post('/api/v1/feeders', data=data).data
+    return feeder['feeder']
+
+
+@pytest.fixture
 def permission(admin):
     data = {
         'name': 'A Permission',
