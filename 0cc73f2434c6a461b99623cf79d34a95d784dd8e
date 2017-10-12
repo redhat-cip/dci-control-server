@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_5204087d",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 340,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-12T10:22:43Z",
+      "side": 1,
+      "message": "This was previously restricted to a user having the \u0027ADMIN\u0027 role in the team. Although I\u0027m not sure we should restrict this, is it really what you wanted to do ?",
+      "revId": "0cc73f2434c6a461b99623cf79d34a95d784dd8e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
