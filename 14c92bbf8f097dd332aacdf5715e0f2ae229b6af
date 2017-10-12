@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_522c084a",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-10-12T07:29:35Z",
+      "side": 1,
+      "message": "missing \u0027user\u0027: models.USERS,",
+      "revId": "14c92bbf8f097dd332aacdf5715e0f2ae229b6af",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
