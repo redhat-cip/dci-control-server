@@ -16,6 +16,24 @@
       "revId": "14c92bbf8f097dd332aacdf5715e0f2ae229b6af",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_32bf54d2",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-12T08:52:20Z",
+      "side": 1,
+      "message": "Nope, we still don\u0027t want users to be able to use an API secret. Do we ?",
+      "parentUuid": "9abe1de1_522c084a",
+      "revId": "14c92bbf8f097dd332aacdf5715e0f2ae229b6af",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
