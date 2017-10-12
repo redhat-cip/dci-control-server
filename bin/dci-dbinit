@@ -99,10 +99,17 @@ def init_db(db_conn):
         'description': 'A RemoteCI',
     }
 
+    feeder_role = {
+        'name': 'Feeder',
+        'label': 'FEEDER',
+        'description': 'A Feeder',
+    }
+
     db_insert_with_name(models.ROLES, **product_owner_role)
     db_insert_with_name(models.ROLES, **admin_role)
     db_insert_with_name(models.ROLES, **user_role)
     db_insert_with_name(models.ROLES, **remoteci_role)
+    db_insert_with_name(models.ROLES, **feeder_role)
     super_admin_role_id = db_insert_with_name(models.ROLES,
                                               **super_admin_role)
 

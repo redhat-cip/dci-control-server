@@ -605,3 +605,25 @@ product_put = {
 }
 
 product = DCISchema(schema_factory(product).post, Schema(product_put))
+
+###############################################################################
+#                                                                             #
+#                             Feeder schemas                                  #
+#                                                                             #
+###############################################################################
+
+feeder = utils.dict_merge(base, DATA_FIELD, {
+    'team_id': v.Any(UUID, msg=INVALID_TEAM),
+    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
+                                                 msg=INVALID_RESOURCE_STATE),
+})
+
+feeder_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('data'): dict,
+    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
+    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
+                               msg=INVALID_RESOURCE_STATE),
+}
+
+feeder = DCISchema(schema_factory(feeder).post, Schema(feeder_put))

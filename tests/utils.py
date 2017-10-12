@@ -135,11 +135,18 @@ def provision(db_conn):
         'description': 'A RemoteCI',
     }
 
+    feeder_role = {
+        'name': 'Feeder',
+        'label': 'FEEDER',
+        'description': 'A Feeder',
+    }
+
     admin_role_id = db_insert(models.ROLES, **admin_role)
     user_role_id = db_insert(models.ROLES, **user_role)
     super_admin_role_id = db_insert(models.ROLES, **super_admin_role)
     product_owner_role_id = db_insert(models.ROLES, **product_owner_role)
     db_insert(models.ROLES, **remoteci_role)
+    db_insert(models.ROLES, **feeder_role)
 
     # Create users
     db_insert(models.USERS,

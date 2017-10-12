@@ -277,6 +277,16 @@ def tests(root_select=models.TESTS):
     }
 
 
+def feeders(root_select=models.FEEDERS):
+    return {
+        'team': [
+            {'right': TEAM,
+             'onclause': and_(TEAM.c.id == root_select.c.team_id,
+                              TEAM.c.state != 'archived')}
+        ]
+    }
+
+
 def products(root_select=models.PRODUCTS):
     return {
         'team': [
@@ -379,6 +389,8 @@ EMBED_STRING_TO_OBJECT = {
     'components': {
         'files': CFILES,
         'jobs': models.JOBS},
+    'feeders': {
+        'team': TEAM},
     'files': {
         'jobstate': JOBSTATE,
         'jobstate.job': JOBSTATE_JOBS,
@@ -421,6 +433,7 @@ EMBED_JOINS = {
     'jobs': jobs,
     'remotecis': remotecis,
     'components': components,
+    'feeders': feeders,
     'files': files,
     'jobstates': jobstates,
     'products': products,
