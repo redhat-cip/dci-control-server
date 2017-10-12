@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_7d6c7d9c",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-10-12T16:46:40Z",
+      "side": 1,
+      "message": "v1_utils.verify_existence_and_get(topic_id, models.TOPICS)",
+      "revId": "9757b94fbe9c76a3cdbe6dd5b7c261d0f4c29347",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
