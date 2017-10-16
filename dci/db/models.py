@@ -199,13 +199,14 @@ TEAMS = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
-    sa.Column('name', sa.String(255), unique=True, nullable=False),
+    sa.Column('name', sa.String(255), nullable=False),
     # https://en.wikipedia.org/wiki/ISO_3166-1 Alpha-2 code
     sa.Column('country', sa.String(255), nullable=True),
     sa.Column('state', STATES, default='active'),
     sa.Column('parent_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='SET NULL'),
-              nullable=True)
+              nullable=True),
+    sa.UniqueConstraint('name', 'parent_id', name='teams_name_parent_id_key'),
 )
 
 
