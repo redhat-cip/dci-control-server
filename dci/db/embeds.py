@@ -50,6 +50,7 @@ JOBSTATE = models.JOBSTATES.alias('jobstate')
 JOBSTATE_JOBS = models.JOBS.alias('jobstate.job')
 
 TOPIC = models.TOPICS.alias('topic')
+NEXT_TOPIC = models.TOPICS.alias('nexttopic')
 
 ROLE = models.ROLES.alias('role')
 
@@ -318,8 +319,12 @@ def topics(root_select=models.TOPICS):
             {'right': PRODUCT,
              'onclause': and_(PRODUCT.c.id == root_select.c.product_id,
                               PRODUCT.c.state != 'archived'),
-             'isouter': True}
-        ],
+             'isouter': True}],
+        'nexttopic': [
+            {'right': NEXT_TOPIC,
+             'onclause': and_(root_select.c.next_topic == NEXT_TOPIC.c.id,
+                              NEXT_TOPIC.c.state != 'archived'),
+             'isouter': True}],
     }
 
 
@@ -399,7 +404,8 @@ EMBED_STRING_TO_OBJECT = {
     },
     'topics': {
         'teams': models.TEAMS,
-        'product': PRODUCT
+        'product': PRODUCT,
+        'nexttopic': NEXT_TOPIC
     },
     'users': {
         'team': TEAM,

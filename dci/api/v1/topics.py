@@ -37,6 +37,7 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
     'teams': True,
     'product': False,
+    'nexttopic': False,
 }
 
 
