@@ -154,12 +154,14 @@ def delete_component_by_id(user, c_id):
 
 @api.route('/components/purge', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def get_to_purge_archived_components(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/components/purge', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def purge_archived_components(user):
     return base.purge_archived_resources(user, _TABLE)
 

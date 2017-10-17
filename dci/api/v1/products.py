@@ -20,7 +20,6 @@ from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
-from dci import auth
 from dci import decorators
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -41,11 +40,9 @@ _EMBED_MANY = {
 
 @api.route('/products', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 @audits.log
 def create_product(user):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     values = v1_utils.common_values_dict(user)
     values.update(schemas.product.post(flask.request.json))
 
@@ -67,10 +64,8 @@ def create_product(user):
 
 @api.route('/products/<uuid:product_id>', methods=['PUT'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def update_product(user, product_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.product.put(flask.request.json)
@@ -119,10 +114,8 @@ def get_product_by_id(user, product_id):
 
 @api.route('/products/<uuid:product_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def delete_product_by_id(user, product_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     v1_utils.verify_existence_and_get(product_id, _TABLE)
@@ -146,11 +139,13 @@ def delete_product_by_id(user, product_id):
 
 @api.route('/products/purge', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def get_to_purge_archived_products(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/products/purge', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def purge_archived_products(user):
     return base.purge_archived_resources(user, _TABLE)

@@ -180,7 +180,7 @@ def get_file_content(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
     swift = dci_config.get_store('files')
 
-    if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
+    if not user.is_in_team(file['team_id']):
         raise auth.UNAUTHORIZED
 
     file_path = swift.build_file_path(file['team_id'],
@@ -203,7 +203,7 @@ def get_file_content(user, file_id):
 def delete_file_by_id(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
-    if not (auth.is_admin(user) or auth.is_in_team(user, file['team_id'])):
+    if not user.is_in_team(file['team_id']):
         raise auth.UNAUTHORIZED
 
     values = {'state': 'archived'}
@@ -222,11 +222,13 @@ def delete_file_by_id(user, file_id):
 
 @api.route('/files/purge', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def get_to_purge_archived_files(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/files/purge', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def purge_archived_files(user):
     return base.purge_archived_resources(user, _TABLE)

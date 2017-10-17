@@ -208,9 +208,8 @@ def add_user_to_remoteci(user, r_id):
                                                        models.USERS)
 
     if values['user_id'] != user['id'] and \
-       not user.is_super_admin() and \
-       not user.is_team_product_owner(remoteci['team_id']) and \
-       not user.is_team_admin(remoteci['team_id']):
+       not user.is_in_team(remoteci['team_id']) and \
+       user.is_regular_user():
         raise auth.UNAUTHORIZED
 
     if user_to_attach['team_id'] != remoteci['team_id']:
@@ -248,7 +247,8 @@ def delete_user_from_remoteci(user, r_id, u_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
     if u_id != user['id'] and \
-       (user.is_regular_user() or not user.is_in_team(remoteci['team_id'])):
+       not user.is_in_team(remoteci['team_id']) and \
+       user.is_regular_user():
         raise auth.UNAUTHORIZED
 
     JUR = models.JOIN_USER_REMOTECIS
