@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_03dd2442",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 149,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-10-17T12:30:03Z",
+      "side": 1,
+      "message": "I love when you do what you said! :)",
+      "revId": "26a9adbb49de6e67b2b4786371bc79d727e626c4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
