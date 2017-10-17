@@ -18,7 +18,6 @@ import flask
 from sqlalchemy import sql
 
 from dci.api.v1 import api
-from dci import auth
 from dci import decorators
 from dci.db import models
 
@@ -61,10 +60,8 @@ def _get_all_jobs_by_component(component_id):
 
 @api.route('/metrics/topics', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER'])
 def get_all_metrics(user):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     data = {}
     topics = _get_all_topics()
     for t in topics:

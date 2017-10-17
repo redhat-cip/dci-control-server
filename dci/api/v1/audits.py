@@ -18,7 +18,6 @@ import flask
 
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
-from dci import auth
 from dci import decorators
 from dci.common import schemas
 from dci.db import models
@@ -30,20 +29,17 @@ _A_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 @api.route('/audits', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN'])
 def get_logs(user):
     args = schemas.args(flask.request.args.to_dict())
-
-    if user['role_id'] not in [auth.get_role_id('ADMIN'),
-                               auth.get_role_id('SUPER_ADMIN')]:
-        raise auth.UNAUTHORIZED
 
     if args['limit'] is None:
         args['limit'] = 10
 
     query = v1_utils.QueryBuilder(_TABLE, args, _A_COLUMNS)
 
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
+    if not user.is_super_admin():
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)

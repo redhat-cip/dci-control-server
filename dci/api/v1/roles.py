@@ -40,6 +40,7 @@ _EMBED_MANY = {
 
 @api.route('/roles', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 @audits.log
 def create_roles(user):
     values = v1_utils.common_values_dict(user)
@@ -47,9 +48,6 @@ def create_roles(user):
 
     if not values['label']:
         values.update({'label': values['name'].upper()})
-
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
 
     query = _TABLE.insert().values(**values)
 
@@ -66,15 +64,13 @@ def create_roles(user):
 
 @api.route('/roles/<uuid:role_id>', methods=['PUT'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 @audits.log
 def update_role(user, role_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.role.put(flask.request.json)
     v1_utils.verify_existence_and_get(role_id, _TABLE)
-
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
@@ -123,10 +119,10 @@ def get_all_roles(user):
 def get_role_by_id(user, role_id):
     role = v1_utils.verify_existence_and_get(role_id, _TABLE)
 
-    if user['role_id'] != role_id and \
-       user['role_id'] == auth.get_role_id('USER'):
+    if user.role_id != role_id and user.is_regular_user():
         raise auth.UNAUTHORIZED
-    if not auth.is_admin(user) and auth.get_role_id('SUPER_ADMIN') == role_id:
+    if not user.is_super_admin() and \
+       auth.get_role_id('SUPER_ADMIN') == role_id:
         raise auth.UNAUTHORIZED
 
     return base.get_resource_by_id(user, role, _TABLE, _EMBED_MANY)
@@ -134,14 +130,12 @@ def get_role_by_id(user, role_id):
 
 @api.route('/roles/<uuid:role_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 @audits.log
 def delete_role_by_id(user, role_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     v1_utils.verify_existence_and_get(role_id, _TABLE)
-
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
 
     values = {'state': 'archived'}
     where_clause = sql.and_(
@@ -159,22 +153,22 @@ def delete_role_by_id(user, role_id):
 
 @api.route('/roles/purge', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def get_to_purge_archived_roles(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/roles/purge', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def purge_archived_roles(user):
     return base.purge_archived_resources(user, _TABLE)
 
 
 @api.route('/roles/<uuid:role_id>/permissions', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def add_permission_to_role(user, role_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     data_json = flask.request.json
     values = {'role_id': role_id,
               'permission_id': data_json.get('permission_id')}
@@ -194,9 +188,8 @@ def add_permission_to_role(user, role_id):
 @api.route('/roles/<uuid:role_id>/permissions/<uuid:permission_id>',
            methods=['DELETE'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def delete_permission_from_role(user, role_id, permission_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
     v1_utils.verify_existence_and_get(role_id, _TABLE)
 
     JRP = models.JOIN_ROLES_PERMISSIONS
