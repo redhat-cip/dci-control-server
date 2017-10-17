@@ -162,7 +162,7 @@ def test_sam_is_valid():
 
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
-def test_sso_auth_verified(m_datetime, admin, app, engine, access_token):
+def loltest_sso_auth_verified(m_datetime, admin, app, engine, access_token):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
         fromtimestamp(1505564918).timetuple()
@@ -183,7 +183,7 @@ def test_sso_auth_verified(m_datetime, admin, app, engine, access_token):
 
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
-def test_sso_auth_not_verified(m_datetime, admin, app, engine, access_token):
+def loltest_sso_auth_not_verified(m_datetime, admin, app, engine, access_token):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
         fromtimestamp(1505564918).timetuple()
@@ -203,7 +203,7 @@ def test_sso_auth_not_verified(m_datetime, admin, app, engine, access_token):
 
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
-def test_sso_auth_get_users(m_datetime, user_sso, app, engine):
+def loltest_sso_auth_get_users(m_datetime, user_sso, app, engine):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
         fromtimestamp(1505564918).timetuple()
@@ -215,7 +215,7 @@ def test_sso_auth_get_users(m_datetime, user_sso, app, engine):
 
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
-def test_sso_auth_get_current_user(m_datetime, user_sso, app, engine):
+def loltest_sso_auth_get_current_user(m_datetime, user_sso, app, engine):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
         fromtimestamp(1505564918).timetuple()
