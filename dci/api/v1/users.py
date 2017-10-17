@@ -60,13 +60,12 @@ def _verify_existence_and_get_user(user_id):
 
 @api.route('/users', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN'])
 def create_users(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.user.post(flask.request.json))
 
-    if not user.is_super_admin() and \
-       not user.is_team_product_owner(values['team_id']) and \
-       not user.is_team_admin(values['team_id']):
+    if not user.is_in_team(values['team_id']):
         raise auth.UNAUTHORIZED
 
     role_id = values.get('role_id', auth.get_role_id('USER'))
@@ -174,6 +173,7 @@ def put_current_user(user):
 
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN'])
 def put_user(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -182,11 +182,8 @@ def put_user(user, user_id):
     # to update a user the caller must be either the admin of its team
     # or a super admin
     puser = dict(_verify_existence_and_get_user(user_id))
-    if puser['id'] != str(user_id):
-        if not user.is_super_admin() and \
-           not user.is_team_product_owner(puser['team_id']) and \
-           not user.is_team_admin(puser['team_id']):
-            raise auth.UNAUTHORIZED
+    if puser['id'] != str(user_id) and not user.is_in_team(values['team_id']):
+        raise auth.UNAUTHORIZED
 
     # if the caller wants to update the team_id then it must be done by a super
     # admin
@@ -216,15 +213,14 @@ def put_user(user, user_id):
 
 @api.route('/users/<uuid:user_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN'])
 def delete_user_by_id(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     duser = _verify_existence_and_get_user(user_id)
 
-    if not user.is_super_admin() and \
-       not user.is_team_product_owner(duser['team_id']) and \
-       not user.is_team_admin(duser['team_id']):
+    if not user.is_in_team(duser['team_id']):
         raise auth.UNAUTHORIZED
 
     values = {'state': 'archived'}
@@ -244,11 +240,13 @@ def delete_user_by_id(user, user_id):
 
 @api.route('/users/purge', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def get_to_purge_archived_users(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/users/purge', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def purge_archived_users(user):
     return base.purge_archived_resources(user, _TABLE)

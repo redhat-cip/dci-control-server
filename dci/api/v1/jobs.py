@@ -64,16 +64,15 @@ _EMBED_MANY = {
 
 @api.route('/jobs', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER'])
 def create_jobs(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.job.post(flask.request.json))
     components_ids = values.pop('components')
 
     values['team_id'] = values.get('team_id', user['team_id'])
-    # Only super admin can create job for other teams
-    if not auth.is_admin(user):
-        if not auth.is_in_team(user, values['team_id']):
-            raise auth.UNAUTHORIZED
+    if not user.is_in_team(values['team_id']):
+        raise auth.UNAUTHORIZED
 
     if values['topic_id'] is not None:
         v1_utils.verify_team_in_topic(user, values['topic_id'])
@@ -469,6 +468,7 @@ def get_job_by_id(user, job_id):
 
 @api.route('/jobs/<uuid:job_id>', methods=['PUT'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN'])
 @audits.log
 def update_job_by_id(user, job_id):
     """Update a job
@@ -481,8 +481,7 @@ def update_job_by_id(user, job_id):
 
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
 
-    # If it's an admin or belongs to the same team
-    if not(auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
 
     # Update jobstate if needed
@@ -555,8 +554,7 @@ def get_all_results_from_jobs(user, j_id):
 
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
-    # If it's an admin or belongs to the same team
-    if not(auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
 
     swift = dci_config.get_store('files')
@@ -587,13 +585,14 @@ def get_all_results_from_jobs(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN'])
 def delete_job_by_id(user, j_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
-    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
 
     with flask.g.db_conn.begin():
@@ -622,7 +621,7 @@ def delete_job_by_id(user, j_id):
 @decorators.login_required
 def associate_meta(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
     return metas.create_meta(user, j_id)
 
@@ -631,7 +630,7 @@ def associate_meta(user, j_id):
 @decorators.login_required
 def get_meta_by_id(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
     return metas.get_meta_by_id(m_id)
 
@@ -640,7 +639,7 @@ def get_meta_by_id(user, j_id, m_id):
 @decorators.login_required
 def get_all_metas(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
     return metas.get_all_metas_from_job(j_id)
 
@@ -649,7 +648,7 @@ def get_all_metas(user, j_id):
 @decorators.login_required
 def put_meta(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
     return metas.put_meta(j_id, m_id)
 
@@ -658,7 +657,7 @@ def put_meta(user, j_id, m_id):
 @decorators.login_required
 def delete_meta(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not (auth.is_admin(user) or auth.is_in_team(user, job['team_id'])):
+    if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
     return metas.delete_meta(j_id, m_id)
 
@@ -673,7 +672,7 @@ def notify(user, j_id):
 
     values = schemas.job_notify.post(flask.request.json)
 
-    if not (auth.is_in_team(user, job['team_id']) or auth.is_admin(user)):
+    if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
 
     # Select all email user attach to this remoteci
@@ -700,11 +699,13 @@ def notify(user, j_id):
 
 @api.route('/jobs/purge', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def get_to_purge_archived_jobs(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/jobs/purge', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def purge_archived_jobs(user):
     return base.purge_archived_resources(user, _TABLE)
