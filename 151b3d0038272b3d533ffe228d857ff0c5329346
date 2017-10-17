@@ -1,0 +1,8 @@
+Code-Review+2: Yassine Lamgarchal <yassine.lamgarchal@redhat.com>
+Workflow+1: Yassine Lamgarchal <yassine.lamgarchal@redhat.com>
+Verified+2: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-by: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-at: Tue, 17 Oct 2017 20:00:09 +0000
+Reviewed-on: https://softwarefactory-project.io/r/9922
+Project: dci-control-server
+Branch: refs/heads/master
