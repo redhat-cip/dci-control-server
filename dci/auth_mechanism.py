@@ -253,7 +253,7 @@ class OpenIDCAuth(BaseMechanism):
         try:
             decoded_token = auth.decode_jwt(token,
                                             conf['SSO_PUBLIC_KEY'],
-                                            'dci-cs')
+                                            conf['SSO_CLIENT_ID'])
         except Exception:
             return False
 
