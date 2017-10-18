@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "9abe1de1_bece8b81",
+        "filename": "dci/api/v1/audits.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-10-18T08:12:57Z",
+      "side": 1,
+      "message": "UI used to have an audit section where all Create/Delete admin operations (the one decorated with @audits.log) where displayed.\n\nToday the answer is no one and no where this feature is used, since it has been removed from the UI.",
+      "parentUuid": "9abe1de1_3ed39b3a",
+      "range": {
+        "startLine": 30,
+        "startChar": 0,
+        "endLine": 30,
+        "endChar": 38
+      },
+      "revId": "159e5be62ad3d57bf99cd546b71822cc308c64f4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9abe1de1_1ed8d752",
         "filename": "dci/api/v1/files.py",
         "patchSetId": 6
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "9abe1de1_9ecbc772",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 207,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-10-18T08:12:57Z",
+      "side": 1,
+      "message": "As of today yes. Anyone can CRUD on files, as long as it belongs to the team or is super_admin.\n\nThis patch isn\u0027t trying to fix it all, but rather put the restriction where they were.\n\nTo tackle the full issue (issue is present in many endpoints), I think we need to go with layered patches, fixes pieces by layer rather than a huge patch that fixes it all",
+      "parentUuid": "9abe1de1_1ed8d752",
+      "range": {
+        "startLine": 206,
+        "startChar": 0,
+        "endLine": 207,
+        "endChar": 31
+      },
+      "revId": "159e5be62ad3d57bf99cd546b71822cc308c64f4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9abe1de1_fedc0348",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 6
@@ -59,6 +107,30 @@
       "writtenOn": "2017-10-18T07:24:33Z",
       "side": 1,
       "message": "missing @decorators.has_role([\u0027SUPER_ADMIN\u0027, \u0027PRODUCT_OWNER\u0027, \u0027ADMIN\u0027]) no ?",
+      "range": {
+        "startLine": 551,
+        "startChar": 0,
+        "endLine": 551,
+        "endChar": 42
+      },
+      "revId": "159e5be62ad3d57bf99cd546b71822cc308c64f4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_7ec8f374",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 551,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-10-18T08:12:57Z",
+      "side": 1,
+      "message": "Nop, if you look on the right side, regular user should be able to get jobs results.\n\nThe right side state if its not a super_admin or if its does not belong to the team. A user belonging to the team has the permission to retrieve those results",
+      "parentUuid": "9abe1de1_fedc0348",
       "range": {
         "startLine": 551,
         "startChar": 0,
