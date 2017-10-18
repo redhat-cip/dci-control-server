@@ -17,6 +17,7 @@
 import datetime
 
 import dci.auth_mechanism as authm
+from dci.common import exceptions as dci_exc
 
 import flask
 import mock
@@ -37,7 +38,8 @@ class AuthMock(object):
 
 def test_basic_auth_mecanism_is_valid_false_if_no_auth():
     basic_auth_mecanism = authm.BasicAuthMechanism(MockRequest())
-    assert not basic_auth_mecanism.is_valid()
+    with pytest.raises(dci_exc.DCIException):
+        basic_auth_mecanism.authenticate()
 
 
 def test_bam_is_valid_false_if_not_authenticated():
@@ -46,7 +48,8 @@ def test_bam_is_valid_false_if_not_authenticated():
 
     basic_auth_mecanism = authm.BasicAuthMechanism(MockRequest(AuthMock()))
     basic_auth_mecanism.get_user_and_check_auth = return_is_authenticated
-    assert not basic_auth_mecanism.is_valid()
+    with pytest.raises(dci_exc.DCIException):
+        basic_auth_mecanism.authenticate()
 
 
 def test_bam_is_valid():
@@ -59,7 +62,7 @@ def test_bam_is_valid():
     basic_auth_mecanism = authm.BasicAuthMechanism(MockRequest(AuthMock()))
     basic_auth_mecanism.get_user_and_check_auth = return_is_authenticated
     basic_auth_mecanism.get_user_teams = return_get_user_teams
-    assert basic_auth_mecanism.is_valid()
+    basic_auth_mecanism.authenticate()
 
 
 class MockSignedRequest(object):
@@ -101,27 +104,27 @@ def test_get_client_info_bad():
         'DCI-Client-Info should match the following format: ' + \
         '"YYYY-MM-DD HH:MI:SSZ/<client_type>/<id>"'
 
-    with pytest.raises(ValueError) as e_info:
+    with pytest.raises(dci_exc.DCIException) as e_info:
         _test_client_info_value('pif!paf!pouf!')
-    assert e_info.value.args[0] == bad_format_message
+    assert e_info.value.message == bad_format_message
 
-    with pytest.raises(ValueError) as e_info:
+    with pytest.raises(dci_exc.DCIException) as e_info:
         _test_client_info_value('pif/paf')
-    assert e_info.value.args[0] == bad_format_message
+    assert e_info.value.message == bad_format_message
 
-    with pytest.raises(ValueError) as e_info:
+    with pytest.raises(dci_exc.DCIException) as e_info:
         _test_client_info_value('pif/paf/pouf/.')
-    assert e_info.value.args[0] == bad_format_message
+    assert e_info.value.message == bad_format_message
 
-    with pytest.raises(ValueError) as e_info:
+    with pytest.raises(dci_exc.DCIException) as e_info:
         _test_client_info_value('p/p/')
-    assert e_info.value.args[0] == bad_format_message
+    assert e_info.value.message == bad_format_message
 
-    with pytest.raises(ValueError) as e_info:
+    with pytest.raises(dci_exc.DCIException) as e_info:
         _test_client_info_value('p//p')
-    assert e_info.value.args[0] == bad_format_message
+    assert e_info.value.message == bad_format_message
 
-    with pytest.raises(ValueError) as e_info:
+    with pytest.raises(dci_exc.DCIException) as e_info:
         _test_client_info_value('pif/paf/pouf')
 
 
@@ -138,7 +141,8 @@ def test_get_client_info_good():
 
 def test_sam_is_valid_false_if_no_signature():
     mech = authm.SignatureAuthMechanism(MockSignedRequest())
-    assert not mech.is_valid()
+    with pytest.raises(dci_exc.DCIException):
+        mech.authenticate()
 
 
 def test_sam_is_valid_false_if_not_authenticated():
@@ -148,7 +152,8 @@ def test_sam_is_valid_false_if_not_authenticated():
     mech = authm.SignatureAuthMechanism(MockSignedRequest(sam_headers))
     mech.verify_remoteci_auth_signature = return_is_authenticated
     mech.get_remoteci = return_get_remoteci
-    assert not mech.is_valid()
+    with pytest.raises(dci_exc.DCIException):
+        mech.authenticate()
 
 
 def test_sam_is_valid():
@@ -158,7 +163,7 @@ def test_sam_is_valid():
     mech = authm.SignatureAuthMechanism(MockSignedRequest(sam_headers))
     mech.verify_remoteci_auth_signature = return_is_authenticated
     mech.get_remoteci = return_get_remoteci
-    assert mech.is_valid()
+    mech.authenticate()
 
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
@@ -173,7 +178,7 @@ def test_sso_auth_verified(m_datetime, admin, app, engine, access_token):
     with app.app_context():
         flask.g.db_conn = engine.connect()
         mech = authm.OpenIDCAuth(sso_headers)
-        assert mech.is_valid()
+        mech.authenticate()
         assert mech.identity['team_id'] is None
         assert mech.identity['name'] == 'dci'
         assert mech.identity['sso_username'] == 'dci'
@@ -196,7 +201,8 @@ def test_sso_auth_not_verified(m_datetime, admin, app, engine, access_token):
     with app.app_context():
         flask.g.db_conn = engine.connect()
         mech = authm.OpenIDCAuth(sso_headers)
-        assert not mech.is_valid()
+        with pytest.raises(dci_exc.DCIException):
+            mech.authenticate()
         assert mech.identity is None
         nb_users_after_sso = len(admin.get('/api/v1/users').data['users'])
         assert nb_users == nb_users_after_sso

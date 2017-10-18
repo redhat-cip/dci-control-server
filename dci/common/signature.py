@@ -87,5 +87,6 @@ def is_valid(their_signature,
     local_signature = gen_signature(secret, http_verb, content_type, timestamp,
                                     url, query_string, payload).encode('utf-8')
 
+    # TODO(all): differentiate the expiration and the comparison error
     return is_timestamp_in_bounds(timestamp) and \
         compare_digest(their_signature, local_signature)

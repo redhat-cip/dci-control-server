@@ -25,14 +25,17 @@ from dci.db import models
 from dci import dci_config
 from dci.identity import Identity
 
+from jwt import exceptions as jwt_exc
+
 
 class BaseMechanism(object):
     def __init__(self, request):
         self.request = request
         self.identity = None
 
-    def is_valid(self):
-        """Test if the user is a valid user."""
+    def authenticate(self):
+        """Authenticate the user, if the user fail to authenticate then the
+        method must raise an exception with proper error message."""
         pass
 
     def get_user_teams(self, user):
@@ -64,14 +67,16 @@ class BaseMechanism(object):
 
 
 class BasicAuthMechanism(BaseMechanism):
-    def is_valid(self):
+    def authenticate(self):
         auth = self.request.authorization
         if not auth:
-            return False
+            raise dci_exc.DCIException('Authorization header missing',
+                                       status_code=401)
         user, is_authenticated = \
             self.get_user_and_check_auth(auth.username, auth.password)
         if not is_authenticated:
-            return False
+            raise dci_exc.DCIException('Invalid user credentials',
+                                       status_code=401)
         teams = self.get_user_teams(user)
         self.identity = Identity(user, teams)
         return True
@@ -122,29 +127,29 @@ class BasicAuthMechanism(BaseMechanism):
 
         user = flask.g.db_conn.execute(query_get_user).fetchone()
         if user is None:
-            return None, False
+            raise dci_exc.DCIException('User %s does not exists.' % username,
+                                       status_code=401)
         user = dict(user)
 
         return user, auth.check_passwords_equal(password, user.get('password'))
 
 
 class SignatureAuthMechanism(BaseMechanism):
-    def is_valid(self):
+    def authenticate(self):
         """Tries to authenticate a request using a signature as authentication
         mechanism.
-        Returns True or False.
         Sets self.identity to the authenticated entity for later use.
         """
         # Get headers and extract information
-        try:
-            client_info = self.get_client_info()
-            their_signature = self.request.headers.get('DCI-Auth-Signature')
-        except ValueError:
-            return False
+
+        client_info = self.get_client_info()
+        their_signature = self.request.headers.get('DCI-Auth-Signature')
 
         remoteci = self.get_remoteci(client_info['id'])
         if remoteci is None:
-            return False
+            raise dci_exc.DCIException(
+                'RemoteCI %s does not exist' % client_info['id'],
+                status_code=401)
         dict_remoteci = dict(remoteci)
         # NOTE(fc): role assignment should be done in another place
         #           but this should do the job for now.
@@ -154,29 +159,38 @@ class SignatureAuthMechanism(BaseMechanism):
         dict_remoteci['role_label'] = 'REMOTECI'
         self.identity = Identity(dict_remoteci, [dict_remoteci['team_id']])
 
-        return self.verify_remoteci_auth_signature(
-            remoteci, client_info['timestamp'], their_signature)
+        if not self.verify_remoteci_auth_signature(
+           remoteci, client_info['timestamp'], their_signature):
+            raise dci_exc.DCIException('Invalid remotecI credentials.',
+                                       status_code=401)
 
     def get_client_info(self):
         """Extracts timestamp, client type and client id from a
         DCI-Client-Info header.
         Returns a hash with the three values.
         Throws an exception if the format is bad or if strptime fails."""
-        bad_format_exception = \
-            ValueError('DCI-Client-Info should match the following format: ' +
-                       '"YYYY-MM-DD HH:MI:SSZ/<client_type>/<id>"')
+        if 'DCI-Client-Info' not in self.request.headers:
+            raise dci_exc.DCIException('Header DCI-Client-Info missing',
+                                       status_code=401)
 
-        client_info = self.request.headers.get('DCI-Client-Info', '')
+        client_info = self.request.headers.get('DCI-Client-Info')
         client_info = client_info.split('/')
         if len(client_info) != 3 or not all(client_info):
-            raise bad_format_exception
+            raise dci_exc.DCIException(
+                'DCI-Client-Info should match the following format: ' +
+                '"YYYY-MM-DD HH:MI:SSZ/<client_type>/<id>"')
 
         dateformat = '%Y-%m-%d %H:%M:%SZ'
-        return {
-            'timestamp': datetime.strptime(client_info[0], dateformat),
-            'type': client_info[1],
-            'id': client_info[2],
-        }
+        try:
+            timestamp = datetime.strptime(client_info[0], dateformat)
+            return {
+                'timestamp': timestamp,
+                'type': client_info[1],
+                'id': client_info[2],
+            }
+        except ValueError:
+            raise dci_exc.DCIException('Bad date format in DCI-Client-Info',
+                                       '401')
 
     @staticmethod
     def get_remoteci(ci_id):
@@ -223,7 +237,9 @@ class SignatureAuthMechanism(BaseMechanism):
         """Extract the values from the request, and pass them to the signature
         verification method."""
         if remoteci.api_secret is None:
-            return False
+            raise dci_exc.DCIException('RemoteCI %s does not have an API'
+                                       'secret set' % remoteci['id'],
+                                       status_code=401)
 
         return signature.is_valid(
             their_signature=their_signature.encode('utf-8'),
@@ -238,24 +254,22 @@ class SignatureAuthMechanism(BaseMechanism):
 
 
 class OpenIDCAuth(BaseMechanism):
-    def is_valid(self):
-        if 'Authorization' not in self.request.headers:
-            return False
+    def authenticate(self):
         auth_header = self.request.headers.get('Authorization').split(' ')
         if len(auth_header) != 2:
             return False
         bearer, token = auth_header
-
-        if bearer != 'Bearer':
-            return False
 
         conf = dci_config.generate_conf()
         try:
             decoded_token = auth.decode_jwt(token,
                                             conf['SSO_PUBLIC_KEY'],
                                             conf['SSO_CLIENT_ID'])
-        except Exception:
-            return False
+        except jwt_exc.DecodeError:
+            raise dci_exc.DCIException('Invalid JWT token.', status_code=401)
+        except jwt_exc.ExpiredSignatureError:
+            raise dci_exc.DCIException('JWT token expired, please refresh.',
+                                       status_code=401)
 
         sso_username = decoded_token['username']
         user_from_sso_username = self._get_user_from_sso_username(sso_username)
@@ -265,8 +279,6 @@ class OpenIDCAuth(BaseMechanism):
         else:
             user_teams = self.get_user_teams(user_from_sso_username)
             self.identity = Identity(user_from_sso_username, user_teams)
-
-        return True
 
     def _get_user_from_sso_username(self, sso_username):
         """Given the sso's username, get the associated user."""
