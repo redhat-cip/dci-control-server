@@ -20,6 +20,7 @@ from functools import wraps
 import flask
 
 import dci.auth_mechanism as am
+from dci.common import exceptions as dci_exc
 
 
 def reject():
@@ -35,14 +36,35 @@ def reject():
                           content_type='application/json')
 
 
+def _get_auth_class_from_headers(headers):
+    if 'DCI-Auth-Signature' in headers:
+        return am.SignatureAuthMechanism
+
+    if 'Authorization' not in headers:
+        raise dci_exc.DCIException('Authorization header missing',
+                                   status_code=401)
+
+    auth_header = headers.get('Authorization').split(' ')
+    if len(auth_header) != 2:
+        raise dci_exc.DCIException('Authorization header malformed',
+                                   status_code=401)
+    auth_type, token = auth_header
+    if auth_type == 'Bearer':
+        return am.OpenIDCAuth
+    elif auth_type == 'Basic':
+        return am.BasicAuthMechanism
+
+    raise dci_exc.DCIException('Authorization scheme %s unknown' % auth_type,
+                               status_code=401)
+
+
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        for mechanism in [am.BasicAuthMechanism(flask.request),
-                          am.SignatureAuthMechanism(flask.request),
-                          am.OpenIDCAuth(flask.request)]:
-            if mechanism.is_valid():
-                return f(mechanism.identity, *args, **kwargs)
-        return reject()
+        flask.request.headers.get('DCI-Auth-Signature')
+        auth_class = _get_auth_class_from_headers(flask.request.headers)
+        auth_scheme = auth_class(flask.request)
+        auth_scheme.authenticate()
+        return f(auth_scheme.identity, *args, **kwargs)
 
     return decorated
