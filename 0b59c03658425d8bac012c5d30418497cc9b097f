@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_beb0cb8c",
+        "filename": "dci/api/v1/feeders.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 182,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-18T13:27:37Z",
+      "side": 1,
+      "message": "remoteci ? also, there are no tests for this apparently.",
+      "range": {
+        "startLine": 175,
+        "startChar": 0,
+        "endLine": 182,
+        "endChar": 39
+      },
+      "revId": "0b59c03658425d8bac012c5d30418497cc9b097f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_deba5f6e",
+        "filename": "dci/api/v1/feeders.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 226,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-10-18T13:27:37Z",
+      "side": 1,
+      "message": "Would you mind if I asked you to extract this token-resetting code and the one from remoteci to have only one method to do this (with the model name as a parameter) ?",
+      "range": {
+        "startLine": 197,
+        "startChar": 0,
+        "endLine": 226,
+        "endChar": 14
+      },
+      "revId": "0b59c03658425d8bac012c5d30418497cc9b097f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
