@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_3eba7be2",
+        "filename": "dci/common/signature.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 90,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-10-18T07:28:17Z",
+      "side": 1,
+      "message": "We should try to avoid todos :)",
+      "range": {
+        "startLine": 90,
+        "startChar": 0,
+        "endLine": 90,
+        "endChar": 70
+      },
+      "revId": "6d37eda53ad30ebff2595047ed181b9d595232ed",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
