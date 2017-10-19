@@ -27,6 +27,8 @@ To run the api in development mode follow those steps:
 Database installation
 ---------------------
 
+**Note**: https://github.com/redhat-cip/dci-infra take care of all that for you.
+
 Assuming that we are running on a fedora based distribution here are the steps
 for installing the database which will be used by the API and its tests.
 
