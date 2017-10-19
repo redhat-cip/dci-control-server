@@ -62,9 +62,6 @@ def create_tests(user):
 @api.route('/tests/<uuid:t_id>', methods=['PUT'])
 @decorators.login_required
 def update_tests(user, t_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     v1_utils.verify_existence_and_get(t_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -89,9 +86,6 @@ def update_tests(user, t_id):
 def get_all_tests(user, team_id):
     args = schemas.args(flask.request.args.to_dict())
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, team_id)):
-        raise auth.UNAUTHORIZED
-
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
     query.add_extra_condition(_TABLE.c.team_id == team_id)
     query.add_extra_condition(_TABLE.c.state != 'archived')
@@ -109,7 +103,7 @@ def get_all_tests(user, team_id):
 @decorators.login_required
 def get_test_by_id(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
-    if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
+    if not user.is_in_team(test['team_id']):
         raise auth.UNAUTHORIZED
     res = flask.jsonify({'test': test})
     return res
@@ -124,10 +118,11 @@ def get_remotecis_by_test(user, test_id):
 
 @api.route('/tests/<uuid:t_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN'])
 def delete_test_by_id(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, test['team_id'])):
+    if not user.is_in_team(test['team_id']):
         raise auth.UNAUTHORIZED
 
     with flask.g.db_conn.begin():
@@ -150,11 +145,13 @@ def delete_test_by_id(user, t_id):
 
 @api.route('/tests/purge', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def get_to_purge_archived_tests(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/tests/purge', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def purge_archived_tests(user):
     return base.purge_archived_resources(user, _TABLE)

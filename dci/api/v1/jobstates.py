@@ -111,7 +111,7 @@ def get_jobstate_by_id(user, js_id):
 def delete_jobstate_by_id(user, js_id):
     jobstate = v1_utils.verify_existence_and_get(js_id, _TABLE)
 
-    if not(auth.is_admin(user) or auth.is_in_team(user, jobstate['team_id'])):
+    if not user.is_in_team(jobstate['team_id']):
         raise auth.UNAUTHORIZED
 
     where_clause = _TABLE.c.id == js_id

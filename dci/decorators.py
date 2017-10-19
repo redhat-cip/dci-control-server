@@ -19,6 +19,7 @@ from functools import wraps
 
 import flask
 
+from dci.auth import UNAUTHORIZED
 import dci.auth_mechanism as am
 from dci.common import exceptions as dci_exc
 
@@ -68,3 +69,17 @@ def login_required(f):
         return f(auth_scheme.identity, *args, **kwargs)
 
     return decorated
+
+
+def has_role(role_labels):
+    """Decorator to ensure authentified entity has proper permission."""
+
+    def actual_decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            user = args[0]
+            if user.role_label in role_labels:
+                return f(*args, **kwargs)
+            raise UNAUTHORIZED
+        return wrapper
+    return actual_decorator

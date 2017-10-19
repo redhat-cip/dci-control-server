@@ -20,7 +20,6 @@ from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
-from dci import auth
 from dci import decorators
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -38,11 +37,9 @@ _EMBED_MANY = {}
 
 @api.route('/permissions', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 @audits.log
 def create_permission(user):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     values = v1_utils.common_values_dict(user)
     values.update(schemas.permission.post(flask.request.json))
 
@@ -64,10 +61,8 @@ def create_permission(user):
 
 @api.route('/permissions/<uuid:permission_id>', methods=['PUT'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def update_permission(user, permission_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.permission.put(flask.request.json)
@@ -116,10 +111,8 @@ def get_permission_by_id(user, permission_id):
 
 @api.route('/permissions/<uuid:permission_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def delete_permission_by_id(user, permission_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
-
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     v1_utils.verify_existence_and_get(permission_id, _TABLE)
@@ -143,11 +136,13 @@ def delete_permission_by_id(user, permission_id):
 
 @api.route('/permissions/purge', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def get_to_purge_archived_permissions(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/permissions/purge', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def purge_archived_permissions(user):
     return base.purge_archived_resources(user, _TABLE)
