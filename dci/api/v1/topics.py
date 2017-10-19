@@ -238,6 +238,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
              .where(
                  sql.and_(
                      models.REMOTECIS.c.state == 'active',
+                     models.TEAMS.c.external == True,  # noqa
                      models.JOBS.c.status.in_(valid_status),
                      models.JOBS.c.state != 'archived',
                      models.COMPONENTS.c.type == type_id,
