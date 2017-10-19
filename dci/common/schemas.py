@@ -190,6 +190,7 @@ team = utils.dict_merge(base, {
     v.Optional('country', default=None): six.text_type,
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
+    v.Optional('external', default=True): bool,
     v.Optional('parent_id', default=None): v.Any(UUID, msg=INVALID_TEAM),
 })
 
@@ -198,6 +199,7 @@ team_put = {
     v.Optional('country'): six.text_type,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
+    v.Optional('external'): bool,
     v.Optional('parent_id'): v.Any(UUID, msg=INVALID_TEAM),
 }
 

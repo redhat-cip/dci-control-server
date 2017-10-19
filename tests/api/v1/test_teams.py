@@ -176,6 +176,29 @@ def test_put_teams(admin):
     assert gt.data['team']['name'] == 'nname'
 
 
+def test_put_team_external_flag(user, admin, product_owner, team_product_id):
+    cteam = admin.post('/api/v1/teams', data={'name': 'pname',
+                                              'parent_id': team_product_id})
+    cteam_id = cteam.data['team']['id']
+
+    cteam = product_owner.get('/api/v1/teams/%s' % cteam_id)
+    cteam_etag = cteam.headers.get('Etag')
+
+    cteam_put = user.put('/api/v1/teams/%s' % cteam_id,
+                         data={'external': False},
+                         headers={'If-match': cteam_etag})
+    assert cteam_put.status_code == 401
+
+    cteam_put = product_owner.put('/api/v1/teams/%s' % cteam_id,
+                                  data={'external': True},
+                                  headers={'If-match': cteam_etag})
+    assert cteam_put.status_code == 204
+
+    cteam = product_owner.get('/api/v1/teams/%s' % cteam_id)
+
+    assert cteam.data['team']['external'] is True
+
+
 def test_delete_team_by_id(admin):
     pt = admin.post('/api/v1/teams',
                     data={'name': 'pname'})
