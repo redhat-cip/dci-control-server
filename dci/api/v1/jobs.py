@@ -308,8 +308,8 @@ def _get_job(user, job_id, embed):
     args = {'embed': embed}
     query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS)
 
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
+    if not user.is_super_admin():
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     query.add_extra_condition(_TABLE.c.id == job_id)
     query.add_extra_condition(_TABLE.c.state != 'archived')
@@ -423,8 +423,8 @@ def get_all_jobs(user, topic_id=None):
     # add extra conditions for filtering
 
     # # If not admin then restrict the view to the team
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
+    if not user.is_super_admin():
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     # # If topic_id not None, then filter by topic_id
     if topic_id is not None:

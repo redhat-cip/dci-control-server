@@ -93,7 +93,7 @@ def get_all_tests(user, team_id):
         raise auth.UNAUTHORIZED
 
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
-    query.add_extra_condition(_TABLE.c.team_id == team_id)
+    query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
     # get the number of rows for the '_meta' section

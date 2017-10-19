@@ -154,8 +154,8 @@ def get_all_files(user, j_id=None):
     query = v1_utils.QueryBuilder(_TABLE, args, _FILES_COLUMNS)
 
     # If it's not an admin then restrict the view to the team's file
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.team_id == user['team_id'])
+    if not user.is_super_admin():
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
     if j_id is not None:
         query.add_extra_condition(_TABLE.c.job_id == j_id)
     query.add_extra_condition(_TABLE.c.state != 'archived')
