@@ -16,6 +16,24 @@
       "revId": "43ba24353baeac3d37610a2bcb3d37ef62510b75",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_12f8cbe4",
+        "filename": "dci/decorators.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-10-19T08:21:48Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9abe1de1_b2b91f31",
+      "revId": "43ba24353baeac3d37610a2bcb3d37ef62510b75",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
