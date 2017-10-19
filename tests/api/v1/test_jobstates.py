@@ -286,6 +286,15 @@ def test_get_all_jobstates_as_user(user, team_user_id):
         assert jobstate['team_id'] == team_user_id
 
 
+@pytest.mark.usefixtures('jobstate_id', 'jobstate_user_id')
+def test_get_all_jobstates_as_product_owner(product_owner, team_user_id):
+    jobstates = product_owner.get('/api/v1/jobstates')
+    assert jobstates.status_code == 200
+    assert jobstates.data['_meta']['count'] == 1
+    for jobstate in jobstates.data['jobstates']:
+        assert jobstate['team_id'] == team_user_id
+
+
 def test_get_jobstate_as_user(user, jobstate_id, job_user_id):
     jobstate = user.get('/api/v1/jobstates/%s' % jobstate_id)
     assert jobstate.status_code == 404

@@ -245,6 +245,15 @@ def test_get_all_files_as_user(user, team_user_id):
         assert file['team_id'] == team_user_id
 
 
+@pytest.mark.usefixtures('file_id', 'file_user_id')
+def test_get_all_files_as_product_owner(product_owner, team_user_id):
+    files = product_owner.get('/api/v1/files')
+    assert files.status_code == 200
+    assert files.data['_meta']['count']
+    for file in files.data['files']:
+        assert file['team_id'] == team_user_id
+
+
 def test_get_file_as_user(user, file_id, jobstate_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
