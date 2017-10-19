@@ -592,6 +592,7 @@ product = {
     'team_id': v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('label', default=None): six.text_type,
     v.Optional('description', default=None): six.text_type,
+    v.Optional('external', default=True): bool,
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 }
@@ -601,6 +602,7 @@ product_put = {
     v.Optional('description'): six.text_type,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
+    v.Optional('external'): bool,
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
 }
 

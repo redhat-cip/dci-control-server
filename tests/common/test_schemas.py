@@ -76,8 +76,8 @@ class TestComponentType(BaseSchemaTesting):
 
 class TestTeam(utils.SchemaTesting):
     schema = schemas.team
-    data = dict([utils.NAME, utils.COUNTRY,
-                 utils.STATE, utils.PARENT])
+    data = dict([utils.NAME, utils.COUNTRY, utils.STATE, utils.PARENT,
+                 utils.EXTERNAL])
 
     @staticmethod
     def generate_invalids_and_errors():

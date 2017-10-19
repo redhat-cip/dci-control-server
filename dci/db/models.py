@@ -203,6 +203,7 @@ TEAMS = sa.Table(
     # https://en.wikipedia.org/wiki/ISO_3166-1 Alpha-2 code
     sa.Column('country', sa.String(255), nullable=True),
     sa.Column('state', STATES, default='active'),
+    sa.Column('external', sa.BOOLEAN, default=True),
     sa.Column('parent_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='SET NULL'),
               nullable=True),
