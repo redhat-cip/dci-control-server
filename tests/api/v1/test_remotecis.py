@@ -464,6 +464,29 @@ def test_put_remoteci_as_user(user, team_user_id, remoteci_id, admin):
     assert remoteci_put.status_code == 401
 
 
+def test_put_remoteci_external_flag(user, team_user_id, product_owner):
+    remoteci = user.post('/api/v1/remotecis',
+                         data={'name': 'rname', 'team_id': team_user_id})
+    remoteci_id = remoteci.data['remoteci']['id']
+    remoteci = user.get('/api/v1/remotecis/%s' % remoteci_id)
+    remoteci_etag = remoteci.headers.get("ETag")
+
+    remoteci_put = user.put('/api/v1/remotecis/%s'
+                            % remoteci.data['remoteci']['id'],
+                            data={'external': False},
+                            headers={'If-match': remoteci_etag})
+    assert remoteci_put.status_code == 401
+
+    remoteci_put = product_owner.put('/api/v1/remotecis/%s' % remoteci_id,
+                                     data={'external': False},
+                                     headers={'If-match': remoteci_etag})
+    assert remoteci_put.status_code == 204
+
+    remoteci = user.get('/api/v1/remotecis/%s' % remoteci_id)
+
+    assert remoteci.data['remoteci']['external'] is False
+
+
 def test_delete_remoteci_as_user(user, team_user_id, admin, remoteci_id):
     remoteci = user.post('/api/v1/remotecis',
                          data={'name': 'rname', 'team_id': team_user_id})

@@ -120,6 +120,12 @@ def put_remoteci(user, r_id):
     if not user.is_in_team(remoteci['team_id']):
         raise auth.UNAUTHORIZED
 
+    # only the product owner or the super admin can decide if a remoteci
+    # is external or not
+    if ('external' in values and
+            not user.is_team_product_owner(remoteci['team_id'])):
+        raise auth.UNAUTHORIZED
+
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(_TABLE.c.etag == if_match_etag,
                             _TABLE.c.state != 'archived',

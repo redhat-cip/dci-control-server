@@ -293,7 +293,7 @@ class TestComponent(utils.SchemaTesting):
 class TestRemoteCI(utils.SchemaTesting):
     schema = schemas.remoteci
     data = dict([utils.NAME, utils.TEAM, utils.ALLOW_UPGRADE_JOB,
-                 utils.STATE, utils.PUBLIC])
+                 utils.STATE, utils.PUBLIC, utils.EXTERNAL])
 
     @staticmethod
     def generate_invalids_and_errors():
