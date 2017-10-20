@@ -26,16 +26,20 @@ def test_identity():
 
     super_admin_user = {'role_label': 'SUPER_ADMIN'}
     assert Identity(super_admin_user, []).is_super_admin() is True
+    assert Identity(super_admin_user, []).is_in_team(None) is True
 
     product_owner_user = {'role_label': 'PRODUCT_OWNER'}
     assert Identity(product_owner_user, []).is_product_owner() is True
     assert Identity(product_owner_user, teams). \
         is_team_product_owner(teams[0]) is True
+    assert Identity(product_owner_user, []).is_in_team(None) is False
 
     admin_user = {'role_label': 'ADMIN'}
     assert Identity(admin_user, []).is_admin() is True
     assert Identity(admin_user, teams).is_team_admin(teams[0]) is True
+    assert Identity(admin_user, []).is_in_team(None) is False
 
     user = {'role_label': 'USER'}
     assert Identity(user, []).is_regular_user() is True
     assert Identity(user, teams).is_in_team(teams[0]) is True
+    assert Identity(user, []).is_in_team(None) is False
