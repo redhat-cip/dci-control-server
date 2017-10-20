@@ -34,6 +34,9 @@ class Identity:
     def is_in_team(self, team_id):
         """Ensure the user is in the specified team."""
 
+        if self.is_super_admin():
+            return True
+
         return team_id in self.teams
 
     def is_super_admin(self):
