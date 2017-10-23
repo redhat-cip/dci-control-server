@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "9abe1de1_558d0d30",
+        "filename": "dci/api/v1/__init__.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-10-23T09:07:31Z",
+      "side": 1,
+      "message": "alphabetical order :p",
+      "revId": "f63db6078f469cdf69e8ecbdacf40ca0200b09e6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9abe1de1_959cc56a",
         "filename": "dci/api/v1/identity.py",
         "patchSetId": 2
