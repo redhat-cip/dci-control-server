@@ -164,7 +164,8 @@ args = Schema({
                                               msg=INVALID_OFFSET),
     v.Optional('sort', default=[]): split_coerce,
     v.Optional('where', default=[]): split_coerce,
-    v.Optional('embed', default=[]): split_coerce
+    v.Optional('embed', default=[]): split_coerce,
+    v.Optional('role_type', default=None): six.text_type
 }, extra=v.REMOVE_EXTRA)
 
 ###############################################################################

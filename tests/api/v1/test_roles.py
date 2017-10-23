@@ -166,6 +166,35 @@ def test_failure_get_super_admin_role_by_id(admin, user_admin, user):
     assert u_request.status_code == 401
 
 
+def test_success_get_role_by_type(admin):
+    result = admin.get('/api/v1/roles?role_type=user')
+    roles = [r['label'] for r in result.data['roles']]
+    assert ['ADMIN', 'PRODUCT_OWNER', 'SUPER_ADMIN', 'USER'] == sorted(roles)
+
+    result = admin.get('/api/v1/roles?role_type=remoteci')
+    roles = [r['label'] for r in result.data['roles']]
+    assert ['REMOTECI'] == sorted(roles)
+
+    result = admin.get('/api/v1/roles?role_type=feeder')
+    roles = [r['label'] for r in result.data['roles']]
+    assert ['FEEDER'] == sorted(roles)
+
+    result = admin.get('/api/v1/roles?role_type=all')
+    roles = [r['label'] for r in result.data['roles']]
+    assert ['ADMIN', 'FEEDER', 'PRODUCT_OWNER', 'REMOTECI', 'SUPER_ADMIN',
+            'USER'] == sorted(roles)
+
+    result = admin.get('/api/v1/roles')
+    roles = [r['label'] for r in result.data['roles']]
+    assert ['ADMIN', 'FEEDER', 'PRODUCT_OWNER', 'REMOTECI', 'SUPER_ADMIN',
+            'USER'] == sorted(roles)
+
+    result = admin.get('/api/v1/roles?role_type=doesnotexist')
+    roles = [r['label'] for r in result.data['roles']]
+    assert ['ADMIN', 'FEEDER', 'PRODUCT_OWNER', 'REMOTECI', 'SUPER_ADMIN',
+            'USER'] == sorted(roles)
+
+
 def test_failure_get_not_my_role_by_id(user, role):
     result = user.get('/api/v1/roles/%s' % role['id'])
 
@@ -206,25 +235,7 @@ def test_failure_get_all_roles_user(user):
     assert result.status_code == 200
 
     roles = [r['label'] for r in result.data['roles']]
-    assert ['USER'] == sorted(roles)
-
-
-def test_success_delete_role_admin(admin, role):
-    result = admin.get('/api/v1/roles')
-    roles = [r['label'] for r in result.data['roles']]
-
-    assert ['ADMIN', 'FEEDER', 'MANAGER', 'PRODUCT_OWNER',
-            'REMOTECI', 'SUPER_ADMIN', 'USER'] == sorted(roles)
-
-    result = admin.delete('/api/v1/roles/%s' % role['id'],
-                          headers={'If-match': role['etag']})
-
-    assert result.status_code == 204
-
-    result = admin.get('/api/v1/roles')
-    roles = [r['label'] for r in result.data['roles']]
-    assert ['ADMIN', 'FEEDER', 'PRODUCT_OWNER', 'REMOTECI',
-            'SUPER_ADMIN', 'USER'] == sorted(roles)
+    assert ['FEEDER', 'REMOTECI', 'USER'] == sorted(roles)
 
 
 def test_fail_delete_role_user(user, role):

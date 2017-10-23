@@ -91,20 +91,46 @@ def update_role(user, role_id):
 @api.route('/roles', methods=['GET'])
 @decorators.login_required
 def get_all_roles(user):
-    args = schemas.args(flask.request.args.to_dict())
-    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
+    """Retrieve all roles for a given type.
 
+    This method can receive a type parameter (ie. /roles?type=user)
+    Type can be of those values:
+
+      * user: Returns user roles (ie. SUPER_ADMIN, ADMIN, PRODUCT_OWNER, ...)
+      * remoteci: REMOTECI
+      * feeder: FEEDER
+      * all: all of the above
+
+    If type is none of the above it will default to all.
+
+    """
+    args = schemas.args(flask.request.args.to_dict())
+
+    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    if not auth.is_admin(user):
-        query.add_extra_condition(_TABLE.c.label != 'SUPER_ADMIN')
+    _map_role_type = {
+        'user': ['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN', 'USER'],
+        'remoteci': ['REMOTECI'],
+        'feeder': ['FEEDER'],
+        'all': ['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN', 'USER',
+                'REMOTECI', 'FEEDER'],
+    }
 
-    if not (auth.is_admin(user) or
-            user['role_id'] == auth.get_role_id('PRODUCT_OWNER')):
-        query.add_extra_condition(_TABLE.c.label != 'PRODUCT_OWNER')
+    role_type = args.get('role_type', 'all')
 
-    if user['role_id'] == auth.get_role_id('USER'):
-        query.add_extra_condition(_TABLE.c.id == user['role_id'])
+    if role_type not in ['user', 'remoteci', 'feeder', 'all']:
+        role_type = 'all'
+
+    roles = _map_role_type[role_type]
+    if role_type in ['user', 'all']:
+        if not user.is_super_admin():
+            roles.remove('SUPER_ADMIN')
+        if not user.is_super_admin() and not user.is_product_owner():
+            roles.remove('PRODUCT_OWNER')
+        if user.is_regular_user():
+            roles.remove('ADMIN')
+    query.add_extra_condition(_TABLE.c.label.in_(roles))
 
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
