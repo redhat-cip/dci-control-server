@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_959cc56a",
+        "filename": "dci/api/v1/identity.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2017-10-23T09:07:05Z",
+      "side": 1,
+      "message": "Shouldn\u0027t whatami renamed identity?\n\nGet /api/v1/identity ?",
+      "revId": "f63db6078f469cdf69e8ecbdacf40ca0200b09e6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
