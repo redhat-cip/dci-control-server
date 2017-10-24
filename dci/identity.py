@@ -22,17 +22,28 @@ class Identity:
     def __init__(self, user, teams):
         for key in user.keys():
             setattr(self, key, user[key])
+        self._filter_teams_on_role(teams)
 
-        self.teams = teams
-
-    # TODO(spredzy): In order to avoid a huge refactor patch, the __getitem__
+    # NOTE(spredzy): In order to avoid a huge refactor patch, the __getitem__
     # function is overloaded so it behaves like a dict and the code in place
     # can work transparently
     def __getitem__(self, key):
         return getattr(self, key)
 
+    def _filter_teams_on_role(self, teams):
+        """ A PRODUCT_OWNER is part of all user/product/… related teams.
+        Anything else is just part of his own team."""
+
+        self.teams = []
+        if self.role_label == 'PRODUCT_OWNER':
+            self.teams = teams
+        else:
+            if hasattr(self, 'team_id'):
+                self.teams = [self.team_id]
+
     def is_in_team(self, team_id):
-        """Ensure the user is in the specified team."""
+        """Ensure the user is in the specified team.
+        A super admin is always considered as part of any team."""
 
         if self.is_super_admin():
             return True
