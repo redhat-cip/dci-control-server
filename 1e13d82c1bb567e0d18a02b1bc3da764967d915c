@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_b5fc693f",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-10-24T07:39:17Z",
+      "side": 1,
+      "message": "flip if else to get positive if",
+      "range": {
+        "startLine": 99,
+        "startChar": 8,
+        "endLine": 103,
+        "endChar": 13
+      },
+      "revId": "1e13d82c1bb567e0d18a02b1bc3da764967d915c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
