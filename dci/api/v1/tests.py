@@ -87,7 +87,8 @@ def get_all_tests(user, team_id):
     args = schemas.args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
-    query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
+    if not user.is_super_admin():
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
     # get the number of rows for the '_meta' section
