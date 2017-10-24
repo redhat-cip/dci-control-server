@@ -23,6 +23,10 @@ class Identity:
         for key in user.keys():
             setattr(self, key, user[key])
 
+        if self.role_label == 'PRODUCT_OWNER':
+            teams = self.teams
+        else:
+            teams = [self.team_id]
         self.teams = teams
 
     # TODO(spredzy): In order to avoid a huge refactor patch, the __getitem__
