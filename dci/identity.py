@@ -23,21 +23,53 @@ class Identity:
         for key in user.keys():
             setattr(self, key, user[key])
 
-        self.teams = teams
+        # TODO: replace user['role_label'] with user['role']['label']
+        self.role_label = user['role_label']
+        self.team = self._get_user_team(user, teams)
+        self.partner_teams = self._get_partner_teams(user, teams)
+        # TODO: remove teams object and use team and partner_teams
+        self.teams = self._get_teams()
 
-    # TODO(spredzy): In order to avoid a huge refactor patch, the __getitem__
+    # NOTE(spredzy): In order to avoid a huge refactor patch, the __getitem__
     # function is overloaded so it behaves like a dict and the code in place
     # can work transparently
     def __getitem__(self, key):
         return getattr(self, key)
 
-    def is_in_team(self, team_id):
-        """Ensure the user is in the specified team."""
+    def _get_teams(self):
+        teams = []
+        if self.team:
+            teams.append(self.team['id'])
+        for partner_team in self.partner_teams:
+            teams.append(partner_team['id'])
+        return teams
 
+    def _get_user_team(self, user, teams):
+        for team in teams:
+            if user['team_id'] == team['id']:
+                return team
+
+    def _get_partner_teams(self, user, teams):
+        partner_teams = []
+        for team in teams:
+            if user['role_label'] == 'PRODUCT_OWNER' and \
+                            user['team_id'] == team['parent_id']:
+                partner_teams.append(team)
+        return partner_teams
+
+    def is_member_of(self, team):
         if self.is_super_admin():
             return True
+        if team['id'] == self.team['id']:
+            return True
+        for partner_team in self.partner_teams:
+            if team['id'] == partner_team['id']:
+                return True
+        return False
 
-        return team_id in self.teams
+    # TODO: remove is_in_team (use is_member_of instead)
+    def is_in_team(self, team_id):
+        return self.is_member_of({'id': team_id})
 
     def is_super_admin(self):
         """Ensure the user has the role SUPER_ADMIN."""
@@ -49,6 +81,7 @@ class Identity:
 
         return self.role_label == 'PRODUCT_OWNER'
 
+    # TODO: replace team_id with object team
     def is_team_product_owner(self, team_id):
         """Ensure the user has the role PRODUCT_OWNER and belongs
            to the team."""
@@ -75,3 +108,8 @@ class Identity:
         """Ensure ther resource has the role REMOTECI."""
 
         return self.role_label == 'REMOTECI'
+
+    def is_feeder(self):
+        """Ensure ther resource has the role FEEDER."""
+
+        return self.role_label == 'FEEDER'

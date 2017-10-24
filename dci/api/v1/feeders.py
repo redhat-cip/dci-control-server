@@ -176,7 +176,6 @@ def purge_archived_feeders(user):
 def put_api_secret_feeder(user, f_id):
     utils.check_and_get_etag(flask.request.headers)
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
-
     if not user.is_in_team(feeder['team_id']):
         raise auth.UNAUTHORIZED
 
