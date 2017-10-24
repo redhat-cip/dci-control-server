@@ -15,7 +15,9 @@
 # under the License.
 
 from datetime import datetime, timedelta
+import pytest
 
+from dci.common import exceptions as dci_exc
 from dci.common import signature
 
 
@@ -82,7 +84,7 @@ def test_signature_is_valid():
     kwargs = signature_kwargs()
     kwargs['their_signature'] = signature.gen_signature(**kwargs)\
         .encode('utf-8')
-    assert signature.is_valid(**kwargs)
+    signature.is_valid(**kwargs)
 
 
 def test_signature_4min_old_is_valid():
@@ -90,7 +92,7 @@ def test_signature_4min_old_is_valid():
     kwargs = signature_kwargs(-4)
     kwargs['their_signature'] = signature.gen_signature(**kwargs)\
         .encode('utf-8')
-    assert signature.is_valid(**kwargs)
+    signature.is_valid(**kwargs)
 
 
 def test_signature_6min_old_is_invalid():
@@ -98,7 +100,9 @@ def test_signature_6min_old_is_invalid():
     kwargs = signature_kwargs(-6)
     kwargs['their_signature'] = signature.gen_signature(**kwargs)\
         .encode('utf-8')
-    assert not signature.is_valid(**kwargs)
+    with pytest.raises(dci_exc.DCIException,
+                       match='Timestamp out of bounds.*'):
+        signature.is_valid(**kwargs)
 
 
 def test_signature_bad_http_verb_is_invalid():
@@ -107,7 +111,8 @@ def test_signature_bad_http_verb_is_invalid():
         .encode('utf-8')
     # Using a different verb than the one used for the signature
     kwargs['http_verb'] = b'PUT'
-    assert not signature.is_valid(**kwargs)
+    with pytest.raises(dci_exc.DCIException, match='Bad signature'):
+        signature.is_valid(**kwargs)
 
 
 def test_timestamp_is_in_bounds_earlier():

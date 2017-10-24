@@ -146,11 +146,11 @@ def test_sam_authenticate_fail_if_no_signature():
 
 
 def test_sam_authenticate_fail_if_not_authenticated():
-    def return_is_authenticated(*args):
-        return False
+    def raise_not_authenticated(*args):
+        raise dci_exc.DCIException("None shall pass!")
 
     mech = authm.SignatureAuthMechanism(MockSignedRequest(sam_headers))
-    mech.verify_remoteci_auth_signature = return_is_authenticated
+    mech.verify_remoteci_auth_signature = raise_not_authenticated
     mech.get_remoteci = return_get_remoteci
     with pytest.raises(dci_exc.DCIException):
         mech.authenticate()
