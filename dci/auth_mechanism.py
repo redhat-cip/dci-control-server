@@ -138,6 +138,7 @@ class SignatureAuthMechanism(BaseMechanism):
     def authenticate(self):
         """Tries to authenticate a request using a signature as authentication
         mechanism.
+        Raises an exception when authentication fails.
         Sets self.identity to the authenticated entity for later use.
         """
         # Get headers and extract information
@@ -152,9 +153,8 @@ class SignatureAuthMechanism(BaseMechanism):
                 status_code=401)
         self.identity = identity
 
-        if not self.verify_auth_signature(identity, client_info['timestamp'],
-                                          their_signature):
-            raise dci_exc.DCIException('Invalid signature.', status_code=401)
+        self.verify_auth_signature(identity, client_info['timestamp'],
+                                   their_signature)
         return True
 
     def get_identity(self, client_type, client_id):
@@ -211,7 +211,7 @@ class SignatureAuthMechanism(BaseMechanism):
                                        ' an API secret set' % identity,
                                        status_code=401)
 
-        return signature.is_valid(
+        signature.is_valid(
             their_signature=their_signature.encode('utf-8'),
             secret=identity.api_secret.encode('utf-8'),
             http_verb=self.request.method.upper().encode('utf-8'),
