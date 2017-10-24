@@ -15,31 +15,95 @@
 # under the License.
 
 
-import uuid
-
 from dci.identity import Identity
 
 
-def test_identity():
+def identity_factory(role_label):
+    user = {'role_label': role_label, 'team_id': 'abc'}
+    team = {'id': 'abc', 'parent_id': None}
+    return Identity(user, [team])
 
-    teams = [uuid.uuid4()]
 
-    super_admin_user = {'role_label': 'SUPER_ADMIN'}
-    assert Identity(super_admin_user, []).is_super_admin() is True
-    assert Identity(super_admin_user, []).is_in_team(None) is True
+def test_is_super_admin():
+    super_admin = identity_factory('SUPER_ADMIN')
+    assert super_admin.is_super_admin()
 
-    product_owner_user = {'role_label': 'PRODUCT_OWNER'}
-    assert Identity(product_owner_user, []).is_product_owner() is True
-    assert Identity(product_owner_user, teams). \
-        is_team_product_owner(teams[0]) is True
-    assert Identity(product_owner_user, []).is_in_team(None) is False
 
-    admin_user = {'role_label': 'ADMIN'}
-    assert Identity(admin_user, []).is_admin() is True
-    assert Identity(admin_user, teams).is_team_admin(teams[0]) is True
-    assert Identity(admin_user, []).is_in_team(None) is False
+def test_is_admin():
+    admin = identity_factory('ADMIN')
+    assert admin.is_admin()
 
-    user = {'role_label': 'USER'}
-    assert Identity(user, []).is_regular_user() is True
-    assert Identity(user, teams).is_in_team(teams[0]) is True
-    assert Identity(user, []).is_in_team(None) is False
+
+def test_is_product_owner():
+    product_owner = identity_factory('PRODUCT_OWNER')
+    assert product_owner.is_product_owner()
+
+
+def test_is_feeder():
+    feeder = identity_factory('FEEDER')
+    assert feeder.is_feeder()
+
+
+def test_is_remoteci():
+    remoteci = identity_factory('REMOTECI')
+    assert remoteci.is_remoteci()
+
+
+def test_is_regular_user():
+    user = identity_factory('USER')
+    assert user.is_regular_user()
+
+
+def test_user_is_member_of():
+    team = {'id': 'id-1'}
+    user = Identity({'role_label': 'USER', 'team_id': 'id-1'}, [team])
+    assert user.is_member_of(team)
+    assert user.is_member_of({'id': 'another_team_id'}) is False
+
+
+def test_super_admin_is_member_of_all_teams():
+    super_admin = identity_factory('SUPER_ADMIN')
+    assert super_admin.is_member_of({'id': 'id-1'})
+    assert super_admin.is_member_of({'id': 'id-2'})
+
+
+def test_product_owner_is_member_of_all_child_teams():
+    product_owner = {'role_label': 'PRODUCT_OWNER', 'team_id': 'abc'}
+    teams = [
+        {'id': 'abc', 'parent_id': None},
+        {'id': 'def', 'parent_id': 'abc'},
+        {'id': 'ghi', 'parent_id': None}
+    ]
+    user = Identity(product_owner, teams)
+    assert user.is_member_of({'id': 'abc'})
+    assert user.is_member_of({'id': 'def'})
+
+
+def test_filter_teams():
+    teams = [
+        {'id': 'abc', 'parent_id': None},
+        {'id': 'cde', 'parent_id': 'abc'}
+    ]
+    user = Identity({'role_label': 'USER', 'team_id': 'abc'}, teams)
+    assert user.team['id'] == 'abc'
+    assert user.team['parent_id'] is None
+    # TODO remove user.teams
+    assert user.teams[0] == 'abc'
+    assert len(user.partner_teams) == 0
+
+
+def test_filter_teams_with_partner_teams():
+    product_owner = {'role_label': 'PRODUCT_OWNER', 'team_id': 'abc'}
+    teams = [
+        {'id': 'abc', 'parent_id': None},
+        {'id': 'def', 'parent_id': 'abc'},
+        {'id': 'ghi', 'parent_id': None}
+    ]
+    user = Identity(product_owner, teams)
+    assert user.team['id'] == 'abc'
+    assert user.team['parent_id'] is None
+    assert len(user.partner_teams) == 1
+    # TODO remove user.teams
+    assert user.teams[0] == 'abc'
+    assert user.teams[1] == 'def'
+    assert user.partner_teams[0]['id'] == 'def'
