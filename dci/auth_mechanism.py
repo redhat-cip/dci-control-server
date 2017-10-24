@@ -97,21 +97,14 @@ class BaseMechanism(object):
         """
 
         teams = []
-        if role_label != 'SUPER_ADMIN' and \
-           role_label != 'PRODUCT_OWNER':
-            teams = [team_id]
-        else:
-            query = sql.select([models.TEAMS.c.id])
-            if role_label == 'PRODUCT_OWNER':
-                query = query.where(
-                    sql.or_(
-                        models.TEAMS.c.parent_id == team_id,
-                        models.TEAMS.c.id == team_id
-                    )
-                )
+        query = sql.select([models.TEAMS.c.id]) \
+            .where(sql.or_(
+                models.TEAMS.c.parent_id == team_id,
+                models.TEAMS.c.id == team_id
+            ))
 
-            result = flask.g.db_conn.execute(query).fetchall()
-            teams = [row[models.TEAMS.c.id] for row in result]
+        result = flask.g.db_conn.execute(query).fetchall()
+        teams = [row[models.TEAMS.c.id] for row in result]
 
         return teams
 
