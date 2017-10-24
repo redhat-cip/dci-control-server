@@ -138,6 +138,7 @@ class SignatureAuthMechanism(BaseMechanism):
     def authenticate(self):
         """Tries to authenticate a request using a signature as authentication
         mechanism.
+        Raises an exception when authentication fails.
         Sets self.identity to the authenticated entity for later use.
         """
         # Get headers and extract information
@@ -156,10 +157,8 @@ class SignatureAuthMechanism(BaseMechanism):
         dict_remoteci['role'] = 'remoteci'
         self.identity = Identity(dict_remoteci, [dict_remoteci['team_id']])
 
-        if not self.verify_remoteci_auth_signature(
-           remoteci, client_info['timestamp'], their_signature):
-            raise dci_exc.DCIException('Invalid remotecI credentials.',
-                                       status_code=401)
+        self.verify_remoteci_auth_signature(
+            remoteci, client_info['timestamp'], their_signature)
 
     def get_client_info(self):
         """Extracts timestamp, client type and client id from a
@@ -242,7 +241,7 @@ class SignatureAuthMechanism(BaseMechanism):
                                        'secret set' % remoteci['id'],
                                        status_code=401)
 
-        return signature.is_valid(
+        signature.is_valid(
             their_signature=their_signature.encode('utf-8'),
             secret=remoteci.api_secret.encode('utf-8'),
             http_verb=self.request.method.upper().encode('utf-8'),
