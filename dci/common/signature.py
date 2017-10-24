@@ -20,6 +20,8 @@ import hmac
 import random
 import string
 
+from dci.common import exceptions as dci_exc
+
 
 def gen_secret(length=64):
     """ Generates a secret of given length
@@ -83,10 +85,16 @@ def is_valid(their_signature,
     """Verifies the remote signature against a locally computed signature and
     ensures the timestamp lies within ±5 minutes of current time.
 
-    Returns True if signature is valid and timestamp within defined bounds"""
+    Raises an exception if there's any issue with time or signature."""
     local_signature = gen_signature(secret, http_verb, content_type, timestamp,
                                     url, query_string, payload).encode('utf-8')
 
-    # TODO(all): differentiate the expiration and the comparison error
-    return is_timestamp_in_bounds(timestamp) and \
-        compare_digest(their_signature, local_signature)
+    if not is_timestamp_in_bounds(timestamp):
+        raise dci_exc.DCIException('Timestamp out of bounds (±5 minutes of '
+                                   'current server time). Is you clock '
+                                   'correctly set ?',
+                                   status_code=401)
+
+    if not compare_digest(their_signature, local_signature):
+        raise dci_exc.DCIException('Bad signature.',
+                                   status_code=401)
