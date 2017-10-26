@@ -226,7 +226,7 @@ def _build_new_template(topic_id, remoteci, components_ids, values,
     # if there is no rconfiguration associated to the remoteci or no
     # component types then use the topic's one.
     if (rconfiguration is not None and
-            rconfiguration['component_types'] != []):
+            rconfiguration['component_types'] is not None):
         component_types = rconfiguration['component_types']
     else:
         component_types = _get_component_types_from_topic()
@@ -251,15 +251,16 @@ def _build_new_template(topic_id, remoteci, components_ids, values,
         # create the job
         flask.g.db_conn.execute(_TABLE.insert().values(**values))
 
-        # Adds the components to the jobs using join_jobs_components
-        job_components = [
-            {'job_id': values['id'], 'component_id': sci}
-            for sci in schedule_components_ids
-        ]
+        if len(schedule_components_ids) > 0:
+            # Adds the components to the jobs using join_jobs_components
+            job_components = [
+                {'job_id': values['id'], 'component_id': sci}
+                for sci in schedule_components_ids
+            ]
 
-        flask.g.db_conn.execute(
-            models.JOIN_JOBS_COMPONENTS.insert(), job_components
-        )
+            flask.g.db_conn.execute(
+                models.JOIN_JOBS_COMPONENTS.insert(), job_components
+            )
 
     return values
 

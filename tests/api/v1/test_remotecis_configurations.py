@@ -19,6 +19,13 @@ def test_create_configuration(user, remoteci_user_id, topic_user_id):
     rc = user.post('/api/v1/remotecis/%s/rconfigurations' % remoteci_user_id,
                    data={'name': 'cname',
                          'topic_id': topic_user_id,
+                         'data': {'lol': 'lol'}})
+    assert rc.status_code == 201
+    assert rc.data['rconfiguration']['component_types'] is None
+
+    rc = user.post('/api/v1/remotecis/%s/rconfigurations' % remoteci_user_id,
+                   data={'name': 'cname',
+                         'topic_id': topic_user_id,
                          'component_types': ['kikoo', 'lol'],
                          'data': {'lol': 'lol'}})
     assert rc.status_code == 201
