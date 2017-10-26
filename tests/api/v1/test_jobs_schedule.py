@@ -195,7 +195,8 @@ def test_schedule_jobs_with_rconfiguration(admin, remoteci_id, topic_id,
 
     rconfiguration = admin.post('/api/v1/remotecis/%s/rconfigurations' % remoteci_id,  # noqa
                                 data={'name': 'rconfig1',
-                                      'topic_id': topic_id})
+                                      'topic_id': topic_id,
+                                      'component_types': []})
     rconfiguration_id = rconfiguration.data['rconfiguration']['id']
 
     headers = {
@@ -206,8 +207,12 @@ def test_schedule_jobs_with_rconfiguration(admin, remoteci_id, topic_id,
                      data={'remoteci_id': remoteci_id,
                            'topic_id': topic_id})
     assert job.status_code == 201
+    job_id = job.data['job']['id']
+
+    job = admin.get('/api/v1/jobs/%s?embed=components' % job_id)
     job = job.data
     assert job['job']['rconfiguration_id'] == rconfiguration_id
+    assert job['job']['components'] == []
 
 
 def test_schedule_jobs_round_robin_rconfiguration(admin, remoteci_id, topic_id,
