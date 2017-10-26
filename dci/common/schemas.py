@@ -554,7 +554,7 @@ role = DCISchema(schema_factory(role).post, Schema(role_put))
 
 rconfiguration = utils.dict_merge(base, DATA_FIELD, {
     'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
-    v.Optional('component_types', default=[]): list
+    v.Optional('component_types', default=None): list
 })
 
 rconfiguration = schema_factory(rconfiguration)
