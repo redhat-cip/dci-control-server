@@ -2,6 +2,75 @@
   "comments": [
     {
       "key": {
+        "uuid": "9abe1de1_6b04b27d",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-10-26T08:30:50Z",
+      "side": 1,
+      "message": "_get_team_ids_from_db ?",
+      "range": {
+        "startLine": 91,
+        "startChar": 8,
+        "endLine": 91,
+        "endChar": 22
+      },
+      "revId": "b6f35b1dd9a56bd6a05df3ca886f5eec0a89ef59",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_abdbea1a",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-10-26T08:30:50Z",
+      "side": 1,
+      "message": "remove this declaration",
+      "range": {
+        "startLine": 99,
+        "startChar": 0,
+        "endLine": 99,
+        "endChar": 18
+      },
+      "revId": "b6f35b1dd9a56bd6a05df3ca886f5eec0a89ef59",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_8bd8261f",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 107,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-10-26T08:30:50Z",
+      "side": 1,
+      "message": "just a quick note: looks like a team_ids",
+      "range": {
+        "startLine": 107,
+        "startChar": 8,
+        "endLine": 107,
+        "endChar": 13
+      },
+      "revId": "b6f35b1dd9a56bd6a05df3ca886f5eec0a89ef59",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9abe1de1_2be7dae5",
         "filename": "dci/identity.py",
         "patchSetId": 5
