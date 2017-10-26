@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_2be7dae5",
+        "filename": "dci/identity.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-10-26T08:27:43Z",
+      "side": 1,
+      "message": "make the method static, and inject the role and teams. return teams filtered and in the constructor:\n\nself.teams \u003d _filter_teams_with_role(teams, role)",
+      "range": {
+        "startLine": 33,
+        "startChar": 0,
+        "endLine": 42,
+        "endChar": 43
+      },
+      "revId": "b6f35b1dd9a56bd6a05df3ca886f5eec0a89ef59",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
