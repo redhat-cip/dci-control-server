@@ -29,22 +29,34 @@ depends_on = None
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy import sql
 from sqlalchemy.dialects import postgresql as pg
 
-from dci.common import exceptions as dci_exc
-from dci.db import models
+import datetime
+from dci.common import utils
+
+
+JOBDEFINITIONS = sa.Table(
+    'jobdefinitions', sa.MetaData(),
+    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255)),
+    sa.Column('topic_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              nullable=True),
+    sa.Index('jobdefinitions_topic_id_idx', 'topic_id'),
+    sa.Column('comment', sa.Text),
+    sa.Column('component_types', pg.JSON, default=[]),
+)
 
 
 def upgrade():
-
-    _JOBS = models.JOBS
-
-    def _get_topic_id_from_jobdefinition(conn, j_id):
-        query = (sql.select([models.JOBDEFINITIONS])
-                 .where(models.JOBDEFINITIONS.c.id == j_id))
-        row = conn.execute(query).fetchone()
-        return row.topic_id
 
     db_conn = op.get_bind()
     with db_conn.begin():
@@ -55,22 +67,6 @@ def upgrade():
                                 # removed
                                 nullable=True))
         op.create_index('jobs_topic_id_idx', 'jobs', ['topic_id'])
-
-        # for each job, update its topic_id field
-        query = sql.select([models.JOBS.c.id, models.JOBS.c.jobdefinition_id])
-        all_jobs = db_conn.execute(query).fetchall()
-
-        for j in all_jobs:
-            job = dict(j)
-            topic_id = _get_topic_id_from_jobdefinition(db_conn,
-                                                        job['jobdefinition_id'])  # noqa
-            values = {'topic_id': topic_id}
-            query = _JOBS.update().where(_JOBS.c.id == job['id']). \
-                values(**values)
-            result = db_conn.execute(query)
-            if not result.rowcount:
-                raise dci_exc.DCIException('Failed to update job %s'
-                                           % job['id'])
 
 
 def downgrade():

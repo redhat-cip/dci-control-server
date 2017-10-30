@@ -29,6 +29,7 @@ depends_on = None
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql as pg
 import sqlalchemy_utils as sa_utils
 
 from dci.common import utils
@@ -102,6 +103,26 @@ TOPICS = sa.Table(
     sa.Column('name', sa.String(255), unique=True, nullable=False)
 )
 
+JOBDEFINITIONS = sa.Table(
+    'jobdefinitions', sa.MetaData(),
+    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255)),
+    sa.Column('topic_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              nullable=True),
+    sa.Index('jobdefinitions_topic_id_idx', 'topic_id'),
+    sa.Column('comment', sa.Text),
+    sa.Column('component_types', pg.JSON, default=[]),
+)
+
 
 def upgrade():
     op.add_column('components',
@@ -132,7 +153,7 @@ def upgrade():
     # Adds all components, jobdefinitions and tests to the default topics
     values = {'topic_id': topic_id}
     db_conn.execute(COMPONENTS.update().values(**values))
-    db_conn.execute(models.JOBDEFINITIONS.update().values(**values))
+    db_conn.execute(JOBDEFINITIONS.update().values(**values))
     db_conn.execute(TESTS.update().values(**values))
 
     # Adds all teams to the default topics

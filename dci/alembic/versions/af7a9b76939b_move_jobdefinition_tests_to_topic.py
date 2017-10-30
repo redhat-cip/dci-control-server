@@ -28,9 +28,34 @@ branch_labels = None
 depends_on = None
 
 from alembic import op
+import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy import sql
 
+import datetime
+from dci.common import utils
 from dci.db import models
+
+
+JOBDEFINITIONS = sa.Table(
+    'jobdefinitions', sa.MetaData(),
+    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('name', sa.String(255)),
+    sa.Column('topic_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              nullable=True),
+    sa.Index('jobdefinitions_topic_id_idx', 'topic_id'),
+    sa.Column('comment', sa.Text),
+    sa.Column('component_types', pg.JSON, default=[]),
+)
 
 
 def upgrade():
@@ -52,7 +77,7 @@ def upgrade():
 
     with db_conn.begin():
         # get all jobdefinitions
-        query = sql.select([models.JOBDEFINITIONS])
+        query = sql.select([JOBDEFINITIONS])
         all_jobdefinitions = db_conn.execute(query).fetchall()
         # for each jobdefinitions copy its tests into its
         # associated topic

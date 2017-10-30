@@ -79,9 +79,6 @@ def create_jobs(user):
 
     values.update({
         'status': 'new',
-        # todo(yassine): will be removed once jobdefinition is removed from
-        # the db model
-        'jobdefinition_id': None,
         'topic_id': values['topic_id'],
         'rconfiguration_id': values['rconfiguration_id'],
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
