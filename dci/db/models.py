@@ -176,7 +176,7 @@ TEAMS = sa.Table(
     sa.Column('parent_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='SET NULL'),
               nullable=True),
-    sa.UniqueConstraint('name', 'parent_id', name='teams_name_parent_id_key'),
+    sa.UniqueConstraint('name', 'parent_id', name='teams_name_parent_id_key')
 )
 
 
@@ -203,7 +203,7 @@ REMOTECIS = sa.Table(
     sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key'),
     sa.Column('allow_upgrade_job', sa.BOOLEAN, default=False),
     sa.Column('public', sa.BOOLEAN, default=False),
-    sa.Column('state', STATES, default='active'),
+    sa.Column('state', STATES, default='active')
 )
 
 JOBS = sa.Table(
@@ -287,7 +287,8 @@ METAS = sa.Table(
     sa.Column('job_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('jobs.id', ondelete='CASCADE'),
               nullable=False),
-    sa.Index('metas_job_id_idx', 'job_id'))
+    sa.Index('metas_job_id_idx', 'job_id')
+)
 
 JOIN_JOBS_COMPONENTS = sa.Table(
     'jobs_components', metadata,
@@ -296,7 +297,8 @@ JOIN_JOBS_COMPONENTS = sa.Table(
               nullable=False, primary_key=True),
     sa.Column('component_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('components.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True))
+              nullable=False, primary_key=True)
+)
 
 JOIN_JOBS_ISSUES = sa.Table(
     'jobs_issues', metadata,
@@ -308,7 +310,8 @@ JOIN_JOBS_ISSUES = sa.Table(
               nullable=False, primary_key=True),
     sa.Column('user_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('users.id')),
-    sa.Index('jobs_issues_user_id_idx', 'user_id'))
+    sa.Index('jobs_issues_user_id_idx', 'user_id')
+)
 
 JOBSTATES = sa.Table(
     'jobstates', metadata,
@@ -325,7 +328,8 @@ JOBSTATES = sa.Table(
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
-    sa.Index('jobstates_team_id_idx', 'team_id'))
+    sa.Index('jobstates_team_id_idx', 'team_id')
+)
 
 JOIN_REMOTECIS_RCONFIGURATIONS = sa.Table(
     'remotecis_rconfigurations', metadata,
@@ -334,7 +338,8 @@ JOIN_REMOTECIS_RCONFIGURATIONS = sa.Table(
               nullable=False, primary_key=True),
     sa.Column('rconfiguration_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('rconfigurations.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True))
+              nullable=False, primary_key=True)
+)
 
 REMOTECIS_RCONFIGURATIONS = sa.Table(
     'rconfigurations', metadata,
@@ -354,7 +359,8 @@ REMOTECIS_RCONFIGURATIONS = sa.Table(
     sa.Column('name', sa.String(255), nullable=False),
     sa.Column('component_types', pg.JSON, nullable=True, default=None),
     sa.Column('data', sa_utils.JSONType),
-    sa.Index('rconfigurations_topic_id_idx', 'topic_id'))
+    sa.Index('rconfigurations_topic_id_idx', 'topic_id')
+)
 
 FILES = sa.Table(
     'files', metadata,
@@ -386,7 +392,7 @@ FILES = sa.Table(
     sa.Index('files_job_id_idx', 'job_id'),
     sa.Column('state', STATES, default='active'),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
+              onupdate=utils.gen_etag)
 )
 
 FILES_EVENTS = sa.Table(
@@ -419,7 +425,7 @@ COMPONENT_FILES = sa.Table(
     sa.Index('component_files_component_id_idx', 'component_id'),
     sa.Column('state', STATES, default='active'),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
+              onupdate=utils.gen_etag)
 )
 COMPONENTFILES = COMPONENT_FILES.alias('componentfiles')
 
@@ -472,7 +478,8 @@ LOGS = sa.Table(
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
     sa.Index('logs_team_id_idx', 'team_id'),
-    sa.Column('action', sa.Text, nullable=False))
+    sa.Column('action', sa.Text, nullable=False)
+)
 
 ISSUES = sa.Table(
     'issues', metadata,
@@ -484,7 +491,8 @@ ISSUES = sa.Table(
               onupdate=datetime.datetime.utcnow,
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('url', sa.Text, unique=True),
-    sa.Column('tracker', TRACKERS, nullable=False))
+    sa.Column('tracker', TRACKERS, nullable=False)
+)
 
 ROLES = sa.Table(
     'roles', metadata,
@@ -528,7 +536,8 @@ JOIN_ROLES_PERMISSIONS = sa.Table(
               nullable=False, primary_key=True),
     sa.Column('permission_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('permissions.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True))
+              nullable=False, primary_key=True)
+)
 
 PRODUCTS = sa.Table(
     'products', metadata,
@@ -547,7 +556,7 @@ PRODUCTS = sa.Table(
     sa.Column('state', STATES, default='active'),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='SET NULL'),
-              nullable=False),
+              nullable=False)
 )
 
 FEEDERS = sa.Table(
@@ -571,5 +580,5 @@ FEEDERS = sa.Table(
               sa.ForeignKey('roles.id', ondelete='SET NULL')),
     sa.Index('feeders_team_id_idx', 'team_id'),
     sa.UniqueConstraint('name', 'team_id', name='feeders_name_team_id_key'),
-    sa.Column('state', STATES, default='active'),
+    sa.Column('state', STATES, default='active')
 )
