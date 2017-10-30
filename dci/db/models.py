@@ -387,7 +387,7 @@ REMOTECIS_RCONFIGURATIONS = sa.Table(
               sa.ForeignKey('topics.id', ondelete='CASCADE'),
               nullable=True),
     sa.Column('name', sa.String(255), nullable=False),
-    sa.Column('component_types', pg.JSON, default=[]),
+    sa.Column('component_types', pg.JSON, nullable=True, default=None),
     sa.Column('data', sa_utils.JSONType),
     sa.Index('rconfigurations_topic_id_idx', 'topic_id'))
 
