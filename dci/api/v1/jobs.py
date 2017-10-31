@@ -334,6 +334,13 @@ def schedule_jobs(user):
     running jobs that were associated with the remoteci. This is because they
     will never be finished.
     """
+
+    # QuickFix
+    remoteci_id = flask.request.json.get('remoteci_id')
+    if remoteci_id is not None and '/' in remoteci_id:
+        remoteci_id = remoteci_id.split('/')[1]
+        flask.request.json['remoteci_id'] = remoteci_id
+
     values = schemas.job_schedule.post(flask.request.json)
 
     values.update({
