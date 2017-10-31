@@ -370,7 +370,8 @@ def upgrade_jobs(user):
     original_job_id = values.pop('job_id')
     original_job = v1_utils.verify_existence_and_get(original_job_id,
                                                      models.JOBS)
-    v1_utils.verify_user_in_team(user, original_job['team_id'])
+    if not user.is_in_team(original_job['team_id']):
+        raise auth.UNAUTHORIZED
 
     # get the remoteci
     remoteci_id = str(original_job['remoteci_id'])
