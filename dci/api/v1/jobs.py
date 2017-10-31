@@ -64,6 +64,7 @@ _EMBED_MANY = {
 
 @api.route('/jobs', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['REMOTECI'])
 def create_jobs(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.job.post(flask.request.json))
@@ -83,6 +84,7 @@ def create_jobs(user):
         # the db model
         'jobdefinition_id': None,
         'topic_id': values['topic_id'],
+        'remoteci_id': user.id,
         'rconfiguration_id': values['rconfiguration_id'],
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get(
@@ -266,7 +268,7 @@ def _build_new_template(topic_id, remoteci, components_ids, values,
 
 def _validate_input(values, user):
     topic_id = values.pop('topic_id')
-    remoteci_id = values.get('remoteci_id')
+    remoteci_id = user.id
     components_ids = values.pop('components_ids')
 
     values.update({
@@ -325,6 +327,7 @@ def _get_job(user, job_id, embed):
 
 @api.route('/jobs/schedule', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['REMOTECI'])
 def schedule_jobs(user):
     """Dispatch jobs to remotecis.
 
@@ -356,6 +359,7 @@ def schedule_jobs(user):
 
 @api.route('/jobs/upgrade', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['REMOTECI'])
 def upgrade_jobs(user):
     values = schemas.job_upgrade.post(flask.request.json)
 
