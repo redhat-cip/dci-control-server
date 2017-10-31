@@ -83,6 +83,7 @@ def create_jobs(user):
         # the db model
         'jobdefinition_id': None,
         'topic_id': values['topic_id'],
+        'remoteci_id': user.id,
         'rconfiguration_id': values['rconfiguration_id'],
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get(
@@ -266,11 +267,12 @@ def _build_new_template(topic_id, remoteci, components_ids, values,
 
 def _validate_input(values, user):
     topic_id = values.pop('topic_id')
-    remoteci_id = values.get('remoteci_id')
+    remoteci_id = user.id
     components_ids = values.pop('components_ids')
 
     values.update({
         'id': utils.gen_uuid(),
+        'remoteci_id': remoteci_id,
         'created_at': datetime.datetime.utcnow().isoformat(),
         'updated_at': datetime.datetime.utcnow().isoformat(),
         'etag': utils.gen_etag(),
