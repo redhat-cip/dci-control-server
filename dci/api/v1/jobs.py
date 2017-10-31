@@ -69,6 +69,9 @@ def create_jobs(user):
     values.update(schemas.job.post(flask.request.json))
     components_ids = values.pop('components')
 
+    if 'remoteci_id' not in values and user.is_remoteci():
+        values['remoteci_id'] = user.id
+
     values['team_id'] = values.get('team_id', user['team_id'])
     # Only super admin can create job for other teams
     if not user.is_super_admin() and not user.is_in_team(values['team_id']):
@@ -266,7 +269,6 @@ def _build_new_template(topic_id, remoteci, components_ids, values,
 
 def _validate_input(values, user):
     topic_id = values.pop('topic_id')
-    remoteci_id = values.get('remoteci_id')
     components_ids = values.pop('components_ids')
 
     values.update({
@@ -276,6 +278,10 @@ def _validate_input(values, user):
         'etag': utils.gen_etag(),
         'status': 'new'
     })
+
+    if 'remoteci_id' not in values and user.is_remoteci():
+        values['remoteci_id'] = user.id
+    remoteci_id = values['remoteci_id']
 
     remoteci = v1_utils.verify_existence_and_get(remoteci_id, models.REMOTECIS)
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)

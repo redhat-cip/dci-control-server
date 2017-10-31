@@ -390,14 +390,6 @@ job_upgrade = {
 job_upgrade = schema_factory(job_upgrade)
 
 
-job_schedule_template = {
-    'remoteci_id': v.Any(UUID, msg=INVALID_REMOTE_CI),
-    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
-
-}
-
-job_schedule_template = schema_factory(job_schedule_template)
-
 job_notify = {
     'mesg': six.text_type
 }
