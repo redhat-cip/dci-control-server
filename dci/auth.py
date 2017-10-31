@@ -57,15 +57,6 @@ def is_admin(user, super=False):
     return user['team_name'] == 'admin'
 
 
-def is_admin_user(user, team_id):
-    return str(user['team_id']) == str(team_id) and \
-        user['role_id'] == get_role_id('ADMIN')
-
-
-def is_in_team(user, team_id):
-    return str(user['team_id']) == str(team_id)
-
-
 def check_export_control(user, component):
     if not is_admin(user):
         if not component['export_control']:

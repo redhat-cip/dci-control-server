@@ -345,6 +345,7 @@ def put_api_secret(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>/rconfigurations', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN'])
 def create_configuration(user, r_id):
     values_configuration = v1_utils.common_values_dict(user)
     values_configuration.update(
@@ -353,8 +354,8 @@ def create_configuration(user, r_id):
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
-    if not auth.is_admin(user):
-        v1_utils.verify_user_in_team(user, remoteci['team_id'])
+    if not user.is_in_team(remoteci['team_id']):
+        raise auth.UNAUTHORIZED
 
     rconfiguration_id = values_configuration.get('id')
 
@@ -387,8 +388,8 @@ def get_all_configurations(user, r_id):
     args = schemas.args(flask.request.args.to_dict())
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
-    if not auth.is_admin(user):
-        v1_utils.verify_user_in_team(user, remoteci['team_id'])
+    if not user.is_in_team(remoteci['team_id']):
+        raise auth.UNAUTHORIZED
 
     query = sql.select([_RCONFIGURATIONS]). \
         select_from(models.JOIN_REMOTECIS_RCONFIGURATIONS.
@@ -437,13 +438,13 @@ def get_configuration_by_id(user, r_id, c_id):
 @api.route('/remotecis/<uuid:r_id>/rconfigurations/<uuid:c_id>',
            methods=['DELETE'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN'])
 def delete_configuration_by_id(user, r_id, c_id):
-    # todo(yassine): veryify user team == remoteci team
     remoteci = v1_utils.verify_existence_and_get(r_id, models.REMOTECIS)
     v1_utils.verify_existence_and_get(c_id, _RCONFIGURATIONS)
 
-    if not auth.is_admin(user):
-        v1_utils.verify_user_in_team(user, remoteci['team_id'])
+    if not user.is_in_team(remoteci['team_id']):
+        raise auth.UNAUTHORIZED
 
     with flask.g.db_conn.begin():
         values = {'state': 'archived'}
@@ -460,11 +461,13 @@ def delete_configuration_by_id(user, r_id, c_id):
 
 @api.route('/remotecis/rconfigurations/purge', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def get_to_purge_archived_rconfigurations(user):
     return base.get_to_purge_archived_resources(user, _RCONFIGURATIONS)
 
 
 @api.route('/remotecis/rconfigurations/purge', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def purge_archived_rconfigurations(user):
     return base.purge_archived_resources(user, _RCONFIGURATIONS)

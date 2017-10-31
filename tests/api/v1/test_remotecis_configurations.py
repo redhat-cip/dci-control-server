@@ -15,31 +15,34 @@
 # under the License.
 
 
-def test_create_configuration(user, remoteci_user_id, topic_user_id):
-    rc = user.post('/api/v1/remotecis/%s/rconfigurations' % remoteci_user_id,
-                   data={'name': 'cname',
-                         'topic_id': topic_user_id,
-                         'component_types': ['kikoo', 'lol'],
-                         'data': {'lol': 'lol'}})
+def test_create_configuration(user_admin, remoteci_user_id, topic_user_id):
+    url = '/api/v1/remotecis/%s/rconfigurations' % remoteci_user_id
+    rc = user_admin.post(url, data={
+        'name': 'cname',
+        'topic_id': topic_user_id,
+        'component_types': ['kikoo', 'lol'],
+        'data': {'lol': 'lol'}
+    })
     assert rc.status_code == 201
     rc = rc.data
     rc_id = rc['rconfiguration']['id']
-    grc = user.get('/api/v1/remotecis/%s/rconfigurations/%s' %
-                   (remoteci_user_id, rc_id)).data
+    grc = user_admin.get('/api/v1/remotecis/%s/rconfigurations/%s' %
+                         (remoteci_user_id, rc_id)).data
     assert grc['rconfiguration']['name'] == 'cname'
     assert grc['rconfiguration']['topic_id'] == topic_user_id
     assert grc['rconfiguration']['data'] == {'lol': 'lol'}
     assert grc['rconfiguration']['component_types'] == ['kikoo', 'lol']
 
 
-def test_get_all_configurations(user, remoteci_user_id, topic_user_id):
+def test_get_all_configurations(user_admin, user, remoteci_user_id,
+                                topic_user_id):
     for i in range(3):
-        rc = user.post('/api/v1/remotecis/%s/rconfigurations' %
-                       remoteci_user_id,
-                       data={'name': 'cname%s' % i,
-                             'topic_id': topic_user_id,
-                             'component_types': ['kikoo%s' % i],
-                             'data': {'lol': 'lol%s' % i}})
+        rc = user_admin.post('/api/v1/remotecis/%s/rconfigurations' %
+                             remoteci_user_id,
+                             data={'name': 'cname%s' % i,
+                                   'topic_id': topic_user_id,
+                                   'component_types': ['kikoo%s' % i],
+                                   'data': {'lol': 'lol%s' % i}})
         assert rc.status_code == 201
 
     all_rcs = user.get('/api/v1/remotecis/%s/rconfigurations?sort=created_at' %
@@ -53,14 +56,15 @@ def test_get_all_configurations(user, remoteci_user_id, topic_user_id):
     assert all_rcs['_meta']['count'] == 3
 
 
-def test_delete_configuration_by_id(user, remoteci_user_id, topic_user_id):
+def test_delete_configuration_by_id(user_admin, user, remoteci_user_id,
+                                    topic_user_id):
     rc_ids = []
     for i in range(3):
-        rc = user.post('/api/v1/remotecis/%s/rconfigurations' %
-                       remoteci_user_id,
-                       data={'name': 'cname%s' % i,
-                             'topic_id': topic_user_id,
-                             'data': {'lol': 'lol%s' % i}})
+        rc = user_admin.post('/api/v1/remotecis/%s/rconfigurations' %
+                             remoteci_user_id,
+                             data={'name': 'cname%s' % i,
+                                   'topic_id': topic_user_id,
+                                   'data': {'lol': 'lol%s' % i}})
         rc_ids.append(rc.data['rconfiguration']['id'])
         assert rc.status_code == 201
 
@@ -69,8 +73,8 @@ def test_delete_configuration_by_id(user, remoteci_user_id, topic_user_id):
     assert all_rcs['_meta']['count'] == 3
 
     for i in range(3):
-        drc = user.delete('/api/v1/remotecis/%s/rconfigurations/%s' %
-                          (remoteci_user_id, rc_ids[i]))
+        drc = user_admin.delete('/api/v1/remotecis/%s/rconfigurations/%s' %
+                                (remoteci_user_id, rc_ids[i]))
         assert drc.status_code == 204
         all_rcs = user.get('/api/v1/remotecis/%s/rconfigurations' %
                            remoteci_user_id).data
@@ -78,16 +82,17 @@ def test_delete_configuration_by_id(user, remoteci_user_id, topic_user_id):
         assert all_rcs['_meta']['count'] == (3 - (i + 1))
 
 
-def test_purge(user, admin, remoteci_user_id, topic_user_id):
+def test_purge(admin, user_admin, remoteci_user_id, topic_user_id):
     for i in range(3):
-        rc = user.post('/api/v1/remotecis/%s/rconfigurations' %
-                       remoteci_user_id,
-                       data={'name': 'cname%s' % i,
-                             'topic_id': topic_user_id,
-                             'data': {'lol': 'lol%s' % i}})
+        rc = user_admin.post('/api/v1/remotecis/%s/rconfigurations' %
+                             remoteci_user_id,
+                             data={'name': 'cname%s' % i,
+                                   'topic_id': topic_user_id,
+                                   'data': {'lol': 'lol%s' % i}})
         assert rc.status_code == 201
-        dr = user.delete('/api/v1/remotecis/%s/rconfigurations/%s' %
-                         (remoteci_user_id, rc.data['rconfiguration']['id']))
+        url = '/api/v1/remotecis/%s/rconfigurations/%s' % \
+              (remoteci_user_id, rc.data['rconfiguration']['id'])
+        dr = user_admin.delete(url)
         assert dr.status_code == 204
 
     prg = admin.get('/api/v1/remotecis/rconfigurations/purge')
