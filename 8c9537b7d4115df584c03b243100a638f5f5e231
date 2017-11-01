@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_3c8dde31",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2017-11-01T08:42:17Z",
+      "side": 1,
+      "message": "I don\u0027t think you need the first \u0027is not None\u0027\n\nIf rconfiguration and rconfiguration[\u0027component_types\u0027] is not None:",
+      "revId": "8c9537b7d4115df584c03b243100a638f5f5e231",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
