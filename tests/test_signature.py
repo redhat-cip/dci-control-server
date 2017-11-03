@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from __future__ import unicode_literals
+
 from datetime import datetime, timedelta
 
 from dci.common import signature
@@ -29,13 +31,13 @@ def test_format_string_to_sign():
     timestamp = datetime(2016, 5, 19, 13, 51, 59)
 
     payload_hash = \
-        b'41af286dc0b172ed2f1ca934fd2278de4a1192302ffa07087cea2682e7d372e3'
+        '41af286dc0b172ed2f1ca934fd2278de4a1192302ffa07087cea2682e7d372e3'
     formated = signature.format_for_signature(
-        http_verb=b'DELETE',
-        content_type=b'application/json',
+        http_verb='DELETE',
+        content_type='application/json',
         timestamp=timestamp,
-        url=b'/api/v1/boo/yah',
-        query_string=b'param=value&foo=bar',
+        url='/api/v1/boo/yah',
+        query_string='param=value&foo=bar',
         payload_hash=payload_hash)
 
     assert formated == b'''DELETE
