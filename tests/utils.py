@@ -13,23 +13,29 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+from __future__ import unicode_literals
 import base64
 import collections
 import flask
+import hashlib
+import hmac
 import shutil
 
 import mock
 import six
 
 import dci.auth as auth
+from dci.common import signature
 import dci.common.utils as utils
 import dci.db.models as models
 import dci.dci_config as config
 from dci.stores.swift import Swift
 
+import datetime
 import os
 import subprocess
+
+
 
 # convenient alias
 memoized = utils.memoized
@@ -86,6 +92,61 @@ def generate_client(app, credentials=None, access_token=None):
     client.open = client_open_decorator(client.open)
 
     return client
+
+
+def generate_remoteci_client(app, remoteci_api_secret, remoteci_id):
+    attrs = ['status_code', 'data', 'headers']
+    Response = collections.namedtuple('Response', attrs)
+
+    timestamp = datetime.datetime.utcnow()
+    timestamp_str = timestamp.strftime('%Y-%m-%d %H:%M:%SZ')
+
+    headers = {
+        'DCI-Client-Info': '%s/remoteci/%s' % (timestamp_str, remoteci_id),
+        'Content-Type': 'application/json',
+    }
+
+    def client_open_decorator(func):
+        def wrapper(*args, **kwargs):
+            url = args[0]
+            method = kwargs['method']
+            headers.update(kwargs.get('headers', {}))
+            kwargs['headers'] = headers
+            content_type = headers.get('Content-Type')
+            data = kwargs.get('data')
+            if data and content_type == 'application/json':
+                kwargs['data'] = flask.json.dumps(data, cls=utils.JSONEncoder)
+
+            # all the signature items are encoded to utf-8
+            # the server will then decode them when needed
+            sign = signature.gen_signature(
+                secret=remoteci_api_secret.encode('utf-8'),
+                http_verb=method.encode('utf-8'),
+                content_type='application/json'.encode('utf-8'),
+                timestamp=timestamp,
+                url=url.encode('utf-8'),
+                query_string=''.encode('utf-8'),
+                payload=kwargs.get('data', '').encode('utf-8')
+            ).encode('utf-8')
+
+            headers['DCI-Auth-Signature'] = sign
+            response = func(*args, **kwargs)
+
+            data = response.data
+            if response.content_type == 'application/json':
+                data = flask.json.loads(data or '{}')
+            if type(data) == six.binary_type:
+                data = data.decode('utf8')
+
+            return Response(response.status_code, data, response.headers)
+
+        return wrapper
+
+    client = app.test_client()
+    client.open = client_open_decorator(client.open)
+
+    return client
+
 
 
 def provision(db_conn):
