@@ -14,6 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+try:
+    from urlparse import parse_qsl
+    from urlparse import urlparse
+except ImportError:
+    from urllib.parse import parse_qsl
+    from urllib.parse import urlparse
 import base64
 import collections
 import flask
@@ -100,20 +106,25 @@ def generate_remoteci_client(app, remoteci_api_secret, remoteci_id):
     def client_open_decorator(func):
         def wrapper(*args, **kwargs):
             headers.update(kwargs.get('headers', {}))
+            payload = kwargs.get('data')
+            content_type = headers.get('Content-Type')
+            url = urlparse(args[0])
+            params = dict(parse_qsl(url.query))
             hmac_headers = hmac_signature.generate_headers_with_secret(
                 remoteci_api_secret,
                 method=kwargs.get('method'),
-                content_type=headers.get('Content-Type'),
-                url=args[0],
-                params={},
-                payload=kwargs.get('data'))
+                content_type=content_type,
+                url=url.path,
+                params=params,
+                payload=payload)
             headers.update(hmac_headers)
             kwargs['headers'] = headers
+            if payload and content_type == 'application/json':
+                kwargs['data'] = flask.json.dumps(payload,
+                                                  cls=utils.JSONEncoder)
             response = func(*args, **kwargs)
             data = flask.json.loads(response.data or '{}')
-            print(data)
             return Response(response.status_code, data, response.headers)
-
         return wrapper
 
     client = app.test_client()

@@ -41,6 +41,11 @@ def test_hmac_mechanism_invalid_header_raise_exception():
         })
 
 
-def test_hmac_mechanism_from_outside(remoteci):
-    jobs_request = remoteci.get('/api/v1/jobs')
+def test_hmac_mechanism_from_outside(remoteci_context):
+    jobs_request = remoteci_context.get('/api/v1/jobs')
+    assert jobs_request.status_code == 200
+
+
+def test_hmac_mechanism_params(remoteci_context):
+    jobs_request = remoteci_context.get('/api/v1/jobs?embed=components')
     assert jobs_request.status_code == 200
