@@ -14,11 +14,15 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from __future__ import unicode_literals
+
 from datetime import datetime, timedelta
 import hashlib
 import hmac
 import random
 import string
+
+import six
 
 
 def gen_secret(length=64):
@@ -34,20 +38,29 @@ def format_for_signature(http_verb, content_type, timestamp, url,
     """Returns the string used to generate the signature in a correctly
     formatter manner.
     """
-    return b'\n'.join((
+    return '\n'.join((
         http_verb,
         content_type,
-        timestamp.strftime('%Y-%m-%d %H:%M:%SZ').encode('utf-8'),
+        timestamp.strftime('%Y-%m-%d %H:%M:%SZ'),
         url,
         query_string,
-        payload_hash,
-    ))
+        str(payload_hash)
+    )).encode('utf-8')
 
 
 def gen_signature(secret, http_verb, content_type, timestamp, url,
                   query_string, payload):
     """Generates a signature compatible with DCI for the parameters passed"""
-    payload_hash = hashlib.sha256(payload).hexdigest().encode('utf-8')
+
+    if isinstance(http_verb, six.binary_type):
+        http_verb = http_verb.decode('utf-8')
+    if isinstance(content_type, six.binary_type):
+        content_type = content_type.decode('utf-8')
+    if isinstance(url, six.binary_type):
+        url = url.decode('utf-8')
+    if isinstance(query_string, six.binary_type):
+        query_string = query_string.decode('utf-8')
+    payload_hash = hashlib.sha256(payload).hexdigest()
     stringtosign = format_for_signature(
         http_verb=http_verb,
         content_type=content_type,
@@ -57,6 +70,8 @@ def gen_signature(secret, http_verb, content_type, timestamp, url,
         payload_hash=payload_hash
     )
 
+    if not isinstance(secret, six.binary_type):
+        secret = secret.encode('utf-8')
     return hmac.new(secret,
                     stringtosign,
                     hashlib.sha256).hexdigest()
@@ -67,6 +82,9 @@ def compare_digest(foo, bar):
     NOTE: this uses hmac.compare_digest() if possible, a simple == else.
           hmac.compare_digest is available only in python≥(2.7.7,3.3)"""
     f = getattr(hmac, 'compare_digest', lambda a, b: a == b)
+    if not isinstance(foo, six.binary_type):
+        foo = foo.encode('utf-8')
+
     return f(foo, bar)
 
 
@@ -88,5 +106,5 @@ def is_valid(their_signature,
                                     url, query_string, payload).encode('utf-8')
 
     # TODO(all): differentiate the expiration and the comparison error
-    return is_timestamp_in_bounds(timestamp) and \
-        compare_digest(their_signature, local_signature)
+    return (is_timestamp_in_bounds(timestamp) and
+            compare_digest(their_signature, local_signature))

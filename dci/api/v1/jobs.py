@@ -325,6 +325,7 @@ def _get_job(user, job_id, embed):
 
 @api.route('/jobs/schedule', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['REMOTECI', 'SUPER_ADMIN', 'ADMIN', 'USER'])
 def schedule_jobs(user):
     """Dispatch jobs to remotecis.
 
@@ -334,6 +335,13 @@ def schedule_jobs(user):
     running jobs that were associated with the remoteci. This is because they
     will never be finished.
     """
+
+    # QuickFix
+    remoteci_id = flask.request.json.get('remoteci_id')
+    if remoteci_id is not None and '/' in remoteci_id:
+        remoteci_id = remoteci_id.split('/')[1]
+        flask.request.json['remoteci_id'] = remoteci_id
+
     values = schemas.job_schedule.post(flask.request.json)
 
     values.update({

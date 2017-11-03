@@ -225,15 +225,15 @@ class SignatureAuthMechanism(BaseMechanism):
                                        status_code=401)
 
         return signature.is_valid(
-            their_signature=their_signature.encode('utf-8'),
-            secret=identity.api_secret.encode('utf-8'),
-            http_verb=self.request.method.upper().encode('utf-8'),
-            content_type=(self.request.headers.get('Content-Type')
-                          .encode('utf-8')),
+            their_signature=their_signature,
+            secret=identity.api_secret,
+            http_verb=self.request.method.upper(),
+            content_type=self.request.headers.get('Content-Type'),
             timestamp=timestamp,
-            url=self.request.path.encode('utf-8'),
+            url=self.request.path,
             query_string=self.request.query_string,
-            payload=self.request.data)
+            payload=self.request.data
+        )
 
 
 class OpenIDCAuth(BaseMechanism):
