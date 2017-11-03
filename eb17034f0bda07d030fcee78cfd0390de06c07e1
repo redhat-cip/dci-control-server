@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9abe1de1_f72ae12b",
+        "filename": "tests/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 113,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-11-03T13:21:50Z",
+      "side": 1,
+      "message": "duplicates dci/common/signature.py format_for_signature",
+      "range": {
+        "startLine": 113,
+        "startChar": 4,
+        "endLine": 113,
+        "endChar": 18
+      },
+      "revId": "eb17034f0bda07d030fcee78cfd0390de06c07e1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_17267568",
+        "filename": "tests/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-11-03T13:21:50Z",
+      "side": 1,
+      "message": "duplicates dci/common/signature.py gen_signature",
+      "range": {
+        "startLine": 126,
+        "startChar": 4,
+        "endLine": 126,
+        "endChar": 8
+      },
+      "revId": "eb17034f0bda07d030fcee78cfd0390de06c07e1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
