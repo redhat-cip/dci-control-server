@@ -29,8 +29,6 @@ def test_schedule_jobs(remoteci_user, team_user_id, remoteci_user_id,
                              data={'remoteci_id': remoteci_user_id,
                                    'topic_id': topic_user_id})
 
-    print(job)
-    print(type(remoteci_user_id))
     assert job.status_code == 201
     job = job.data['job']
     assert job['topic_id'] == topic_user_id
@@ -200,10 +198,10 @@ def test_schedule_job_with_export_control(admin, remoteci_user,
     assert job_scheduled.status_code == 201
 
 
-def test_schedule_jobs_with_rconfiguration(admin, remoteci_user, remoteci_id,
+def test_schedule_jobs_with_rconfiguration(admin, remoteci_user, remoteci_user_id,  # noqa
                                            topic_user_id, components_user_ids):
 
-    rconfiguration = admin.post('/api/v1/remotecis/%s/rconfigurations' % remoteci_id,  # noqa
+    rconfiguration = admin.post('/api/v1/remotecis/%s/rconfigurations' % remoteci_user_id,  # noqa
                                 data={'name': 'rconfig1',
                                       'topic_id': topic_user_id})
     rconfiguration_id = rconfiguration.data['rconfiguration']['id']
@@ -213,7 +211,7 @@ def test_schedule_jobs_with_rconfiguration(admin, remoteci_user, remoteci_id,
         'Client-Version': 'python-dciclient_0.1.0'
     }
     job = remoteci_user.post('/api/v1/jobs/schedule', headers=headers,
-                             data={'remoteci_id': remoteci_id,
+                             data={'remoteci_id': remoteci_user_id,
                                    'topic_id': topic_user_id})
     assert job.status_code == 201
     job = job.data

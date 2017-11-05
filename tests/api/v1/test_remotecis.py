@@ -18,6 +18,8 @@ from __future__ import unicode_literals
 import pytest
 import uuid
 
+from tests import utils
+
 
 def test_create_remotecis(admin, team_id, role_remoteci):
     pr = admin.post('/api/v1/remotecis',
@@ -84,11 +86,17 @@ def test_get_all_remotecis_with_where(admin, team_id):
 
 def test_get_all_remotecis_with_last_job(admin, team_user_id, remoteci_user,
                                          remoteci_user_id, components_user_ids,
-                                         topic_user_id):
+                                         topic_user_id, app):
 
     data = {'name': 'idle', 'team_id': team_user_id}
     idle_remoteci = admin.post('/api/v1/remotecis', data=data).data
     idle_remoteci_id = idle_remoteci['remoteci']['id']
+    idle_remoteci_secret = idle_remoteci['remoteci']['api_secret']
+    # create idle_remoteci client
+    idle_remoteci_client = utils.generate_remoteci_client(app,
+                                                          idle_remoteci_secret,
+                                                          idle_remoteci_id)
+
     admin.post('/api/v1/topics/%s/teams' % topic_user_id,
                data={'team_id': team_user_id})
     remotecis = admin.get((
@@ -147,9 +155,9 @@ def test_get_all_remotecis_with_last_job(admin, team_user_id, remoteci_user,
     assert 'id' not in idle_remoteci['currentjob']
     assert 'id' not in idle_remoteci['lastjob']
 
-    remoteci_user.post('/api/v1/jobs/schedule',
-                       data={'remoteci_id': idle_remoteci_id,
-                             'topic_id': topic_user_id})
+    idle_remoteci_client.post('/api/v1/jobs/schedule',
+                              data={'remoteci_id': idle_remoteci_id,
+                                    'topic_id': topic_user_id})
     remotecis = admin.get((
         '/api/v1/remotecis?embed='
         'team,'
@@ -166,9 +174,9 @@ def test_get_all_remotecis_with_last_job(admin, team_user_id, remoteci_user,
     assert 'id' in idle_remoteci['currentjob']
     assert 'id' not in idle_remoteci['lastjob']
 
-    remoteci_user.post('/api/v1/jobs/schedule',
-                       data={'remoteci_id': idle_remoteci_id,
-                             'topic_id': topic_user_id})
+    idle_remoteci_client.post('/api/v1/jobs/schedule',
+                              data={'remoteci_id': idle_remoteci_id,
+                                    'topic_id': topic_user_id})
     remotecis = admin.get((
         '/api/v1/remotecis?embed='
         'team,'
