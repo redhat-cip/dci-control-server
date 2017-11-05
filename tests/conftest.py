@@ -134,9 +134,10 @@ def product_owner(app, db_provisioning):
 
 
 @pytest.fixture
-def remoteci(app, db_provisioning, remoteci_id, remoteci_api_secret):
-    return utils.generate_remoteci_client(app, remoteci_api_secret,
-                                          remoteci_id)
+def remoteci_user(app, db_provisioning, remoteci_user_id,
+                  remoteci_user_api_secret):
+    return utils.generate_remoteci_client(app, remoteci_user_api_secret,
+                                          remoteci_user_id)
 
 
 @pytest.fixture
@@ -211,8 +212,8 @@ def remoteci_id(admin, team_id):
 
 
 @pytest.fixture
-def remoteci_api_secret(admin, remoteci_id):
-    api_secret = admin.get('/api/v1/remotecis/%s' % remoteci_id).data
+def remoteci_user_api_secret(user, remoteci_user_id):
+    api_secret = user.get('/api/v1/remotecis/%s' % remoteci_user_id).data
     return api_secret['remoteci']['api_secret']
 
 
