@@ -183,7 +183,6 @@ class SignatureAuthMechanism(BaseMechanism):
             return None
 
         constraint = identity_model.c.id == client_id
-
         identity = self.identity_from_db(identity_model, constraint)
         return identity
 
