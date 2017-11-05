@@ -23,7 +23,7 @@ GITHUB_TRACKER = 'dci.trackers.github.requests'
 BUGZILLA_TRACKER = 'dci.trackers.bugzilla.requests'
 
 
-def test_attach_issue_to_job(admin, job_id):
+def test_attach_issue_to_job(admin, job_user_id):
     with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
 
         mock_github_result = mock.Mock()
@@ -46,8 +46,8 @@ def test_attach_issue_to_job(admin, job_id):
         data = {
             'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
         }
-        issue = admin.post('/api/v1/jobs/%s/issues' % job_id, data=data).data
-        result = admin.get('/api/v1/jobs/%s/issues' % job_id).data
+        issue = admin.post('/api/v1/jobs/%s/issues' % job_user_id, data=data).data  # noqa
+        result = admin.get('/api/v1/jobs/%s/issues' % job_user_id).data
         assert result['issues'][0]['id'] == issue['issue']['id']
         assert result['issues'][0]['url'] == data['url']
 
@@ -92,15 +92,15 @@ def test_attach_issue_to_component(admin, topic_id):
         assert result['issues'][0]['url'] == data['url']
 
 
-def test_attach_invalid_issue(admin, job_id):
+def test_attach_invalid_issue(admin, job_user_id):
     data = {
         'url': '<script>alert("booo")</script>'
     }
-    r = admin.post('/api/v1/jobs/%s/issues' % job_id, data=data)
+    r = admin.post('/api/v1/jobs/%s/issues' % job_user_id, data=data)
     assert r.status_code == 400
 
 
-def test_unattach_issue_from_job(admin, job_id):
+def test_unattach_issue_from_job(admin, job_user_id):
     with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
         mock_github_result = mock.Mock()
         mock_github_request.get.return_value = mock_github_result
@@ -122,12 +122,12 @@ def test_unattach_issue_from_job(admin, job_id):
         data = {
             'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
         }
-        result = admin.post('/api/v1/jobs/%s/issues' % job_id, data=data)
+        result = admin.post('/api/v1/jobs/%s/issues' % job_user_id, data=data)
         issue_id = result.data['issue']['id']
-        result = admin.get('/api/v1/jobs/%s/issues' % job_id).data
+        result = admin.get('/api/v1/jobs/%s/issues' % job_user_id).data
         assert result['_meta']['count'] == 1
-        admin.delete('/api/v1/jobs/%s/issues/%s' % (job_id, issue_id))
-        result = admin.get('/api/v1/jobs/%s/issues' % job_id).data
+        admin.delete('/api/v1/jobs/%s/issues/%s' % (job_user_id, issue_id))
+        result = admin.get('/api/v1/jobs/%s/issues' % job_user_id).data
         assert result['_meta']['count'] == 0
 
 
@@ -177,7 +177,7 @@ def test_unattach_issue_from_component(admin, topic_id):
         assert result['_meta']['count'] == 0
 
 
-def test_github_tracker(admin, job_id):
+def test_github_tracker(admin, job_user_id):
     with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
         mock_github_result = mock.Mock()
         mock_github_request.get.return_value = mock_github_result
@@ -199,9 +199,9 @@ def test_github_tracker(admin, job_id):
         data = {
             'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
         }
-        admin.post('/api/v1/jobs/%s/issues' % job_id, data=data)
+        admin.post('/api/v1/jobs/%s/issues' % job_user_id, data=data)
         result = (
-            admin.get('/api/v1/jobs/%s/issues' % job_id).data['issues'][0]
+            admin.get('/api/v1/jobs/%s/issues' % job_user_id).data['issues'][0]
         )
 
         assert result['status_code'] == 200
@@ -219,7 +219,7 @@ def test_github_tracker(admin, job_id):
         assert result['assignee'] is None
 
 
-def test_github_tracker_with_private_issue(admin, job_id):
+def test_github_tracker_with_private_issue(admin, job_user_id):
     with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
         mock_github_result = mock.Mock()
         mock_github_request.get.return_value = mock_github_result
@@ -229,9 +229,9 @@ def test_github_tracker_with_private_issue(admin, job_id):
         data = {
             'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
         }
-        admin.post('/api/v1/jobs/%s/issues' % job_id, data=data)
+        admin.post('/api/v1/jobs/%s/issues' % job_user_id, data=data)
         result = (
-            admin.get('/api/v1/jobs/%s/issues' % job_id).data['issues'][0]
+            admin.get('/api/v1/jobs/%s/issues' % job_user_id).data['issues'][0]
         )
 
         assert result['status_code'] == 404
@@ -247,7 +247,7 @@ def test_github_tracker_with_private_issue(admin, job_id):
         assert result['assignee'] is None
 
 
-def test_bugzilla_tracker(admin, job_id):
+def test_bugzilla_tracker(admin, job_user_id):
     with mock.patch(BUGZILLA_TRACKER, spec=requests) as mock_bugzilla_request:
         mock_bugzilla_result = mock.Mock()
         mock_bugzilla_request.get.return_value = mock_bugzilla_result
@@ -274,9 +274,9 @@ def test_bugzilla_tracker(admin, job_id):
         data = {
             'url': 'https://bugzilla.redhat.com/show_bug.cgi?id=1184949'
         }
-        admin.post('/api/v1/jobs/%s/issues' % job_id, data=data)
+        admin.post('/api/v1/jobs/%s/issues' % job_user_id, data=data)
         result = (
-            admin.get('/api/v1/jobs/%s/issues' % job_id).data['issues'][0]
+            admin.get('/api/v1/jobs/%s/issues' % job_user_id).data['issues'][0]
         )
 
         assert result['status_code'] == 200
@@ -292,7 +292,7 @@ def test_bugzilla_tracker(admin, job_id):
         assert result['closed_at'] is None
 
 
-def test_bugzilla_tracker_with_non_existent_issue(admin, job_id):
+def test_bugzilla_tracker_with_non_existent_issue(admin, job_user_id):
     with mock.patch(BUGZILLA_TRACKER, spec=requests) as mock_bugzilla_request:
         mock_bugzilla_result = mock.Mock()
         mock_bugzilla_request.get.return_value = mock_bugzilla_result
@@ -302,9 +302,9 @@ def test_bugzilla_tracker_with_non_existent_issue(admin, job_id):
         data = {
             'url': 'https://bugzilla.redhat.com/show_bug.cgi?id=1184949'
         }
-        admin.post('/api/v1/jobs/%s/issues' % job_id, data=data)
+        admin.post('/api/v1/jobs/%s/issues' % job_user_id, data=data)
         result = (
-            admin.get('/api/v1/jobs/%s/issues' % job_id).data['issues'][0]
+            admin.get('/api/v1/jobs/%s/issues' % job_user_id).data['issues'][0]
         )
 
         assert result['status_code'] == 400

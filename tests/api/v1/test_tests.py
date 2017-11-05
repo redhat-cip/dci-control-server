@@ -310,7 +310,7 @@ def test_delete_test_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_test_archive_dependencies(admin, job_id, team_id):
+def test_delete_test_archive_dependencies(admin, job_user_id, team_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
         mockito = mock.MagicMock()
@@ -325,7 +325,7 @@ def test_delete_test_archive_dependencies(admin, job_id, team_id):
         mock_swift.return_value = mockito
 
         test = admin.post('/api/v1/tests', data={'name': 'pname',
-                                                 'team_id': team_id})
+                                                 'team_id': team_user_id})
         test_id = test.data['test']['id']
         assert test.status_code == 201
         test_etag = \
@@ -334,7 +334,7 @@ def test_delete_test_archive_dependencies(admin, job_id, team_id):
         file = admin.post('/api/v1/files',
                           headers={
                               'DCI-NAME': 'kikoolol',
-                              'DCI-JOB-ID': job_id,
+                              'DCI-JOB-ID': job_user_id,
                               'DCI-TEST-ID': test_id
                           },
                           data='content')
