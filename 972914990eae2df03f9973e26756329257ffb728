@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "9abe1de1_f348b42f",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 235,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-11-06T10:05:08Z",
+      "side": 1,
+      "message": "The tests has been run with python2 and python3, see the depends-on of patch https://softwarefactory-project.io/r/#/c/10085",
+      "parentUuid": "9abe1de1_b38d9c7d",
+      "range": {
+        "startLine": 235,
+        "startChar": 20,
+        "endLine": 235,
+        "endChar": 37
+      },
+      "revId": "972914990eae2df03f9973e26756329257ffb728",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9abe1de1_d3901098",
         "filename": "dci/common/signature.py",
         "patchSetId": 5
@@ -60,6 +84,30 @@
       "writtenOn": "2017-11-06T08:22:17Z",
       "side": 1,
       "message": "http verb, content type and url could/should not content unicode char.\nThis is useless",
+      "range": {
+        "startLine": 55,
+        "startChar": 0,
+        "endLine": 60,
+        "endChar": 33
+      },
+      "revId": "972914990eae2df03f9973e26756329257ffb728",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9abe1de1_134c4841",
+        "filename": "dci/common/signature.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2017-11-06T10:05:08Z",
+      "side": 1,
+      "message": "In python3 from the tests they will contain unicode char.",
+      "parentUuid": "9abe1de1_d3901098",
       "range": {
         "startLine": 55,
         "startChar": 0,
