@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7ad32947_364e38c2",
+        "filename": "dci/identity.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-11-07T10:45:56Z",
+      "side": 1,
+      "message": "There\u0027s no need to loop over all teams if the user is not product owner. The test on the role could be done before looping.",
+      "revId": "2a8e2662133b27075b47824593699a9874d198ce",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
