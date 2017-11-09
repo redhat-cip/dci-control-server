@@ -21,6 +21,7 @@ from sqlalchemy import sql
 from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import signature
+from dciauth import signature as hmac_signature
 from dci.db import models
 from dci import dci_config
 from dci.identity import Identity
@@ -220,6 +221,54 @@ class SignatureAuthMechanism(BaseMechanism):
             url=self.request.path.encode('utf-8'),
             query_string=self.request.query_string,
             payload=self.request.data)
+
+
+class HmacMechanism(BaseMechanism):
+    def authenticate(self):
+        client_info = self.get_client_info(self.request.headers)
+        self.identity = self.get_identity(client_info)
+        headers = self.request.headers
+        expected_signature = hmac_signature.calculate_signature(
+            secret=getattr(self.identity, 'api_secret', ''),
+            method=self.request.method,
+            headers=headers,
+            url=self.request.path,
+            query_string=self.request.query_string.decode('utf-8'),
+            payload=self.request.get_json(silent=True)
+        )
+        dci_signature = hmac_signature.get_signature_from_headers(headers)
+        dci_signature = dci_signature.encode('utf-8')
+        if not hmac_signature.equals(expected_signature, dci_signature):
+            raise dci_exc.DCIException(
+                'Authentication failed: signature invalid', status_code=401)
+
+        if hmac_signature.is_expired(headers):
+            raise dci_exc.DCIException(
+                'Authentication failed: signature expired', status_code=401)
+        return True
+
+    def get_client_info(self, headers):
+        if 'DCI-Client-Info' not in headers:
+            raise dci_exc.DCIException('Header DCI-Client-Info missing',
+                                       status_code=401)
+
+        client_info = headers.get('DCI-Client-Info')
+        client_info = client_info.split('/')
+        return {
+            'type': client_info[0],
+            'id': client_info[1],
+        }
+
+    def get_identity(self, client_info):
+        allowed_types_model = {
+            'remoteci': models.REMOTECIS,
+            'feeder': models.FEEDERS,
+        }
+        identity_model = allowed_types_model.get(client_info['type'])
+        if identity_model is None:
+            return None
+        constraint = identity_model.c.id == client_info['id']
+        return self.identity_from_db(identity_model, constraint)
 
 
 class OpenIDCAuth(BaseMechanism):

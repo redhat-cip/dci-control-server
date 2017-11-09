@@ -27,6 +27,7 @@ import dci.common.utils as utils
 import dci.db.models as models
 import dci.dci_config as config
 from dci.stores.swift import Swift
+from dciauth import signature as hmac_signature
 
 import os
 import subprocess
@@ -85,6 +86,38 @@ def generate_client(app, credentials=None, access_token=None):
     client = app.test_client()
     client.open = client_open_decorator(client.open)
 
+    return client
+
+
+def generate_remoteci_client(app, remoteci_api_secret, remoteci_id):
+    attrs = ['status_code', 'data', 'headers']
+    Response = collections.namedtuple('Response', attrs)
+    headers = {
+        'DCI-Client-Info': 'remoteci/%s' % remoteci_id,
+        'Content-Type': 'application/json',
+    }
+
+    def client_open_decorator(func):
+        def wrapper(*args, **kwargs):
+            headers.update(kwargs.get('headers', {}))
+            hmac_headers = hmac_signature.generate_headers_with_secret(
+                remoteci_api_secret,
+                method=kwargs.get('method'),
+                content_type=headers.get('Content-Type'),
+                url=args[0],
+                params={},
+                payload=kwargs.get('data'))
+            headers.update(hmac_headers)
+            kwargs['headers'] = headers
+            response = func(*args, **kwargs)
+            data = flask.json.loads(response.data or '{}')
+            print(data)
+            return Response(response.status_code, data, response.headers)
+
+        return wrapper
+
+    client = app.test_client()
+    client.open = client_open_decorator(client.open)
     return client
 
 
