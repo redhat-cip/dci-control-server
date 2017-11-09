@@ -213,6 +213,15 @@ def remoteci_user_id(user, team_user_id):
 
 
 @pytest.fixture
+def remoteci(app, admin, team_id):
+    data = {'name': 'dci', 'team_id': team_id, 'allow_upgrade_job': True}
+    remoteci = admin.post('/api/v1/remotecis', data=data).data['remoteci']
+    api_secret = remoteci['api_secret']
+    remoteci_id = str(remoteci['id'])
+    return utils.generate_remoteci_client(app, api_secret, remoteci_id)
+
+
+@pytest.fixture
 def remoteci_configuration_user_id(user, remoteci_user_id, topic_user_id):
     rc = user.post('/api/v1/remotecis/%s/configurations' % remoteci_user_id,
                    data={'name': 'cname',

@@ -62,6 +62,7 @@ Requires:       python-voluptuous
 Requires:       python-werkzeug
 Requires:       python-zmq
 Requires:       python-jwt
+Requires:       python-dciauth
 Requires:       python2-swiftclient
 Requires:       pytz
 
@@ -115,6 +116,7 @@ Requires:       python3-voluptuous
 Requires:       python3-werkzeug
 Requires:       python3-zmq
 Requires:       python-jwt
+Requires:       python3-dciauth
 
 %description -n dci-api-python3
 The implementation of the DCI control server API.
