@@ -22,6 +22,7 @@ import flask
 from dci.auth import UNAUTHORIZED
 import dci.auth_mechanism as am
 from dci.common import exceptions as dci_exc
+from dciauth import signature
 
 
 def reject():
@@ -52,6 +53,8 @@ def _get_auth_class_from_headers(headers):
     auth_type, token = auth_header
     if auth_type == 'Bearer':
         return am.OpenIDCAuth
+    elif auth_type == signature.DCI_ALGORITHM:
+        return am.HmacMechanism
     elif auth_type == 'Basic':
         return am.BasicAuthMechanism
 
