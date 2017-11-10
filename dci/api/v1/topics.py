@@ -246,7 +246,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
              .order_by(
                  models.REMOTECIS.c.name,
                  models.JOBS.c.created_at.desc())
-             .distinct(models.REMOTECIS.c.name))
+             .distinct(models.REMOTECIS.c.id))
 
     if not user.is_super_admin():
         query.append_whereclause(models.TEAMS.c.id.in_(user.teams))
