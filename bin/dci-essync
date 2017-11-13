@@ -60,6 +60,7 @@ except:
 
 if db_current_sequence != -1:
     es_engine.update_sequence(db_current_sequence)
+    files_events.delete(dci_context, last_sequence)
 
 print('[*] New last sequence: %s' % max(db_current_sequence, last_sequence))
 print('[*] Sync done')

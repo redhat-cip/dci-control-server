@@ -25,10 +25,12 @@ conf = dci_config.generate_conf()
 es_engine = es_client.DCIESEngine(conf['ES_HOST'], conf['ES_PORT'], 'dci')
 
 
-def test_essync_add_files(user, jobstate_user_id):
+def test_essync_add_files(user, admin, jobstate_user_id):
     for i in range(5):
         utils.post_file(user, jobstate_user_id,
                         utils.FileDesc('kikoolol', 'content'))
+    f_events = admin.get('/api/v1/files_events/0').data
+    assert len(f_events['files']) == 5
 
     env = {'DCI_CS_URL': 'http://127.0.0.1:5000',
            'DCI_LOGIN': 'admin',
@@ -38,3 +40,6 @@ def test_essync_add_files(user, jobstate_user_id):
     pprint.pprint(status.communicate())
     assert status.returncode == 0
     assert es_engine.get_last_sequence(doc_type='logs') == 5
+
+    f_events = admin.get('/api/v1/files_events/0').data
+    assert len(f_events['files']) == 0
