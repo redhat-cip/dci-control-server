@@ -42,6 +42,21 @@ def test_files_events_delete(admin, user, jobstate_user_id, team_user_id):
     assert f_events_data['files'][1]['event']['action'] == models.FILES_DELETE
 
 
+def test_files_events_delete_from_sequence_number(admin, user,
+                                                  jobstate_user_id,
+                                                  team_user_id):
+    for i in range(5):
+        utils.post_file(user, jobstate_user_id,
+                        utils.FileDesc('kikoolol%s' % i, 'content%s' % i))
+    f_events = admin.get('/api/v1/files_events/0').data
+    assert len(f_events['files']) == 5
+
+    admin.delete('/api/v1/files_events/3')
+
+    f_events = admin.get('/api/v1/files_events/0').data
+    assert len(f_events['files']) == 2
+
+
 def test_files_events_user_unauthorized(user):
     f_events = user.get('/api/v1/files_events/0')
     assert f_events.status_code == 401

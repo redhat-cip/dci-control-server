@@ -78,6 +78,17 @@ def get_files_events_from_sequence(user, sequence):
     return json.jsonify({'files': res, '_meta': {'count': nb_rows}})
 
 
+@api.route('/files_events/<int:sequence>', methods=['DELETE'])
+@decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
+def purge_files_events_from_sequence(user, sequence):
+    query = _TABLE.delete(). \
+        where(_TABLE.c.id >= sequence)
+    flask.g.db_conn.execute(query)
+
+    return flask.Response(None, 204, content_type='application/json')
+
+
 def create_event(file_id, action):
     values = {'file_id': file_id,
               'action': action}

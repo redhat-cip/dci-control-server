@@ -44,6 +44,8 @@ try:
         db_current_sequence = f_event['event']['id']
         if f_event['event']['action'] == 'create':
             file_content = file.content(dci_context, db_file['id'])
+            # if the file doesn't exist it means there is a delete
+            # action afterwards, so we can safely ignore it
             if file_content.status_code == 200:
                 db_file['content'] = str(file_content.content)
                 es_engine.index(db_file)
