@@ -542,3 +542,18 @@ def common_values_dict(user):
 
 def log():
     return flask.current_app.logger
+
+
+def get_content_from_request(request):
+    """Ensure the proper content is uploaded."""
+
+    if request.stream.tell():
+        log().info(
+            'Request stream already consumed. Storing file content '
+            'using in-memory data.')
+        return request.data
+
+    else:
+        log().info(
+            'Storing file content using request stream.')
+        return request.stream

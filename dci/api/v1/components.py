@@ -250,8 +250,8 @@ def upload_component_file(user, c_id):
     file_id = utils.gen_uuid()
     file_path = swift.build_file_path(component['topic_id'], c_id, file_id)
 
-    swift = dci_config.get_store('components')
-    swift.upload(file_path, flask.request.stream)
+    content = v1_utils.get_content_from_request(flask.request)
+    swift.upload(file_path, content)
     s_file = swift.head(file_path)
 
     values = dict.fromkeys(['md5', 'mime', 'component_id', 'name'])
