@@ -33,6 +33,7 @@ from dci.common import schemas
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
+from dci.stores import files
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.COMPONENTS
@@ -250,8 +251,8 @@ def upload_component_file(user, c_id):
     file_id = utils.gen_uuid()
     file_path = swift.build_file_path(component['topic_id'], c_id, file_id)
 
-    swift = dci_config.get_store('components')
-    swift.upload(file_path, flask.request.stream)
+    content = files.get_content_from_request(flask.request)
+    swift.upload(file_path, content)
     s_file = swift.head(file_path)
 
     values = dict.fromkeys(['md5', 'mime', 'component_id', 'name'])

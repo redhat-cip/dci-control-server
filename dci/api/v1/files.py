@@ -32,6 +32,7 @@ from dci.common import utils
 from dci.db import embeds
 from dci.db import models
 from dci import dci_config
+from dci.stores import files
 
 
 _TABLE = models.FILES
@@ -88,18 +89,8 @@ def create_files(user):
                                       values['job_id'],
                                       file_id)
 
-    # NOTE(Goneri): Ie803dd94c5cb395305dcf08ad9f8bfd410ca1448 drop the client
-    # ability to do plain upload. We should only get stream once the patch is
-    # merged.
-    if flask.request.stream.tell():
-        v1_utils.log().info(
-            'Request stream already consumed. Storing file content '
-            'using in-memory data.')
-        swift.upload(file_path, flask.request.data)
-    else:
-        v1_utils.log().info(
-            'Storing file content using request stream.')
-        swift.upload(file_path, flask.request.stream)
+    content = files.get_content_from_request(flask.request)
+    swift.upload(file_path, content)
     s_file = swift.head(file_path)
 
     etag = utils.gen_etag()
