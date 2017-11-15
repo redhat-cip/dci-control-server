@@ -233,7 +233,7 @@ class HmacMechanism(BaseMechanism):
             method=self.request.method,
             headers=headers,
             url=self.request.path,
-            query_string=self.request.query_string.decode('utf-8'),
+            params=self.request.args.to_dict(flat=True),
             payload=self.request.get_json(silent=True)
         )
         dci_signature = hmac_signature.get_signature_from_headers(headers)

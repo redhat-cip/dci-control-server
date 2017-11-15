@@ -16,4 +16,4 @@ lxml
 python-swiftclient
 cryptography
 pyjwt
-dciauth
+dciauth>=1.0.0
