@@ -4,4 +4,4 @@ pytest-cov>=1.8.0
 mock
 pylint==1.6.4
 dciclient>=0.3.3
-dciauth
+dciauth>=1.0.0
