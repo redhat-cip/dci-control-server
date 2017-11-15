@@ -22,6 +22,7 @@ import tests.utils as utils
 from dci.common import utils as dci_utils
 
 from passlib.apps import custom_app_context as pwd_context
+import contextlib
 import pytest
 import sqlalchemy
 import sqlalchemy_utils.functions
@@ -43,6 +44,26 @@ def engine(request):
         sqlalchemy_utils.functions.create_database(db_uri)
     utils.restore_db(engine)
     return engine
+
+
+@pytest.fixture
+def empty_db(engine):
+    with contextlib.closing(engine.connect()) as con:
+        meta = models.metadata
+        trans = con.begin()
+        for table in reversed(meta.sorted_tables):
+            con.execute(table.delete())
+        trans.commit()
+    return True
+
+
+@pytest.fixture
+def reset_file_event(engine):
+    with contextlib.closing(engine.connect()) as con:
+        trans = con.begin()
+        con.execute("ALTER SEQUENCE files_events_id_seq RESTART WITH 1")
+        trans.commit()
+    return True
 
 
 @pytest.fixture
@@ -69,7 +90,7 @@ def fs_clean(request):
 
 
 @pytest.fixture
-def db_provisioning(teardown_db_clean, engine):
+def db_provisioning(empty_db, engine):
     with engine.begin() as conn:
         utils.provision(conn)
 
