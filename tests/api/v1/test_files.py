@@ -19,6 +19,7 @@ import pytest
 import mock
 import six
 
+from dci.api.v1.files import get_file_info_from_header
 from dci.stores.swift import Swift
 from dci.common import utils
 
@@ -348,3 +349,18 @@ def test_change_file_to_invalid_state(admin, file_id):
     current_file = admin.get('/api/v1/files/' + file_id)
     assert current_file.status_code == 200
     assert current_file.data['file']['state'] == 'active'
+
+
+def test_get_file_info_from_header():
+    headers = {
+        'DCI-Client-Info': '',
+        'DCI-Auth-Signature': '',
+        'Authorization': '',
+        'DCI-Datetime': '',
+        'mime': '',
+        'Dci-Job-Id': ''
+    }
+    file_info = get_file_info_from_header(headers)
+    assert len(file_info.keys()) == 2
+    assert 'mime' in file_info
+    assert 'job_id' in file_info
