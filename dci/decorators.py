@@ -65,7 +65,6 @@ def _get_auth_class_from_headers(headers):
 def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        flask.request.headers.get('DCI-Auth-Signature')
         auth_class = _get_auth_class_from_headers(flask.request.headers)
         auth_scheme = auth_class(flask.request)
         auth_scheme.authenticate()
