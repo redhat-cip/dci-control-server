@@ -48,11 +48,20 @@ _EMBED_MANY = {
 }
 
 
+def get_file_info_from_header(headers):
+    new_headers = {}
+    for key, value in headers.items():
+        key = key.replace('-', '_').lower().replace('dci_', '')
+        if key in ['md5', 'mime', 'jobstate_id',
+                   'job_id', 'name', 'test_id']:
+            new_headers[key] = value
+    return new_headers
+
+
 @api.route('/files', methods=['POST'])
 @decorators.login_required
 def create_files(user):
-    # todo(yassine): use voluptuous for headers validation
-    headers_values = v1_utils.flask_headers_to_dict(flask.request.headers)
+    headers_values = get_file_info_from_header(dict(flask.request.headers))
     swift = dci_config.get_store('files')
 
     values = dict.fromkeys(['md5', 'mime', 'jobstate_id',
