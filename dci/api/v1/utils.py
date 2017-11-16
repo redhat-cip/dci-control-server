@@ -501,25 +501,6 @@ def format_result(rows, root_table_name, list_embeds=None, embed_many=None):
     return result_rows
 
 
-def flask_headers_to_dict(headers):
-    """Parse headers for finding dci related ones
-
-    Replace each characters '-' from headers by '_' for sql backend
-    """
-    rv = {}
-    for header, value in six.iteritems(dict(headers)):
-        header = header.replace('-', '_').lower()
-        if header.startswith('dci'):
-            rv[header[4:]] = value
-
-    # Discard authentication headers
-    for key in ('auth_signature', 'client_info'):
-        if key in rv:
-            del rv[key]
-
-    return rv
-
-
 def common_values_dict(user):
     """Build a basic values object used in every create method.
 
