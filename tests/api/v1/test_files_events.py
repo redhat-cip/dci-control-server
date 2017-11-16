@@ -18,7 +18,8 @@ from dci.db import models
 from tests import utils
 
 
-def test_files_events_create(admin, user, jobstate_user_id, team_user_id):
+def test_files_events_create(admin, user, jobstate_user_id, team_user_id,
+                             reset_file_event):
     file_id = utils.post_file(user, jobstate_user_id,
                               utils.FileDesc('kikoolol', 'content'))
     f_events = admin.get('/api/v1/files_events/0')
@@ -29,7 +30,8 @@ def test_files_events_create(admin, user, jobstate_user_id, team_user_id):
     assert f_events_data['files'][0]['event']['action'] == models.FILES_CREATE
 
 
-def test_files_events_delete(admin, user, jobstate_user_id, team_user_id):
+def test_files_events_delete(admin, user, jobstate_user_id, team_user_id,
+                             reset_file_event):
     file_id = utils.post_file(user, jobstate_user_id,
                               utils.FileDesc('kikoolol', 'content'))
     admin.delete('/api/v1/files/%s' % file_id)
@@ -44,7 +46,8 @@ def test_files_events_delete(admin, user, jobstate_user_id, team_user_id):
 
 def test_files_events_delete_from_sequence_number(admin, user,
                                                   jobstate_user_id,
-                                                  team_user_id):
+                                                  team_user_id,
+                                                  reset_file_event):
     for i in range(5):
         utils.post_file(user, jobstate_user_id,
                         utils.FileDesc('kikoolol%s' % i, 'content%s' % i))
