@@ -15,7 +15,6 @@
 # under the License.
 
 import flask
-import six
 from sqlalchemy import sql, func
 import uuid
 
@@ -499,25 +498,6 @@ def format_result(rows, root_table_name, list_embeds=None, embed_many=None):
     if list_embeds is not None and embed_many is not None:
         return _format_level_2(result_rows, list_embeds, embed_many)
     return result_rows
-
-
-def flask_headers_to_dict(headers):
-    """Parse headers for finding dci related ones
-
-    Replace each characters '-' from headers by '_' for sql backend
-    """
-    rv = {}
-    for header, value in six.iteritems(dict(headers)):
-        header = header.replace('-', '_').lower()
-        if header.startswith('dci'):
-            rv[header[4:]] = value
-
-    # Discard authentication headers
-    for key in ('auth_signature', 'client_info'):
-        if key in rv:
-            del rv[key]
-
-    return rv
 
 
 def common_values_dict(user):
