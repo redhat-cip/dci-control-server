@@ -26,42 +26,50 @@ import sys
 import traceback
 
 
-dci_context = context.build_dci_context()
-conf = dci_config.generate_conf()
-es_engine = es_client.DCIESEngine(conf['ES_HOST'], conf['ES_PORT'], 'dci')
+def main(es_engine, dci_context):
+    print('[*] Start Elasticsearch sync')
 
-print('[*] Start Elasticsearch sync')
+    last_sequence = es_engine.get_last_sequence(doc_type='logs')
 
-last_sequence = es_engine.get_last_sequence(doc_type='logs')
+    print('[*] Current last sequence number: %s' % last_sequence)
 
-print('[*] Current last sequence number: %s' % last_sequence)
+    db_current_sequence = -1
 
-db_current_sequence = -1
+    try:
+        for f_event in files_events.iter(dci_context, sequence=last_sequence+1):
+            db_file = f_event['file']
+            db_current_sequence = f_event['event']['id']
+            if f_event['event']['action'] == 'create':
+                file_content = file.content(dci_context, db_file['id'])
+                # if the file doesn't exist it means there is a delete
+                # action afterwards, so we can safely ignore it
+                if file_content.status_code == 200:
+                    db_file['content'] = str(file_content.content)
+                    es_engine.index(db_file)
+                    print('[*] Index file id %s' % db_file['id'])
+            elif f_event['event']['action'] == 'delete':
+                es_engine.delete(db_file['id'])
+                print('[*] Delete file id %s' % db_file['id'])
+    except:
+        print('[*] An error has been encountered\n')
+        traceback.print_exc()
+        sys.exit(-1)
 
-try:
-    for f_event in files_events.iter(dci_context, sequence=last_sequence+1):
-        db_file = f_event['file']
-        db_current_sequence = f_event['event']['id']
-        if f_event['event']['action'] == 'create':
-            file_content = file.content(dci_context, db_file['id'])
-            # if the file doesn't exist it means there is a delete
-            # action afterwards, so we can safely ignore it
-            if file_content.status_code == 200:
-                db_file['content'] = str(file_content.content)
-                es_engine.index(db_file)
-                print('[*] Index file id %s' % db_file['id'])
-        elif f_event['event']['action'] == 'delete':
-            es_engine.delete(db_file['id'])
-            print('[*] Delete file id %s' % db_file['id'])
-except:
-    print('[*] An error has been encountered\n')
-    traceback.print_exc()
-    sys.exit(-1)
+    if db_current_sequence != -1:
+        es_engine.update_sequence(db_current_sequence)
+        files_events.delete(dci_context, last_sequence)
 
-if db_current_sequence != -1:
-    es_engine.update_sequence(db_current_sequence)
-    files_events.delete(dci_context, last_sequence)
+    print('[*] New last sequence: %s' % max(db_current_sequence, last_sequence))
+    print('[*] Sync done')
 
-print('[*] New last sequence: %s' % max(db_current_sequence, last_sequence))
-print('[*] Sync done')
-sys.exit(0)
+
+if __name__ == '__main__':
+    if len(sys.argv) == 4:
+        dci_context = context.build_dci_context(dci_cs_url=sys.argv[1],
+                                                dci_login=sys.argv[2],
+                                                dci_password=sys.argv[3])
+    else:
+        dci_context = context.build_dci_context()
+    conf = dci_config.generate_conf()
+    es_engine = es_client.DCIESEngine(conf['ES_HOST'], conf['ES_PORT'], 'dci')
+    main(es_engine, dci_context)
