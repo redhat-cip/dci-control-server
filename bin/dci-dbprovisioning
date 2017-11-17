@@ -258,7 +258,7 @@ def create_files(jobs):
 def wait_db_ready():
     while True:
         try:
-            r = get('users/me')
+            r = get('identity')
             if r.status_code == 200:
                 break
         except requests.exceptions.ConnectionError:
@@ -267,17 +267,11 @@ def wait_db_ready():
             time.sleep(1)
 
 
-def delete_default_topic():
-    default_topic = get('topics').json()['topics'][0]
-    delete('topics/%s' % default_topic['id'])
-
-
 def main():
     wait_db_ready()
     teams = create_teams()
     create_users(teams)
     create_products(teams)
-    delete_default_topic()
     topics = create_topics()
     associate_topics_to_teams(topics, teams)
     components = create_components(topics)
