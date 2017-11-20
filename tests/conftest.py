@@ -174,6 +174,24 @@ def topic_id(admin, team_id, product):
 
 
 @pytest.fixture
+def topic(admin, team_id, product):
+    topic = admin.post('/api/v1/topics', data={
+        'name': 'OSP12',
+        'product_id': product['id'],
+        'component_types': ['puddle_osp']
+    }).data['topic']
+    admin.post('/api/v1/components', data={
+        'topic_id': topic['id'],
+        'name': 'RH7-RHOS-12.0 2017-11-09.2',
+        'type': 'puddle_osp',
+        'export_control': True
+    })
+    admin.post('/api/v1/topics/%s/teams' % topic['id'],
+               data={'team_id': team_id})
+    return topic
+
+
+@pytest.fixture
 def test_id(admin, team_id):
     data = {'name': 'pname', 'team_id': team_id}
     test = admin.post('/api/v1/tests', data=data).data
@@ -234,7 +252,13 @@ def remoteci_user_id(user, team_user_id):
 
 
 @pytest.fixture
-def remoteci(app, admin, team_id):
+def remoteci(admin, team_id):
+    data = {'name': 'remoteci', 'team_id': team_id, 'allow_upgrade_job': True}
+    return admin.post('/api/v1/remotecis', data=data).data['remoteci']
+
+
+@pytest.fixture
+def remoteci_context(app, admin, team_id):
     data = {'name': 'dci', 'team_id': team_id, 'allow_upgrade_job': True}
     remoteci = admin.post('/api/v1/remotecis', data=data).data['remoteci']
     api_secret = remoteci['api_secret']
@@ -312,7 +336,6 @@ def jobstate_user_id(user, job_user_id):
 @pytest.fixture
 def file_id(admin, jobstate_id, team_admin_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
-
         mockito = mock.MagicMock()
 
         head_result = {
@@ -338,7 +361,6 @@ def file_id(admin, jobstate_id, team_admin_id):
 @pytest.fixture
 def file_user_id(user, jobstate_user_id, team_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
-
         mockito = mock.MagicMock()
 
         head_result = {
@@ -363,7 +385,6 @@ def file_user_id(user, jobstate_user_id, team_user_id):
 @pytest.fixture
 def file_job_user_id(user, job_user_id, team_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
-
         mockito = mock.MagicMock()
 
         head_result = {
