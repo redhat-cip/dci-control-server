@@ -22,6 +22,8 @@ from dciclient.v1.api import files_events
 
 from dci.elasticsearch import es_client
 
+import atexit
+import fcntl
 import sys
 import traceback
 
@@ -73,4 +75,15 @@ if __name__ == '__main__':
         dci_context = context.build_dci_context()
     conf = dci_config.generate_conf()
     es_engine = es_client.DCIESEngine(conf['ES_HOST'], conf['ES_PORT'], 'dci')
-    main(es_engine, dci_context)
+
+    # acquire an exclusive file lock
+    with open('/tmp/dci-essync.lock', 'w') as f:
+        try:
+            fcntl.lockf(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            # release the lock on exit
+            atexit.register(fcntl.lockf, fd=f, operation=fcntl.LOCK_UN)
+        except IOError:
+            print('dci-essync instance already running, exit(0)')
+            sys.exit(0)
+        main(es_engine, dci_context)
+    sys.exit(0)
