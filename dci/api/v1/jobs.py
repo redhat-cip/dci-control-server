@@ -323,6 +323,7 @@ def _get_job(user, job_id, embed):
 
 @api.route('/jobs/schedule', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'REMOTECI'])
 def schedule_jobs(user):
     """Dispatch jobs to remotecis.
 

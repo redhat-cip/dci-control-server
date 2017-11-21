@@ -170,7 +170,7 @@ def test_junit2dict_empty():
     assert result == {}
 
 
-def test_retrieve_junit2dict(admin, job_id):
+def test_retrieve_junit2dict(admin, job_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
         mockito = mock.MagicMock()
 
@@ -188,7 +188,7 @@ def test_retrieve_junit2dict(admin, job_id):
         mock_swift.return_value = mockito
         headers = {
             'DCI-NAME': 'junit_file.xml',
-            'DCI-JOB-ID': job_id,
+            'DCI-JOB-ID': job_user_id,
             'DCI-MIME': 'application/junit',
             'Content-Disposition': 'attachment; filename=junit_file.xml',
             'Content-Type': 'application/junit'
@@ -210,7 +210,7 @@ def test_retrieve_junit2dict(admin, job_id):
         assert res.headers['Content-Type'] == 'application/junit'
 
 
-def test_create_file_fill_tests_results_table(engine, admin, job_id):
+def test_create_file_fill_tests_results_table(engine, admin, job_user_id):
     with open('tests/data/tempest-results.xml', 'r') as f:
         content_file = f.read()
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
@@ -225,7 +225,7 @@ def test_create_file_fill_tests_results_table(engine, admin, job_id):
         mock_swift.return_value = mockito
 
         headers = {
-            'DCI-JOB-ID': job_id,
+            'DCI-JOB-ID': job_user_id,
             'DCI-NAME': 'tempest-results.xml',
             'DCI-MIME': 'application/junit',
             'Content-Disposition': 'attachment; filename=tempest-results.xml',
