@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fae47921_324bf05b",
+        "filename": "bin/dci-essync",
+        "patchSetId": 1
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2017-11-21T08:33:12Z",
+      "side": 1,
+      "message": "You should run main() in an exception catching block to be sure to release the lock and eventually re-raise the exception after calling fcntl.lockf()",
+      "range": {
+        "startLine": 85,
+        "startChar": 0,
+        "endLine": 87,
+        "endChar": 37
+      },
+      "revId": "5df185ad7fbb3fffc1aeb39274fd60fbfb2237e5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
