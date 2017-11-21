@@ -23,39 +23,39 @@ from dci.common import utils
 SWIFT = 'dci.stores.swift.Swift'
 
 
-def test_create_tests(admin, team_id):
-    pt = admin.post('/api/v1/tests',
-                    data={'name': 'pname', 'team_id': team_id}).data
+def test_create_tests(user, team_user_id):
+    pt = user.post('/api/v1/tests',
+                    data={'name': 'pname', 'team_id': team_user_id}).data
     pt_id = pt['test']['id']
-    gt = admin.get('/api/v1/tests/%s' % pt_id).data
+    gt = user.get('/api/v1/tests/%s' % pt_id).data
     assert gt['test']['name'] == 'pname'
 
 
-def test_create_tests_already_exist(admin, team_id):
-    pstatus_code = admin.post('/api/v1/tests',
+def test_create_tests_already_exist(user, team_user_id):
+    pstatus_code = user.post('/api/v1/tests',
                               data={'name': 'pname',
-                                    'team_id': team_id}).status_code
+                                    'team_id': team_user_id}).status_code
     assert pstatus_code == 201
 
-    pstatus_code = admin.post('/api/v1/tests',
+    pstatus_code = user.post('/api/v1/tests',
                               data={'name': 'pname',
-                                    'team_id': team_id}).status_code
+                                    'team_id': team_user_id}).status_code
     assert pstatus_code == 409
 
 
-def test_get_all_tests_from_topic(admin, team_id, topic_id):
-    test_1 = admin.post('/api/v1/tests', data={'name': 'pname1',
-                                               'team_id': team_id}).data
-    test_2 = admin.post('/api/v1/tests', data={'name': 'pname2',
-                                               'team_id': team_id}).data
+def test_get_all_tests_from_topic(admin, user, team_user_id, topic_user_id):
+    test_1 = user.post('/api/v1/tests', data={'name': 'pname1',
+                                               'team_id': team_user_id}).data
+    test_2 = user.post('/api/v1/tests', data={'name': 'pname2',
+                                               'team_id': team_user_id}).data
 
-    admin.post('/api/v1/topics/%s/tests' % topic_id,
+    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
                data={'test_id': test_1['test']['id']})
-    admin.post('/api/v1/topics/%s/tests' % topic_id,
+    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
                data={'test_id': test_2['test']['id']})
 
-    db_all_tests = admin.get(
-        '/api/v1/topics/%s/tests?sort=created_at' % topic_id).data
+    db_all_tests = user.get(
+        '/api/v1/topics/%s/tests?sort=created_at' % topic_user_id).data
 
     db_all_tests = db_all_tests['tests']
     db_all_tests_ids = [db_t['id'] for db_t in db_all_tests]
@@ -64,25 +64,15 @@ def test_get_all_tests_from_topic(admin, team_id, topic_id):
 
 
 def test_get_all_tests(admin, user, team_user_id, topic_user_id):
-    test_1 = admin.post('/api/v1/tests', data={'name': 'pname1',
-                                               'team_id': team_user_id}).data
-    test_2 = admin.post('/api/v1/tests', data={'name': 'pname2',
-                                               'team_id': team_user_id}).data
+    test_1 = user.post('/api/v1/tests', data={'name': 'pname1',
+                                              'team_id': team_user_id}).data
+    test_2 = user.post('/api/v1/tests', data={'name': 'pname2',
+                                              'team_id': team_user_id}).data
 
     admin.post('/api/v1/topics/%s/tests' % topic_user_id,
                data={'test_id': test_1['test']['id']})
     admin.post('/api/v1/topics/%s/tests' % topic_user_id,
                data={'test_id': test_2['test']['id']})
-
-    # get tests by admin
-    db_all_tests = admin.get('/api/v1/topics/%s/tests' % topic_user_id).data
-
-    db_all_tests = db_all_tests['tests']
-    assert len(db_all_tests) == 2
-    db_all_tests_ids = set([db_t['id'] for db_t in db_all_tests])
-
-    assert db_all_tests_ids == set([test_1['test']['id'],
-                                    test_2['test']['id']])
 
     # get tests by user
     db_all_tests = user.get('/api/v1/topics/%s/tests' % topic_user_id).data
@@ -91,8 +81,7 @@ def test_get_all_tests(admin, user, team_user_id, topic_user_id):
     assert len(db_all_tests) == 2
     db_all_tests_ids = set([db_t['id'] for db_t in db_all_tests])
 
-    assert db_all_tests_ids == set([test_1['test']['id'],
-                                    test_2['test']['id']])
+    assert db_all_tests_ids == {test_1['test']['id'], test_2['test']['id']}
 
 
 def test_get_all_tests_not_in_topic(admin, user, product_openstack):
@@ -106,69 +95,72 @@ def test_get_all_tests_not_in_topic(admin, user, product_openstack):
     assert status_code == 412
 
 
-def test_get_all_tests_with_pagination(admin, team_id, topic_id):
+def test_get_all_tests_with_pagination(admin, user, team_user_id,
+                                       topic_user_id):
     # create 4 components types and check meta data count
     test1 = admin.post('/api/v1/tests',
-                       data={'name': 'pname1', 'team_id': team_id}).data
+                       data={'name': 'pname1', 'team_id': team_user_id}).data
     test2 = admin.post('/api/v1/tests',
-                       data={'name': 'pname2', 'team_id': team_id}).data
+                       data={'name': 'pname2', 'team_id': team_user_id}).data
     test3 = admin.post('/api/v1/tests',
-                       data={'name': 'pname3', 'team_id': team_id}).data
+                       data={'name': 'pname3', 'team_id': team_user_id}).data
     test4 = admin.post('/api/v1/tests',
-                       data={'name': 'pname4', 'team_id': team_id}).data
+                       data={'name': 'pname4', 'team_id': team_user_id}).data
 
-    admin.post('/api/v1/topics/%s/tests' % topic_id,
+    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
                data={'test_id': test1['test']['id']})
-    admin.post('/api/v1/topics/%s/tests' % topic_id,
+    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
                data={'test_id': test2['test']['id']})
-    admin.post('/api/v1/topics/%s/tests' % topic_id,
+    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
                data={'test_id': test3['test']['id']})
-    admin.post('/api/v1/topics/%s/tests' % topic_id,
+    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
                data={'test_id': test4['test']['id']})
-    ts = admin.get('/api/v1/topics/%s/tests' % topic_id).data
+    ts = admin.get('/api/v1/topics/%s/tests' % topic_user_id).data
 
     assert ts['_meta']['count'] == 4
 
     # verify limit and offset are working well
-    ts = admin.get(
-        '/api/v1/topics/%s/tests?limit=2&offset=0' % topic_id).data
+    ts = user.get(
+        '/api/v1/topics/%s/tests?limit=2&offset=0' % topic_user_id).data
     assert len(ts['tests']) == 2
 
-    ts = admin.get(
-        '/api/v1/topics/%s/tests?limit=2&offset=2' % topic_id).data
+    ts = user.get(
+        '/api/v1/topics/%s/tests?limit=2&offset=2' % topic_user_id).data
     assert len(ts['tests']) == 2
 
     # if offset is out of bound, the api returns an empty list
-    ts = admin.get('/api/v1/topics/%s/tests?limit=5&offset=300' % topic_id)
+    ts = user.get('/api/v1/topics/%s/tests?limit=5&offset=300' % topic_user_id)
     assert ts.status_code == 200
     assert ts.data['tests'] == []
 
 
-def test_get_all_tests_with_sort(admin, team_id, topic_id):
+def test_get_all_tests_with_sort(admin, user, team_user_id, topic_user_id):
     # create 2 tests ordered by created time
     t_1 = admin.post('/api/v1/tests', data={'name': 'pname1',
-                                            'team_id': team_id}).data['test']
+                                            'team_id': team_user_id}).data['test']
     t_2 = admin.post('/api/v1/tests', data={'name': 'pname2',
-                                            'team_id': team_id}).data['test']
+                                            'team_id': team_user_id}).data['test']
 
-    admin.post('/api/v1/topics/%s/tests' % topic_id,
+    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
                data={'test_id': t_1['id']})
-    admin.post('/api/v1/topics/%s/tests' % topic_id,
+    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
                data={'test_id': t_2['id']})
 
-    gts = admin.get('/api/v1/topics/%s/tests?sort=created_at' % topic_id).data
+    gts = user.get('/api/v1/topics/%s/tests?sort=created_at' %
+                   topic_user_id).data
     assert gts['tests'][0]['id'] == t_1['id']
     assert gts['tests'][1]['id'] == t_2['id']
 
     # test in reverse order
-    gts = admin.get('/api/v1/topics/%s/tests?sort=-created_at' % topic_id).data
+    gts = user.get('/api/v1/topics/%s/tests?sort=-created_at' %
+                   topic_user_id).data
     assert gts['tests'][0]['id'] == t_2['id']
     assert gts['tests'][1]['id'] == t_1['id']
 
 
-def test_get_test_by_id(admin, team_id):
+def test_get_test_by_id(admin, team_user_id):
     pt = admin.post('/api/v1/tests', data={'name': 'pname',
-                                           'team_id': team_id}).data
+                                           'team_id': team_user_id}).data
     pt_id = pt['test']['id']
 
     # get by uuid
@@ -221,7 +213,7 @@ def test_get_tests_from_remotecis(admin, user, team_user_id, team_id):
     test_id_1 = test_1['id']
     test_2 = admin.post('/api/v1/tests',
                         data={'name': 'pname2',
-                              'team_id': team_id}).data['test']
+                              'team_id': team_user_id}).data['test']
     test_id_2 = test_2['id']
 
     # Attach tests to remote CI
@@ -241,8 +233,7 @@ def test_get_tests_from_remotecis(admin, user, team_user_id, team_id):
     assert t_tests.status_code == 404
 
 
-def test_get_tests_from_topics(admin, user, team_user_id, team_id,
-                               product):
+def test_get_tests_from_topics(admin, user, team_user_id, team_id, product):
     # Create two test 1 for each team
     test_1 = admin.post('/api/v1/tests',
                         data={'name': 'pname1',
@@ -286,9 +277,9 @@ def test_get_tests_from_topics(admin, user, team_user_id, team_id,
     assert t_tests.status_code == 412
 
 
-def test_delete_test_by_id(admin, team_id):
+def test_delete_test_by_id(admin, team_user_id):
     pt = admin.post('/api/v1/tests', data={'name': 'pname',
-                                           'team_id': team_id})
+                                           'team_id': team_user_id})
     pt_id = pt.data['test']['id']
     assert pt.status_code == 201
 
@@ -310,7 +301,7 @@ def test_delete_test_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_test_archive_dependencies(admin, job_id, team_id):
+def test_delete_test_archive_dependencies(admin, job_user_id, team_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
         mockito = mock.MagicMock()
@@ -325,7 +316,7 @@ def test_delete_test_archive_dependencies(admin, job_id, team_id):
         mock_swift.return_value = mockito
 
         test = admin.post('/api/v1/tests', data={'name': 'pname',
-                                                 'team_id': team_id})
+                                                 'team_id': team_user_id})
         test_id = test.data['test']['id']
         assert test.status_code == 201
         test_etag = \
@@ -334,7 +325,7 @@ def test_delete_test_archive_dependencies(admin, job_id, team_id):
         file = admin.post('/api/v1/files',
                           headers={
                               'DCI-NAME': 'kikoolol',
-                              'DCI-JOB-ID': job_id,
+                              'DCI-JOB-ID': job_user_id,
                               'DCI-TEST-ID': test_id
                           },
                           data='content')
