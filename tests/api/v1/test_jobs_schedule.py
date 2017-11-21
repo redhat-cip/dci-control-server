@@ -37,9 +37,9 @@ def test_schedule_jobs(remoteci_context, remoteci, team_id, topic):
     assert job['rconfiguration_id'] is None
 
 
-def test_schedule_jobs_with_components_ids(admin, remoteci_context, remoteci,
+def test_schedule_jobs_with_components_ids(user, remoteci_context, remoteci,
                                            topic):
-    components = admin.get('/api/v1/topics/%s/components' % topic['id']).data['components']  # noqa
+    components = user.get('/api/v1/topics/%s/components' % topic['id']).data['components']  # noqa
     data = {
         'topic_id': topic['id'],
         'remoteci_id': remoteci['id'],
