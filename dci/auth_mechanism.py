@@ -237,6 +237,21 @@ class HmacMechanism(BaseMechanism):
             payload=self.request.get_json(silent=True)
         )
         dci_signature = hmac_signature.get_signature_from_headers(headers)
+
+        print('~~~~~~~~~~~~~~~')  # noqa
+        print('~ DciHMACAuth ~')  # noqa
+        print('~~~~~~~~~~~~~~~')  # noqa
+        print('client_info', client_info)  # noqa
+        print('api_secret', getattr(self.identity, 'api_secret', ''))  # noqa
+        print('dci_signature', dci_signature)  # noqa
+        print('expected_signature', expected_signature)  # noqa
+        print('headers', self.request.headers)  # noqa
+        print('method', self.request.method)  # noqa
+        print('url', self.request.path)  # noqa
+        print('params', self.request.args.to_dict(flat=True))  # noqa
+        print('payload', self.request.get_json(silent=True))  # noqa
+        print('~~~~~~~~~~~~~~~')  # noqa
+
         if not hmac_signature.equals(expected_signature, dci_signature):
             raise dci_exc.DCIException(
                 'Authentication failed: signature invalid', status_code=401)
