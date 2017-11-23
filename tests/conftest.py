@@ -174,7 +174,7 @@ def topic_id(admin, team_id, product):
 
 
 @pytest.fixture
-def topic(admin, team_id, product):
+def topic(admin, team_user_id, product):
     topic = admin.post('/api/v1/topics', data={
         'name': 'OSP12',
         'product_id': product['id'],
@@ -187,13 +187,20 @@ def topic(admin, team_id, product):
         'export_control': True
     })
     admin.post('/api/v1/topics/%s/teams' % topic['id'],
-               data={'team_id': team_id})
+               data={'team_id': team_user_id})
     return topic
 
 
 @pytest.fixture
 def test_id(admin, team_id):
     data = {'name': 'pname', 'team_id': team_id}
+    test = admin.post('/api/v1/tests', data=data).data
+    return str(test['test']['id'])
+
+
+@pytest.fixture
+def test_user_id(admin, team_user_id):
+    data = {'name': 'pname', 'team_id': team_user_id}
     test = admin.post('/api/v1/tests', data=data).data
     return str(test['test']['id'])
 
@@ -244,6 +251,12 @@ def remoteci_id(admin, team_id):
 
 
 @pytest.fixture
+def remoteci_user_api_secret(user, remoteci_user_id):
+    api_secret = user.get('/api/v1/remotecis/%s' % remoteci_user_id).data
+    return api_secret['remoteci']['api_secret']
+
+
+@pytest.fixture
 def remoteci_user_id(user, team_user_id):
     data = {'name': 'rname', 'team_id': team_user_id,
             'allow_upgrade_job': True}
@@ -258,12 +271,10 @@ def remoteci(admin, team_id):
 
 
 @pytest.fixture
-def remoteci_context(app, admin, team_id):
-    data = {'name': 'dci', 'team_id': team_id, 'allow_upgrade_job': True}
-    remoteci = admin.post('/api/v1/remotecis', data=data).data['remoteci']
-    api_secret = remoteci['api_secret']
-    remoteci_id = str(remoteci['id'])
-    return utils.generate_remoteci_client(app, api_secret, remoteci_id)
+def remoteci_context(app, remoteci_user_id, remoteci_user_api_secret):
+    return utils.generate_remoteci_client(app,
+                                          remoteci_user_api_secret,
+                                          remoteci_user_id)
 
 
 @pytest.fixture
@@ -301,29 +312,13 @@ def components_user_ids(admin, topic_user_id):
 
 
 @pytest.fixture
-def job_id(admin, topic_id, remoteci_id, components_ids):
-    data = {'remoteci_id': remoteci_id,
-            'topic_id': topic_id}
-    job = admin.post('/api/v1/jobs/schedule', data=data).data
-    return job['job']['id']
-
-
-@pytest.fixture
-def job_user_id(admin, team_user_id, remoteci_user_id,
-                components_ids, topic_user_id):
-    data = {'team_id': team_user_id,
-            'remoteci_id': remoteci_user_id, 'components': components_ids,
+def job_user_id(remoteci_context, remoteci_user_id, components_user_ids,
+                topic_user_id):
+    data = {'remoteci_id': remoteci_user_id,
+            'components_ids': components_user_ids,
             'topic_id': topic_user_id}
-    job = admin.post('/api/v1/jobs', data=data).data
+    job = remoteci_context.post('/api/v1/jobs/schedule', data=data).data
     return job['job']['id']
-
-
-@pytest.fixture
-def jobstate_id(admin, job_id):
-    data = {'job_id': job_id, 'status': 'running',
-            'comment': 'kikoolol'}
-    jobstate = admin.post('/api/v1/jobstates', data=data).data
-    return jobstate['jobstate']['id']
 
 
 @pytest.fixture
@@ -331,31 +326,6 @@ def jobstate_user_id(user, job_user_id):
     data = {'job_id': job_user_id, 'status': 'running', 'comment': 'kikoolol'}
     jobstate = user.post('/api/v1/jobstates', data=data).data
     return jobstate['jobstate']['id']
-
-
-@pytest.fixture
-def file_id(admin, jobstate_id, team_admin_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
-        mockito = mock.MagicMock()
-
-        head_result = {
-            'etag': dci_utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 1
-        }
-
-        mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
-        headers = {'DCI-JOBSTATE-ID': jobstate_id,
-                   'DCI-NAME': 'name'}
-        file = admin.post('/api/v1/files',
-                          headers=headers,
-                          data='kikoolol').data
-        headers['team_id'] = team_admin_id
-        headers['id'] = file['file']['id']
-        conn = es_engine.DCIESEngine(utils.conf)
-        conn.index(headers)
-        return file['file']['id']
 
 
 @pytest.fixture
