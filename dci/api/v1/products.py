@@ -94,7 +94,8 @@ def get_all_products(user):
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
     query.add_extra_condition(
-        _TABLE.c.state != 'archived'
+        _TABLE.c.state != 'archived',
+        _TABLE.c.team_id == user.team
     )
 
     nb_rows = query.get_number_of_rows()
