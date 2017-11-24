@@ -150,3 +150,13 @@ def test_success_get_products_embed(admin, product):
 
     assert result.status_code == 200
     assert 'team' in result.data['product'].keys()
+
+
+def test_success_get_only_po_product(admin, product_owner, product_openstack):
+
+    products_admin = admin.get('/api/v1/products').data
+    products_po = product_owner.get('/api/v1/products').data
+
+    assert len(products_admin['products']) > 1
+    assert len(products_po['products']) == 1
+    assert products_po['products'][0]['label'] == 'AWSM'
