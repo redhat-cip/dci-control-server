@@ -93,9 +93,10 @@ def get_all_products(user):
     args = schemas.args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
-    query.add_extra_condition(
-        _TABLE.c.state != 'archived'
-    )
+    query.add_extra_condition(_TABLE.c.state != 'archived')
+
+    if not user.is_super_admin():
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
