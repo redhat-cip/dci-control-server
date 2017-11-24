@@ -136,7 +136,7 @@ def get_component_by_id(user, c_id):
 
 @api.route('/components/<uuid:c_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'FEEDER'])
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
 def delete_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
 
@@ -276,7 +276,7 @@ def upload_component_file(user, c_id):
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'FEEDER'])
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
 def delete_component_file(user, c_id, f_id):
     COMPONENT_FILES = models.COMPONENT_FILES
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
