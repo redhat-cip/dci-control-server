@@ -196,23 +196,29 @@ def test_get_component_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_component_by_id(admin, topic_id):
-    data = {'name': 'pname',
-            'type': 'gerrit_review',
-            'topic_id': topic_id,
-            'export_control': True}
-    pc = admin.post('/api/v1/components', data=data)
-    pc_id = pc.data['component']['id']
-    assert pc.status_code == 201
+def test_delete_component_by_id(admin, topic_id, product_owner,
+                                topic_id_product):
 
-    created_ct = admin.get('/api/v1/components/%s' % pc_id)
-    assert created_ct.status_code == 200
+    authorized_contexts = [{'user': admin, 'topic': topic_id},
+                           {'user': product_owner, 'topic': topic_id_product}]
 
-    deleted_ct = admin.delete('/api/v1/components/%s' % pc_id)
-    assert deleted_ct.status_code == 204
+    for context in authorized_contexts:
+        data = {'name': 'pname',
+                'type': 'gerrit_review',
+                'topic_id': context['topic'],
+                'export_control': True}
+        pc = context['user'].post('/api/v1/components', data=data)
+        pc_id = pc.data['component']['id']
+        assert pc.status_code == 201
 
-    gct = admin.get('/api/v1/components/%s' % pc_id)
-    assert gct.status_code == 404
+        created_ct = context['user'].get('/api/v1/components/%s' % pc_id)
+        assert created_ct.status_code == 200
+
+        deleted_ct = context['user'].delete('/api/v1/components/%s' % pc_id)
+        assert deleted_ct.status_code == 204
+
+        gct = context['user'].get('/api/v1/components/%s' % pc_id)
+        assert gct.status_code == 404
 
 
 def test_get_all_components_with_sort(admin, topic_id):
