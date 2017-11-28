@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fae47921_ccaf637c",
+        "filename": "tests/api/v1/test_products.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 155,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-11-28T09:25:54Z",
+      "side": 1,
+      "message": "unused ?",
+      "range": {
+        "startLine": 155,
+        "startChar": 59,
+        "endLine": 155,
+        "endChar": 76
+      },
+      "revId": "20de4c0c932c3bfd5e8015bcfcd122bda48d54ad",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
