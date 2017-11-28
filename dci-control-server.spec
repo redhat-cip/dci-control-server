@@ -46,6 +46,7 @@ BuildRequires:  python-dciauth
 BuildRequires:  python2-pytest
 BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
+BuildRequires:  python2-keystoneclient
 BuildRequires:  systemd
 BuildRequires:  systemd-units
 Requires:       python-alembic
@@ -65,6 +66,7 @@ Requires:       python-zmq
 Requires:       python-jwt
 Requires:       python-dciauth
 Requires:       python2-swiftclient
+Requires:       python2-keystoneclient
 Requires:       pytz
 
 %description -n dci-api
@@ -95,6 +97,7 @@ BuildRequires:  python3-setuptools
 BuildRequires:  python3-six
 BuildRequires:  python3-sqlalchemy-utils
 BuildRequires:  python3-swiftclient
+BuildRequires:  python3-keystoneclient
 BuildRequires:  python3-voluptuous
 BuildRequires:  python3-werkzeug
 BuildRequires:  python3-zmq
@@ -114,6 +117,7 @@ Requires:       python3-requests
 Requires:       python3-six
 Requires:       python3-sqlalchemy-utils
 Requires:       python3-swiftclient
+Requires:       python3-keystoneclient
 Requires:       python3-voluptuous
 Requires:       python3-werkzeug
 Requires:       python3-zmq
