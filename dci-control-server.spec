@@ -162,7 +162,7 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %files -n dci-api
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
-%{_bindir}/dci-esindex
+%{_bindir}/dci-essync
 %license LICENSE
 %doc
 %{python2_sitelib}/dci
@@ -174,7 +174,7 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %if 0%{?with_python3}
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
-%{_bindir}/dci-esindex
+%{_bindir}/dci-essync
 %files -n dci-api-python3
 %doc
 %{python3_sitelib}/dci
@@ -188,6 +188,9 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %exclude %{python2_sitelib}/dci/settings.py?
 
 %changelog
+* Fri Dec 1  2017 Yassine Lamgarchal <ylamgarc@redhat.com> 0.2.0-3
+- Replace dci-esindex by dci-essync
+
 * Thu Oct 05 2017 Yassine Lamgarchal <ylamgarc@redhat.com> 0.2.0-2
 - Adding jwt dependency.
 
