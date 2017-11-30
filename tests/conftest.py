@@ -356,7 +356,9 @@ def file_user_id(user, jobstate_user_id, team_user_id):
                          headers=headers, data='kikoolol').data
         headers['team_id'] = team_user_id
         headers['id'] = file['file']['id']
-        conn = es_engine.DCIESEngine(utils.conf)
+        conn = es_engine.DCIESEngine(es_host=utils.conf['ES_HOST'],
+                                     es_port=utils.conf['ES_PORT'],
+                                     index='dci', timeout=60)
         conn.index(headers)
         return file['file']['id']
 
@@ -379,7 +381,9 @@ def file_job_user_id(user, job_user_id, team_user_id):
         file = user.post('/api/v1/files', headers=headers, data='foobar').data
         headers['team_id'] = team_user_id
         headers['id'] = file['file']['id']
-        conn = es_engine.DCIESEngine(utils.conf)
+        conn = es_engine.DCIESEngine(es_host=utils.conf['ES_HOST'],
+                                     es_port=utils.conf['ES_PORT'],
+                                     index='dci', timeout=60)
         conn.index(headers)
         return file['file']['id']
 
@@ -433,7 +437,9 @@ def product(admin):
 
 @pytest.fixture
 def es_clean(request):
-    conn = es_engine.DCIESEngine(utils.conf)
+    conn = es_engine.DCIESEngine(es_host=utils.conf['ES_HOST'],
+                                 es_port=utils.conf['ES_PORT'],
+                                 index='dci', timeout=60)
     conn.cleanup()
 
 
