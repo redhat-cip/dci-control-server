@@ -16,7 +16,7 @@
 
 import dci.app
 from dci.db import models
-from dci.elasticsearch import engine as es_engine
+from dci.elasticsearch import engine as elastic_engine
 from dci.stores.swift import Swift
 import tests.utils as utils
 from dci.common import utils as dci_utils
@@ -44,6 +44,13 @@ def engine(request):
         sqlalchemy_utils.functions.create_database(db_uri)
     utils.restore_db(engine)
     return engine
+
+
+@pytest.fixture(scope='session')
+def es_engine():
+    return elastic_engine.DCIESEngine(es_host=utils.conf['ES_HOST'],
+                                      es_port=utils.conf['ES_PORT'],
+                                      index='dci', timeout=60)
 
 
 @pytest.fixture
@@ -338,7 +345,7 @@ def jobstate_user_id(user, job_user_id):
 
 
 @pytest.fixture
-def file_user_id(user, jobstate_user_id, team_user_id):
+def file_user_id(user, jobstate_user_id, team_user_id, es_engine):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
         mockito = mock.MagicMock()
 
@@ -356,13 +363,12 @@ def file_user_id(user, jobstate_user_id, team_user_id):
                          headers=headers, data='kikoolol').data
         headers['team_id'] = team_user_id
         headers['id'] = file['file']['id']
-        conn = es_engine.DCIESEngine(utils.conf)
-        conn.index(headers)
+        es_engine.index(headers)
         return file['file']['id']
 
 
 @pytest.fixture
-def file_job_user_id(user, job_user_id, team_user_id):
+def file_job_user_id(user, job_user_id, team_user_id, es_engine):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
         mockito = mock.MagicMock()
 
@@ -379,8 +385,7 @@ def file_job_user_id(user, job_user_id, team_user_id):
         file = user.post('/api/v1/files', headers=headers, data='foobar').data
         headers['team_id'] = team_user_id
         headers['id'] = file['file']['id']
-        conn = es_engine.DCIESEngine(utils.conf)
-        conn.index(headers)
+        es_engine.index(headers)
         return file['file']['id']
 
 
@@ -432,9 +437,8 @@ def product(admin):
 
 
 @pytest.fixture
-def es_clean(request):
-    conn = es_engine.DCIESEngine(utils.conf)
-    conn.cleanup()
+def es_clean(es_engine):
+    es_engine.cleanup()
 
 
 @pytest.fixture
