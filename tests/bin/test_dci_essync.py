@@ -16,13 +16,15 @@
 
 
 from dci import dci_config
-from dci.elasticsearch import es_client
+from dci.elasticsearch import engine
 
 from tests import utils
 
 conf = dci_config.generate_conf()
 
-es_engine = es_client.DCIESEngine(conf['ES_HOST'], conf['ES_PORT'], 'dci')
+es_engine = engine.DCIESEngine(es_host=conf['ES_HOST'],
+                               es_port=conf['ES_PORT'],
+                               index='dci', timeout=60)
 
 
 def test_essync_add_files(user, admin, jobstate_user_id):
@@ -36,8 +38,8 @@ def test_essync_add_files(user, admin, jobstate_user_id):
            'DCI_LOGIN': 'admin',
            'DCI_PASSWORD': 'admin'}
     status = utils.run_bin('dci-essync', env=env)
-    # import pprint
-    # pprint.pprint(status.communicate())
+    import pprint
+    pprint.pprint(status.communicate())
     status.communicate()
     assert status.returncode == 0
     assert es_engine.get_last_sequence(doc_type='logs') == 5
