@@ -15,55 +15,90 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from concurrent import futures
 from dci import dci_config
 from dciclient.v1.api import context
 from dciclient.v1.api import file
 from dciclient.v1.api import files_events
 
-from dci.elasticsearch import es_client
-
 import atexit
 import fcntl
+import logging
 import sys
 import traceback
 
+logging.basicConfig(format='%(asctime)-15s %(message)s')
 
-def main(es_engine, dci_context):
-    print('[*] Start Elasticsearch sync')
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+stream_handler = logging.StreamHandler(stream=sys.stdout)
+stream_handler.setLevel(logging.INFO)
+logger.addHandler(stream_handler)
 
-    last_sequence = es_engine.get_last_sequence(doc_type='logs')
+LOG = logging.getLogger(__name__)
 
-    print('[*] Current last sequence number: %s' % last_sequence)
+from dci.elasticsearch import engine as es_engine
 
-    db_current_sequence = -1
+NB_WORKERS = 8
 
+def worker_logs(f_event, db_file, sequence, dci_context):
+    if f_event['event']['action'] == 'create':
+        file_content = file.content(dci_context, db_file['id'])
+        # if the file doesn't exist it means there is a delete
+        # action afterwards, so we can safely ignore it
+        if file_content.status_code == 200:
+            db_file['content'] = file_content.content
+            es.index(db_file)
+            LOG.info('event %s, index file id %s' % (sequence, db_file['id'])) # noqa
+    elif f_event['event']['action'] == 'delete':
+        es.delete(db_file['id'])
+        LOG.info('event %s, delete file id %s' % (sequence, db_file['id'])) # noqa
+
+
+def main(es, dci_context, thread_executor):
+    LOG.info('Start Elasticsearch sync')
+    last_sequence = es.get_last_sequence(doc_type='logs')
+
+    LOG.info('Current last sequence number: %s' % last_sequence)
+    db_current_sequence = last_sequence+1
+
+    list_of_futures = []
     try:
-        for f_event in files_events.iter(dci_context, sequence=last_sequence+1,
-                                         limit=100):
+        for f_event in files_events.iter(dci_context,
+                                         sequence=db_current_sequence,
+                                         limit=512):
             db_file = f_event['file']
+            if db_file['mime'] != 'text/plain':
+                pass #continue
+
             db_current_sequence = f_event['event']['id']
-            if f_event['event']['action'] == 'create':
-                file_content = file.content(dci_context, db_file['id'])
-                # if the file doesn't exist it means there is a delete
-                # action afterwards, so we can safely ignore it
-                if file_content.status_code == 200:
-                    db_file['content'] = str(file_content.content)
-                    es_engine.index(db_file)
-                    print('[*] Index file id %s' % db_file['id'])
-            elif f_event['event']['action'] == 'delete':
-                es_engine.delete(db_file['id'])
-                print('[*] Delete file id %s' % db_file['id'])
+            future = thread_executor.submit(worker_logs, f_event, db_file,
+                                            db_current_sequence,
+                                            dci_context)
+            list_of_futures.append(future)
+
+            if len(list_of_futures) == NB_WORKERS:
+                for future in list_of_futures:
+                    future.result()
+                list_of_futures = []
+
+        if len(list_of_futures) > 0:
+            for future in list_of_futures:
+                future.result()
     except:
-        print('[*] An error has been encountered\n')
+        LOG.error('An error has been encountered')
+        LOG.info('New last sequence: %s' % max((db_current_sequence-1), last_sequence))  # noqa
+        es.update_sequence(max((db_current_sequence-1), last_sequence))
         traceback.print_exc()
         sys.exit(-1)
 
-    if db_current_sequence != -1:
-        es_engine.update_sequence(db_current_sequence)
+    if db_current_sequence > last_sequence:
+        LOG.info('New last sequence: %s' % max(db_current_sequence, last_sequence))  # noqa
+        es.update_sequence(max(db_current_sequence, last_sequence))
         files_events.delete(dci_context, last_sequence)
 
-    print('[*] New last sequence: %s' % max(db_current_sequence, last_sequence))
-    print('[*] Sync done')
+    LOG.info('New last sequence: %s' % max(db_current_sequence, last_sequence)) # noqa
+    LOG.info('Sync done')
 
 
 if __name__ == '__main__':
@@ -74,16 +109,22 @@ if __name__ == '__main__':
     else:
         dci_context = context.build_dci_context()
     conf = dci_config.generate_conf()
-    es_engine = es_client.DCIESEngine(conf['ES_HOST'], conf['ES_PORT'], 'dci')
+    es = es_engine.DCIESEngine(es_host=conf['ES_HOST'],
+                               es_port=conf['ES_PORT'],
+                               index='dci', timeout=60)
+
+    thread_executor = futures.ThreadPoolExecutor(max_workers=NB_WORKERS)
 
     # acquire an exclusive file lock
-    with open('/tmp/dci-essync.lock', 'w') as f:
-        try:
-            fcntl.lockf(f, fcntl.LOCK_EX | fcntl.LOCK_NB)
-            # release the lock on exit
-            atexit.register(fcntl.lockf, fd=f, operation=fcntl.LOCK_UN)
-        except IOError:
-            print('dci-essync instance already running, exit(0)')
-            sys.exit(0)
-        main(es_engine, dci_context)
+    lock_file = open('/tmp/dci-essync.lock', 'w')
+    try:
+        fcntl.lockf(lock_file, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        # release the lock on exit
+        atexit.register(lock_file.close)
+        atexit.register(fcntl.lockf, lock_file, fcntl.LOCK_UN)
+    except IOError:
+        LOG.error('dci-essync instance already running, exit(0)')
+        sys.exit(0)
+    main(es, dci_context, thread_executor)
+    thread_executor.shutdown()
     sys.exit(0)

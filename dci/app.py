@@ -38,7 +38,8 @@ class DciControlServer(flask.Flask):
         self.config.update(conf)
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
-        self.es_engine = es_engine.DCIESEngine(conf)
+        self.es_engine = es_engine.DCIESEngine(es_host=conf['ES_HOST'],
+                                               es_port=conf['ES_PORT'])
         self.sender = self._get_zmq_sender(conf['ZMQ_CONN'])
 
     def _get_zmq_sender(self, zmq_conn):
