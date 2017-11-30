@@ -64,5 +64,5 @@ setuptools.setup(
     scripts=[
         'bin/dci-dbsync',
         'bin/dci-dbinit',
-        'bin/dci-esindex'
+        'bin/dci-essync'
     ])
