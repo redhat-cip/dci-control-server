@@ -16,7 +16,7 @@
 
 import dci.app
 from dci.db import models
-from dci.elasticsearch import engine as es_engine
+from dci.elasticsearch import engine as elastic_engine
 from dci.stores.swift import Swift
 import tests.utils as utils
 from dci.common import utils as dci_utils
@@ -44,6 +44,18 @@ def engine(request):
         sqlalchemy_utils.functions.create_database(db_uri)
     utils.restore_db(engine)
     return engine
+
+
+@pytest.fixture(scope='session')
+def es_engine(request):
+    el_engine = elastic_engine.DCIESEngine(es_host=utils.conf['ES_HOST'],
+                                           es_port=utils.conf['ES_PORT'],
+                                           index='dci', timeout=60)
+
+    def fin():
+        el_engine.cleanup()
+    request.addfinalizer(fin)
+    return el_engine
 
 
 @pytest.fixture
@@ -96,8 +108,8 @@ def db_provisioning(empty_db, engine):
 
 
 @pytest.fixture
-def app(db_provisioning, engine, es_clean, fs_clean):
-    app = dci.app.create_app(utils.conf)
+def app(db_provisioning, engine, es_engine, fs_clean):
+    app = dci.app.create_app(utils.conf, es_engine)
     app.testing = True
     app.engine = engine
     return app
@@ -338,7 +350,7 @@ def jobstate_user_id(user, job_user_id):
 
 
 @pytest.fixture
-def file_user_id(user, jobstate_user_id, team_user_id):
+def file_user_id(user, jobstate_user_id, team_user_id, es_engine):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
         mockito = mock.MagicMock()
 
@@ -356,13 +368,12 @@ def file_user_id(user, jobstate_user_id, team_user_id):
                          headers=headers, data='kikoolol').data
         headers['team_id'] = team_user_id
         headers['id'] = file['file']['id']
-        conn = es_engine.DCIESEngine(utils.conf)
-        conn.index(headers)
+        es_engine.index(headers)
         return file['file']['id']
 
 
 @pytest.fixture
-def file_job_user_id(user, job_user_id, team_user_id):
+def file_job_user_id(user, job_user_id, team_user_id, es_engine):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
         mockito = mock.MagicMock()
 
@@ -379,8 +390,7 @@ def file_job_user_id(user, job_user_id, team_user_id):
         file = user.post('/api/v1/files', headers=headers, data='foobar').data
         headers['team_id'] = team_user_id
         headers['id'] = file['file']['id']
-        conn = es_engine.DCIESEngine(utils.conf)
-        conn.index(headers)
+        es_engine.index(headers)
         return file['file']['id']
 
 
@@ -429,12 +439,6 @@ def product_openstack(admin, team_id):
 @pytest.fixture
 def product(admin):
     return admin.get('/api/v1/products?where=label:AWSM').data['products'][0]
-
-
-@pytest.fixture
-def es_clean(request):
-    conn = es_engine.DCIESEngine(utils.conf)
-    conn.cleanup()
 
 
 @pytest.fixture

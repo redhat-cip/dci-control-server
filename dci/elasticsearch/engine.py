@@ -15,19 +15,36 @@
 # under the License.
 
 from elasticsearch import Elasticsearch
+from elasticsearch import exceptions
 
 
 class DCIESEngine(object):
-    def __init__(self, conf, index="global", timeout=30):
-        self.esindex = index
-        self.conn = Elasticsearch(conf['ES_HOST'], port=conf['ES_PORT'],
-                                  timeout=timeout)
+    def __init__(self, es_host, es_port, index='dci', timeout=30):
+        self._index = index
+        self._conn = Elasticsearch([{'host': es_host, 'port': es_port}],
+                                   timeout=timeout)
+        self._conn.indices.create(index=self._index, ignore=400)
 
-    def create_index(self):
-        self.conn.indices.create(index=self.esindex)
+    def index(self, document):
+        return self._conn.index(index=self._index, doc_type='logs',
+                                id=document['id'], body=document)
+
+    def update_sequence(self, sequence, doc_type='logs'):
+        return self._conn.index(index=self._index, doc_type=doc_type,
+                                id='sequence', body={'sequence': sequence})
+
+    def get_last_sequence(self, doc_type='logs'):
+        try:
+            res = self._conn.get(index=self._index,
+                                 doc_type='logs',
+                                 id='sequence')
+            return res['_source']['sequence']
+        except exceptions.NotFoundError:
+            self.update_sequence(0, doc_type)
+            return 0
 
     def get(self, id, team_id=None):
-        res = self.conn.get(index=self.esindex, doc_type='log', id=id)
+        res = self._conn.get(index=self.esindex, doc_type='logs', id=id)
         if team_id:
             if res:
                 if res['_source']['team_id'] != team_id:
@@ -35,13 +52,16 @@ class DCIESEngine(object):
         return res
 
     def delete(self, id):
-        self.conn.delete(index=self.esindex, doc_type='log', id=id)
-        return True
+        try:
+            return self._conn.delete(index=self._index, doc_type='logs', id=id)
+        except exceptions.NotFoundError:
+            pass
 
-    def list(self, include=None, exclude=None):
+    def list(self, include=None, exclude=None, size=64):
 
+        include = include or ['id']
         query = {
-            "size": 10000,
+            "size": size,
             "query": {
                 "match_all": {}
             }
@@ -54,18 +74,14 @@ class DCIESEngine(object):
             query['_source'] = {
                 'exclude': exclude
             }
-        if self.conn.indices.exists(index=self.esindex):
-            return self.conn.search(index=self.esindex, body=query)
+        if self._conn.indices.exists(index=self._index):
+            return self._conn.search(index=self._index, body=query)
         else:
             return None
 
-    def index(self, values):
-        return self.conn.index(index=self.esindex, doc_type='log',
-                               id=values['id'], body=values)
-
     def refresh(self):
-        return self.conn.indices.refresh(index=self.esindex,
-                                         force=True)
+        return self._conn.indices.refresh(index=self._index,
+                                          force=True)
 
     def search_content(self, pattern, team_id=None):
         if team_id:
@@ -80,9 +96,9 @@ class DCIESEngine(object):
         else:
             query = {"query": {"match": {"content": pattern}}}
 
-        return self.conn.search(index=self.esindex, body=query,
-                                request_cache=False, size=100)
+        return self._conn.search(index=self._index, body=query,
+                                 request_cache=False, size=100)
 
     def cleanup(self):
-        if self.conn.indices.exists(index=self.esindex):
-            return self.conn.indices.delete(index=self.esindex)
+        if self._conn.indices.exists(index=self._index):
+            return self._conn.indices.delete(index=self._index)
