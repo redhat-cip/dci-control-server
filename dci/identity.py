@@ -50,8 +50,6 @@ class Identity:
                 return team
 
     def _get_partner_teams(self, user, teams):
-        if user['role_label'] != 'PRODUCT_OWNER':
-            return []
         partner_teams = []
         for team in teams:
             if user['team_id'] == team['parent_id']:
