@@ -57,11 +57,15 @@ def user_topic_ids(user):
             models.TOPICS.c.product_id == user.product_id
         )
     else:
-        query = (
-            sql.select([
-                models.JOINS_TOPICS_TEAMS.c.topic_id,
-            ]).select_from(models.JOINS_TOPICS_TEAMS)
-            .where(models.JOINS_TOPICS_TEAMS.c.team_id == user.team_id))
+        where_clause = sql.and_(
+            models.TOPICS.c.state == 'active',
+            models.TEAMS.c.state == 'active',
+            models.JOINS_TOPICS_TEAMS.c.team_id.in_(user.teams)
+        )
+        query = (sql.select([models.JOINS_TOPICS_TEAMS.c.topic_id])
+                 .select_from(models.JOINS_TOPICS_TEAMS
+                              .join(models.TOPICS).join(models.TEAMS))
+                 .where(where_clause))
 
     rows = flask.g.db_conn.execute(query).fetchall()
     return [str(row[0]) for row in rows]
