@@ -55,7 +55,7 @@ def test_is_regular_user():
 
 
 def test_user_is_member_of():
-    team = {'id': 'id-1'}
+    team = {'id': 'id-1', 'parent_id': 'id-0'}
     user = Identity({'role_label': 'USER', 'team_id': 'id-1'}, [team])
     assert user.is_member_of(team)
     assert user.is_member_of({'id': 'another_team_id'}) is False
@@ -89,7 +89,7 @@ def test_filter_teams():
     assert user.team['parent_id'] is None
     # TODO remove user.teams
     assert user.teams[0] == 'abc'
-    assert len(user.partner_teams) == 0
+    assert len(user.partner_teams) == 1
 
 
 def test_filter_teams_with_partner_teams():
@@ -99,6 +99,7 @@ def test_filter_teams_with_partner_teams():
         {'id': 'def', 'parent_id': 'abc'},
         {'id': 'ghi', 'parent_id': None}
     ]
+
     user = Identity(product_owner, teams)
     assert user.team['id'] == 'abc'
     assert user.team['parent_id'] is None
@@ -106,4 +107,17 @@ def test_filter_teams_with_partner_teams():
     # TODO remove user.teams
     assert user.teams[0] == 'abc'
     assert user.teams[1] == 'def'
-    assert user.partner_teams[0]['id'] == 'def'
+
+
+def test_ensure_any_parent_team_member_has_access_to_subteam():
+    user = {'role_label': None, 'team_id': 'abc'}
+    teams = [
+        {'id': 'abc', 'parent_id': None},
+        {'id': 'def', 'parent_id': 'abc'},
+        {'id': 'ghi', 'parent_id': None}
+    ]
+
+    user = Identity(user, teams)
+    assert user.team['id'] == 'abc'
+    assert user.team['parent_id'] is None
+    assert len(user.partner_teams) == 1
