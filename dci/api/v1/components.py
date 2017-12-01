@@ -50,7 +50,7 @@ _EMBED_MANY = {
 
 @api.route('/components', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'FEEDER'])
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
 def create_components(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.component.post(flask.request.json))
@@ -71,7 +71,7 @@ def create_components(user):
 
 @api.route('/components/<uuid:c_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'FEEDER'])
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
 def update_components(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -136,7 +136,7 @@ def get_component_by_id(user, c_id):
 
 @api.route('/components/<uuid:c_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'FEEDER'])
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
 def delete_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
 
@@ -238,7 +238,7 @@ def download_component_file(user, c_id, f_id):
 
 @api.route('/components/<uuid:c_id>/files', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'FEEDER'])
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
 def upload_component_file(user, c_id):
     COMPONENT_FILES = models.COMPONENT_FILES
 
@@ -276,7 +276,7 @@ def upload_component_file(user, c_id):
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'FEEDER'])
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
 def delete_component_file(user, c_id, f_id):
     COMPONENT_FILES = models.COMPONENT_FILES
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)

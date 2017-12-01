@@ -167,9 +167,18 @@ def topic_id(admin, team_id, product):
             'component_types': ['type_1', 'type_2', 'type_3']}
     topic = admin.post('/api/v1/topics', data=data).data
     t_id = topic['topic']['id']
-    admin.post('/api/v1/topics/%s/teams' % t_id,
-               data={'team_id': team_id,
-                     'component_types': ['type_1', 'type_2', 'type_3']})
+    admin.post('/api/v1/topics/%s/teams' % t_id, data={'team_id': team_id})
+    return str(t_id)
+
+
+@pytest.fixture
+def topic_id_product(product_owner, team_id, product):
+    data = {'name': 'Ansible-2.4', 'product_id': product['id'],
+            'component_types': ['git-commit']}
+    topic = product_owner.post('/api/v1/topics', data=data).data
+    t_id = topic['topic']['id']
+    product_owner.post('/api/v1/topics/%s/teams' % t_id,
+                       data={'team_id': team_id})
     return str(t_id)
 
 
