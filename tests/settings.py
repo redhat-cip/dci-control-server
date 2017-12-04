@@ -20,9 +20,7 @@ DEBUG = False
 
 LOG_FILE = '/dev/null'
 
-SQLALCHEMY_DATABASE_URI = "postgresql:///%s?host=%s" % (
-    'charlesdegaulle', os.path.abspath(os.environ['DCI_DB_DIR'])
-)
+SQLALCHEMY_DATABASE_URI = "postgresql:///test?host=%s" % os.path.abspath(os.environ['DCI_DB_DIR'])  # noqa
 
 FILES_UPLOAD_FOLDER = '/tmp/dci-control-server'
 
