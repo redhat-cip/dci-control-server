@@ -19,11 +19,10 @@ RUN pip install -r requirements.txt
 ADD . /opt/dci-control-server/
 
 ENV PYTHONPATH /opt/dci-control-server
-ENV DCI_SETTINGS_FILE /tmp/settings/settings.py
 ENV DISABLE_DB_START 1
 ENV DISABLE_ES_START 1
-ENV TOX_TESTENV_PASSENV "PYTHONPATH DB_PORT ES_PORT SWIFT_PORT"
-
+ENV API_HOST "0.0.0.0"
+ENV TOX_TESTENV_PASSENV "PYTHONPATH DB_HOST ES_HOST SWIFT_HOST"
 EXPOSE 5000
 
 COPY bin/keycloak-provision.py /opt/keycloak-provision.py
