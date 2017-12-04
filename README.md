@@ -1,5 +1,7 @@
 # Distributed CI control server
 
+DO NOT MERGE
+
 This repository is used for the development of the API of Distributed CI. It contains the source code, tests, development and building scripts.
 
 ## Getting started
