@@ -14,15 +14,9 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import os
-
 DEBUG = False
 
 LOG_FILE = '/dev/null'
-
-SQLALCHEMY_DATABASE_URI = "postgresql:///%s?host=%s" % (
-    'charlesdegaulle', os.path.abspath(os.environ['DCI_DB_DIR'])
-)
 
 FILES_UPLOAD_FOLDER = '/tmp/dci-control-server'
 
