@@ -507,21 +507,21 @@ issue = schema_factory(issue)
 
 ###############################################################################
 #                                                                             #
-#                                Metas schemas                                #
+#                                Tags schemas                                 #
 #                                                                             #
 ###############################################################################
 
-meta = {
+tag = {
     'name': six.text_type,
     'value': six.text_type
 }
 
-meta_put = {
+tag_put = {
     v.Optional('name'): six.text_type,
     v.Optional('value'): six.text_type
 }
 
-meta = DCISchema(schema_factory(meta).post, Schema(meta_put))
+tag = DCISchema(schema_factory(tag).post, Schema(tag_put))
 
 ###############################################################################
 #                                                                             #
