@@ -24,15 +24,15 @@ from dci.common import utils
 from dci.db import models
 
 
-_TABLE = models.METAS
+_TABLE = models.TAGS
 
 
-def create_meta(user, job_id):
-    """Create a meta information associated to a specific job."""
+def create_tag(user, job_id):
+    """Create a tag information associated to a specific job."""
     v1_utils.verify_existence_and_get(job_id, models.JOBS)
 
     values = v1_utils.common_values_dict(user)
-    values.update(schemas.meta.post(flask.request.json))
+    values.update(schemas.tag.post(flask.request.json))
 
     values.update({
         'job_id': job_id
@@ -44,75 +44,88 @@ def create_meta(user, job_id):
             _TABLE.c.job_id == values['job_id'])
         query = sql.select([_TABLE.c.id]).where(where_clause)
         if flask.g.db_conn.execute(query).fetchone():
-            raise dci_exc.DCIConflict('Meta already exists', values['name'])
+            raise dci_exc.DCIConflict('Tag already exists', values['name'])
 
         # create the label/value row
         query = _TABLE.insert().values(**values)
         flask.g.db_conn.execute(query)
-        result = json.dumps({'meta': values})
+        result = json.dumps({'tag': values})
         return flask.Response(result, 201,
                               headers={'ETag': values['etag']},
                               content_type='application/json')
 
 
-def get_all_metas_from_job(job_id):
-    """Get all metas from a specific job."""
+def get_all_tags_from_job(job_id):
+    """Get all tags from a specific job."""
 
     query = (sql.select([_TABLE])
              .where(_TABLE.c.job_id == job_id))
 
     rows = flask.g.db_conn.execute(query)
 
-    res = flask.jsonify({'metas': rows,
-                         '_meta': {'count': rows.rowcount}})
+    res = flask.jsonify({'tags': rows,
+                         '_tag': {'count': rows.rowcount}})
     res.status_code = 200
     return res
 
 
-def put_meta(job_id, meta_id):
-    """Modify a meta."""
+def get_tag_by_id(t_id):
+    """Get specific tag by id."""
+
+    query = sql.select([_TABLE]).where(_TABLE.c.id == t_id)
+
+    rows = flask.g.db_conn.execute(query)
+
+    res = flask.jsonify({'tag': rows,
+                         '_tag': {'count': rows.rowcount}})
+    res.status_code = 200
+    return res
+
+
+def put_tag(job_id, tag_id):
+    """Modify a tag."""
 
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    values = schemas.meta.put(flask.request.json)
+    values = schemas.tag.put(flask.request.json)
 
-    meta_retrieved = v1_utils.verify_existence_and_get(meta_id, _TABLE)
+    tag_retrieved = v1_utils.verify_existence_and_get(tag_id, _TABLE)
 
-    if meta_retrieved['job_id'] != job_id:
+    if tag_retrieved['job_id'] != job_id:
         raise dci_exc.DCIException(
-            "Meta '%s' is not associated to job '%s'." % (meta_id, job_id))
+            "tag '%s' is not associated to job '%s'." % (tag_id, job_id))
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == meta_id
+        _TABLE.c.id == tag_id
     )
     query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
-        raise dci_exc.DCIConflict('Meta', meta_id)
+        raise dci_exc.DCIConflict('Tag', tag_id)
 
     return flask.Response(None, 204, headers={'ETag': values['etag']},
                           content_type='application/json')
 
 
-def delete_meta(job_id, meta_id):
-    """Delete a meta from a specific job."""
+def delete_tag(job_id, tag_id):
+    """Delete a tag from a specific job."""
 
-    meta_retrieved = v1_utils.verify_existence_and_get(meta_id, _TABLE)
+    tag_retrieved = v1_utils.verify_existence_and_get(tag_id, _TABLE)
 
-    if meta_retrieved['job_id'] != job_id:
+    if tag_retrieved['job_id'] != job_id:
         raise dci_exc.DCIDeleteConflict(
-            "Meta '%s' is not associated to job '%s'." % (meta_id, job_id))
+            "Tag '%s' is not associated to job '%s'." % (tag_id, job_id))
 
-    query = _TABLE.delete().where(_TABLE.c.id == meta_id)
+    query = _TABLE.delete().where(_TABLE.c.id == tag_id)
 
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
-        raise dci_exc.DCIConflict('Meta deletion conflict', meta_id)
+        raise dci_exc.DCIConflict('Tag deletion conflict', tag_id)
 
     return flask.Response(None, 204, content_type='application/json')

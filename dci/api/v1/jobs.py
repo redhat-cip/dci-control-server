@@ -37,7 +37,7 @@ from dci.db import models
 from dci.api.v1 import files
 from dci.api.v1 import issues
 from dci.api.v1 import jobstates
-from dci.api.v1 import metas
+from dci.api.v1 import tags
 from dci import dci_config
 
 
@@ -48,7 +48,7 @@ _VALID_EMBED = embeds.jobs()
 _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
     'files': True,
-    'metas': True,
+    'tags': True,
     'topic': False,
     'topic.tests': True,
     'issues': True,
@@ -621,51 +621,51 @@ def delete_job_by_id(user, j_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
-# jobs metas controllers
+# jobs tags controllers
 
-@api.route('/jobs/<uuid:j_id>/metas', methods=['POST'])
+@api.route('/jobs/<uuid:j_id>/tags', methods=['POST'])
 @decorators.login_required
-def associate_meta(user, j_id):
+def associate_tag(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
-    return metas.create_meta(user, j_id)
+    return tags.create_tag(user, j_id)
 
 
-@api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['GET'])
+@api.route('/jobs/<uuid:j_id>/tags/<uuid:m_id>', methods=['GET'])
 @decorators.login_required
-def get_meta_by_id(user, j_id, m_id):
+def get_tag_by_id(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
-    return metas.get_meta_by_id(m_id)
+    return tags.get_tag_by_id(m_id)
 
 
-@api.route('/jobs/<uuid:j_id>/metas', methods=['GET'])
+@api.route('/jobs/<uuid:j_id>/tags', methods=['GET'])
 @decorators.login_required
-def get_all_metas(user, j_id):
+def get_all_tags(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
-    return metas.get_all_metas_from_job(j_id)
+    return tags.get_all_tags_from_job(j_id)
 
 
-@api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['PUT'])
+@api.route('/jobs/<uuid:j_id>/tags/<uuid:m_id>', methods=['PUT'])
 @decorators.login_required
-def put_meta(user, j_id, m_id):
+def put_tag(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
-    return metas.put_meta(j_id, m_id)
+    return tags.put_tag(j_id, m_id)
 
 
-@api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['DELETE'])
+@api.route('/jobs/<uuid:j_id>/tags/<uuid:m_id>', methods=['DELETE'])
 @decorators.login_required
-def delete_meta(user, j_id, m_id):
+def delete_tag(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
-    return metas.delete_meta(j_id, m_id)
+    return tags.delete_tag(j_id, m_id)
 
 
 @api.route('/jobs/<uuid:j_id>/notify', methods=['POST'])
