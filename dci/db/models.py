@@ -271,8 +271,8 @@ TESTS_RESULTS = sa.Table(
     sa.Index('tests_results_file_id_idx', 'file_id')
 )
 
-METAS = sa.Table(
-    'metas', metadata,
+TAGS = sa.Table(
+    'tags', metadata,
     sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
               default=utils.gen_uuid),
     sa.Column('created_at', sa.DateTime(),
@@ -287,7 +287,7 @@ METAS = sa.Table(
     sa.Column('job_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('jobs.id', ondelete='CASCADE'),
               nullable=False),
-    sa.Index('metas_job_id_idx', 'job_id')
+    sa.Index('tags_job_id_idx', 'job_id')
 )
 
 JOIN_JOBS_COMPONENTS = sa.Table(

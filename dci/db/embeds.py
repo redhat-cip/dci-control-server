@@ -62,9 +62,9 @@ def jobs(root_select=models.JOBS):
              'onclause': and_(models.FILES.c.job_id == root_select.c.id,
                               models.FILES.c.state != 'archived'),
              'isouter': True}],
-        'metas': [
-            {'right': models.METAS,
-             'onclause': models.METAS.c.job_id == root_select.c.id,
+        'tags': [
+            {'right': models.TAGS,
+             'onclause': models.TAGS.c.job_id == root_select.c.id,
              'isouter': True}],
         'jobstates': [
             {'right': models.JOBSTATES,
@@ -367,7 +367,7 @@ def users(root_select=models.USERS):
 EMBED_STRING_TO_OBJECT = {
     'jobs': {
         'files': models.FILES,
-        'metas': models.METAS,
+        'tags': models.TAGS,
         'topic': TOPIC,
         'topic.tests': TOPIC_TESTS,
         'issues': models.ISSUES,
