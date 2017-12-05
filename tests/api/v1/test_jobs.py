@@ -218,7 +218,7 @@ def test_get_all_jobs_with_duplicated_embed(admin, team_user_id,
 
     admin.post('/api/v1/jobs', data=data)
     query_embed = (('/api/v1/jobs?embed='
-                    'metas,topic,topic.tests,components,'
+                    'tags,topic,topic.tests,components,'
                     'files,topic,team,remoteci,remoteci.tests'))
     jobs = admin.get(query_embed).data
     assert len(jobs['jobs']) == 1
