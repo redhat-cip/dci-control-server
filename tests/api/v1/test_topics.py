@@ -18,14 +18,38 @@ from __future__ import unicode_literals
 import uuid
 
 
-def test_create_topics(admin, product):
+def topic_creation(identity, product):
     data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
-    pt = admin.post('/api/v1/topics', data=data).data
+    pt = identity.post('/api/v1/topics', data=data).data
     pt_id = pt['topic']['id']
-    gc = admin.get('/api/v1/topics/%s' % pt_id).data
-    assert gc['topic']['name'] == 'tname'
-    assert gc['topic']['component_types'] == ['type1', 'type2']
+    return identity.get('/api/v1/topics/%s' % pt_id)
+
+
+def topic_update(identity, topic_id):
+    t = identity.get('/api/v1/topics/' + topic_id).data['topic']
+    data = {'label': 'my comment',
+            'component_types': ['lol1', 'lol2']}
+    identity.put('/api/v1/topics/' + topic_id, data=data,
+                 headers={'If-match': t['etag']})
+
+    return identity.get('/api/v1/topics/' + topic_id)
+
+
+def topic_removal(identity, topic_id):
+    return identity.delete('/api/v1/topics/%s' % topic_id)
+
+
+def test_create_topics(admin, product):
+    topic = topic_creation(admin, product).data
+    assert topic['topic']['name'] == 'tname'
+    assert topic['topic']['component_types'] == ['type1', 'type2']
+
+
+def test_create_topic_as_feeder(feeder_context, product):
+    topic = topic_creation(feeder_context, product).data
+    assert topic['topic']['name'] == 'tname'
+    assert topic['topic']['component_types'] == ['type1', 'type2']
 
 
 def test_create_topics_as_user(user, product):
@@ -36,17 +60,15 @@ def test_create_topics_as_user(user, product):
 
 
 def test_update_topics_as_admin(admin, topic_id):
-    t = admin.get('/api/v1/topics/' + topic_id).data['topic']
-    data = {'label': 'my comment',
-            'component_types': ['lol1', 'lol2']}
-    r = admin.put('/api/v1/topics/' + topic_id,
-                  data=data,
-                  headers={'If-match': t['etag']})
+    topic = topic_update(admin, topic_id).data['topic']
+    assert topic['label'] == 'my comment'
+    assert topic['component_types'] == ['lol1', 'lol2']
 
-    assert r.status_code == 204
-    current_topic = admin.get('/api/v1/topics/' + topic_id).data['topic']
-    assert current_topic['label'] == 'my comment'
-    assert current_topic['component_types'] == ['lol1', 'lol2']
+
+def test_update_topic_as_feeder(feeder_context, topic_id):
+    topic = topic_update(feeder_context, topic_id).data['topic']
+    assert topic['label'] == 'my comment'
+    assert topic['component_types'] == ['lol1', 'lol2']
 
 
 def test_change_topic_state(admin, topic_id):
@@ -197,20 +219,19 @@ def test_get_topic_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_topic_by_id(admin, product):
-    data = {'name': 'tname', 'product_id': product['id'],
-            'component_types': ['type1', 'type2']}
-    pt = admin.post('/api/v1/topics', data=data)
-    pt_id = pt.data['topic']['id']
-    assert pt.status_code == 201
+def test_delete_topic_by_id(admin, topic_id):
+    topic = topic_removal(admin, topic_id)
+    assert topic.status_code == 204
 
-    created_ct = admin.get('/api/v1/topics/%s' % pt_id)
-    assert created_ct.status_code == 200
+    gct = admin.get('/api/v1/topics/%s' % topic_id)
+    assert gct.status_code == 404
 
-    deleted_ct = admin.delete('/api/v1/topics/%s' % pt_id)
-    assert deleted_ct.status_code == 204
 
-    gct = admin.get('/api/v1/topics/%s' % pt_id)
+def test_delete_topic_by_id_as_feeder(feeder_context, topic_id):
+    topic = topic_removal(feeder_context, topic_id)
+    assert topic.status_code == 204
+
+    gct = feeder_context.get('/api/v1/topics/%s' % topic_id)
     assert gct.status_code == 404
 
 
