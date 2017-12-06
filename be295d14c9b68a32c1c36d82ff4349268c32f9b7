@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3ae2911b_4c65bfdf",
+        "filename": "dci/alembic/versions/5758a78a7f58_migrate_metas_to_tags.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-12-06T09:56:52Z",
+      "side": 1,
+      "message": "can be removed",
+      "range": {
+        "startLine": 38,
+        "startChar": 4,
+        "endLine": 38,
+        "endChar": 8
+      },
+      "revId": "be295d14c9b68a32c1c36d82ff4349268c32f9b7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ae2911b_2c6273d9",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 516,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-12-06T09:56:52Z",
+      "side": 1,
+      "message": "is it for backward compatibility?\nwhy keeping value for a tag?",
+      "range": {
+        "startLine": 516,
+        "startChar": 0,
+        "endLine": 516,
+        "endChar": 52
+      },
+      "revId": "be295d14c9b68a32c1c36d82ff4349268c32f9b7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3ae2911b_0c5fb70f",
+        "filename": "dci/db/models.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 286,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2017-12-06T09:56:52Z",
+      "side": 1,
+      "message": "should be deleted no?",
+      "range": {
+        "startLine": 286,
+        "startChar": 0,
+        "endLine": 286,
+        "endChar": 32
+      },
+      "revId": "be295d14c9b68a32c1c36d82ff4349268c32f9b7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
