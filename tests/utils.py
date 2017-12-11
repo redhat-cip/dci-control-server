@@ -95,11 +95,11 @@ def generate_client(app, credentials=None, access_token=None):
     return client
 
 
-def generate_remoteci_client(app, remoteci_api_secret, remoteci_id):
+def generate_token_based_client(app, resource):
     attrs = ['status_code', 'data', 'headers']
     Response = collections.namedtuple('Response', attrs)
     headers = {
-        'DCI-Client-Info': 'remoteci/%s' % remoteci_id,
+        'DCI-Client-Info': '%s/%s' % (resource['type'], resource['id']),
         'Content-Type': 'application/json',
     }
 
@@ -111,7 +111,7 @@ def generate_remoteci_client(app, remoteci_api_secret, remoteci_id):
             url = urlparse(args[0])
             params = dict(parse_qsl(url.query))
             hmac_headers = hmac_signature.generate_headers_with_secret(
-                remoteci_api_secret,
+                resource['api_secret'],
                 method=kwargs.get('method'),
                 content_type=content_type,
                 url=url.path,
