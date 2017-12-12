@@ -1,0 +1,9 @@
+Code-Review+2: Guillaume Vincent <gvincent@redhat.com>
+Code-Review+2: Gonéri Le Bouder <goneri@lebouder.net>
+Workflow+1: Gonéri Le Bouder <goneri@lebouder.net>
+Verified+2: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-by: Jenkins CI <jenkins@softwarefactory-project.io>
+Submitted-at: Tue, 12 Dec 2017 19:17:13 +0000
+Reviewed-on: https://softwarefactory-project.io/r/10565
+Project: dci-control-server
+Branch: refs/heads/master
