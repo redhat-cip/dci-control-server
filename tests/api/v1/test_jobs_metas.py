@@ -21,6 +21,12 @@ def test_create_meta(user, job_user_id):
     assert meta.status_code == 201
 
 
+def test_create_meta_without_value(user, job_user_id):
+    meta = user.post('/api/v1/jobs/%s/metas' % job_user_id,
+                     data={'name': 'kikoo'})
+    assert meta.status_code == 201
+
+
 def test_delete_meta(user, job_user_id):
     meta = user.post('/api/v1/jobs/%s/metas' % job_user_id,
                      data={'name': 'kikoo', 'value': 'lol'})

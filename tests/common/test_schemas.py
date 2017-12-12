@@ -524,7 +524,7 @@ class TestMeta(utils.SchemaTesting):
         super(TestMeta, self).test_post_extra_data(data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'value')
+        errors = utils.generate_errors('name')
         super(TestMeta, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
