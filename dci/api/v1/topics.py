@@ -48,7 +48,7 @@ def create_topics(user):
     values.update(schemas.topic.post(flask.request.json))
 
     if not user.is_super_admin() and \
-       not (user.is_product_owner() and
+       not ((user.is_product_owner() or user.is_feeder()) and
             user.product_id == values['product_id']):
         raise auth.UNAUTHORIZED
 
@@ -122,7 +122,7 @@ def put_topic(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
     if not user.is_super_admin() and \
-       not (user.is_product_owner() and
+       not ((user.is_product_owner() or user.is_feeder()) and
             user.product_id == topic['product_id']):
         raise auth.UNAUTHORIZED
 
@@ -156,7 +156,7 @@ def put_topic(user, topic_id):
 def delete_topic_by_id(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     if not user.is_super_admin() and \
-       not (user.is_product_owner() and
+       not ((user.is_product_owner() or user.is_feeder()) and
             user.product_id == topic['product_id']):
         raise auth.UNAUTHORIZED
 
