@@ -513,7 +513,7 @@ issue = schema_factory(issue)
 
 meta = {
     'name': six.text_type,
-    'value': six.text_type
+    v.Optional('value'): six.text_type
 }
 
 meta_put = {
