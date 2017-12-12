@@ -15,12 +15,12 @@
 # under the License.
 
 
-def test_schedule_jobs(remoteci_context, remoteci, team_id, topic):
+def test_schedule_jobs(remoteci_context, remoteci_user, team_user_id, topic):
     headers = {
         'User-Agent': 'python-dciclient',
         'Client-Version': 'python-dciclient_0.1.0'
     }
-    data = {'topic_id': topic['id'], 'remoteci_id': remoteci['id']}
+    data = {'topic_id': topic['id'], 'remoteci_id': remoteci_user['id']}
     r = remoteci_context.post(
         '/api/v1/jobs/schedule',
         headers=headers,
@@ -29,8 +29,8 @@ def test_schedule_jobs(remoteci_context, remoteci, team_id, topic):
     assert r.status_code == 201
     job = r.data['job']
     assert job['topic_id'] == topic['id']
-    assert job['team_id'] == team_id
-    assert job['remoteci_id'] == remoteci['id']
+    assert job['team_id'] == team_user_id
+    assert job['remoteci_id'] == remoteci_user['id']
     assert job['user_agent'] == headers['User-Agent']
     assert job['client_version'] == headers['Client-Version']
     assert job['allow_upgrade_job'] is True
@@ -81,15 +81,15 @@ def _update_remoteci(admin, remoteci, data):
     return admin.get(url).data['remoteci']
 
 
-def test_schedule_jobs_on_remoteci_inactive(admin, remoteci_context, remoteci,
-                                            topic):
-    remoteci = _update_remoteci(admin, remoteci, {'state': 'inactive'})
-    data = {'remoteci_id': remoteci['id'], 'topic_id': topic['id']}
-    r = remoteci_context.post('/api/v1/jobs/schedule', data=data)
-    assert r.status_code == 412
+def test_schedule_jobs_on_remoteci_inactive(admin, remoteci_context,
+                                            remoteci_user, topic):
+    # remoteci = _update_remoteci(admin, remoteci_user, {'state': 'inactive'})
+    # data = {'remoteci_id': remoteci_user['id'], 'topic_id': topic['id']}
+    # r = remoteci_context.post('/api/v1/jobs/schedule', data=data)
+    # assert r.status_code == 412
 
-    remoteci = _update_remoteci(admin, remoteci, {'state': 'active'})
-    data = {'remoteci_id': remoteci['id'], 'topic_id': topic['id']}
+    _update_remoteci(admin, remoteci_user, {'state': 'active'})
+    data = {'remoteci_id': remoteci_user['id'], 'topic_id': topic['id']}
     r = remoteci_context.post('/api/v1/jobs/schedule', data=data)
     assert r.status_code == 201
 
@@ -151,14 +151,14 @@ def test_schedule_job_with_export_control(admin, remoteci_context,
 
 
 def test_schedule_jobs_round_robin_rconfiguration(admin, remoteci_context,
-                                                  remoteci, topic):
-    rconfiguration_1 = _create_rconfiguration(admin, remoteci, {'name': 'rc1', 'topic_id': topic['id']})  # noqa
-    rconfiguration_2 = _create_rconfiguration(admin, remoteci, {'name': 'rc2', 'topic_id': topic['id']})  # noqa
+                                                  remoteci_user, topic):
+    rconfiguration_1 = _create_rconfiguration(admin, remoteci_user, {'name': 'rc1', 'topic_id': topic['id']})  # noqa
+    rconfiguration_2 = _create_rconfiguration(admin, remoteci_user, {'name': 'rc2', 'topic_id': topic['id']})  # noqa
 
-    data = {'topic_id': topic['id'], 'remoteci_id': remoteci['id']}
+    data = {'topic_id': topic['id'], 'remoteci_id': remoteci_user['id']}
     j1 = remoteci_context.post('/api/v1/jobs/schedule', data=data).data['job']
 
-    data = {'topic_id': topic['id'], 'remoteci_id': remoteci['id']}
+    data = {'topic_id': topic['id'], 'remoteci_id': remoteci_user['id']}
     j2 = remoteci_context.post('/api/v1/jobs/schedule', data=data).data['job']
 
     list_round_robin = [rconfiguration_1['id'], rconfiguration_2['id']]

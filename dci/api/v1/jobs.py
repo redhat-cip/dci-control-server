@@ -69,6 +69,8 @@ def create_jobs(user):
     values.update(schemas.job.post(flask.request.json))
     components_ids = values.pop('components')
 
+    if 'remoteci_id' not in values and user.is_remoteci():
+        values['remoteci_id'] = user.id
     values['team_id'] = values.get('team_id', user['team_id'])
     # Only super admin can create job for other teams
     if not user.is_super_admin() and not user.is_in_team(values['team_id']):
@@ -291,7 +293,7 @@ def _validate_input(values, user):
     kill_query = _TABLE .update().where(where_clause).values(status='killed')
     flask.g.db_conn.execute(kill_query)
 
-    if remoteci['state'] != 'active':
+    if remoteci['state'] == 'inactive':
         message = 'RemoteCI "%s" is disabled.' % remoteci_id
         raise dci_exc.DCIException(message, status_code=412)
 
@@ -323,7 +325,7 @@ def _get_job(user, job_id, embed):
 
 @api.route('/jobs/schedule', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'REMOTECI'])
+@decorators.has_role(['REMOTECI'])
 def schedule_jobs(user):
     """Dispatch jobs to remotecis.
 
@@ -334,11 +336,9 @@ def schedule_jobs(user):
     will never be finished.
     """
 
-    # QuickFix
-    remoteci_id = flask.request.json.get('remoteci_id')
-    if remoteci_id is not None and '/' in remoteci_id:
-        remoteci_id = remoteci_id.split('/')[1]
-        flask.request.json['remoteci_id'] = remoteci_id
+    # We can safely set the remoteci_id field since the controller
+    # enforces the caller to be a remoteci
+    flask.request.json['remoteci_id'] = user.id
 
     values = schemas.job_schedule.post(flask.request.json)
 

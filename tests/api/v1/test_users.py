@@ -536,16 +536,17 @@ def test_update_current_user(admin, user):
     assert me['timezone'] == 'Europe/Paris'
 
 
-def test_get_embed_remotecis(admin, user, remoteci_user_id, user_id):
+def test_get_embed_remotecis(admin, user, remoteci_user, user_id):
     data = {
         'user_id': user_id
     }
-    r = admin.post('/api/v1/remotecis/%s/users' % remoteci_user_id, data=data)
+    r = admin.post('/api/v1/remotecis/%s/users' % remoteci_user['id'],
+                   data=data)
 
     assert r.status_code == 201
 
     me = user.get('/api/v1/users/me?embed=remotecis').data['user']
-    assert me['remotecis'][0]['id'] == remoteci_user_id
+    assert me['remotecis'][0]['id'] == remoteci_user['id']
 
 
 def test_user_cannot_update_team(user, user_id, team_admin_id):
