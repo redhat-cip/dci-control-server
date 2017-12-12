@@ -260,17 +260,16 @@ def remoteci_id(admin, team_id):
 
 
 @pytest.fixture
-def remoteci_user_api_secret(user, remoteci_user_id):
-    api_secret = user.get('/api/v1/remotecis/%s' % remoteci_user_id).data
+def remoteci_user_api_secret(user, remoteci_user):
+    api_secret = user.get('/api/v1/remotecis/%s' % remoteci_user['id']).data
     return api_secret['remoteci']['api_secret']
 
 
 @pytest.fixture
-def remoteci_user_id(user, team_user_id):
+def remoteci_user(user, team_user_id):
     data = {'name': 'rname', 'team_id': team_user_id,
             'allow_upgrade_job': True}
-    remoteci = user.post('/api/v1/remotecis', data=data).data
-    return str(remoteci['remoteci']['id'])
+    return user.post('/api/v1/remotecis', data=data).data['remoteci']
 
 
 @pytest.fixture
@@ -280,15 +279,15 @@ def remoteci(admin, team_id):
 
 
 @pytest.fixture
-def remoteci_context(app, remoteci_user_id, remoteci_user_api_secret):
+def remoteci_context(app, remoteci_user, remoteci_user_api_secret):
     return utils.generate_remoteci_client(app,
                                           remoteci_user_api_secret,
-                                          remoteci_user_id)
+                                          remoteci_user['id'])
 
 
 @pytest.fixture
-def remoteci_configuration_user_id(user, remoteci_user_id, topic_user_id):
-    rc = user.post('/api/v1/remotecis/%s/configurations' % remoteci_user_id,
+def remoteci_configuration_user_id(user, remoteci_user, topic_user_id):
+    rc = user.post('/api/v1/remotecis/%s/configurations' % remoteci_user['id'],
                    data={'name': 'cname',
                          'topic_id': topic_user_id,
                          'component_types': ['kikoo', 'lol'],
@@ -321,9 +320,9 @@ def components_user_ids(admin, topic_user_id):
 
 
 @pytest.fixture
-def job_user_id(remoteci_context, remoteci_user_id, components_user_ids,
+def job_user_id(remoteci_context, remoteci_user, components_user_ids,
                 topic_user_id):
-    data = {'remoteci_id': remoteci_user_id,
+    data = {'remoteci_id': remoteci_user['id'],
             'components_ids': components_user_ids,
             'topic_id': topic_user_id}
     job = remoteci_context.post('/api/v1/jobs/schedule', data=data).data
