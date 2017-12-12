@@ -281,9 +281,9 @@ def remoteci(admin, team_id):
 
 @pytest.fixture
 def remoteci_context(app, remoteci_user_id, remoteci_user_api_secret):
-    return utils.generate_remoteci_client(app,
-                                          remoteci_user_api_secret,
-                                          remoteci_user_id)
+    remoteci = {'id': remoteci_user_id, 'api_secret': remoteci_user_api_secret,
+                'type': 'remoteci'}
+    return utils.generate_token_based_client(app, remoteci)
 
 
 @pytest.fixture
@@ -294,6 +294,26 @@ def remoteci_configuration_user_id(user, remoteci_user_id, topic_user_id):
                          'component_types': ['kikoo', 'lol'],
                          'data': {'lol': 'lol'}}).data
     return str(rc['configuration']['id'])
+
+
+@pytest.fixture
+def feeder_id(product_owner, team_user_id):
+    data = {'name': 'feeder_osp', 'team_id': team_user_id}
+    feeder = product_owner.post('/api/v1/feeders', data=data).data
+    return str(feeder['feeder']['id'])
+
+
+@pytest.fixture
+def feeder_api_secret(product_owner, feeder_id):
+    api_secret = product_owner.get('/api/v1/feeders/%s' % feeder_id).data
+    return api_secret['feeder']['api_secret']
+
+
+@pytest.fixture
+def feeder_context(app, feeder_id, feeder_api_secret):
+    feeder = {'id': feeder_id, 'api_secret': feeder_api_secret,
+              'type': 'feeder'}
+    return utils.generate_token_based_client(app, feeder)
 
 
 def create_components(user, topic_id, component_types):
