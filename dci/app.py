@@ -33,12 +33,15 @@ zmq_sender = None
 
 
 class DciControlServer(flask.Flask):
-    def __init__(self, conf):
+    def __init__(self, conf, elastic_engine=None):
         super(DciControlServer, self).__init__(__name__)
         self.config.update(conf)
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
-        self.es_engine = es_engine.DCIESEngine(conf)
+        self.es_engine = elastic_engine
+        if not self.es_engine:
+            self.es_engine = es_engine.DCIESEngine(es_host=conf['ES_HOST'],
+                                                   es_port=conf['ES_PORT'])
         self.sender = self._get_zmq_sender(conf['ZMQ_CONN'])
 
     def _get_zmq_sender(self, zmq_conn):
@@ -81,9 +84,9 @@ def handle_dbapi_exception(dbapi_exception):
     return response
 
 
-def create_app(conf):
+def create_app(conf, elastic_engine=None):
     dci_config.sanity_check(conf)
-    dci_app = DciControlServer(conf)
+    dci_app = DciControlServer(conf, elastic_engine=elastic_engine)
     dci_app.url_map.converters['uuid'] = utils.UUIDConverter
 
     # Logging support

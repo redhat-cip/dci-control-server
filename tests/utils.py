@@ -256,7 +256,8 @@ def post_file(client, jobstate_id, file_desc):
         mockito.head.return_value = head_result
         mock_swift.return_value = mockito
         headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
-                   'Content-Type': 'text/plain'}
+                   'Content-Type': 'text/plain',
+                   'DCI-MIME': 'text/plain'}
         res = client.post('/api/v1/files',
                           headers=headers,
                           data=file_desc.content)
