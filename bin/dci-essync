@@ -62,10 +62,11 @@ def main(es, dci_context, thread_executor):
     LOG.info('Current last sequence number: %s' % last_sequence)
     db_current_sequence = last_sequence+1
 
+    nb_events_proceed = 0
     list_of_futures = []
     try:
         for f_event in files_events.iter(dci_context,
-                                         sequence=db_current_sequence,
+                                         sequence=last_sequence+1,
                                          limit=512):
             db_file = f_event['file']
             if db_file['mime'] != 'text/plain':
@@ -81,23 +82,26 @@ def main(es, dci_context, thread_executor):
                 for future in list_of_futures:
                     future.result()
                 list_of_futures = []
+            nb_events_proceed = nb_events_proceed + 1
 
         if len(list_of_futures) > 0:
             for future in list_of_futures:
                 future.result()
     except:
         LOG.error('An error has been encountered')
-        LOG.info('New last sequence: %s' % max((db_current_sequence-1), last_sequence))  # noqa
+        LOG.info('New last sequence: %s' % (last_sequence + nb_events_proceed))  # noqa
         es.update_sequence(max((db_current_sequence-1), last_sequence))
         traceback.print_exc()
         sys.exit(-1)
 
-    if db_current_sequence > last_sequence:
-        LOG.info('New last sequence: %s' % max(db_current_sequence, last_sequence))  # noqa
-        es.update_sequence(max(db_current_sequence, last_sequence))
+    if nb_events_proceed > 0:
+        new_last_sequence = last_sequence + nb_events_proceed
+        LOG.info('New last sequence: %s' % new_last_sequence)  # noqa
+        es.update_sequence(new_last_sequence)
         files_events.delete(dci_context, last_sequence)
-
-    LOG.info('New last sequence: %s' % max(db_current_sequence, last_sequence)) # noqa
+        LOG.info('New last sequence: %s' % new_last_sequence) # noqa
+    else:
+        LOG.info('No new files events.')
     LOG.info('Sync done')
 
 
