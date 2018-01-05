@@ -22,7 +22,6 @@ import flask
 from dci.auth import UNAUTHORIZED
 import dci.auth_mechanism as am
 from dci.common import exceptions as dci_exc
-from dciauth import signature
 
 
 def reject():
@@ -46,14 +45,10 @@ def _get_auth_class_from_headers(headers):
         raise dci_exc.DCIException('Authorization header missing',
                                    status_code=401)
 
-    auth_header = headers.get('Authorization').split(' ')
-    if len(auth_header) != 2:
-        raise dci_exc.DCIException('Authorization header malformed',
-                                   status_code=401)
-    auth_type, token = auth_header
+    auth_type = headers.get('Authorization').split(' ')[0]
     if auth_type == 'Bearer':
         return am.OpenIDCAuth
-    elif auth_type == signature.DCI_ALGORITHM:
+    elif auth_type == 'DCI-HMAC-SHA256':
         return am.HmacMechanism
     elif auth_type == 'Basic':
         return am.BasicAuthMechanism

@@ -33,7 +33,8 @@ import dci.common.utils as utils
 import dci.db.models as models
 import dci.dci_config as config
 from dci.stores.swift import Swift
-from dciauth import signature as hmac_signature
+from dciauth.request import AuthRequest
+from dciauth.signature import Signature
 
 import os
 import subprocess
@@ -98,30 +99,30 @@ def generate_client(app, credentials=None, access_token=None):
 def generate_token_based_client(app, resource):
     attrs = ['status_code', 'data', 'headers']
     Response = collections.namedtuple('Response', attrs)
-    headers = {
-        'DCI-Client-Info': '%s/%s' % (resource['type'], resource['id']),
-        'Content-Type': 'application/json',
-    }
+    headers = {'Content-Type': 'application/json'}
 
     def client_open_decorator(func):
         def wrapper(*args, **kwargs):
             headers.update(kwargs.get('headers', {}))
             payload = kwargs.get('data')
-            content_type = headers.get('Content-Type')
             url = urlparse(args[0])
             params = dict(parse_qsl(url.query))
-            hmac_headers = hmac_signature.generate_headers_with_secret(
-                resource['api_secret'],
+            auth_request = AuthRequest(
                 method=kwargs.get('method'),
-                content_type=content_type,
-                url=url.path,
-                params=params,
-                payload=payload)
-            headers.update(hmac_headers)
-            kwargs['headers'] = headers
-            if payload and content_type == 'application/json':
-                kwargs['data'] = flask.json.dumps(payload,
-                                                  cls=utils.JSONEncoder)
+                endpoint=url.path,
+                payload=payload,
+                headers=headers,
+                params=params
+            )
+            signature = Signature(request=auth_request)
+            kwargs['headers'] = signature.generate_headers(
+                client_id=resource['id'],
+                client_type=resource['type'],
+                secret=resource['api_secret']
+            )
+            if payload:
+                json = flask.json.dumps(payload, cls=utils.JSONEncoder)
+                kwargs['data'] = json
             response = func(*args, **kwargs)
             data = flask.json.loads(response.data or '{}')
             return Response(response.status_code, data, response.headers)
