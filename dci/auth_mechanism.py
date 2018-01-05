@@ -21,7 +21,8 @@ from sqlalchemy import sql
 from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import signature
-from dciauth import signature as hmac_signature
+from dciauth.request import AuthRequest
+from dciauth.signature import Signature
 from dci.db import models
 from dci import dci_config
 from dci.identity import Identity
@@ -225,48 +226,34 @@ class SignatureAuthMechanism(BaseMechanism):
 
 class HmacMechanism(BaseMechanism):
     def authenticate(self):
-        client_info = self.get_client_info(self.request.headers)
-        self.identity = self.get_identity(client_info)
         headers = self.request.headers
-        expected_signature = hmac_signature.calculate_signature(
-            secret=getattr(self.identity, 'api_secret', ''),
+        auth_request = AuthRequest(
             method=self.request.method,
+            endpoint=self.request.path,
+            payload=self.request.get_json(silent=True),
             headers=headers,
-            url=self.request.path,
-            params=self.request.args.to_dict(flat=True),
-            payload=self.request.get_json(silent=True)
+            params=self.request.args.to_dict(flat=True)
         )
-        dci_signature = hmac_signature.get_signature_from_headers(headers)
-        if not hmac_signature.equals(expected_signature, dci_signature):
+        hmac_signature = Signature(request=auth_request)
+        self.identity = self.build_identity(auth_request.get_client_info())
+        secret = getattr(self.identity, 'api_secret', '')
+        if not hmac_signature.is_valid(secret):
             raise dci_exc.DCIException(
                 'Authentication failed: signature invalid', status_code=401)
-
-        if hmac_signature.is_expired(headers):
+        if hmac_signature.is_expired():
             raise dci_exc.DCIException(
                 'Authentication failed: signature expired', status_code=401)
         return True
 
-    def get_client_info(self, headers):
-        if 'DCI-Client-Info' not in headers:
-            raise dci_exc.DCIException('Header DCI-Client-Info missing',
-                                       status_code=401)
-
-        client_info = headers.get('DCI-Client-Info')
-        client_info = client_info.split('/')
-        return {
-            'type': client_info[0],
-            'id': client_info[1],
-        }
-
-    def get_identity(self, client_info):
+    def build_identity(self, client_info):
         allowed_types_model = {
             'remoteci': models.REMOTECIS,
             'feeder': models.FEEDERS,
         }
-        identity_model = allowed_types_model.get(client_info['type'])
+        identity_model = allowed_types_model.get(client_info['client_type'])
         if identity_model is None:
             return None
-        constraint = identity_model.c.id == client_info['id']
+        constraint = identity_model.c.id == client_info['client_id']
         return self.identity_from_db(identity_model, constraint)
 
 
