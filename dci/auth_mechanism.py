@@ -21,7 +21,8 @@ from sqlalchemy import sql
 from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import signature
-from dciauth import signature as hmac_signature
+from dciauth.request import AuthRequest
+from dciauth.signature import Signature
 from dci.db import models
 from dci import dci_config
 from dci.identity import Identity
@@ -225,28 +226,27 @@ class SignatureAuthMechanism(BaseMechanism):
 
 class HmacMechanism(BaseMechanism):
     def authenticate(self):
-        client_info = self.get_client_info(self.request.headers)
-        self.identity = self.get_identity(client_info)
         headers = self.request.headers
-        expected_signature = hmac_signature.calculate_signature(
-            secret=getattr(self.identity, 'api_secret', ''),
+        auth_request = AuthRequest(
             method=self.request.method,
+            endpoint=self.request.path,
+            payload=self.request.get_json(silent=True),
             headers=headers,
-            url=self.request.path,
-            params=self.request.args.to_dict(flat=True),
-            payload=self.request.get_json(silent=True)
+            params=self.request.args.to_dict(flat=True)
         )
-        dci_signature = hmac_signature.get_signature_from_headers(headers)
-        if not hmac_signature.equals(expected_signature, dci_signature):
+        signature = Signature(request=auth_request)
+        self.identity = self.build_identity(self.get_client_info(headers))
+        secret = getattr(self.identity, 'api_secret', '')
+        if not signature.is_valid(secret):
             raise dci_exc.DCIException(
                 'Authentication failed: signature invalid', status_code=401)
-
-        if hmac_signature.is_expired(headers):
+        if signature.is_expired():
             raise dci_exc.DCIException(
                 'Authentication failed: signature expired', status_code=401)
         return True
 
-    def get_client_info(self, headers):
+    @staticmethod
+    def get_client_info(headers):
         if 'DCI-Client-Info' not in headers:
             raise dci_exc.DCIException('Header DCI-Client-Info missing',
                                        status_code=401)
@@ -258,7 +258,7 @@ class HmacMechanism(BaseMechanism):
             'id': client_info[1],
         }
 
-    def get_identity(self, client_info):
+    def build_identity(self, client_info):
         allowed_types_model = {
             'remoteci': models.REMOTECIS,
             'feeder': models.FEEDERS,
