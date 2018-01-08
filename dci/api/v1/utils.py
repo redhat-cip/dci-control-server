@@ -24,6 +24,8 @@ from dci.common import utils
 from dci.db import models
 from dci.db import embeds
 
+from lxml import etree
+
 
 def verify_existence_and_get(id, table, get_id=False):
     """Verify the existence of a resource in the database and then
@@ -526,3 +528,24 @@ def common_values_dict(user):
 
 def log():
     return flask.current_app.logger
+
+
+def get_regressions_failures(testsuite1, testsuite2):
+    """Given two junit testsuite, this function will compute the failures
+    that happen in testsuite2 and not in testsuite1."""
+
+    def get_testcases_on_failure(string_testsuite):
+        root = etree.fromstring(string_testsuite).getroottree()
+        result = set()
+        # xpath to get only the testcase tags which includes the tag 'failure'
+        testcases_on_failure = root.xpath('./testcase/failure/..')
+        for testcase in testcases_on_failure:
+            result.add(testcase.attrib.get('name'))
+        # result is a set containing all the tests names
+        return result
+
+    failures_1 = get_testcases_on_failure(testsuite1)
+    failures_2 = get_testcases_on_failure(testsuite2)
+
+    # returns the difference of the two sets
+    return list(failures_2 - failures_1)
