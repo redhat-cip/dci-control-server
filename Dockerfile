@@ -9,12 +9,12 @@ RUN yum -y install epel-release && \
     yum -y install python34 python34-devel python34-pip python34-setuptools && \
     yum clean all
 
+RUN pip install -U pip
 # python-tox is broken, install tox with pip instead
 RUN pip install -U tox
 
 WORKDIR /opt/dci-control-server
 ADD requirements.txt /opt/dci-control-server/
-RUN pip install -U pip
 RUN pip install -r requirements.txt
 ADD . /opt/dci-control-server/
 
