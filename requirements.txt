@@ -17,4 +17,4 @@ python-swiftclient
 python-keystoneclient
 cryptography
 pyjwt
-dciauth>=1.0.1
+dciauth==1.0.1
