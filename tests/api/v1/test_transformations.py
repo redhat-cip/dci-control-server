@@ -246,3 +246,51 @@ def test_create_file_fill_tests_results_table(engine, admin, job_user_id):
     assert test_result['errors'] == 0
     assert test_result['success'] == 117
     assert test_result['time'] == 1308365
+
+
+def test_get_regressions_failures():
+    jobtest1 = """
+<testsuite errors="0" failures="60" name="" tests="2289" time="3385.127">
+    <testcase
+            classname="Testsuite1"
+            name="test_1"
+            time="28.810">
+        <failure type="Exception">Traceback</failure>
+    </testcase>
+    <testcase
+            classname="Testsuite1"
+            name="test_2"
+            time="29.419">
+    </testcase>
+        <testcase
+            classname="Testsuite1"
+            name="test_3"
+            time="29.419">
+    </testcase>
+</testsuite>
+"""
+    jobtest2 = """
+<testsuite errors="0" failures="60" name="" tests="2289" time="3385.127">
+    <testcase
+            classname="Testsuite1"
+            name="test_1"
+            time="28.810">
+        <failure type="Exception">Traceback</failure>
+    </testcase>
+    <testcase
+            classname="Testsuite1"
+            name="test_2"
+            time="29.419">
+        <failure type="Exception">Traceback</failure>
+    </testcase>
+    <testcase
+            classname="Testsuite1"
+            name="test_3"
+            time="29.419">
+            <failure type="Exception">Traceback</failure>
+    </testcase>
+</testsuite>
+"""
+    regressions = transformations.get_regressions_failures(jobtest1, jobtest2)
+    assert len(regressions) == 2
+    assert regressions == {'Testsuite1:test_2', 'Testsuite1:test_3'}
