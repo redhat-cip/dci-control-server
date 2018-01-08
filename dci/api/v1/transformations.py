@@ -105,3 +105,28 @@ def junit2dict(string):
         results['error'] = "XMLSyntaxError: %s " % str(e)
         LOG.error('XMLSyntaxError %s' % str(e))
     return results
+
+
+def get_regressions_failures(testsuite1, testsuite2):
+    """Given two junit testsuite, this function will compute the failures
+    that happen in testsuite2 and not in testsuite1."""
+
+    def get_testcases_on_failure(string_testsuite):
+        root = etree.fromstring(string_testsuite).getroottree()
+        result = set()
+        # xpath to get only the testcase tags which includes the tag 'failure'
+        testcases_on_failure = root.xpath('./testcase/failure/..')
+        for testcase in testcases_on_failure:
+            classname = testcase.attrib.get('classname')
+            name = testcase.attrib.get('name')
+            result.add('%s:%s' % (classname, name))
+        # result is a set containing all the tests names
+        return result
+
+    try:
+        failures_1 = get_testcases_on_failure(testsuite1)
+        failures_2 = get_testcases_on_failure(testsuite2)
+        # returns the difference of the two sets
+        return list(failures_2 - failures_1)
+    except etree.XMLSyntaxError as e:
+        LOG.error('XMLSyntaxError %s' % str(e))
