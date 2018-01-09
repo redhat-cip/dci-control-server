@@ -34,6 +34,7 @@ from dci.db import models
 from dci import dci_config
 from dci.stores import files
 
+from sqlalchemy import sql
 
 _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
@@ -56,6 +57,37 @@ def get_file_info_from_headers(headers):
                    'job_id', 'name', 'test_id']:
             new_headers[key] = value
     return new_headers
+
+
+def _get_regressions(swift, job, filename, team_id, current_test_suite):
+    def _get_previous_job_in_topic(job):
+        topic_id = job['jobs_topic_id']
+        query = sql.select([models.JOBS]). \
+            where(sql.and_(models.JOBS.c.topic_id == topic_id,
+                           models.JOBS.c.created_at < job['jobs_created_at'],
+                           models.JOBS.c.state != 'archived')). \
+            order_by(sql.desc(models.JOBS.c.created_at)).limit(1)
+        return flask.g.db_conn.execute(query).fetchone()
+
+    def _get_file_from_job(job_id, filename):
+        query = sql.select([models.FILES]). \
+            where(sql.and_(models.FILES.c.name == filename,
+                           models.FILES.c.job_id == job_id))
+        return flask.g.db_conn.execute(query).fetchone()
+
+    prev_job = _get_previous_job_in_topic(job)
+    if prev_job is not None:
+        prev_job_file = _get_file_from_job(prev_job['id'], filename)
+        if prev_job_file is not None:
+            prev_file_path = swift.build_file_path(
+                team_id,
+                prev_job['id'],
+                prev_job_file['id'])
+            _, prev_file_descriptor = swift.get(prev_file_path)
+            prev_test_suite = prev_file_descriptor.read()
+            return v1_utils.get_regressions_failures(prev_test_suite,
+                                                     current_test_suite)
+    return []
 
 
 @api.route('/files', methods=['POST'])
@@ -87,8 +119,8 @@ def create_files(user):
     if not auth.is_admin(user):
         query.add_extra_condition(models.JOBS.c.team_id == user['team_id'])
     query.add_extra_condition(models.JOBS.c.id == values['job_id'])
-    row = query.execute(fetchone=True)
-    if row is None:
+    job = query.execute(fetchone=True)
+    if job is None:
         raise dci_exc.DCINotFound('Job', values['job_id'])
 
     file_id = utils.gen_uuid()
@@ -123,7 +155,10 @@ def create_files(user):
 
         if values['mime'] == 'application/junit':
             _, file_descriptor = swift.get(file_path)
-            junit = tsfm.junit2dict(file_descriptor.read())
+            current_test_suite = file_descriptor.read()
+            regressions = _get_regressions(swift, job, values['name'],
+                                           user['team_id'], current_test_suite)
+            junit = tsfm.junit2dict(current_test_suite)
             query = models.TESTS_RESULTS.insert().values({
                 'id': utils.gen_uuid(),
                 'created_at': values['created_at'],
@@ -135,6 +170,7 @@ def create_files(user):
                 'failures': junit['failures'],
                 'errors': junit['errors'],
                 'skips': junit['skips'],
+                'regressions': regressions,
                 'total': junit['total'],
                 'time': junit['time']
             })
