@@ -261,6 +261,7 @@ TESTS_RESULTS = sa.Table(
     sa.Column('failures', sa.Integer),
     sa.Column('errors', sa.Integer),
     sa.Column('time', sa.Integer),
+    sa.Column('regressions', sa.Integer),
     sa.Column('job_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('jobs.id', ondelete='CASCADE'),
               nullable=False),
