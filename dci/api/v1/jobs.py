@@ -570,12 +570,22 @@ def get_all_results_from_jobs(user, j_id):
                                           j_id,
                                           file['id'])
         _, file_descriptor = swift.get(file_path)
-        data = tsfm.junit2dict(file_descriptor.read())
+
+        current_test_suite = file_descriptor.read()
+        regressions = tsfm.get_regressions(swift, job, file['name'],
+                                           user['team_id'],
+                                           current_test_suite)
+
+        data = tsfm.junit2dict(current_test_suite)
+        if len(regressions) > 0:
+            tsfm.add_regression_to_junit_dict(data, regressions)
+
         results.append({'filename': file['name'],
                         'name': file['name'],
                         'total': data['total'],
                         'failures': data['failures'],
                         'errors': data['errors'],
+                        'regressions': len(regressions),
                         'skips': data['skips'],
                         'time': data['time'],
                         'success': data['success'],

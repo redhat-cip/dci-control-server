@@ -120,6 +120,34 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
         '/api/v1/jobs/%s?embed=results' % job_2['id']).data['job']['results']
     assert job_2_results[0]['regressions'] == 1
 
+    # 4. get the job2's tests results
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 1
+        }
+
+        mockito.head.return_value = head_result
+        mockito.get = swift_get_mock
+        mockito.build_file_path = Swift.build_file_path
+        mock_swift.return_value = mockito
+        job_2_tests_results = admin.get(
+            '/api/v1/jobs/%s/results' % job_2['id'])
+
+        testcases = job_2_tests_results.data['results'][0]['testscases']
+
+        regression_found = False
+        for testcase in testcases:
+            if testcase['regression'] is True:
+                assert testcase['classname'] == 'Testsuite_1'
+                assert testcase['name'] == 'test_3'
+                regression_found = True
+        assert regression_found is True
+
 
 def test_get_all_files(user, jobstate_user_id):
     file_1 = post_file(user, jobstate_user_id, FileDesc('kikoolol1', ''))
