@@ -120,7 +120,7 @@ def create_files(user):
     if not auth.is_admin(user):
         query.add_extra_condition(models.JOBS.c.team_id == user['team_id'])
     query.add_extra_condition(models.JOBS.c.id == values['job_id'])
-    job = query.execute(fetchone=True)
+    job = query.execute(fetchone=True, use_labels=False)
     if job is None:
         raise dci_exc.DCINotFound('Job', values['job_id'])
 
@@ -157,9 +157,10 @@ def create_files(user):
         if values['mime'] == 'application/junit':
             _, file_descriptor = swift.get(file_path)
             current_test_suite = file_descriptor.read()
-            regressions = _get_nb_regressions(swift, job, values['name'],
-                                              user['team_id'],
-                                              current_test_suite)
+            regressions = len(tsfm.get_regressions(swift, job,
+                                                   values['name'],
+                                                   user['team_id'],
+                                                   current_test_suite))
             junit = tsfm.junit2dict(current_test_suite)
             query = models.TESTS_RESULTS.insert().values({
                 'id': utils.gen_uuid(),
