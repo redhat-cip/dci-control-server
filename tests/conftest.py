@@ -359,11 +359,12 @@ def job_user_id(remoteci_context, remoteci_user_id, components_user_ids,
             'components_ids': components_user_ids,
             'topic_id': topic_user_id}
     job = remoteci_context.post('/api/v1/jobs/schedule', data=data).data
-    return job['job']['id']
+    return job
 
 
 @pytest.fixture
 def jobstate_user_id(user, job_user_id):
+    print(job_user_id)
     data = {'job_id': job_user_id, 'status': 'running', 'comment': 'kikoolol'}
     jobstate = user.post('/api/v1/jobstates', data=data).data
     return jobstate['jobstate']['id']
