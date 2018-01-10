@@ -59,38 +59,6 @@ def get_file_info_from_headers(headers):
     return new_headers
 
 
-def _get_nb_regressions(swift, job, filename, team_id, current_test_suite):
-    def _get_previous_job_in_topic(job):
-        topic_id = job['jobs_topic_id']
-        query = sql.select([models.JOBS]). \
-            where(sql.and_(models.JOBS.c.topic_id == topic_id,
-                           models.JOBS.c.created_at < job['jobs_created_at'],
-                           models.JOBS.c.id != job['jobs_id'],
-                           models.JOBS.c.state != 'archived')). \
-            order_by(sql.desc(models.JOBS.c.created_at))
-        return flask.g.db_conn.execute(query).fetchone()
-
-    def _get_file_from_job(job_id, filename):
-        query = sql.select([models.FILES]). \
-            where(sql.and_(models.FILES.c.name == filename,
-                           models.FILES.c.job_id == job_id))
-        return flask.g.db_conn.execute(query).fetchone()
-
-    prev_job = _get_previous_job_in_topic(job)
-    if prev_job is not None:
-        prev_job_file = _get_file_from_job(prev_job['id'], filename)
-        if prev_job_file is not None:
-            prev_file_path = swift.build_file_path(
-                team_id,
-                prev_job['id'],
-                prev_job_file['id'])
-            _, prev_file_descriptor = swift.get(prev_file_path)
-            prev_test_suite = prev_file_descriptor.read()
-            return len(tsfm.get_regressions_failures(prev_test_suite,
-                                                     current_test_suite))
-    return 0
-
-
 @api.route('/files', methods=['POST'])
 @decorators.login_required
 def create_files(user):
@@ -120,7 +88,7 @@ def create_files(user):
     if not auth.is_admin(user):
         query.add_extra_condition(models.JOBS.c.team_id == user['team_id'])
     query.add_extra_condition(models.JOBS.c.id == values['job_id'])
-    job = query.execute(fetchone=True)
+    job = query.execute(fetchone=True, use_labels=False)
     if job is None:
         raise dci_exc.DCINotFound('Job', values['job_id'])
 
@@ -157,9 +125,10 @@ def create_files(user):
         if values['mime'] == 'application/junit':
             _, file_descriptor = swift.get(file_path)
             current_test_suite = file_descriptor.read()
-            regressions = _get_nb_regressions(swift, job, values['name'],
-                                              user['team_id'],
-                                              current_test_suite)
+            regressions = len(tsfm.get_regressions(swift, job,
+                                                   values['name'],
+                                                   user['team_id'],
+                                                   current_test_suite))
             junit = tsfm.junit2dict(current_test_suite)
             query = models.TESTS_RESULTS.insert().values({
                 'id': utils.gen_uuid(),
