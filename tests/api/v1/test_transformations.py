@@ -43,6 +43,7 @@ JSONUNIT = {
             'action': 'skipped',
             'message': 'skip message',
             'type': 'skipped',
+            'regression': False,
             'value': 'test skipped'
         },
         {
@@ -52,6 +53,7 @@ JSONUNIT = {
             'action': 'error',
             'message': 'error message',
             'type': 'error',
+            'regression': False,
             'value': 'test in error'
         },
         {
@@ -61,6 +63,7 @@ JSONUNIT = {
             'action': 'failure',
             'message': 'failure message',
             'type': 'failure',
+            'regression': False,
             'value': 'test in failure'
         },
         {
@@ -70,6 +73,7 @@ JSONUNIT = {
             'action': 'passed',
             'message': '',
             'type': '',
+            'regression': False,
             'value': ''
         },
         {
@@ -79,6 +83,7 @@ JSONUNIT = {
             'action': 'passed',
             'message': '',
             'type': '',
+            'regression': False,
             'value': 'STDOUT'
         },
         {
@@ -88,6 +93,7 @@ JSONUNIT = {
             'action': 'passed',
             'message': '',
             'type': '',
+            'regression': False,
             'value': 'STDERR'
         },
     ]
