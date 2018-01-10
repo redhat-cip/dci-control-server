@@ -135,7 +135,7 @@ def test_junit2dict_with_ansible_run_ovs_integration_tests_xml():
 
 
 def test_junit2dict_with_tempest_xml():
-    with open('tests/data/tempest-results.xml', 'r') as f:
+    with open('tests/data/tempest-results1.xml', 'r') as f:
         content_file = f.read()
         result = transformations.junit2dict(content_file)
 
@@ -149,7 +149,7 @@ def test_junit2dict_with_tempest_xml():
 
 
 def test_junit2dict_with_rally_xml():
-    with open('tests/data/rally-results.xml', 'r') as f:
+    with open('tests/data/rally-results1.xml', 'r') as f:
         content_file = f.read()
         result = transformations.junit2dict(content_file)
 
@@ -217,7 +217,7 @@ def test_retrieve_junit2dict(admin, job_user_id):
 
 
 def test_create_file_fill_tests_results_table(engine, admin, job_user_id):
-    with open('tests/data/tempest-results.xml', 'r') as f:
+    with open('tests/data/tempest-results1.xml', 'r') as f:
         content_file = f.read()
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
         mockito = mock.MagicMock()
@@ -232,9 +232,9 @@ def test_create_file_fill_tests_results_table(engine, admin, job_user_id):
 
         headers = {
             'DCI-JOB-ID': job_user_id,
-            'DCI-NAME': 'tempest-results.xml',
+            'DCI-NAME': 'tempest-results1.xml',
             'DCI-MIME': 'application/junit',
-            'Content-Disposition': 'attachment; filename=tempest-results.xml',
+            'Content-Disposition': 'attachment; filename=tempest-results1.xml',
             'Content-Type': 'application/junit'
         }
         admin.post('/api/v1/files', headers=headers, data=content_file)
@@ -245,7 +245,7 @@ def test_create_file_fill_tests_results_table(engine, admin, job_user_id):
 
     assert len(tests_results) == 1
     assert UUID(str(test_result['id']), version=4)
-    assert test_result['name'] == 'tempest-results.xml'
+    assert test_result['name'] == 'tempest-results1.xml'
     assert test_result['total'] == 130
     assert test_result['skips'] == 13
     assert test_result['failures'] == 0
