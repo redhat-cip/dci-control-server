@@ -1,0 +1,164 @@
+<testsuite errors="0" failures="3" name="" tests="130" time="996.679">
+<testcase classname="tempest.api.compute.flavors.test_flavors.FlavorsV2TestJSON" name="test_get_flavor[id-fdfdc380-7482-4e7e-99f4-3dbdbdf4b631,smoke]" time="0.530"/>
+<testcase classname="tempest.api.compute.flavors.test_flavors.FlavorsV2TestJSON" name="test_list_flavors[id-9895db89-9866-408c-a6a4-15af00ce94da,smoke]" time="0.167"/>
+<testcase classname="tempest.api.identity.admin.v3.test_domains.DefaultDomainTestJSON" name="test_default_domain_exists[id-fd693ced-a1d7-4687-94ed-3b81620d3991,smoke]" time="0.228"/>
+<testcase classname="tempest.api.compute.security_groups.test_security_group_rules.SecurityGroupRulesTestJSON" name="test_security_group_rules_create[id-14deeed5-7828-4262-b1d9-f92c1821f48a,network,smoke]" time="4.780"/>
+<testcase classname="tempest.api.identity.admin.v3.test_services.ServicesTestJSON" name="test_create_update_get_service[id-b5c88893-5c7e-4431-ae0b-012001c2d546,smoke]" time="1.302"/>
+<testcase classname="tempest.api.compute.security_groups.test_security_group_rules.SecurityGroupRulesTestJSON" name="test_security_group_rules_list[id-bbf6f4ee-adaa-42a9-b811-4b0ec034ea58,network,smoke]" time="6.598"/>
+<testcase classname="tempest.api.compute.security_groups.test_security_groups.SecurityGroupsTestJSON" name="test_security_groups_create_list_delete[id-cbada7f0-7ed0-47fe-8177-dd937d1894f8,network,smoke]" time="13.727"/>
+<testcase classname="tempest.api.identity.admin.v3.test_trusts.TrustsV3TestJSON" name="test_get_trusts_all[id-61695af0-bec6-4bda-bf9c-ef1ba914819e,smoke]" time="6.427"/>
+<testcase classname="tempest.api.identity.v3.test_api_discovery.TestApiDiscovery" name="test_api_media_types[id-71478a40-38bb-42fe-b3c9-34abd8899d58,smoke]" time="0.228"/>
+<testcase classname="tempest.api.identity.v3.test_api_discovery.TestApiDiscovery" name="test_api_version_resources[id-e065df73-b03f-4ce1-80d5-06a4ba8bdf4b,smoke]" time="0.285"/>
+<testcase classname="tempest.api.identity.v3.test_api_discovery.TestApiDiscovery" name="test_api_version_statuses[id-269f7038-9f70-4012-95ac-a6cbbda614ce,smoke]" time="0.289"/>
+<testcase classname="tempest.api.compute.servers.test_create_server.ServersTestManualDisk" name="test_list_servers[id-433c6a8f-5e66-4761-9ade-abeb313876c6,smoke]" time="0.349"/>
+<testcase classname="tempest.api.compute.servers.test_create_server.ServersTestManualDisk" name="test_verify_server_details[id-1b1bc049-9df9-4ced-9ed0-7adacf27471a,smoke]" time="0.001"/>
+<testcase classname="tempest.api.network.test_extensions.ExtensionsTestJSON" name="test_list_show_extensions[id-cb3968d2-1819-4b4a-98b5-850bbdb9e14b,smoke]" time="7.746"/>
+<testcase classname="tempest.api.compute.servers.test_attach_interfaces.AttachInterfacesTestJSON" name="test_add_remove_fixed_ip[id-dc0ee336-dadc-44c1-a0bf-a65093f6644f,network,smoke]" time="34.806"/>
+<testcase classname="tempest.api.compute.servers.test_create_server.ServersTestJSON" name="test_list_servers[id-8e40ef78-2f4d-4361-9ff8-b485ec760466,smoke]" time="0.330"/>
+<testcase classname="tempest.api.compute.servers.test_create_server.ServersTestJSON" name="test_verify_server_details[id-4bda6d9b-5528-4622-b240-53815132a996,smoke]" time="0.001"/>
+<testcase classname="tempest.api.identity.admin.v2.test_users.UsersTestJSON" name="test_create_user[id-7c2c6ff9-c611-49fa-80cc-21ac158cc6cc,smoke]" time="2.243"/>
+<testcase classname="tempest.api.identity.admin.v3.test_credentials.CredentialsTestJSON" name="test_credentials_create_get_update_delete[id-a1a79747-66b3-4eaf-a9db-9dfa7697536f,smoke]" time="2.711"/>
+<testcase classname="tempest.api.network.test_floating_ips.FloatingIPTestJSON" name="test_create_floating_ip_specifying_a_fixed_ip_address[id-bd3a6a9f-7311-4d18-ad4c-e8ded08539a9,smoke]" time="8.971"/>
+<testcase classname="tempest.api.network.test_floating_ips.FloatingIPTestJSON" name="test_create_list_show_update_delete_floating_ip[id-26b46236-67bf-4408-85fc-b4c725b76be6,smoke]" time="8.629"/>
+<testcase classname="tempest.api.identity.admin.v3.test_domains.DomainsTestJSON" name="test_create_update_delete_domain[id-fe4b71ea-30bd-46a4-92a0-4bd073035da0,smoke]" time="1.835"/>
+<testcase classname="tempest.api.identity.admin.v2.test_services.ServicesTestJSON" name="test_list_services[id-ecf0d25c-5d5b-4f61-bfda-f1fe34e73e69,smoke]" time="2.637"/>
+<testcase classname="tempest.api.identity.admin.v3.test_endpoints.EndPointsTestJSON" name="test_update_endpoint[id-b734ae9b-12f5-46cf-a3c0-5aacefd24c7d,smoke]" time="1.112"/>
+<testcase classname="tempest.api.identity.admin.v3.test_roles.RolesV3TestJSON" name="test_role_create_update_show_list[id-31307a8d-1b1b-4bc7-9b51-3ab0fc1b11b7,smoke]" time="1.299"/>
+<testcase classname="tempest.api.identity.admin.v3.test_groups.GroupsV3TestJSON" name="test_group_users_add_list_delete[id-630bcaa7-51b5-42ca-97d5-dea08605dbbf,smoke]" time="8.005"/>
+<testcase classname="tempest.api.compute.servers.test_server_actions.ServerActionsTestJSON" name="test_reboot_server_hard[id-8767976e-986f-4e19-809c-577a6c83d760,smoke]" time="8.141"/>
+<testcase classname="tempest.api.identity.v2.test_api_discovery.TestApiDiscovery" name="test_api_media_types[id-2fc6822e-b5a8-42ed-967b-11d86e881ce3,smoke]" time="0.272"/>
+<testcase classname="tempest.api.identity.v2.test_api_discovery.TestApiDiscovery" name="test_api_version_resources[id-f149a4b9-57fc-4fcd-afaf-714ad0c4b207,smoke]" time="0.214"/>
+<testcase classname="tempest.api.identity.v2.test_api_discovery.TestApiDiscovery" name="test_api_version_statuses[id-32fc7d57-3d2e-4d6c-aa30-e7dfc6fdc6f3,smoke]" time="0.415"/>
+<testcase classname="tempest.api.network.test_ports.PortsIpV6TestJSON" name="test_create_port_in_allowed_allocation_pools[id-95a7d063-6529-49aa-9cfb-36630ed9cea7,smoke]" time="16.342"/>
+<testcase classname="tempest.api.image.v2.test_images.BasicOperationsImagesTest" name="test_delete_image[id-4da8b06d-67e1-444e-a1ad-674c5c33db36,smoke]" time="2.207"/>
+<testcase classname="tempest.api.image.v2.test_images.BasicOperationsImagesTest" name="test_register_upload_get_image_file[id-ea3084e4-bde9-4be0-90ec-46b478db894c,smoke]" time="3.372"/>
+<testcase classname="tempest.api.identity.admin.v3.test_regions.RegionsTestJSON" name="test_create_region_with_specific_id[id-2216947c-2075-42f2-879c-341dd2eaee42,smoke]" time="0.735"/>
+<testcase classname="tempest.api.image.v2.test_images.BasicOperationsImagesTest" name="test_update_image[id-91237988-3948-4e81-a43f-e9e34383e6c7,smoke]" time="3.690"/>
+<testcase classname="" name="setUpClass (tempest.api.object_storage.test_account_quotas.AccountQuotasTest)" time="0.000">
+<skipped>AccountQuotasTest skipped as swift is not available</skipped>
+</testcase>
+<testcase classname="tempest.api.network.test_ports.PortsIpV6TestJSON" name="test_create_port_with_no_securitygroups[id-0d9894f5-97d7-4ca4-9342-d5571d3a9b21,smoke]" time="16.162"/>
+<testcase classname="tempest.api.network.test_ports.PortsIpV6TestJSON" name="test_create_update_delete_port[id-a1229df6-4e4c-485d-a72b-2b0a8af05fdd,smoke]" time="3.367"/>
+<testcase classname="tempest.api.network.test_ports.PortsIpV6TestJSON" name="test_list_ports[id-21666509-180b-4171-b567-6c54f38fc3d0,smoke]" time="0.198"/>
+<testcase classname="tempest.api.network.test_ports.PortsIpV6TestJSON" name="test_show_port[id-1da7a454-f57a-4e67-8f9d-24bc7d280873,smoke]" time="0.151"/>
+<testcase classname="tempest.api.network.test_networks.BulkNetworkOpsIpV6Test" name="test_bulk_create_delete_network[id-94720f48-34f9-403a-b87d-5cc1fcd132d7,smoke]" time="5.536"/>
+<testcase classname="tempest.api.network.test_networks.BulkNetworkOpsIpV6Test" name="test_bulk_create_delete_port[id-bd93e7f0-247d-4192-aa1c-4bb81d57469d,smoke]" time="7.102"/>
+<testcase classname="tempest.api.volume.test_volumes_actions.VolumesV1ActionsTest" name="test_attach_detach_volume_to_instance[compute,id-fff42874-7db5-4487-a8e1-ddda5fb5288d,smoke]" time="20.023"/>
+<testcase classname="tempest.api.network.test_networks.BulkNetworkOpsIpV6Test" name="test_bulk_create_delete_subnet[id-7549d64e-4938-489d-96ba-016451660556,smoke]" time="12.110"/>
+<testcase classname="tempest.api.compute.servers.test_server_addresses.ServerAddressesTestJSON" name="test_list_server_addresses[id-b501abea-63da-4741-b62f-10426d2bd5c8,network,smoke]" time="0.268"/>
+<testcase classname="tempest.api.compute.servers.test_server_addresses.ServerAddressesTestJSON" name="test_list_server_addresses_by_network[id-8dd9d0d9-a1f9-4207-bf01-33fbd9d0adfd,network,smoke]" time="0.409"/>
+<testcase classname="tempest.api.identity.admin.v3.test_policies.PoliciesTestJSON" name="test_create_update_delete_policy[id-2fdb5e9b-2226-4b83-9576-7037943846e1,smoke]" time="0.819"/>
+<testcase classname="tempest.api.network.test_networks.BulkNetworkOpsTest" name="test_bulk_create_delete_network[id-dd90abb7-1a4e-48e3-a167-f277ec11108f,smoke]" time="5.800"/>
+<testcase classname="tempest.api.volume.test_volumes_actions.VolumesV2ActionsTest" name="test_attach_detach_volume_to_instance[compute,id-fff42874-7db5-4487-a8e1-ddda5fb5288d,smoke]" time="18.366"/>
+<testcase classname="tempest.api.network.test_networks.BulkNetworkOpsTest" name="test_bulk_create_delete_port[id-eeb7533f-fd53-411a-9289-fcb4258b7f45,smoke]" time="7.748"/>
+<testcase classname="tempest.api.network.test_routers.RoutersTest" name="test_add_multiple_router_interfaces[id-142463a1-ed6a-4b9d-abe4-78569731c6f9,smoke]" time="42.241"/>
+<testcase classname="tempest.api.network.test_networks.BulkNetworkOpsTest" name="test_bulk_create_delete_subnet[id-09aaf80c-4cde-43f0-80bb-cc7486133057,smoke]" time="5.665"/>
+<testcase classname="tempest.api.volume.test_volumes_list.VolumesV1ListTestJSON" name="test_volume_list[id-44f7b3e0-6373-4427-949f-68ab32d6e184,smoke]" time="0.092"/>
+<testcase classname="" name="setUpClass (mistral_tempest_tests.tests.api.v2.test_actions.ActionTestsV2)" time="0.000">
+<skipped>Mistral support is required.</skipped>
+</testcase>
+<testcase classname="tempest.api.network.test_networks.NetworksIpV6Test" name="test_create_update_delete_network_subnet[id-983e1633-e577-415b-851d-635eb5025ec9,smoke]" time="15.892"/>
+<testcase classname="tempest.api.network.test_networks.NetworksIpV6Test" name="test_external_network_visibility[id-4334ba1b-de5c-41e7-8511-0d0eeb5c285b,smoke]" time="0.797"/>
+<testcase classname="tempest.api.network.test_networks.NetworksIpV6Test" name="test_list_networks[id-593e96ef-4d7e-47a3-8d5e-9cb6c1504acb,smoke]" time="0.832"/>
+<testcase classname="tempest.api.network.test_networks.NetworksIpV6Test" name="test_list_subnets[id-4f3c4a81-2c76-4c27-8b4a-ec3c4ed80107,smoke]" time="0.600"/>
+<testcase classname="tempest.api.network.test_networks.NetworksIpV6Test" name="test_show_network[id-4f278dab-1e1f-4126-8112-5c8d115ad62f,smoke]" time="0.283"/>
+<testcase classname="tempest.api.network.test_networks.NetworksIpV6Test" name="test_show_subnet[id-a24dbec1-c9a5-4d36-a524-20033184f620,smoke]" time="0.229"/>
+<testcase classname="neutron.tests.tempest.api.admin.test_shared_network_extension.RBACSharedNetworksTest" name="test_create_rbac_policy_with_target_tenant_none[id-ff13925f-b235-413e-8ef3-1325d463add9,smoke]" time="7.025"/>
+<testcase classname="tempest.api.network.test_routers.RoutersTest" name="test_add_remove_router_interface_with_port_id[id-02693de1-7330-4857-9c77-b25c33607b35,smoke]" time="29.507"/>
+<testcase classname="neutron.tests.tempest.api.admin.test_shared_network_extension.RBACSharedNetworksTest" name="test_create_rbac_policy_with_target_tenant_too_long_id[id-693b66cd-3ada-41ac-886a-6cfee12f1b7b,smoke]" time="5.082"/>
+<testcase classname="neutron.tests.tempest.api.admin.test_shared_network_extension.RBACSharedNetworksTest" name="test_network_only_visible_to_policy_target[id-7c621ce5-de0d-4274-8d89-02be7bd9e225,smoke]" time="12.603"/>
+<testcase classname="tempest.api.network.test_networks.NetworksTest" name="test_create_update_delete_network_subnet[id-b672a174-6ed4-4d0e-a0cd-404dda544c09,smoke]" time="9.870"/>
+<testcase classname="tempest.api.network.test_networks.NetworksTest" name="test_external_network_visibility[id-403ab82d-bcdf-45e2-bddb-655b3a00a1f5,smoke]" time="0.803"/>
+<testcase classname="tempest.api.network.test_networks.NetworksTest" name="test_list_networks[id-5daa85e7-5edf-4deb-992c-e0107fd19b2b,smoke]" time="0.342"/>
+<testcase classname="tempest.api.network.test_networks.NetworksTest" name="test_list_subnets[id-f2c03a3a-b43b-4829-8251-6c693448c8c2,smoke]" time="0.203"/>
+<testcase classname="tempest.api.network.test_networks.NetworksTest" name="test_show_network[id-9b922b8a-ef9d-4a26-bbbd-7c37ecfc7f21,smoke]" time="0.293"/>
+<testcase classname="tempest.api.network.test_networks.NetworksTest" name="test_show_subnet[id-2207e5f2-2de1-46c5-954d-a2295e75ca2b,smoke]" time="0.436"/>
+<testcase classname="tempest.api.network.test_routers.RoutersTest" name="test_add_remove_router_interface_with_subnet_id[id-9bd032b6-4292-4e4d-ab2e-0113fc638bfa,smoke]" time="29.382"/>
+<testcase classname="tempest.api.network.test_routers.RoutersIpV6Test" name="test_add_multiple_router_interfaces[id-828bca65-e8e4-4e55-88a5-ce15333ee461,smoke]" time="44.825"/>
+<testcase classname="neutron.tests.tempest.api.test_tag.TagFilterNetworkTestJSON" name="test_filter_network_tags[id-574d99a6-0432-4379-a3d3-238e55547eb4,smoke]" time="3.084"/>
+<testcase classname="tempest.api.network.test_routers.RoutersTest" name="test_create_show_list_update_delete_router[id-a19c4c3c-490d-41fb-9ea6-a37c04b6db89,smoke]" time="21.941"/>
+<testcase classname="tempest.api.network.test_ports.PortsTestJSON" name="test_create_port_in_allowed_allocation_pools[id-c6c55e41-f6e5-4cc7-b2af-9b7d863a4ac7,smoke]" time="16.602"/>
+<testcase classname="tempest.api.network.test_routers.RoutersIpV6Test" name="test_add_remove_router_interface_with_port_id[id-ac58ceb1-0cb8-40ad-8a1d-3be5636dcd41,smoke]" time="28.079"/>
+<testcase classname="tempest.api.network.test_ports.PortsTestJSON" name="test_create_port_with_no_securitygroups[id-8ca6d376-ceff-423b-9021-38aa76bd51c5,smoke]" time="22.243"/>
+<testcase classname="tempest.api.network.test_ports.PortsTestJSON" name="test_create_update_delete_port[id-153838d9-8c65-439a-91a3-ff40e5b182ac,smoke]" time="4.372"/>
+<testcase classname="tempest.api.network.test_ports.PortsTestJSON" name="test_list_ports[id-124ef885-6e91-482f-9789-9315db2e13ce,smoke]" time="0.180"/>
+<testcase classname="neutron.tests.tempest.api.test_tag.TagFilterSubnetTestJSON" name="test_filter_subnet_tags[id-06dcba8d-6ce5-4cb1-b733-d5bbbd94f019,smoke]" time="2.984"/>
+<testcase classname="tempest.api.network.test_ports.PortsTestJSON" name="test_show_port[id-5e82e447-cca1-4794-9f2b-14465f323645,smoke]" time="0.239"/>
+<testcase classname="" name="setUpClass (tempest.api.object_storage.test_container_services.ContainerTest)" time="0.000">
+<skipped>ContainerTest skipped as swift is not available</skipped>
+</testcase>
+<testcase classname="" name="setUpClass (tempest.api.object_storage.test_object_services.ObjectTest)" time="0.000">
+<skipped>ObjectTest skipped as swift is not available</skipped>
+</testcase>
+<testcase classname="tempest.api.network.test_routers.RoutersIpV6Test" name="test_add_remove_router_interface_with_subnet_id[id-5a7184b5-447d-4513-bf0e-a6c020d70ad0,smoke]" time="32.366"/>
+<testcase classname="tempest.api.volume.test_volumes_get.VolumesV1GetTest" name="test_volume_create_get_update_delete[id-3d3e4c03-dd47-4cdc-a3a0-381e91a7f3f3,smoke]" time="11.841"/>
+<testcase classname="tempest.api.network.test_security_groups.SecGroupIPv6Test" name="test_create_list_update_show_delete_security_group[id-4c69f27d-f2a9-429d-9b96-49d1d19ef222,smoke]" time="4.133"/>
+<testcase classname="tempest.api.network.test_security_groups.SecGroupIPv6Test" name="test_create_show_delete_security_group_rule[id-1451d282-aa92-4c28-a716-e2745da75159,smoke]" time="3.423"/>
+<testcase classname="tempest.api.network.test_security_groups.SecGroupIPv6Test" name="test_list_security_groups[id-44bcc753-6d7d-4b37-9982-51069eabf339,smoke]" time="0.557"/>
+<testcase classname="tempest.api.network.test_routers.RoutersIpV6Test" name="test_create_show_list_update_delete_router[id-704e170b-0e14-4af7-a57b-a4a0673cb9f3,smoke]" time="22.208"/>
+<testcase classname="tempest.api.network.test_security_groups.SecGroupTest" name="test_create_list_update_show_delete_security_group[id-21fb980a-4961-47db-b093-9f8d03cf80a0,smoke]" time="4.147"/>
+<testcase classname="tempest.api.network.test_security_groups.SecGroupTest" name="test_create_show_delete_security_group_rule[id-8855809c-0f3b-43b6-ab14-1b2d70b8c2a4,smoke]" time="4.038"/>
+<testcase classname="tempest.api.network.test_security_groups.SecGroupTest" name="test_list_security_groups[id-b3e0158d-853c-4283-9ff8-b349ff7b5988,smoke]" time="0.122"/>
+<testcase classname="tempest.api.volume.test_volumes_get.VolumesV1GetTest" name="test_volume_create_get_update_delete_from_image[id-86269e74-466d-4dca-a985-267715e6383c,image,smoke]" time="20.037"/>
+<testcase classname="tempest.api.network.test_versions.NetworksApiDiscovery" name="test_api_version_resources[id-714f1f2a-7479-4643-8648-b94f99361db6,smoke]" time="0.007"/>
+<testcase classname="" name="setUpClass (tempest.api.object_storage.test_account_services.AccountTest)" time="0.000">
+<skipped>AccountTest skipped as swift is not available</skipped>
+</testcase>
+<testcase classname="neutron.tests.tempest.api.test_tag.TagFilterSubnetpoolTestJSON" name="test_filter_subnetpool_tags[id-8c090110-ef16-429f-bae7-298f72260331,smoke]" time="2.597"/>
+<testcase classname="tempest.api.network.test_subnetpools_extensions.SubnetPoolsTestJSON" name="test_create_list_show_update_delete_subnetpools[id-b254c398-9a00-41f2-bcc4-4ea77e80d329,smoke]" time="5.519"/>
+<testcase classname="" name="setUpClass (tempest.api.object_storage.test_container_quotas.ContainerQuotasTest)" time="0.000">
+<skipped>ContainerQuotasTest skipped as swift is not available</skipped>
+</testcase>
+<testcase classname="neutron.tests.tempest.api.test_tag.TagSubnetTestJSON" name="test_subnet_tags[id-e25e9a6d-8c62-476f-9e80-b154154c5592,smoke]" time="11.662"/>
+<testcase classname="tempest.api.orchestration.stacks.test_resource_types.ResourceTypesTest" name="test_resource_type_list[id-5785f96b-c0df-46dd-b6dd-21df0f4a1da6,smoke]" time="19.945"/>
+<testcase classname="tempest.api.orchestration.stacks.test_stacks.StacksTestJSON" name="test_stack_crud_no_resources[id-8e7d74f2-3df1-4b05-8e4d-68c5b7f86a37,smoke]" time="9.221"/>
+<testcase classname="tempest.api.orchestration.stacks.test_stacks.StacksTestJSON" name="test_stack_list_responds[id-0e4738ce-c2fc-46b9-9094-2671beec28e0,smoke]" time="0.102"/>
+<testcase classname="tempest.api.orchestration.stacks.test_resource_types.ResourceTypesTest" name="test_resource_type_show[id-8eabfe15-503c-42b9-a638-c1915a2157b4,smoke]" time="31.777"/>
+<testcase classname="tempest.api.orchestration.stacks.test_resource_types.ResourceTypesTest" name="test_resource_type_template[id-632142c4-acbb-4be8-8868-ae2aba552b0b,smoke]" time="0.064"/>
+<testcase classname="tempest.api.volume.test_volumes_list.VolumesV2ListTestJSON" name="test_volume_list[id-9b45285e-9792-4478-bb6f-47e903579ea1,smoke]" time="0.115"/>
+<testcase classname="tempest.scenario.test_network_basic_ops.TestNetworkBasicOps" name="test_network_basic_ops[compute,id-f323b3ba-82f8-4db7-8ea6-6a895869ec49,network,smoke]" time="164.319"/>
+<testcase classname="tempest.api.orchestration.stacks.test_soft_conf.TestSoftwareConfig" name="test_get_deployment_list[id-d1c854cf-e78b-4d59-8c67-a1b6b2519b76,smoke]" time="5.874"/>
+<testcase classname="tempest.api.orchestration.stacks.test_soft_conf.TestSoftwareConfig" name="test_get_deployment_metadata[id-bcf24d12-2d8d-4c41-b97d-d735d41405d9,smoke]" time="1.923"/>
+<testcase classname="tempest.api.orchestration.stacks.test_soft_conf.TestSoftwareConfig" name="test_get_software_config[id-91018d8f-041a-407d-8fc1-ca10c533b8b8,smoke]" time="3.052"/>
+<testcase classname="tempest.api.orchestration.stacks.test_soft_conf.TestSoftwareConfig" name="test_software_deployment_create_validate[id-72fde0da-6755-4344-9a0c-4b32924c813b,smoke]" time="1.980"/>
+<testcase classname="tempest.api.orchestration.stacks.test_soft_conf.TestSoftwareConfig" name="test_software_deployment_update_no_metadata_change[id-52177087-213d-4fe1-8fe5-15c2a7c528e5,smoke]" time="1.240"/>
+<testcase classname="tempest.api.orchestration.stacks.test_soft_conf.TestSoftwareConfig" name="test_software_deployment_update_with_metadata_change[id-49b47cdc-82db-4df2-8d0a-2ec39674e25a,smoke]" time="1.046"/>
+<testcase classname="tempest.scenario.test_server_basic_ops.TestServerBasicOps" name="test_server_basic_ops[compute,id-7fff3fb3-91d8-4fd0-bd7d-0204f1f180ba,network,smoke]" time="40.670"/>
+<testcase classname="" name="setUpClass (mistral_tempest_tests.tests.api.v2.test_cron_triggers.CronTriggerTestsV2)" time="0.000">
+<skipped>Mistral support is required.</skipped>
+</testcase>
+<testcase classname="" name="setUpClass (mistral_tempest_tests.tests.api.v2.test_tasks.TasksTestsV2)" time="0.000">
+<skipped>Mistral support is required.</skipped>
+</testcase>
+<testcase classname="" name="setUpClass (mistral_tempest_tests.tests.api.v2.test_workflows.WorkflowTestsV2)" time="0.000">
+<skipped>Mistral support is required.</skipped>
+</testcase>
+<testcase classname="neutron.tests.tempest.api.test_tag.TagSubnetPoolTestJSON" name="test_subnetpool_tags[id-d0880a81-0f80-4e28-b501-9eb658700007,smoke]" time="4.442"/>
+<testcase classname="tempest.api.volume.test_volumes_get.VolumesV2GetTest" name="test_volume_create_get_update_delete[id-71611f9e-bab4-4221-b7e6-c66f6339c2bd,smoke]" time="10.531"/>
+<testcase classname="tempest.api.volume.test_volumes_get.VolumesV2GetTest" name="test_volume_create_get_update_delete_from_image[id-e4d768c7-c208-4d81-b8f7-357cac931a63,image,smoke]" time="16.721"/>
+<testcase classname="" name="setUpClass (tempest.scenario.test_server_multinode.TestServerMultinode)" time="0.000">
+<skipped>Less than 2 compute nodes, skipping multinode tests.</skipped>
+</testcase>
+<testcase classname="neutron.tests.tempest.api.test_tag.TagFilterRouterTestJSON" name="test_filter_router_tags[id-0c2e6d83-ae24-468d-8516-b7c5785bef0a,smoke]" time="2.531"/>
+<testcase classname="tempest.scenario.test_volume_boot_pattern.TestVolumeBootPattern" name="test_volume_boot_pattern[compute,id-557cd2c2-4eb8-4dce-98be-f86765ff311b,image,smoke,volume]" time="158.856"/>
+<testcase classname="neutron.tests.tempest.api.test_tag.TagNetworkTestJSON" name="test_network_tags[id-15c72621-1e2f-4e3b-9895-1af552272aa5,smoke]" time="5.626"/>
+<testcase classname="tempest.scenario.test_volume_boot_pattern.TestVolumeBootPatternV2" name="test_volume_boot_pattern[compute,id-557cd2c2-4eb8-4dce-98be-f86765ff311b,image,smoke,volume]" time="139.931"/>
+<testcase classname="" name="setUpClass (mistral_tempest_tests.tests.api.v2.test_executions.ExecutionTestsV2)" time="0.000">
+<skipped>Mistral support is required.</skipped>
+</testcase>
+<testcase classname="" name="setUpClass (mistral_tempest_tests.tests.api.v2.test_workbooks.WorkbookTestsV2)" time="0.000">
+<skipped>Mistral support is required.</skipped>
+</testcase>
+<testcase classname="" name="setUpClass (inspector_tempest_plugin.tests.test_basic.InspectorSmokeTest)" time="0.000">
+<skipped>Ironic is not enabled.</skipped>
+</testcase>
+    <testcase classname="neutron.tests.tempest.api.test_tag.TagFilterPortTestJSON" name="test_filter_port_tags[id-fc626f6b-5fcd-4688-88bf-7bf13ac6f079,smoke]" time="1.094">
+        <failure type="Exception">Traceback</failure>
+    </testcase>
+    <testcase classname="neutron.tests.tempest.api.test_tag.TagPortTestJSON" name="test_port_tags[id-89f16085-1987-4460-90de-e8aeb9d63e57,smoke]" time="3.966">
+        <failure type="Exception">Traceback</failure>
+    </testcase>
+    <testcase classname="neutron.tests.tempest.api.test_tag.TagRouterTestJSON" name="test_router_tags[id-ad41caf1-c8b9-4708-83f6-a7d27e900a4c,smoke]" time="5.273">
+        <failure type="Exception">Traceback</failure>
+    </testcase>
+</testsuite>
