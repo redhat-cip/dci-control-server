@@ -14,9 +14,14 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from dci.db import models
+
+import flask
 import logging
 from lxml import etree
 from datetime import timedelta
+
+from sqlalchemy import sql
 
 LOG = logging.getLogger(__name__)
 
@@ -65,7 +70,26 @@ def parse_testssuites(root):
     return testssuites
 
 
-def junit2dict(string):
+def parse_regressions(regressions):
+    test_case_dict = {'name': '',
+                      'classname': '',
+                      'time': '',
+                      'message': '',
+                      'value': '',
+                      'action': 'regression',
+                      'type': ''}
+    results = []
+    for regression in regressions:
+        classname, name = regression.split(':')
+        test_case = dict(test_case_dict)
+        test_case['classname'] = classname
+        test_case['name'] = name
+        results.append(test_case)
+
+    return results
+
+
+def junit2dict(string, regressions=None):
     if not string:
         return {}
     results = {
@@ -100,6 +124,9 @@ def junit2dict(string):
                                   results['failures'] -
                                   results['errors'] -
                                   results['skips'])
+            if regressions is not None:
+                regressions = parse_regressions(regressions)
+                results['testscases'].extend(regressions)
             results['time'] += int(test_duration.total_seconds() * 1000)
     except etree.XMLSyntaxError as e:
         results['error'] = "XMLSyntaxError: %s " % str(e)
@@ -130,3 +157,37 @@ def get_regressions_failures(testsuite1, testsuite2):
         return list(failures_2 - failures_1)
     except etree.XMLSyntaxError as e:
         LOG.error('XMLSyntaxError %s' % str(e))
+
+
+def get_regressions(swift, job, filename, team_id, current_test_suite):
+    """Get previous job of the passed job and compute regression agains the
+    file referenced by 'filename'."""
+    def _get_previous_job_in_topic(job):
+        topic_id = job['topic_id']
+        query = sql.select([models.JOBS]). \
+            where(sql.and_(models.JOBS.c.topic_id == topic_id,
+                           models.JOBS.c.created_at < job['created_at'],
+                           models.JOBS.c.id != job['id'],
+                           models.JOBS.c.state != 'archived')). \
+            order_by(sql.desc(models.JOBS.c.created_at))
+        return flask.g.db_conn.execute(query).fetchone()
+
+    def _get_file_from_job(job_id, filename):
+        query = sql.select([models.FILES]). \
+            where(sql.and_(models.FILES.c.name == filename,
+                           models.FILES.c.job_id == job_id))
+        return flask.g.db_conn.execute(query).fetchone()
+
+    prev_job = _get_previous_job_in_topic(job)
+    if prev_job is not None:
+        prev_job_file = _get_file_from_job(prev_job['id'], filename)
+        if prev_job_file is not None:
+            prev_file_path = swift.build_file_path(
+                team_id,
+                prev_job['id'],
+                prev_job_file['id'])
+            _, prev_file_descriptor = swift.get(prev_file_path)
+            prev_test_suite = prev_file_descriptor.read()
+            return get_regressions_failures(prev_test_suite,
+                                            current_test_suite)
+    return []
