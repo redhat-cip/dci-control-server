@@ -49,8 +49,11 @@ class Swift(stores.Store):
                                              'deleting %s' % filename)
 
     def get(self, filename):
-        return self.connection.get_object(self.container, filename,
-                                          resp_chunk_size=65535)
+        try:
+            return self.connection.get_object(self.container, filename,
+                                              resp_chunk_size=65535)
+        except swiftclient.exceptions.ClientException:
+            raise exceptions.DCINotFound('file not found', filename)
 
     def head(self, filename):
         try:
