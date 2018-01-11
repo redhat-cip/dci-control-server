@@ -351,7 +351,7 @@ remoteci_user = schema_factory(remoteci_user)
 ###############################################################################
 
 job = {
-    'remoteci_id': v.Any(UUID, msg=INVALID_REMOTE_CI),
+    v.Optional('remoteci_id'): v.Any(UUID, msg=INVALID_REMOTE_CI),
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     'components': list,
     v.Optional('comment', default=None): six.text_type,
@@ -375,7 +375,7 @@ job_put = {
 job = DCISchema(schema_factory(job).post, Schema(job_put))
 
 job_schedule = {
-    'remoteci_id': v.Any(UUID, msg=INVALID_REMOTE_CI),
+    v.Optional('remoteci_id'): v.Any(UUID, msg=INVALID_REMOTE_CI),
     'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
     v.Optional('components_ids', default=[]): list
 }
@@ -391,7 +391,7 @@ job_upgrade = schema_factory(job_upgrade)
 
 
 job_schedule_template = {
-    'remoteci_id': v.Any(UUID, msg=INVALID_REMOTE_CI),
+    v.Optional('remoteci_id'): v.Any(UUID, msg=INVALID_REMOTE_CI),
     'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
 
 }
