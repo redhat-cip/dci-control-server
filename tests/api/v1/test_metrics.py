@@ -15,7 +15,7 @@
 # under the License.
 
 
-def test_metrics_admin(admin, remoteci_id, team_id, product):
+def test_metrics_admin(admin, remoteci_context, remoteci_id, team_id, product):
     t = admin.post('/api/v1/topics',
                    data={'name': 'foo', 'product_id': product['id'],
                          'component_types': ['type1', 'type2']}).data
@@ -32,12 +32,8 @@ def test_metrics_admin(admin, remoteci_id, team_id, product):
     admin.post('/api/v1/topics',
                data={'name': 'bar', 'product_id': product['id'],
                      'component_types': ['type1', 'type2']})
-    admin.post('/api/v1/jobs', data={'team_id': team_id,
-                                     'remoteci_id': remoteci_id,
-                                     'components': [c_id]})
-    admin.post('/api/v1/jobs', data={'team_id': team_id,
-                                     'remoteci_id': remoteci_id,
-                                     'components': [c_id]})
+    remoteci_context.post('/api/v1/jobs', data={'components': [c_id]})
+    remoteci_context.post('/api/v1/jobs', data={'components': [c_id]})
     res = admin.get('/api/v1/metrics/topics')
     foo = res.data['topics']['foo']
     bar = res.data['topics']['bar']

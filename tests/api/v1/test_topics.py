@@ -447,16 +447,11 @@ def test_delete_team_from_topic_as_user(admin, user, product):
     assert status_code == 401
 
 
-def test_status_from_component_type_last_component(admin, topic_id,
-                                                   components_ids,
-                                                   remoteci_id,
-                                                   team_id):
-    data = {
-        'team_id': team_id,
-        'remoteci_id': remoteci_id,
-        'components': components_ids
-    }
-    job = admin.post('/api/v1/jobs', data=data).data['job']
+def test_status_from_component_type_last_component(admin, remoteci_context,
+                                                   topic_id,
+                                                   components_ids):
+    data = {'components': components_ids}
+    job = remoteci_context.post('/api/v1/jobs', data=data).data['job']
     data_update = {'status': 'success'}
     admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
               headers={'If-match': job['etag']})
@@ -487,14 +482,10 @@ def test_status_from_component_type_last_component(admin, topic_id,
     assert 'name-' in status['jobs'][0]['component_name']
 
 
-def test_status_from_component_type_get_status(admin, topic_id, components_ids,
-                                               remoteci_id, team_id):
-    data = {
-        'team_id': team_id,
-        'remoteci_id': remoteci_id,
-        'components': components_ids,
-    }
-    job = admin.post('/api/v1/jobs', data=data).data['job']
+def test_status_from_component_type_get_status(admin, remoteci_context,
+                                               topic_id, components_ids):
+    data = {'components': components_ids}
+    job = remoteci_context.post('/api/v1/jobs', data=data).data['job']
     data_update = {'status': 'success'}
     admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
               headers={'If-match': job['etag']})
