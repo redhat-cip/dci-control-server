@@ -223,7 +223,7 @@ def test_delete_team_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_team_archive_dependencies(admin, product):
+def test_delete_team_archive_dependencies(admin, remoteci_context, product):
     team = admin.post('/api/v1/teams', data={'name': 'team_name'})
     team_id = team.data['team']['id']
     team_etag = team.data['team']['etag']
@@ -265,10 +265,9 @@ def test_delete_team_archive_dependencies(admin, product):
     component_id = component.data['component']['id']
     assert component.status_code == 201
 
-    data = {'team_id': team_id,
-            'remoteci_id': remoteci_id, 'comment': 'kikoolol',
+    data = {'comment': 'kikoolol',
             'components': [component_id]}
-    job = admin.post('/api/v1/jobs', data=data)
+    job = remoteci_context.post('/api/v1/jobs', data=data)
     job_id = job.data['job']['id']
     assert job.status_code == 201
 
