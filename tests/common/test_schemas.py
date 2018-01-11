@@ -380,19 +380,17 @@ class TestRemoteciRconfigurations(utils.SchemaTesting):
 
 class TestJob(utils.SchemaTesting):
     schema = schemas.job
-    data = dict([utils.REMOTE_CI, utils.TEAM,
-                 utils.COMPONENTS, utils.PREVIOUS_JOB_ID, utils.STATE,
-                 utils.TOPIC, utils.RCONFIGURATION])
+    data = dict([utils.TEAM, utils.COMPONENTS, utils.PREVIOUS_JOB_ID,
+                 utils.STATE, utils.TOPIC, utils.RCONFIGURATION])
     data_put = dict([('status', 'success'), utils.COMMENT])
 
     @staticmethod
     def generate_invalids_and_errors():
-        invalids = dict([utils.INVALID_REMOTE_CI, utils.INVALID_TEAM,
+        invalids = dict([utils.INVALID_TEAM,
                          utils.INVALID_COMPONENTS,
                          utils.INVALID_TOPIC,
                          utils.INVALID_RCONFIGURATION])
-        errors = dict([utils.INVALID_REMOTE_CI_ERROR,
-                       utils.INVALID_TEAM_ERROR,
+        errors = dict([utils.INVALID_TEAM_ERROR,
                        utils.INVALID_COMPONENTS_ERROR,
                        utils.INVALID_TOPIC_ERROR,
                        utils.INVALID_RCONFIGURATION_ERROR])
@@ -410,7 +408,7 @@ class TestJob(utils.SchemaTesting):
         super(TestJob, self).test_post_extra_data(data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('remoteci_id', 'components')
+        errors = utils.generate_errors('components')
         super(TestJob, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
@@ -435,14 +433,13 @@ class TestJob(utils.SchemaTesting):
 
 class TestJobSchedule(utils.SchemaTesting):
     schema = schemas.job_schedule
-    data = dict([utils.REMOTE_CI, utils.TOPIC, utils.COMPONENTS_IDS])
+    data = dict([utils.TOPIC, utils.COMPONENTS_IDS])
 
     @staticmethod
     def generate_invalids_and_errors():
-        invalids = dict([utils.INVALID_REMOTE_CI, utils.INVALID_TOPIC,
+        invalids = dict([utils.INVALID_TOPIC,
                          utils.INVALID_COMPONENTS_IDS])
-        errors = dict([utils.INVALID_REMOTE_CI_ERROR,
-                       utils.INVALID_TOPIC_ERROR,
+        errors = dict([utils.INVALID_TOPIC_ERROR,
                        utils.INVALID_COMPONENTS_IDS_ERROR])
         return invalids, errors
 
@@ -450,7 +447,7 @@ class TestJobSchedule(utils.SchemaTesting):
         super(TestJobSchedule, self).test_post(self.data, self.data)
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('remoteci_id', 'topic_id')
+        errors = utils.generate_errors('topic_id')
         super(TestJobSchedule, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
