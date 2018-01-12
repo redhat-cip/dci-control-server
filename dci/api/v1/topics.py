@@ -43,13 +43,16 @@ _EMBED_MANY = {
 
 @api.route('/topics', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
 def create_topics(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.topic.post(flask.request.json))
 
+    if not values['product_id']:
+        values['product_id'] = user.product_id
+
     if not user.is_super_admin() and \
-       not ((user.is_product_owner() or user.is_feeder()) and
-            user.product_id == values['product_id']):
+       not user.product_id == values['product_id']:
         raise auth.UNAUTHORIZED
 
     # todo(yassine): enabled when client updated.
@@ -115,6 +118,7 @@ def get_all_topics(user):
 
 @api.route('/topics/<uuid:topic_id>', methods=['PUT'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
 def put_topic(user, topic_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -122,8 +126,7 @@ def put_topic(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
     if not user.is_super_admin() and \
-       not ((user.is_product_owner() or user.is_feeder()) and
-            user.product_id == topic['product_id']):
+       not user.product_id == topic['product_id']:
         raise auth.UNAUTHORIZED
 
     n_topic = None
@@ -153,11 +156,11 @@ def put_topic(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
 def delete_topic_by_id(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     if not user.is_super_admin() and \
-       not ((user.is_product_owner() or user.is_feeder()) and
-            user.product_id == topic['product_id']):
+       not user.product_id == topic['product_id']:
         raise auth.UNAUTHORIZED
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
@@ -336,6 +339,7 @@ def delete_test_from_topic(user, t_id, test_id):
 # teams set apis
 @api.route('/topics/<uuid:topic_id>/teams', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER'])
 def add_team_to_topic(user, topic_id):
     # TODO(yassine): use voluptuous schema
     data_json = flask.request.json
@@ -365,6 +369,7 @@ def add_team_to_topic(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>/teams/<uuid:team_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER'])
 def delete_team_from_topic(user, topic_id, team_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
@@ -389,12 +394,12 @@ def delete_team_from_topic(user, topic_id, team_id):
 
 @api.route('/topics/<uuid:topic_id>/teams', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER'])
 def get_all_teams_from_topic(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
     if not user.is_super_admin() and \
-       not (user.is_product_owner() and
-            user.product_id == topic['product_id']):
+       not user.product_id == topic['product_id']:
         raise auth.UNAUTHORIZED
 
     # Get all teams which belongs to a given topic
@@ -411,11 +416,13 @@ def get_all_teams_from_topic(user, topic_id):
 
 @api.route('/topics/purge', methods=['GET'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def get_to_purge_archived_topics(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/topics/purge', methods=['POST'])
 @decorators.login_required
+@decorators.has_role(['SUPER_ADMIN'])
 def purge_archived_topics(user):
     return base.purge_archived_resources(user, _TABLE)
