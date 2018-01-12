@@ -1,0 +1,44 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba076199_1748de5a",
+        "filename": "dci/api/v1/transformations.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-01-12T17:24:59Z",
+      "side": 1,
+      "message": "Single Responsability Principle\nCreate another method to append a regression",
+      "revId": "d9cc33eefe4f4ba864870736f358341fbe4e841d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba076199_97728eac",
+        "filename": "dci/api/v1/transformations.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 129,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-01-12T17:24:59Z",
+      "side": 1,
+      "message": "do not extend the testscases. It\u0027s not easy for the user interface.\n\njust add \u0027regression\u0027 field to True or False for the testcase. It will be easier to manipulate on the frontend",
+      "range": {
+        "startLine": 129,
+        "startChar": 16,
+        "endLine": 129,
+        "endChar": 57
+      },
+      "revId": "d9cc33eefe4f4ba864870736f358341fbe4e841d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
