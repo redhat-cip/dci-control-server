@@ -24,7 +24,8 @@ conf = dci_config.generate_conf()
 
 es_engine = engine.DCIESEngine(es_host=conf['ES_HOST'],
                                es_port=conf['ES_PORT'],
-                               index='dci', timeout=60)
+                               index='dci', create_index=True,
+                               timeout=60)
 
 
 def test_essync_add_files(user, admin, jobstate_user_id):

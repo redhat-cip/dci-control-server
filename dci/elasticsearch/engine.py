@@ -19,11 +19,13 @@ from elasticsearch import exceptions
 
 
 class DCIESEngine(object):
-    def __init__(self, es_host, es_port, index='dci', timeout=30):
+    def __init__(self, es_host, es_port, index='dci', create_index=False,
+                 timeout=30):
         self._index = index
         self._conn = Elasticsearch([{'host': es_host, 'port': es_port}],
                                    timeout=timeout)
-        self._conn.indices.create(index=self._index, ignore=400)
+        if create_index is True:
+            self._conn.indices.create(index=self._index, ignore=400)
 
     def index(self, document):
         return self._conn.index(index=self._index, doc_type='logs',
