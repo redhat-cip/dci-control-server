@@ -50,7 +50,8 @@ def engine(request):
 def es_engine(request):
     el_engine = elastic_engine.DCIESEngine(es_host=utils.conf['ES_HOST'],
                                            es_port=utils.conf['ES_PORT'],
-                                           index='dci', timeout=60)
+                                           index='dci', create_index=True,
+                                           timeout=60)
 
     def fin():
         el_engine.cleanup()
