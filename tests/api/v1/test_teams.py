@@ -223,14 +223,13 @@ def test_delete_team_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_team_archive_dependencies(admin, product):
-    team = admin.post('/api/v1/teams', data={'name': 'team_name'})
-    team_id = team.data['team']['id']
-    team_etag = team.data['team']['etag']
-    assert team.status_code == 201
+def test_delete_team_archive_dependencies(admin, remoteci_context, product,
+                                          team_user_id):
+    team_user = admin.get('/api/v1/teams/%s' % team_user_id).data['team']
+    team_user_etag = team_user['etag']
 
     test = admin.post('/api/v1/tests',
-                      data={'name': 'pname', 'team_id': team_id})
+                      data={'name': 'pname', 'team_id': team_user_id})
     test_id = test.data['test']['id']
     assert test.status_code == 201
 
@@ -238,12 +237,12 @@ def test_delete_team_archive_dependencies(admin, product):
                       data={'name': 'pname', 'password': 'ppass',
                             'fullname': 'P Name',
                             'email': 'pname@example.org',
-                            'team_id': team_id})
+                            'team_id': team_user_id})
     user_id = user.data['user']['id']
     assert user.status_code == 201
 
     remoteci = admin.post('/api/v1/remotecis',
-                          data={'name': 'pname', 'team_id': team_id})
+                          data={'name': 'pname', 'team_id': team_user_id})
     remoteci_id = remoteci.data['remoteci']['id']
     assert remoteci.status_code == 201
 
@@ -265,15 +264,15 @@ def test_delete_team_archive_dependencies(admin, product):
     component_id = component.data['component']['id']
     assert component.status_code == 201
 
-    data = {'team_id': team_id,
-            'remoteci_id': remoteci_id, 'comment': 'kikoolol',
+    data = {'team_id': team_user_id,
+            'comment': 'kikoolol',
             'components': [component_id]}
-    job = admin.post('/api/v1/jobs', data=data)
+    job = remoteci_context.post('/api/v1/jobs', data=data)
     job_id = job.data['job']['id']
     assert job.status_code == 201
 
-    deleted_team = admin.delete('/api/v1/teams/%s' % team_id,
-                                headers={'If-match': team_etag})
+    deleted_team = admin.delete('/api/v1/teams/%s' % team_user_id,
+                                headers={'If-match': team_user_etag})
     assert deleted_team.status_code == 204
 
     deleted_user = admin.get('/api/v1/users/%s' % user_id)

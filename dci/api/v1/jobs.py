@@ -79,6 +79,7 @@ def create_jobs(user):
 
     values.update({
         'status': 'new',
+        'remoteci_id': user.id,
         'topic_id': values['topic_id'],
         'rconfiguration_id': values['rconfiguration_id'],
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
@@ -262,9 +263,8 @@ def _build_new_template(topic_id, remoteci, components_ids, values,
     return values
 
 
-def _validate_input(values, user):
+def _validate_input(values, identity):
     topic_id = values.pop('topic_id')
-    remoteci_id = values.get('remoteci_id')
     components_ids = values.pop('components_ids')
 
     values.update({
@@ -275,7 +275,7 @@ def _validate_input(values, user):
         'status': 'new'
     })
 
-    remoteci = v1_utils.verify_existence_and_get(remoteci_id, models.REMOTECIS)
+    remoteci = v1_utils.verify_existence_and_get(identity.id, models.REMOTECIS)
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
 
     if topic['state'] != 'active':
@@ -285,18 +285,18 @@ def _validate_input(values, user):
 
 # let's kill existing running jobs for the remoteci
     where_clause = sql.expression.and_(
-        _TABLE.c.remoteci_id == remoteci_id,
+        _TABLE.c.remoteci_id == identity.id,
         _TABLE.c.status.in_(('new', 'pre-run', 'running', 'post-run'))
     )
     kill_query = _TABLE .update().where(where_clause).values(status='killed')
     flask.g.db_conn.execute(kill_query)
 
     if remoteci['state'] != 'active':
-        message = 'RemoteCI "%s" is disabled.' % remoteci_id
+        message = 'RemoteCI "%s" is disabled.' % remoteci['id']
         raise dci_exc.DCIException(message, status_code=412)
 
     # The user belongs to the topic then we can start the scheduling
-    v1_utils.verify_team_in_topic(user, topic_id)
+    v1_utils.verify_team_in_topic(identity, topic_id)
     return topic_id, remoteci, components_ids
 
 
@@ -334,15 +334,10 @@ def schedule_jobs(user):
     will never be finished.
     """
 
-    # QuickFix
-    remoteci_id = flask.request.json.get('remoteci_id')
-    if remoteci_id is not None and '/' in remoteci_id:
-        remoteci_id = remoteci_id.split('/')[1]
-        flask.request.json['remoteci_id'] = remoteci_id
-
     values = schemas.job_schedule.post(flask.request.json)
 
     values.update({
+        'remoteci_id': user.id,
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'
