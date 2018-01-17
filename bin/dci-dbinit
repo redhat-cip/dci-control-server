@@ -14,123 +14,149 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-"""
-This module will initialize the database with the admin user and group based
-on DCI environment variable.
-"""
-
 import os
-import sys
 
 import sqlalchemy
-from sqlalchemy import exc as sa_exc
-from sqlalchemy_utils import functions as sa_funcs
+from sqlalchemy.orm import Session
+from sqlalchemy_utils import functions
 
 from dci import auth
-from dci.db import models
+from dci.db.orm import *
 from dci import dci_config
 from dci.alembic import utils as dci_alembic
-
 
 DCI_LOGIN = os.environ.get('DCI_LOGIN', 'admin')
 DCI_PASSWORD = os.environ.get('DCI_PASSWORD', 'admin')
 DCI_PASSWORD_HASH = auth.hash_password(DCI_PASSWORD)
 
 
-def init_db(db_conn):
-    def db_insert_with_name(model_item, **kwargs):
-        query = sqlalchemy.sql.select([model_item]).where(
-            model_item.c.name == kwargs['name'])
-        try:
-            result = db_conn.execute(query).fetchone()
-        except sa_exc.DBAPIError as e:
-            print(str(e))
-            sys.exit(1)
-
-        if result is None:
-            query = model_item.insert().values(**kwargs)
-            return db_conn.execute(query).inserted_primary_key[0]
-        else:
-            result = dict(result)
-            query = model_item.update().where(
-                model_item.c.name == result['name']).values(**kwargs)
-            try:
-                db_conn.execute(query)
-            except sa_exc.DBAPIError as e:
-                print(str(e))
-                sys.exit(1)
-            return result['id']
-
-    # Create team admin
-    team_admin_id = db_insert_with_name(models.TEAMS, name='admin')
-
-    # Create the three mandatory roles
-    super_admin_role = {
-        'name': 'Super Admin',
-        'label': 'SUPER_ADMIN',
-        'description': 'Admin of the platform',
-    }
-
-    product_owner_role = {
-        'name': 'Product Owner',
-        'label': 'PRODUCT_OWNER',
-        'description': 'Product Owner',
-    }
-
-    admin_role = {
-        'name': 'Admin',
-        'label': 'ADMIN',
-        'description': 'Admin of a team',
-    }
-
-    user_role = {
-        'name': 'User',
-        'label': 'USER',
-        'description': 'Regular User',
-    }
-
-    remoteci_role = {
-        'name': 'RemoteCI',
-        'label': 'REMOTECI',
-        'description': 'A RemoteCI',
-    }
-
-    feeder_role = {
-        'name': 'Feeder',
-        'label': 'FEEDER',
-        'description': 'A Feeder',
-    }
-
-    db_insert_with_name(models.ROLES, **product_owner_role)
-    db_insert_with_name(models.ROLES, **admin_role)
-    db_insert_with_name(models.ROLES, **user_role)
-    db_insert_with_name(models.ROLES, **remoteci_role)
-    db_insert_with_name(models.ROLES, **feeder_role)
-    super_admin_role_id = db_insert_with_name(models.ROLES,
-                                              **super_admin_role)
-
-    # Create super admin user
-    db_insert_with_name(models.USERS,
-                        name=DCI_LOGIN,
-                        password=DCI_PASSWORD_HASH,
-                        role_id=super_admin_role_id,
-                        team_id=team_admin_id,
-                        fullname='Admin',
-                        email='admin@example.org')
-
-
 def main():
     conf = dci_config.generate_conf()
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
-    if sa_funcs.database_exists(db_uri):
-        sa_funcs.drop_database(db_uri)
-    sa_funcs.create_database(db_uri)
+    if functions.database_exists(db_uri):
+        functions.drop_database(db_uri)
+        functions.create_database(db_uri)
 
     dci_alembic.sync()
     engine = sqlalchemy.create_engine(db_uri)
-    with engine.begin() as conn:
-        init_db(conn)
+
+    session = Session(engine)
+
+    # roles
+    super_admin_role = Role(name='Super Admin', label='SUPER_ADMIN', description='Admin of the platform')
+    product_owner_role = Role(name='Product Owner', label='PRODUCT_OWNER', description='Product Owner')
+    admin_role = Role(name='Admin', label='ADMIN', description='Admin of a team')
+    user_role = Role(name='User', label='USER', description='Regular User')
+    remoteci_role = Role(name='RemoteCI', label='REMOTECI', description='A RemoteCI')
+    feeder_role = Role(name='Feeder', label='FEEDER', description='A Feeder')
+    session.add_all([super_admin_role, product_owner_role, admin_role, user_role, remoteci_role, feeder_role])
+
+    # teams
+    admin_team = Team(name="admin")
+    session.flush()
+    session.add(admin_team)
+    openstack_team = Team(name="OpenStack", parent_id=admin_team.id)
+    ansible_team = Team(name="Ansible", parent_id=admin_team.id)
+    session.add_all([openstack_team, ansible_team])
+    session.flush()
+    dell_team = Team(name="Dell", parent_id=openstack_team.id)
+    hp_team = Team(name="HP", parent_id=openstack_team.id)
+    cisco_team = Team(name="Cisco", parent_id=ansible_team.id)
+    session.add_all([dell_team, hp_team, cisco_team])
+    session.flush()
+
+    # users
+    super_admin = User(name=DCI_LOGIN, password=DCI_PASSWORD_HASH, role_id=super_admin_role.id, team_id=admin_team.id, fullname='Admin', email='admin@example.org')
+    ansible_po = User(name='ansible_po', password=auth.hash_password('ansible_po'), role_id=product_owner_role.id, team_id=ansible_team.id, fullname='Ansible PO', email='ansible_po@example.org')
+    openstack_po = User(name='openstack_po', password=auth.hash_password('openstack_po'), role_id=product_owner_role.id, team_id=openstack_team.id, fullname='OpenStack PO', email='openstack_po@example.org')
+    admin_cisco = User(name='admin_cisco', password=auth.hash_password('admin_cisco'), role_id=admin_role.id, team_id=cisco_team.id, fullname='Admin Cisco', email='admin_cisco@example.org')
+    admin_hp = User(name='admin_hp', password=auth.hash_password('admin_hp'), role_id=admin_role.id, team_id=hp_team.id, fullname='Admin HP', email='admin_hp@example.org')
+    admin_dell = User(name='admin_dell', password=auth.hash_password('admin_dell'), role_id=admin_role.id, team_id=dell_team.id, fullname='Admin Dell', email='admin_dell@example.org')
+    user_cisco = User(name='user_cisco', password=auth.hash_password('user_cisco'), role_id=user_role.id, team_id=cisco_team.id, fullname='User Cisco', email='user_cisco@example.org')
+    user_hp = User(name='user_hp', password=auth.hash_password('user_hp'), role_id=user_role.id, team_id=hp_team.id, fullname='User HP', email='user_hp@example.org')
+    user_dell = User(name='user_dell', password=auth.hash_password('user_dell'), role_id=user_role.id, team_id=dell_team.id, fullname='User Dell', email='user_dell@example.org')
+    session.add_all([super_admin, ansible_po, openstack_po, admin_cisco, admin_hp, admin_dell, user_cisco, user_hp, user_dell])
+    session.flush()
+
+    # products
+    openstack = Product(name='OpenStack', label='OPENSTACK', team_id=openstack_team.id)
+    ansible = Product(name='Ansible', label='ANSIBLE', team_id=ansible_team.id)
+    session.add_all([openstack, ansible])
+    session.flush()
+
+    # topics
+    osp12 = Topic(name='OSP12', component_types=['puddle'], product_id=openstack.id)
+    session.add(osp12)
+    session.flush()
+    osp11 = Topic(name='OSP11', component_types=['puddle'], next_topic=osp12.id, product_id=openstack.id)
+    session.add(osp11)
+    session.flush()
+    osp10 = Topic(name='OSP10', component_types=['puddle'], next_topic=osp11.id, product_id=openstack.id)
+    session.add(osp10)
+    ansible_devel = Topic(name='ansible-devel', component_types=['snapshot_ansible'], product_id=ansible.id)
+    session.add(ansible_devel)
+    session.flush()
+    ansible_24 = Topic(name='ansible-2.4', component_types=['snapshot_ansible'], next_topic=ansible_devel.id, product_id=ansible.id)
+    session.add(ansible_24)
+    session.flush()
+
+    # associate topics to teams
+    session.add_all([
+        TopicTeam(team_id=dell_team.id, topic_id=osp10.id),
+        TopicTeam(team_id=dell_team.id, topic_id=osp11.id),
+        TopicTeam(team_id=dell_team.id, topic_id=osp12.id),
+        TopicTeam(team_id=ansible_team.id, topic_id=ansible_devel.id),
+        TopicTeam(team_id=ansible_team.id, topic_id=ansible_24.id),
+    ])
+    session.flush()
+
+    # components
+    component_osp10 = Component(name='RH7-RHOS-10.0 2016-10-28.1', type='puddle', topic_id=osp10.id)
+    component_osp11 = Component(name='RH7-RHOS-11.0 2016-11-11.1', type='puddle', topic_id=osp11.id)
+    component_osp12 = Component(name='RH7-RHOS-12.0 2016-11-12.2', type='puddle', topic_id=osp12.id)
+    session.add_all([
+        component_osp10,
+        component_osp11,
+        Component(name='RH7-RHOS-12.0 2016-11-12.1', type='puddle', topic_id=osp12.id),
+        component_osp12,
+        Component(name='Ansible devel', type='snapshot_ansible', topic_id=ansible_devel.id),
+        Component(name='Ansible 2.4', type='snapshot_ansible', topic_id=ansible_24.id),
+    ])
+    session.flush()
+
+    # remoteci
+    dell_remoteci = Remoteci(name='Remoteci Dell 1', team_id=dell_team.id)
+    session.add_all([
+        dell_remoteci,
+        Remoteci(name='Remoteci Dell 2', team_id=dell_team.id),
+        Remoteci(name='Remoteci Ansible', team_id=ansible_team.id)
+    ])
+    session.flush()
+
+    # jobs
+    job1 = Job(topic_id=osp10.id, team_id=dell_team.id, remoteci_id=dell_remoteci.id)
+    job2 = Job(topic_id=osp10.id, team_id=dell_team.id, remoteci_id=dell_remoteci.id)
+    job3 = Job(topic_id=osp11.id, team_id=dell_team.id, remoteci_id=dell_remoteci.id)
+    job4 = Job(topic_id=osp12.id, team_id=dell_team.id, remoteci_id=dell_remoteci.id)
+    session.add_all([
+        job1,
+        job2,
+        job3,
+        job4,
+    ])
+    session.flush()
+
+    # jobs_components
+    session.add_all([
+        JobComponent(component_id=component_osp10.id, job_id=job1.id),
+        JobComponent(component_id=component_osp10.id, job_id=job2.id),
+        JobComponent(component_id=component_osp11.id, job_id=job3.id),
+        JobComponent(component_id=component_osp12.id, job_id=job4.id),
+    ])
+    session.flush()
+
+    # commit
+    session.commit()
 
 
 if __name__ == '__main__':
