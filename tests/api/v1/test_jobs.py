@@ -274,18 +274,25 @@ def test_job_notification(app, user, remoteci_user_id, user_id, job_user_id):
 
         data_post = {'mesg': 'test'}
 
-        with mock.patch('dci.api.v1.jobs.flask.g.sender.send_json') as f_s:
+        with mock.patch('dci.api.v1.jobs.flask.g.sender.send_json') as sj:
             res = user.post('/api/v1/jobs/%s/notify' % job_user_id,
                             data=data_post)
             assert res.status_code == 204
-            f_s.assert_called_once_with(
-                {'event': 'notification',
-                 'emails': ['user@example.org'],
-                 'job_id': job_user_id,
-                 'remoteci_id': remoteci_user_id,
-                 'topic_id': job['topic_id'],
-                 'status': 'new',
-                 'mesg': 'test'})
+            args, _ = sj.call_args_list[0]
+            args = args[0]
+            print(args)
+            assert args['event'] == 'notification'
+            assert args['emails'] == ['user@example.org']
+            assert args['job_id'] == job_user_id
+            assert args['remoteci_id'] == remoteci_user_id
+            assert args['remoteci_name'] == 'rname'
+            assert args['topic_id'] == job['topic_id']
+            assert args['topic_name'] == 'topic_user_name'
+            assert args['status'] == 'new'
+            assert args['mesg'] == 'test'
+            # component are uuid based so just check 'components' key and len
+            assert 'components' in args
+            assert len(args['components']) == 3
 
 
 def test_get_all_jobs_with_where(admin, team_user_id, job_user_id):
