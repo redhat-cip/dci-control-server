@@ -670,11 +670,18 @@ def notify(user, j_id):
     _TABLE_USERS = models.USERS
 
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-
     values = schemas.job_notify.post(flask.request.json)
 
     if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
+
+    # Get job with embed topics,remoteci
+    job = base.get_resource_by_id(user, dict(job), _TABLE, _EMBED_MANY,
+                                  embeds=['topic', 'remoteci', 'components'],
+                                  jsonify=False)
+    job = dict(job)
+
+    components_names = [c['name'] for c in job['components']]
 
     # Select all email user attach to this remoteci
     query = (sql.select([_TABLE_USERS.c.email]).
@@ -691,7 +698,10 @@ def notify(user, j_id):
                'job_id': str(job['id']),
                'status': job['status'],
                'topic_id': str(job['topic_id']),
+               'topic_name': str(job['topic']['name']),
                'remoteci_id': str(job['remoteci_id']),
+               'remoteci_name': str(job['remoteci']['name']),
+               'components': components_names,
                'mesg': values['mesg']}
         flask.g.sender.send_json(msg)
 

@@ -34,15 +34,19 @@ def mail(mesg):
     SUBJECT = "DCI Status"
 
     message = "Subject: %s\n"\
+              "DCI-remoteci: %s\n"\
+              "DCI-topic: %s\n"\
               "You are receiving this email because of the DCI job %s\n"\
-              "For the topic : %s on the Remote CI : %s\n"\
+              "For the topic : %s/%s on the Remote CI : %s/%s\n"\
               "The current status of the job is : %s\n"\
+              "The components used are the following: %s\n"\
               "Message : %s"\
               "For more information : "\
               "https://www.distributed-ci.io/#!/jobs/%s/results"\
-              % (SUBJECT, mesg['job_id'], mesg['topic_id'],
-                 mesg['remoteci_id'], mesg['status'], mesg['mesg'],
-                 mesg['job_id'])
+              % (SUBJECT, mesg['remoteci_name'], mesg['topic_name'],
+                 mesg['job_id'], mesg['topic_id'], mesg['topic_name'],
+                 mesg['remoteci_id'], mesg['remoteci_name'], mesg['status'],
+                 mesg['mesg'], mesg['components'], mesg['job_id'])
 
     # Send the mail
     server = smtplib.SMTP('localhost')
