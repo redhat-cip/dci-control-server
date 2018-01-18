@@ -24,9 +24,11 @@ from dci.common import signature
 from dci.common import utils
 
 
-def get_resource_by_id(user, resource, table, embed_many, ignore_columns=None,
-                       resource_name=None):
+def get_resource_by_id(user, resource, table, embed_many, embeds=None,
+                       ignore_columns=None, resource_name=None, jsonify=True):
     args = schemas.args(flask.request.args.to_dict())
+    if embeds is not None:
+        args['embed'].extend(embeds)
     resource_name = resource_name or table.name[0:-1]
     resource_id = resource['id']
     columns = v1_utils.get_columns_name_with_objects(table)
@@ -49,12 +51,13 @@ def get_resource_by_id(user, resource, table, embed_many, ignore_columns=None,
         raise dci_exc.DCINotFound(resource_name, resource_id)
     resource = rows[0]
 
-    res = flask.jsonify({resource_name: resource})
-
-    if 'etag' in resource:
-        res.headers.add_header('ETag', resource['etag'])
-
-    return res
+    if jsonify is True:
+        res = flask.jsonify({resource_name: resource})
+        if 'etag' in resource:
+            res.headers.add_header('ETag', resource['etag'])
+        return res
+    else:
+        return resource
 
 
 def get_to_purge_archived_resources(user, table):
