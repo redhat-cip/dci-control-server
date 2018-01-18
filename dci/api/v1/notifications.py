@@ -24,6 +24,8 @@ def email(job):
     if job['status'] != 'failure':
         return None
 
+    components_names = [c['name'] for c in job['components']]
+
     _TABLE_URCIS = models.JOIN_USER_REMOTECIS
 
     query = (sql.select([models.USERS.c.email]).
@@ -41,7 +43,9 @@ def email(job):
             'topic_id': str(job['topic_id']),
             'topic_name': job['topic']['name'],
             'remoteci_id': str(job['remoteci_id']),
-            'remoteci_name': job['remoteci']['name']
+            'remoteci_name': job['remoteci']['name'],
+            'components': components_names,
+            'mesg': values['mesg']
         }
         return msg
 

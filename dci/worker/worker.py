@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2018 Red Hat, Inc
+# Copyright (C) 2015-2016 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -92,18 +92,24 @@ def dlrn_publish(event):
 
 
 def mail(mesg):
-
     email_configuration = get_email_configuration()
     if email_configuration:
         subject = 'DCI Status'
         message = "Subject: %s\n"\
+                  "DCI-remoteci: %s\n"\
+                  "DCI-topic: %s\n"\
                   "You are receiving this email because of the DCI job %s\n"\
-                  "For the topic : %s on the Remote CI : %s\n"\
+                  "For the topic : %s/%s on the Remote CI : %s/%s\n"\
                   "The current status of the job is : %s\n"\
+                  "The components used are the following: %s\n"\
+                  "Message : %s"\
                   "For more information : "\
-                  "https://www.distributed-ci.io/#!/jobs/%s/tests"\
-                  % (subject, mesg['job_id'], mesg['topic_name'],
-                     mesg['remoteci_name'], mesg['status'], mesg['job_id'])
+                  "https://www.distributed-ci.io/#!/jobs/%s/results"\
+                  % (subject, mesg['remoteci_name'], mesg['topic_name'],
+                     mesg['job_id'], mesg['topic_id'], mesg['topic_name'],
+                     mesg['remoteci_id'], mesg['remoteci_name'],
+                     mesg['status'], mesg['mesg'], mesg['components'],
+                     mesg['job_id'])
 
         email = MIMEText(message)
         email["From"] = 'Distributed-CI Notification <%s>' % \
