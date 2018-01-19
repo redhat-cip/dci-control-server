@@ -5,6 +5,7 @@ After=network.target
 [Service]
 Type=simple
 PIDFile=/var/run/dci-worker.pid
+EnvironmentFile=/etc/dci_worker.sh
 ExecStart=/usr/bin/python /usr/lib/python2.7/site-packages/dci/worker/worker.py
 
 [Install]
