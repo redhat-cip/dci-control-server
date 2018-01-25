@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba076199_7d76d13f",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 219,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-01-25T14:04:38Z",
+      "side": 1,
+      "message": "I would drop the user.is_product_owner() here, this way a regular user in the OpenStack team will also be able to subscribe to the notification from a remoteci.",
+      "revId": "1a7a8cdc92d44fe8baf05bc2fd88c9e95b1da90b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
