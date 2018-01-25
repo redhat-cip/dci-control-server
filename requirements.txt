@@ -6,7 +6,7 @@ SQLAlchemy
 SQLAlchemy-Utils
 psycopg2
 requests
-voluptuous
+voluptuous<0.11.1
 passlib
 setuptools
 Werkzeug
