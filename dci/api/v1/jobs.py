@@ -23,7 +23,6 @@ from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import base
-from dci.api.v1 import transformations as tsfm
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci import decorators
@@ -559,27 +558,23 @@ def get_all_results_from_jobs(user, j_id):
     if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
 
-    swift = dci_config.get_store('files')
-    job_files = json.loads(files.get_all_files(j_id).response[0])['files']
-    r_files = [file for file in job_files
-               if file['mime'] == 'application/junit']
+    # get testscases from tests_results
+    query = sql.select([models.TESTS_RESULTS]). \
+        where(models.TESTS_RESULTS.c.job_id == job['id'])
+    all_tests_results = flask.g.db_conn.execute(query).fetchall()
 
     results = []
-    for file in r_files:
-        file_path = swift.build_file_path(file['team_id'],
-                                          j_id,
-                                          file['id'])
-        _, file_descriptor = swift.get(file_path)
-        data = tsfm.junit2dict(file_descriptor.read())
-        results.append({'filename': file['name'],
-                        'name': file['name'],
-                        'total': data['total'],
-                        'failures': data['failures'],
-                        'errors': data['errors'],
-                        'skips': data['skips'],
-                        'time': data['time'],
-                        'success': data['success'],
-                        'testscases': data['testscases']})
+    for test_result in all_tests_results:
+        test_result = dict(test_result)
+        results.append({'filename': test_result['name'],
+                        'name': test_result['name'],
+                        'total': test_result['total'],
+                        'failures': test_result['failures'],
+                        'errors': test_result['errors'],
+                        'skips': test_result['skips'],
+                        'time': test_result['time'],
+                        'success': test_result['success'],
+                        'testscases': test_result['tests_cases']})
 
     return flask.jsonify({'results': results,
                           '_meta': {'count': len(results)}})
