@@ -33,6 +33,7 @@ JSONUNIT = {
     'failures': 1,
     'errors': 1,
     'skips': 1,
+    'regressions': 0,
     'total': 6,
     'time': 9759,
     'testscases': [
@@ -41,6 +42,8 @@ JSONUNIT = {
             'classname': 'classname_1',
             'time': 0.02311568802,
             'action': 'skipped',
+            'regression': False,
+            'successfix': False,
             'message': 'skip message',
             'type': 'skipped',
             'value': 'test skipped'
@@ -50,6 +53,8 @@ JSONUNIT = {
             'classname': 'classname_1',
             'time': 0.91562318802,
             'action': 'error',
+            'regression': False,
+            'successfix': False,
             'message': 'error message',
             'type': 'error',
             'value': 'test in error'
@@ -59,6 +64,8 @@ JSONUNIT = {
             'classname': 'classname_1',
             'time': 0.18802915623,
             'action': 'failure',
+            'regression': False,
+            'successfix': False,
             'message': 'failure message',
             'type': 'failure',
             'value': 'test in failure'
@@ -68,6 +75,8 @@ JSONUNIT = {
             'classname': 'classname_1',
             'time': 2.91562318802,
             'action': 'passed',
+            'regression': False,
+            'successfix': False,
             'message': '',
             'type': '',
             'value': ''
@@ -77,6 +86,8 @@ JSONUNIT = {
             'classname': 'classname_1',
             'time': 3.23423443444,
             'action': 'passed',
+            'regression': False,
+            'successfix': False,
             'message': '',
             'type': '',
             'value': 'STDOUT'
@@ -86,6 +97,8 @@ JSONUNIT = {
             'classname': 'classname_1',
             'time': 2.48294832443,
             'action': 'passed',
+            'regression': False,
+            'successfix': False,
             'message': '',
             'type': '',
             'value': 'STDERR'
@@ -246,3 +259,75 @@ def test_create_file_fill_tests_results_table(engine, admin, job_user_id):
     assert test_result['errors'] == 0
     assert test_result['success'] == 117
     assert test_result['time'] == 1308365
+
+
+def test_add_regressions_successfix():
+    jobtest1 = """
+<testsuite errors="0" failures="60" name="" tests="2289" time="3385.127">
+    <testcase
+            classname="Testsuite1"
+            name="test_1"
+            time="28.810">
+        <failure type="Exception">Traceback</failure>
+    </testcase>
+    <testcase
+            classname="Testsuite1"
+            name="test_2"
+            time="29.419">
+    </testcase>
+        <testcase
+            classname="Testsuite1"
+            name="test_3"
+            time="29.419">
+    </testcase>
+</testsuite>
+"""
+    jobtest2 = """
+<testsuite errors="0" failures="60" name="" tests="2289" time="3385.127">
+    <testcase
+            classname="Testsuite1"
+            name="test_1"
+            time="28.810">
+    </testcase>
+    <testcase
+            classname="Testsuite1"
+            name="test_2"
+            time="29.419">
+        <failure type="Exception">Traceback</failure>
+    </testcase>
+    <testcase
+            classname="Testsuite1"
+            name="test_3"
+            time="29.419">
+            <failure type="Exception">Traceback</failure>
+    </testcase>
+</testsuite>
+"""
+    testsuite1 = transformations.junit2dict(jobtest1)
+    testsuite2 = transformations.junit2dict(jobtest2)
+    transformations.add_regressions_and_successfix_to_tests(testsuite1,
+                                                            testsuite2)
+
+    # test regressions and successfix are properly catched
+    for testcase in testsuite2['testscases']:
+        if testcase['name'] == 'test_1':
+            assert testcase['successfix'] is True
+        elif testcase['name'] == 'test_2':
+            assert testcase['regression'] is True
+        elif testcase['name'] == 'test_3':
+            assert testcase['regression'] is True
+    assert testsuite2['regressions'] == 2
+
+    # test regressions are properly replicated from previous job
+    testsuite2_bis = transformations.junit2dict(jobtest2)
+    transformations.add_regressions_and_successfix_to_tests(testsuite2,
+                                                            testsuite2_bis)
+    for testcase in testsuite2_bis['testscases']:
+        if testcase['name'] == 'test_1':
+            assert testcase['successfix'] is False
+            assert testcase['regression'] is False
+        elif testcase['name'] == 'test_2':
+            assert testcase['regression'] is True
+        elif testcase['name'] == 'test_3':
+            assert testcase['regression'] is True
+    assert testsuite2_bis['regressions'] == 2
