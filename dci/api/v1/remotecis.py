@@ -208,12 +208,7 @@ def add_user_to_remoteci(user, r_id):
     user_to_attach = v1_utils.verify_existence_and_get(values['user_id'],
                                                        models.USERS)
 
-    if values['user_id'] != user['id'] and \
-       not user.is_in_team(remoteci['team_id']) and \
-       user.is_regular_user():
-        raise auth.UNAUTHORIZED
-
-    if user_to_attach['team_id'] != remoteci['team_id']:
+    if not user.is_member_of(remoteci['team_id']):
         raise auth.UNAUTHORIZED
 
     query = models.JOIN_USER_REMOTECIS.insert().values(**values)
