@@ -208,12 +208,19 @@ def add_user_to_remoteci(user, r_id):
     user_to_attach = v1_utils.verify_existence_and_get(values['user_id'],
                                                        models.USERS)
 
-    if values['user_id'] != user['id'] and \
-       not user.is_in_team(remoteci['team_id']) and \
-       user.is_regular_user():
-        raise auth.UNAUTHORIZED
-
-    if user_to_attach['team_id'] != remoteci['team_id']:
+    # Admin Can do everything
+    if user.is_super_admin():
+        pass
+    # User attach itself to a his team's remoteci
+    elif user_to_attach['id'] == user['id'] and \
+        user.is_in_team(remoteci['team_id']):
+        pass
+    # you'r PO and you want to be notified from partner remoteci
+    elif user.is_product_owner() and \
+        remoteci['team_id'] in user.partner_teams:
+        pass
+    # All other cases are forbidden
+    else:
         raise auth.UNAUTHORIZED
 
     query = models.JOIN_USER_REMOTECIS.insert().values(**values)
