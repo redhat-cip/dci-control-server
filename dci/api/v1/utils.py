@@ -136,7 +136,7 @@ def where_query(where, table, columns):
 
     def _get_column(table, columns, name):
         payload = {'error': 'where key must have the following form '
-                   '"key:value"'}
+                            '"key:value"'}
 
         if '.' in name:
             subtable_name, name = name.split('.')
@@ -270,7 +270,7 @@ class QueryBuilder(object):
             embed_list.append(embed_elem)
         return sorted(set(embed_list))
 
-    def get_query(self):
+    def get_query(self, use_labels=True):
         select_clause = [self._root_table]
         if self._ignored_columns:
             select_clause = self._filtered_root_columns()
@@ -287,7 +287,7 @@ class QueryBuilder(object):
             select_clause = [root_subquery]
             root_select = root_subquery
 
-        query = sql.select(select_clause, use_labels=True)
+        query = sql.select(select_clause, use_labels=use_labels)
         if self._embeds:
             embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select)  # noqa
             embed_list = self._get_embed_list(embed_joins)
@@ -330,11 +330,18 @@ class QueryBuilder(object):
             query = self._add_where_to_query(query)
         return flask.g.db_conn.execute(query).scalar()
 
-    def execute(self, fetchall=False, fetchone=False):
+    def execute(self, fetchall=False, fetchone=False, use_labels=True):
+        """
+        :param fetchall: get all rows
+        :param fetchone:  get only one row
+        :param use_labels: prefix row columns names by the table name
+        :return:
+        """
+        query = self.get_query(use_labels=use_labels)
         if fetchall:
-            return flask.g.db_conn.execute(self.get_query()).fetchall()
+            return flask.g.db_conn.execute(query).fetchall()
         elif fetchone:
-            return flask.g.db_conn.execute(self.get_query()).fetchone()
+            return flask.g.db_conn.execute(query).fetchone()
 
     def _get_pg_query(self):
         from sqlalchemy.dialects import postgresql
