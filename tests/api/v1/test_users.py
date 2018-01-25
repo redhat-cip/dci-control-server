@@ -536,11 +536,9 @@ def test_update_current_user(admin, user):
     assert me['timezone'] == 'Europe/Paris'
 
 
-def test_get_embed_remotecis(admin, user, remoteci_user_id, user_id):
-    data = {
-        'user_id': user_id
-    }
-    r = admin.post('/api/v1/remotecis/%s/users' % remoteci_user_id, data=data)
+def test_get_embed_remotecis(user, remoteci_user_id, user_id):
+
+    r = user.post('/api/v1/remotecis/%s/users' % remoteci_user_id)
 
     assert r.status_code == 201
 

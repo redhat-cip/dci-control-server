@@ -338,11 +338,6 @@ remoteci_put = {
 
 remoteci = DCISchema(schema_factory(remoteci).post, Schema(remoteci_put))
 
-remoteci_user = {
-    'user_id': v.Any(UUID, msg=INVALID_UUID)
-}
-
-remoteci_user = schema_factory(remoteci_user)
 
 ###############################################################################
 #                                                                             #
