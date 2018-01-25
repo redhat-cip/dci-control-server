@@ -34,6 +34,8 @@ from dci.db import models
 from dci import dci_config
 from dci.stores import files
 
+from sqlalchemy import sql
+
 
 _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
@@ -56,6 +58,27 @@ def get_file_info_from_headers(headers):
                    'job_id', 'name', 'test_id']:
             new_headers[key] = value
     return new_headers
+
+
+def _get_test_result_of_previous_job(job):
+    def _get_previous_job_in_topic(job):
+        topic_id = job['topic_id']
+        query = sql.select([models.JOBS]). \
+            where(sql.and_(models.JOBS.c.topic_id == topic_id,
+                           models.JOBS.c.created_at < job['created_at'],
+                           models.JOBS.c.id != job['id'],
+                           models.JOBS.c.state != 'archived')). \
+            order_by(sql.desc(models.JOBS.c.created_at))
+        return flask.g.db_conn.execute(query).fetchone()
+    prev_job = _get_previous_job_in_topic(job)
+    if prev_job is None:
+        return None
+    query = sql.select([models.TESTS_RESULTS]). \
+        where(models.TESTS_RESULTS.c.job_id == prev_job['id'])
+    res = flask.g.db_conn.execute(query).fetchone()
+    if res is not None:
+        res = dict(res)
+    return res
 
 
 @api.route('/files', methods=['POST'])
@@ -87,8 +110,8 @@ def create_files(user):
     if not auth.is_admin(user):
         query.add_extra_condition(models.JOBS.c.team_id == user['team_id'])
     query.add_extra_condition(models.JOBS.c.id == values['job_id'])
-    row = query.execute(fetchone=True)
-    if row is None:
+    job = query.execute(fetchone=True, use_labels=False)
+    if job is None:
         raise dci_exc.DCINotFound('Job', values['job_id'])
 
     file_id = utils.gen_uuid()
@@ -123,7 +146,13 @@ def create_files(user):
 
         if values['mime'] == 'application/junit':
             _, file_descriptor = swift.get(file_path)
-            junit = tsfm.junit2dict(file_descriptor.read())
+            jsonunit = tsfm.junit2dict(file_descriptor.read())
+            prev_testresult = _get_test_result_of_previous_job(job)
+            if prev_testresult is not None:
+                prev_testresult['testscases'] = prev_testresult['tests_cases']
+                if len(prev_testresult['testscases']) > 0:
+                    tsfm.add_regressions_and_successfix_to_tests(
+                        prev_testresult, jsonunit)
             query = models.TESTS_RESULTS.insert().values({
                 'id': utils.gen_uuid(),
                 'created_at': values['created_at'],
@@ -131,12 +160,14 @@ def create_files(user):
                 'file_id': file_id,
                 'job_id': values['job_id'],
                 'name': values['name'],
-                'success': junit['success'],
-                'failures': junit['failures'],
-                'errors': junit['errors'],
-                'skips': junit['skips'],
-                'total': junit['total'],
-                'time': junit['time']
+                'success': jsonunit['success'],
+                'failures': jsonunit['failures'],
+                'errors': jsonunit['errors'],
+                'regressions': jsonunit['regressions'],
+                'skips': jsonunit['skips'],
+                'total': jsonunit['total'],
+                'time': jsonunit['time'],
+                'tests_cases': jsonunit['testscases']
             })
             flask.g.db_conn.execute(query)
         files_events.create_event(file_id, models.FILES_CREATE)
