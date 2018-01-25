@@ -504,6 +504,21 @@ def test_success_attach_user_to_remoteci_in_team_as_admin(admin, user_id,
     assert r.data['remoteci']['users'][0]['name'] == 'user'
 
 
+def test_success_attach_po_to_partner_remoteci(admin, remoteci_user_id,
+                                               product_owner, product_owner_id):
+    data = {
+        'user_id': product_owner_id
+    }
+    r = product_owner.post('/api/v1/remotecis/%s/users' % remoteci_user_id, data=data)
+
+    assert r.status_code == 201
+
+    r = admin.get('/api/v1/remotecis/%s?embed=users' % remoteci_user_id)
+
+    assert r.status_code == 200
+    assert r.data['remoteci']['users'][0]['name'] == 'product_owner'
+
+
 def test_success_attach_myself_to_remoteci_in_team(user, user_id,
                                                    remoteci_user_id):
     data = {
