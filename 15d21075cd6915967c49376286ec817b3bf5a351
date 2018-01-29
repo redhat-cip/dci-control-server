@@ -33,6 +33,24 @@
       "revId": "15d21075cd6915967c49376286ec817b3bf5a351",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba076199_6055081c",
+        "filename": "dci/stores/swift.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-01-29T14:46:58Z",
+      "side": 1,
+      "message": "if not we will have a nice xml 500 internal error :p",
+      "parentUuid": "ba076199_00440c72",
+      "revId": "15d21075cd6915967c49376286ec817b3bf5a351",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
