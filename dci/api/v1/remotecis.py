@@ -471,3 +471,14 @@ def get_to_purge_archived_rconfigurations(user):
 @decorators.has_role(['SUPER_ADMIN'])
 def purge_archived_rconfigurations(user):
     return base.purge_archived_resources(user, _RCONFIGURATIONS)
+
+
+def kill_existing_jobs(remoteci_id, db_conn=None):
+
+    db_conn = db_conn or flask.g.db_conn
+    where_clause = sql.expression.and_(
+        models.JOBS.c.remoteci_id == remoteci_id,
+        models.JOBS.c.status.in_(('new', 'pre-run', 'running', 'post-run'))
+    )
+    kill_query = _TABLE .update().where(where_clause).values(status='killed')
+    db_conn.execute(kill_query)
