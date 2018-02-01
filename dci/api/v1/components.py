@@ -25,6 +25,7 @@ from dci import dci_config
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import issues
+from dci.api.v1 import remotecis
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci import decorators
@@ -348,6 +349,107 @@ def delete_component_file(user, c_id, f_id):
     swift.delete(file_path)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+def get_component_types_from_topic(topic_id, db_conn=None):
+    """Returns the component types of a topic."""
+    db_conn = db_conn or flask.g.db_conn
+    query = sql.select([models.TOPICS]).\
+        where(models.TOPICS.c.id == topic_id)
+    topic = db_conn.execute(query).fetchone()
+    topic = dict(topic)
+    return topic['component_types']
+
+
+def get_component_types(topic_id, remoteci_id, db_conn=None):
+    """Returns either the topic component types or the rconfigration's
+    component types."""
+
+    db_conn = db_conn or flask.g.db_conn
+    rconfiguration = remotecis.get_remoteci_configuration(topic_id,
+                                                          remoteci_id,
+                                                          db_conn=db_conn)
+
+    # if there is no rconfiguration associated to the remoteci or no
+    # component types then use the topic's one.
+    if (rconfiguration is not None and
+            rconfiguration['component_types'] is not None):
+        component_types = rconfiguration['component_types']
+    else:
+        component_types = get_component_types_from_topic(topic_id,
+                                                         db_conn=db_conn)
+
+    return component_types, rconfiguration
+
+
+def get_last_components_by_type(component_types, topic_id, db_conn=None):
+    """For each component type of a topic, get the last one."""
+    db_conn = db_conn or flask.g.db_conn
+    schedule_components_ids = []
+    for ct in component_types:
+        where_clause = sql.and_(models.COMPONENTS.c.type == ct,
+                                models.COMPONENTS.c.topic_id == topic_id,
+                                models.COMPONENTS.c.export_control == True,
+                                models.COMPONENTS.c.state == 'active')  # noqa
+        query = (sql.select([models.COMPONENTS.c.id])
+                 .where(where_clause)
+                 .order_by(sql.desc(models.COMPONENTS.c.created_at)))
+        cmpt_id = db_conn.execute(query).fetchone()
+
+        if cmpt_id is None:
+            msg = 'Component of type "%s" not found or not exported.' % ct
+            raise dci_exc.DCIException(msg, status_code=412)
+
+        cmpt_id = cmpt_id[0]
+        if cmpt_id in schedule_components_ids:
+            msg = ('Component types %s malformed: type %s duplicated.' %
+                   (component_types, ct))
+            raise dci_exc.DCIException(msg, status_code=412)
+        schedule_components_ids.append(cmpt_id)
+    return schedule_components_ids
+
+
+def verify_and_get_components_ids(topic_id, components_ids, component_types,
+                                  db_conn=None):
+    """Process some verifications of the provided components ids."""
+    db_conn = db_conn or flask.g.db_conn
+    if len(components_ids) != len(component_types):
+        msg = 'The number of component ids does not match the number ' \
+              'of component types %s' % component_types
+        raise dci_exc.DCIException(msg, status_code=412)
+
+    # get the components from their ids
+    schedule_component_types = set()
+    for c_id in components_ids:
+        where_clause = sql.and_(models.COMPONENTS.c.id == c_id,
+                                models.COMPONENTS.c.topic_id == topic_id,
+                                models.COMPONENTS.c.export_control == True,  # noqa
+                                models.COMPONENTS.c.state == 'active')
+        query = (sql.select([models.COMPONENTS])
+                 .where(where_clause))
+        cmpt = db_conn.execute(query).fetchone()
+
+        if cmpt is None:
+            msg = 'Component id %s not found or not exported' % c_id
+            raise dci_exc.DCIException(msg, status_code=412)
+        cmpt = dict(cmpt)
+
+        if cmpt['type'] in schedule_component_types:
+            msg = ('Component types malformed: type %s duplicated.' %
+                   cmpt['type'])
+            raise dci_exc.DCIException(msg, status_code=412)
+        schedule_component_types.add(cmpt['type'])
+    return components_ids
+
+
+def get_schedule_components_ids(topic_id, component_types, components_ids):
+    if components_ids == []:
+        schedule_components_ids = get_last_components_by_type(
+            component_types, topic_id)
+    else:
+        schedule_components_ids = verify_and_get_components_ids(
+            topic_id, components_ids, component_types)
+    return schedule_components_ids
 
 
 @api.route('/components/<c_id>/issues', methods=['GET'])
