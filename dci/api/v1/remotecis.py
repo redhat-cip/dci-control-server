@@ -452,6 +452,69 @@ def delete_configuration_by_id(user, r_id, c_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
+def get_last_rconfiguration_id(topic_id, remoteci_id, db_conn=None):
+    """Get the rconfiguration_id of the last job run by the remoteci.
+
+    :param topic_id: the topic
+    :param remoteci_id: the remoteci id
+    :return: last rconfiguration_id of the remoteci
+    """
+    db_conn = db_conn or flask.g.db_conn
+    __TABLE = models.JOBS
+    query = sql.select([__TABLE.c.rconfiguration_id]). \
+        order_by(sql.desc(__TABLE.c.created_at)). \
+        where(sql.and_(__TABLE.c.topic_id == topic_id,
+                       __TABLE.c.remoteci_id == remoteci_id)). \
+        limit(1)
+    rconfiguration_id = db_conn.execute(query).fetchone()
+    if rconfiguration_id is not None:
+        return str(rconfiguration_id[0])
+    else:
+        return None
+
+
+def get_remoteci_configuration(topic_id, remoteci_id, db_conn=None):
+    """Get a remoteci configuration. This will iterate over each
+    configuration in a round robin manner depending on the last
+    rconfiguration used by the remoteci."""
+
+    db_conn = db_conn or flask.g.db_conn
+    last_rconfiguration_id = get_last_rconfiguration_id(
+        topic_id, remoteci_id, db_conn=db_conn)
+    _RCONFIGURATIONS = models.REMOTECIS_RCONFIGURATIONS
+    _J_RCONFIGURATIONS = models.JOIN_REMOTECIS_RCONFIGURATIONS
+    query = sql.select([_RCONFIGURATIONS]). \
+        select_from(_J_RCONFIGURATIONS.
+                    join(_RCONFIGURATIONS)). \
+        where(_J_RCONFIGURATIONS.c.remoteci_id == remoteci_id)
+    query = query.where(sql.and_(_RCONFIGURATIONS.c.state != 'archived',
+                                 _RCONFIGURATIONS.c.topic_id == topic_id))
+    query = query.order_by(sql.desc(_RCONFIGURATIONS.c.created_at))
+    query = query.order_by(sql.asc(_RCONFIGURATIONS.c.name))
+    all_rconfigurations = db_conn.execute(query).fetchall()
+
+    if len(all_rconfigurations) > 0:
+        for i in range(len(all_rconfigurations)):
+            if str(all_rconfigurations[i]['id']) == last_rconfiguration_id:
+                # if i==0, then indice -1 is the last element
+                return all_rconfigurations[i - 1]
+        return all_rconfigurations[0]
+    else:
+        return None
+
+
+def kill_existing_jobs(remoteci_id, db_conn=None):
+
+    db_conn = db_conn or flask.g.db_conn
+    where_clause = sql.expression.and_(
+        models.JOBS.c.remoteci_id == remoteci_id,
+        models.JOBS.c.status.in_(('new', 'pre-run', 'running', 'post-run'))
+    )
+    kill_query = models.JOBS.update().where(where_clause).values(
+        status='killed')
+    db_conn.execute(kill_query)
+
+
 @api.route('/remotecis/rconfigurations/purge', methods=['GET'])
 @decorators.login_required
 @decorators.has_role(['SUPER_ADMIN'])

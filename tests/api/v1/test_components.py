@@ -16,9 +16,12 @@
 
 from __future__ import unicode_literals
 import mock
+import pytest
 import six
 import uuid
+from dci.api.v1 import components
 from dci.stores.swift import Swift
+from dci.common import exceptions as dci_exc
 from dci.common import utils
 
 SWIFT = 'dci.stores.swift.Swift'
@@ -543,3 +546,92 @@ def test_component_success_update_field_by_field(admin, topic_id):
     assert c['name'] == 'pname2'
     assert c['state'] == 'inactive'
     assert c['title'] == 'a new title'
+
+
+def test_get_component_types_from_topic(admin, engine, topic):
+    expected_component_types = ['puddle_osp']
+    component_types = components.get_component_types_from_topic(topic['id'],
+                                                                db_conn=engine)
+    assert expected_component_types == component_types
+
+
+def _create_rconfiguration(admin, remoteci_id, data):
+    url = '/api/v1/remotecis/%s/rconfigurations' % remoteci_id
+    r = admin.post(url, data=data)
+    assert r.status_code == 201
+    return r.data['rconfiguration']
+
+
+def test_get_component_types(engine, admin, remoteci_context, topic):
+    remoteci = remoteci_context.get('/api/v1/identity').data['identity']
+
+    component_types, _ = components.get_component_types(topic['id'],
+                                                        remoteci['id'],
+                                                        db_conn=engine)
+    # use topic's component types
+    expected_component_types = ['puddle_osp']
+    assert expected_component_types == component_types
+
+    # use rconfiguration's component types
+    expected_component_types = ['kikoolol', 'mdr']
+    rconfiguration = {'name': 'rc', 'topic_id': topic['id'],
+                      'component_types': expected_component_types}
+    _create_rconfiguration(admin, remoteci['id'], rconfiguration)
+    component_types, _ = components.get_component_types(topic['id'],
+                                                        remoteci['id'],
+                                                        db_conn=engine)
+    assert expected_component_types == component_types
+
+
+def create_component(admin, topic_id, ct, name):
+    data = {'topic_id': topic_id,
+            'name': name,
+            'type': ct,
+            'export_control': True}
+    component = admin.post('/api/v1/components',
+                           data=data).data
+    return str(component['component']['id'])
+
+
+def test_get_last_components(engine, admin, topic):
+
+    components_ids = []
+    for i in range(3):
+        cid = create_component(admin, topic['id'], 'puddle_osp', 'name-%s' % i)
+        components_ids.append(cid)
+
+    last_components = components.get_last_components(['puddle_osp'],
+                                                     topic_id=topic['id'],
+                                                     db_conn=engine)
+    assert str(last_components[0]) == components_ids[-1]
+
+
+def test_verify_and_get_components_ids(engine, admin, topic, topic_user_id):
+    # components types not valid
+    with pytest.raises(dci_exc.DCIException):
+        components.verify_and_get_components_ids(topic['id'], [],
+                                                 ['puddle_osp'],
+                                                 db_conn=engine)
+
+    with pytest.raises(dci_exc.DCIException):
+        components.verify_and_get_components_ids(topic['id'],
+                                                 [str(uuid.uuid4())],
+                                                 ['puddle_osp'],
+                                                 db_conn=engine)
+
+    # duplicated component types
+    c1 = create_component(admin, topic_user_id, 'type1', 'n1')
+    c2 = create_component(admin, topic_user_id, 'type1', 'n2')
+    c3 = create_component(admin, topic_user_id, 'type2', 'n3')
+    with pytest.raises(dci_exc.DCIException):
+        components.verify_and_get_components_ids(
+            topic_user_id,
+            [c1, c2, c3],
+            ['type_1', 'type_2', 'type_3'],
+            db_conn=engine)
+
+    cids = components.verify_and_get_components_ids(topic_user_id,
+                                                    [c1, c3],
+                                                    ['type_1', 'type_2'],
+                                                    db_conn=engine)
+    assert set(cids) == {c1, c3}

@@ -23,6 +23,7 @@ from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import base
+from dci.api.v1 import components
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci import decorators
@@ -37,6 +38,7 @@ from dci.api.v1 import files
 from dci.api.v1 import issues
 from dci.api.v1 import jobstates
 from dci.api.v1 import metas
+from dci.api.v1 import remotecis
 from dci import dci_config
 
 
@@ -106,136 +108,13 @@ def create_jobs(user):
                           content_type='application/json')
 
 
-def _build_new_template(topic_id, remoteci, components_ids, values,
-                        previous_job_id=None):
+def _build_job(topic_id, remoteci, components_ids, values,
+               previous_job_id=None):
 
-    def _get_last_rconfiguration_id():
-        """Get the rconfiguration_id of the last job run by the remoteci."""
-        query = sql.select([_TABLE.c.rconfiguration_id]). \
-            order_by(sql.desc(_TABLE.c.created_at)). \
-            where(sql.and_(_TABLE.c.topic_id == topic_id,
-                           _TABLE.c.remoteci_id == remoteci['id'])). \
-            limit(1)
-        rconfiguration_id = flask.g.db_conn.execute(query).fetchone()
-        if rconfiguration_id is not None:
-            return str(rconfiguration_id[0])
-        else:
-            return None
-
-    def _get_remoteci_configuration(last_rconfiguration_id):
-        """Get a remoteci configuration. This will iterate over each
-        configuration in a round robin manner depending on the last
-        rconfiguration used by the remoteci."""
-
-        _RCONFIGURATIONS = models.REMOTECIS_RCONFIGURATIONS
-        _J_RCONFIGURATIONS = models.JOIN_REMOTECIS_RCONFIGURATIONS
-        query = sql.select([_RCONFIGURATIONS]). \
-            select_from(_J_RCONFIGURATIONS.
-                        join(_RCONFIGURATIONS)). \
-            where(_J_RCONFIGURATIONS.c.remoteci_id == remoteci['id'])
-        query = query.where(sql.and_(_RCONFIGURATIONS.c.state != 'archived',
-                                     _RCONFIGURATIONS.c.topic_id == topic_id))
-        query = query.order_by(sql.desc(_RCONFIGURATIONS.c.created_at))
-        query = query.order_by(sql.asc(_RCONFIGURATIONS.c.name))
-        all_rconfigurations = flask.g.db_conn.execute(query).fetchall()
-
-        if len(all_rconfigurations) > 0:
-            for i in range(len(all_rconfigurations)):
-                if str(all_rconfigurations[i]['id']) == last_rconfiguration_id:
-                    # if i==0, then indice -1 is the last element
-                    return all_rconfigurations[i - 1]
-            return all_rconfigurations[0]
-        else:
-            return None
-
-    def _get_component_types_from_topic():
-        query = sql.select([models.TOPICS]).\
-            where(models.TOPICS.c.id == topic_id)
-        topic = flask.g.db_conn.execute(query).fetchone()
-        topic = dict(topic)
-        return topic['component_types']
-
-    def _get_last_components(component_types, topic_id):
-        schedule_components_ids = []
-        for ct in component_types:
-            where_clause = sql.and_(models.COMPONENTS.c.type == ct,
-                                    models.COMPONENTS.c.topic_id == topic_id,
-                                    models.COMPONENTS.c.export_control == True,
-                                    models.COMPONENTS.c.state == 'active')  # noqa
-            query = (sql.select([models.COMPONENTS.c.id])
-                     .where(where_clause)
-                     .order_by(sql.desc(models.COMPONENTS.c.created_at)))
-            cmpt_id = flask.g.db_conn.execute(query).fetchone()
-
-            if cmpt_id is None:
-                msg = 'Component of type "%s" not found or not exported.' % ct
-                raise dci_exc.DCIException(msg, status_code=412)
-
-            cmpt_id = cmpt_id[0]
-            if cmpt_id in schedule_components_ids:
-                msg = ('Component types %s malformed: type %s duplicated.' %
-                       (component_types, ct))
-                raise dci_exc.DCIException(msg, status_code=412)
-            schedule_components_ids.append(cmpt_id)
-        return schedule_components_ids
-
-    def _get_components_from_ids(topic_id, rconfiguration, components_ids,
-                                 component_types):
-        # used for error message
-        source = ' topic %s' % topic_id
-        if (rconfiguration is not None and
-                rconfiguration['component_types'] != []):
-            source = ' rconfiguration %s' % rconfiguration['id']
-        if len(components_ids) != len(component_types):
-            msg = 'The number of component ids does not match the number ' \
-                  'of component types of %s' % source
-            raise dci_exc.DCIException(msg, status_code=412)
-
-        # get the components from their ids
-        schedule_component_types = set()
-        for c_id in components_ids:
-            where_clause = sql.and_(models.COMPONENTS.c.id == c_id,
-                                    models.COMPONENTS.c.topic_id == topic_id,
-                                    models.COMPONENTS.c.export_control == True,  # noqa
-                                    models.COMPONENTS.c.state == 'active')
-            query = (sql.select([models.COMPONENTS])
-                     .where(where_clause))
-            cmpt = flask.g.db_conn.execute(query).fetchone()
-
-            if cmpt is None:
-                msg = 'Component id %s not found or not exported' % c_id
-                raise dci_exc.DCIException(msg, status_code=412)
-            cmpt = dict(cmpt)
-
-            if cmpt['type'] in schedule_component_types:
-                msg = ('Component types malformed: type %s duplicated.' %
-                       cmpt['type'])
-                raise dci_exc.DCIException(msg, status_code=412)
-            schedule_component_types.add(cmpt['type'])
-        return components_ids
-
-    # get the last rconfiguration id of the remoteci to make the
-    # round robin
-    last_rconfiguration_id = _get_last_rconfiguration_id()
-
-    rconfiguration = _get_remoteci_configuration(last_rconfiguration_id)
-
-    # if there is no rconfiguration associated to the remoteci or no
-    # component types then use the topic's one.
-    if (rconfiguration is not None and
-            rconfiguration['component_types'] is not None):
-        component_types = rconfiguration['component_types']
-    else:
-        component_types = _get_component_types_from_topic()
-
-    if components_ids == []:
-        schedule_components_ids = _get_last_components(component_types,
-                                                       topic_id)
-    else:
-        schedule_components_ids = _get_components_from_ids(topic_id,
-                                                           rconfiguration,
-                                                           components_ids,
-                                                           component_types)
+    component_types, rconfiguration = components.get_component_types(
+        topic_id, remoteci['id'])
+    schedule_components_ids = components.get_schedule_components_ids(
+        topic_id, component_types, components_ids)
 
     values.update({
         'topic_id': topic_id,
@@ -260,43 +139,6 @@ def _build_new_template(topic_id, remoteci, components_ids, values,
             )
 
     return values
-
-
-def _validate_input(values, identity):
-    topic_id = values.pop('topic_id')
-    components_ids = values.pop('components_ids')
-
-    values.update({
-        'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
-        'etag': utils.gen_etag(),
-        'status': 'new'
-    })
-
-    remoteci = v1_utils.verify_existence_and_get(identity.id, models.REMOTECIS)
-    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
-
-    if topic['state'] != 'active':
-        msg = 'Topic %s:%s not active.' % (topic['id'], topic['name'])
-        raise dci_exc.DCIException(msg, status_code=412)
-
-
-# let's kill existing running jobs for the remoteci
-    where_clause = sql.expression.and_(
-        _TABLE.c.remoteci_id == identity.id,
-        _TABLE.c.status.in_(('new', 'pre-run', 'running', 'post-run'))
-    )
-    kill_query = _TABLE .update().where(where_clause).values(status='killed')
-    flask.g.db_conn.execute(kill_query)
-
-    if remoteci['state'] != 'active':
-        message = 'RemoteCI "%s" is disabled.' % remoteci['id']
-        raise dci_exc.DCIException(message, status_code=412)
-
-    # The user belongs to the topic then we can start the scheduling
-    v1_utils.verify_team_in_topic(identity, topic_id)
-    return topic_id, remoteci, components_ids
 
 
 def _get_job(user, job_id, embed):
@@ -336,15 +178,35 @@ def schedule_jobs(user):
     values = schemas.job_schedule.post(flask.request.json)
 
     values.update({
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': utils.gen_etag(),
+        'status': 'new',
         'remoteci_id': user.id,
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'
         ),
     })
-    topic_id, remoteci, components_ids = _validate_input(values, user)
 
-    values = _build_new_template(topic_id, remoteci, components_ids, values)
+    topic_id = values.pop('topic_id')
+    components_ids = values.pop('components_ids')
+
+    # check remoteci and topic
+    remoteci = v1_utils.verify_existence_and_get(user.id, models.REMOTECIS)
+    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+    if topic['state'] != 'active':
+        msg = 'Topic %s:%s not active.' % (topic['id'], topic['name'])
+        raise dci_exc.DCIException(msg, status_code=412)
+    if remoteci['state'] != 'active':
+        message = 'RemoteCI "%s" is disabled.' % remoteci['id']
+        raise dci_exc.DCIException(message, status_code=412)
+
+    v1_utils.verify_team_in_topic(user, topic_id)
+    remotecis.kill_existing_jobs(remoteci['id'])
+
+    values = _build_job(topic_id, remoteci, components_ids, values)
 
     # add upgrade flag to the job result
     values.update({'allow_upgrade_job': remoteci['allow_upgrade_job']})
@@ -398,8 +260,8 @@ def upgrade_jobs(user):
 
     # instantiate a new job in the next_topic_id
     # todo(yassine): make possible the upgrade to choose specific components
-    values = _build_new_template(next_topic_id, remoteci, [], values,
-                                 previous_job_id=original_job_id)
+    values = _build_job(next_topic_id, remoteci, [], values,
+                        previous_job_id=original_job_id)
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': values['etag']},
@@ -656,6 +518,41 @@ def delete_meta(user, j_id, m_id):
     if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
     return metas.delete_meta(j_id, m_id)
+
+
+@api.route('/jobs/<uuid:j_id>/notify', methods=['POST'])
+@decorators.login_required
+def notify(user, j_id):
+    _TABLE_URCIS = models.JOIN_USER_REMOTECIS
+    _TABLE_USERS = models.USERS
+
+    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
+
+    values = schemas.job_notify.post(flask.request.json)
+
+    if not user.is_in_team(job['team_id']):
+        raise auth.UNAUTHORIZED
+
+    # Select all email user attach to this remoteci
+    query = (sql.select([_TABLE_USERS.c.email]).
+             select_from(_TABLE_USERS.join(_TABLE_URCIS)).
+             where(_TABLE_URCIS.c.remoteci_id == job['remoteci_id']))
+    result = flask.g.db_conn.execute(query).fetchall()
+
+    # For each email send a notification
+    emails = [k['email'] for k in result]
+
+    if emails:
+        msg = {'event': 'notification',
+               'emails': emails,
+               'job_id': str(job['id']),
+               'status': job['status'],
+               'topic_id': str(job['topic_id']),
+               'remoteci_id': str(job['remoteci_id']),
+               'mesg': values['mesg']}
+        flask.g.sender.send_json(msg)
+
+    return flask.Response(None, 204, content_type='application/json')
 
 
 @api.route('/jobs/purge', methods=['GET'])
