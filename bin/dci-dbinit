@@ -32,13 +32,10 @@ from dci.db import models
 from dci import dci_config
 from dci.alembic import utils as dci_alembic
 
-if not os.environ.get('DCI_LOGIN') or not os.environ.get('DCI_PASSWORD'):
-    print("Environment variables missing: DCI_LOGIN='', DCI_PASSWORD=''")
-    sys.exit(1)
 
-DCI_LOGIN = os.environ.get('DCI_LOGIN')
-DCI_PASSWORD = os.environ.get('DCI_PASSWORD')
-DCI_PASSWORD_HASH = auth.hash_password(os.environ.get('DCI_PASSWORD'))
+DCI_LOGIN = os.environ.get('DCI_LOGIN', 'admin')
+DCI_PASSWORD = os.environ.get('DCI_PASSWORD', 'admin')
+DCI_PASSWORD_HASH = auth.hash_password(DCI_PASSWORD)
 
 
 def init_db(db_conn):
