@@ -19,6 +19,7 @@ import json
 import os
 import smtplib
 import zmq
+import requests
 
 from email.MIMEText import MIMEText
 from zmq.eventloop import ioloop, zmqstream
@@ -47,8 +48,22 @@ def get_email_configuration():
     return configuration
 
 
-def mail(mesg):
+def get_dlrn_configuration():
 
+    configuration = {
+        'login': os.getenv('DCI_DLRN_LOGIN'),
+        'server': os.getenv('DCI_DLRN_SERVER_URL'),
+        'password': os.getenv('DCI_DLRN_PASSWORD'),
+    }
+
+    if not configuration['login'] or not configuration['password'] or \
+      not configuration['server']:
+        configuration = None
+
+    return configuration
+
+
+def mail(mesg):
     email_configuration = get_email_configuration()
     if email_configuration:
         subject = 'DCI Status'
@@ -79,11 +94,37 @@ def mail(mesg):
         server.quit()
 
 
+def dlrn_publish(mesg):
+    dlrn_config = get_dlrn_configuration()
+    if dlrn_config:
+        if mesg['status'] == 'success':
+            success = 'true'
+        else:
+            success = 'false'
+        payload = {
+                   'job_id': 'dci-rdo-queens',
+                   'commit_hash': mesg['dlrn']['commit_hash'],
+                   'distro_hash': mesg['dlrn']['distro_hash'],
+                   'url': 'http://www.distributed-ci.io/jobs/%s/jobStates' \
+                           % mesg['job_id'],
+                   'timestamp': '1517481035',
+                   'success': success,
+                   'notes': 'This is just a random test'
+                  }
+        headers = {'Content-type': 'application/json'}
+        r = requests.post(dlrn_config['server'],
+                          auth=(dlrn_config['login'],dlrn_config['password']),
+                          data=json.dumps(payload),
+                          headers=headers)
+
+
 def loop(msg):
     try:
         mesg = json.loads(msg[0])
         if mesg['event'] == 'notification':
             mail(mesg)
+        elif mesg['event'] == 'dlrn_publish':
+            dlrn_publish(mesg)
     except:
         pass
 

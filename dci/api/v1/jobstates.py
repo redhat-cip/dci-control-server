@@ -62,6 +62,31 @@ def create_jobstates(user):
     # Update job status
     job_id = values.get('job_id')
 
+    if values['status'] == 'failure' or values['status'] == 'success':
+        job_column_name = v1_utils.get_columns_name_with_objects(models.JOBS)
+        query = v1_utils.QueryBuilder(models.JOBS, {'embed': ['components']},
+                                      job_column_name)
+        query.add_extra_condition(models.JOBS.c.id == job_id)
+        rows = query.execute(fetchall=True)
+        rows = v1_utils.format_result(rows, models.JOBS.name, ['components'],
+                                      {'components': True})
+
+        for component in rows[0]['components']:
+            if 'dlrn' in component['data'].keys() and \
+              component['data']['dlrn']['commit_hash'] and \
+              component['data']['dlrn']['distro_hash']:
+                commit_hash = component['data']['dlrn']['commit_hash']
+                distro_hash = component['data']['dlrn']['distro_hash']
+                msg = {'event': 'dlrn_publish',
+                       'dlrn': {
+                                'commit_hash': commit_hash,
+                                'distro_hash': distro_hash
+                               },
+                       'status': values['status'],
+                       'job_id': str(job_id),
+                      }
+                flask.g.sender.send_json(msg)
+
     query_update_job = (models.JOBS.update()
                         .where(models.JOBS.c.id == job_id)
                         .values(status=values.get('status')))
