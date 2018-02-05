@@ -16,6 +16,24 @@
       "revId": "7a22c7f6aca1205702a3a4bd288548a4723a734e",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a016987_0600baa9",
+        "filename": "dci/api/v1/remotecis.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 211,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2018-02-05T09:34:36Z",
+      "side": 1,
+      "message": "You\u0027r right, I didn\u0027t see this function.\nI will change the patch.",
+      "parentUuid": "7a016987_a60e86e3",
+      "revId": "7a22c7f6aca1205702a3a4bd288548a4723a734e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
