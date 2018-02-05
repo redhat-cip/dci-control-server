@@ -22,6 +22,7 @@ from flask import json
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
+from dci.api.v1 import jobs
 from dci import auth
 from dci import decorators
 from dci.common import exceptions as dci_exc
@@ -61,6 +62,21 @@ def create_jobstates(user):
 
     # Update job status
     job_id = values.get('job_id')
+
+    if values['status'] == 'failure' or values['status'] == 'success':
+        job, _ = jobs._get_job(user, job_id, ['components'])
+        for component in job['components']:
+            if component['data']['dlrn']['commit_hash'] and \
+              component['data']['dlrn']['distro_hash']:
+                msg = {'event': 'dlrn_publish',
+                       'dlrn': {
+                                'commit_hash': component['data']['dlrn']['commit_hash'],
+                                'distro_hash': component['data']['dlrn']['distro_hash']
+                               },
+                       'status': values['status'],
+                       'job_id': job_id,
+                      }
+                flask.g.sender.send_json(msg)
 
     query_update_job = (models.JOBS.update()
                         .where(models.JOBS.c.id == job_id)
