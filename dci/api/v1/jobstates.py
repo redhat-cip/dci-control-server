@@ -62,6 +62,16 @@ def create_jobstates(user):
     # Update job status
     job_id = values.get('job_id')
 
+    # We need to add more test to avoir sending thing on DLRN from topic
+    # not concerned (like RHEL, Ansible etc ...)
+    if values['status'] == 'failure' or values['status'] == 'success':
+        msg = {'event': 'dlrn_publish',
+               'job_id': str(job_id),
+               'status': values['status'],
+               'topic_id': str(job['topic_id']),
+               'remoteci_id': str(job['remoteci_id'])}
+        flask.g.sender.send_json(msg)
+
     query_update_job = (models.JOBS.update()
                         .where(models.JOBS.c.id == job_id)
                         .values(status=values.get('status')))

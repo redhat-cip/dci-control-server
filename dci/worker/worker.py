@@ -19,6 +19,7 @@ import json
 import os
 import smtplib
 import zmq
+import request
 
 from email.MIMEText import MIMEText
 from zmq.eventloop import ioloop, zmqstream
@@ -48,7 +49,6 @@ def get_email_configuration():
 
 
 def mail(mesg):
-
     email_configuration = get_email_configuration()
     if email_configuration:
         subject = 'DCI Status'
@@ -78,12 +78,26 @@ def mail(mesg):
             server.sendmail(email['From'], email['To'], email.as_string())
         server.quit()
 
+def dlrn_publish(mesg):
+    payload = {
+               'job_id': 'dci-rdo-queens',
+               'commit_hash': mesg['dlrn']['commit_hash'],
+               'distro_hash': mesg['dlrn']['distro_hash'],
+               'url': mesg['url']#URL of the job
+               'timestamp': '1517481035,
+               'success': 'true',
+               'notes': 'This is just a random test'
+              }
+    r = request.post('http://%s:%s@%s' % (login, password, url), data=payload)
+
 
 def loop(msg):
     try:
         mesg = json.loads(msg[0])
         if mesg['event'] == 'notification':
             mail(mesg)
+        elif mesg['event'] == 'dlrn_publish':
+            dlrn_publish(mesg)
     except:
         pass
 
