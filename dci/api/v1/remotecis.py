@@ -202,27 +202,20 @@ def get_remoteci_data_json(user, r_id):
 @api.route('/remotecis/<uuid:r_id>/users', methods=['POST'])
 @decorators.login_required
 def add_user_to_remoteci(user, r_id):
-    values = schemas.remoteci_user.post(flask.request.json)
-    values['remoteci_id'] = r_id
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
-    user_to_attach = v1_utils.verify_existence_and_get(values['user_id'],
-                                                       models.USERS)
+    team = v1_utils.verify_existence_and_get(remoteci['team_id'], models.TEAMS)
 
-    if values['user_id'] != user['id'] and \
-       not user.is_in_team(remoteci['team_id']) and \
-       user.is_regular_user():
+    if not user.is_member_of(team):
         raise auth.UNAUTHORIZED
 
-    if user_to_attach['team_id'] != remoteci['team_id']:
-        raise auth.UNAUTHORIZED
-
-    query = models.JOIN_USER_REMOTECIS.insert().values(**values)
+    query = models.JOIN_USER_REMOTECIS.insert().values({'user_id': user.id,
+                                                        'remoteci_id': r_id})
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError:
         raise dci_exc.DCICreationConflict(_TABLE.name,
                                           'remoteci_id, user_id')
-    result = json.dumps(values)
+    result = json.dumps({'user_id': user.id, 'remoteci_id': r_id})
     return flask.Response(result, 201, content_type='application/json')
 
 
