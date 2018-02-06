@@ -262,32 +262,6 @@ def test_success_update_job_status(admin, job_user_id):
     assert job['status'] == 'failure'
 
 
-def test_job_notification(app, user, remoteci_user_id, user_id, job_user_id):
-
-    with app.app_context():
-        data = {'user_id': user_id}
-        user.post('/api/v1/remotecis/%s/users' % remoteci_user_id,
-                  data=data)
-
-        job = user.get('/api/v1/jobs/%s' % job_user_id)
-        job = job.data['job']
-
-        data_post = {'mesg': 'test'}
-
-        with mock.patch('dci.api.v1.jobs.flask.g.sender.send_json') as f_s:
-            res = user.post('/api/v1/jobs/%s/notify' % job_user_id,
-                            data=data_post)
-            assert res.status_code == 204
-            f_s.assert_called_once_with(
-                {'event': 'notification',
-                 'emails': ['user@example.org'],
-                 'job_id': job_user_id,
-                 'remoteci_id': remoteci_user_id,
-                 'topic_id': job['topic_id'],
-                 'status': 'new',
-                 'mesg': 'test'})
-
-
 def test_get_all_jobs_with_where(admin, team_user_id, job_user_id):
     db_job = admin.get('/api/v1/jobs?where=id:%s' % job_user_id).data
     db_job_id = db_job['jobs'][0]['id']
