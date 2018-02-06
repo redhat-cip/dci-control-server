@@ -21,6 +21,7 @@ from flask import json
 
 from dci.api.v1 import api
 from dci.api.v1 import base
+from dci.api.v1 import notifications
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci import decorators
@@ -61,15 +62,27 @@ def create_jobstates(user):
 
     # Update job status
     job_id = values.get('job_id')
-
     query_update_job = (models.JOBS.update()
                         .where(models.JOBS.c.id == job_id)
                         .values(status=values.get('status')))
-
     result = flask.g.db_conn.execute(query_update_job)
 
     if not result.rowcount:
         raise dci_exc.DCIConflict('Job', job_id)
+
+    FINAL_STATES = ['failure', 'success']
+    if values.get('status') in FINAL_STATES:
+        embeds = ['components', 'topic', 'remoteci']
+        embeds_dict = {'components': True, 'topic': False, 'remoteci': False}
+
+        job_column_name = v1_utils.get_columns_name_with_objects(models.JOBS)
+        query = v1_utils.QueryBuilder(models.JOBS, {'embed': embeds},
+                                      job_column_name)
+        query.add_extra_condition(models.JOBS.c.id == job_id)
+        rows = query.execute(fetchall=True)
+        job = v1_utils.format_result(rows, models.JOBS.name, embeds,
+                                     embeds_dict)[0]
+        notifications.dispatcher(job)
 
     result = json.dumps({'jobstate': values})
     return flask.Response(result, 201, content_type='application/json')
