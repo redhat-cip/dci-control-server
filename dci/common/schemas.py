@@ -398,12 +398,6 @@ job_schedule_template = {
 
 job_schedule_template = schema_factory(job_schedule_template)
 
-job_notify = {
-    'mesg': six.text_type
-}
-
-job_notify = schema_factory(job_notify)
-
 ###############################################################################
 #                                                                             #
 #                             Job State schemas                               #
