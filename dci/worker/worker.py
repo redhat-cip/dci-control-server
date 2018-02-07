@@ -95,14 +95,14 @@ def mail(mesg):
 
     email_configuration = get_email_configuration()
     if email_configuration:
-        subject = 'DCI Status'
-        message = "Subject: %s\n"\
-                  "You are receiving this email because of the DCI job %s\n"\
-                  "For the topic : %s on the Remote CI : %s\n"\
-                  "The current status of the job is : %s\n"\
-                  "For more information : "\
+        subject = '[DCI Status][%s][%s][%s]' % (
+            mesg['topic_name'], mesg['remoteci_name'], mesg['status'])
+        message = "You are receiving this email because of the DCI job %s\n"\
+                  "For the topic : %s on the Remote CI: %s\n"\
+                  "The current status of the job is: %s\n"\
+                  "For more information: "\
                   "https://www.distributed-ci.io/#!/jobs/%s/tests"\
-                  % (subject, mesg['job_id'], mesg['topic_name'],
+                  % (mesg['job_id'], mesg['topic_name'],
                      mesg['remoteci_name'], mesg['status'], mesg['job_id'])
 
         email = MIMEText(message)
