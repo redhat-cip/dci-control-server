@@ -19,6 +19,40 @@
     },
     {
       "key": {
+        "uuid": "7a016987_ec2b3f32",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 98,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-02-07T13:15:02Z",
+      "side": 1,
+      "message": "Extra comment: This line can be removed. subject is set l117 email[\u0027subject\u0027].",
+      "revId": "0f4d33072b778334dabf89b5d8ef3c1e9bf89648",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a016987_cc3083a1",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-02-07T13:15:02Z",
+      "side": 1,
+      "message": "This line and the one below should be removed. They are supposed to be headers to message content.",
+      "revId": "0f4d33072b778334dabf89b5d8ef3c1e9bf89648",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a016987_4cf6d3d8",
         "filename": "dci/worker/worker.py",
         "patchSetId": 10
@@ -36,6 +70,23 @@
     },
     {
       "key": {
+        "uuid": "7a016987_ac25475d",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-02-07T13:15:02Z",
+      "side": 1,
+      "message": "Update accordingly with all the removed data",
+      "revId": "0f4d33072b778334dabf89b5d8ef3c1e9bf89648",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a016987_2c0397ba",
         "filename": "dci/worker/worker.py",
         "patchSetId": 10
@@ -47,6 +98,23 @@
       "writtenOn": "2018-02-07T13:04:05Z",
       "side": 1,
       "message": "mesg[\u0027mesg\u0027] does not exist. This line should be removed.",
+      "revId": "0f4d33072b778334dabf89b5d8ef3c1e9bf89648",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a016987_8c2a8b2b",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 115
+      },
+      "writtenOn": "2018-02-07T13:15:02Z",
+      "side": 1,
+      "message": "add email[\u0027DCI-remoteci\u0027] and email[\u0027DCI-topic\u0027] here",
       "revId": "0f4d33072b778334dabf89b5d8ef3c1e9bf89648",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
