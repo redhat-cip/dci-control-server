@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a016987_8c5e0b75",
+        "filename": "dci/api/v1/global_status.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-02-07T16:10:02Z",
+      "side": 1,
+      "message": "It\u0027s an improvement but I was expceting more something: DISTINCT ON (jobs.remoteci_id, jobs.rconfiguration_id)\n\nOtherwise we will just get the last job for a given remoteci.",
+      "revId": "c24d89d51a251c7706ce26a5263fa599b3959fd8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
