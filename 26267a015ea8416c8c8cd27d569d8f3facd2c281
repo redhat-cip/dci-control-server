@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "7a016987_4ca01391",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 207,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-02-07T14:47:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7a016987_49d805f0",
+      "revId": "26267a015ea8416c8c8cd27d569d8f3facd2c281",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "7a016987_29e5c9a7",
         "filename": "dci/api/v1/scheduler.py",
         "patchSetId": 4
@@ -30,6 +48,24 @@
       "writtenOn": "2018-02-06T21:48:40Z",
       "side": 1,
       "message": "You don\u0027t need to filter on th topic_id here.",
+      "revId": "26267a015ea8416c8c8cd27d569d8f3facd2c281",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a016987_8c9deb5b",
+        "filename": "dci/api/v1/scheduler.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 176,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-02-07T14:47:22Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "7a016987_29e5c9a7",
       "revId": "26267a015ea8416c8c8cd27d569d8f3facd2c281",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
