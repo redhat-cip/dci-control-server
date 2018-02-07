@@ -31,51 +31,48 @@ def _get_all_topics():
     return flask.g.db_conn.execute(stmt).fetchall()
 
 
-def _get_all_components_by_topic(topic_id):
+def _get_latest_component_by_topic(topic_id):
     stmt = (sql.select([models.COMPONENTS.c.id,
                         models.COMPONENTS.c.name,
                         models.COMPONENTS.c.created_at])
             .select_from(models.COMPONENTS)
             .where(
-                sql.and_(
-                    models.COMPONENTS.c.topic_id == topic_id,
-                    models.COMPONENTS.c.state == 'active'))
-            .order_by(models.COMPONENTS.c.created_at.asc()))
-    return flask.g.db_conn.execute(stmt).fetchall()
+        sql.and_(
+            models.COMPONENTS.c.topic_id == topic_id,
+            models.COMPONENTS.c.state == 'active'))
+            .order_by(models.COMPONENTS.c.created_at.desc())
+            .limit(1))
+    return flask.g.db_conn.execute(stmt).fetchone()
 
 
 def _get_all_jobs_by_component(component_id):
-    stmt = (sql.select([models.JOBS.c.created_at])
+    stmt = (sql.select([models.JOBS.c.id,
+                        models.JOBS.c.status,
+                        models.JOBS.c.created_at])
             .select_from(
-                sql.join(
-                    models.JOBS,
-                    models.JOIN_JOBS_COMPONENTS))
+        sql.join(
+            models.JOBS,
+            models.JOIN_JOBS_COMPONENTS))
             .where(
-                sql.and_(
-                    models.JOBS.c.state == 'active',
-                    models.JOIN_JOBS_COMPONENTS.c.component_id == component_id))  # noqa
+        sql.and_(
+            models.JOBS.c.state == 'active',
+            models.JOIN_JOBS_COMPONENTS.c.component_id == component_id))  # noqa
             .order_by(models.JOBS.c.created_at))
     return flask.g.db_conn.execute(stmt).fetchall()
 
 
-@api.route('/metrics/topics', methods=['GET'])
+@api.route('/global_status', methods=['GET'])
 @decorators.login_required
 @decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER'])
-def get_all_metrics(user):
+def get_global_status(user):
     data = {}
     topics = _get_all_topics()
-    for t in topics:
-        data[t['name']] = []
-        components = _get_all_components_by_topic(t['id'])
-        for c in components:
-            jobs = _get_all_jobs_by_component(c['id'])
-            values = []
-            for j in jobs:
-                delay = j['created_at'] - c['created_at']
-                values.append(int(delay.total_seconds()))
-            data[t['name']].append({'component': c['name'],
-                                    'date': c['created_at'],
-                                    'values': values})
-
-    return flask.jsonify({'topics': data,
+    for topic in topics:
+        component = _get_latest_component_by_topic(topic['id'])
+        jobs = _get_all_jobs_by_component(component['id'])
+        data[component['name']] = {
+            'topic': topic,
+            'jobs': jobs
+        }
+    return flask.jsonify({'data': data,
                           '_meta': {'count': len(topics)}})
