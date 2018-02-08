@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a016987_4ff6c5d8",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-02-08T15:03:53Z",
+      "side": 1,
+      "message": "make the method static to avoid mock in tests",
+      "range": {
+        "startLine": 92,
+        "startChar": 4,
+        "endLine": 92,
+        "endChar": 58
+      },
+      "revId": "9ccd9e1f346acfe75424a470fadfdac9519125cf",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a016987_6ff981c8",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-02-08T15:03:53Z",
+      "side": 1,
+      "message": "return self.get_team_and_children_teams(teams, team_id)",
+      "range": {
+        "startLine": 110,
+        "startChar": 0,
+        "endLine": 112,
+        "endChar": 20
+      },
+      "revId": "9ccd9e1f346acfe75424a470fadfdac9519125cf",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
