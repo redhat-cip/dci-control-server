@@ -97,10 +97,10 @@ def mail(mesg):
         subject = '[DCI Status][%s][%s][%s]' % (
             mesg['topic_name'], mesg['remoteci_name'], mesg['status'])
         message = "You are receiving this email because of the DCI job %s\n"\
-                  "For the topic : %s on the Remote CI : %s\n"\
-                  "The current status of the job is : %s\n"\
+                  "For the topic: %s on the Remote CI: %s\n"\
+                  "The current status of the job is: %s\n"\
                   "The components used are the following: %s\n"\
-                  "For more information : "\
+                  "For more information: "\
                   "https://www.distributed-ci.io/jobs/%s/jobStates"\
                   % (mesg['job_id'], mesg['topic_name'], mesg['remoteci_name'],
                      mesg['status'], ', '.join(mesg['components']),
