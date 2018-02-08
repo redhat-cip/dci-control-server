@@ -52,7 +52,7 @@ class Identity:
     def _get_partner_teams(self, user, teams):
         partner_teams = []
         for team in teams:
-            if user['team_id'] == team['parent_id']:
+            if user['team_id'] != team['id']:
                 partner_teams.append(team)
         return partner_teams
 
