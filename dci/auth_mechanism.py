@@ -89,18 +89,26 @@ class BaseMechanism(object):
 
         return Identity(identity, teams)
 
-    def _teams_from_db(self, team_id):
-        query = sql.select([models.TEAMS.c.id, models.TEAMS.c.parent_id]) \
-            .where(sql.or_(
-                models.TEAMS.c.parent_id == team_id,
-                models.TEAMS.c.id == team_id
-            ))
+    def get_team_and_children_teams(self, teams, team_id):
+        return_teams = []
+        for team in teams:
+            if team['id'] == team_id:
+                return_teams.append(team)
+            if team['parent_id'] == team_id:
+                return_teams += self.get_team_and_children_teams(teams,
+                                                                 team['id'])
 
+        return return_teams
+
+    def _teams_from_db(self, team_id):
+        query = sql.select([models.TEAMS.c.id, models.TEAMS.c.parent_id])
         result = flask.g.db_conn.execute(query).fetchall()
         teams = [{
             'id': row[models.TEAMS.c.id],
             'parent_id': row[models.TEAMS.c.parent_id]
         } for row in result]
+        teams = self.get_team_and_children_teams(teams, team_id)
+
         return teams
 
 
