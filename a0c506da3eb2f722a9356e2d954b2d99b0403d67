@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a016987_0f5fad0f",
+        "filename": "dci/api/v1/global_status.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 54,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2018-02-08T08:35:53Z",
+      "side": 1,
+      "message": "You can avoid multiple request and treatment in python with something like that :\n\nSELECT DISTINCT ON (jobs.remoteci_id) * from jobs LEFT JOIN jobs_components ON jobs.id \u003d jobs_components.job_id WHERE jobs_components.component_id IN (Select DISTINCT ON (topic_id) id from components ORDER By topic_id, created_at DESC);",
+      "range": {
+        "startLine": 31,
+        "startChar": 4,
+        "endLine": 54,
+        "endChar": 50
+      },
+      "revId": "a0c506da3eb2f722a9356e2d954b2d99b0403d67",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
