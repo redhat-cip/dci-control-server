@@ -75,13 +75,11 @@ def create_jobstates(user):
         embeds = ['components', 'topic', 'remoteci']
         embeds_dict = {'components': True, 'topic': False, 'remoteci': False}
 
-        job_column_name = v1_utils.get_columns_name_with_objects(models.JOBS)
-        query = v1_utils.QueryBuilder(models.JOBS, {'embed': embeds},
-                                      job_column_name)
-        query.add_extra_condition(models.JOBS.c.id == job_id)
-        rows = query.execute(fetchall=True)
-        job = v1_utils.format_result(rows, models.JOBS.name, embeds,
-                                     embeds_dict)[0]
+        job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
+        job = base.get_resource_by_id(user, dict(job), models.JOBS,
+                                      embeds_dict, embeds=embeds,
+                                      jsonify=False)
+        job = dict(job)
         notifications.dispatcher(job)
 
     result = json.dumps({'jobstate': values})
