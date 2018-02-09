@@ -15,6 +15,8 @@
 # under the License.
 
 
+import dci.auth_mechanism as authm
+
 from dci.identity import Identity
 
 
@@ -99,6 +101,7 @@ def test_filter_teams_with_partner_teams():
         {'id': 'def', 'parent_id': 'abc'},
         {'id': 'ghi', 'parent_id': None}
     ]
+    teams = authm.BaseMechanism.get_team_and_children_teams(teams, 'abc')
 
     user = Identity(product_owner, teams)
     assert user.team['id'] == 'abc'
@@ -116,6 +119,7 @@ def test_ensure_any_parent_team_member_has_access_to_subteam():
         {'id': 'def', 'parent_id': 'abc'},
         {'id': 'ghi', 'parent_id': None}
     ]
+    teams = authm.BaseMechanism.get_team_and_children_teams(teams, 'abc')
 
     user = Identity(user, teams)
     assert user.team['id'] == 'abc'
