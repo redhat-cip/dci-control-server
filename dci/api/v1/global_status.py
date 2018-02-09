@@ -96,4 +96,4 @@ ORDER BY
 
     jobs = engine.execute(sql)
     global_status = format_global_status(jobs)
-    return flask.jsonify(add_percentage_of_success(global_status))
+    return flask.jsonify({'globalStatus': add_percentage_of_success(global_status)})
