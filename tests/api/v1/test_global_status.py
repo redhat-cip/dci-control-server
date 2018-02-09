@@ -20,8 +20,7 @@ from dci.api.v1.global_status import add_percentage_of_success
 def test_global_status(admin, user, job_user_id):
     user.post('/api/v1/jobstates',
               data={'job_id': job_user_id, 'status': 'success'})
-    global_status = admin.get('/api/v1/global_status').data
-    print(global_status)
+    global_status = admin.get('/api/v1/global_status').data['globalStatus']
     assert global_status[0]['jobs'][0]['status'] == 'success'
     assert 'topic_name' in global_status[0]
     assert 'name' in global_status[0]
