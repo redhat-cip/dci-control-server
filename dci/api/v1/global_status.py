@@ -86,12 +86,29 @@ WHERE
     teams.external = '1' AND
     (jobs.status = 'failure' OR jobs.status = 'success') AND
     remotecis.state = 'active' AND
-    components.id IN (Select DISTINCT ON (topic_id) id from components ORDER By topic_id, created_at DESC)
-ORDER BY
+    components.id IN (SELECT DISTINCT ON (topic_id) id from components ORDER BY topic_id, created_at DESC)
+UNION
+SELECT NULL,
+    NULL,
+    NULL,
+    NULL,
+    NULL,
     components.id,
-    jobs.remoteci_id,
-    jobs.rconfiguration_id,
-    jobs.created_at DESC;
+    components.name,
+    topics.id,
+    topics.name,
+    NULL,
+    NULL,
+    NULL
+FROM components
+JOIN topics on components.topic_id = topics.id
+WHERE
+    components.id IN (SELECT DISTINCT ON (topic_id) id FROM components ORDER BY topic_id, created_at DESC)
+ORDER BY
+    component_id,
+    remoteci_id,
+    rconfiguration_id,
+    created_at DESC;
 """)  # noqa
 
     jobs = engine.execute(sql)
