@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a016987_5510964e",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-02-12T14:52:33Z",
+      "side": 1,
+      "message": "Hi Yanis. Could you please give a bit more details regarding what you want to improve.",
+      "revId": "d8dea0273ff67ece8259c1a62788f3907f21c683",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
