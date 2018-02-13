@@ -119,6 +119,9 @@ def mail(mesg):
         server.login(email_configuration['account'],
                      email_configuration['password'])
         for contact in mesg['emails']:
+            # email.message are not classic dict, a new affectation does
+            # not overwrite the previous one.
+            del email['To']
             email['To'] = contact
             server.sendmail(email['From'], email['To'], email.as_string())
         server.quit()
