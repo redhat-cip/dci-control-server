@@ -18,6 +18,7 @@ import datetime
 
 import flask
 from flask import json
+from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -63,15 +64,15 @@ def create_jobstates(user):
     # Update job status
     job_id = values.get('job_id')
     query_update_job = (models.JOBS.update()
-                        .where(models.JOBS.c.id == job_id)
+                        .where(
+                            sql.and_(
+                                models.JOBS.c.id == job_id,
+                                models.JOBS.c.status != values.get('status')))
                         .values(status=values.get('status')))
     result = flask.g.db_conn.execute(query_update_job)
 
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('Job', job_id)
-
     FINAL_STATES = ['failure', 'success']
-    if values.get('status') in FINAL_STATES:
+    if result.rowcount and values.get('status') in FINAL_STATES:
         embeds = ['components', 'topic', 'remoteci']
         embeds_dict = {'components': True, 'topic': False, 'remoteci': False}
 
