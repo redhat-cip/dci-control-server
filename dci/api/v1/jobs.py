@@ -304,7 +304,7 @@ def _get_job(user, job_id, embed):
     args = {'embed': embed}
     query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS)
 
-    if not user.is_super_admin():
+    if not user.is_super_admin() and not user.is_rh_employee():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     query.add_extra_condition(_TABLE.c.id == job_id)
@@ -422,8 +422,8 @@ def get_all_jobs(user, topic_id=None):
 
     # add extra conditions for filtering
 
-    # # If not admin then restrict the view to the team
-    if not user.is_super_admin():
+    # # If not admin nor rh employee then restrict the view to the team
+    if not user.is_super_admin() and not user.is_rh_employee():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     # # If topic_id not None, then filter by topic_id
@@ -626,7 +626,7 @@ def associate_meta(user, j_id):
 @decorators.login_required
 def get_meta_by_id(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not user.is_in_team(job['team_id']):
+    if not user.is_in_team(job['team_id']) and not user.is_rh_employee():
         raise auth.UNAUTHORIZED
     return metas.get_meta_by_id(m_id)
 
@@ -635,7 +635,7 @@ def get_meta_by_id(user, j_id, m_id):
 @decorators.login_required
 def get_all_metas(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not user.is_in_team(job['team_id']):
+    if not user.is_in_team(job['team_id']) and not user.is_rh_employee():
         raise auth.UNAUTHORIZED
     return metas.get_all_metas_from_job(j_id)
 
