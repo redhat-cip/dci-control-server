@@ -20,6 +20,7 @@ from dci.elasticsearch import engine as elastic_engine
 from dci.stores.swift import Swift
 import tests.utils as utils
 from dci.common import utils as dci_utils
+import tests.sso_tokens as sso_tokens
 
 from passlib.apps import custom_app_context as pwd_context
 import contextlib
@@ -140,6 +141,11 @@ def user(app, db_provisioning):
 @pytest.fixture
 def user_sso(app, db_provisioning, access_token):
     return utils.generate_client(app, access_token=access_token)
+
+
+@pytest.fixture
+def user_sso_rh_employee(app, db_provisioning, access_token_rh_employee):
+    return utils.generate_client(app, access_token=access_token_rh_employee)
 
 
 @pytest.fixture
@@ -488,65 +494,9 @@ def role_remoteci(admin):
 
 @pytest.fixture
 def access_token():
-    """
-{
-  "alg": "RS256",
-  "typ": "JWT",
-  "kid": "-68W8qbt5ztlVv4gemEWKwMeZQLVbs3ALVe4kNXdT8E"
-}
-{
-  "jti": "bfff129a-f7f0-475e-9df4-f157f2f78ba7",
-  "exp": 1505565718,
-  "nbf": 0,
-  "iat": 1505564818,
-  "iss": "http://localhost:8180/auth/realms/dci-test",
-  "aud": "dci-cs",
-  "sub": "b309e4da-ed6f-45fc-9054-7855e6e4eb92",
-  "typ": "Bearer",
-  "azp": "dci-cs",
-  "nonce": "ab40edba-9187-11e7-a921-c85b7636c33f",
-  "auth_time": 1505564818,
-  "session_state": "c5f689c8-66ad-41cc-b704-4d5ff9427152",
-  "acr": "1",
-  "allowed-origins": [
-    "http://localhost:5000"
-  ],
-  "realm_access": {
-    "roles": [
-      "uma_authorization"
-    ]
-  },
-  "resource_access": {
-    "account": {
-      "roles": [
-        "manage-account",
-        "manage-account-links",
-        "view-profile"
-      ]
-    }
-  },
-  "email": "dci@distributed-ci.io",
-  "username": "dci"
-}
-    """
+    return sso_tokens.ACCESS_TOKEN_USER
 
-    access_token = 'eyJhbGciOiJSUzI1NiIsInR5cCIgOiAiSldUIiwia2lkIiA6ICItNjhX' \
-        'OHFidDV6dGxWdjRnZW1FV0t3TWVaUUxWYnMzQUxWZTRrTlhkVDhFIn0.eyJqdGkiOiJ' \
-        'iZmZmMTI5YS1mN2YwLTQ3NWUtOWRmNC1mMTU3ZjJmNzhiYTciLCJleHAiOjE1MDU1Nj' \
-        'U3MTgsIm5iZiI6MCwiaWF0IjoxNTA1NTY0ODE4LCJpc3MiOiJodHRwOi8vbG9jYWxob' \
-        '3N0OjgxODAvYXV0aC9yZWFsbXMvZGNpLXRlc3QiLCJhdWQiOiJkY2ktY3MiLCJzdWIi' \
-        'OiJiMzA5ZTRkYS1lZDZmLTQ1ZmMtOTA1NC03ODU1ZTZlNGViOTIiLCJ0eXAiOiJCZWF' \
-        'yZXIiLCJhenAiOiJkY2ktY3MiLCJub25jZSI6ImFiNDBlZGJhLTkxODctMTFlNy1hOT' \
-        'IxLWM4NWI3NjM2YzMzZiIsImF1dGhfdGltZSI6MTUwNTU2NDgxOCwic2Vzc2lvbl9zd' \
-        'GF0ZSI6ImM1ZjY4OWM4LTY2YWQtNDFjYy1iNzA0LTRkNWZmOTQyNzE1MiIsImFjciI6' \
-        'IjEiLCJhbGxvd2VkLW9yaWdpbnMiOlsiaHR0cDovL2xvY2FsaG9zdDo1MDAwIl0sInJ' \
-        'lYWxtX2FjY2VzcyI6eyJyb2xlcyI6WyJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3' \
-        'VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiL' \
-        'CJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sImVtYWlsIjoi' \
-        'ZGNpQGRpc3RyaWJ1dGVkLWNpLmlvIiwidXNlcm5hbWUiOiJkY2kifQ.Sv-r1bChnDLQ' \
-        'I1S9j07UJ3nYInu0grJS6_tCznLG2gW3_QXQhpLNKiMpNlyJU7hDQHXmRG7d2Y58JXF' \
-        'RPLgDFMGnUeTyGxSJS2PcZ6WKKDLMdOnfqexKJfSqU17jJ7h18qeRjLWdK-PMLJAQkJ' \
-        'u9QlqaQsZNIXH_2uYY1_rWeaulPia_fj6iNzmYxeUvqci2IBbRIrZV5lvxlL55v1siG' \
-        '4vF26G8pbjGL7Fg7HvDekJCTZE5uWRCQtg15IJ44Fsspip6C2kSIhAFvsitFe5r7ltO' \
-        'Nnh5nbZCsru5r9qEEYzcSyIZnkyVGgZrxNY_PY8CC6WtSBZTC7inFFcWWKioSw'
-    return access_token
+
+@pytest.fixture
+def access_token_rh_employee():
+    return sso_tokens.ACCESS_TOKEN_READ_ONLY_USER
