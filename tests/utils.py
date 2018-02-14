@@ -133,6 +133,33 @@ def generate_token_based_client(app, resource):
     return client
 
 
+def post_file(client, jobstate_id, file_desc, mime='text/plain',
+              swift_get_mock=None):
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': len(file_desc.content)
+        }
+
+        mockito.head.return_value = head_result
+        mockito.get.return_value = (0, six.StringIO(file_desc.content))
+        mockito.build_file_path = Swift.build_file_path
+        if swift_get_mock is not None:
+            mockito.get = swift_get_mock
+        mock_swift.return_value = mockito
+        headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
+                   'DCI-MIME': mime, 'Content-Type': 'text/plain'}
+        res = client.post('/api/v1/files',
+                          headers=headers,
+                          data=file_desc.content)
+
+        return res.data['file']['id']
+
+
 def provision(db_conn):
     def db_insert(model_item, **kwargs):
         query = model_item.insert().values(**kwargs)
@@ -180,6 +207,12 @@ def provision(db_conn):
         'description': 'A RemoteCI',
     }
 
+    rh_employee_role = {
+        'name': 'Rh_employee',
+        'label': 'READ_ONLY_USER',
+        'description': 'RH employee with RO access'
+    }
+
     feeder_role = {
         'name': 'Feeder',
         'label': 'FEEDER',
@@ -190,6 +223,7 @@ def provision(db_conn):
     user_role_id = db_insert(models.ROLES, **user_role)
     super_admin_role_id = db_insert(models.ROLES, **super_admin_role)
     product_owner_role_id = db_insert(models.ROLES, **product_owner_role)
+    db_insert(models.ROLES, **rh_employee_role)
     db_insert(models.ROLES, **remoteci_role)
     db_insert(models.ROLES, **feeder_role)
 
@@ -241,29 +275,6 @@ def provision(db_conn):
 SWIFT = 'dci.stores.swift.Swift'
 
 FileDesc = collections.namedtuple('FileDesc', ['name', 'content'])
-
-
-def post_file(client, jobstate_id, file_desc):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
-
-        mockito = mock.MagicMock()
-
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 7
-        }
-
-        mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
-        headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
-                   'Content-Type': 'text/plain',
-                   'DCI-MIME': 'text/plain'}
-        res = client.post('/api/v1/files',
-                          headers=headers,
-                          data=file_desc.content)
-
-        return res.data['file']['id']
 
 
 def run_bin(bin_name, env):

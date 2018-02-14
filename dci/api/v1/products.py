@@ -95,7 +95,7 @@ def get_all_products(user):
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    if not user.is_super_admin():
+    if not user.is_super_admin() and not user.is_read_only_user():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     nb_rows = query.get_number_of_rows()

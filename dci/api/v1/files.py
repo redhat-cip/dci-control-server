@@ -185,7 +185,7 @@ def get_all_files(user, j_id=None):
     query = v1_utils.QueryBuilder(_TABLE, args, _FILES_COLUMNS)
 
     # If it's not an admin then restrict the view to the team's file
-    if not user.is_super_admin():
+    if not user.is_super_admin() and not user.is_read_only_user():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
     if j_id is not None:
         query.add_extra_condition(_TABLE.c.job_id == j_id)
@@ -211,7 +211,7 @@ def get_file_content(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
     swift = dci_config.get_store('files')
 
-    if not user.is_in_team(file['team_id']):
+    if not user.is_in_team(file['team_id']) and not user.is_read_only_user():
         raise auth.UNAUTHORIZED
 
     file_path = swift.build_file_path(file['team_id'],
