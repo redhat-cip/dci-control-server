@@ -305,8 +305,13 @@ class OpenIDCAuth(BaseMechanism):
         """Create the user according to the token, this function assume that
         the token has been verified."""
 
+        role_id = auth.get_role_id('USER')
+
+        if 'redhat:employees' in decoded_token['realm_access']['roles']:
+            role_id = auth.get_role_id('RH_EMPLOYEE')
+
         user_values = {
-            'role_id': auth.get_role_id('USER'),
+            'role_id': role_id,
             'name': decoded_token.get('username'),
             'fullname': decoded_token.get('username'),
             'sso_username': decoded_token.get('username'),

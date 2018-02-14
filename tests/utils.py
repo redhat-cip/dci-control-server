@@ -180,6 +180,12 @@ def provision(db_conn):
         'description': 'A RemoteCI',
     }
 
+    rh_employee_role = {
+        'name': 'Rh_employee',
+        'label': 'RH_EMPLOYEE',
+        'description': 'RH employee with RO access'
+    }
+
     feeder_role = {
         'name': 'Feeder',
         'label': 'FEEDER',
@@ -190,6 +196,7 @@ def provision(db_conn):
     user_role_id = db_insert(models.ROLES, **user_role)
     super_admin_role_id = db_insert(models.ROLES, **super_admin_role)
     product_owner_role_id = db_insert(models.ROLES, **product_owner_role)
+    db_insert(models.ROLES, **rh_employee_role)
     db_insert(models.ROLES, **remoteci_role)
     db_insert(models.ROLES, **feeder_role)
 

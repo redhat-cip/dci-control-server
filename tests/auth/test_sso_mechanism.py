@@ -28,7 +28,7 @@ import pytest
 def test_sso_auth_verified(m_datetime, admin, app, engine, access_token):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
-        fromtimestamp(1505564918).timetuple()
+        fromtimestamp(1518653629).timetuple()
     m_datetime.utcnow.return_value = m_utcnow
     sso_headers = mock.Mock
     sso_headers.headers = {'Authorization': 'Bearer %s' % access_token}
@@ -49,7 +49,7 @@ def test_sso_auth_verified(m_datetime, admin, app, engine, access_token):
 def test_sso_auth_not_verified(m_datetime, admin, app, engine, access_token):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
-        fromtimestamp(1505564918).timetuple()
+        fromtimestamp(1518653629).timetuple()
     m_datetime.utcnow.return_value = m_utcnow
     # corrupt access_token
     access_token = access_token + 'lol'
@@ -70,7 +70,7 @@ def test_sso_auth_not_verified(m_datetime, admin, app, engine, access_token):
 def test_sso_auth_get_users(m_datetime, user_sso, app, engine):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
-        fromtimestamp(1505564918).timetuple()
+        fromtimestamp(1518653629).timetuple()
     m_datetime.utcnow.return_value = m_utcnow
     with app.app_context():
         flask.g.db_conn = engine.connect()
@@ -82,7 +82,7 @@ def test_sso_auth_get_users(m_datetime, user_sso, app, engine):
 def test_sso_auth_get_current_user(m_datetime, user_sso, app, engine):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
-        fromtimestamp(1505564918).timetuple()
+        fromtimestamp(1518653629).timetuple()
     m_datetime.utcnow.return_value = m_utcnow
     with app.app_context():
         flask.g.db_conn = engine.connect()

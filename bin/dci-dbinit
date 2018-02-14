@@ -90,6 +90,12 @@ def init_db(db_conn):
         'description': 'Regular User',
     }
 
+    rh_employee_role = {
+        'name': 'Rh_employee',
+        'label': 'RH_EMPLOYEE',
+        'description': 'RH employee with RO access'
+    }
+
     remoteci_role = {
         'name': 'RemoteCI',
         'label': 'REMOTECI',
@@ -105,6 +111,7 @@ def init_db(db_conn):
     db_insert_with_name(models.ROLES, **product_owner_role)
     db_insert_with_name(models.ROLES, **admin_role)
     db_insert_with_name(models.ROLES, **user_role)
+    db_insert_with_name(models.ROLES, **rh_employee_role)
     db_insert_with_name(models.ROLES, **remoteci_role)
     db_insert_with_name(models.ROLES, **feeder_role)
     super_admin_role_id = db_insert_with_name(models.ROLES,

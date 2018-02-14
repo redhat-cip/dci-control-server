@@ -78,13 +78,16 @@ def get_topic_by_id(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
     if not user.is_super_admin() and not user.is_product_owner():
-        v1_utils.verify_team_in_topic(user, topic_id)
+        if not user.is_rh_employee():
+            v1_utils.verify_team_in_topic(user, topic_id)
         if 'teams' in args['embed']:
             raise dci_exc.DCIException('embed=teams not authorized.',
                                        status_code=401)
 
-    if not user.is_super_admin() and user.product_id != topic['product_id']:
-        raise auth.UNAUTHORIZED
+    if (not user.is_super_admin() and
+        user.product_id != topic['product_id'] and
+        not user.is_rh_employee()):
+            raise auth.UNAUTHORIZED
 
     return base.get_resource_by_id(user, topic, _TABLE, _EMBED_MANY)
 
@@ -187,7 +190,8 @@ def delete_topic_by_id(user, topic_id):
 @decorators.login_required
 def get_all_components(user, topic_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
-    v1_utils.verify_team_in_topic(user, topic_id)
+    if not user.is_rh_employee():
+        v1_utils.verify_team_in_topic(user, topic_id)
     return components.get_all_components(user, topic_id=topic_id)
 
 
@@ -264,7 +268,8 @@ def get_jobs_status_from_components(user, topic_id, type_id):
 @decorators.login_required
 def get_all_tests(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
-    v1_utils.verify_team_in_topic(user, topic_id)
+    if not user.is_rh_employee():
+        v1_utils.verify_team_in_topic(user, topic_id)
     v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
     query = sql.select([models.TESTS]).\

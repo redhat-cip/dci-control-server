@@ -94,7 +94,7 @@ def get_all_jobstates(user, j_id=None):
     args = schemas.args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder(_TABLE, args, _JS_COLUMNS)
-    if not user.is_super_admin():
+    if not user.is_super_admin() and not user.is_rh_employee():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     # used for counting the number of rows when j_id is not None

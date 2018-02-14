@@ -38,7 +38,8 @@ def get_resource_by_id(user, resource, table, embed_many,
     query = v1_utils.QueryBuilder(table, args, columns, ignore_columns)
 
     if (not user.is_super_admin() and 'team_id' in resource and
-            resource['team_id'] is not None):
+            resource['team_id'] is not None and
+        not user.is_rh_employee()):
         query.add_extra_condition(table.c.team_id.in_(user.teams))
 
     if 'state' in resource:
