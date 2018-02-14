@@ -14,10 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-ALL = ['SUPER_ADMIN', 'USER', 'ADMIN', 'PRODUCT_OWNER', 'FEEDER', 'REMOTECI']
-HUMAN = ['SUPER_ADMIN', 'USER', 'ADMIN', 'PRODUCT_OWNER']
+ALL = ['SUPER_ADMIN', 'USER', 'ADMIN', 'PRODUCT_OWNER', 'FEEDER', 'REMOTECI',
+       'READ_ONLY_USER']
+HUMAN = ['SUPER_ADMIN', 'USER', 'ADMIN', 'PRODUCT_OWNER', 'READ_ONLY_USER']
 SUPER_ADMIN = ['SUPER_ADMIN']
 SUPER_ADMIN_PO = ['SUPER_ADMIN', 'PRODUCT_OWNER']
+SUPER_ADMIN_PO_RO_USER = ['SUPER_ADMIN', 'PRODUCT_OWNER', 'READ_ONLY_USER']
 SUPER_ADMIN_PO_FEEDER = ['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER']
 ADMINS = ['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN']
 REMOTECI = ['SUPER_ADMIN', 'REMOTECI']
@@ -70,7 +72,7 @@ ROLES = {
     'get_to_purge_archived_fingerprint': SUPER_ADMIN,
     'purge_fingerprint': SUPER_ADMIN,
     # global status
-    'get_global_status': SUPER_ADMIN_PO,
+    'get_global_status': SUPER_ADMIN_PO_RO_USER,
     # identity
     'get_identity': ALL,
     # jobs

@@ -107,7 +107,7 @@ def get_all_tests(user, team_id):
 @decorators.check_roles
 def get_test_by_id(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
-    if not user.is_in_team(test['team_id']):
+    if not user.is_in_team(test['team_id']) and not user.is_read_only_user():
         raise auth.UNAUTHORIZED
     res = flask.jsonify({'test': test})
     return res

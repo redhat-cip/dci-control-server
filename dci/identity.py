@@ -26,6 +26,9 @@ class Identity:
         # TODO: replace user['role_label'] with user['role']['label']
         self.role_label = user['role_label']
         self.team = self._get_user_team(user, teams)
+        # in case of sso user without team
+        if self.team is None:
+            self.team = {'id': None}
         self.partner_teams = self._get_partner_teams(user, teams)
         # TODO: remove teams object and use team and partner_teams
         self.teams = self._get_teams()
@@ -68,6 +71,8 @@ class Identity:
 
     # TODO: remove is_in_team (use is_member_of instead)
     def is_in_team(self, team_id):
+        if not team_id:
+            return False
         return self.is_member_of({'id': team_id})
 
     def is_super_admin(self):
@@ -92,6 +97,10 @@ class Identity:
         """Ensure the user has the role ADMIN."""
 
         return self.role_label == 'ADMIN'
+
+    def is_read_only_user(self):
+        """Check if the user is a rh employee."""
+        return self.role_label == 'READ_ONLY_USER'
 
     def is_team_admin(self, team_id):
         """Ensure the user has the role ADMIN and belongs to the team."""
