@@ -90,6 +90,12 @@ def init_db(db_conn):
         'description': 'Regular User',
     }
 
+    read_only_user_role = {
+        'name': 'Read only user',
+        'label': 'READ_ONLY_USER',
+        'description': 'User with RO access'
+    }
+
     remoteci_role = {
         'name': 'RemoteCI',
         'label': 'REMOTECI',
@@ -105,6 +111,7 @@ def init_db(db_conn):
     db_insert_with_name(models.ROLES, **product_owner_role)
     db_insert_with_name(models.ROLES, **admin_role)
     db_insert_with_name(models.ROLES, **user_role)
+    db_insert_with_name(models.ROLES, **read_only_user_role)
     db_insert_with_name(models.ROLES, **remoteci_role)
     db_insert_with_name(models.ROLES, **feeder_role)
     super_admin_role_id = db_insert_with_name(models.ROLES,

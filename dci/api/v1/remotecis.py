@@ -85,7 +85,7 @@ def get_all_remotecis(user, t_id=None):
     # build the query thanks to the QueryBuilder class
     query = v1_utils.QueryBuilder(_TABLE, args, _R_COLUMNS)
 
-    if not user.is_super_admin():
+    if not user.is_super_admin() and not user.is_read_only_user():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     if t_id is not None:

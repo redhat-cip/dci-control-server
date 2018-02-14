@@ -17,6 +17,7 @@
 from __future__ import unicode_literals
 
 import tests.api.v1.test_files as files
+import tests.utils as t_utils
 
 import uuid
 
@@ -100,7 +101,8 @@ def test_get_all_jobstates_with_embed(user, job_user_id, team_user_id):
     user.post('/api/v1/jobstates', data=data)
     js = user.post('/api/v1/jobstates', data=data).data
 
-    files.post_file(user, js['jobstate']['id'], files.FileDesc('foo', 'bar'))
+    t_utils.post_file(user, js['jobstate']['id'],
+                      files.FileDesc('foo', 'bar'))
 
     data = {'job_id': job_user_id, 'status': 'running', 'comment': 'kikoolol2'}
     user.post('/api/v1/jobstates', data=data)
@@ -185,10 +187,10 @@ def test_get_all_jobstates_with_sub_sort(user, job_user_id):
                        data={'job_id': job_user_id,
                              'status': 'running',
                              'comment': 'a'}).data['jobstate']
-    files.post_file(user, jd_1_1['id'], files.FileDesc('foo', 'bar'))
-    files.post_file(user, jd_1_2['id'], files.FileDesc('older', 'bar'))
-    files.post_file(user, jd_1_2['id'], files.FileDesc('something', 'bar'))
-    files.post_file(user, jd_1_2['id'], files.FileDesc('latest', 'bar'))
+    t_utils.post_file(user, jd_1_1['id'], files.FileDesc('foo', 'bar'))
+    t_utils.post_file(user, jd_1_2['id'], files.FileDesc('older', 'bar'))
+    t_utils.post_file(user, jd_1_2['id'], files.FileDesc('something', 'bar'))
+    t_utils.post_file(user, jd_1_2['id'], files.FileDesc('latest', 'bar'))
 
     jds = user.get('/api/v1/jobstates?sort=comment' +
                    '&embed=files').data

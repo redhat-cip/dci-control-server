@@ -22,6 +22,7 @@ from dci.api.v1.files import get_file_info_from_headers
 from dci.stores.swift import Swift
 from dci.common import utils
 from tests import data as tests_data
+import tests.utils as t_utils
 
 import collections
 
@@ -31,36 +32,9 @@ SWIFT = 'dci.stores.swift.Swift'
 FileDesc = collections.namedtuple('FileDesc', ['name', 'content'])
 
 
-def post_file(client, jobstate_id, file_desc, mime='text/plain',
-              swift_get_mock=None):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
-
-        mockito = mock.MagicMock()
-
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': len(file_desc.content)
-        }
-
-        mockito.head.return_value = head_result
-        mockito.get.return_value = (0, six.StringIO(file_desc.content))
-        mockito.build_file_path = Swift.build_file_path
-        if swift_get_mock is not None:
-            mockito.get = swift_get_mock
-        mock_swift.return_value = mockito
-        headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
-                   'DCI-MIME': mime, 'Content-Type': 'text/plain'}
-        res = client.post('/api/v1/files',
-                          headers=headers,
-                          data=file_desc.content)
-
-        return res.data['file']['id']
-
-
 def test_create_files(user, jobstate_user_id):
-    file_id = post_file(user, jobstate_user_id,
-                        FileDesc('kikoolol', 'content'))
+    file_id = t_utils.post_file(user, jobstate_user_id,
+                                FileDesc('kikoolol', 'content'))
 
     file = user.get('/api/v1/files/%s' % file_id).data['file']
 
@@ -75,8 +49,10 @@ def test_create_files_jobstate_id_and_job_id_missing(admin):
 
 
 def test_get_all_files(user, jobstate_user_id):
-    file_1 = post_file(user, jobstate_user_id, FileDesc('kikoolol1', ''))
-    file_2 = post_file(user, jobstate_user_id, FileDesc('kikoolol2', ''))
+    file_1 = t_utils.post_file(user, jobstate_user_id,
+                               FileDesc('kikoolol1', ''))
+    file_2 = t_utils.post_file(user, jobstate_user_id,
+                               FileDesc('kikoolol2', ''))
 
     db_all_files = user.get('/api/v1/files?sort=created_at').data
     db_all_files = db_all_files['files']
@@ -116,14 +92,17 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
             return (0, six.StringIO(tests_data.jobtest_with_failures))
     swift_get_mock = mock.MagicMock(side_effect=get_file_content)
 
-    f_1 = post_file(admin, jobstate_1['id'],
-                    FileDesc('Tempest', tests_data.jobtest_without_failures),
-                    mime='application/junit')
+    f_1 = t_utils.post_file(admin, jobstate_1['id'],
+                            FileDesc('Tempest',
+                                     tests_data.jobtest_without_failures),
+                            mime='application/junit')
     assert f_1 is not None
 
-    f_2 = post_file(admin, jobstate_2['id'],
-                    FileDesc('Tempest', tests_data.jobtest_with_failures),
-                    mime='application/junit', swift_get_mock=swift_get_mock)
+    f_2 = t_utils.post_file(admin, jobstate_2['id'],
+                            FileDesc('Tempest',
+                                     tests_data.jobtest_with_failures),
+                            mime='application/junit',
+                            swift_get_mock=swift_get_mock)
     assert f_2 is not None
 
     # 4. verify regression in job_2's result which is 'test_3'
@@ -163,7 +142,7 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
 def test_get_all_files_with_pagination(user, jobstate_user_id):
     # create 4 files types and check meta count
     for i in range(4):
-        post_file(user, jobstate_user_id, FileDesc('lol%d' % i, ''))
+        t_utils.post_file(user, jobstate_user_id, FileDesc('lol%d' % i, ''))
 
     # check meta count
     files = user.get('/api/v1/files').data
@@ -184,8 +163,8 @@ def test_get_all_files_with_pagination(user, jobstate_user_id):
 
 def test_get_all_files_with_embed(user, jobstate_user_id, team_user_id,
                                   job_user_id):
-    post_file(user, jobstate_user_id, FileDesc('lol1', ''))
-    post_file(user, jobstate_user_id, FileDesc('lol2', ''))
+    t_utils.post_file(user, jobstate_user_id, FileDesc('lol1', ''))
+    t_utils.post_file(user, jobstate_user_id, FileDesc('lol2', ''))
 
     # verify embed
     files = user.get('/api/v1/files?embed=team,jobstate,jobstate.job').data
@@ -199,7 +178,7 @@ def test_get_all_files_with_embed(user, jobstate_user_id, team_user_id,
 
 
 def test_get_all_files_with_where(user, jobstate_user_id):
-    file_id = post_file(user, jobstate_user_id, FileDesc('lol1', ''))
+    file_id = t_utils.post_file(user, jobstate_user_id, FileDesc('lol1', ''))
 
     db_job = user.get('/api/v1/files?where=id:%s' % file_id).data
     db_job_id = db_job['files'][0]['id']
@@ -225,10 +204,10 @@ def test_where_invalid(admin):
 
 def test_get_all_files_with_sort(user, jobstate_user_id):
     # create 4 files ordered by created time
-    file_1_1 = post_file(user, jobstate_user_id, FileDesc('a', ''))
-    file_1_2 = post_file(user, jobstate_user_id, FileDesc('a', ''))
-    file_2_1 = post_file(user, jobstate_user_id, FileDesc('b', ''))
-    file_2_2 = post_file(user, jobstate_user_id, FileDesc('b', ''))
+    file_1_1 = t_utils.post_file(user, jobstate_user_id, FileDesc('a', ''))
+    file_1_2 = t_utils.post_file(user, jobstate_user_id, FileDesc('a', ''))
+    file_2_1 = t_utils.post_file(user, jobstate_user_id, FileDesc('b', ''))
+    file_2_2 = t_utils.post_file(user, jobstate_user_id, FileDesc('b', ''))
 
     files = user.get('/api/v1/files?sort=created_at').data
     files = [file['id'] for file in files['files']]
@@ -241,7 +220,8 @@ def test_get_all_files_with_sort(user, jobstate_user_id):
 
 
 def test_get_file_by_id(user, jobstate_user_id):
-    file_id = post_file(user, jobstate_user_id, FileDesc('kikoolol', ''))
+    file_id = t_utils.post_file(user, jobstate_user_id,
+                                FileDesc('kikoolol', ''))
 
     # get by uuid
     created_file = user.get('/api/v1/files/%s' % file_id)
@@ -280,13 +260,13 @@ def test_get_file_with_embed(user, jobstate_user_id, team_user_id):
 
 
 def test_get_file_with_embed_not_valid(user, jobstate_user_id):
-    file_id = post_file(user, jobstate_user_id, FileDesc('name', ''))
+    file_id = t_utils.post_file(user, jobstate_user_id, FileDesc('name', ''))
     file = user.get('/api/v1/files/%s?embed=mdr' % file_id)
     assert file.status_code == 400
 
 
 def test_delete_file_by_id(user, jobstate_user_id):
-    file_id = post_file(user, jobstate_user_id, FileDesc('name', ''))
+    file_id = t_utils.post_file(user, jobstate_user_id, FileDesc('name', ''))
     url = '/api/v1/files/%s' % file_id
 
     created_file = user.get(url)
@@ -376,7 +356,8 @@ def test_get_file_content_as_user(user, jobstate_user_id):
             head_result, six.StringIO("azertyuiop1234567890")]
         mock_swift.return_value = mockito
         content = "azertyuiop1234567890"
-        file_id = post_file(user, jobstate_user_id, FileDesc('foo', content))
+        file_id = t_utils.post_file(user, jobstate_user_id,
+                                    FileDesc('foo', content))
 
         get_file = user.get('/api/v1/files/%s/content' % file_id)
 
