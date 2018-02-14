@@ -93,6 +93,10 @@ class Identity:
 
         return self.role_label == 'ADMIN'
 
+    def is_rh_employee(self):
+        """Check if the user is a rh employee."""
+        return self.role_label == 'RH_EMPLOYEE'
+
     def is_team_admin(self, team_id):
         """Ensure the user has the role ADMIN and belongs to the team."""
 
