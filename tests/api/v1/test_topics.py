@@ -598,3 +598,14 @@ def test_delete_test_from_topic(admin, topic_id, test_id):
     admin.delete('/api/v1/topics/%s/tests/%s' % (topic_id, test_id))
     t = admin.get('/api/v1/topics/%s/tests' % topic_id).data['tests']
     assert len(t) == 0
+
+
+def test_get_latest_component_per_topic(admin, topic_id):
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
+    admin.post('/api/v1/components', data=data)
+    data = {'name': 'pnamelast', 'type': 'gerrit_review', 'topic_id': topic_id}
+    admin.post('/api/v1/components', data=data)
+
+    component = admin.get('/api/v1/topics/%s/components/latest' % topic_id). \
+        data['component']
+    assert component['name'] == 'pnamelast'

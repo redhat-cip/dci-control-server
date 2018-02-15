@@ -191,6 +191,21 @@ def get_all_components(user, topic_id):
     return components.get_all_components(user, topic_id=topic_id)
 
 
+@api.route('/topics/<uuid:topic_id>/components/latest', methods=['GET'])
+@decorators.login_required
+def get_latest_component_per_topic(user, topic_id):
+    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
+    v1_utils.verify_team_in_topic(user, topic_id)
+
+    latest_components = components._get_latest_components()
+    for component in latest_components:
+        if component['topic_id'] == topic_id:
+            last_component = component
+            break
+
+    return flask.jsonify({'component': last_component})
+
+
 @api.route('/topics/<uuid:topic_id>/type/<type_id>/status',
            methods=['GET'])
 @decorators.login_required
