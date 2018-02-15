@@ -48,6 +48,33 @@ _EMBED_MANY = {
 }
 
 
+def _get_latest_components():
+
+    _C_COLUMNS.update({
+        'topic_id': models.TOPICS.c.id.label('topic_id'),
+        'topic_name': models.TOPICS.c.name.label('topic_name'),
+        'product_id': models.PRODUCTS.c.id.label('product_id'),
+        'product_name': models.PRODUCTS.c.name.label('product_name'),
+    })
+
+    join_condition = sql.join(
+        models.COMPONENTS, models.TOPICS,
+        models.COMPONENTS.c.topic_id == models.TOPICS.c.id
+    ).join(
+        models.PRODUCTS,
+        models.TOPICS.c.product_id == models.PRODUCTS.c.id
+    )
+
+    select_clause = list(dict(_C_COLUMNS).values())
+    query = (sql.select(select_clause).select_from(join_condition).
+             distinct(models.TOPICS.c.id).
+             order_by(models.TOPICS.c.id,
+                      models.COMPONENTS.c.created_at.desc()))
+    rows = flask.g.db_conn.execute(query).fetchall()
+
+    return [dict(row) for row in rows]
+
+
 @api.route('/components', methods=['POST'])
 @decorators.login_required
 @decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
@@ -122,6 +149,21 @@ def get_all_components(user, topic_id):
         rows = [row for row in rows if row['export_control']]
 
     return flask.jsonify({'components': rows, '_meta': {'count': nb_rows}})
+
+
+@api.route('/components/latest', methods=['GET'])
+@decorators.login_required
+def get_latest_components(user):
+    authorized_topics = v1_utils.user_topic_ids(user)
+
+    latest_components = _get_latest_components()
+    latest_components = [c for c in latest_components
+                         if str(c['topic_id']) in authorized_topics]
+
+    return flask.jsonify({
+        'components': latest_components,
+        '_meta': {'count': len(latest_components)}
+    })
 
 
 @api.route('/components/<uuid:c_id>', methods=['GET'])
