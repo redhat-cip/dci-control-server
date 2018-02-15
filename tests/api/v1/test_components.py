@@ -176,6 +176,27 @@ def test_get_component_by_id_or_name(admin, topic_id):
     assert created_ct['component']['id'] == pc_id
 
 
+def test_get_latest_components(admin, topic_id):
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
+    admin.post('/api/v1/components', data=data)
+    data = {'name': 'pnamelast', 'type': 'gerrit_review', 'topic_id': topic_id}
+    admin.post('/api/v1/components', data=data)
+
+    components = admin.get('/api/v1/components/latest').data['components']
+    assert components[0]['name'] == 'pnamelast'
+
+
+def test_get_latest_component_per_topic(admin, topic_id):
+    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
+    admin.post('/api/v1/components', data=data)
+    data = {'name': 'pnamelast', 'type': 'gerrit_review', 'topic_id': topic_id}
+    admin.post('/api/v1/components', data=data)
+
+    components = admin.get('/api/v1/topics/%s/components/latest' % topic_id). \
+        data['components']
+    assert components[0]['name'] == 'pnamelast'
+
+
 def test_get_component_export_control(admin, user, topic_user_id):
     data = {'name': 'pname',
             'type': 'gerrit_review',
