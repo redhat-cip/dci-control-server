@@ -25,6 +25,8 @@ def parse_testcase(root):
     return {
         'name': root.attrib.get('name', ''),
         'classname': root.attrib.get('classname', ''),
+        'regression': False,
+        'successfix': False,
         'time': float(root.attrib.get('time', 0))
     }
 
@@ -72,6 +74,7 @@ def junit2dict(string):
         'success': 0,
         'errors': 0,
         'failures': 0,
+        'regressions': 0,
         'skips': 0,
         'total': 0,
         'testscases': [],
@@ -105,3 +108,29 @@ def junit2dict(string):
         results['error'] = "XMLSyntaxError: %s " % str(e)
         LOG.error('XMLSyntaxError %s' % str(e))
     return results
+
+
+def add_regressions_and_successfix_to_tests(testsuite1, testsuite2):
+    # dict from testcase's name to each testcase itself for fast access
+    testscases1_map = dict()
+    for testcase in testsuite1['testscases']:
+        testname = '%s:%s' % (testcase['classname'], testcase['name'])
+        testscases1_map[testname] = testcase
+
+    for testcase in testsuite2['testscases']:
+        testname = '%s:%s' % (testcase['classname'], testcase['name'])
+        # this is a new test then ignore it
+        if testname not in testscases1_map:
+            continue
+        prev_testcase = testscases1_map[testname]
+        # if switch from success to failure then its a regression
+        if testcase['action'] == 'failure':
+            if (prev_testcase['action'] == 'passed' or
+                    prev_testcase['regression']):
+                testcase['regression'] = True
+                testsuite2['regressions'] += 1
+        # if switch from either failure/regression to success its successfix
+        elif testcase['action'] == 'passed':
+            if (prev_testcase['action'] == 'failure' or
+                    prev_testcase['regression']):
+                testcase['successfix'] = True
