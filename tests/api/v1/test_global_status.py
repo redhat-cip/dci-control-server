@@ -34,6 +34,7 @@ def test_format_global_status():
             'remoteci_name': 'remoteci 1',
             'remoteci_id': '48dd507a-8185-47de-aed1-ee41aefd1479',
             'topic_name': 'topic A',
+            'product_name': 'product A',
             'created_at': '2018-02-08T15:23:32.316227',
             'status': 'success',
             'component_name': 'component A',
@@ -46,6 +47,7 @@ def test_format_global_status():
             'remoteci_name': 'remoteci 2',
             'remoteci_id': 'aed1507a-8185-48dd-47de-ee41aefd1479',
             'topic_name': 'topic B',
+            'product_name': 'product B',
             'created_at': '2018-02-08T15:23:32.316227',
             'status': 'failure',
             'component_name': 'component B',
@@ -57,6 +59,7 @@ def test_format_global_status():
             'remoteci_name': 'remoteci 3',
             'remoteci_id': '8185507a-47de-48dd-aed1-ee41aefd1479',
             'topic_name': 'topic A',
+            'product_name': 'product A',
             'created_at': '2018-02-08T15:23:32.316227',
             'status': 'success',
             'component_name': 'component A',
@@ -72,6 +75,7 @@ def test_format_global_status():
     assert component_a['id'] == '72d7582a-db37-43d9-afda-1ce481e2081b'
     assert component_a['name'] == 'component A'
     assert component_a['topic_name'] == 'topic A'
+    assert component_a['product_name'] == 'product A'
     assert len(component_a['jobs']) == 2
     assert component_a['jobs'][0]['remoteci_name'] == 'remoteci 1'
     assert component_a['jobs'][0]['rconfiguration_name'] == 'configuration 1'
