@@ -33,3 +33,44 @@ JUNIT = """<testsuite errors="1" failures="1" name="pytest" skipped="1" tests="6
     </testcase>
 </testsuite>
 """  # noqa
+
+jobtest_without_failures = """
+<testsuite errors="0" failures="0" name="Kikoolol1" tests="3" time="127.0">
+    <testcase
+            classname="Testsuite_1"
+            name="test_1"
+            time="28.810">
+    </testcase>
+    <testcase
+            classname="Testsuite_1"
+            name="test_2"
+            time="29.419">
+    </testcase>
+    <testcase
+            classname="Testsuite_1"
+            name="test_3"
+            time="29.419">
+    </testcase>
+</testsuite>
+"""
+
+jobtest_with_failures = """
+<testsuite errors="1" failures="1" name="Kikoolol2" tests="3" time="3385.127">
+    <testcase
+            classname="Testsuite_1"
+            name="test_1"
+            time="28.810">
+    </testcase>
+    <testcase
+            classname="Testsuite_1"
+            name="test_2"
+            time="29.419">
+    </testcase>
+    <testcase
+            classname="Testsuite_1"
+            name="test_3"
+            time="29.419">
+        <failure type="Exception">Traceback</failure>
+    </testcase>
+</testsuite>
+"""

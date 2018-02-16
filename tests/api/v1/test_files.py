@@ -21,15 +21,18 @@ import six
 from dci.api.v1.files import get_file_info_from_headers
 from dci.stores.swift import Swift
 from dci.common import utils
+from tests import data as tests_data
 
 import collections
+
 
 SWIFT = 'dci.stores.swift.Swift'
 
 FileDesc = collections.namedtuple('FileDesc', ['name', 'content'])
 
 
-def post_file(client, jobstate_id, file_desc):
+def post_file(client, jobstate_id, file_desc, mime='text/plain',
+              swift_get_mock=None):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
         mockito = mock.MagicMock()
@@ -37,13 +40,17 @@ def post_file(client, jobstate_id, file_desc):
         head_result = {
             'etag': utils.gen_etag(),
             'content-type': "stream",
-            'content-length': 7
+            'content-length': len(file_desc.content)
         }
 
         mockito.head.return_value = head_result
+        mockito.get.return_value = (0, six.StringIO(file_desc.content))
+        mockito.build_file_path = Swift.build_file_path
+        if swift_get_mock is not None:
+            mockito.get = swift_get_mock
         mock_swift.return_value = mockito
         headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
-                   'Content-Type': 'text/plain'}
+                   'DCI-MIME': mime, 'Content-Type': 'text/plain'}
         res = client.post('/api/v1/files',
                           headers=headers,
                           data=file_desc.content)
@@ -76,6 +83,81 @@ def test_get_all_files(user, jobstate_user_id):
     db_all_files_ids = [file['id'] for file in db_all_files]
 
     assert db_all_files_ids == [file_1, file_2]
+
+
+def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
+                                             topic):
+    headers = {
+        'User-Agent': 'python-dciclient',
+        'Client-Version': 'python-dciclient_0.1.0'
+    }
+
+    # 1. schedule two jobs and create their jobstate
+    data = {'topic_id': topic['id'], 'remoteci_id': remoteci['id']}
+    job_1 = remoteci_context.post('/api/v1/jobs/schedule',
+                                  headers=headers,
+                                  data=data).data['job']
+    job_2 = remoteci_context.post('/api/v1/jobs/schedule',
+                                  headers=headers,
+                                  data=data).data['job']
+
+    # 2. create the associated jobstates for each job
+    data = {'job_id': job_1['id'], 'status': 'success'}
+    jobstate_1 = admin.post('/api/v1/jobstates', data=data).data['jobstate']
+    data = {'job_id': job_2['id'], 'status': 'failure'}
+    jobstate_2 = admin.post('/api/v1/jobstates', data=data).data['jobstate']
+
+    # 3. upload junit file for each job
+    # mock side_effect function
+    def get_file_content(filename):
+        if str(job_1['id']) in str(filename):
+            return (0, six.StringIO(tests_data.jobtest_without_failures))
+        else:
+            return (0, six.StringIO(tests_data.jobtest_with_failures))
+    swift_get_mock = mock.MagicMock(side_effect=get_file_content)
+
+    f_1 = post_file(admin, jobstate_1['id'],
+                    FileDesc('Tempest', tests_data.jobtest_without_failures),
+                    mime='application/junit')
+    assert f_1 is not None
+
+    f_2 = post_file(admin, jobstate_2['id'],
+                    FileDesc('Tempest', tests_data.jobtest_with_failures),
+                    mime='application/junit', swift_get_mock=swift_get_mock)
+    assert f_2 is not None
+
+    # 4. verify regression in job_2's result which is 'test_3'
+    job_2_results = admin.get(
+        '/api/v1/jobs/%s?embed=results' % job_2['id']).data['job']['results']
+    assert job_2_results[0]['regressions'] == 1
+
+    # 4. get the job2's tests results
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 1
+        }
+
+        mockito.head.return_value = head_result
+        mockito.get = swift_get_mock
+        mockito.build_file_path = Swift.build_file_path
+        mock_swift.return_value = mockito
+        job_2_tests_results = admin.get(
+            '/api/v1/jobs/%s/results' % job_2['id'])
+
+        testcases = job_2_tests_results.data['results'][0]['testscases']
+
+        regression_found = False
+        for testcase in testcases:
+            if testcase['regression'] is True:
+                assert testcase['classname'] == 'Testsuite_1'
+                assert testcase['name'] == 'test_3'
+                regression_found = True
+        assert regression_found is True
 
 
 def test_get_all_files_with_pagination(user, jobstate_user_id):
