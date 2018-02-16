@@ -1,0 +1,9 @@
+Code-Review+2: Cédric Lecomte <ced.lecomte@gmail.com>
+Code-Review+2: Yanis Guenane <yguenane@gmail.com>
+Workflow+1: Yanis Guenane <yguenane@gmail.com>
+Verified+2: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-by: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-at: Fri, 16 Feb 2018 18:00:44 +0000
+Reviewed-on: https://softwarefactory-project.io/r/11223
+Project: dci-control-server
+Branch: refs/heads/master
