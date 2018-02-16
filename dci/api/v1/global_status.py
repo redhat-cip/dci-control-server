@@ -30,6 +30,7 @@ def format_global_status(jobs):
             'id': component_id,
             'name': job['component_name'],
             'topic_name': job['topic_name'],
+            'product_name': job['product_name'],
             'jobs': []
         })
         component['jobs'].append({
@@ -72,6 +73,8 @@ SELECT DISTINCT ON (components.id, jobs.remoteci_id, jobs.rconfiguration_id)
     components.name as component_name,
     topics.id as topic_id,
     topics.name as topic_name,
+    products.id as product_id,
+    products.name as product_name,
     remotecis.name as remoteci_name,
     rconfigurations.name as rconfiguration_name,
     teams.name as team_name
@@ -82,6 +85,7 @@ LEFT JOIN topics ON jobs.topic_id = topics.id
 LEFT JOIN rconfigurations ON jobs.rconfiguration_id = rconfigurations.id
 LEFT JOIN jobs_components ON jobs.id = jobs_components.job_id
 LEFT JOIN components ON components.id = jobs_components.component_id
+LEFT JOIN products ON topics.product_id = products.id
 WHERE
     teams.external = '1' AND
     (jobs.status = 'failure' OR jobs.status = 'success') AND
