@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a016987_8df962cb",
+        "filename": "requirements.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-02-16T20:35:45Z",
+      "side": 1,
+      "message": "I would prefer a \u003c0.11, this would allow us to get a potential 0.10.6 update.",
+      "revId": "8ef73462e1f92ee027e1803c930769ad8902c1d5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
