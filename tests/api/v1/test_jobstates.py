@@ -18,13 +18,16 @@ from __future__ import unicode_literals
 
 import tests.api.v1.test_files as files
 
+import mock
 import uuid
 
 
 def test_create_jobstates(user, job_user_id):
     data = {'job_id': job_user_id, 'status': 'running', 'comment': 'kikoolol'}
 
-    js = user.post('/api/v1/jobstates', data=data).data
+    with mock.patch('dci.api.v1.notifications') as mocked_notif:
+        js = user.post('/api/v1/jobstates', data=data).data
+        assert not mocked_notif.displatcher.called
     js_id = js['jobstate']['id']
 
     js = user.get('/api/v1/jobstates/%s' % js_id).data
@@ -32,6 +35,19 @@ def test_create_jobstates(user, job_user_id):
 
     assert js['jobstate']['comment'] == 'kikoolol'
     assert job['job']['status'] == 'running'
+
+
+def test_create_jobstates_failure(user, job_user_id):
+    data = {'job_id': job_user_id, 'status': 'failure'}
+
+    with mock.patch('dci.api.v1.notifications') as mocked_notif:
+        user.post('/api/v1/jobstates', data=data).data
+        # Notification should be sent just one time
+        user.post('/api/v1/jobstates', data=data).data
+        assert mocked_notif.dispatcher.called_once()
+
+    job = user.get('/api/v1/jobs/%s' % job_user_id).data
+    assert job['job']['status'] == 'failure'
 
 
 def test_create_jobstates_empty_comment(user, job_user_id):
