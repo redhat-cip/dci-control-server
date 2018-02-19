@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a016987_300085aa",
+        "filename": "bin/dci-dbinit",
+        "patchSetId": 9
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-02-19T18:37:46Z",
+      "side": 1,
+      "message": "Can we also avoid this one?",
+      "revId": "6037464cea5e972790d6b256cb36b2e3a8849784",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
