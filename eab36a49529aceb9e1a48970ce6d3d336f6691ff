@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a016987_b0459518",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 160,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-02-19T18:23:04Z",
+      "side": 1,
+      "message": "Follow up the an IRC discussion today, I think Guillaume want \nto implement something similar.",
+      "revId": "eab36a49529aceb9e1a48970ce6d3d336f6691ff",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a016987_10d0e952",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 370,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-02-19T18:23:04Z",
+      "side": 1,
+      "message": "Why not just:\n\nif rconfiguration and rconfiguration[\u0027component_types\u0027]:\n  component_types \u003d rconfiguration[\u0027component_types\u0027]\nelse:\n  component_types \u003d get_component_types_from_topic(topic_id,                                                       db_conn\u003ddb_conn)\n\n\nOr a try/except KeyError.",
+      "revId": "eab36a49529aceb9e1a48970ce6d3d336f6691ff",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
