@@ -18,8 +18,26 @@ import flask
 from sqlalchemy import text
 
 from dci.api.v1 import api
+from dci.api.v1 import components as v1_components
 from dci import decorators
 from dci.dci_config import generate_conf, get_engine
+
+
+def insert_component_with_no_job(components, latest_components):
+
+    component_names = [component['topic_name'] for component in components]
+
+    for component in latest_components:
+        if component['topic_name'] not in component_names:
+            components.append({
+                'id': component['id'],
+                'name': component['name'],
+                'topic_name': component['topic_name'],
+                'product_name': component['product_name'],
+                'jobs': []
+            })
+
+    return components
 
 
 def format_global_status(jobs):
@@ -51,7 +69,9 @@ def add_percentage_of_success(global_status):
         for job in component['jobs']:
             if job['status'] == 'success':
                 nb_of_success += 1
-        success = int(round(100 * nb_of_success / len(component['jobs'])))
+        success = 0
+        if len(component['jobs']):
+            success = int(round(100 * nb_of_success / len(component['jobs'])))
         component['percentageOfSuccess'] = success
     return global_status
 
@@ -100,6 +120,9 @@ ORDER BY
 
     jobs = engine.execute(sql)
     global_status = format_global_status(jobs)
+    global_status = insert_component_with_no_job(
+        global_status, v1_components._get_latest_components()
+    )
     return flask.jsonify(
         {'globalStatus': add_percentage_of_success(global_status)}
     )
