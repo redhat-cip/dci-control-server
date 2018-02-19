@@ -17,3 +17,4 @@ htmlcov
 .db_dir
 # use as final destination during the rpm build
 development
+.pytest_cache

@@ -129,24 +129,28 @@ def create_products(teams):
     }
 
 
-def create_topic(name, component_types, next_topic=None):
-    t = {'name': name, 'component_types': component_types}
+def create_topic(name, component_types, product, next_topic=None):
+    topic = {'name': name, 'component_types': component_types, 'product_id': product['id']}
     if next_topic:
-        t['next_topic'] = next_topic['id']
-    r = post('topics', t)
+        topic['next_topic'] = next_topic['id']
+    r = post('topics', topic)
     return r.json()['topic']
 
 
-def create_topics():
-    osp12 = create_topic('OSP12', ['puddle'])
-    osp11 = create_topic('OSP11', ['puddle'], osp12)
-    ansible_devel = create_topic('ansible-devel', ['snapshot_ansible'])
+def create_topics(products):
+    openstack = products['OpenStack']
+    ansible = products['Ansible']
+    osp12 = create_topic('OSP12', ['puddle'], openstack)
+    osp11 = create_topic('OSP11', ['puddle'], openstack, osp12)
+    osp10 = create_topic('OSP10', ['puddle'], openstack, osp11)
+    ansible_dev = create_topic('ansible-devel', ['snapshot_ansible'], ansible)
+    ansible_24 = create_topic('ansible-2.4', ['snapshot_ansible'], ansible, ansible_dev)
     return {
         'OSP12': osp12,
         'OSP11': osp11,
-        'OSP10': create_topic('OSP10', ['puddle'], osp11),
-        'ansible-devel': ansible_devel,
-        'ansible-2.4': create_topic('ansible-2.4', ['snapshot_ansible'], ansible_devel),
+        'OSP10': osp10,
+        'ansible-devel': ansible_dev,
+        'ansible-2.4': ansible_24,
     }
 
 
@@ -276,8 +280,8 @@ def main():
     wait_db_ready()
     teams = create_teams()
     create_users(teams)
-    create_products(teams)
-    topics = create_topics()
+    products = create_products(teams)
+    topics = create_topics(products)
     associate_topics_to_teams(topics, teams)
     components = create_components(topics)
     remotecis = create_remotecis(teams)
