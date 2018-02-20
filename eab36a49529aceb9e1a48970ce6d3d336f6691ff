@@ -33,6 +33,29 @@
       "revId": "eab36a49529aceb9e1a48970ce6d3d336f6691ff",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a016987_30c1a52f",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 380,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-02-20T07:40:05Z",
+      "side": 1,
+      "message": "Hello, can you remove duplication here and reuse _get_latest_components() and list comprehension. See line 52",
+      "range": {
+        "startLine": 380,
+        "startChar": 4,
+        "endLine": 380,
+        "endChar": 23
+      },
+      "revId": "eab36a49529aceb9e1a48970ce6d3d336f6691ff",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
