@@ -49,6 +49,7 @@ _RCONFIGURATIONS_COLUMNS = v1_utils.get_columns_name_with_objects(
 
 @api.route('/remotecis', methods=['POST'])
 @decorators.login_required
+@decorators.check_roles
 def create_remotecis(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.remoteci.post(flask.request.json))
@@ -79,6 +80,7 @@ def create_remotecis(user):
 
 @api.route('/remotecis', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_all_remotecis(user, t_id=None):
     args = schemas.args(flask.request.args.to_dict())
 
@@ -102,6 +104,7 @@ def get_all_remotecis(user, t_id=None):
 
 @api.route('/remotecis/<uuid:r_id>', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_remoteci_by_id(user, r_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
     return base.get_resource_by_id(user, remoteci, _TABLE, _EMBED_MANY)
@@ -109,6 +112,7 @@ def get_remoteci_by_id(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>', methods=['PUT'])
 @decorators.login_required
+@decorators.check_roles
 def put_remoteci(user, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -141,6 +145,7 @@ def put_remoteci(user, r_id):
 
 @api.route('/remotecis/<uuid:remoteci_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.check_roles
 def delete_remoteci_by_id(user, remoteci_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -173,6 +178,7 @@ def delete_remoteci_by_id(user, remoteci_id):
 
 @api.route('/remotecis/<uuid:r_id>/data', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_remoteci_data(user, r_id):
     remoteci_data = get_remoteci_data_json(user, r_id)
 
@@ -201,6 +207,7 @@ def get_remoteci_data_json(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>/users', methods=['POST'])
 @decorators.login_required
+@decorators.check_roles
 def add_user_to_remoteci(user, r_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
     team = v1_utils.verify_existence_and_get(remoteci['team_id'], models.TEAMS)
@@ -221,6 +228,7 @@ def add_user_to_remoteci(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>/users', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_all_users_from_remotecis(user, r_id):
     v1_utils.verify_existence_and_get(r_id, _TABLE)
 
@@ -237,6 +245,7 @@ def get_all_users_from_remotecis(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>/users/<uuid:u_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.check_roles
 def delete_user_from_remoteci(user, r_id, u_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
@@ -259,6 +268,7 @@ def delete_user_from_remoteci(user, r_id, u_id):
 
 @api.route('/remotecis/<uuid:r_id>/tests', methods=['POST'])
 @decorators.login_required
+@decorators.check_roles
 def add_test_to_remoteci(user, r_id):
     data_json = flask.request.json
     values = {'remoteci_id': r_id,
@@ -278,6 +288,7 @@ def add_test_to_remoteci(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>/tests', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_all_tests_from_remotecis(user, r_id):
     v1_utils.verify_existence_and_get(r_id, _TABLE)
 
@@ -295,6 +306,7 @@ def get_all_tests_from_remotecis(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>/tests/<uuid:t_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.check_roles
 def delete_test_from_remoteci(user, r_id, t_id):
     v1_utils.verify_existence_and_get(r_id, _TABLE)
 
@@ -312,18 +324,21 @@ def delete_test_from_remoteci(user, r_id, t_id):
 
 @api.route('/remotecis/purge', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_to_purge_archived_remotecis(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/remotecis/purge', methods=['POST'])
 @decorators.login_required
+@decorators.check_roles
 def purge_archived_remotecis(user):
     return base.purge_archived_resources(user, _TABLE)
 
 
 @api.route('/remotecis/<uuid:r_id>/api_secret', methods=['PUT'])
 @decorators.login_required
+@decorators.check_roles
 def put_api_secret(user, r_id):
     utils.check_and_get_etag(flask.request.headers)
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
@@ -338,7 +353,7 @@ def put_api_secret(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>/rconfigurations', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN'])
+@decorators.check_roles
 def create_configuration(user, r_id):
     values_configuration = v1_utils.common_values_dict(user)
     values_configuration.update(
@@ -377,6 +392,7 @@ def create_configuration(user, r_id):
 
 @api.route('/remotecis/<uuid:r_id>/rconfigurations', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_all_configurations(user, r_id):
     args = schemas.args(flask.request.args.to_dict())
 
@@ -421,6 +437,7 @@ def get_all_configurations(user, r_id):
 @api.route('/remotecis/<uuid:r_id>/rconfigurations/<uuid:c_id>',
            methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_configuration_by_id(user, r_id, c_id):
     v1_utils.verify_existence_and_get(r_id, _TABLE)
     configuration = v1_utils.verify_existence_and_get(c_id, _RCONFIGURATIONS)
@@ -431,7 +448,7 @@ def get_configuration_by_id(user, r_id, c_id):
 @api.route('/remotecis/<uuid:r_id>/rconfigurations/<uuid:c_id>',
            methods=['DELETE'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN'])
+@decorators.check_roles
 def delete_configuration_by_id(user, r_id, c_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, models.REMOTECIS)
     v1_utils.verify_existence_and_get(c_id, _RCONFIGURATIONS)
@@ -454,13 +471,13 @@ def delete_configuration_by_id(user, r_id, c_id):
 
 @api.route('/remotecis/rconfigurations/purge', methods=['GET'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 def get_to_purge_archived_rconfigurations(user):
     return base.get_to_purge_archived_resources(user, _RCONFIGURATIONS)
 
 
 @api.route('/remotecis/rconfigurations/purge', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 def purge_archived_rconfigurations(user):
     return base.purge_archived_resources(user, _RCONFIGURATIONS)

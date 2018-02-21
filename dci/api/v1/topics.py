@@ -43,7 +43,7 @@ _EMBED_MANY = {
 
 @api.route('/topics', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
+@decorators.check_roles
 def create_topics(user):
     values = v1_utils.common_values_dict(user)
     values.update(schemas.topic.post(flask.request.json))
@@ -73,6 +73,7 @@ def create_topics(user):
 
 @api.route('/topics/<uuid:topic_id>', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_topic_by_id(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
@@ -91,6 +92,7 @@ def get_topic_by_id(user, topic_id):
 
 @api.route('/topics', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_all_topics(user):
     args = schemas.args(flask.request.args.to_dict())
     # if the user is an admin then he can get all the topics
@@ -118,7 +120,7 @@ def get_all_topics(user):
 
 @api.route('/topics/<uuid:topic_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
+@decorators.check_roles
 def put_topic(user, topic_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -156,7 +158,7 @@ def put_topic(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'FEEDER'])
+@decorators.check_roles
 def delete_topic_by_id(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     if not user.is_super_admin() and \
@@ -185,6 +187,7 @@ def delete_topic_by_id(user, topic_id):
 # components, tests GET
 @api.route('/topics/<uuid:topic_id>/components', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_all_components(user, topic_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
@@ -193,6 +196,7 @@ def get_all_components(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>/components/latest', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_latest_component_per_topic(user, topic_id):
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
@@ -209,6 +213,7 @@ def get_latest_component_per_topic(user, topic_id):
 @api.route('/topics/<uuid:topic_id>/type/<type_id>/status',
            methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_jobs_status_from_components(user, topic_id, type_id):
 
     # List of job meaningfull job status for global overview
@@ -277,6 +282,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
 
 @api.route('/topics/<uuid:topic_id>/tests', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_all_tests(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
     v1_utils.verify_team_in_topic(user, topic_id)
@@ -312,6 +318,7 @@ def get_all_tests(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>/tests', methods=['POST'])
 @decorators.login_required
+@decorators.check_roles
 def add_test_to_topic(user, topic_id):
     if not auth.is_admin(user):
         raise auth.UNAUTHORIZED
@@ -334,6 +341,7 @@ def add_test_to_topic(user, topic_id):
 
 @api.route('/topics/<uuid:t_id>/tests/<uuid:test_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.check_roles
 def delete_test_from_topic(user, t_id, test_id):
     if not auth.is_admin(user):
         v1_utils.verify_team_in_topic(user, t_id)
@@ -354,7 +362,7 @@ def delete_test_from_topic(user, t_id, test_id):
 # teams set apis
 @api.route('/topics/<uuid:topic_id>/teams', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER'])
+@decorators.check_roles
 def add_team_to_topic(user, topic_id):
     # TODO(yassine): use voluptuous schema
     data_json = flask.request.json
@@ -384,7 +392,7 @@ def add_team_to_topic(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>/teams/<uuid:team_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER'])
+@decorators.check_roles
 def delete_team_from_topic(user, topic_id, team_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
@@ -409,7 +417,7 @@ def delete_team_from_topic(user, topic_id, team_id):
 
 @api.route('/topics/<uuid:topic_id>/teams', methods=['GET'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER'])
+@decorators.check_roles
 def get_all_teams_from_topic(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
@@ -431,13 +439,13 @@ def get_all_teams_from_topic(user, topic_id):
 
 @api.route('/topics/purge', methods=['GET'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 def get_to_purge_archived_topics(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/topics/purge', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 def purge_archived_topics(user):
     return base.purge_archived_resources(user, _TABLE)
