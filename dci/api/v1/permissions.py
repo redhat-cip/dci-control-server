@@ -37,7 +37,7 @@ _EMBED_MANY = {}
 
 @api.route('/permissions', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 @audits.log
 def create_permission(user):
     values = v1_utils.common_values_dict(user)
@@ -61,7 +61,7 @@ def create_permission(user):
 
 @api.route('/permissions/<uuid:permission_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 def update_permission(user, permission_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -86,6 +86,7 @@ def update_permission(user, permission_id):
 
 @api.route('/permissions', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_all_permissions(user):
     args = schemas.args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
@@ -104,6 +105,7 @@ def get_all_permissions(user):
 
 @api.route('/permissions/<uuid:permission_id>', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_permission_by_id(user, permission_id):
     permission = v1_utils.verify_existence_and_get(permission_id, _TABLE)
     return base.get_resource_by_id(user, permission, _TABLE, _EMBED_MANY)
@@ -111,7 +113,7 @@ def get_permission_by_id(user, permission_id):
 
 @api.route('/permissions/<uuid:permission_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 def delete_permission_by_id(user, permission_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -136,13 +138,13 @@ def delete_permission_by_id(user, permission_id):
 
 @api.route('/permissions/purge', methods=['GET'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 def get_to_purge_archived_permissions(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/permissions/purge', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 def purge_archived_permissions(user):
     return base.purge_archived_resources(user, _TABLE)

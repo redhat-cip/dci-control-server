@@ -36,6 +36,7 @@ _EMBED_MANY = {}
 
 @api.route('/fingerprints', methods=['POST'])
 @decorators.login_required
+@decorators.check_roles
 def create_fingerprint(user):
     """Create Fingerprint.
     """
@@ -53,6 +54,7 @@ def create_fingerprint(user):
 
 @api.route('/fingerprints', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_all_fingerprints(user):
     """Get all Fingerprint.
     """
@@ -71,6 +73,7 @@ def get_all_fingerprints(user):
 
 @api.route('/fingerprints/<uuid:fp_id>', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_fingerprint_by_id(user, fp_id):
     """Get Fingerprint by id.
     """
@@ -81,6 +84,7 @@ def get_fingerprint_by_id(user, fp_id):
 
 @api.route('/fingerprints/<uuid:fp_id>', methods=['PUT'])
 @decorators.login_required
+@decorators.check_roles
 def modify_fingerprint(user, fp_id):
     """Modify a Fingerprint.
     """
@@ -108,6 +112,7 @@ def modify_fingerprint(user, fp_id):
 
 @api.route('/fingerprints/<uuid:fp_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.check_roles
 def delete_fingerprint_by_id(user, fp_id):
     """... Fingerprint.
     """
@@ -136,6 +141,7 @@ def delete_fingerprint_by_id(user, fp_id):
 
 @api.route('/fingerprints/purge', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_to_purge_archived_fingerprint(user):
     """Show purgeable items in Fingerprint.
     """
@@ -144,6 +150,7 @@ def get_to_purge_archived_fingerprint(user):
 
 @api.route('/fingerprints/purge', methods=['POST'])
 @decorators.login_required
+@decorators.check_roles
 def purge_fingerprint(user):
     """Purge Fingerprint.
     """
