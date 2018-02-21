@@ -44,7 +44,7 @@ _EMBED_MANY = {
 
 @api.route('/teams', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER'])
+@decorators.check_roles
 @audits.log
 def create_teams(user):
     values = v1_utils.common_values_dict(user)
@@ -69,6 +69,7 @@ def create_teams(user):
 
 @api.route('/teams', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_all_teams(user):
     args = schemas.args(flask.request.args.to_dict())
 
@@ -89,6 +90,7 @@ def get_all_teams(user):
 
 @api.route('/teams/<uuid:t_id>', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_team_by_id(user, t_id):
     team = v1_utils.verify_existence_and_get(t_id, _TABLE)
     if not user.is_in_team(t_id):
@@ -98,6 +100,7 @@ def get_team_by_id(user, t_id):
 
 @api.route('/teams/<uuid:team_id>/remotecis', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_remotecis_by_team(user, team_id):
     if not user.is_in_team(team_id):
         raise auth.UNAUTHORIZED
@@ -108,6 +111,7 @@ def get_remotecis_by_team(user, team_id):
 
 @api.route('/teams/<uuid:team_id>/tests', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_tests_by_team(user, team_id):
     if not user.is_in_team(team_id):
         raise auth.UNAUTHORIZED
@@ -118,7 +122,7 @@ def get_tests_by_team(user, team_id):
 
 @api.route('/teams/<uuid:t_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER', 'ADMIN'])
+@decorators.check_roles
 def put_team(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -148,7 +152,7 @@ def put_team(user, t_id):
 
 @api.route('/teams/<uuid:t_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN', 'PRODUCT_OWNER'])
+@decorators.check_roles
 def delete_team_by_id(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -181,13 +185,13 @@ def delete_team_by_id(user, t_id):
 
 @api.route('/teams/purge', methods=['GET'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 def get_to_purge_archived_teams(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/teams/purge', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 def purge_archived_teams(user):
     return base.purge_archived_resources(user, _TABLE)
