@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3afb71cf_84eca690",
+        "filename": "dci/decorators.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 92,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-02-21T17:33:45Z",
+      "side": 1,
+      "message": "as a security we can check if that f.__name___ in ROLES",
+      "revId": "da07d8e61b7bb168885e98a26440ad730763b835",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3afb71cf_a4e7a2ab",
+        "filename": "dci/policies.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 25,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-02-21T17:33:45Z",
+      "side": 1,
+      "message": "a REMOTECI can only schedule jobs and download/upload files IIRC.",
+      "revId": "da07d8e61b7bb168885e98a26440ad730763b835",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
