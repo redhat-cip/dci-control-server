@@ -55,6 +55,7 @@ def insert_jobstate(user, values, created_at=None):
 
 @api.route('/jobstates', methods=['POST'])
 @decorators.login_required
+@decorators.check_roles
 def create_jobstates(user):
     created_at, _ = utils.get_dates(user)
     values = schemas.jobstate.post(flask.request.json)
@@ -89,6 +90,7 @@ def create_jobstates(user):
 
 @api.route('/jobstates', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_all_jobstates(user, j_id=None):
     """Get all jobstates.
     """
@@ -113,6 +115,7 @@ def get_all_jobstates(user, j_id=None):
 
 @api.route('/jobstates/<uuid:js_id>', methods=['GET'])
 @decorators.login_required
+@decorators.check_roles
 def get_jobstate_by_id(user, js_id):
     jobstate = v1_utils.verify_existence_and_get(js_id, _TABLE)
     return base.get_resource_by_id(user, jobstate, _TABLE, _EMBED_MANY)
@@ -120,6 +123,7 @@ def get_jobstate_by_id(user, js_id):
 
 @api.route('/jobstates/<uuid:js_id>', methods=['DELETE'])
 @decorators.login_required
+@decorators.check_roles
 def delete_jobstate_by_id(user, js_id):
     jobstate = v1_utils.verify_existence_and_get(js_id, _TABLE)
 
