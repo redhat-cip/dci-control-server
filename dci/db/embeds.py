@@ -16,6 +16,7 @@
 
 from dci.db import models
 
+from sqlalchemy import sql
 from sqlalchemy.sql import and_
 
 
@@ -35,8 +36,10 @@ REMOTECI = models.REMOTECIS.alias('remoteci')
 CFILES = models.COMPONENT_FILES.alias('files')
 RCONFIGURATION = models.REMOTECIS_RCONFIGURATIONS.alias('rconfiguration')
 
-TESTS_RESULTS = models.TESTS_RESULTS.alias('results')
-
+# ignore tests_cases as its too heavy to be embeded by jobs
+TESTS_RESULTS = sql.select(ignore_columns_from_table(
+    models.TESTS_RESULTS,
+    ['tests_cases'])).alias('results')
 JOB = models.JOBS.alias('job')
 LASTJOB = models.JOBS.alias('lastjob')
 LASTJOB_COMPONENTS = models.COMPONENTS.alias('lastjob.components')
