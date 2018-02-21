@@ -161,6 +161,8 @@ def test_get_all_jobs_with_embed(admin, remoteci_context, team_user_id,
     assert len(jobs['jobs']) == 2
     for job in jobs['jobs']:
         assert len(job['results']) == 1
+        for result in job['results']:
+            assert 'tests_cases' not in result
 
 
 def test_get_all_jobs_with_duplicated_embed(admin, team_user_id,
