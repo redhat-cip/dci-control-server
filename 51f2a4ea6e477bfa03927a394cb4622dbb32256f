@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3afb71cf_e478fafa",
+        "filename": "dci/db/embeds.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-02-21T17:02:39Z",
+      "side": 1,
+      "message": "We use upper case for static variables. BUT YOU MODIFY IT. HOW DARE YOU?! :-)",
+      "revId": "51f2a4ea6e477bfa03927a394cb4622dbb32256f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
