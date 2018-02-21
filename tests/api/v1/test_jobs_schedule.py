@@ -35,6 +35,20 @@ def test_schedule_jobs(remoteci_context, remoteci, topic):
     assert job['rconfiguration_id'] is None
 
 
+def test_schedule_jobs_fucked_role(user, remoteci, topic):
+    headers = {
+        'User-Agent': 'python-dciclient',
+        'Client-Version': 'python-dciclient_0.1.0'
+    }
+    data = {'topic_id': topic['id']}
+    r = user.post(
+        '/api/v1/jobs/schedule',
+        headers=headers,
+        data=data
+    )
+    assert r.status_code == 401
+
+
 def test_schedule_jobs_with_components_ids(user, remoteci_context, topic):
     components = user.get('/api/v1/topics/%s/components' % topic['id']).data['components']  # noqa
     data = {

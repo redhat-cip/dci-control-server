@@ -60,6 +60,14 @@ _EMBED_MANY = {
     'rconfiguration': False,
 }
 
+_ROLES = {
+    'USER': {'get_all_jobs'},
+    'PRODUCT_OWNER': {'get_all_jobs'},
+    'ADMIN': {'get_all_jobs'},
+    'SUPER_ADMIN': {'get_all_jobs'},
+    'REMOTECI': {'get_all_jobs', 'schedule_jobs'}
+}
+
 
 @api.route('/jobs', methods=['POST'])
 @decorators.login_required
@@ -322,7 +330,7 @@ def _get_job(user, job_id, embed):
 
 @api.route('/jobs/schedule', methods=['POST'])
 @decorators.login_required
-@decorators.has_role(['REMOTECI'])
+@decorators.check_permission(_ROLES)
 def schedule_jobs(user):
     """Dispatch jobs to remotecis.
 
@@ -408,6 +416,7 @@ def upgrade_jobs(user):
 
 @api.route('/jobs', methods=['GET'])
 @decorators.login_required
+@decorators.check_permission(_ROLES)
 def get_all_jobs(user, topic_id=None):
     """Get all jobs.
 

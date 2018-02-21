@@ -80,3 +80,19 @@ def has_role(role_labels):
             raise UNAUTHORIZED
         return wrapper
     return actual_decorator
+
+
+def check_permission(roles_permissions):
+    """Decorator to ensure authentified entity has proper permission."""
+
+    def actual_decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            user = args[0]
+            func_name = f.__name__
+            if user.role_label in roles_permissions:
+                if func_name in roles_permissions[user.role_label]:
+                    return f(*args, **kwargs)
+            raise UNAUTHORIZED
+        return wrapper
+    return actual_decorator
