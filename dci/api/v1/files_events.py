@@ -32,7 +32,7 @@ _FILES_EVENTS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 @api.route('/files_events/<int:sequence>', methods=['GET'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 def get_files_events_from_sequence(user, sequence):
     """Get all the files events from a given sequence number."""
 
@@ -80,7 +80,7 @@ def get_files_events_from_sequence(user, sequence):
 
 @api.route('/files_events/<int:sequence>', methods=['DELETE'])
 @decorators.login_required
-@decorators.has_role(['SUPER_ADMIN'])
+@decorators.check_roles
 def purge_files_events_from_sequence(user, sequence):
     query = _TABLE.delete(). \
         where(_TABLE.c.id >= sequence)
