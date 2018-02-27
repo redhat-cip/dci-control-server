@@ -49,8 +49,8 @@ _EMBED_MANY = {
 
 
 def _get_latest_components():
-
-    _C_COLUMNS.update({
+    __C_COLUMNS = dict(_C_COLUMNS)
+    __C_COLUMNS.update({
         'topic_id': models.TOPICS.c.id.label('topic_id'),
         'topic_name': models.TOPICS.c.name.label('topic_name'),
         'product_id': models.PRODUCTS.c.id.label('product_id'),
@@ -67,7 +67,7 @@ def _get_latest_components():
                  models.PRODUCTS.c.state == 'active')
     )
 
-    select_clause = list(dict(_C_COLUMNS).values())
+    select_clause = list(dict(__C_COLUMNS).values())
     query = (sql.select(select_clause).select_from(join_condition).
              distinct(models.TOPICS.c.id).
              where(models.COMPONENTS.c.state == 'active').
