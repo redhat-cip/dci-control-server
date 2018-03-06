@@ -38,3 +38,6 @@ csnCpzVVAEEaQEwv/Smu9e1L2ObyAp387xjDOTHQZNXMb7TSJuhxyOLQQ3NWO+1o
 zQIDAQAB
 -----END PUBLIC KEY-----
 """
+
+CA_CERT = '/tmp/ca.crt'
+CA_KEY = '/tmp/ca.key'
