@@ -43,6 +43,8 @@ ROLES = {
     'retrieve_issues_from_component': ALL,
     'attach_issue_to_component': ALL,
     'unattach_issue_from_component': ALL,
+    # certs
+    'verify_repo_access': SUPER_ADMIN,
     # feeder
     'create_feeders': SUPER_ADMIN_PO,
     'get_all_feeders': SUPER_ADMIN_PO,
@@ -140,6 +142,7 @@ ROLES = {
     'get_all_configurations': ALL,
     'get_configuration_by_id': ALL,
     'delete_configuration_by_id': ADMINS,
+    'update_remoteci_keys': ALL,
     'get_to_purge_archived_rconfigurations': SUPER_ADMIN,
     'purge_archived_rconfigurations': SUPER_ADMIN,
     # roles

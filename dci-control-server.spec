@@ -25,6 +25,7 @@ BuildRequires:  java-1.8.0-openjdk
 BuildRequires:  net-tools
 BuildRequires:  postgresql
 BuildRequires:  postgresql-server
+BuildRequires:  pyopenssl
 BuildRequires:  python-alembic
 BuildRequires:  python-elasticsearch
 BuildRequires:  python-flask
@@ -48,6 +49,7 @@ BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
 BuildRequires:  systemd
 BuildRequires:  systemd-units
+Requires:       pyopenssl
 Requires:       python-alembic
 Requires:       python-elasticsearch
 Requires:       python-flask
@@ -81,6 +83,7 @@ BuildRequires:  net-tools
 BuildRequires:  postgresql
 # For the unit-test
 BuildRequires:  postgresql-server
+BuildRequires:  pyopenssl
 BuildRequires:  python3-alembic
 BuildRequires:  python3-elasticsearch
 BuildRequires:  python3-flask
@@ -102,6 +105,7 @@ BuildRequires:  python-jwt
 BuildRequires:  python3-dciauth
 BuildRequires:  systemd
 BuildRequires:  systemd-units
+Requires:       pyopenssl
 Requires:       python3-alembic
 Requires:       python3-elasticsearch
 Requires:       python3-flask
@@ -119,6 +123,7 @@ Requires:       python3-werkzeug
 Requires:       python3-zmq
 Requires:       python-jwt
 Requires:       python3-dciauth
+
 
 %description -n dci-api-python3
 The implementation of the DCI control server API.
