@@ -14,14 +14,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
+import re
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql, func
+from OpenSSL import crypto
 
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
 from dci import auth
+from dci import dci_config
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
@@ -85,7 +88,8 @@ def get_all_remotecis(user, t_id=None):
     args = schemas.args(flask.request.args.to_dict())
 
     # build the query thanks to the QueryBuilder class
-    query = v1_utils.QueryBuilder(_TABLE, args, _R_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _R_COLUMNS,
+                                  ignore_columns=['keys', 'cert_fp'])
 
     if not user.is_super_admin() and not user.is_read_only_user():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
@@ -107,7 +111,8 @@ def get_all_remotecis(user, t_id=None):
 @decorators.check_roles
 def get_remoteci_by_id(user, r_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
-    return base.get_resource_by_id(user, remoteci, _TABLE, _EMBED_MANY)
+    return base.get_resource_by_id(user, remoteci, _TABLE, _EMBED_MANY,
+                                   ignore_columns=["keys", "cert_fp"])
 
 
 @api.route('/remotecis/<uuid:r_id>', methods=['PUT'])
@@ -530,6 +535,44 @@ def kill_existing_jobs(remoteci_id, db_conn=None):
     kill_query = models.JOBS.update().where(where_clause).values(
         status='killed')
     db_conn.execute(kill_query)
+
+
+@api.route('/remotecis/<uuid:r_id>/keys', methods=['PUT'])
+@decorators.login_required
+@decorators.check_roles
+def update_remoteci_keys(user, r_id):
+    _CAKEY = dci_config.generate_conf()['CA_KEY']
+    _CACERT = dci_config.generate_conf()['CA_CERT']
+
+    etag = utils.check_and_get_etag(flask.request.headers)
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+
+    key, cert = v1_utils.get_key_and_cert_signed(_CAKEY, _CACERT)
+
+    values = {}
+    keys = {'key': crypto.dump_privatekey(crypto.FILETYPE_PEM,
+                                          key).decode('utf-8'),
+            'cert': crypto.dump_certificate(crypto.FILETYPE_PEM,
+                                            cert).decode('utf-8')}
+    where_clause = sql.and_(_TABLE.c.etag == etag,
+                            _TABLE.c.state != 'archived',
+                            _TABLE.c.id == remoteci['id'])
+
+    values['etag'] = utils.gen_etag()
+    values['cert_fp'] = re.sub(':', '',
+                               cert.digest('sha1').decode('utf-8')).lower()
+
+    query = (_TABLE
+             .update()
+             .where(where_clause)
+             .values(**values))
+
+    flask.g.db_conn.execute(query)
+
+    return flask.Response(
+        json.dumps({'keys': keys}), 201,
+        content_type='application/json'
+    )
 
 
 @api.route('/remotecis/rconfigurations/purge', methods=['GET'])
