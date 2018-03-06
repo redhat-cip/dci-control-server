@@ -43,6 +43,7 @@ BuildRequires:  python-werkzeug
 BuildRequires:  python-zmq
 BuildRequires:  python-jwt
 BuildRequires:  python-dciauth
+BuildRequires:  python2-crypto
 BuildRequires:  python2-pytest
 BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
@@ -65,6 +66,7 @@ Requires:       python-zmq
 Requires:       python-jwt
 Requires:       python-dciauth
 Requires:       python2-swiftclient
+Requires:       python2-crypto
 Requires:       pytz
 
 %description -n dci-api
@@ -82,6 +84,7 @@ BuildRequires:  postgresql
 # For the unit-test
 BuildRequires:  postgresql-server
 BuildRequires:  python3-alembic
+BuildRequires:  python3-crypto
 BuildRequires:  python3-elasticsearch
 BuildRequires:  python3-flask
 BuildRequires:  python3-flask-sqlalchemy
@@ -103,6 +106,7 @@ BuildRequires:  python3-dciauth
 BuildRequires:  systemd
 BuildRequires:  systemd-units
 Requires:       python3-alembic
+Requires:       python3-crypto
 Requires:       python3-elasticsearch
 Requires:       python3-flask
 Requires:       python3-flask-sqlalchemy
