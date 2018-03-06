@@ -17,6 +17,7 @@ import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql, func
+from Crypto.PublicKey import RSA
 
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -467,6 +468,47 @@ def delete_configuration_by_id(user, r_id, c_id):
             raise dci_exc.DCIDeleteConflict('rconfiguration', c_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/remotecis/<uuid:r_id>/keys', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def get_remoteci_keys(user, r_id):
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+    res = flask.jsonify({'keys': remoteci['keys']})
+    return res
+
+
+@api.route('/remotecis/<uuid:r_id>/keys', methods=['PUT'])
+@decorators.login_required
+@decorators.check_roles
+def update_remoteci_keys(user, r_id):
+    etag = utils.check_and_get_etag(flask.request.headers)
+    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+    new_key = RSA.generate(2048, e=65537)
+    public_key = new_key.publickey().exportKey("PEM")
+    private_key = new_key.exportKey("PEM")
+
+    values = {}
+    values['keys'] = {'public': public_key, 'private': private_key}
+
+    where_clause = sql.and_(_TABLE.c.etag == etag,
+                            _TABLE.c.state != 'archived',
+                            _TABLE.c.id == r_id)
+
+    values['etag'] = utils.gen_etag()
+
+    query = (_TABLE
+             .update()
+             .where(where_clause)
+             .values(**values))
+
+    result = flask.g.db_conn.execute(query)
+
+    return flask.Response(
+        json.dumps({'keys': values['keys']}), 201,
+        content_type='application/json'
+    )
 
 
 @api.route('/remotecis/rconfigurations/purge', methods=['GET'])

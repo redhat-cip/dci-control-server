@@ -137,6 +137,8 @@ ROLES = {
     'get_all_configurations': ALL,
     'get_configuration_by_id': ALL,
     'delete_configuration_by_id': ADMINS,
+    'update_remoteci_keys': ALL,
+    'get_remoteci_keys': ALL,
     'get_to_purge_archived_rconfigurations': SUPER_ADMIN,
     'purge_archived_rconfigurations': SUPER_ADMIN,
     # roles
