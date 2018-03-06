@@ -100,3 +100,6 @@ hZ3LTvCbgf1OdidRPayfIBECq/oU9hsfu1oX3sJXYdISqaxBXfyWXSbwt5Rv1HuV
 4GdQgMGs8c49SX/5ZUZii3sCAwEAAQ==
 -----END PUBLIC KEY-----
 """
+
+CA_CERT = '/etc/ssl/repo/ca.crt'
+CA_KEY = '/etc/ssl/repo/ca.key'
