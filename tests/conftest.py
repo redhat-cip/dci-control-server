@@ -550,3 +550,97 @@ def access_token():
         '4vF26G8pbjGL7Fg7HvDekJCTZE5uWRCQtg15IJ44Fsspip6C2kSIhAFvsitFe5r7ltO' \
         'Nnh5nbZCsru5r9qEEYzcSyIZnkyVGgZrxNY_PY8CC6WtSBZTC7inFFcWWKioSw'
     return access_token
+
+@pytest.fixture(scope='session')
+def cakeys():
+    keycontent = '-----BEGIN RSA PRIVATE KEY-----\n' \
+'MIIJKAIBAAKCAgEAxVY2C4es4YwMtwwe6FKuybMZ8K8uWylF6AUurzFnp8mYObwT\n' \
+'IvM5W0es7qjdT7UowZBKC+wiCFfwG9O6HZJj62PW/PfHRJWbJZ6PaLPGj1J83qYN\n' \
+'SoSWIx340oUgzZnh0h3Yucqt634tjH+9nRq5YumLDKrcxryUSnGkFxv9jbx7yTUJ\n' \
+'Xl3QFu5pjoam78q6bbZjQapTFqmSoKNkhpflnLsxU1r27lmfWUj0chh1TBR0nCxk\n' \
+'dqCdafIl2MWCCJh3y459Qm6nbDBNrdDMpc+xluri/9o/MPWBk3amv7qvEzOn2DIx\n' \
+'H1n/nLqzsCeR86EzREemIk+259QQTWQqsiq1rghDl3CJB4DWHec0C5FLbOq9wQvV\n' \
+'S8J7UNKQrxcP3nnxa0iOGWYnoSzpfuB9uKIOtSMNJmPznFAiUbMbjRLACkWQlIHe\n' \
+'VyqqcEXLmERdpIQ8IoZPd6RLtc8g7UYjppMsbd342gcBqn+tskS5C3Ka7g6spYKh\n' \
+'Ct7TL3cmh5Tjghj9sTemUPsG8q9UVaUDIj5IHOg22kN+TSoa5DsoIES2x2ijgLXg\n' \
+'LMP9WtmfVVxK9mDKm9FVMwJuqFU2OjvELw/d3eKvfVTLZcZ647BYMxfUxGtj9R58\n' \
+'jxB0uL/nY4zhxwpgxLBq8Pv+x3MwLpGFOqAqJFO6q53l9d34pIetyuDEqqkCAwEA\n' \
+'AQKCAgAr7CttV46ASUbPO1Bpz3V+CXI9oxBDVCVuJjEk52815mYOe7Eat15N1d9E\n' \
+'46sWwbDHnJEOpElS6BfWacLkMCAzVW6VsaTVvCLjNa6f1FverLKEcBtHOcmdGV+3\n' \
+'o9AQUy7zMJd7iwQ5BUWoHwqaPEeFH4xGjoVDatfq1e57AkzmTkyTFU33hhP59qji\n' \
+'A1CG0O2727ut8vY5dhbf0F5gotCFmRi6f+W0WZhhLB7UgmMhQvBNjofx63/+A9qu\n' \
+'rA9sUFthoF56+dwj9YBkrrPOODND7xYFcpNcF1j29JLa2/d546Z5NXq/iq2dOeUi\n' \
+'0TvoKToa+YOd4XZJlWbnguMJ8v2q0bUdQFcJRcV155DxgqTtng7CAZyKd3AjPtE5\n' \
+'6+/WkZiMaBS6tJxBeUNSuanErMxpTshLukDZQbrKskn/PKL7Hy7Q04tYXDa1UB6M\n' \
+'qRMDxJB7+W4ct9dJ9lt4WxmNnnQz7TrzZxzX46i1o45+qDe1R8k5UL9vQ9vXwsE/\n' \
+'LYHsd4CwbyS2JXpFL/5m7yC6RrkEz2WF2ln5A/fHAW9Wl/6VP2MI05mv6gfYdIr5\n' \
+'MgkkR4NjucwBj5wK0CP+4+8Qyf+ZGwIBUMMjraIkGFvEFElapxgg8gxNfrHD7gfg\n' \
+'orwqJ1N55Ajs5ZVjbf14It+u0HfamAbE10++yqEm9H//CaTiAQKCAQEA5ByigRd4\n' \
+'639fYaLmMgEXTs5I+3D7eDYZt9YnT9fIsINqtvzuuhSI+nxfk/6rlxviJQ2S9yWQ\n' \
+'dLZDuNSfZxx9G74qaO0ShWSXp4T+jyA+y+E0skuWOR/KxGqzqUab9vdhO+D1oLfV\n' \
+'dDnnY4ILxPeLj6veAg56Qcc9X+dbHKcPiGgNC/A+Rj0qVvvaUKOcQqyAjCSyIXxF\n' \
+'PvDshyku+Ty2gAtu0MS2LcXZJDjLs4dGu7MQz5/POe6pjgTEIOy3IWLqKVzczNmR\n' \
+'4hKra2EgmMQ+Ls/Od4n77WL3bhGg9DTdChKdJyJOMXSCq5YsCEQnQfkodfq6/Amb\n' \
+'hhpkuVKZwwac6QKCAQEA3XZjYuGwna4CBKF3TWG9yREuYhguUF370ly7G9TL7enw\n' \
+'e100i/n/KWjApxAByInNy0TEHcSGfEiLMc9sDbQoaBuG7PEhIeSuSn6/D4olTUvq\n' \
+'F3C0Z27tT95HZZ43xBDszsKJOhNx8wepmbtbK7pHUfqQm1KqY5qiABAxojaxDWn+\n' \
+'8Q6W7HL4IPcmw9acFni2V/5WrWRfvT1TWEYxzWU65+wT0HWpGatqQVFyh0F6Yxe7\n' \
+'WnIG7v5qxtz1Sj6hqf5vEkN50fHI7XLOoMDe3RtRj8TZ50fyAvvOjkw1yHMf0Wsk\n' \
+'nTBCpN+CF6F74zNScITsfp+Cl9jXU6y7FR4/z84HwQKCAQEAhfePNJNtb5kRkkzS\n' \
+'NoHPh3e9AvaaqUHUntPFqK2I7qlvjeJD7cLLo5hRpaAGdCtrB+nN6xoDmZfFdBJj\n' \
+'P3JKw3VOgOriWrb2HesMeVAtsR0lDqU3p3rVYb9snjiatlMYpsr6VpZAZQ7wps8k\n' \
+'TFw5eXotWzXXdTQnBmDgcJZol+rL5rwERsn7SLSGxZ8g0UNwB14xw1qxbEKgFs0I\n' \
+'ClYutEqCnVc5yu4MFarJbzk+QFPsxpMLZ/GTYJXJ/bAn6RKnhP1Fq4UHmSbvx5N2\n' \
+'SmHORz3B+xBthT//IoR165X0TssZwnbyRzcu2sjKOVyVVbiXm5pSIF0gGoT7rJ8n\n' \
+'MJN8qQKCAQBnqsF/ShJ43TmInWTRTk2ez3Ic7SDQ8g2tPUdBEe2cIwQ1Wz37wDzX\n' \
+'T3fPPEj5bLhuzHPZU2N4ziSKXoRALfM0OJ6CT6WozflgWdBqH8qyUjT0YAey21Qv\n' \
+'LOfTA6srFpkjeCDwlKWklBOqKO/Wmk5Ea7xBWQL1uS7YRLxXKK7cjp+Oi7vOV0sb\n' \
+'c1YsGkvaoQsKSb6dT/0ZApn/Gmy5rwdSBUqJLGrJ31nP1aZ89gOqWzOSdQoV2fZ1\n' \
+'vHz+Ei9u+fFYZUmjI0FhFXrv+RjZ+63EVOuDvkPlbaYVKkuK14kvaK4s/qhTsWSe\n' \
+'VzM8+Ys/rJlf9J8XIaQ6QQMaMZzBU7qBAoIBABqsTioYbOJDR0OJXLy7ykiXOdcx\n' \
+'so7mek6YFRL+//9XlprLYDfoMVf0s0uWrJ9xY+Gcr9GIyOiKBrnWKVFrbibfZSvr\n' \
+'L9swaN82IotuiT9Mk7JKLWdRY0JLMC1XhfahRgg5wyukjct8mYJGcuY2vVvHmd6D\n' \
+'XuhVO0mlm0v/ScdBUvKQKjMOFLYXxHh/2a1mQD5coujJnn9iCA4Pf9xmLo6fG/Jy\n' \
+'xqrDef+lE+ow+uPJanueVDo9KcNBEa80f9KOzOwyb90zWfVYkvt1vMkOOsoVkvR/\n' \
+'qM1R5M9igUzsHGfIpY6jA0OR26gg2G+xcwPKCqeSUnmSbhE8LXHEyskc+Gs=\n' \
+'-----END RSA PRIVATE KEY-----'
+    certcontent = '-----BEGIN CERTIFICATE-----\n' \
+'MIIF5jCCA86gAwIBAgIJAK1pLlYEf/ebMA0GCSqGSIb3DQEBCwUAMIGHMQswCQYD\n' \
+'VQQGEwJGUjEMMAoGA1UECAwDSURGMQ4wDAYDVQQHDAVQYXJpczEPMA0GA1UECgwG\n' \
+'UmVkSGF0MQwwCgYDVQQLDANEQ0kxETAPBgNVBAMMCERDSS1SZXBvMSgwJgYJKoZI\n' \
+'hvcNAQkBFhlkaXN0cmlidXRlZC1jaUByZWRoYXQuY29tMB4XDTE4MDMxNDEzMzY0\n' \
+'MFoXDTE5MDMxNDEzMzY0MFowgYcxCzAJBgNVBAYTAkZSMQwwCgYDVQQIDANJREYx\n' \
+'DjAMBgNVBAcMBVBhcmlzMQ8wDQYDVQQKDAZSZWRIYXQxDDAKBgNVBAsMA0RDSTER\n' \
+'MA8GA1UEAwwIRENJLVJlcG8xKDAmBgkqhkiG9w0BCQEWGWRpc3RyaWJ1dGVkLWNp\n' \
+'QHJlZGhhdC5jb20wggIiMA0GCSqGSIb3DQEBAQUAA4ICDwAwggIKAoICAQDFVjYL\n' \
+'h6zhjAy3DB7oUq7Jsxnwry5bKUXoBS6vMWenyZg5vBMi8zlbR6zuqN1PtSjBkEoL\n' \
+'7CIIV/Ab07odkmPrY9b898dElZslno9os8aPUnzepg1KhJYjHfjShSDNmeHSHdi5\n' \
+'yq3rfi2Mf72dGrli6YsMqtzGvJRKcaQXG/2NvHvJNQleXdAW7mmOhqbvyrpttmNB\n' \
+'qlMWqZKgo2SGl+WcuzFTWvbuWZ9ZSPRyGHVMFHScLGR2oJ1p8iXYxYIImHfLjn1C\n' \
+'bqdsME2t0Mylz7GW6uL/2j8w9YGTdqa/uq8TM6fYMjEfWf+curOwJ5HzoTNER6Yi\n' \
+'T7bn1BBNZCqyKrWuCEOXcIkHgNYd5zQLkUts6r3BC9VLwntQ0pCvFw/eefFrSI4Z\n' \
+'ZiehLOl+4H24og61Iw0mY/OcUCJRsxuNEsAKRZCUgd5XKqpwRcuYRF2khDwihk93\n' \
+'pEu1zyDtRiOmkyxt3fjaBwGqf62yRLkLcpruDqylgqEK3tMvdyaHlOOCGP2xN6ZQ\n' \
+'+wbyr1RVpQMiPkgc6DbaQ35NKhrkOyggRLbHaKOAteAsw/1a2Z9VXEr2YMqb0VUz\n' \
+'Am6oVTY6O8QvD93d4q99VMtlxnrjsFgzF9TEa2P1HnyPEHS4v+djjOHHCmDEsGrw\n' \
+'+/7HczAukYU6oCokU7qrneX13fikh63K4MSqqQIDAQABo1MwUTAdBgNVHQ4EFgQU\n' \
+'MAt4tfiBDZ7koyZq8Ss0P+swDpQwHwYDVR0jBBgwFoAUMAt4tfiBDZ7koyZq8Ss0\n' \
+'P+swDpQwDwYDVR0TAQH/BAUwAwEB/zANBgkqhkiG9w0BAQsFAAOCAgEAlqC46nbw\n' \
+'Y8UhIktSTInTrtX70Y9QF/Gl0weDoOgUNG/j9ReQPU1h/W3Ion4sZ4WO6Q3Y3jQ/\n' \
+'0+Ky0bJFpQZ0C3ssS65XdJC9fpLsiZY/HZUlgRuj7tnR7AjqHA6PBFNz83yGHZgq\n' \
+'GMA3LMq+FyY3K/FTj/NX5iaE2sJlDLu36yv6zcVnQwskkQ/rHoNmE3Prr3A7ZkLv\n' \
+'Ox73PpkiD7FySmTFiiz6i/CPUyx6Y9fZNhNSXvjg6F2tXYQWPJAEL0fWTKvywMML\n' \
+'tpIQnwz6hNaH5Z+O92X67LfJJtmoggNexmO/pbeGVNYPjyRllMcNNJq3GsABwzuA\n' \
+'7zIitCjqpw0RV40pSLv9oulqrS+tdMW55R/RxVCEx3L0H/L36K7IjXan5UkWQxlW\n' \
+'zi65LvYGgCU9d0CH7gUtyyRgJ1G7hAYbBqYOlMEjHdYYOGhGW4LVKSJ4QwPn+yHn\n' \
+'+GXELJTacwV0LVGcDPkqdWbt0KcyMukDFQXs5UikE3i+54783cmfZr3U5Gr/OCWZ\n' \
+'VikifhmBSl3sRfVm7YPW5pffAdACRDZVjZ6ro37x0JQ6jERuhaKe7sv3s0/gCWT5\n' \
+'XMFg+rftswcrSvxBpVNTUu5vPnXK3dWsM4noalVxh449ewlcruYh17Yt2KEwkB/+\n' \
+'4AMjw7GIwuUN1rZsqBbZ5tBHrRoR02IDcMA=\n' \
+'-----END CERTIFICATE-----'
+    cert = open('/tmp/ca.crt','w')
+    cert.write(certcontent)
+    cert.close()
+    key = open('/tmp/ca.key','w')
+    key.write(keycontent)
+    key.close()
