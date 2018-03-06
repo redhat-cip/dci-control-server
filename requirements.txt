@@ -18,3 +18,4 @@ python-keystoneclient
 cryptography
 pyjwt
 dciauth
+pyopenssl

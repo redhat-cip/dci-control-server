@@ -203,6 +203,8 @@ REMOTECIS = sa.Table(
     sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key'),
     sa.Column('allow_upgrade_job', sa.BOOLEAN, default=False),
     sa.Column('public', sa.BOOLEAN, default=False),
+    sa.Column('keys', sa_utils.JSONType),
+    sa.Column('cert_fp',sa.String(255)),
     sa.Column('state', STATES, default='active')
 )
 
