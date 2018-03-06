@@ -17,6 +17,20 @@
 from __future__ import unicode_literals
 import pytest
 import uuid
+from OpenSSL import crypto
+
+
+def test_generate_keys(user, team_user_id, remoteci_user_id, cakeys):
+    ctype = crypto.FILETYPE_PEM
+    rci = user.get('/api/v1/remotecis/%s' % remoteci_user_id).data
+    keys = user.put('/api/v1/remotecis/%s/keys' % remoteci_user_id,
+                    headers={'If-match': rci['remoteci']['etag']}).data
+    tmp_cert = crypto.load_certificate(ctype, keys['keys']['cert'])
+    tmp_cert = crypto.dump_certificate(ctype, tmp_cert)
+    tmp_key = crypto.load_privatekey(ctype, keys['keys']['key'])
+    tmp_key = crypto.dump_privatekey(ctype, tmp_key)
+    assert tmp_key == keys['keys']['key']
+    assert tmp_cert == keys['keys']['cert']
 
 
 def test_create_remotecis(user, team_user_id, role_remoteci):
