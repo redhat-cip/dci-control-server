@@ -242,6 +242,10 @@ JOBS = sa.Table(
               sa.ForeignKey('jobs.id'),
               nullable=True, default=None),
     sa.Index('jobs_previous_job_id_idx', 'previous_job_id'),
+    sa.Column('update_previous_job_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('jobs.id'),
+              nullable=True, default=None),
+    sa.Index('jobs_update_previous_job_id_idx', 'update_previous_job_id'),
     sa.Column('state', STATES, default='active')
 )
 

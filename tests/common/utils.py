@@ -51,6 +51,7 @@ ALLOW_UPGRADE_JOB = 'allow_upgrade_job', False
 PUBLIC = 'public', False
 EXTERNAL = 'external', True
 PREVIOUS_JOB_ID = 'previous_job_id', uuid.uuid4()
+UPDATE_PREVIOUS_JOB_ID = 'update_previous_job_id', uuid.uuid4()
 
 INVALID_NAME = 'name', None
 INVALID_NAME_ERROR = 'name', schemas.INVALID_STRING

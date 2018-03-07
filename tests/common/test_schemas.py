@@ -381,7 +381,8 @@ class TestRemoteciRconfigurations(utils.SchemaTesting):
 class TestJob(utils.SchemaTesting):
     schema = schemas.job
     data = dict([utils.TEAM, utils.COMPONENTS, utils.PREVIOUS_JOB_ID,
-                 utils.STATE, utils.TOPIC, utils.RCONFIGURATION])
+                 utils.UPDATE_PREVIOUS_JOB_ID, utils.STATE, utils.TOPIC,
+                 utils.RCONFIGURATION])
     data_put = dict([('status', 'success'), utils.COMMENT])
 
     @staticmethod
