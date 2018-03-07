@@ -76,7 +76,8 @@ ROLES = {
     # jobs
     'create_jobs': ALL,
     'schedule_jobs': REMOTECI,
-    'upgrade_jobs': ALL,
+    'create_new_update_job_from_an_existing_job': REMOTECI,
+    'create_new_upgrade_job_from_an_existing_job': ALL,
     'get_all_jobs': ALL,
     'get_components_from_job': ALL,
     'get_jobstates_by_job': ALL,

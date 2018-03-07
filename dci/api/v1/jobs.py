@@ -110,7 +110,7 @@ def create_jobs(user):
 
 
 def _build_job(topic_id, remoteci, components_ids, values,
-               previous_job_id=None):
+               previous_job_id=None, update_previous_job_id=None):
 
     component_types, rconfiguration = components.get_component_types(
         topic_id, remoteci['id'])
@@ -121,7 +121,8 @@ def _build_job(topic_id, remoteci, components_ids, values,
         'topic_id': topic_id,
         'rconfiguration_id': rconfiguration['id'] if rconfiguration else None,  # noqa
         'team_id': remoteci['team_id'],
-        'previous_job_id': previous_job_id
+        'previous_job_id': previous_job_id,
+        'update_previous_job_id': update_previous_job_id
     })
 
     with flask.g.db_conn.begin():
@@ -217,10 +218,59 @@ def schedule_jobs(user):
                           content_type='application/json')
 
 
+@api.route('/jobs/<uuid:job_id>/update', methods=['POST'])
+@decorators.login_required
+@decorators.check_roles
+def create_new_update_job_from_an_existing_job(user, job_id):
+    """Create a new job in the same topic as the job_id provided and
+    associate the latest components of this topic."""
+
+    values = {
+        'id': utils.gen_uuid(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'etag': utils.gen_etag(),
+        'status': 'new'
+    }
+
+    original_job_id = job_id
+    original_job = v1_utils.verify_existence_and_get(original_job_id,
+                                                     models.JOBS)
+
+    if not user.is_in_team(original_job['team_id']):
+        raise auth.UNAUTHORIZED
+
+    # get the remoteci
+    remoteci_id = str(original_job['remoteci_id'])
+    remoteci = v1_utils.verify_existence_and_get(remoteci_id,
+                                                 models.REMOTECIS)
+    values.update({'remoteci_id': remoteci_id})
+
+    # get the associated topic
+    topic_id = str(original_job['topic_id'])
+    v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+
+    values.update({
+        'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
+        'client_version': flask.request.environ.get(
+            'HTTP_CLIENT_VERSION'
+        ),
+    })
+
+    values = _build_job(topic_id, remoteci, [], values,
+                        update_previous_job_id=original_job_id)
+
+    return flask.Response(json.dumps({'job': values}), 201,
+                          headers={'ETag': values['etag']},
+                          content_type='application/json')
+
+
 @api.route('/jobs/upgrade', methods=['POST'])
 @decorators.login_required
 @decorators.check_roles
-def upgrade_jobs(user):
+def create_new_upgrade_job_from_an_existing_job(user):
+    """Create a new job in the 'next topic' of the topic of
+    the provided job_id."""
     values = schemas.job_upgrade.post(flask.request.json)
 
     values.update({

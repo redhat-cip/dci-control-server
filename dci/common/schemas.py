@@ -352,6 +352,8 @@ job = {
     v.Optional('comment', default=None): six.text_type,
     v.Optional('previous_job_id', default=None): v.Any(UUID,
                                                        msg=INVALID_JOB),
+    v.Optional('update_previous_job_id', default=None): v.Any(UUID,
+                                                              msg=INVALID_JOB),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
     v.Optional('topic_id', default=None): v.Any(UUID, msg=INVALID_TOPIC),
