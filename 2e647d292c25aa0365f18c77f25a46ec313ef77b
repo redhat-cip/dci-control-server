@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "da37b569_aa82f3c6",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-03-08T14:30:28Z",
+      "side": 1,
+      "message": "update_jobs() sounds like it\u0027s an endpoint that give the ability to modify an existing job with HTTP PUT.\n\nWhat about: create_new_update_job_from_an_existing_job(user, job_id) and a nice docstring to explain the purpose of the end-point.",
+      "revId": "2e647d292c25aa0365f18c77f25a46ec313ef77b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da37b569_ca8737d6",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 269,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-03-08T14:30:28Z",
+      "side": 1,
+      "message": "Of course, this one should be renamed too.",
+      "revId": "2e647d292c25aa0365f18c77f25a46ec313ef77b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
