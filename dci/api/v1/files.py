@@ -208,28 +208,34 @@ def get_file_by_id(user, file_id):
     return base.get_resource_by_id(user, file, _TABLE, _EMBED_MANY)
 
 
+def get_file_descriptor(file_object):
+    swift = dci_config.get_store('files')
+    file_path = swift.build_file_path(file_object['team_id'],
+                                      file_object['job_id'],
+                                      file_object['id'])
+    # Check if file exist on the storage engine
+    swift.head(file_path)
+    _, file_descriptor = swift.get(file_path)
+    return file_descriptor
+
+
+def get_file_object(file_id):
+    return v1_utils.verify_existence_and_get(file_id, _TABLE)
+
+
 @api.route('/files/<uuid:file_id>/content', methods=['GET'])
 @decorators.login_required
 @decorators.check_roles
 def get_file_content(user, file_id):
-    file = v1_utils.verify_existence_and_get(file_id, _TABLE)
-    swift = dci_config.get_store('files')
-
-    if not user.is_in_team(file['team_id']) and not user.is_read_only_user():
+    file_object = get_file_object(file_id)
+    if not user.is_in_team(file_object['team_id']) and not user.is_read_only_user():
         raise auth.UNAUTHORIZED
-
-    file_path = swift.build_file_path(file['team_id'],
-                                      file['job_id'],
-                                      file_id)
-
-    # Check if file exist on the storage engine
-    swift.head(file_path)
-    _, file_descriptor = swift.get(file_path)
+    file_descriptor = get_file_descriptor(file_object)
     return flask.send_file(
         file_descriptor,
-        mimetype=file['mime'] or 'text/plain',
+        mimetype=file_object['mime'] or 'text/plain',
         as_attachment=True,
-        attachment_filename=file['name'].replace(' ', '_')
+        attachment_filename=file_object['name'].replace(' ', '_')
     )
 
 

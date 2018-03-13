@@ -100,3 +100,5 @@ hZ3LTvCbgf1OdidRPayfIBECq/oU9hsfu1oX3sJXYdISqaxBXfyWXSbwt5Rv1HuV
 4GdQgMGs8c49SX/5ZUZii3sCAwEAAQ==
 -----END PUBLIC KEY-----
 """
+
+CERTIFICATION_URL = 'https://access.stage.redhat.com/hydra/rest/cwe/xmlrpc/v2'  # noqa

@@ -27,6 +27,8 @@ REMOTECI = ['SUPER_ADMIN', 'REMOTECI']
 ROLES = {
     # audits
     'get_logs': ADMINS,
+    # certifications
+    'upload_certification': HUMAN,
     # components
     'create_components': SUPER_ADMIN_PO_FEEDER,
     'update_components': SUPER_ADMIN_PO_FEEDER,
