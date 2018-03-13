@@ -98,3 +98,5 @@ hZ3LTvCbgf1OdidRPayfIBECq/oU9hsfu1oX3sJXYdISqaxBXfyWXSbwt5Rv1HuV
 
 CA_CERT = '/etc/ssl/repo/ca.crt'
 CA_KEY = '/etc/ssl/repo/ca.key'
+
+CERTIFICATION_URL = 'https://access.stage.redhat.com/hydra/rest/cwe/xmlrpc/v2'  # noqa
