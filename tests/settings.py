@@ -38,3 +38,5 @@ csnCpzVVAEEaQEwv/Smu9e1L2ObyAp387xjDOTHQZNXMb7TSJuhxyOLQQ3NWO+1o
 zQIDAQAB
 -----END PUBLIC KEY-----
 """
+
+CERTIFICATION_HOST = 'https://access.stage.redhat.com/hydra/rest/cwe/xmlrpc/v2'  # noqa
