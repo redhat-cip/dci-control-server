@@ -15,9 +15,13 @@
 # under the License.
 
 from __future__ import unicode_literals
+
+import base64
+
 import mock
 import six
 
+from dci.api.v1 import files
 from dci.api.v1.files import get_file_info_from_headers
 from dci.stores.swift import Swift
 from dci.common import utils
@@ -25,7 +29,6 @@ from tests import data as tests_data
 import tests.utils as t_utils
 
 import collections
-
 
 SWIFT = 'dci.stores.swift.Swift'
 
@@ -90,6 +93,7 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
             return (0, six.StringIO(tests_data.jobtest_without_failures))
         else:
             return (0, six.StringIO(tests_data.jobtest_with_failures))
+
     swift_get_mock = mock.MagicMock(side_effect=get_file_content)
 
     f_1 = t_utils.post_file(admin, jobstate_1['id'],
@@ -236,7 +240,6 @@ def test_get_file_not_found(user):
 
 def test_get_file_with_embed(user, jobstate_user_id, team_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
-
         mockito = mock.MagicMock()
 
         head_result = {
@@ -284,7 +287,6 @@ def test_delete_file_by_id(user, jobstate_user_id):
 
 def test_create_file_as_user(user, jobstate_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
-
         mockito = mock.MagicMock()
 
         head_result = {
@@ -319,7 +321,6 @@ def test_get_all_files_as_product_owner(product_owner, team_user_id,
 
 def test_get_file_as_user(user, file_user_id, jobstate_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
-
         mockito = mock.MagicMock()
 
         head_result = {
@@ -335,14 +336,12 @@ def test_get_file_as_user(user, file_user_id, jobstate_user_id):
 
 
 def test_delete_file_as_user(user, file_user_id):
-
     file_delete = user.delete('/api/v1/files/%s' % file_user_id)
     assert file_delete.status_code == 204
 
 
 def test_get_file_content_as_user(user, jobstate_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
-
         mockito = mock.MagicMock()
 
         head_result = {
@@ -390,3 +389,23 @@ def test_get_file_info_from_header():
     assert len(file_info.keys()) == 2
     assert 'mime' in file_info
     assert 'job_id' in file_info
+
+
+def test_build_certification():
+    with open('tests/data/certification.xml.tar.gz', 'rb') as f:
+        node_id = '40167'
+        username = 'dci'
+        password = 'dci'
+        file_name = 'certification.xml.tar.gz'
+        file_content = f.read()
+        cert = files.build_certification(username, password, node_id,
+                                         file_name, file_content)
+
+        assert cert['username'] == 'dci'
+        assert cert['password'] == 'dci'
+        assert cert['id'] == '40167'
+        assert cert['type'] == 'certification'
+        assert cert['description'] == 'DCI automatic upload test log'
+        assert cert['filename'] == 'certification.xml.tar.gz'
+
+        base64.decodestring(cert['data'])

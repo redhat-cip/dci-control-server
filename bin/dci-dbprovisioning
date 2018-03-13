@@ -244,12 +244,12 @@ def create_job_states(jobs):
         post('jobstates', jobstate, ('admin_dell', 'admin_dell',))
 
 
-def create_file(job_id, file_name, file_path, user):
+def create_file(job_id, file_name, file_path, user, content_type='application/junit'):
     file_path = os.path.join(file_path)
     data = open(file_path).read()
-    headers = {'DCI-JOB-ID': job_id, 'DCI-NAME': file_name, 'DCI-MIME': 'application/junit',
+    headers = {'DCI-JOB-ID': job_id, 'DCI-NAME': file_name, 'DCI-MIME': content_type,
                'Content-Disposition': 'attachment; filename=%s' % os.path.basename(file_path),
-               'Content-Type': 'application/junit'}
+               'Content-Type': content_type}
     return requests.post(
         '%s/api/v1/files' % DCI_CS_URL,
         data=data,
@@ -262,6 +262,8 @@ def create_files(jobs):
     user_dell = ('admin_dell', 'admin_dell',)
     create_file(jobs[2]['id'], 'Tempest', 'tests/data/tempest-results.xml', user_dell)
     create_file(jobs[2]['id'], 'Rally', 'tests/data/rally-results.xml', user_dell)
+    create_file(jobs[2]['id'], 'certification.xml.gz', 'tests/data/certification.xml.tar.gz', user_dell,
+                'application/x-compressed')
 
 
 def wait_db_ready():

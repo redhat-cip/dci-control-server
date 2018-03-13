@@ -431,6 +431,12 @@ file = utils.dict_merge(base, {
 
 file = schema_factory(file)
 
+file_upload_certification = schema_factory({
+    'username': six.text_type,
+    'password': six.text_type,
+    'certification_id': six.text_type,
+})
+
 ###############################################################################
 #                                                                             #
 #                                Topic schemas                                #
