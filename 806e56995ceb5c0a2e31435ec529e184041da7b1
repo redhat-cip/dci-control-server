@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3cc151_201daa66",
+        "filename": "dci/api/v1/certification.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-03-13T19:04:27Z",
+      "side": 1,
+      "message": "Could be nice to valid the file content is XML.",
+      "revId": "806e56995ceb5c0a2e31435ec529e184041da7b1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
