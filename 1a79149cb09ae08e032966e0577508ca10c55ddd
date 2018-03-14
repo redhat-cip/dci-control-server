@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3cc151_e0c6e215",
+        "filename": "dci/api/v1/certs.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-03-14T12:52:18Z",
+      "side": 1,
+      "message": "def splitpath(path):\n    path \u003d os.path.normpath(path)\n    paths \u003d path.split(\u0027/\u0027)\n    return [p for p in paths if p]",
+      "revId": "1a79149cb09ae08e032966e0577508ca10c55ddd",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
