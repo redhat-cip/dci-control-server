@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3cc151_06043e13",
+        "filename": "dci/alembic/versions/6647e6ca3982_add_keys_column_in_remoteci.py",
+        "patchSetId": 15
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-03-16T14:30:00Z",
+      "side": 1,
+      "message": "Do we really need to keep the cert in the DB. It sounds like a bad pattern to me.",
+      "revId": "a4a453372ab9d88a6168284aae6a1277add4ba32",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba3cc151_a608f229",
+        "filename": "dci/api/v1/certs.py",
+        "patchSetId": 15
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-03-16T14:30:00Z",
+      "side": 1,
+      "message": "Not a big deal, but I think this can be replaced by a mix of  os.path.split(path) and urllib.parse.urlparse().",
+      "revId": "a4a453372ab9d88a6168284aae6a1277add4ba32",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba3cc151_6613ca5d",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 15
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-03-16T14:30:00Z",
+      "side": 1,
+      "message": "I would be nice to have these in the settings.py",
+      "revId": "a4a453372ab9d88a6168284aae6a1277add4ba32",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
