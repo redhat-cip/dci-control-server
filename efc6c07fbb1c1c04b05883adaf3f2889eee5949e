@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3cc151_031d1073",
+        "filename": "bin/dci-dbinit",
+        "patchSetId": 11
+      },
+      "lineNbr": 114,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-03-16T13:20:53Z",
+      "side": 1,
+      "message": "little question, how will this role be inserted into production?",
+      "range": {
+        "startLine": 114,
+        "startChar": 0,
+        "endLine": 114,
+        "endChar": 60
+      },
+      "revId": "efc6c07fbb1c1c04b05883adaf3f2889eee5949e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
