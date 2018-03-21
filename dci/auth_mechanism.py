@@ -284,42 +284,33 @@ class OpenIDCAuth(BaseMechanism):
             raise dci_exc.DCIException('JWT token expired, please refresh.',
                                        status_code=401)
 
-        sso_username = decoded_token['username']
-        self.identity = self._get_user_from_sso_username(sso_username)
-        if self.identity is None:
-            self.identity = self._create_user_and_get(decoded_token)
-            if self.identity is None:
-                return False
+        user_info = self._get_user_info(decoded_token, auth.get_role_id('USER'))
+        try:
+            self.identity = self._get_or_create_user(user_info)
+        except sa_exc.IntegrityError:
+            raise dci_exc.DCICreationConflict(models.USERS.name, 'username')
+        return True
 
-    def _get_user_from_sso_username(self, sso_username):
-        """Given the sso's username, get the associated user."""
-        constraint = sql.or_(
-            models.USERS.c.sso_username == sso_username,
-            models.USERS.c.email == sso_username
-        )
-
-        identity = self.identity_from_db(models.USERS, constraint)
-        return identity
-
-    def _create_user_and_get(self, decoded_token):
-        """Create the user according to the token, this function assume that
-        the token has been verified."""
-
-        user_values = {
-            'role_id': auth.get_role_id('USER'),
-            'name': decoded_token.get('username'),
-            'fullname': decoded_token.get('username'),
-            'sso_username': decoded_token.get('username'),
+    @staticmethod
+    def _get_user_info(token, user_role_id):
+        return {
+            'role_id': user_role_id,
+            'name': token.get('username'),
+            'fullname': token.get('username'),
+            'sso_username': token.get('username'),
             'team_id': None,
-            'email': decoded_token.get('email'),
+            'email': token.get('email'),
             'timezone': 'UTC',
         }
 
-        query = models.USERS.insert().values(user_values)
-
-        try:
-            flask.g.db_conn.execute(query)
-        except sa_exc.IntegrityError:
-            raise dci_exc.DCICreationConflict(models.USERS.name, 'username')
-
-        return self._get_user_from_sso_username(decoded_token.get('username'))
+    def _get_or_create_user(self, user_info):
+        constraint = sql.or_(
+            models.USERS.c.sso_username == user_info['sso_username'],
+            models.USERS.c.email == user_info['sso_username'],
+            models.USERS.c.email == user_info['email']
+        )
+        identity = self.identity_from_db(models.USERS, constraint)
+        if identity is None:
+            query = models.USERS.insert().values(user_info)
+            return dict(flask.g.db_conn.execute(query))
+        return identity
