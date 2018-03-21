@@ -39,9 +39,6 @@ def reject():
 
 
 def _get_auth_class_from_headers(headers):
-    if 'DCI-Auth-Signature' in headers:
-        return am.SignatureAuthMechanism
-
     if 'Authorization' not in headers:
         raise dci_exc.DCIException('Authorization header missing',
                                    status_code=401)
