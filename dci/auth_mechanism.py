@@ -13,7 +13,6 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from datetime import datetime
 import flask
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
@@ -21,7 +20,6 @@ from sqlalchemy import sql
 from dci import auth
 from dci import dci_config
 from dci.common import exceptions as dci_exc
-from dci.common import signature
 from dciauth.request import AuthRequest
 from dciauth.signature import Signature
 from dci.db import models
@@ -142,95 +140,6 @@ class BasicAuthMechanism(BaseMechanism):
                                        status_code=401)
 
         return user, auth.check_passwords_equal(password, user.password)
-
-
-class SignatureAuthMechanism(BaseMechanism):
-    def authenticate(self):
-        """Tries to authenticate a request using a signature as authentication
-        mechanism.
-        Sets self.identity to the authenticated entity for later use.
-        """
-        # Get headers and extract information
-
-        client_info = self.get_client_info()
-        their_signature = self.request.headers.get('DCI-Auth-Signature')
-
-        identity = self.get_identity(client_info['type'], client_info['id'])
-        if identity is None:
-            raise dci_exc.DCIException(
-                'Client %(type)s/%(id)s does not exist' % client_info,
-                status_code=401)
-        self.identity = identity
-
-        if not self.verify_auth_signature(identity, client_info['timestamp'],
-                                          their_signature):
-            raise dci_exc.DCIException('Invalid signature.', status_code=401)
-        return True
-
-    def get_identity(self, client_type, client_id):
-        """Get an identity including its API secret
-        """
-        allowed_types_model = {
-            'remoteci': models.REMOTECIS,
-            'feeder': models.FEEDERS,
-        }
-
-        identity_model = allowed_types_model.get(client_type, None)
-        if identity_model is None:
-            return None
-
-        constraint = identity_model.c.id == client_id
-
-        identity = self.identity_from_db(identity_model, constraint)
-        return identity
-
-    def get_client_info(self):
-        """Extracts timestamp, client type and client id from a
-        DCI-Client-Info header.
-        Returns a hash with the three values.
-        Throws an exception if the format is bad or if strptime fails."""
-        if 'DCI-Client-Info' not in self.request.headers:
-            raise dci_exc.DCIException('Header DCI-Client-Info missing',
-                                       status_code=401)
-
-        client_info = self.request.headers.get('DCI-Client-Info')
-        client_info = client_info.split('/')
-        if len(client_info) != 3 or not all(client_info):
-            raise dci_exc.DCIException(
-                'DCI-Client-Info should match the following format: ' +
-                '"YYYY-MM-DD HH:MI:SSZ/<client_type>/<id>"')
-
-        dateformat = '%Y-%m-%d %H:%M:%SZ'
-        try:
-            timestamp = datetime.strptime(client_info[0], dateformat)
-            return {
-                'timestamp': timestamp,
-                'type': client_info[1],
-                'id': client_info[2],
-            }
-        except ValueError:
-            raise dci_exc.DCIException('Bad date format in DCI-Client-Info',
-                                       '401')
-
-    def verify_auth_signature(self, identity, timestamp,
-                              their_signature):
-        """Extract the values from the request, and pass them to the signature
-        verification method."""
-        if identity.api_secret is None:
-            raise dci_exc.DCIException('Client %(type)s/%(id)s does not have'
-                                       ' an API secret set' % identity,
-                                       status_code=401)
-
-        return signature.is_valid(
-            their_signature=their_signature.encode('utf-8'),
-            secret=identity.api_secret.encode('utf-8'),
-            http_verb=self.request.method.upper().encode('utf-8'),
-            content_type=(self.request.headers.get('Content-Type')
-                          .encode('utf-8')),
-            timestamp=timestamp,
-            url=self.request.path.encode('utf-8'),
-            query_string=self.request.query_string,
-            payload=self.request.data)
 
 
 class HmacMechanism(BaseMechanism):
