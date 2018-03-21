@@ -210,9 +210,8 @@ def get_remoteci_data_json(user, r_id):
 @decorators.check_roles
 def add_user_to_remoteci(user, r_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
-    team = v1_utils.verify_existence_and_get(remoteci['team_id'], models.TEAMS)
 
-    if not user.is_member_of(team):
+    if user.is_not_in_team(remoteci['team_id']):
         raise auth.UNAUTHORIZED
 
     query = models.JOIN_USER_REMOTECIS.insert().values({'user_id': user.id,

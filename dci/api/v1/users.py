@@ -224,7 +224,7 @@ def delete_user_by_id(user, user_id):
 
     duser = _verify_existence_and_get_user(user_id)
 
-    if not user.is_in_team(duser['team_id']):
+    if user.is_not_in_team(duser['team_id']):
         raise auth.UNAUTHORIZED
 
     values = {'state': 'archived'}

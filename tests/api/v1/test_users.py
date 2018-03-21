@@ -321,6 +321,12 @@ def test_delete_user_by_id(admin, team_id):
     assert gu.status_code == 404
 
 
+def test_delete_user_with_no_team(admin, user_no_team):
+    deleted_user = admin.delete('/api/v1/users/%s' % user_no_team['id'],
+                                headers={'If-match': user_no_team['etag']})
+    assert deleted_user.status_code == 204
+
+
 def test_delete_user_not_found(admin):
     result = admin.delete('/api/v1/users/%s' % uuid.uuid4(),
                           headers={'If-match': 'mdr'})
@@ -537,7 +543,6 @@ def test_update_current_user(admin, user):
 
 
 def test_get_embed_remotecis(user, remoteci_user_id, user_id):
-
     r = user.post('/api/v1/remotecis/%s/users' % remoteci_user_id)
 
     assert r.status_code == 201

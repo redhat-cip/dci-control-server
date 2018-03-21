@@ -59,21 +59,20 @@ class Identity:
                 partner_teams.append(team)
         return partner_teams
 
-    def is_member_of(self, team):
+    def is_not_in_team(self, team_id):
+        """Test if user is not in team"""
+        return not self.is_not_in_team(team_id)
+
+    def is_in_team(self, team_id):
+        """Test if user is in team"""
         if self.is_super_admin():
             return True
-        if team['id'] == self.team['id']:
+        if team_id == self.team['id']:
             return True
         for partner_team in self.partner_teams:
-            if team['id'] == partner_team['id']:
+            if team_id == partner_team['id']:
                 return True
         return False
-
-    # TODO: remove is_in_team (use is_member_of instead)
-    def is_in_team(self, team_id):
-        if not team_id:
-            return False
-        return self.is_member_of({'id': team_id})
 
     def is_super_admin(self):
         """Ensure the user has the role SUPER_ADMIN."""
@@ -90,8 +89,7 @@ class Identity:
         """Ensure the user has the role PRODUCT_OWNER and belongs
            to the team."""
 
-        return self.role_label == 'PRODUCT_OWNER' and \
-            self.is_in_team(team_id)
+        return self.role_label == 'PRODUCT_OWNER' and self.is_in_team(team_id)
 
     def is_admin(self):
         """Ensure the user has the role ADMIN."""
