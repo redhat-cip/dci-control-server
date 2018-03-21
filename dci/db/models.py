@@ -20,6 +20,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as pg
 import sqlalchemy_utils as sa_utils
 
+import dci.auth
 from dci.common import signature, utils
 
 metadata = sa.MetaData()
@@ -193,7 +194,7 @@ REMOTECIS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255)),
     sa.Column('data', sa_utils.JSONType),
-    sa.Column('api_secret', sa.String(64), default=signature.gen_secret),
+    sa.Column('api_secret', sa.String(64), default=dci.auth.gen_secret),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
@@ -598,7 +599,7 @@ FEEDERS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), nullable=False),
     sa.Column('data', sa_utils.JSONType),
-    sa.Column('api_secret', sa.String(64), default=signature.gen_secret),
+    sa.Column('api_secret', sa.String(64), default=dci.auth.gen_secret),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),

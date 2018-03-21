@@ -19,6 +19,7 @@ from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
+import dci.auth
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
@@ -52,7 +53,7 @@ def create_feeders(user):
     values.update({
         # XXX(fc): this should be populated as a default value from the
         # model, but we don't return values from the database :(
-        'api_secret': signature.gen_secret(),
+        'api_secret': dci.auth.gen_secret(),
         'role_id': auth.get_role_id('FEEDER'),
         'data': values.get('data', {}),
     })

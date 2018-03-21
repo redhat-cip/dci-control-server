@@ -22,6 +22,8 @@ Create Date: 2016-01-15 09:19:34.996037
 """
 
 # revision identifiers, used by Alembic.
+import dci.auth
+
 revision = '446d2220f8ea'
 down_revision = None
 branch_labels = None
@@ -264,7 +266,7 @@ def upgrade():
                   default=utils.gen_etag, onupdate=utils.gen_etag),
         sa.Column('name', sa.String(255)),
         sa.Column('data', sa_utils.JSONType),
-        sa.Column('api_secret', sa.String(64), default=signature.gen_secret),
+        sa.Column('api_secret', sa.String(64), default=dci.auth.gen_secret),
         sa.Column('team_id', pg.UUID(as_uuid=True),
                   sa.ForeignKey('teams.id', ondelete='CASCADE'),
                   nullable=False),
@@ -585,7 +587,7 @@ def upgrade():
                   default=utils.gen_etag, onupdate=utils.gen_etag),
         sa.Column('name', sa.String(255), nullable=False),
         sa.Column('data', sa_utils.JSONType),
-        sa.Column('api_secret', sa.String(64), default=signature.gen_secret),
+        sa.Column('api_secret', sa.String(64), default=dci.auth.gen_secret),
         sa.Column('team_id', pg.UUID(as_uuid=True),
                   sa.ForeignKey('teams.id', ondelete='CASCADE'),
                   nullable=False),
