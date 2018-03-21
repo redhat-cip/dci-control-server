@@ -126,6 +126,7 @@ def generate_token_based_client(app, resource):
             response = func(*args, **kwargs)
             data = flask.json.loads(response.data or '{}')
             return Response(response.status_code, data, response.headers)
+
         return wrapper
 
     client = app.test_client()
@@ -136,7 +137,6 @@ def generate_token_based_client(app, resource):
 def post_file(client, jobstate_id, file_desc, mime='text/plain',
               swift_get_mock=None):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
-
         mockito = mock.MagicMock()
 
         head_result = {
@@ -164,11 +164,6 @@ def provision(db_conn):
     def db_insert(model_item, **kwargs):
         query = model_item.insert().values(**kwargs)
         return db_conn.execute(query).inserted_primary_key[0]
-
-    user_pw_hash = auth.hash_password('user')
-    user_admin_pw_hash = auth.hash_password('user_admin')
-    product_owner_pw_hash = auth.hash_password('product_owner')
-    admin_pw_hash = auth.hash_password('admin')
 
     # Create teams
     team_admin_id = db_insert(models.TEAMS, name='admin')
@@ -228,6 +223,7 @@ def provision(db_conn):
     db_insert(models.ROLES, **feeder_role)
 
     # Create users
+    user_pw_hash = auth.hash_password('user')
     db_insert(models.USERS,
               name='user',
               sso_username='user',
@@ -237,6 +233,17 @@ def provision(db_conn):
               email='user@example.org',
               team_id=team_user_id)
 
+    user_no_team_pw_hash = auth.hash_password('user_no_team')
+    db_insert(models.USERS,
+              name='user_no_team',
+              sso_username='user_no_team',
+              role_id=user_role_id,
+              password=user_no_team_pw_hash,
+              fullname='User No Team',
+              email='user_no_team@example.org',
+              team_id=None)
+
+    user_admin_pw_hash = auth.hash_password('user_admin')
     db_insert(models.USERS,
               name='user_admin',
               sso_username='user_admin',
@@ -246,6 +253,7 @@ def provision(db_conn):
               email='user_admin@example.org',
               team_id=team_user_id)
 
+    product_owner_pw_hash = auth.hash_password('product_owner')
     db_insert(models.USERS,
               name='product_owner',
               sso_username='product_owner',
@@ -255,6 +263,7 @@ def provision(db_conn):
               email='product_ownern@example.org',
               team_id=team_product_id)
 
+    admin_pw_hash = auth.hash_password('admin')
     db_insert(models.USERS,
               name='admin',
               sso_username='admin',

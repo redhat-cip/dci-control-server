@@ -156,6 +156,12 @@ def user_id(admin):
 
 
 @pytest.fixture
+def user_no_team(admin):
+    r = admin.get('/api/v1/users?where=name:user_no_team')
+    return dict(r.data['users'][0])
+
+
+@pytest.fixture
 def user_admin(app, db_provisioning):
     return utils.generate_client(app, ('user_admin', 'user_admin'))
 
