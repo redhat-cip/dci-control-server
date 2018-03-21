@@ -16,7 +16,6 @@
 
 import dci.app
 from dci.db import models
-from dci.elasticsearch import engine as elastic_engine
 from dci.stores.swift import Swift
 import tests.utils as utils
 from dci.common import utils as dci_utils
@@ -45,18 +44,6 @@ def engine(request):
         sqlalchemy_utils.functions.create_database(db_uri)
     utils.restore_db(engine)
     return engine
-
-
-@pytest.fixture(scope='session')
-def es_engine(request):
-    el_engine = elastic_engine.DCIESEngine(es_host=utils.conf['ES_HOST'],
-                                           es_port=utils.conf['ES_PORT'],
-                                           index='dci', timeout=60)
-
-    def fin():
-        el_engine.cleanup()
-    request.addfinalizer(fin)
-    return el_engine
 
 
 @pytest.fixture
@@ -109,8 +96,8 @@ def db_provisioning(empty_db, engine):
 
 
 @pytest.fixture
-def app(db_provisioning, engine, es_engine, fs_clean):
-    app = dci.app.create_app(utils.conf, es_engine)
+def app(db_provisioning, engine, fs_clean):
+    app = dci.app.create_app(utils.conf)
     app.testing = True
     app.engine = engine
     return app
@@ -374,7 +361,7 @@ def jobstate_user_id(user, job_user_id):
 
 
 @pytest.fixture
-def file_user_id(user, jobstate_user_id, team_user_id, es_engine):
+def file_user_id(user, jobstate_user_id, team_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
         mockito = mock.MagicMock()
 
@@ -392,12 +379,11 @@ def file_user_id(user, jobstate_user_id, team_user_id, es_engine):
                          headers=headers, data='kikoolol').data
         headers['team_id'] = team_user_id
         headers['id'] = file['file']['id']
-        es_engine.index(headers)
         return file['file']['id']
 
 
 @pytest.fixture
-def file_job_user_id(user, job_user_id, team_user_id, es_engine):
+def file_job_user_id(user, job_user_id, team_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
         mockito = mock.MagicMock()
 
@@ -414,7 +400,6 @@ def file_job_user_id(user, job_user_id, team_user_id, es_engine):
         file = user.post('/api/v1/files', headers=headers, data='foobar').data
         headers['team_id'] = team_user_id
         headers['id'] = file['file']['id']
-        es_engine.index(headers)
         return file['file']['id']
 
 

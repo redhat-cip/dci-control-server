@@ -20,11 +20,6 @@ HOST = '127.0.0.1'
 PORT = 5000
 DEBUG = True
 
-# ElasticSearch Connection parameters
-#
-ES_HOST = '127.0.0.1'
-ES_PORT = '9200'
-
 # Database (SQLAlchemy) related parameters
 #
 SQLALCHEMY_DATABASE_URI = 'postgresql://dci:password@127.0.0.1:5432/dci'
