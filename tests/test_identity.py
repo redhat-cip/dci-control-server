@@ -56,20 +56,20 @@ def test_is_regular_user():
     assert user.is_regular_user()
 
 
-def test_user_is_member_of():
+def test_user_is_not_in_team():
     team = {'id': 'id-1', 'parent_id': 'id-0'}
     user = Identity({'role_label': 'USER', 'team_id': 'id-1'}, [team])
-    assert user.is_member_of(team)
-    assert user.is_member_of({'id': 'another_team_id'}) is False
+    assert not user.is_not_in_team(team_id='id-1')
+    assert user.is_not_in_team(team_id='another_team_id')
 
 
-def test_super_admin_is_member_of_all_teams():
+def test_super_admin_is_not_in_team_all_teams():
     super_admin = identity_factory('SUPER_ADMIN')
-    assert super_admin.is_member_of({'id': 'id-1'})
-    assert super_admin.is_member_of({'id': 'id-2'})
+    assert not super_admin.is_not_in_team(team_id='id-1')
+    assert not super_admin.is_not_in_team(team_id='id-2')
 
 
-def test_product_owner_is_member_of_all_child_teams():
+def test_product_owner_is_not_in_team_all_child_teams():
     product_owner = {'role_label': 'PRODUCT_OWNER', 'team_id': 'abc'}
     teams = [
         {'id': 'abc', 'parent_id': None},
@@ -77,8 +77,8 @@ def test_product_owner_is_member_of_all_child_teams():
         {'id': 'ghi', 'parent_id': None}
     ]
     user = Identity(product_owner, teams)
-    assert user.is_member_of({'id': 'abc'})
-    assert user.is_member_of({'id': 'def'})
+    assert not user.is_not_in_team(team_id='abc')
+    assert not user.is_not_in_team(team_id='def')
 
 
 def test_filter_teams():
