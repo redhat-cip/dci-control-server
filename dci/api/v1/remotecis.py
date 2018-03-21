@@ -20,6 +20,7 @@ from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql, func
 from OpenSSL import crypto
 
+import dci.auth
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
@@ -64,7 +65,7 @@ def create_remotecis(user):
         'data': values.get('data', {}),
         # XXX(fc): this should be populated as a default value from the
         # model, but we don't return values from the database :(
-        'api_secret': signature.gen_secret(),
+        'api_secret': dci.auth.gen_secret(),
         'role_id': auth.get_role_id('REMOTECI'),
     })
 
