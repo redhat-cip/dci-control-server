@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3cc151_d4711ce2",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 224,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-03-21T10:05:37Z",
+      "side": 0,
+      "message": "You should also be able to remove most of the code in dci/common/signature.py (all except the \u0027gen_secret\u0027 function in fact) and same in tests/test_signature.py",
+      "revId": "837acfb87ac6acb962996f0f26d1d3782664d9d3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}

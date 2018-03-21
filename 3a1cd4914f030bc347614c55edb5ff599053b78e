@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3cc151_547e6caf",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-03-21T10:05:37Z",
+      "side": 1,
+      "message": "can also be removed",
+      "revId": "3a1cd4914f030bc347614c55edb5ff599053b78e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
