@@ -19,12 +19,12 @@ from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
 from dci import auth
+from dci import dci_config
 from dci.common import exceptions as dci_exc
 from dci.common import signature
 from dciauth.request import AuthRequest
 from dciauth.signature import Signature
 from dci.db import models
-from dci import dci_config
 from dci.identity import Identity
 
 from jwt import exceptions as jwt_exc
@@ -305,8 +305,15 @@ class OpenIDCAuth(BaseMechanism):
         """Create the user according to the token, this function assume that
         the token has been verified."""
 
+        role_id = auth.get_role_id('USER')
+        ro_group = dci_config.generate_conf().get('SSO_READ_ONLY_GROUP')
+
+        if 'roles' in decoded_token['realm_access']:
+            if ro_group in decoded_token['realm_access']['roles']:
+                role_id = auth.get_role_id('READ_ONLY_USER')
+
         user_values = {
-            'role_id': auth.get_role_id('USER'),
+            'role_id': role_id,
             'name': decoded_token.get('username'),
             'fullname': decoded_token.get('username'),
             'sso_username': decoded_token.get('username'),
