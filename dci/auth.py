@@ -13,6 +13,8 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import random
+import string
 
 import flask
 import jwt
@@ -61,3 +63,11 @@ def check_export_control(user, component):
     if not is_admin(user):
         if not component['export_control']:
             raise UNAUTHORIZED
+
+
+def gen_secret(length=64):
+    """ Generates a secret of given length
+    """
+    charset = string.ascii_letters + string.digits
+    return ''.join(random.SystemRandom().choice(charset)
+                   for _ in range(length))

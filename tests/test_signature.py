@@ -13,11 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import dci.auth
 from dci.common import signature
 
 
 def test_gen_secret():
-    assert len(signature.gen_secret()) == 64
-    assert len(signature.gen_secret(128)) == 128
-    assert signature.gen_secret() != signature.gen_secret()
+    assert len(dci.auth.gen_secret()) == 64
+    assert len(dci.auth.gen_secret(128)) == 128
+    assert dci.auth.gen_secret() != dci.auth.gen_secret()
