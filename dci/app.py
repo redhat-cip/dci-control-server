@@ -18,7 +18,6 @@
 from dci.api import v1 as api_v1
 from dci.common import exceptions
 from dci.common import utils
-from dci.elasticsearch import engine as es_engine
 
 import flask
 import logging
@@ -33,15 +32,11 @@ zmq_sender = None
 
 
 class DciControlServer(flask.Flask):
-    def __init__(self, conf, elastic_engine=None):
+    def __init__(self, conf):
         super(DciControlServer, self).__init__(__name__)
         self.config.update(conf)
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
-        self.es_engine = elastic_engine
-        if not self.es_engine:
-            self.es_engine = es_engine.DCIESEngine(es_host=conf['ES_HOST'],
-                                                   es_port=conf['ES_PORT'])
         self.sender = self._get_zmq_sender(conf['ZMQ_CONN'])
 
     def _get_zmq_sender(self, zmq_conn):
@@ -84,9 +79,9 @@ def handle_dbapi_exception(dbapi_exception):
     return response
 
 
-def create_app(conf, elastic_engine=None):
+def create_app(conf):
     dci_config.sanity_check(conf)
-    dci_app = DciControlServer(conf, elastic_engine=elastic_engine)
+    dci_app = DciControlServer(conf)
     dci_app.url_map.converters['uuid'] = utils.UUIDConverter
 
     # Logging support
@@ -115,7 +110,6 @@ def create_app(conf, elastic_engine=None):
                 time.sleep(1)
                 pass
 
-        flask.g.es_conn = dci_app.es_engine
         flask.g.sender = dci_app.sender
 
     @dci_app.teardown_request
