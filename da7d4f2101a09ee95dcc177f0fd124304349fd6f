@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3cc151_fa03e974",
+        "filename": "dci/elasticsearch/engine.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-03-22T11:50:44Z",
+      "side": 0,
+      "message": "There are still references to this class in bin/dci-essync",
+      "revId": "da7d4f2101a09ee95dcc177f0fd124304349fd6f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
