@@ -26,6 +26,17 @@ def topic_creation(identity, product):
     return identity.get('/api/v1/topics/%s' % pt_id)
 
 
+def topic_creation_with_opts(identity, product):
+    data = {'name': 'tname', 'product_id': product['id'],
+            'component_types': ['type1', 'type2'],
+            'data': {'foo': 'bar'}, 'label': 'rob'}
+    pt = identity.post('/api/v1/topics', data=data).data
+    pt_id = pt['topic']['id']
+    t = identity.get('/api/v1/topics/%s' % pt_id)
+    assert t['topic']['data']['foo'] == 'bar'
+    assert t['topic']['label'] == 'rob'
+
+
 def topic_update(identity, topic_id):
     t = identity.get('/api/v1/topics/' + topic_id).data['topic']
     data = {'label': 'my comment',
@@ -174,7 +185,8 @@ def test_get_topics_of_user(admin, user, team_user_id, product):
         admin.post('/api/v1/topics',
                    data={'name': 'tname%s' % uuid.uuid4(),
                          'product_id': product['id'],
-                         'component_types': ['type1', 'type2']})
+                         'component_types': ['type1', 'type2'],
+                         'data': {}})
     topics_user = user.get('/api/v1/topics').data
     assert topic == topics_user['topics'][0]
     assert len(topics_user['topics']) == 1
