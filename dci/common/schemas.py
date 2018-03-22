@@ -443,7 +443,7 @@ file_upload_certification = schema_factory({
 #                                                                             #
 ###############################################################################
 
-topic = utils.dict_merge(base, {
+topic = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('product_id', default=None): v.Any(UUID, msg=INVALID_PRODUCT),
     v.Optional('label', default=None): six.text_type,
     v.Optional('next_topic', default=None): v.Any(UUID,
@@ -460,7 +460,7 @@ topic_put = {
     v.Optional('product_id'): v.Any(UUID, msg=INVALID_PRODUCT),
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
-    v.Optional('component_types'): list
+    v.Optional('component_types'): list,
 }
 
 topic = DCISchema(schema_factory(topic).post, Schema(topic_put))
