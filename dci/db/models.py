@@ -104,7 +104,8 @@ TOPICS = sa.Table(
               nullable=True, default=None),
     sa.Index('topics_product_id_idx', 'product_id'),
     sa.Index('topics_next_topic_idx', 'next_topic'),
-    sa.Column('state', STATES, default='active')
+    sa.Column('state', STATES, default='active'),
+    sa.Column('data', sa_utils.JSONType)
 )
 
 JOINS_TOPICS_TEAMS = sa.Table(
