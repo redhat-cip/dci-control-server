@@ -609,3 +609,27 @@ FEEDERS = sa.Table(
     sa.UniqueConstraint('name', 'team_id', name='feeders_name_team_id_key'),
     sa.Column('state', STATES, default='active')
 )
+
+TAGS = sa.Table(
+    'tags', metadata,
+    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('name', sa.String(255), nullable=False),
+    sa.Column('description', sa.Text),
+    sa.Index('tags_name_idx', 'name'),
+)
+
+JOIN_COMPONENT_TAGS = sa.Table(
+    'component_tags', metadata,
+    sa.Column('component_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('components.id', ondelete='CASCADE'),
+              nullable=True),
+    sa.Column('tag_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('tags.id', ondelete='CASCADE'),
+              nullable=True),
+)
