@@ -89,6 +89,8 @@ class BaseMechanism(object):
 
     @staticmethod
     def get_team_and_children_teams(teams, team_id):
+        if not team_id:
+            return []
         return_teams = []
         for team in teams:
             if team['id'] == team_id:
