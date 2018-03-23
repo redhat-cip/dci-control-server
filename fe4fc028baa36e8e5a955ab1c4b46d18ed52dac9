@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3cc151_d5eb56af",
+        "filename": "dci-control-server.spec",
+        "patchSetId": 5
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2018-03-23T09:21:55Z",
+      "side": 1,
+      "message": "Need to be removed as you removed the file",
+      "range": {
+        "startLine": 157,
+        "startChar": 0,
+        "endLine": 157,
+        "endChar": 21
+      },
+      "revId": "fe4fc028baa36e8e5a955ab1c4b46d18ed52dac9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba3cc151_b5e6d2e6",
+        "filename": "dci-control-server.spec",
+        "patchSetId": 5
+      },
+      "lineNbr": 169,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2018-03-23T09:21:55Z",
+      "side": 1,
+      "message": "Need to be deleted as you remove the file",
+      "range": {
+        "startLine": 169,
+        "startChar": 0,
+        "endLine": 169,
+        "endChar": 21
+      },
+      "revId": "fe4fc028baa36e8e5a955ab1c4b46d18ed52dac9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
