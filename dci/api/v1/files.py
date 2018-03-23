@@ -13,8 +13,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import base64
 import datetime
+
+try:
+    from xmlrpclib import ServerProxy
+except ImportError:
+    from xmlrpc.client import ServerProxy
 
 import flask
 from flask import json
@@ -35,7 +40,6 @@ from dci import dci_config
 from dci.stores import files
 
 from sqlalchemy import sql
-
 
 _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
@@ -70,6 +74,7 @@ def _get_test_result_of_previous_job(job):
                            models.JOBS.c.state != 'archived')). \
             order_by(sql.desc(models.JOBS.c.created_at))
         return flask.g.db_conn.execute(query).fetchone()
+
     prev_job = _get_previous_job_in_topic(job)
     if prev_job is None:
         return None
@@ -208,23 +213,29 @@ def get_file_by_id(user, file_id):
     return base.get_resource_by_id(user, file, _TABLE, _EMBED_MANY)
 
 
+def get_file_descriptor(file_object):
+    swift = dci_config.get_store('files')
+    file_path = swift.build_file_path(file_object['team_id'],
+                                      file_object['job_id'],
+                                      file_object['id'])
+    # Check if file exist on the storage engine
+    swift.head(file_path)
+    _, file_descriptor = swift.get(file_path)
+    return file_descriptor
+
+
+def get_file_object(file_id):
+    return v1_utils.verify_existence_and_get(file_id, _TABLE)
+
+
 @api.route('/files/<uuid:file_id>/content', methods=['GET'])
 @decorators.login_required
 @decorators.check_roles
 def get_file_content(user, file_id):
-    file = v1_utils.verify_existence_and_get(file_id, _TABLE)
-    swift = dci_config.get_store('files')
-
+    file = get_file_object(file_id)
     if not user.is_in_team(file['team_id']) and not user.is_read_only_user():
         raise auth.UNAUTHORIZED
-
-    file_path = swift.build_file_path(file['team_id'],
-                                      file['job_id'],
-                                      file_id)
-
-    # Check if file exist on the storage engine
-    swift.head(file_path)
-    _, file_descriptor = swift.get(file_path)
+    file_descriptor = get_file_descriptor(file)
     return flask.send_file(
         file_descriptor,
         mimetype=file['mime'] or 'text/plain',
@@ -254,6 +265,48 @@ def delete_file_by_id(user, file_id):
         files_events.create_event(file_id, models.FILES_DELETE)
 
         return flask.Response(None, 204, content_type='application/json')
+
+
+def build_certification(username, password, node_id, file_name, file_content):
+    return {
+        'username': username,
+        'password': password,
+        'id': node_id,
+        'type': 'certification',
+        'data': base64.b64encode(file_content),
+        'description': 'DCI automatic upload test log',
+        'filename': file_name
+    }
+
+
+@api.route('/files/<uuid:file_id>/certifications', methods=['POST'])
+@decorators.login_required
+@decorators.check_roles
+def upload_certification(user, file_id):
+    data = schemas.file_upload_certification.post(flask.request.json)
+
+    file = get_file_object(file_id)
+    file_descriptor = get_file_descriptor(file)
+    file_content = file_descriptor.read()
+
+    username = data['username']
+    password = data['password']
+    conf = dci_config.generate_conf()
+    proxy = ServerProxy(conf['CERTIFICATION_URL'])
+    certification_details = proxy.Cert.getOpenStack_4_7({
+        'username': username,
+        'password': password,
+        'certification_id': data['certification_id']
+    })
+    certification = build_certification(
+        username,
+        password,
+        certification_details['cert_nid'],
+        file['name'],
+        file_content
+    )
+    proxy.Cert.uploadTestLog(certification)
+    return flask.Response(None, 204, content_type='application/json')
 
 
 @api.route('/files/purge', methods=['GET'])
