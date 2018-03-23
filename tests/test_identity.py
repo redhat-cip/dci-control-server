@@ -125,3 +125,12 @@ def test_ensure_any_parent_team_member_has_access_to_subteam():
     assert user.team['id'] == 'abc'
     assert user.team['parent_id'] is None
     assert len(user.partner_teams) == 1
+
+
+def test_if_no_team_id_get_team_and_children_teams_return_empty_array():
+    teams = [
+        {'id': 'abc', 'parent_id': None},
+        {'id': 'def', 'parent_id': 'abc'}
+    ]
+    teams = authm.BaseMechanism.get_team_and_children_teams(teams, None)
+    assert len(teams) == 0
