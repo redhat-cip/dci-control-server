@@ -5,3 +5,4 @@ mock
 pylint==1.6.4
 dciclient>=0.4
 pyOpenSSL
+tox
