@@ -20,14 +20,11 @@ DCI control server
 Summary:        DCI control server API
 Conflicts:      dci-common < %{version}
 Obsoletes:      dci-common
-BuildRequires:  elasticsearch
-BuildRequires:  java-1.8.0-openjdk
 BuildRequires:  net-tools
 BuildRequires:  postgresql
 BuildRequires:  postgresql-server
 BuildRequires:  pyOpenSSL
 BuildRequires:  python-alembic
-BuildRequires:  python-elasticsearch
 BuildRequires:  python-flask
 BuildRequires:  python-flask-sqlalchemy
 BuildRequires:  python-lxml
@@ -51,7 +48,6 @@ BuildRequires:  systemd
 BuildRequires:  systemd-units
 Requires:       pyOpenSSL
 Requires:       python-alembic
-Requires:       python-elasticsearch
 Requires:       python-flask
 Requires:       python-flask-sqlalchemy
 Requires:       python-lxml
@@ -77,15 +73,12 @@ The implementation of the DCI control server API.
 Summary:        DCI control server API
 Conflicts:      dci-common-python3 < %{version}
 Obsoletes:      dci-common-python3
-BuildRequires:  elasticsearch
-BuildRequires:  java-1.8.0-openjdk
 BuildRequires:  net-tools
 BuildRequires:  postgresql
 # For the unit-test
 BuildRequires:  postgresql-server
 BuildRequires:  pyOpenSSL
 BuildRequires:  python3-alembic
-BuildRequires:  python3-elasticsearch
 BuildRequires:  python3-flask
 BuildRequires:  python3-flask-sqlalchemy
 BuildRequires:  python3-lxml
@@ -107,7 +100,6 @@ BuildRequires:  systemd
 BuildRequires:  systemd-units
 Requires:       pyOpenSSL
 Requires:       python3-alembic
-Requires:       python3-elasticsearch
 Requires:       python3-flask
 Requires:       python3-flask-sqlalchemy
 Requires:       python3-lxml
@@ -167,7 +159,6 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %files -n dci-api
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
-%{_bindir}/dci-essync
 %license LICENSE
 %doc
 %{python2_sitelib}/dci
@@ -179,7 +170,6 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %if 0%{?with_python3}
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
-%{_bindir}/dci-essync
 %files -n dci-api-python3
 %doc
 %{python3_sitelib}/dci
@@ -193,6 +183,9 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %exclude %{python2_sitelib}/dci/settings.py?
 
 %changelog
+* Fri Mar 1  2018 Yassine Lamgarchal <ylamgarc@redhat.com> 0.2.0-4
+- Remove all Elasticsearch related components
+
 * Fri Dec 1  2017 Yassine Lamgarchal <ylamgarc@redhat.com> 0.2.0-3
 - Replace dci-esindex by dci-essync
 
