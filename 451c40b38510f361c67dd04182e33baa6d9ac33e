@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba3cc151_a73789e2",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 270,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-03-23T14:10:46Z",
+      "side": 1,
+      "message": "I\u0027m not really convinced this function is useful.",
+      "revId": "451c40b38510f361c67dd04182e33baa6d9ac33e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
