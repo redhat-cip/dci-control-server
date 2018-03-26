@@ -105,7 +105,8 @@ def get_all_topics(user):
         if 'teams' in args['embed']:
             raise dci_exc.DCIException('embed=teams not authorized.',
                                        status_code=401)
-        query.add_extra_condition(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))  # noqa
+        if not user.is_read_only_user():
+            query.add_extra_condition(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))  # noqa
 
     if user.is_product_owner():
         query.add_extra_condition(_TABLE.c.product_id == user.product_id)

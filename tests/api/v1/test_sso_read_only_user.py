@@ -82,6 +82,12 @@ def test_components(m_datetime, admin, user_sso_rh_employee, app, engine,
             d_file = user_sso.get(url)
             assert d_file.status_code == 200
 
+            # get latest component
+            url = '/api/v1/components/latest'
+            components_latest = user_sso.get(url)
+            assert components_latest.status_code == 200
+            assert len(components_latest.data['components']) > 0
+
 
 # FILES
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
@@ -141,6 +147,10 @@ def test_jobs(m_datetime, user_sso_rh_employee, app, engine,
         job_id = job_1.data['job']['id']
         job = user_sso.get('/api/v1/jobs/%s' % job_id)
         assert job.status_code == 200
+
+        # get job result
+        job_result = user_sso.get('/api/v1/jobs/%s/results' % job_id)
+        assert job_result.status_code == 200
 
         # get job's metas
         metas = user_sso.get('/api/v1/jobs/%s/metas' % job_id)
@@ -206,6 +216,8 @@ def test_topics(m_datetime, user_sso_rh_employee, app, engine,
     with app.app_context():
         gtopic = user_sso.get('/api/v1/topics/%s' % topic_user_id)
         assert gtopic.status_code == 200
+        gtopics = user_sso.get('/api/v1/topics')
+        assert gtopics.status_code == 200
 
 
 # GLOBAL STATUS

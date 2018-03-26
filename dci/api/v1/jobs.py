@@ -479,7 +479,7 @@ def get_all_results_from_jobs(user, j_id):
 
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
-    if not user.is_in_team(job['team_id']):
+    if not user.is_in_team(job['team_id']) and not user.is_read_only_user():
         raise auth.UNAUTHORIZED
 
     # get testscases from tests_results
