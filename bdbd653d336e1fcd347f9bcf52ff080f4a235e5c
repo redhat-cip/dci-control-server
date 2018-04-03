@@ -22,6 +22,30 @@
       "revId": "bdbd653d336e1fcd347f9bcf52ff080f4a235e5c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a46c9f1_e19a60c5",
+        "filename": "tests/api/v1/test_topics.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-04-03T21:17:56Z",
+      "side": 1,
+      "message": "Good point.",
+      "parentUuid": "7a46c9f1_fe2f61f4",
+      "range": {
+        "startLine": 23,
+        "startChar": 49,
+        "endLine": 23,
+        "endChar": 73
+      },
+      "revId": "bdbd653d336e1fcd347f9bcf52ff080f4a235e5c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
