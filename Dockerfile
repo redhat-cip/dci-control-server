@@ -3,6 +3,8 @@ FROM centos:7
 LABEL name="DCI API" version="0.0.2"
 MAINTAINER DCI Team <distributed-ci@redhat.com>
 
+ENV LANG en_US.UTF-8
+
 RUN yum -y install epel-release && \
     yum -y install gcc && \
     yum -y install python python2-devel python2-pip python2-setuptools && \
