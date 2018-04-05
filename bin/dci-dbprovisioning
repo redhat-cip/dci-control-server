@@ -189,7 +189,7 @@ def create_remotecis(teams):
     remotecis = {}
     for team, value in teams.items():
         name = 'Remoteci %s' % team
-        r = post('remotecis', {'name': name, 'team_id': value['id'], 'allow_upgrade_job': True})
+        r = post('remotecis', {'name': name, 'team_id': value['id']})
         remotecis[team] = r.json()['remoteci']
     return remotecis
 

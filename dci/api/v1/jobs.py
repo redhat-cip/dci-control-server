@@ -210,9 +210,6 @@ def schedule_jobs(user):
 
     values = _build_job(topic_id, remoteci, components_ids, values)
 
-    # add upgrade flag to the job result
-    values.update({'allow_upgrade_job': remoteci['allow_upgrade_job']})
-
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': values['etag']},
                           content_type='application/json')

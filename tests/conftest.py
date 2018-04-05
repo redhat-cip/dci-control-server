@@ -265,7 +265,7 @@ def topic_user_id(admin, user, team_user_id, product):
 
 @pytest.fixture
 def remoteci_id(admin, team_id):
-    data = {'name': 'pname', 'team_id': team_id, 'allow_upgrade_job': True}
+    data = {'name': 'pname', 'team_id': team_id}
     remoteci = admin.post('/api/v1/remotecis', data=data).data
     return str(remoteci['remoteci']['id'])
 
@@ -278,15 +278,14 @@ def remoteci_user_api_secret(user, remoteci_user_id):
 
 @pytest.fixture
 def remoteci_user_id(user, team_user_id):
-    data = {'name': 'rname', 'team_id': team_user_id,
-            'allow_upgrade_job': True}
+    data = {'name': 'rname', 'team_id': team_user_id}
     remoteci = user.post('/api/v1/remotecis', data=data).data
     return str(remoteci['remoteci']['id'])
 
 
 @pytest.fixture
 def remoteci(admin, team_id):
-    data = {'name': 'remoteci', 'team_id': team_id, 'allow_upgrade_job': True}
+    data = {'name': 'remoteci', 'team_id': team_id}
     return admin.post('/api/v1/remotecis', data=data).data['remoteci']
 
 

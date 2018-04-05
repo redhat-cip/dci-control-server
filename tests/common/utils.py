@@ -47,7 +47,6 @@ NEXT_TOPIC = 'next_topic', uuid.uuid4()
 COUNTRY = 'country', text_type
 EMAIL = 'email', 'foo@bar.org'
 VALUE = 'value', text_type
-ALLOW_UPGRADE_JOB = 'allow_upgrade_job', False
 PUBLIC = 'public', False
 EXTERNAL = 'external', True
 PREVIOUS_JOB_ID = 'previous_job_id', uuid.uuid4()
