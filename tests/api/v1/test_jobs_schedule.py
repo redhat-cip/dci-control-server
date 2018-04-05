@@ -31,7 +31,6 @@ def test_schedule_jobs(remoteci_context, remoteci, topic):
     assert job['topic_id'] == topic['id']
     assert job['user_agent'] == headers['User-Agent']
     assert job['client_version'] == headers['Client-Version']
-    assert job['allow_upgrade_job'] is True
     assert job['rconfiguration_id'] is None
 
 
