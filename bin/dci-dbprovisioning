@@ -19,13 +19,13 @@ import os
 import time
 
 import requests
-
+from dci import settings
 from dciauth.signature import Signature
 from dciauth.request import AuthRequest
 
 DCI_LOGIN = os.environ.get('DCI_LOGIN', 'admin')
 DCI_PASSWORD = os.environ.get('DCI_PASSWORD', 'admin')
-DCI_CS_URL = os.environ.get('DCI_CS_URL', 'http://localhost:5000')
+DCI_CS_URL = 'http://{host}:{port}'.format(host=settings.HOST, port=settings.PORT)
 
 
 def get_url(endpoint):
@@ -228,7 +228,7 @@ def create_jobs(topics, remotecis, teams, components):
         auth_request = AuthRequest(method="POST", endpoint='/api/v1/jobs', payload=job,
                                    headers={'content-type': 'application/json'})
         headers = Signature(request=auth_request).generate_headers('remoteci', client_id, api_secret)
-        requests.post('http://127.0.0.1:5000/api/v1/jobs', headers=headers, json=job)
+        requests.post('%s/api/v1/jobs' % DCI_CS_URL, headers=headers, json=job)
 
     return get('jobs', ('admin_dell', 'admin_dell',)).json()['jobs']
 
