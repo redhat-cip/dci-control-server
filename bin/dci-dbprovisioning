@@ -34,17 +34,22 @@ def get_url(endpoint):
 
 def get(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
     url = get_url(endpoint)
-    print('-------------')
+    print('-' * 20)
     print('GET %s' % url)
-    return requests.get(url, auth=user)
+    r = requests.get(url, auth=user)
+    print(r.status_code)
+    print(r.json())
+    return r
 
 
 def post(endpoint, data, user=(DCI_LOGIN, DCI_PASSWORD,)):
     url = get_url(endpoint)
-    print('-------------')
+    print('-' * 20)
     print('POST %s' % url)
     print(json.dumps(data, indent=2))
-    return requests.post(url, json=data, auth=user)
+    r = requests.post(url, json=data, auth=user)
+    print(r.status_code)
+    return r
 
 
 def delete(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
@@ -156,8 +161,12 @@ def create_topics(products):
 
 def associate_topics_to_teams(topics, teams):
     for topic, topic_value in topics.items():
+        print('-' * 20)
+        print(json.dumps(topic_value, indent=2))
         for team, team_value in teams.items():
+            print(json.dumps(team_value, indent=2))
             post('topics/%s/teams' % topic_value['id'], {'team_id': team_value['id']})
+            print('-' * 20)
 
 
 def create_component(name, topic):
@@ -228,7 +237,7 @@ def create_jobs(topics, remotecis, teams, components):
         auth_request = AuthRequest(method="POST", endpoint='/api/v1/jobs', payload=job,
                                    headers={'content-type': 'application/json'})
         headers = Signature(request=auth_request).generate_headers('remoteci', client_id, api_secret)
-        requests.post('http://127.0.0.1:5000/api/v1/jobs', headers=headers, json=job)
+        requests.post('%s/api/v1/jobs' % DCI_CS_URL, headers=headers, json=job)
 
     return get('jobs', ('admin_dell', 'admin_dell',)).json()['jobs']
 
