@@ -225,8 +225,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
     #
     # ie. If current job status is running, we should retrieve status
     # from prior job.
-    valid_status = ['failure', 'product-failure', 'deployment-failure',
-                    'success']
+    valid_status = ['failure', 'success']
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
     v1_utils.verify_team_in_topic(user, topic_id)
