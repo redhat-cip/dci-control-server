@@ -2,6 +2,9 @@
 set -xe
 
 DCI_DB_DIR=${DCI_DB_DIR:-".db_dir"}
+DCI_DB_USER=${DCI_DB_USER:-"dci"}
+DCI_DB_PASS=${DCI_DB_PASS:-"dci"}
+DCI_DB_NAME=${DCI_DB_NAME:-"dci"}
 
 # get dci_db_dir absolute path
 DCI_DB_DIR="$(cd "$(dirname "$0")/.." && pwd)/$DCI_DB_DIR"
@@ -23,3 +26,5 @@ OPTIONS="--client-encoding=utf8 --full-page_writes=off \
 # init the database directory and start the process
 pg_ctl initdb -D "$DCI_DB_DIR"
 pg_ctl start -w -D "$DCI_DB_DIR" -o "-k $DCI_DB_DIR -F -h '' $OPTIONS"
+psql -c "CREATE USER '${DCI_DB_USER}' WITH SUPERUSER PASSWORD '${DCI_DB_PASS}';"
+createdb -O "${DCI_DB_USER}" "${DCI_DB_NAME}"
