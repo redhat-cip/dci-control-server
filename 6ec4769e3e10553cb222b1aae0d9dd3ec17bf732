@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a43c5e1_a30bfe7c",
+        "filename": "tests/conftest.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-04-06T13:10:12Z",
+      "side": 1,
+      "message": "debug print ^",
+      "revId": "6ec4769e3e10553cb222b1aae0d9dd3ec17bf732",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
