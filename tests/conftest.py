@@ -37,7 +37,7 @@ SWIFT = 'dci.stores.swift.Swift'
 def engine(request):
     utils.rm_upload_folder()
     db_uri = utils.conf['SQLALCHEMY_DATABASE_URI']
-
+    print(db_uri)
     engine = sqlalchemy.create_engine(db_uri)
 
     if not sqlalchemy_utils.functions.database_exists(db_uri):
