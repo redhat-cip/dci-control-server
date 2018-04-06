@@ -5,7 +5,7 @@
 %endif
 
 Name:           dci
-Version:        0.2.0
+Version:        0.2.1
 Release:        1.VERS%{?dist}
 Summary:        DCI control server
 License:        ASL 2.0
@@ -21,8 +21,8 @@ Summary:        DCI control server API
 Conflicts:      dci-common < %{version}
 Obsoletes:      dci-common
 BuildRequires:  net-tools
-BuildRequires:  postgresql
-BuildRequires:  postgresql-server
+BuildRequires:  rh-postgresql94-postgresql-devel
+BuildRequires:  rh-postgresql94
 BuildRequires:  pyOpenSSL
 BuildRequires:  python-alembic
 BuildRequires:  python-flask
@@ -74,9 +74,8 @@ Summary:        DCI control server API
 Conflicts:      dci-common-python3 < %{version}
 Obsoletes:      dci-common-python3
 BuildRequires:  net-tools
-BuildRequires:  postgresql
-# For the unit-test
-BuildRequires:  postgresql-server
+BuildRequires:  rh-postgresql94-postgresql-devel
+BuildRequires:  rh-postgresql94
 BuildRequires:  pyOpenSSL
 BuildRequires:  python3-alembic
 BuildRequires:  python3-flask
@@ -183,6 +182,9 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %exclude %{python2_sitelib}/dci/settings.py?
 
 %changelog
+* Wed Apr 18  2018 Guillaume Vincent <gvincent@redhat.com> 0.2.1-1
+- Use rh-postgresql94 to mimic the db production version
+
 * Fri Mar 1  2018 Yassine Lamgarchal <ylamgarc@redhat.com> 0.2.0-4
 - Remove all Elasticsearch related components
 
