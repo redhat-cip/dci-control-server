@@ -21,7 +21,6 @@ RUN pip install -r requirements.txt
 ADD . /opt/dci-control-server/
 
 ENV PYTHONPATH /opt/dci-control-server
-ENV DCI_SETTINGS_FILE /tmp/settings/settings.py
 ENV DISABLE_DB_START 1
 ENV DISABLE_ES_START 1
 ENV TOX_TESTENV_PASSENV "PYTHONPATH DB_PORT ES_PORT SWIFT_PORT"
