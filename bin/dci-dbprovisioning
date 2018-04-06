@@ -228,7 +228,7 @@ def create_jobs(topics, remotecis, teams, components):
         auth_request = AuthRequest(method="POST", endpoint='/api/v1/jobs', payload=job,
                                    headers={'content-type': 'application/json'})
         headers = Signature(request=auth_request).generate_headers('remoteci', client_id, api_secret)
-        requests.post('http://127.0.0.1:5000/api/v1/jobs', headers=headers, json=job)
+        requests.post('%s/api/v1/jobs' % DCI_CS_URL, headers=headers, json=job)
 
     return get('jobs', ('admin_dell', 'admin_dell',)).json()['jobs']
 
