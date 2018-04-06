@@ -143,9 +143,7 @@ def remotecis(root_select=models.REMOTECIS):
                  LASTJOB.c.status.in_([
                      'success',
                      'failure',
-                     'killed',
-                     'product-failure',
-                     'deployment-failure']),
+                     'killed']),
                  LASTJOB.c.remoteci_id == root_select.c.id),
              'isouter': True,
              'sort': LASTJOB.c.created_at}],
