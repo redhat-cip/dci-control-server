@@ -51,6 +51,14 @@ def test_create_jobstates_failure(user, job_user_id):
     assert job['job']['status'] == 'failure'
 
 
+def test_create_jobstates_error(user, job_user_id):
+    data = {'job_id': job_user_id, 'status': 'error'}
+
+    js = user.post('/api/v1/jobstates', data=data).data
+    js = user.get('/api/v1/jobstates/%s' % js['jobstate']['id']).data
+    assert js['jobstate']['status'] == 'error'
+
+
 def test_create_jobstates_empty_comment(user, job_user_id):
     data = {'job_id': job_user_id, 'status': 'running'}
 
