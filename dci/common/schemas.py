@@ -68,7 +68,7 @@ def Timezone(value):
 
 
 VALID_STATUS_UPDATE = ['new', 'pre-run', 'running', 'post-run',
-                       'success', 'failure', 'killed']
+                       'success', 'failure', 'killed', 'error']
 
 VALID_RESOURCE_STATE = ['active', 'inactive', 'archived']
 

@@ -25,7 +25,7 @@ from dci.common import signature, utils
 metadata = sa.MetaData()
 
 JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run',
-                'success', 'failure', 'killed']
+                'success', 'failure', 'killed', 'error']
 STATUSES = sa.Enum(*JOB_STATUSES, name='statuses')
 
 RESOURCE_STATES = ['active', 'inactive', 'archived']

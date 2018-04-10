@@ -237,7 +237,7 @@ def create_job_states(jobs):
     jobstates = [
         {'job_id': jobs[0]['id'], 'status': 'running'},
         {'job_id': jobs[1]['id'], 'status': 'success'},
-        {'job_id': jobs[2]['id'], 'status': 'success'},
+        {'job_id': jobs[2]['id'], 'status': 'error'},
         {'job_id': jobs[3]['id'], 'status': 'failure'},
     ]
     for jobstate in jobstates:
