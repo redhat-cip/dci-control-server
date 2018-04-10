@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5a43c5e1_0c63ffb2",
+        "filename": "bin/dci-dbprovisioning",
+        "patchSetId": 24
+      },
+      "lineNbr": 28,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-04-10T12:49:46Z",
+      "side": 1,
+      "message": "http only available ?",
+      "range": {
+        "startLine": 28,
+        "startChar": 14,
+        "endLine": 28,
+        "endChar": 18
+      },
+      "revId": "07830d1c68892eba82574d23406d83a8179784a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
