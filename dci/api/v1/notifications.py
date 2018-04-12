@@ -54,7 +54,7 @@ def email(job):
 def dlrn(job):
 
     for component in job['components']:
-        if 'dlrn' in component['data']:
+        if 'dlrn' in component['data'] and component['data']['dlrn']:
             if component['data']['dlrn']['commit_hash'] and \
                component['data']['dlrn']['distro_hash'] and \
                component['data']['dlrn']['commit_branch']:
