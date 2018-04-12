@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3a50d1a3_3c55d11c",
+        "filename": "dci/api/v1/notifications.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-04-12T06:29:38Z",
+      "side": 1,
+      "message": "data \u003d component[\u0027data\u0027]",
+      "range": {
+        "startLine": 57,
+        "startChar": 24,
+        "endLine": 57,
+        "endChar": 25
+      },
+      "revId": "15d9c483aa799cc7e9ec744303e8eb8893c40f8a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
