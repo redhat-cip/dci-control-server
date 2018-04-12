@@ -54,10 +54,11 @@ def email(job):
 def dlrn(job):
 
     for component in job['components']:
-        if 'dlrn' in component['data']:
-            if component['data']['dlrn']['commit_hash'] and \
-               component['data']['dlrn']['distro_hash'] and \
-               component['data']['dlrn']['commit_branch']:
+        data = component['data']
+        if 'dlrn' in data and data['dlrn']:
+            if data['dlrn']['commit_hash'] and \
+               data['dlrn']['distro_hash'] and \
+               data['dlrn']['commit_branch']:
                 msg = {
                     'event': 'dlrn_publish',
                     'status': job['status'],
