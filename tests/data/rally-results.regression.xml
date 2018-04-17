@@ -1,5 +1,7 @@
-<testsuite errors="0" failures="0" name="Rally test suite" tests="16" time="1186.41">
-    <testcase classname="NeutronNetworks" name="create_and_delete_ports" time="70.72"/>
+<testsuite errors="0" failures="0" name="Rally test suite" tests="16" time="1196.41">
+    <testcase classname="NeutronNetworks" name="create_and_delete_ports" time="80.72">
+        <failure>regression failure</failure>
+    </testcase>
     <testcase classname="NeutronNetworks" name="create_and_delete_routers" time="66.69"/>
     <testcase classname="Quotas" name="cinder_update_and_delete" time="35.40"/>
     <testcase classname="CinderVolumes" name="create_and_upload_volume_to_image" time="602.92"/>

@@ -175,14 +175,14 @@ def create_components(topics):
     components = {}
     for component in [
         {'name': 'RH7-RHOS-10.0 2016-10-28.1', 'topic_name': 'OSP10'},
+        {'name': 'RH7-RHOS-10.0 2016-11-12.1', 'topic_name': 'OSP10'},
         {'name': 'RH7-RHOS-11.0 2016-11-11.1', 'topic_name': 'OSP11'},
         {'name': 'RH7-RHOS-12.0 2016-11-12.1', 'topic_name': 'OSP12'},
-        {'name': 'RH7-RHOS-12.0 2016-11-12.2', 'topic_name': 'OSP12'},
         {'name': 'Ansible devel', 'topic_name': 'ansible-devel'},
         {'name': 'Ansible 2.4', 'topic_name': 'ansible-2.4'},
     ]:
         c = create_component(component['name'], topics[component['topic_name']])
-        components[c['topic_id']] = c
+        components[c['name']] = c
     return components
 
 
@@ -196,30 +196,26 @@ def create_remotecis(teams):
 
 
 def create_jobs(topics, remotecis, teams, components):
-    osp10_component_id = components[topics['OSP10']['id']]['id']
-    osp11_component_id = components[topics['OSP11']['id']]['id']
-    osp12_component_id = components[topics['OSP12']['id']]['id']
-
     jobs = [
         {
             'team_id': teams['Dell']['id'],
             'topic_id': topics['OSP10']['id'],
-            'components': [osp10_component_id]
+            'components': [components['RH7-RHOS-10.0 2016-10-28.1']['id']]
         },
         {
             'team_id': teams['Dell']['id'],
             'topic_id': topics['OSP10']['id'],
-            'components': [osp10_component_id]
+            'components': [components['RH7-RHOS-10.0 2016-11-12.1']['id']]
         },
         {
             'team_id': teams['Dell']['id'],
             'topic_id': topics['OSP11']['id'],
-            'components': [osp11_component_id]
+            'components': [components['RH7-RHOS-11.0 2016-11-11.1']['id']]
         },
         {
             'team_id': teams['Dell']['id'],
             'topic_id': topics['OSP12']['id'],
-            'components': [osp12_component_id]
+            'components': [components['RH7-RHOS-12.0 2016-11-12.1']['id']]
         },
     ]
 
@@ -237,9 +233,9 @@ def create_jobs(topics, remotecis, teams, components):
 def create_job_states(jobs):
     jobstates = [
         {'job_id': jobs[0]['id'], 'status': 'running'},
-        {'job_id': jobs[1]['id'], 'status': 'success'},
-        {'job_id': jobs[2]['id'], 'status': 'error'},
-        {'job_id': jobs[3]['id'], 'status': 'failure'},
+        {'job_id': jobs[1]['id'], 'status': 'error'},
+        {'job_id': jobs[2]['id'], 'status': 'failure'},
+        {'job_id': jobs[3]['id'], 'status': 'success'},
     ]
     for jobstate in jobstates:
         post('jobstates', jobstate, ('admin_dell', 'admin_dell',))
@@ -261,8 +257,10 @@ def create_file(job_id, file_name, file_path, user, content_type='application/ju
 
 def create_files(jobs):
     user_dell = ('admin_dell', 'admin_dell',)
+    create_file(jobs[3]['id'], 'Tempest', 'tests/data/tempest-results.xml', user_dell)
     create_file(jobs[2]['id'], 'Tempest', 'tests/data/tempest-results.xml', user_dell)
-    create_file(jobs[2]['id'], 'Rally', 'tests/data/rally-results.xml', user_dell)
+    create_file(jobs[3]['id'], 'Rally', 'tests/data/rally-results.xml', user_dell)
+    create_file(jobs[2]['id'], 'Rally', 'tests/data/rally-results.regression.xml', user_dell)
     create_file(jobs[2]['id'], 'certification.xml.gz', 'tests/data/certification.xml.tar.gz', user_dell,
                 'application/x-compressed')
 
