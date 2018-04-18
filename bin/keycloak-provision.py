@@ -153,6 +153,11 @@ client_data = {
 }
 
 
+def get_auth_headers(access_token):
+    return {'Authorization': 'bearer %s' % access_token,
+            'Content-Type': 'application/json'}
+
+
 def get_access_token():
     data = {'client_id': 'admin-cli',
             'username': 'admin',
@@ -170,13 +175,27 @@ def get_access_token():
             pass
 
 
+def create_realm_dci_test(access_token):
+    realm_data = {'realm': 'dci-test',
+                  'enabled': True}
+    r = requests.post('http://keycloak:8180/auth/admin/realms',
+                      data=json.dumps(realm_data),
+                      headers=get_auth_headers(access_token))
+    if r.status_code in (201, 409):
+        print('Keycloak realm dci-test created successfully.')
+    else:
+        raise Exception(
+            'Error while creating realm dci-test:\nstatus code %s\n'
+            'error: %s' % (r.status_code, r.content)
+        )
+
+
 def create_client(access_token):
     """Create the dci client in the master realm."""
     url = 'http://keycloak:8180/auth/admin/realms/dci-test/clients'
     r = requests.post(url,
                       data=json.dumps(client_data),
-                      headers={'Authorization': 'bearer %s' % access_token,
-                               'Content-Type': 'application/json'})
+                      headers=get_auth_headers(access_token))
     if r.status_code in (201, 409):
         print('Keycloak client dci created successfully.')
     else:
@@ -197,8 +216,7 @@ def create_user_dci(access_token):
                                   'value': 'dci'}]}
     r = requests.post('http://keycloak:8180/auth/admin/realms/dci-test/users',
                       data=json.dumps(user_data),
-                      headers={'Authorization': 'bearer %s' % access_token,
-                               'Content-Type': 'application/json'})
+                      headers=get_auth_headers(access_token))
     if r.status_code in (201, 409):
         print('Keycloak user dci created successfully.')
     else:
@@ -206,20 +224,25 @@ def create_user_dci(access_token):
                         'error: %s' % (r.status_code, r.content))
 
 
-def create_realm_dci_test(access_token):
-    realm_data = {'realm': 'dci-test',
-                  'enabled': True}
-    r = requests.post('http://keycloak:8180/auth/admin/realms',
-                      data=json.dumps(realm_data),
-                      headers={'Authorization': 'bearer %s' % access_token,
-                               'Content-Type': 'application/json'})
+def create_and_associate_redhat_role_to_dci_user(access_token):
+    url = 'http://keycloak:8180/auth/admin/realms/dci-test/users/'
+    user = requests.get(url, headers=get_auth_headers(access_token)).json()[0]
+    url = 'http://keycloak:8180/auth/admin/realms/dci-test/roles/'
+    requests.post(url,
+                  data=json.dumps({"name": "redhat:employees"}),
+                  headers=get_auth_headers(access_token))
+    url = 'http://keycloak:8180/auth/admin/realms/dci-test/roles/redhat:employees'
+    redhat_employees = requests.get(url, headers=get_auth_headers(access_token)).json()
+
+    url = 'http://keycloak:8180/auth/admin/realms/dci-test/users/%s/role-mappings/realm' % user['id']  # noqa
+    r = requests.post(url,
+                      data=json.dumps([redhat_employees]),
+                      headers=get_auth_headers(access_token))
     if r.status_code in (201, 409):
-        print('Keycloak realm dci-test created successfully.')
+        print('Role "redhat:employees" created successfully.')
     else:
-        raise Exception(
-            'Error while creating realm dci-test:\nstatus code %s\n'
-            'error: %s' % (r.status_code, r.content)
-        )
+        raise Exception('Error while creating role redhat:employees:\nstatus code %s\n'
+                        'error: %s' % (r.status_code, r.content))
 
 
 if __name__ == '__main__':
@@ -227,3 +250,4 @@ if __name__ == '__main__':
     create_realm_dci_test(access_token)
     create_client(access_token)
     create_user_dci(access_token)
+    create_and_associate_redhat_role_to_dci_user(access_token)
