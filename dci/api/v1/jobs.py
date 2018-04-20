@@ -494,6 +494,7 @@ def get_all_results_from_jobs(user, j_id):
                         'errors': test_result['errors'],
                         'skips': test_result['skips'],
                         'time': test_result['time'],
+                        'regressions': test_result['regressions'],
                         'success': test_result['success'],
                         'testscases': test_result['tests_cases']})
 
