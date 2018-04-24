@@ -70,9 +70,9 @@ def _get_latest_components():
 
     select_clause = list(dict(__C_COLUMNS).values())
     query = (sql.select(select_clause).select_from(join_condition).
-             distinct(models.TOPICS.c.id).
+             distinct(models.TOPICS.c.id, models.COMPONENTS.c.type).
              where(models.COMPONENTS.c.state == 'active').
-             order_by(models.TOPICS.c.id,
+             order_by(models.TOPICS.c.id, models.COMPONENTS.c.type,
                       models.COMPONENTS.c.created_at.desc()))
     rows = flask.g.db_conn.execute(query).fetchall()
 
