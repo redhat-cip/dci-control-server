@@ -460,14 +460,18 @@ def test_delete_team_from_topic_as_user(admin, user, product):
 
 
 def test_status_from_component_type_last_component(admin, remoteci_context,
-                                                   topic_id,
-                                                   components_ids):
-    data = {'components': components_ids}
+                                                   remoteci_user_id,
+                                                   topic_user_id,
+                                                   components_user_ids):
+    data = {'components': components_user_ids,
+            'topic_id': topic_user_id}
     job = remoteci_context.post('/api/v1/jobs', data=data).data['job']
     data_update = {'status': 'success'}
-    admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
-              headers={'If-match': job['etag']})
-    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
+    job_put = admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
+                        headers={'If-match': job['etag']})
+    assert job_put.status_code == 204
+    status = admin.get('/api/v1/topics/%s/type/type_1/status' %
+                       topic_user_id).data
 
     assert len(status['jobs']) == 1
     assert status['jobs'][0]['job_status'] == 'success'
@@ -481,12 +485,13 @@ def test_status_from_component_type_last_component(admin, remoteci_context,
         'name': 'newversion',
         'type': 'type_1',
         'url': 'http://example.com/',
-        'topic_id': topic_id,
+        'topic_id': topic_user_id,
         'export_control': True,
         'state': 'active'}
     admin.post('/api/v1/components', data=data).data
 
-    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
+    status = admin.get('/api/v1/topics/%s/type/type_1/status' %
+                       topic_user_id).data
 
     assert len(status['jobs']) == 1
     assert status['jobs'][0]['job_status'] == 'success'
@@ -495,13 +500,16 @@ def test_status_from_component_type_last_component(admin, remoteci_context,
 
 
 def test_status_from_component_type_get_status(admin, remoteci_context,
-                                               topic_id, components_ids):
-    data = {'components': components_ids}
+                                               topic_user_id,
+                                               components_user_ids):
+    data = {'components': components_user_ids,
+            'topic_id': topic_user_id}
     job = remoteci_context.post('/api/v1/jobs', data=data).data['job']
     data_update = {'status': 'success'}
     admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
               headers={'If-match': job['etag']})
-    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
+    status = admin.get('/api/v1/topics/%s/type/type_1/status' %
+                       topic_user_id).data
 
     assert len(status['jobs']) == 1
     assert status['jobs'][0]['job_status'] == 'success'
@@ -512,7 +520,8 @@ def test_status_from_component_type_get_status(admin, remoteci_context,
     data_update = {'status': 'killed'}
     admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
               headers={'If-match': job['etag']})
-    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
+    status = admin.get('/api/v1/topics/%s/type/type_1/status' %
+                       topic_user_id).data
 
     assert len(status['jobs']) == 0
 
@@ -520,7 +529,8 @@ def test_status_from_component_type_get_status(admin, remoteci_context,
     data_update = {'status': 'failure'}
     admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
               headers={'If-match': job['etag']})
-    status = admin.get('/api/v1/topics/%s/type/type_1/status' % topic_id).data
+    status = admin.get('/api/v1/topics/%s/type/type_1/status' %
+                       topic_user_id).data
 
     assert len(status['jobs']) == 1
     assert status['jobs'][0]['job_status'] == 'failure'
