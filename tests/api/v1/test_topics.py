@@ -460,10 +460,17 @@ def test_delete_team_from_topic_as_user(admin, user, product):
 
 
 def test_status_from_component_type_last_component(admin, remoteci_context,
+                                                   remoteci_user_id,
                                                    topic_id,
                                                    components_ids):
-    data = {'components': components_ids}
-    job = remoteci_context.post('/api/v1/jobs', data=data).data['job']
+    data = {'components': components_ids,
+            'topic_id': topic_id}
+    job = remoteci_context.post('/api/v1/jobs', data=data)
+    print(job.status_code)
+    import pprint
+    pprint.pprint(job.data)
+
+    assert job == 42
     data_update = {'status': 'success'}
     admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
               headers={'If-match': job['etag']})
@@ -496,7 +503,8 @@ def test_status_from_component_type_last_component(admin, remoteci_context,
 
 def test_status_from_component_type_get_status(admin, remoteci_context,
                                                topic_id, components_ids):
-    data = {'components': components_ids}
+    data = {'components': components_ids,
+            'topic_id': topic_id}
     job = remoteci_context.post('/api/v1/jobs', data=data).data['job']
     data_update = {'status': 'success'}
     admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,

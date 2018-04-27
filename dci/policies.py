@@ -64,9 +64,9 @@ ROLES = {
     'delete_file_by_id': ALL,
     'get_to_purge_archived_files': SUPER_ADMIN,
     'purge_archived_files': SUPER_ADMIN,
-    # files events
-    'get_files_events_from_sequence': SUPER_ADMIN,
-    'purge_files_events_from_sequence': SUPER_ADMIN,
+    # jobs events
+    'get_jobs_events_from_sequence': SUPER_ADMIN,
+    'purge_jobs_events_from_sequence': SUPER_ADMIN,
     # fingerprint
     'create_fingerprint': HUMAN,
     'get_all_fingerprints': HUMAN,
