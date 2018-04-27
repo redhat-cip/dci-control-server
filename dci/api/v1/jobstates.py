@@ -22,6 +22,7 @@ from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import base
+from dci.api.v1 import jobs_events
 from dci.api.v1 import notifications
 from dci.api.v1 import utils as v1_utils
 from dci import auth
@@ -82,6 +83,9 @@ def create_jobstates(user):
                                       embeds_dict, embeds=embeds,
                                       jsonify=False)
         job = dict(job)
+        jobs_events.create_event(job['id'],
+                                 values.get('status'),
+                                 job['topic_id'])
         notifications.dispatcher(job)
 
     result = json.dumps({'jobstate': values})

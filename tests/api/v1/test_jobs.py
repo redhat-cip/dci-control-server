@@ -218,24 +218,17 @@ def test_get_all_jobs_with_embed_not_valid(remoteci_context):
     assert jds.status_code == 400
 
 
-def test_update_job(admin, remoteci_context, components_user_ids):
-    data = {
-        'comment': 'foo',
-        'components': components_user_ids
-    }
-    job = remoteci_context.post('/api/v1/jobs', data=data)
-    job = job.data['job']
-
-    assert job['comment'] == 'foo'
-
+def test_update_job(admin, job_user_id):
     data_update = {'status': 'failure', 'comment': 'bar'}
 
-    res = admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
-                    headers={'If-match': job['etag']})
+    res = admin.get('/api/v1/jobs/%s' % job_user_id)
+    job = res.data['job']
 
+    res = admin.put('/api/v1/jobs/%s' % job_user_id, data=data_update,
+                    headers={'If-match': job['etag']})
     assert res.status_code == 204
 
-    res = remoteci_context.get('/api/v1/jobs/%s' % job['id'])
+    res = admin.get('/api/v1/jobs/%s' % job_user_id)
     job = res.data['job']
 
     assert res.status_code == 200
