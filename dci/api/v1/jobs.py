@@ -25,6 +25,7 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import components
 from dci.api.v1 import utils as v1_utils
+from dci.api.v1 import jobs_events
 from dci import auth
 from dci import decorators
 from dci.common import audits
@@ -396,17 +397,22 @@ def update_job_by_id(user, job_id):
     values = schemas.job.put(flask.request.json)
 
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
+    job = dict(job)
+    with open('/tmp/kiki', 'w') as f:
+        f.write(str(job))
 
     if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
 
     # Update jobstate if needed
     status = values.get('status')
-    if status and job.status != status:
+    if status and job.get('status') != status:
         jobstates.insert_jobstate(user, {
             'status': status,
             'job_id': job_id
         })
+        if status in ('success', 'failure'):
+            jobs_events.create_event(job_id, status, job['topic_id'])
 
     where_clause = sql.and_(_TABLE.c.etag == if_match_etag,
                             _TABLE.c.id == job_id)

@@ -26,7 +26,6 @@ from flask import json
 
 from dci.api.v1 import api
 from dci.api.v1 import base
-from dci.api.v1 import files_events
 from dci.api.v1 import transformations as tsfm
 from dci.api.v1 import utils as v1_utils
 from dci import auth
@@ -176,7 +175,6 @@ def create_files(user):
                 'tests_cases': jsonunit['testscases']
             })
             flask.g.db_conn.execute(query)
-        files_events.create_event(file_id, models.FILES_CREATE)
 
     return flask.Response(result, 201, content_type='application/json')
 
@@ -262,7 +260,6 @@ def delete_file_by_id(user, file_id):
 
         if not result.rowcount:
             raise dci_exc.DCIDeleteConflict('File', file_id)
-        files_events.create_event(file_id, models.FILES_DELETE)
 
         return flask.Response(None, 204, content_type='application/json')
 
