@@ -27,6 +27,7 @@ metadata = sa.MetaData()
 JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run',
                 'success', 'failure', 'killed', 'error']
 STATUSES = sa.Enum(*JOB_STATUSES, name='statuses')
+FINAL_STATUSES = sa.Enum('success', 'failure', name='final_statuses')
 
 RESOURCE_STATES = ['active', 'inactive', 'archived']
 STATES = sa.Enum(*RESOURCE_STATES, name='states')
@@ -401,15 +402,15 @@ FILES = sa.Table(
               onupdate=utils.gen_etag)
 )
 
-FILES_EVENTS = sa.Table(
-    'files_events', metadata,
+JOBS_EVENTS = sa.Table(
+    'jobs_events', metadata,
     sa.Column('id', sa.Integer, primary_key=True,
               autoincrement=True),
     sa.Column('created_at', sa.DateTime(),
               default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('file_id', pg.UUID(as_uuid=True), nullable=False),
-    sa.Column('action', FILES_ACTIONS, default=FILES_CREATE),
-    sa.Index('files_events_file_id_idx', 'file_id')
+    sa.Column('job_id', pg.UUID(as_uuid=True), nullable=False),
+    sa.Column('status', FINAL_STATUSES),
+    sa.Index('jobs_events_job_id_idx', 'job_id')
 )
 
 COMPONENT_FILES = sa.Table(

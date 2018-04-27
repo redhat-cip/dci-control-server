@@ -25,6 +25,7 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import components
 from dci.api.v1 import utils as v1_utils
+from dci.api.v1 import jobs_events
 from dci import auth
 from dci import decorators
 from dci.common import audits
@@ -407,6 +408,8 @@ def update_job_by_id(user, job_id):
             'status': status,
             'job_id': job_id
         })
+        if status in ('success', 'failure'):
+            jobs_events.create_event(job['id'], status, job['topic_id'])
 
     where_clause = sql.and_(_TABLE.c.etag == if_match_etag,
                             _TABLE.c.id == job_id)
