@@ -24,4 +24,4 @@ if __name__ == '__main__':
 
     dci_app.run(dci_app.config['HOST'],
                 dci_app.config['PORT'],
-                debug=True)
+                debug=dci_app.config['DEBUG'])
