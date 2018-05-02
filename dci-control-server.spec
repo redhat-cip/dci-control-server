@@ -25,7 +25,7 @@ BuildRequires:  rh-postgresql94-postgresql-devel
 BuildRequires:  rh-postgresql94
 BuildRequires:  pyOpenSSL
 BuildRequires:  python-alembic
-BuildRequires:  python-flask
+BuildRequires:  python-flask == 1:0.10.1
 BuildRequires:  python-flask-sqlalchemy
 BuildRequires:  python-lxml
 BuildRequires:  python-passlib
@@ -48,7 +48,7 @@ BuildRequires:  systemd
 BuildRequires:  systemd-units
 Requires:       pyOpenSSL
 Requires:       python-alembic
-Requires:       python-flask
+Requires:       python-flask == 1:0.10.1
 Requires:       python-flask-sqlalchemy
 Requires:       python-lxml
 Requires:       python-passlib
@@ -78,7 +78,7 @@ BuildRequires:  rh-postgresql94-postgresql-devel
 BuildRequires:  rh-postgresql94
 BuildRequires:  pyOpenSSL
 BuildRequires:  python3-alembic
-BuildRequires:  python3-flask
+BuildRequires:  python3-flask == 1:0.10.1
 BuildRequires:  python3-flask-sqlalchemy
 BuildRequires:  python3-lxml
 BuildRequires:  python3-passlib
@@ -99,7 +99,7 @@ BuildRequires:  systemd
 BuildRequires:  systemd-units
 Requires:       pyOpenSSL
 Requires:       python3-alembic
-Requires:       python3-flask
+Requires:       python3-flask == 1:0.10.1
 Requires:       python3-flask-sqlalchemy
 Requires:       python3-lxml
 Requires:       python3-passlib
