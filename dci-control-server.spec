@@ -182,13 +182,13 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %exclude %{python2_sitelib}/dci/settings.py?
 
 %changelog
-* Wed Apr 18  2018 Guillaume Vincent <gvincent@redhat.com> 0.2.1-1
+* Wed Apr 18 2018 Guillaume Vincent <gvincent@redhat.com> 0.2.1-1
 - Use rh-postgresql94 to mimic the db production version
 
-* Fri Mar 1  2018 Yassine Lamgarchal <ylamgarc@redhat.com> 0.2.0-4
+* Fri Mar 2 2018 Yassine Lamgarchal <ylamgarc@redhat.com> 0.2.0-4
 - Remove all Elasticsearch related components
 
-* Fri Dec 1  2017 Yassine Lamgarchal <ylamgarc@redhat.com> 0.2.0-3
+* Fri Dec 1 2017 Yassine Lamgarchal <ylamgarc@redhat.com> 0.2.0-3
 - Replace dci-esindex by dci-essync
 
 * Thu Oct 05 2017 Yassine Lamgarchal <ylamgarc@redhat.com> 0.2.0-2
