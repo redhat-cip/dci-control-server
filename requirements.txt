@@ -1,5 +1,5 @@
 alembic
-flask
+flask==0.12.4
 six
 SQLAlchemy
 SQLAlchemy-Utils
