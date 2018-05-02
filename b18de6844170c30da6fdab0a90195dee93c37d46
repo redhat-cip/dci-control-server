@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ba15a1d1_c1e15800",
+        "filename": "dci/alembic/versions/114108caa80f_add_job_events_table.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-05-02T17:19:48Z",
+      "side": 1,
+      "message": "I\u0027m wondering if those column need to have a FK config. WDYT ?",
+      "range": {
+        "startLine": 47,
+        "startChar": 0,
+        "endLine": 48,
+        "endChar": 69
+      },
+      "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba15a1d1_e1d25c34",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 402,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-05-02T17:19:48Z",
+      "side": 1,
+      "message": "only for debug I guess ?",
+      "range": {
+        "startLine": 401,
+        "startChar": 4,
+        "endLine": 402,
+        "endChar": 25
+      },
+      "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
