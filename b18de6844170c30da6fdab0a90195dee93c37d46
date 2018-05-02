@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "ba15a1d1_21adb488",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 7
+      },
+      "lineNbr": 9,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-05-02T23:41:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ba15a1d1_411788ed",
+      "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba15a1d1_c1e15800",
         "filename": "dci/alembic/versions/114108caa80f_add_job_events_table.py",
         "patchSetId": 7
@@ -30,6 +48,30 @@
       "writtenOn": "2018-05-02T17:19:48Z",
       "side": 1,
       "message": "I\u0027m wondering if those column need to have a FK config. WDYT ?",
+      "range": {
+        "startLine": 47,
+        "startChar": 0,
+        "endLine": 48,
+        "endChar": 69
+      },
+      "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba15a1d1_c19dd85a",
+        "filename": "dci/alembic/versions/114108caa80f_add_job_events_table.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-05-02T23:41:35Z",
+      "side": 1,
+      "message": "As the files_events it will prevent to purge the referenced resource.\n\nhttps://github.com/redhat-cip/dci-control-server/blob/master/dci/db/models.py#L410",
+      "parentUuid": "ba15a1d1_c1e15800",
       "range": {
         "startLine": 47,
         "startChar": 0,
@@ -82,6 +124,24 @@
     },
     {
       "key": {
+        "uuid": "ba15a1d1_e18edc26",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 402,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-05-02T23:41:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ba15a1d1_01d8b052",
+      "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba15a1d1_a1dc6447",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 7
@@ -93,6 +153,24 @@
       "writtenOn": "2018-05-02T17:32:44Z",
       "side": 1,
       "message": "we now also have the \u0027error\u0027 status.",
+      "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba15a1d1_61a3ac9f",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 414,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-05-02T23:41:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ba15a1d1_a1dc6447",
       "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -116,6 +194,24 @@
     },
     {
       "key": {
+        "uuid": "ba15a1d1_01943035",
+        "filename": "dci/api/v1/jobstates.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-05-02T23:41:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ba15a1d1_81e4c00d",
+      "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba15a1d1_21f134ce",
         "filename": "dci/db/models.py",
         "patchSetId": 7
@@ -127,6 +223,24 @@
       "writtenOn": "2018-05-02T17:32:44Z",
       "side": 1,
       "message": "please add \u0027error\u0027 in the list.",
+      "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba15a1d1_e1b57cd0",
+        "filename": "dci/db/models.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-05-02T23:41:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "ba15a1d1_21f134ce",
       "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
@@ -150,6 +264,24 @@
     },
     {
       "key": {
+        "uuid": "ba15a1d1_a198e46b",
+        "filename": "dci/db/models.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 410,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-05-02T23:41:35Z",
+      "side": 1,
+      "message": "There is no FK constraint in the JOBS_EVENTS table. Thus, it will not prevent JOBS deletion. We don\u0027t need to explicitly remove jobs from ES, instead, there is a policy retention so that it can be handled independently.",
+      "parentUuid": "ba15a1d1_41eea8ed",
+      "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ba15a1d1_e1b9fced",
         "filename": "tests/api/v1/test_jobs_events.py",
         "patchSetId": 7
@@ -161,6 +293,24 @@
       "writtenOn": "2018-05-02T17:32:44Z",
       "side": 1,
       "message": "Could you add a job purge test in ./tests/api/v1/test_jobs.py to ensure the job can still be deleted with the new FK.",
+      "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba15a1d1_01bbd0c5",
+        "filename": "tests/api/v1/test_jobs_events.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-05-02T23:41:35Z",
+      "side": 1,
+      "message": "There is no FK constraints.",
+      "parentUuid": "ba15a1d1_e1b9fced",
       "revId": "b18de6844170c30da6fdab0a90195dee93c37d46",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
