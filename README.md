@@ -12,10 +12,9 @@ To run the api in development mode follow those steps:
 
 1.  clone the repository: <http://softwarefactory-project.io/r/dci-control-server>
 2.  ensure that a postgresql database is running and accessible on the URI defined in the `src/settings.py` (if no database is running see [database installation]())
-3.  ensure that an elastic search is running and accessible on the URI defined in the `src/settings.py` (if no elastic search is running see [elastic search installation]())
-4.  install the python requirements: `pip install -r requirements.txt`
-5.  run the dev server: `./bin/dci-runtestserver`
-6.  provision the database: `python bin/dci-dbprovisioning` (BEWARE: it will erase the previous db)
+3.  install the python requirements: `pip install -r requirements.txt`
+4.  run the dev server: `./bin/dci-runtestserver`
+5.  provision the database: `python bin/dci-dbprovisioning` (BEWARE: it will erase the previous db)
 
 ## Database installation
 
@@ -55,35 +54,6 @@ Enter password for new role:
 Enter it again:
 
 $ createdb dci_control_server -O dci
-```
-
-## Elastic search installation
-
-Assuming that we are running on a fedora based distribution here are the steps for installing the elastic search database which will be used by the API and its tests.
-
-Install the elastic search repo keys
-
-``` sourceCode
-$ rpm --import https://packages.elastic.co/GPG-KEY-elasticsearch
-```
-
-Install the repository by copying the following content into `/etc/yum.repos.d/elasticsearch.repo`
-
-``` sourceCode
-[elasticsearch-2.x]
-name=Elasticsearch repository for 2.x packages
-baseurl=http://packages.elastic.co/elasticsearch/2.x/centos
-gpgcheck=1
-gpgkey=http://packages.elastic.co/GPG-KEY-elasticsearch
-enabled=1
-```
-
-Update and install the required packages, then start elasticsearch
-
-``` sourceCode
-$ dnf update -y
-$ dnf install -y elasticsearch java-1.8.0-openjdk hostname
-$ /usr/share/elasticsearch/bin/elasticsearch
 ```
 
 ## REST interface
