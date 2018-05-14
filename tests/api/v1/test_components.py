@@ -78,6 +78,23 @@ def test_create_components_with_same_name_on_same_topics(admin, topic_id):
     assert pstatus_code == 409
 
 
+def test_recreate_components_with_same_name_on_same_topics(admin, topic_id):
+    """ The goal of this test is to verify that we can:
+        - create a component, delete it, then create another component with
+          the same name as the previous one
+        - create, then delete, then create, then delete, multiple times a
+          component with the same name
+    """
+    for n in range(3):
+        data = {'name': 'pouet', 'type': 'gerrit_review', 'topic_id': topic_id}
+        result = admin.post('/api/v1/components', data=data)
+        assert result.status_code == 201
+
+        result = admin.delete('/api/v1/components/%s' %
+                              result.data['component']['id'])
+        assert result.status_code == 204
+
+
 def test_get_all_components(admin, topic_id):
     created_c_ids = []
     for i in range(5):
