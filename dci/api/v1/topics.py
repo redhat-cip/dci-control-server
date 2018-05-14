@@ -82,8 +82,7 @@ def get_topic_by_id(user, topic_id):
         if not user.is_read_only_user():
             v1_utils.verify_team_in_topic(user, topic_id)
         if 'teams' in args['embed']:
-            raise dci_exc.DCIException('embed=teams not authorized.',
-                                       status_code=401)
+            raise auth.UNAUTHORIZED
 
     if (not user.is_super_admin() and
         user.product_id != topic['product_id'] and

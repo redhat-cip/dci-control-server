@@ -102,9 +102,10 @@ def test_get_all_components_not_in_topic(admin, user, product_openstack):
                              'product_id': product_openstack['id'],
                              'component_types': ['type1', 'type2']}).data
     topic_id = topic['topic']['id']
-    status_code = user.get(
-        '/api/v1/topics/%s/components' % topic_id).status_code
-    assert status_code == 412
+    res = user.get(
+        '/api/v1/topics/%s/components' % topic_id)
+    assert res.status_code == 401
+    assert res.data['message'] == 'Operation not authorized.'
 
 
 def test_get_all_components_with_pagination(admin, topic_id):

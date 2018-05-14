@@ -90,9 +90,10 @@ def test_get_all_tests_not_in_topic(admin, user, product_openstack):
                              'product_id': product_openstack['id'],
                              'component_types': ['type1', 'type2']}).data
     topic_id = topic['topic']['id']
-    status_code = user.get(
-        '/api/v1/topics/%s/tests' % topic_id).status_code
-    assert status_code == 412
+    res = user.get(
+        '/api/v1/topics/%s/tests' % topic_id)
+    assert res.status_code == 401
+    assert res.data['message'] == 'Operation not authorized.'
 
 
 def test_get_all_tests_with_pagination(admin, user, team_user_id,
@@ -276,7 +277,8 @@ def test_get_tests_from_topics(admin, user, team_user_id, team_id, product):
 
     # Verify user can't access to other topic tests
     t_tests = user.get('/api/v1/topics/%s/tests' % topic_id_2)
-    assert t_tests.status_code == 412
+    assert t_tests.status_code == 401
+    assert t_tests.data['message'] == 'Operation not authorized.'
 
 
 def test_delete_test_by_id(admin, team_user_id):
