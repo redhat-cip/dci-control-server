@@ -650,3 +650,15 @@ fingerprint_put = {
 
 fingerprint = DCISchema(schema_factory(fingerprint).post,
                         Schema(fingerprint_put))
+
+###############################################################################
+#                                                                             #
+#                          Counter schemas                                    #
+#                                                                             #
+###############################################################################
+
+counter_put = {
+    'sequence': int
+}
+
+counter = DCISchema(None, Schema(counter_put))

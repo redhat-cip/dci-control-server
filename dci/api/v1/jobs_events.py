@@ -20,7 +20,9 @@ from flask import json
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
+from dci.common import exceptions as dci_exc
 from dci.common import schemas
+from dci.common import utils
 from dci.db import models
 
 from sqlalchemy import sql, func
@@ -80,3 +82,49 @@ def create_event(job_id, status, topic_id=None):
         values['topic_id'] = str(job['topic_id'])
     q_add_job_event = models.JOBS_EVENTS.insert().values(**values)
     flask.g.db_conn.execute(q_add_job_event)
+
+
+@api.route('/jobs_events/sequence', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def get_current_sequence(user):
+
+    def create_sequence():
+        etag = utils.gen_etag()
+        q_add_counter = models.COUNTER.insert().values(name='jobs_events',
+                                                       sequence=0,
+                                                       etag=etag)
+        flask.g.db_conn.execute(q_add_counter)
+
+    def get_sequence():
+        query = sql.select([models.COUNTER]).\
+            where(models.COUNTER.c.name == 'jobs_events')
+        return flask.g.db_conn.execute(query).fetchone()
+
+    je_sequence = get_sequence()
+    if not je_sequence:
+        create_sequence()
+        je_sequence = get_sequence()
+
+    return json.jsonify({'sequence': {'sequence': je_sequence.sequence,
+                                      'etag': je_sequence.etag}})
+
+
+@api.route('/jobs_events/sequence', methods=['PUT'])
+@decorators.login_required
+@decorators.check_roles
+def put_current_sequence(user):
+    # get If-Match header
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+    values = schemas.counter.put(flask.request.json)
+    etag = utils.gen_etag()
+    q_update = models.COUNTER.update().\
+        where(sql.and_(models.COUNTER.c.name == 'jobs_events',
+                       models.COUNTER.c.etag == if_match_etag)).\
+        values(sequence=values['sequence'],
+               etag=etag)
+    result = flask.g.db_conn.execute(q_update)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('jobs_events', 'sequence')
+
+    return flask.Response(None, 204, content_type='application/json')
