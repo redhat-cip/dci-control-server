@@ -50,3 +50,22 @@ def test_jobs_events_delete_from_sequence_number(admin, user,
 def test_files_events_user_unauthorized(user):
     j_events = user.get('/api/v1/jobs_events/0')
     assert j_events.status_code == 401
+
+
+def test_get_jobs_events_sequence(admin):
+    sequence = admin.get('/api/v1/jobs_events/sequence')
+    assert sequence.status_code == 200
+    sequence = sequence.data['sequence']
+    assert sequence['sequence'] == 0
+
+
+def test_put_jobs_events_sequence(admin):
+    sequence = admin.get('/api/v1/jobs_events/sequence')
+    assert sequence.status_code == 200
+    etag = sequence.data['sequence']['etag']
+    result = admin.put('/api/v1/jobs_events/sequence',
+                       data={'sequence': 1234},
+                       headers={'If-match': etag})
+    assert result.status_code == 204
+    sequence = admin.get('/api/v1/jobs_events/sequence')
+    assert sequence.data['sequence']['sequence'] == 1234
