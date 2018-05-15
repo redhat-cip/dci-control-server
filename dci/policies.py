@@ -67,6 +67,8 @@ ROLES = {
     # jobs events
     'get_jobs_events_from_sequence': SUPER_ADMIN,
     'purge_jobs_events_from_sequence': SUPER_ADMIN,
+    'put_current_sequence': SUPER_ADMIN,
+    'get_current_sequence': SUPER_ADMIN,
     # fingerprint
     'create_fingerprint': HUMAN,
     'get_all_fingerprints': HUMAN,

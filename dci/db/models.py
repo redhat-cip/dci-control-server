@@ -411,6 +411,14 @@ JOBS_EVENTS = sa.Table(
     sa.Index('jobs_events_job_id_idx', 'job_id')
 )
 
+COUNTER = sa.Table(
+    'counter', metadata,
+    sa.Column('name', sa.String(255), primary_key=True, nullable=False),
+    sa.Column('sequence', sa.Integer, default=0),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag)
+)
+
 COMPONENT_FILES = sa.Table(
     'component_files', metadata,
     sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
