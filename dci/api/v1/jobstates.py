@@ -22,6 +22,7 @@ from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import base
+from dci.api.v1 import jobs_events
 from dci.api.v1 import notifications
 from dci.api.v1 import utils as v1_utils
 from dci import auth
@@ -72,8 +73,7 @@ def create_jobstates(user):
                         .values(status=values.get('status')))
     result = flask.g.db_conn.execute(query_update_job)
 
-    FINAL_STATES = ['failure', 'success']
-    if result.rowcount and values.get('status') in FINAL_STATES:
+    if result.rowcount and values.get('status') in models.FINAL_STATUSES:
         embeds = ['components', 'topic', 'remoteci']
         embeds_dict = {'components': True, 'topic': False, 'remoteci': False}
 
@@ -82,6 +82,9 @@ def create_jobstates(user):
                                       embeds_dict, embeds=embeds,
                                       jsonify=False)
         job = dict(job)
+        jobs_events.create_event(job['id'],
+                                 values['status'],
+                                 job['topic_id'])
         notifications.dispatcher(job)
 
     result = json.dumps({'jobstate': values})

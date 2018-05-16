@@ -58,10 +58,10 @@ def empty_db(engine):
 
 
 @pytest.fixture
-def reset_file_event(engine):
+def reset_job_event(engine):
     with contextlib.closing(engine.connect()) as con:
         trans = con.begin()
-        con.execute("ALTER SEQUENCE files_events_id_seq RESTART WITH 1")
+        con.execute("ALTER SEQUENCE jobs_events_id_seq RESTART WITH 1")
         trans.commit()
     return True
 
