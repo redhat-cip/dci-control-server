@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7a2fa921_9c82edc7",
+        "filename": "dci/alembic/versions/eba69907de79_addcounter.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-05-16T18:22:51Z",
+      "side": 1,
+      "message": "Could you add the updated_at field too?",
+      "revId": "3c54c8c33052da97cd11454cf500cbfe1ec97d1e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a2fa921_fc7d21e8",
+        "filename": "dci/api/v1/jobs_events.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 106,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-05-16T18:22:51Z",
+      "side": 1,
+      "message": "I\u0027m not a big fan of the get_current_sequence() that actually can create new sequence. This is pretty confusing. I suggest you move the create_sequence() in the PUT end point OR better IMO add a new POST end-point for that.",
+      "revId": "3c54c8c33052da97cd11454cf500cbfe1ec97d1e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
