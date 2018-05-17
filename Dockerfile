@@ -6,9 +6,9 @@ LABEL maintainer="DCI Team <distributed-ci@redhat.com>"
 ENV LANG en_US.UTF-8
 
 RUN yum -y install epel-release && \
-    yum -y install gcc && \
-    yum -y install python python2-devel python2-pip python2-setuptools && \
-    yum -y install python34 python34-devel python34-pip python34-setuptools && \
+    yum -y install gcc git \
+    python python2-devel python2-pip python2-setuptools \
+    python34 python34-devel python34-pip python34-setuptools && \
     yum clean all
 
 RUN pip install -U pip
