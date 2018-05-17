@@ -70,12 +70,15 @@ def create_teams():
     team_admin = get_teams()['admin']
     openstack = create_team('OpenStack', team_admin)
     ansible = create_team('Ansible', team_admin)
+    rhel = create_team('RHEL', team_admin)
     return {
         'OpenStack': openstack,
         'Dell': create_team('Dell', openstack),
         'HP': create_team('HP', openstack),
         'Ansible': ansible,
         'Cisco': create_team('Cisco', ansible),
+        'RHEL': rhel,
+        'Veritas': create_team('Veritas', rhel),
     }
 
 
@@ -104,12 +107,15 @@ def create_users(teams):
     return {
         'ansible_po': create_user('Ansible PO', teams['Ansible'], roles['PRODUCT_OWNER']),
         'openstack_po': create_user('OpenStack PO', teams['OpenStack'], roles['PRODUCT_OWNER']),
+        'rhel_po': create_user('RHEL PO', teams['RHEL'], roles['PRODUCT_OWNER']),
         'admin_cisco': create_user('Admin Cisco', teams['Cisco'], roles['ADMIN']),
         'admin_hp': create_user('Admin HP', teams['HP'], roles['ADMIN']),
         'admin_dell': create_user('Admin Dell', teams['Dell'], roles['ADMIN']),
         'user_cisco': create_user('User Cisco', teams['Cisco'], roles['USER']),
         'user_hp': create_user('User HP', teams['HP'], roles['USER']),
-        'user_dell': create_user('User Dell', teams['Dell'], roles['USER'])
+        'user_dell': create_user('User Dell', teams['Dell'], roles['USER']),
+        'admin_veritas': create_user('Admin Veritas', teams['Veritas'], roles['ADMIN']),
+        'user_veritas': create_user('User Veritas', teams['Veritas'], roles['USER']),
     }
 
 
@@ -126,7 +132,8 @@ def create_product(product, team):
 def create_products(teams):
     return {
         'OpenStack': create_product('OpenStack', teams['OpenStack']),
-        'Ansible': create_product('Ansible', teams['Ansible'])
+        'Ansible': create_product('Ansible', teams['Ansible']),
+        'RHEL': create_product('RHEL', teams['RHEL']),
     }
 
 
@@ -141,17 +148,23 @@ def create_topic(name, component_types, product, next_topic=None):
 def create_topics(products):
     openstack = products['OpenStack']
     ansible = products['Ansible']
+    rhel = products['RHEL']
+
     osp12 = create_topic('OSP12', ['puddle'], openstack)
     osp11 = create_topic('OSP11', ['puddle'], openstack, osp12)
     osp10 = create_topic('OSP10', ['puddle'], openstack, osp11)
     ansible_dev = create_topic('ansible-devel', ['snapshot_ansible'], ansible)
     ansible_24 = create_topic('ansible-2.4', ['snapshot_ansible'], ansible, ansible_dev)
+    rhel8 = create_topic('RHEL-8', ['Compose'], rhel)
+    rhel7 = create_topic('RHEL-7', ['Compose'], rhel, rhel8)
     return {
         'OSP12': osp12,
         'OSP11': osp11,
         'OSP10': osp10,
         'ansible-devel': ansible_dev,
         'ansible-2.4': ansible_24,
+        'RHEL-8': rhel8,
+        'RHEL-7': rhel7,
     }
 
 
@@ -180,6 +193,8 @@ def create_components(topics):
         {'name': 'RH7-RHOS-12.0 2016-11-12.1', 'topic_name': 'OSP12'},
         {'name': 'Ansible devel', 'topic_name': 'ansible-devel'},
         {'name': 'Ansible 2.4', 'topic_name': 'ansible-2.4'},
+        {'name': 'RHEL-7.6-20180513.n.0', 'topic_name': 'RHEL-7'},
+        {'name': 'RHEL-8.0-20180503.n.2', 'topic_name': 'RHEL-8'},
     ]:
         c = create_component(component['name'], topics[component['topic_name']])
         components[c['name']] = c
