@@ -159,9 +159,6 @@ ROLES = {
     'purge_archived_roles': SUPER_ADMIN,
     'add_permission_to_role': SUPER_ADMIN,
     'delete_permission_from_role': SUPER_ADMIN,
-    # search
-    'search': HUMAN,
-    'get_search_by_id': HUMAN,
     # teams
     'create_teams': SUPER_ADMIN_PO,
     'get_all_teams': HUMAN,
