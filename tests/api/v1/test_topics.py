@@ -40,7 +40,8 @@ def topic_creation_with_opts(identity, product):
 def topic_update(identity, topic_id):
     t = identity.get('/api/v1/topics/' + topic_id).data['topic']
     data = {'label': 'my comment',
-            'component_types': ['lol1', 'lol2']}
+            'component_types': ['lol1', 'lol2'],
+            'data': {'foo': 'bar'}}
     identity.put('/api/v1/topics/' + topic_id, data=data,
                  headers={'If-match': t['etag']})
 
@@ -74,12 +75,14 @@ def test_update_topics_as_admin(admin, topic_id):
     topic = topic_update(admin, topic_id).data['topic']
     assert topic['label'] == 'my comment'
     assert topic['component_types'] == ['lol1', 'lol2']
+    assert topic['data']['foo'] == 'bar'
 
 
 def test_update_topic_as_feeder(feeder_context, topic_id):
     topic = topic_update(feeder_context, topic_id).data['topic']
     assert topic['label'] == 'my comment'
     assert topic['component_types'] == ['lol1', 'lol2']
+    assert topic['data']['foo'] == 'bar'
 
 
 def test_change_topic_state(admin, topic_id):

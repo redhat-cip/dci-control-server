@@ -458,6 +458,7 @@ topic_put = {
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
     v.Optional('component_types'): list,
+    v.Optional('data'): dict,
 }
 
 topic = DCISchema(schema_factory(topic).post, Schema(topic_put))
