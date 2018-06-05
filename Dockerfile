@@ -20,6 +20,9 @@ ADD requirements.txt /opt/dci-control-server/
 RUN pip install -r requirements.txt
 ADD . /opt/dci-control-server/
 
+COPY tests/data/ca.key /etc/ssl/repo/ca.key
+COPY tests/data/ca.crt /etc/ssl/repo/ca.crt
+
 ENV PYTHONPATH /opt/dci-control-server
 ENV DISABLE_DB_START 1
 
