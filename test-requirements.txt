@@ -1,8 +1,6 @@
-flake8==2.4.1
-pytest>=2.6.2
-pytest-cov>=1.8.0
-mock
-pylint==1.6.4
-dciclient>=0.4
-pyOpenSSL
-tox
+flake8==2.6.2
+pytest==3.0.6
+pytest-cov==2.5.1
+mock==2.0.0
+pylint==1.6.5
+tox==1.4.2

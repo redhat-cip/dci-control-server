@@ -26,7 +26,6 @@ BuildRequires:  rh-postgresql94
 BuildRequires:  pyOpenSSL
 BuildRequires:  python-alembic
 BuildRequires:  python-flask
-BuildRequires:  python-flask-sqlalchemy
 BuildRequires:  python-lxml
 BuildRequires:  python-passlib
 BuildRequires:  python-psycopg2
@@ -49,7 +48,6 @@ BuildRequires:  systemd-units
 Requires:       pyOpenSSL
 Requires:       python-alembic
 Requires:       python-flask
-Requires:       python-flask-sqlalchemy
 Requires:       python-lxml
 Requires:       python-passlib
 Requires:       python-psycopg2
@@ -79,7 +77,6 @@ BuildRequires:  rh-postgresql94
 BuildRequires:  pyOpenSSL
 BuildRequires:  python3-alembic
 BuildRequires:  python3-flask
-BuildRequires:  python3-flask-sqlalchemy
 BuildRequires:  python3-lxml
 BuildRequires:  python3-passlib
 BuildRequires:  python3-psycopg2
@@ -88,6 +85,7 @@ BuildRequires:  python3-requests
 BuildRequires:  python3-rpm-macros
 BuildRequires:  python3-setuptools
 BuildRequires:  python3-six
+BuildRequires:  python3-sqlalchemy
 BuildRequires:  python3-sqlalchemy-utils
 BuildRequires:  python3-swiftclient
 BuildRequires:  python3-voluptuous
@@ -100,13 +98,13 @@ BuildRequires:  systemd-units
 Requires:       pyOpenSSL
 Requires:       python3-alembic
 Requires:       python3-flask
-Requires:       python3-flask-sqlalchemy
 Requires:       python3-lxml
 Requires:       python3-passlib
 Requires:       python3-psycopg2
 Requires:       python3-pytz
 Requires:       python3-requests
 Requires:       python3-six
+Requires:       python3-sqlalchemy
 Requires:       python3-sqlalchemy-utils
 Requires:       python3-swiftclient
 Requires:       python3-voluptuous
