@@ -7,13 +7,11 @@ psycopg2
 requests
 voluptuous<0.11.1
 passlib
-setuptools
 Werkzeug
 pyzmq
 pytz
 lxml
 python-swiftclient
-python-keystoneclient
 cryptography
 pyjwt
 dciauth
