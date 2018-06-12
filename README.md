@@ -190,6 +190,27 @@ resource url: `/api/v1/components/<component_id>`
 -   `DELETE`: remove the given component
     -   response: 204
 
+## Dependencies
+
+All the dependencies in requirements.txt file are fixed. Versions must be equal to the most up-to-date version of the associated rpm in [dci-control-server.spec](dci-control-server.spec). You can verify the version of the python module in the centos base repository or the rdo repository (`https://rdoproject.org/repos/rdo-release.rpm`).
+
+Example: 
+
+```sh
+$ yum info python2-requests
+...
+Installed Packages
+Name        : python2-requests
+Version     : 2.14.2
+```
+
+in `requirements.txt` file
+
+```python
+requests==2.14.2
+```
+
+
 ## License
 
 Apache 2.0
