@@ -1,0 +1,8 @@
+Code-Review+2: Dimitri Savineau <dsavinea@redhat.com>
+Workflow+1: Yanis Guenane <yguenane@gmail.com>
+Verified+2: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-by: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-at: Wed, 13 Jun 2018 15:22:35 +0000
+Reviewed-on: https://softwarefactory-project.io/r/12518
+Project: dci-control-server
+Branch: refs/heads/master
