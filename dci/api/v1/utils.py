@@ -147,7 +147,7 @@ def verify_team_in_topic(user, topic_id):
 def get_columns_name_with_objects(table, table_prefix=False):
     if table_prefix:
         columns = {
-            '%s_%s' % (table.name, column.name): getattr(table.columns, column.name)   # noqa
+            '%s_%s' % (table.name, column.name): getattr(table.columns, column.name)  # noqa
             for column in table.columns
         }
     else:
@@ -591,7 +591,3 @@ def common_values_dict(user):
     }
 
     return values
-
-
-def log():
-    return flask.current_app.logger
