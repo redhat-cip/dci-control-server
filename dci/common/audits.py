@@ -24,7 +24,6 @@ _TABLE = models.LOGS
 
 
 def log_action(user_id, team_id, action):
-    """TODO"""
     values = {
         'user_id': user_id,
         'team_id': team_id,
