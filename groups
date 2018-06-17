@@ -1,8 +1,5 @@
-# UUID Group Name
-global:Registered-Users	Registered Users
-daf82efd9e331a36c8a9ecc550c480025c3316c3	dci-core
-83d587a48d7bb19d0c7ffffd288ea9f742193b3b	dci-dev
-global:Anonymous-Users	Anonymous Users
+# UUID                                  	Group Name
+#
 60d11dc7fadd9ccff3622c60c70c7cf850d75103	dci-ptl
-3e9524ec5161dc0bc28a7343d1c54bb9ae4d6d35	Administrators
-9562193e1f1647ee1c2004b4fb7996e84ae7e717	Non-Interactive Users
+83d587a48d7bb19d0c7ffffd288ea9f742193b3b	dci-dev
+daf82efd9e331a36c8a9ecc550c480025c3316c3	dci-core
