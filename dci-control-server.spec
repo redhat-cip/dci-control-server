@@ -4,6 +4,9 @@
 %global with_python3 0
 %endif
 
+%global logfiledir %{_localstatedir}/log/dci
+%global logfile %{logfiledir}/api.log
+
 Name:           dci
 Version:        0.2.2
 Release:        1.VERS%{?dist}
@@ -46,6 +49,7 @@ BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
 BuildRequires:  systemd
 BuildRequires:  systemd-units
+Requires:       dci-sshpubkeys
 Requires:       pyOpenSSL
 Requires:       python-alembic
 Requires:       python-flask
@@ -97,6 +101,7 @@ BuildRequires:  python-jwt
 BuildRequires:  python3-dciauth
 BuildRequires:  systemd
 BuildRequires:  systemd-units
+Requires:       dci-sshpubkeys
 Requires:       pyOpenSSL
 Requires:       python3-alembic
 Requires:       python3-flask
@@ -143,6 +148,12 @@ mv %{buildroot}/%{python2_sitelib}/dci/settings.py %{buildroot}/%{_sysconfdir}/d
 %{__ln_s} %{_sysconfdir}/dci-api/settings.py %{buildroot}/%{python2_sitelib}/dci/settings.py
 rm -rf %{buildroot}/%{python2_sitelib}/sample
 install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-worker.service
+
+mkdir -p %{buildroot}%{logfiledir}
+chmod 0750 %{buildroot}%{logfiledir}
+touch %{buildroot}%{logfile}
+
+
 %if 0%{?with_python3}
 %py3_install
 %endif
@@ -165,6 +176,8 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %{_unitdir}
 %config(noreplace) %{_sysconfdir}/dci-api/settings.py
 %{_datarootdir}/dci-api/wsgi.py
+%attr(0750,dci,dci) %dir %{logfiledir}
+%attr(0660,dci,dci) %{logfile}
 
 %if 0%{?with_python3}
 %{_bindir}/dci-dbsync
