@@ -15,7 +15,9 @@
 # under the License.
 
 
-from dci.api.v1.utils import log
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def get_stream_or_content_from_request(request):
@@ -29,12 +31,10 @@ def get_stream_or_content_from_request(request):
     """
 
     if request.stream.tell():
-        log().info(
-            'Request stream already consumed. Storing file content '
-            'using in-memory data.')
+        logger.info('Request stream already consumed. '
+                    'Storing file content using in-memory data.')
         return request.data
 
     else:
-        log().info(
-            'Storing file content using request stream.')
+        logger.info('Storing file content using request stream.')
         return request.stream

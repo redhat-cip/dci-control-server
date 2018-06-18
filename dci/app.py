@@ -13,14 +13,13 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-
 from dci.api import v1 as api_v1
 from dci.common import exceptions
 from dci.common import utils
 
 import flask
 import logging
+import logging.handlers
 import time
 import zmq
 
@@ -79,24 +78,40 @@ def handle_dbapi_exception(dbapi_exception):
     return response
 
 
+def configure_logging(conf):
+    formatter = logging.Formatter(conf['LOG_FORMAT'])
+    file_handler = logging.handlers.TimedRotatingFileHandler(
+        filename=conf['LOG_FILE'],
+        backupCount=31,
+        when="D"
+    )
+    file_handler.setFormatter(formatter)
+    console_handler = logging.StreamHandler()
+    console_handler.setFormatter(formatter)
+
+    debug = conf['DEBUG']
+    default_handler = console_handler if debug else file_handler
+
+    dci_logger_level = "DEBUG" if debug else "INFO"
+    dci_logger = logging.getLogger('dci')
+    dci_logger.setLevel(dci_logger_level)
+    dci_logger.addHandler(default_handler)
+
+    module_logger_level = "INFO" if debug else "WARNING"
+    modules_loggers = [logging.getLogger('sqlalchemy'),
+                       logging.getLogger('werkzeug')]
+    for logger in modules_loggers:
+        logger.setLevel(module_logger_level)
+        logger.addHandler(default_handler)
+
+
 def create_app(conf):
     dci_config.sanity_check(conf)
     dci_app = DciControlServer(conf)
     dci_app.url_map.converters['uuid'] = utils.UUIDConverter
 
-    # Logging support
-    loggers = [dci_app.logger, logging.getLogger('sqlalchemy'),
-               logging.getLogger('werkzeug')]
-    for logger in loggers:
-        format = (conf['DEBUG_LOG_FORMAT'] if conf['DEBUG']
-                  else conf['PROD_LOG_FORMAT'])
-
-        handler = (logging.StreamHandler() if conf['DEBUG']
-                   else logging.FileHandler(conf['LOG_FILE']))
-        handler.setFormatter(logging.Formatter(format))
-
-        logger.setLevel(logging.DEBUG if conf['DEBUG'] else logging.WARN)
-        logger.addHandler(handler)
+    dci_app.logger.disabled = True
+    configure_logging(conf)
 
     @dci_app.before_request
     def before_request():
