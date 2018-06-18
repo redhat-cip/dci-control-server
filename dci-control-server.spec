@@ -4,6 +4,10 @@
 %global with_python3 0
 %endif
 
+%global logfiledir %{_localstatedir}/log/dci
+%global logfile %{logfiledir}/api.log
+%global username dci
+
 Name:           dci
 Version:        0.2.2
 Release:        1.VERS%{?dist}
@@ -46,6 +50,7 @@ BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
 BuildRequires:  systemd
 BuildRequires:  systemd-units
+Requires(pre):  shadow-utils
 Requires:       pyOpenSSL
 Requires:       python-alembic
 Requires:       python-flask
@@ -97,6 +102,7 @@ BuildRequires:  python-jwt
 BuildRequires:  python3-dciauth
 BuildRequires:  systemd
 BuildRequires:  systemd-units
+Requires(pre):  shadow-utils
 Requires:       pyOpenSSL
 Requires:       python3-alembic
 Requires:       python3-flask
@@ -143,6 +149,12 @@ mv %{buildroot}/%{python2_sitelib}/dci/settings.py %{buildroot}/%{_sysconfdir}/d
 %{__ln_s} %{_sysconfdir}/dci-api/settings.py %{buildroot}/%{python2_sitelib}/dci/settings.py
 rm -rf %{buildroot}/%{python2_sitelib}/sample
 install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-worker.service
+
+mkdir -p %{buildroot}%{logfiledir}
+chmod 0750 %{buildroot}%{logfiledir}
+touch %{buildroot}%{logfile}
+
+
 %if 0%{?with_python3}
 %py3_install
 %endif
@@ -165,6 +177,8 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %{_unitdir}
 %config(noreplace) %{_sysconfdir}/dci-api/settings.py
 %{_datarootdir}/dci-api/wsgi.py
+%attr(0750,dci,dci) %dir %{logfiledir}
+%attr(0660,dci,dci) %{logfile}
 
 %if 0%{?with_python3}
 %{_bindir}/dci-dbsync
@@ -180,6 +194,13 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 # We don't want to end up with outdated cache on the hard drive.
 %exclude %{_sysconfdir}/dci-api/settings.py?
 %exclude %{python2_sitelib}/dci/settings.py?
+
+%pre
+getent group %{username} >/dev/null || groupadd -r %{username}
+getent passwd %{username} >/dev/null || \
+    useradd -r -g %{username} -d /home/%{username} -s /bin/bash \
+    -c "The DCI user" -m %{username}
+exit 0
 
 %changelog
 * Tue Jun 12 2018 Guillaume Vincent <gvincent@redhat.com> 0.2.2-1
