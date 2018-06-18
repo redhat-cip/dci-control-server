@@ -59,7 +59,7 @@ def createCertRequest(pkey, digest="sha256"):
     req.get_subject().C = "FR"
     req.get_subject().ST = "IDF"
     req.get_subject().L = "Paris"
-    req.get_subject().O = "RedHat"
+    req.get_subject().O = "RedHat"  # noqa
     req.get_subject().OU = "DCI"
     req.get_subject().CN = "DCI-remoteCI"
 

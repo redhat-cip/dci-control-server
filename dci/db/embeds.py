@@ -27,6 +27,7 @@ def ignore_columns_from_table(table, ignored_columns):
 
 # These functions should be called by v1_utils.QueryBuilder
 
+
 # Create necessary aliases
 REMOTECI_TESTS = models.TESTS.alias('remoteci.tests')
 TOPIC_TESTS = models.TESTS.alias('topic.tests')
