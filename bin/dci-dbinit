@@ -130,9 +130,9 @@ def init_db(db_conn):
 def main():
     conf = dci_config.generate_conf()
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
-    if sa_funcs.database_exists(db_uri):
-        sa_funcs.drop_database(db_uri)
-    sa_funcs.create_database(db_uri)
+
+    if not sa_funcs.database_exists(db_uri):
+        sa_funcs.create_database(db_uri)
 
     dci_alembic.sync()
     engine = sqlalchemy.create_engine(db_uri)
