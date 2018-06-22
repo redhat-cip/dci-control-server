@@ -63,5 +63,6 @@ setuptools.setup(
     ],
     scripts=[
         'bin/dci-dbsync',
-        'bin/dci-dbinit'
+        'bin/dci-dbinit',
+        'bin/dci-purge-swift-components'
     ])
