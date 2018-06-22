@@ -1,0 +1,53 @@
+#!/usr/bin/env python
+#
+# Copyright (C) 2018 Red Hat, Inc
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+import datetime
+from dci import dci_config
+from dci.db import models
+from sqlalchemy import sql
+
+conf = dci_config.generate_conf()
+swift = dci_config.get_store('components')
+engine = dci_config.get_engine(conf).connect()
+
+_C = models.COMPONENTS
+_JJC = models.JOIN_JOBS_COMPONENTS
+_CF = models.COMPONENTFILES
+
+created_at = datetime.date.today() - datetime.timedelta(days=90)
+
+subquery = sql.select([sql.distinct(_JJC.c.component_id)])
+where_clause = sql.and_(_C.c.id.notin_(subquery),
+                        _C.c.state == 'active',
+                        _C.c.created_at < created_at)
+query = sql.select([_C.c.id, _C.c.topic_id]).where(where_clause)
+components = engine.execute(query)
+for component in components:
+    query = sql.select([_CF.c.id]).where(_CF.c.component_id == component['id'])
+    component_files = engine.execute(query)
+    for component_file in component_files:
+        file_path = swift.build_file_path(component['topic_id'],
+                                          component['id'],
+                                          component_file['id'])
+        try:
+            swift.delete(file_path)
+            print('deleting: ' + file_path)
+        except:
+            print(file_path + ' already deleted')
+    print('set component ' + str(component['id']) + ' inactive')
+    query = sql.update(_C).where(_C.c.id == component[
+        'id']).values(state='inactive')
+    engine.execute(query)
