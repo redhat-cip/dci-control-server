@@ -158,6 +158,7 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %files -n dci-api
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
+%{_bindir}/dci-purge-swift-components
 %license LICENSE
 %doc
 %{python2_sitelib}/dci
@@ -169,6 +170,7 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %if 0%{?with_python3}
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
+%{_bindir}/dci-purge-swift-components
 %files -n dci-api-python3
 %doc
 %{python3_sitelib}/dci
