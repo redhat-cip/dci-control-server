@@ -15,6 +15,7 @@
 # under the License.
 from __future__ import unicode_literals
 from six.moves.urllib.parse import urlparse
+from voluptuous import REMOVE_EXTRA
 
 import collections
 import dci.common.exceptions as exceptions
@@ -115,6 +116,9 @@ class Schema(v.Schema):
         'expected list': INVALID_LIST,
         'expected a valid timezone': INVALID_TIMEZONE
     }
+
+    def __init__(self, schema, required=False, extra=REMOVE_EXTRA):
+        super(Schema, self).__init__(schema, required, extra)
 
     def __call__(self, data):
         def format_error(error):
