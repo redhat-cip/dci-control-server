@@ -116,6 +116,9 @@ class Schema(v.Schema):
         'expected a valid timezone': INVALID_TIMEZONE
     }
 
+    def __init__(self, schema, required=False, extra=v.REMOVE_EXTRA):
+        super(Schema, self).__init__(schema, required, extra)
+
     def __call__(self, data):
         def format_error(error):
             msg = error.error_message
