@@ -95,17 +95,6 @@ def test_success_update_product(admin, product_openstack):
     assert product['product']['description'] == 'new product'
 
 
-def test_fail_update_product_unauthorized_fields(admin, product):
-    label = {
-        'label': 'NEW LABEL',
-    }
-
-    result = admin.put('/api/v1/products/%s' % product['id'], data=label,
-                       headers={'If-match': product['etag']})
-
-    assert result.status_code == 400
-
-
 def test_success_get_all_products_admin(admin, product, product_openstack):
     result = admin.get('/api/v1/products')
 

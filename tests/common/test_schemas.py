@@ -42,9 +42,6 @@ class BaseSchemaTesting(utils.SchemaTesting):
 
     data = dict([utils.NAME])
 
-    def test_post_extra_data(self):
-        super(BaseSchemaTesting, self).test_post_extra_data(self.data)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('name')
         super(BaseSchemaTesting, self).test_post_missing_data(errors)
@@ -56,9 +53,6 @@ class BaseSchemaTesting(utils.SchemaTesting):
 
     def test_post(self):
         super(BaseSchemaTesting, self).test_post(self.data, self.data)
-
-    def test_put_extra_data(self):
-        super(BaseSchemaTesting, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
         data = dict([utils.INVALID_NAME])
@@ -85,9 +79,6 @@ class TestTeam(utils.SchemaTesting):
         errors = dict([utils.INVALID_NAME_ERROR])
         return invalids, errors
 
-    def test_post_extra_data(self):
-        super(TestTeam, self).test_post_extra_data(self.data)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('name')
         super(TestTeam, self).test_post_missing_data(errors)
@@ -98,10 +89,6 @@ class TestTeam(utils.SchemaTesting):
 
     def test_post(self):
         super(TestTeam, self).test_post(self.data, self.data)
-
-    def test_put_extra_data(self):
-        invalids, errors = TestTeam.generate_invalids_and_errors()
-        super(TestTeam, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
         invalids, errors = TestTeam.generate_invalids_and_errors()
@@ -122,9 +109,6 @@ class TestRole(utils.SchemaTesting):
         errors = dict([utils.INVALID_NAME_ERROR])
         return invalids, errors
 
-    def test_post_extra_data(self):
-        super(TestRole, self).test_post_extra_data(self.data)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('name')
         super(TestRole, self).test_post_missing_data(errors)
@@ -135,10 +119,6 @@ class TestRole(utils.SchemaTesting):
 
     def test_post(self):
         super(TestRole, self).test_post(self.data_post, self.data_post)
-
-    def test_put_extra_data(self):
-        invalids, errors = TestRole.generate_invalids_and_errors()
-        super(TestRole, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
         invalids, errors = TestRole.generate_invalids_and_errors()
@@ -160,12 +140,6 @@ class TestTest(utils.SchemaTesting):
                        utils.INVALID_TEAM_ERROR])
         return invalids, errors
 
-    def test_post_extra_data(self):
-        data = data_expected = utils.dict_merge(
-            self.data, {'data': {'foo': {'bar': 'baz'}}}
-        )
-        super(TestTest, self).test_post(data, data_expected)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('name', 'team_id')
         super(TestTest, self).test_post_missing_data(errors)
@@ -178,10 +152,6 @@ class TestTest(utils.SchemaTesting):
         # add default values to voluptuous output
         data_expected = utils.dict_merge(self.data, {'data': {}})
         super(TestTest, self).test_post(self.data, data_expected)
-
-    def test_put_extra_data(self):
-        invalids, errors = TestTest.generate_invalids_and_errors()
-        super(TestTest, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
         invalids, errors = TestTest.generate_invalids_and_errors()
@@ -210,9 +180,6 @@ class TestUser(utils.SchemaTesting):
                        utils.INVALID_TIMEZONE_ERROR])
         return invalids, errors
 
-    def test_post_extra_data(self):
-        super(TestUser, self).test_post_extra_data(self.data)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('name', 'fullname', 'email')
         super(TestUser, self).test_post_missing_data(errors)
@@ -223,9 +190,6 @@ class TestUser(utils.SchemaTesting):
 
     def test_post(self):
         super(TestUser, self).test_post(self.data, self.data)
-
-    def test_put_extra_data(self):
-        super(TestUser, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
         invalids, errors = TestUser.generate_invalids_and_errors()
@@ -263,9 +227,6 @@ class TestComponent(utils.SchemaTesting):
 
         return invalids, errors
 
-    def test_post_extra_data(self):
-        super(TestComponent, self).test_post_extra_data(self.data)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('name', 'type', 'topic_id')
         super(TestComponent, self).test_post_missing_data(errors)
@@ -279,9 +240,6 @@ class TestComponent(utils.SchemaTesting):
         data_expected = utils.dict_merge(self.data,
                                          TestComponent.generate_optionals())
         super(TestComponent, self).test_post(self.data, data_expected)
-
-    def test_put_extra_data(self):
-        pass
 
     def test_put_invalid_data(self):
         pass
@@ -300,12 +258,6 @@ class TestRemoteCI(utils.SchemaTesting):
         errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_TEAM_ERROR])
         return invalids, errors
 
-    def test_post_extra_data(self):
-        data = data_expected = utils.dict_merge(
-            self.data, {'data': {'foo': {'bar': 'baz'}}}
-        )
-        super(TestRemoteCI, self).test_post(data, data_expected)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('name', 'team_id')
         super(TestRemoteCI, self).test_post_missing_data(errors)
@@ -318,9 +270,6 @@ class TestRemoteCI(utils.SchemaTesting):
         # add default values to voluptuous output
         data_expected = utils.dict_merge(self.data, {'data': {}})
         super(TestRemoteCI, self).test_post(self.data, data_expected)
-
-    def test_put_extra_data(self):
-        super(TestRemoteCI, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
         invalids, errors = TestRemoteCI.generate_invalids_and_errors()
@@ -343,13 +292,6 @@ class TestRemoteciRconfigurations(utils.SchemaTesting):
                        utils.INVALID_TOPIC_ERROR])
         return invalids, errors
 
-    def test_post_extra_data(self):
-        data = data_expected = utils.dict_merge(
-            self.data, {'data': {'foo': {'bar': 'baz'}},
-                        'component_types': ['type1']}
-        )
-        super(TestRemoteciRconfigurations, self).test_post(data, data_expected)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('topic_id', 'name')
         super(TestRemoteciRconfigurations, self).test_post_missing_data(errors)
@@ -366,9 +308,6 @@ class TestRemoteciRconfigurations(utils.SchemaTesting):
                                          {'data': {}, 'component_types': None})
         super(TestRemoteciRconfigurations, self).test_post(self.data,
                                                            data_expected)
-
-    def test_put_extra_data(self):
-        pass
 
     def test_put_invalid_data(self):
         pass
@@ -403,10 +342,6 @@ class TestJob(utils.SchemaTesting):
                        ('status', schemas.INVALID_STATUS_UPDATE)])
         return invalids, errors
 
-    def test_post_extra_data(self):
-        data = utils.dict_merge(self.data, {'comment': 'some comment'})
-        super(TestJob, self).test_post_extra_data(data)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('components')
         super(TestJob, self).test_post_missing_data(errors)
@@ -419,9 +354,6 @@ class TestJob(utils.SchemaTesting):
         # add default values to voluptuous output
         data_expected = utils.dict_merge(self.data, {'comment': None})
         super(TestJob, self).test_post(self.data, data_expected)
-
-    def test_put_extra_data(self):
-        super(TestJob, self).test_put_extra_data(self.data_put)
 
     def test_put_invalid_data(self):
         invalids, errors = TestJob.generate_invalids_and_errors_put()
@@ -443,9 +375,6 @@ class TestJobSchedule(utils.SchemaTesting):
                        utils.INVALID_COMPONENTS_IDS_ERROR])
         return invalids, errors
 
-    def test_post_extra_data(self):
-        super(TestJobSchedule, self).test_post(self.data, self.data)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('topic_id')
         super(TestJobSchedule, self).test_post_missing_data(errors)
@@ -456,9 +385,6 @@ class TestJobSchedule(utils.SchemaTesting):
 
     def test_post(self):
         super(TestJobSchedule, self).test_post(self.data, self.data)
-
-    def test_put_extra_data(self):
-        pass
 
     def test_put_invalid_data(self):
         pass
@@ -479,10 +405,6 @@ class TestIssue(utils.SchemaTesting):
         errors = dict([utils.INVALID_URL_ERROR, status_error])
         return invalids, errors
 
-    def test_post_extra_data(self):
-        data = utils.dict_merge(self.data, {'extra': 'some comment'})
-        super(TestIssue, self).test_post_extra_data(data)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('url')
         super(TestIssue, self).test_post_missing_data(errors)
@@ -493,9 +415,6 @@ class TestIssue(utils.SchemaTesting):
 
     def test_post(self):
         super(TestIssue, self).test_post(self.data, self.data)
-
-    def test_put_extra_data(self):
-        pass
 
     def test_put_invalid_data(self):
         pass
@@ -516,10 +435,6 @@ class TestMeta(utils.SchemaTesting):
                        utils.INVALID_VALUE_ERROR])
         return invalids, errors
 
-    def test_post_extra_data(self):
-        data = utils.dict_merge(self.data, {'extra': 'some comment'})
-        super(TestMeta, self).test_post_extra_data(data)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('name')
         super(TestMeta, self).test_post_missing_data(errors)
@@ -530,9 +445,6 @@ class TestMeta(utils.SchemaTesting):
 
     def test_post(self):
         super(TestMeta, self).test_post(self.data, self.data)
-
-    def test_put_extra_data(self):
-        super(TestMeta, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
         invalids, errors = TestMeta.generate_invalids_and_errors()
@@ -555,10 +467,6 @@ class TestJobState(utils.SchemaTesting):
         errors = dict([utils.INVALID_JOB_ERROR, status_error])
         return invalids, errors
 
-    def test_post_extra_data(self):
-        data = utils.dict_merge(self.data, {'comment': 'some comment'})
-        super(TestJobState, self).test_post_extra_data(data)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('status', 'job_id')
         super(TestJobState, self).test_post_missing_data(errors)
@@ -572,9 +480,6 @@ class TestJobState(utils.SchemaTesting):
         # add default values to voluptuous output
         data_expected = utils.dict_merge(self.data, {'comment': None})
         super(TestJobState, self).test_post(self.data, data_expected)
-
-    def test_put_extra_data(self):
-        super(TestJobState, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
         invalids, errors = TestJobState.generate_invalids_and_errors()
@@ -610,10 +515,6 @@ class LolTestFile(utils.SchemaTesting):
         )
         return invalids, errors
 
-    def test_post_extra_data(self):
-        data = utils.dict_merge(self.data, {'mime': 'mime', 'md5': 'md5'})
-        super(LolTestFile, self).test_post_extra_data(data)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('name')
         super(LolTestFile, self).test_post_missing_data(errors)
@@ -627,9 +528,6 @@ class LolTestFile(utils.SchemaTesting):
         data_expected = utils.dict_merge(self.data,
                                          {'mime': None, 'md5': None})
         super(LolTestFile, self).test_post(self.data, data_expected)
-
-    def test_put_extra_data(self):
-        super(LolTestFile, self).test_put_extra_data(self.data)
 
     def test_put_invalid_data(self):
         invalids, errors = LolTestFile.generate_invalids_and_errors()
@@ -653,9 +551,6 @@ class TestTopic(utils.SchemaTesting):
         errors = dict([utils.INVALID_NAME_ERROR])
         return invalids, errors
 
-    def test_post_extra_data(self):
-        super(TestTopic, self).test_post_extra_data(self.data)
-
     def test_post_missing_data(self):
         errors = utils.generate_errors('name')
         super(TestTopic, self).test_post_missing_data(errors)
@@ -667,9 +562,6 @@ class TestTopic(utils.SchemaTesting):
     def test_post(self):
         expected = utils.dict_merge(self.data, {'component_types': []})
         super(TestTopic, self).test_post(self.data, expected)
-
-    def test_put_extra_data(self):
-        pass
 
     def test_put_invalid_data(self):
         pass

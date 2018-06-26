@@ -103,17 +103,6 @@ def test_success_update_permission(admin, permission):
     assert permission['permission']['description'] == 'new permission'
 
 
-def test_fail_update_permission_unauthorized_fields(admin, permission):
-    label = {
-        'label': 'NEW LABEL',
-    }
-
-    result = admin.put('/api/v1/permissions/%s' % permission['id'], data=label,
-                       headers={'If-match': permission['etag']})
-
-    assert result.status_code == 400
-
-
 def test_success_get_all_permissions_admin(admin, permission):
     result = admin.get('/api/v1/permissions')
 
