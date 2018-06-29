@@ -319,9 +319,7 @@ def create_new_upgrade_job_from_an_existing_job(user):
 
 
 @api.route('/jobs', methods=['GET'])
-@decorators.login_required
-@decorators.check_roles
-def get_all_jobs(user, topic_id=None):
+def get_all_jobs(topic_id=None):
     """Get all jobs.
 
     If topic_id is not None, then return all the jobs with a topic
@@ -335,9 +333,6 @@ def get_all_jobs(user, topic_id=None):
 
     # add extra conditions for filtering
 
-    # # If not admin nor rh employee then restrict the view to the team
-    if not user.is_super_admin() and not user.is_read_only_user():
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
     # # If topic_id not None, then filter by topic_id
     if topic_id is not None:
