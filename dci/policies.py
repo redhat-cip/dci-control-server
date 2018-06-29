@@ -194,6 +194,8 @@ ROLES = {
     'get_all_teams_from_topic': SUPER_ADMIN_PO,
     'get_to_purge_archived_topics': SUPER_ADMIN,
     'purge_archived_topics': SUPER_ADMIN,
+    # trends
+    'get_trends_of_topics': SUPER_ADMIN_PO_RO_USER,
     # users
     'create_users': ADMINS,
     'get_all_users': HUMAN,
