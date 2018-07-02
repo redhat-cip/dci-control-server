@@ -118,14 +118,17 @@ def update_components(user, c_id):
         _TABLE.c.id == c_id
     )
 
-    query = _TABLE.update().where(where_clause).values(**values)
+    query = _TABLE.update().returning(*_TABLE.columns).where(where_clause).\
+        values(**values)
 
     result = flask.g.db_conn.execute(query)
     if not result.rowcount:
         raise dci_exc.DCIConflict('Component', c_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({'component': result.fetchone()}), 200,
+        headers={'ETag': values['etag']}, content_type='application/json'
+    )
 
 
 def get_all_components(user, topic_id):

@@ -73,15 +73,17 @@ def update_permission(user, permission_id):
         _TABLE.c.etag == if_match_etag,
         _TABLE.c.id == permission_id
     )
-    query = _TABLE.update().where(where_clause).values(**values)
+    query = _TABLE.update().returning(*_TABLE.columns).\
+        where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
-
     if not result.rowcount:
         raise dci_exc.DCIConflict('Permission update error', permission_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({'permission': result.fetchone()}), 200,
+        headers={'ETag': values['etag']}, content_type='application/json'
+    )
 
 
 @api.route('/permissions', methods=['GET'])

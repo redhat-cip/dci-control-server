@@ -118,16 +118,21 @@ def put_feeder(user, f_id):
 
     query = (_TABLE
              .update()
+             .returning(*_TABLE.columns)
              .where(where_clause)
              .values(**values))
 
     result = flask.g.db_conn.execute(query)
-
     if not result.rowcount:
         raise dci_exc.DCIConflict('Feeder', f_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _result = dict(result.fetchone())
+    del _result['api_secret']
+
+    return flask.Response(
+        json.dumps({'feeder': _result}), 200,
+        headers={'ETag': values['etag']}, content_type='application/json'
+    )
 
 
 @api.route('/feeders/<uuid:f_id>', methods=['DELETE'])

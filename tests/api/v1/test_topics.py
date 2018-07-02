@@ -91,9 +91,8 @@ def test_change_topic_state(admin, topic_id):
     r = admin.put('/api/v1/topics/' + topic_id,
                   data=data,
                   headers={'If-match': t['etag']})
-    assert r.status_code == 204
-    current_topic = admin.get('/api/v1/topics/' + topic_id).data['topic']
-    assert current_topic['state'] == 'inactive'
+    assert r.status_code == 200
+    assert r.data['topic']['state'] == 'inactive'
 
 
 def test_change_topic_to_invalid_state(admin, topic_id):
@@ -354,7 +353,7 @@ def test_put_topics(admin, topic_id, product):
                     data={'name': 'nname',
                           'next_topic_id': topic_id},
                     headers={'If-match': pt_etag})
-    assert ppt.status_code == 204
+    assert ppt.status_code == 200
 
     gt = admin.get('/api/v1/topics/%s?embed=next_topic' %
                    pt.data['topic']['id'])
@@ -472,7 +471,7 @@ def test_status_from_component_type_last_component(admin, remoteci_context,
     data_update = {'status': 'success'}
     job_put = admin.put('/api/v1/jobs/%s' % job['id'], data=data_update,
                         headers={'If-match': job['etag']})
-    assert job_put.status_code == 204
+    assert job_put.status_code == 200
     status = admin.get('/api/v1/topics/%s/type/type_1/status' %
                        topic_user_id).data
 
@@ -554,7 +553,7 @@ def test_remove_next_topic_from_topic(admin, topic_id, product):
     request2 = admin.put('/api/v1/topics/%s' % new_topic_id,
                          data={'next_topic_id': None},
                          headers={'If-match': request.headers.get("ETag")})
-    assert request2.status_code == 204
+    assert request2.status_code == 200
 
     t = admin.get('/api/v1/topics/%s' % new_topic_id).data['topic']
     assert t['next_topic_id'] is None
@@ -562,7 +561,7 @@ def test_remove_next_topic_from_topic(admin, topic_id, product):
     request3 = admin.put('/api/v1/topics/%s' % new_topic_id,
                          data={'next_topic_id': topic_id},
                          headers={'If-match': request2.headers.get("ETag")})
-    assert request3.status_code == 204
+    assert request3.status_code == 200
 
     t = admin.get('/api/v1/topics/%s' % new_topic_id).data['topic']
     assert t['next_topic_id'] == topic_id
