@@ -126,26 +126,6 @@ def test_success_update_role(admin, role):
     assert role['role']['description'] == 'new role'
 
 
-def test_fail_update_role_label(admin, role):
-    url = '/api/v1/roles/%s' % role['id']
-
-    result = admin.put(url, data={'label': 'MANAGER_UPDATE'},
-                       headers={'If-match': role['etag']})
-
-    assert result.status_code == 400
-
-
-def test_fail_update_role_unauthorized_fields(admin, role):
-    label = {
-        'label': 'NEW LABEL',
-    }
-
-    result = admin.put('/api/v1/roles/%s' % role['id'], data=label,
-                       headers={'If-match': role['etag']})
-
-    assert result.status_code == 400
-
-
 def test_success_get_role_by_id(admin, role):
     result = admin.get('/api/v1/roles/%s' % role['id'])
 

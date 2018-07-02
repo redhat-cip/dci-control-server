@@ -158,16 +158,6 @@ class SchemaTesting(object):
             self.schema.put(None)
         assert exc.value.payload == {'errors': schemas.INVALID_OBJECT}
 
-    def test_post_extra_data(self, data):
-        data_post = {'extra': 'bar'}
-        data_post.update(data)
-        with pytest.raises(exceptions.DCIException) as exc:
-            self.schema.post(data_post)
-
-        assert exc.value.payload == {
-            'errors': {'extra': 'extra keys not allowed'}
-        }
-
     def test_post_missing_data(self, errors):
         with pytest.raises(exceptions.DCIException) as exc:
             self.schema.post({})
@@ -182,19 +172,6 @@ class SchemaTesting(object):
 
     def test_post(self, data, expected_data):
         assert self.schema.post(data) == expected_data
-
-    def test_put_extra_data(self, data, data_extra=None):
-        data_put = data_extra or {'extra': 'bar'}
-        # list() for py34
-        extra = list(data_put.keys())[0]
-        data_put.update(data)
-
-        with pytest.raises(exceptions.DCIException) as exc:
-            self.schema.put(data_put)
-
-            assert exc.value.payload == {
-                'errors': {extra: 'key not allowed'}
-            }
 
     def test_put_invalid_data(self, data, errors):
         with pytest.raises(exceptions.DCIException) as exc:
