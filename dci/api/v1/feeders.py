@@ -126,8 +126,11 @@ def put_feeder(user, f_id):
     if not result.rowcount:
         raise dci_exc.DCIConflict('Feeder', f_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
+    return flask.Response(
+        json.dumps({'feeder': _feeder}), 204,
+        headers={'ETag': values['etag']}, content_type='application/json'
+    )
 
 
 @api.route('/feeders/<uuid:f_id>', methods=['DELETE'])

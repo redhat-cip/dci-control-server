@@ -71,7 +71,7 @@ def test_schedule_jobs_with_rconfiguration(admin, remoteci_context, topic):
 def _update_remoteci(admin, id, etag, data):
     url = '/api/v1/remotecis/%s' % id
     r = admin.put(url, headers={'If-match': etag}, data=data)
-    assert r.status_code == 204
+    assert r.status_code == 200
     return admin.get(url).data['remoteci']
 
 
@@ -97,7 +97,7 @@ def test_schedule_jobs_on_remoteci_inactive(admin, remoteci_context,
 def _update_topic(admin, topic, data):
     url = '/api/v1/topics/%s' % topic['id']
     r = admin.put(url, headers={'If-match': topic['etag']}, data=data)
-    assert r.status_code == 204
+    assert r.status_code == 200
     return admin.get(url).data['topic']
 
 
@@ -128,7 +128,7 @@ def test_schedule_jobs_kills_old_jobs(admin, remoteci_context, topic):
 def _update_component(admin, component, data):
     url = '/api/v1/components/%s' % component['id']
     r = admin.put(url, headers={'If-match': component['etag']}, data=data)
-    assert r.status_code == 204
+    assert r.status_code == 200
     return admin.get(url).data['component']
 
 

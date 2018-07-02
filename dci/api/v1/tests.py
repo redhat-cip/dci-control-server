@@ -81,8 +81,11 @@ def update_tests(user, t_id):
     if not result.rowcount:
         raise dci_exc.DCIConflict('Test', t_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _test = v1_utils.verify_existence_and_get(t_id, _TABLE)
+    return flask.Response(
+        json.dumps({'test': _test}), 200, headers={'ETag': values['etag']},
+        content_type='application/json'
+    )
 
 
 def get_all_tests(user, team_id):

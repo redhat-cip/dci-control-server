@@ -68,10 +68,8 @@ def test_put_fingerprint(admin, topic_id):
     pfp = admin.put('/api/v1/fingerprints/%s' % gfp.data['fingerprint']['id'],
                     data={'name': 'nname'},
                     headers={'If-match': fp_etag})
-    assert pfp.status_code == 204
-
-    gfp = admin.get('/api/v1/fingerprints/%s' % gfp.data['fingerprint']['id'])
-    assert gfp.data['fingerprint']['name'] == 'nname'
+    assert pfp.status_code == 200
+    assert pfp.data['fingerprint']['name'] == 'nname'
 
 
 def test_delete_fingerprint_by_id(admin, topic_id):

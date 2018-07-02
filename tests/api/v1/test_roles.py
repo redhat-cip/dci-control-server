@@ -111,19 +111,15 @@ def test_success_update_role(admin, role):
 
     result = admin.put(url, data={'name': 'User'},
                        headers={'If-match': role['etag']})
-    assert result.status_code == 204
-
-    role = admin.get(url).data
-    assert role['role']['name'] == 'User'
-    assert role['role']['description'] == 'A Manager role'
+    assert result.status_code == 200
+    assert result.data['role']['name'] == 'User'
+    assert result.data['role']['description'] == 'A Manager role'
 
     result = admin.put(url, data={'description': 'new role'},
-                       headers={'If-match': role['role']['etag']})
-    assert result.status_code == 204
-
-    role = admin.get(url).data
-    assert role['role']['name'] == 'User'
-    assert role['role']['description'] == 'new role'
+                       headers={'If-match': result.data['role']['etag']})
+    assert result.status_code == 200
+    assert result.data['role']['name'] == 'User'
+    assert result.data['role']['description'] == 'new role'
 
 
 def test_success_get_role_by_id(admin, role):

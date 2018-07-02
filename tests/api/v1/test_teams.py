@@ -170,10 +170,8 @@ def test_put_teams(admin):
     ppt = admin.put('/api/v1/teams/%s' % gt.data['team']['id'],
                     data={'name': 'nname'},
                     headers={'If-match': pt_etag})
-    assert ppt.status_code == 204
-
-    gt = admin.get('/api/v1/teams/%s' % gt.data['team']['id'])
-    assert gt.data['team']['name'] == 'nname'
+    assert ppt.status_code == 200
+    assert ppt.data['team']['name'] == 'nname'
 
 
 def test_put_team_external_flag(user, admin, product_owner, team_product_id):
@@ -192,11 +190,8 @@ def test_put_team_external_flag(user, admin, product_owner, team_product_id):
     cteam_put = product_owner.put('/api/v1/teams/%s' % cteam_id,
                                   data={'external': False},
                                   headers={'If-match': cteam_etag})
-    assert cteam_put.status_code == 204
-
-    cteam = product_owner.get('/api/v1/teams/%s' % cteam_id)
-
-    assert cteam.data['team']['external'] is False
+    assert cteam_put.status_code == 200
+    assert cteam_put.data['team']['external'] is False
 
 
 def test_delete_team_by_id(admin):
@@ -327,7 +322,7 @@ def test_put_team_as_user_admin(user, team_user_id, user_admin):
     team_put = user_admin.put('/api/v1/teams/%s' % team_user_id,
                               data={'name': 'nname'},
                               headers={'If-match': team_etag})
-    assert team_put.status_code == 204
+    assert team_put.status_code == 200
 
 
 def test_change_team_state(admin, team_id):
@@ -336,9 +331,8 @@ def test_change_team_state(admin, team_id):
     r = admin.put('/api/v1/teams/' + team_id,
                   data=data,
                   headers={'If-match': t['etag']})
-    assert r.status_code == 204
-    current_team = admin.get('/api/v1/teams/' + team_id).data['team']
-    assert current_team['state'] == 'inactive'
+    assert r.status_code == 200
+    assert r.data['team']['state'] == 'inactive'
 
 
 def test_change_team_to_invalid_state(admin, team_id):

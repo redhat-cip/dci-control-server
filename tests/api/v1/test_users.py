@@ -247,10 +247,8 @@ def test_put_users(admin, team_id):
     ppu = admin.put('/api/v1/users/%s' % gu.data['user']['id'],
                     data={'name': 'nname'},
                     headers={'If-match': pu_etag})
-    assert ppu.status_code == 204
-
-    gu = admin.get('/api/v1/users/%s' % gu.data['user']['id'])
-    assert gu.data['user']['name'] == 'nname'
+    assert ppu.status_code == 200
+    assert ppu.data['user']['name'] == 'nname'
 
 
 def test_change_user_state(admin, team_id):
@@ -269,11 +267,8 @@ def test_change_user_state(admin, team_id):
     ppu = admin.put('/api/v1/users/%s' % gu.data['user']['id'],
                     data={'state': 'inactive'},
                     headers={'If-match': pu_etag})
-    assert ppu.status_code == 204
-
-    gu = admin.get('/api/v1/users/%s' % pu.data['user']['id'])
-    assert gu.status_code == 200
-    assert gu.data['user']['state'] == 'inactive'
+    assert ppu.status_code == 200
+    assert ppu.data['user']['state'] == 'inactive'
 
 
 def test_change_user_to_invalid_state(admin, team_id):
@@ -392,14 +387,14 @@ def test_admin_or_team_admin_can_update_another_user(admin, user_admin):
         '/api/v1/users/%s' % user['id'],
         data={'name': 'new_name'},
         headers={'If-match': etag}
-    ).status_code == 204
+    ).status_code == 200
 
     user, etag = get_user(admin, 'new_name')
     assert user_admin.put(
         '/api/v1/users/%s' % user['id'],
         data={'name': 'user'},
         headers={'If-match': etag}
-    ).status_code == 204
+    ).status_code == 200
 
 
 def test_user_cant_update_him(admin, user):
@@ -476,7 +471,7 @@ def test_update_current_user_password(admin, user):
         '/api/v1/users/me',
         data={'current_password': 'user', 'new_password': 'password'},
         headers={'If-match': user_etag}
-    ).status_code == 204
+    ).status_code == 200
 
     assert user.get('/api/v1/users/me').status_code == 401
 
@@ -486,7 +481,7 @@ def test_update_current_user_password(admin, user):
         '/api/v1/users/%s' % user_data['id'],
         data={'password': 'user'},
         headers={'If-match': user_etag}
-    ).status_code == 204
+    ).status_code == 200
 
     assert user.get('/api/v1/users/me').status_code == 200
 
@@ -514,7 +509,7 @@ def test_update_current_user_new_password_empty(admin, user):
         '/api/v1/users/me',
         data={'current_password': 'user', 'new_password': ''},
         headers={'If-match': user_etag}
-    ).status_code == 204
+    ).status_code == 200
 
     assert user.get('/api/v1/users/me').status_code == 200
 
@@ -524,22 +519,17 @@ def test_update_current_user(admin, user):
 
     assert user.get('/api/v1/users/me').status_code == 200
 
-    assert user.put(
+    me = user.put(
         '/api/v1/users/me',
         data={'current_password': 'user', 'new_password': '',
               'email': 'new_email@example.org', 'fullname': 'New Name',
               'timezone': 'Europe/Paris'},
         headers={'If-match': user_etag}
-    ).status_code == 204
-
-    request = user.get('/api/v1/users/me')
-    assert request.status_code == 200
-
-    me = request.data['user']
-
-    assert me['email'] == 'new_email@example.org'
-    assert me['fullname'] == 'New Name'
-    assert me['timezone'] == 'Europe/Paris'
+    )
+    assert me.status_code == 200
+    assert me.data['user']['email'] == 'new_email@example.org'
+    assert me.data['user']['fullname'] == 'New Name'
+    assert me.data['user']['timezone'] == 'Europe/Paris'
 
 
 def test_get_embed_remotecis(user, remoteci_user_id, user_id):
