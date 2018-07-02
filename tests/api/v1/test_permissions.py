@@ -87,20 +87,16 @@ def test_success_update_permission(admin, permission):
 
     result = admin.put(url, data={'name': 'New Permission'},
                        headers={'If-match': permission['etag']})
-    assert result.status_code == 204
-
-    permission = admin.get(url).data
-    assert permission['permission']['name'] == 'New Permission'
-    assert permission['permission']['description'] == \
+    assert result.status_code == 200
+    assert result.data['permission']['name'] == 'New Permission'
+    assert result.data['permission']['description'] == \
         'This is a regular permission'
 
     result = admin.put(url, data={'description': 'new permission'},
-                       headers={'If-match': permission['permission']['etag']})
-    assert result.status_code == 204
-
-    permission = admin.get(url).data
-    assert permission['permission']['name'] == 'New Permission'
-    assert permission['permission']['description'] == 'new permission'
+                       headers={'If-match': result.data['permission']['etag']})
+    assert result.status_code == 200
+    assert result.data['permission']['name'] == 'New Permission'
+    assert result.data['permission']['description'] == 'new permission'
 
 
 def test_success_get_all_permissions_admin(admin, permission):

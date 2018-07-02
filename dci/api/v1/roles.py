@@ -77,15 +77,18 @@ def update_role(user, role_id):
         _TABLE.c.etag == if_match_etag,
         _TABLE.c.id == role_id
     )
-    query = _TABLE.update().where(where_clause).values(**values)
+    query = _TABLE.update().returning(*_TABLE.columns).\
+        where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
-
     if not result.rowcount:
         raise dci_exc.DCIConflict('Role', role_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({'role': result.fetchone()}), 200,
+        headers={'ETag': values['etag']},
+        content_type='application/json'
+    )
 
 
 @api.route('/roles', methods=['GET'])

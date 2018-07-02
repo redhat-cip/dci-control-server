@@ -159,14 +159,18 @@ def put_topic(user, topic_id):
         _TABLE.c.etag == if_match_etag,
         _TABLE.c.id == topic_id
     )
-    query = _TABLE.update().where(where_clause).values(**values)
+    query = _TABLE.update().returning(*_TABLE.columns).\
+        where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
     if not result.rowcount:
         raise dci_exc.DCIConflict('Topic', topic_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({'topic': result.fetchone()}), 200,
+        headers={'ETag': values['etag']},
+        content_type='application/json'
+    )
 
 
 @api.route('/topics/<uuid:topic_id>', methods=['DELETE'])

@@ -199,3 +199,14 @@ def test_failure_refresh_secret_feeder_unauthorized_users(user_admin, user,
 
     assert user_admin_result.status_code == 401
     assert user_result.status_code == 401
+
+
+def test_success_ensure_put_api_secret_is_not_leaked(admin, feeder):
+    """Test to ensure API secret is not leaked during update."""
+
+    res = admin.put('/api/v1/feeders/%s' % feeder['id'],
+                    data={'name': 'newname'},
+                    headers={'If-match': feeder['etag']})
+
+    assert res.status_code == 200
+    assert 'api_secret' not in res.data['feeder']

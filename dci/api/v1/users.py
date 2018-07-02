@@ -159,7 +159,7 @@ def put_current_user(user):
 
     etag = utils.gen_etag()
 
-    query = _TABLE.update().where(sql.and_(
+    query = _TABLE.update().returning(*_TABLE.columns).where(sql.and_(
         _TABLE.c.etag == if_match_etag,
         _TABLE.c.id == user['id']
     )).values({
@@ -170,9 +170,14 @@ def put_current_user(user):
         'password': encrypted_password,
     })
 
-    flask.g.db_conn.execute(query)
-    return flask.Response(None, 204, headers={'ETag': etag},
-                          content_type='application/json')
+    result = flask.g.db_conn.execute(query)
+    _result = dict(result.fetchone())
+    del _result['password']
+
+    return flask.Response(
+        json.dumps({'user': _result}), 200, headers={'ETag': etag},
+        content_type='application/json'
+    )
 
 
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
@@ -204,15 +209,20 @@ def put_user(user, user_id):
         _TABLE.c.etag == if_match_etag,
         _TABLE.c.id == user_id
     )
-    query = _TABLE.update().where(where_clause).values(**values)
+    query = _TABLE.update().returning(*_TABLE.columns).\
+        where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
-
     if not result.rowcount:
         raise dci_exc.DCIConflict('User', user_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _result = dict(result.fetchone())
+    del _result['password']
+
+    return flask.Response(
+        json.dumps({'user': _result}), 200, headers={'ETag': values['etag']},
+        content_type='application/json'
+    )
 
 
 @api.route('/users/<uuid:user_id>', methods=['DELETE'])
