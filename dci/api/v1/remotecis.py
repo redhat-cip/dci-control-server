@@ -144,8 +144,11 @@ def put_remoteci(user, r_id):
     if not result.rowcount:
         raise dci_exc.DCIConflict('RemoteCI', r_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+    return flask.Response(
+        json.dumps({'remoteci': _remoteci}), 200,
+        headers={'ETag': values['etag']}, content_type='application/json'
+    )
 
 
 @api.route('/remotecis/<uuid:remoteci_id>', methods=['DELETE'])

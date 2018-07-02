@@ -83,8 +83,11 @@ def update_product(user, product_id):
     if not result.rowcount:
         raise dci_exc.DCIConflict('Product update error', product_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _product = v1_utils.verify_existence_and_get(product_id, _TABLE)
+    return flask.Response(
+        json.dumps({'product': _product}), 200,
+        headers={'ETag': values['etag']}, content_type='application/json'
+    )
 
 
 @api.route('/products', methods=['GET'])

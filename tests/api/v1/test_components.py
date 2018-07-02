@@ -500,9 +500,8 @@ def test_change_component_state(admin, topic_id):
     r = admin.put('/api/v1/components/' + pc_id,
                   data=data,
                   headers={'If-match': t['etag']})
-    assert r.status_code == 204
-    cpt = admin.get('/api/v1/components/' + pc_id).data['component']
-    assert cpt['state'] == 'inactive'
+    assert r.status_code == 200
+    assert r.data['component']['state'] == 'inactive'
 
 
 def test_change_component_to_invalid_state(admin, topic_id):
@@ -545,11 +544,9 @@ def test_component_success_update_field_by_field(admin, topic_id):
     assert c['state'] == 'inactive'
     assert c['title'] is None
 
-    admin.put('/api/v1/components/%s' % c['id'],
-              data={'name': 'pname2'},
-              headers={'If-match': c['etag']})
-
-    c = admin.get('/api/v1/components/%s' % c['id']).data['component']
+    c = admin.put('/api/v1/components/%s' % c['id'],
+                  data={'name': 'pname2'},
+                  headers={'If-match': c['etag']}).data['component']
 
     assert c['name'] == 'pname2'
     assert c['state'] == 'inactive'

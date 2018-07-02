@@ -155,8 +155,11 @@ def put_topic(user, topic_id):
     if not result.rowcount:
         raise dci_exc.DCIConflict('Topic', topic_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    return flask.Response(
+        json.dumps({'topic': _topic}), 200, headers={'ETag': values['etag']},
+        content_type='application/json'
+    )
 
 
 @api.route('/topics/<uuid:topic_id>', methods=['DELETE'])

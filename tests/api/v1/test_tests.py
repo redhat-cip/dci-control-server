@@ -352,9 +352,8 @@ def test_change_test(admin, test_id):
     r = admin.put('/api/v1/tests/' + test_id,
                   data=data,
                   headers={'If-match': t['etag']})
-    assert r.status_code == 204
-    current_test = admin.get('/api/v1/tests/' + test_id).data['test']
-    assert current_test['state'] == 'inactive'
+    assert r.status_code == 200
+    assert r.data['test']['state'] == 'inactive'
 
 
 def test_change_test_to_invalid_state(admin, test_id):

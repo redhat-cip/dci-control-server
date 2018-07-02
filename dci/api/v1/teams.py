@@ -146,8 +146,11 @@ def put_team(user, t_id):
     if not result.rowcount:
         raise dci_exc.DCIConflict('Team', t_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _team = v1_utils.verify_existence_and_get(t_id, _TABLE)
+    return flask.Response(
+        json.dumps({'team': _team}), 200, headers={'ETag': values['etag']},
+        content_type='application/json'
+    )
 
 
 @api.route('/teams/<uuid:t_id>', methods=['DELETE'])

@@ -226,9 +226,7 @@ def test_update_job(admin, job_user_id):
 
     res = admin.put('/api/v1/jobs/%s' % job_user_id, data=data_update,
                     headers={'If-match': job['etag']})
-    assert res.status_code == 204
-
-    res = admin.get('/api/v1/jobs/%s' % job_user_id)
+    assert res.status_code == 200
     job = res.data['job']
 
     assert res.status_code == 200

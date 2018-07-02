@@ -84,8 +84,11 @@ def update_role(user, role_id):
     if not result.rowcount:
         raise dci_exc.DCIConflict('Role', role_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _role = v1_utils.verify_existence_and_get(role_id, _TABLE)
+    return flask.Response(
+        json.dumps({'role': _role}), 200, headers={'ETag': values['etag']},
+        content_type='application/json'
+    )
 
 
 @api.route('/roles', methods=['GET'])

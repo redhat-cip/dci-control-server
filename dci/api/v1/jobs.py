@@ -423,8 +423,11 @@ def update_job_by_id(user, job_id):
     if not result.rowcount:
         raise dci_exc.DCIConflict('Job', job_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _job = v1_utils.verify_existence_and_get(job_id, _TABLE)
+    return flask.Response(
+        json.dumps({'job': _job}), 200, headers={'ETag': values['etag']},
+        content_type='application/json'
+    )
 
 
 @api.route('/jobs/<uuid:j_id>/files', methods=['POST'])

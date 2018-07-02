@@ -80,8 +80,11 @@ def update_permission(user, permission_id):
     if not result.rowcount:
         raise dci_exc.DCIConflict('Permission update error', permission_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _permission = v1_utils.verify_existence_and_get(permission_id, _TABLE)
+    return flask.Response(
+        json.dumps({'permission': _permission}), 200,
+        headers={'ETag': values['etag']}, content_type='application/json'
+    )
 
 
 @api.route('/permissions', methods=['GET'])

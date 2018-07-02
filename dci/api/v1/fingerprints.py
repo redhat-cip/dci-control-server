@@ -106,8 +106,11 @@ def modify_fingerprint(user, fp_id):
     if not result.rowcount:
         raise dci_exc.DCIConflict('Fingerprint', fp_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _fingerprint = v1_utils.verify_existence_and_get(fp_id, _TABLE)
+    return flask.Response(
+        json.dumps({'fingerprint': _fingerprint}), 200,
+        headers={'ETag': values['etag']}, content_type='application/json'
+    )
 
 
 @api.route('/fingerprints/<uuid:fp_id>', methods=['DELETE'])

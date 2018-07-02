@@ -171,8 +171,14 @@ def put_current_user(user):
     })
 
     flask.g.db_conn.execute(query)
-    return flask.Response(None, 204, headers={'ETag': etag},
-                          content_type='application/json')
+
+    _user = dict(v1_utils.verify_existence_and_get(user['id'], _TABLE))
+    del _user['password']
+
+    return flask.Response(
+        json.dumps({'user': _user}), 200, headers={'ETag': etag},
+        content_type='application/json'
+    )
 
 
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
@@ -207,12 +213,16 @@ def put_user(user, user_id):
     query = _TABLE.update().where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
-
     if not result.rowcount:
         raise dci_exc.DCIConflict('User', user_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _user = dict(v1_utils.verify_existence_and_get(user_id, _TABLE))
+    del _user['password']
+
+    return flask.Response(
+        json.dumps({'user': _user}), 200, headers={'ETag': values['etag']},
+        content_type='application/json'
+    )
 
 
 @api.route('/users/<uuid:user_id>', methods=['DELETE'])

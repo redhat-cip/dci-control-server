@@ -304,12 +304,10 @@ def test_put_remotecis(user, team_user_id):
     ppr = user.put('/api/v1/remotecis/%s' % gr.data['remoteci']['id'],
                    data={'name': 'nname', 'public': True, 'data': {'c': 3}},
                    headers={'If-match': pr_etag})
-    assert ppr.status_code == 204
-
-    gr = user.get('/api/v1/remotecis/%s' % gr.data['remoteci']['id'])
-    assert gr.data['remoteci']['name'] == 'nname'
-    assert gr.data['remoteci']['public'] is True
-    assert set(gr.data['remoteci']['data']) == set(['c'])
+    assert ppr.status_code == 200
+    assert ppr.data['remoteci']['name'] == 'nname'
+    assert ppr.data['remoteci']['public'] is True
+    assert set(ppr.data['remoteci']['data']) == set(['c'])
 
 
 def test_delete_remoteci_by_id(user, team_user_id):
@@ -403,7 +401,7 @@ def test_put_remoteci_as_user(user, team_user_id, remoteci_id, admin):
                             % remoteci.data['remoteci']['id'],
                             data={'name': 'nname'},
                             headers={'If-match': remoteci_etag})
-    assert remoteci_put.status_code == 204
+    assert remoteci_put.status_code == 200
 
     remoteci = user.get('/api/v1/remotecis/%s'
                         % remoteci.data['remoteci']['id']).data['remoteci']
@@ -484,9 +482,8 @@ def test_change_remoteci_state(admin, remoteci_id):
     r = admin.put('/api/v1/remotecis/' + remoteci_id,
                   data=data,
                   headers={'If-match': t['etag']})
-    assert r.status_code == 204
-    rci = admin.get('/api/v1/remotecis/' + remoteci_id).data['remoteci']
-    assert rci['state'] == 'inactive'
+    assert r.status_code == 200
+    assert r.data['remoteci']['state'] == 'inactive'
 
 
 def test_change_remoteci_to_invalid_state(admin, remoteci_id):
