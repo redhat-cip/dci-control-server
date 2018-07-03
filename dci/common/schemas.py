@@ -459,6 +459,9 @@ topic = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('next_topic', default=None): v.Any(
         v.All(UUID, msg=INVALID_TOPIC), None
     ),
+    v.Optional('next_topic_id', default=None): v.Any(
+        v.All(UUID, msg=INVALID_TOPIC), None
+    ),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
     v.Optional('component_types', default=[]): list,
@@ -468,6 +471,7 @@ topic_put = {
     v.Optional('name'): six.text_type,
     v.Optional('label'): six.text_type,
     v.Optional('next_topic'): v.Any(None, UUID, msg=INVALID_TOPIC),
+    v.Optional('next_topic_id'): v.Any(None, UUID, msg=INVALID_TOPIC),
     v.Optional('product_id'): v.Any(UUID, msg=INVALID_PRODUCT),
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),

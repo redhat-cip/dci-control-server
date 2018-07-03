@@ -44,6 +44,7 @@ COMMENT = 'comment', text_type
 CONTENT = 'content', text_type
 LABEL = 'label', text_type
 NEXT_TOPIC = 'next_topic', uuid.uuid4()
+NEXT_TOPIC_ID = 'next_topic_id', uuid.uuid4()
 COUNTRY = 'country', text_type
 EMAIL = 'email', 'foo@bar.org'
 VALUE = 'value', text_type

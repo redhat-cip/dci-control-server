@@ -352,6 +352,30 @@ def test_put_topics(admin, topic_id, product):
 
     ppt = admin.put('/api/v1/topics/%s' % pt.data['topic']['id'],
                     data={'name': 'nname',
+                          'next_topic_id': topic_id},
+                    headers={'If-match': pt_etag})
+    assert ppt.status_code == 204
+
+    gt = admin.get('/api/v1/topics/%s?embed=nexttopic' %
+                   pt.data['topic']['id'])
+    assert gt.status_code == 200
+    assert gt.data['topic']['name'] == 'nname'
+    assert gt.data['topic']['nexttopic']['name'] == 'topic_name'
+
+
+def test_put_topics_legacy(admin, topic_id, product):
+    pt = admin.post('/api/v1/topics',
+                    data={'name': 'pname', 'product_id': product['id'],
+                          'component_types': ['type1', 'type2']})
+    assert pt.status_code == 201
+
+    pt_etag = pt.headers.get("ETag")
+
+    gt = admin.get('/api/v1/topics/%s' % pt.data['topic']['id'])
+    assert gt.status_code == 200
+
+    ppt = admin.put('/api/v1/topics/%s' % pt.data['topic']['id'],
+                    data={'name': 'nname',
                           'next_topic': topic_id},
                     headers={'If-match': pt_etag})
     assert ppt.status_code == 204
@@ -543,29 +567,29 @@ def test_status_from_component_type_get_status(admin, remoteci_context,
 
 def test_remove_next_topic_from_topic(admin, topic_id, product):
     request = admin.post('/api/v1/topics',
-                         data={'name': 'topic 1', 'next_topic': topic_id,
+                         data={'name': 'topic 1', 'next_topic_id': topic_id,
                                'product_id': product['id']})
     assert request.status_code == 201
     new_topic_id = request.data['topic']['id']
 
     t = admin.get('/api/v1/topics/%s' % new_topic_id).data['topic']
-    assert t['next_topic'] == topic_id
+    assert t['next_topic_id'] == topic_id
 
     request2 = admin.put('/api/v1/topics/%s' % new_topic_id,
-                         data={'next_topic': None},
+                         data={'next_topic_id': None},
                          headers={'If-match': request.headers.get("ETag")})
     assert request2.status_code == 204
 
     t = admin.get('/api/v1/topics/%s' % new_topic_id).data['topic']
-    assert t['next_topic'] is None
+    assert t['next_topic_id'] is None
 
     request3 = admin.put('/api/v1/topics/%s' % new_topic_id,
-                         data={'next_topic': topic_id},
+                         data={'next_topic_id': topic_id},
                          headers={'If-match': request2.headers.get("ETag")})
     assert request3.status_code == 204
 
     t = admin.get('/api/v1/topics/%s' % new_topic_id).data['topic']
-    assert t['next_topic'] == topic_id
+    assert t['next_topic_id'] == topic_id
 
 
 def test_component_success_update_field_by_field(admin, topic_id):
