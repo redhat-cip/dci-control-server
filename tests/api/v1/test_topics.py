@@ -356,35 +356,11 @@ def test_put_topics(admin, topic_id, product):
                     headers={'If-match': pt_etag})
     assert ppt.status_code == 204
 
-    gt = admin.get('/api/v1/topics/%s?embed=nexttopic' %
+    gt = admin.get('/api/v1/topics/%s?embed=next_topic' %
                    pt.data['topic']['id'])
     assert gt.status_code == 200
     assert gt.data['topic']['name'] == 'nname'
-    assert gt.data['topic']['nexttopic']['name'] == 'topic_name'
-
-
-def test_put_topics_legacy(admin, topic_id, product):
-    pt = admin.post('/api/v1/topics',
-                    data={'name': 'pname', 'product_id': product['id'],
-                          'component_types': ['type1', 'type2']})
-    assert pt.status_code == 201
-
-    pt_etag = pt.headers.get("ETag")
-
-    gt = admin.get('/api/v1/topics/%s' % pt.data['topic']['id'])
-    assert gt.status_code == 200
-
-    ppt = admin.put('/api/v1/topics/%s' % pt.data['topic']['id'],
-                    data={'name': 'nname',
-                          'next_topic': topic_id},
-                    headers={'If-match': pt_etag})
-    assert ppt.status_code == 204
-
-    gt = admin.get('/api/v1/topics/%s?embed=nexttopic' %
-                   pt.data['topic']['id'])
-    assert gt.status_code == 200
-    assert gt.data['topic']['name'] == 'nname'
-    assert gt.data['topic']['nexttopic']['name'] == 'topic_name'
+    assert gt.data['topic']['next_topic']['name'] == 'topic_name'
 
 
 # Tests for topics and teams management

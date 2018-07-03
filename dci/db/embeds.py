@@ -54,8 +54,8 @@ JOBSTATE = models.JOBSTATES.alias('jobstate')
 JOBSTATE_JOBS = models.JOBS.alias('jobstate.job')
 
 TOPIC = models.TOPICS.alias('topic')
-NEXT_TOPIC = models.TOPICS.alias('next_topic')
 _NEXT_TOPIC = models.TOPICS.alias('nexttopic')
+NEXT_TOPIC = models.TOPICS.alias('next_topic')
 
 ROLE = models.ROLES.alias('role')
 

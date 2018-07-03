@@ -22,7 +22,7 @@ def test_job_upgrade(admin, job_user_id, remoteci_id, topic_id, topic_user_id,
                      components_ids, components_user_ids):
     job_upgraded = admin.post('/api/v1/jobs/upgrade',
                               data={'job_id': job_user_id})
-    # the topic 'topic_id' does not contains a 'next_topic' field
+    # the topic 'topic_id' does not contains a 'next_topic_id' field
     assert job_upgraded.status_code == 400
 
     # adds a next topic to 'topic_user_id'

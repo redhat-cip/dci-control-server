@@ -140,7 +140,7 @@ def create_products(teams):
 def create_topic(name, component_types, product, next_topic=None):
     topic = {'name': name, 'component_types': component_types, 'product_id': product['id']}
     if next_topic:
-        topic['next_topic'] = next_topic['id']
+        topic['next_topic_id'] = next_topic['id']
     r = post('topics', topic)
     return r.json()['topic']
 

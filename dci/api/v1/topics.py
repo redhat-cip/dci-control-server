@@ -60,11 +60,6 @@ def create_topics(user):
     # if values['component_types'] == []:
     #     raise dci_exc.DCIException('component_types should not be void')
 
-    if values.get('next_topic_id'):
-        values['next_topic'] = values['next_topic_id']
-    elif values.get('next_topic'):
-        values['next_topic_id'] = values['next_topic']
-
     query = _TABLE.insert().values(**values)
 
     try:
@@ -144,11 +139,6 @@ def put_topic(user, topic_id):
     if values.get('next_topic_id'):
         n_topic = v1_utils.verify_existence_and_get(values['next_topic_id'],
                                                     _TABLE)
-        values['next_topic'] = values['next_topic_id']
-    elif values.get('next_topic'):
-        n_topic = v1_utils.verify_existence_and_get(values['next_topic'],
-                                                    _TABLE)
-        values['next_topic_id'] = values['next_topic']
 
     if user.is_product_owner() and \
        (user.product_id != topic['product_id'] or
