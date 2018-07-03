@@ -38,6 +38,7 @@ _EMBED_MANY = {
     'teams': True,
     'product': False,
     'nexttopic': False,
+    'next_topic': False,
 }
 
 
@@ -137,9 +138,6 @@ def put_topic(user, topic_id):
     n_topic = None
     if 'next_topic_id' in values and values['next_topic_id']:
         n_topic = v1_utils.verify_existence_and_get(values['next_topic_id'],
-                                                    _TABLE)
-    elif 'next_topic' in values and values['next_topic']:
-        n_topic = v1_utils.verify_existence_and_get(values['next_topic'],
                                                     _TABLE)
 
     if user.is_product_owner() and \

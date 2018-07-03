@@ -447,7 +447,6 @@ file_upload_certification = schema_factory({
 topic = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('product_id', default=None): v.Any(UUID, msg=INVALID_PRODUCT),
     v.Optional('label', default=None): six.text_type,
-    v.Optional('next_topic', default=None): v.Any(UUID, msg=INVALID_TOPIC),
     v.Optional('next_topic_id', default=None): v.Any(UUID, msg=INVALID_TOPIC),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
@@ -457,7 +456,6 @@ topic = utils.dict_merge(base, DATA_FIELD, {
 topic_put = {
     v.Optional('name'): six.text_type,
     v.Optional('label'): six.text_type,
-    v.Optional('next_topic'): v.Any(None, UUID, msg=INVALID_TOPIC),
     v.Optional('next_topic_id'): v.Any(None, UUID, msg=INVALID_TOPIC),
     v.Optional('product_id'): v.Any(UUID, msg=INVALID_PRODUCT),
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
