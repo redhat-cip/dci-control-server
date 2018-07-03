@@ -356,11 +356,11 @@ def test_put_topics(admin, topic_id, product):
                     headers={'If-match': pt_etag})
     assert ppt.status_code == 204
 
-    gt = admin.get('/api/v1/topics/%s?embed=nexttopic' %
+    gt = admin.get('/api/v1/topics/%s?embed=next_topic' %
                    pt.data['topic']['id'])
     assert gt.status_code == 200
     assert gt.data['topic']['name'] == 'nname'
-    assert gt.data['topic']['nexttopic']['name'] == 'topic_name'
+    assert gt.data['topic']['next_topic']['name'] == 'topic_name'
 
 
 # Tests for topics and teams management
