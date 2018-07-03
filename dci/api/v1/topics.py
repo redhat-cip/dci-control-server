@@ -135,7 +135,10 @@ def put_topic(user, topic_id):
         raise auth.UNAUTHORIZED
 
     n_topic = None
-    if 'next_topic' in values and values['next_topic']:
+    if 'next_topic_id' in values and values['next_topic_id']:
+        n_topic = v1_utils.verify_existence_and_get(values['next_topic_id'],
+                                                    _TABLE)
+    elif 'next_topic' in values and values['next_topic']:
         n_topic = v1_utils.verify_existence_and_get(values['next_topic'],
                                                     _TABLE)
 

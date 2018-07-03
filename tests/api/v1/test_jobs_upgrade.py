@@ -30,7 +30,7 @@ def test_job_upgrade(admin, job_user_id, remoteci_id, topic_id, topic_user_id,
     topic_user_etag = topic.data['topic']['etag']
 
     assert admin.put('/api/v1/topics/%s' % topic_user_id,
-                     data={'next_topic': topic_id},
+                     data={'next_topic_id': topic_id},
                      headers={'If-match': topic_user_etag}).status_code == 204
 
     # request for the upgrade of the first job
