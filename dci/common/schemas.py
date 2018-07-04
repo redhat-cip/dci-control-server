@@ -159,12 +159,12 @@ def schema_factory(schema):
 ###############################################################################
 
 
-split_coerce = v.Coerce(lambda s: s.split(','))
+split_coerce = v.Coerce(lambda s: [] if isinstance(s, list) else s.split(','))
 args = Schema({
-    v.Optional('limit', default=None): v.All(v.Coerce(int), v.Range(0),
-                                             msg=INVALID_LIMIT),
-    v.Optional('offset', default=None): v.All(v.Coerce(int), v.Range(0),
-                                              msg=INVALID_OFFSET),
+    v.Optional('limit', default=None): v.Any(v.All(v.Coerce(int), v.Range(0),
+                                                   msg=INVALID_LIMIT), None),
+    v.Optional('offset', default=None): v.Any(v.All(v.Coerce(int), v.Range(0),
+                                                    msg=INVALID_OFFSET), None),
     v.Optional('sort', default=[]): split_coerce,
     v.Optional('where', default=[]): split_coerce,
     v.Optional('embed', default=[]): split_coerce
@@ -190,11 +190,12 @@ componenttype = schema_factory(base)
 ###############################################################################
 
 team = utils.dict_merge(base, {
-    v.Optional('country', default=None): six.text_type,
+    v.Optional('country', default=None): v.Any(six.text_type, None),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
     v.Optional('external', default=True): bool,
-    v.Optional('parent_id', default=None): v.Any(UUID, msg=INVALID_TEAM),
+    v.Optional('parent_id', default=None): v.Any(v.All(UUID, msg=INVALID_TEAM),
+                                                 None),
 })
 
 team_put = {
@@ -244,8 +245,7 @@ user = utils.dict_merge(base, {
     v.Optional('timezone'): v.Any(Timezone, msg=INVALID_TIMEZONE),
     v.Optional('role_id'): v.Any(UUID, msg=INVALID_UUID),
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
+    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE),
 })
 
 user_put = {
@@ -260,8 +260,7 @@ user_put = {
                                msg=INVALID_RESOURCE_STATE),
 }
 
-user = DCISchema(schema_factory(user).post,
-                 Schema(user_put))
+user = DCISchema(schema_factory(user).post, Schema(user_put))
 
 ###############################################################################
 #                                                                             #
@@ -287,12 +286,13 @@ current_user = DCISchema(schema_factory({}).post, Schema(current_user_put))
 ###############################################################################
 
 component = utils.dict_merge(base, DATA_FIELD, {
-    v.Optional('title', default=None): six.text_type,
-    v.Optional('message', default=None): six.text_type,
-    v.Optional('canonical_project_name', default=None): six.text_type,
+    v.Optional('title', default=None): v.Any(six.text_type, None),
+    v.Optional('message', default=None): v.Any(six.text_type, None),
+    v.Optional('canonical_project_name', default=None): v.Any(six.text_type,
+                                                              None),
     # True if the component can be exported to non US countries.
     v.Optional('export_control', default=False): bool,
-    v.Optional('url', default=None): Url(),
+    v.Optional('url', default=None): v.Any(Url(), None),
     'type': six.text_type,
     'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
@@ -306,7 +306,7 @@ component_put = {
     v.Optional('title'): six.text_type,
     v.Optional('message'): six.text_type,
     v.Optional('canonical_project_name'): six.text_type,
-    v.Optional('url'): Url(),
+    v.Optional('url'): v.Any(None, Url()),
     v.Optional('type'): six.text_type,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
@@ -350,16 +350,20 @@ job = {
     v.Optional('remoteci_id'): v.Any(UUID, msg=INVALID_REMOTE_CI),
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     'components': list,
-    v.Optional('comment', default=None): six.text_type,
-    v.Optional('previous_job_id', default=None): v.Any(UUID,
-                                                       msg=INVALID_JOB),
-    v.Optional('update_previous_job_id', default=None): v.Any(UUID,
-                                                              msg=INVALID_JOB),
+    v.Optional('comment', default=None): v.Any(six.text_type, None),
+    v.Optional('previous_job_id', default=None): v.Any(v.All(UUID,
+                                                             msg=INVALID_JOB),
+                                                       None),
+    v.Optional('update_previous_job_id', default=None): v.Any(
+        v.All(UUID, msg=INVALID_JOB), None
+    ),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
-    v.Optional('topic_id', default=None): v.Any(UUID, msg=INVALID_TOPIC),
-    v.Optional('rconfiguration_id', default=None): v.Any(UUID,
-                                                         msg=INVALID_RCONFIGURATION)  # noqa
+    v.Optional('topic_id', default=None): v.Any(v.All(UUID, msg=INVALID_TOPIC),
+                                                None),
+    v.Optional('rconfiguration_id', default=None): v.Any(
+        v.All(UUID, msg=INVALID_RCONFIGURATION), None
+    )
 }
 
 job_put = {
@@ -405,7 +409,7 @@ job_schedule_template = schema_factory(job_schedule_template)
 jobstate = {
     'status': six.text_type,
     'job_id': v.Any(UUID, msg=INVALID_JOB),
-    v.Optional('comment', default=None): six.text_type,
+    v.Optional('comment', default=None): v.Any(six.text_type, None),
 }
 
 jobstate = schema_factory(jobstate)
@@ -418,16 +422,19 @@ jobstate = schema_factory(jobstate)
 
 file = utils.dict_merge(base, {
     v.Optional('content', default=''): six.text_type,
-    v.Optional('md5', default=None): six.text_type,
-    v.Optional('mime', default=None): six.text_type,
-    v.Optional('jobstate_id', default=None): v.Any(UUID,
-                                                   msg=INVALID_JOB_STATE),
-    v.Optional('job_id', default=None): v.Any(UUID,
-                                              msg=INVALID_JOB),
+    v.Optional('md5', default=None): v.Any(six.text_type, None),
+    v.Optional('mime', default=None): v.Any(six.text_type, None),
+    v.Optional('jobstate_id', default=None): v.Any(
+        v.All(UUID, msg=INVALID_JOB_STATE), None
+    ),
+    v.Optional('job_id', default=None): v.Any(
+        v.All(UUID, msg=INVALID_JOB), None
+    ),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
-    v.Optional('test_id', default=None): v.Any(UUID,
-                                               msg=INVALID_TEST)
+    v.Optional('test_id', default=None): v.Any(
+        v.All(UUID, msg=INVALID_TEST), None
+    )
 })
 
 file = schema_factory(file)
@@ -445,10 +452,13 @@ file_upload_certification = schema_factory({
 ###############################################################################
 
 topic = utils.dict_merge(base, DATA_FIELD, {
-    v.Optional('product_id', default=None): v.Any(UUID, msg=INVALID_PRODUCT),
-    v.Optional('label', default=None): six.text_type,
-    v.Optional('next_topic', default=None): v.Any(UUID,
-                                                  msg=INVALID_TOPIC),
+    v.Optional('product_id', default=None): v.Any(
+        v.All(UUID, msg=INVALID_PRODUCT), None
+    ),
+    v.Optional('label', default=None): v.Any(six.text_type, None),
+    v.Optional('next_topic', default=None): v.Any(
+        v.All(UUID, msg=INVALID_TOPIC), None
+    ),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
     v.Optional('component_types', default=[]): list,
@@ -517,8 +527,8 @@ meta = DCISchema(schema_factory(meta).post, Schema(meta_put))
 
 role = {
     'name': six.text_type,
-    v.Optional('label', default=None): six.text_type,
-    v.Optional('description', default=None): six.text_type,
+    v.Optional('label', default=None): v.Any(six.text_type, None),
+    v.Optional('description', default=None): v.Any(six.text_type, None),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 }
@@ -554,8 +564,8 @@ rconfiguration = schema_factory(rconfiguration)
 
 permission = {
     'name': six.text_type,
-    v.Optional('label', default=None): six.text_type,
-    v.Optional('description', default=None): six.text_type,
+    v.Optional('label', default=None): v.Any(six.text_type, None),
+    v.Optional('description', default=None): v.Any(six.text_type, None),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 }
@@ -578,8 +588,8 @@ permission = DCISchema(schema_factory(permission).post, Schema(permission_put))
 product = {
     'name': six.text_type,
     'team_id': v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('label', default=None): six.text_type,
-    v.Optional('description', default=None): six.text_type,
+    v.Optional('label', default=None): v.Any(six.text_type, None),
+    v.Optional('description', default=None): v.Any(six.text_type, None),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 }

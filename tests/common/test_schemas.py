@@ -214,7 +214,7 @@ class TestComponent(utils.SchemaTesting):
     def generate_invalids_and_errors():
         invalids = []
         errors = []
-        for field in ['title', 'message', 'canonical_project_name', 'type']:
+        for field in ['type']:
             invalid, error = utils.generate_invalid_string(field)
             invalids.append(invalid)
             errors.append(error)
