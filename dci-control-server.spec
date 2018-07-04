@@ -36,7 +36,7 @@ BuildRequires:  python-six
 BuildRequires:  python2-sqlalchemy
 BuildRequires:  python-sqlalchemy-utils
 BuildRequires:  python-tornado
-BuildRequires:  python-voluptuous
+BuildRequires:  python-voluptuous = 0.10.5
 BuildRequires:  python-werkzeug
 BuildRequires:  python-zmq
 BuildRequires:  python-jwt
@@ -57,7 +57,7 @@ Requires:       python-six
 Requires:       python2-sqlalchemy
 Requires:       python-sqlalchemy-utils
 Requires:       python-tornado
-Requires:       python-voluptuous
+Requires:       python-voluptuous = 0.10.5
 Requires:       python-werkzeug
 Requires:       python-zmq
 Requires:       python-jwt
@@ -90,7 +90,7 @@ BuildRequires:  python3-six
 BuildRequires:  python3-sqlalchemy
 BuildRequires:  python3-sqlalchemy-utils
 BuildRequires:  python3-swiftclient
-BuildRequires:  python3-voluptuous
+BuildRequires:  python3-voluptuous = 0.10.5
 BuildRequires:  python3-werkzeug
 BuildRequires:  python3-zmq
 BuildRequires:  python-jwt
@@ -109,7 +109,7 @@ Requires:       python3-six
 Requires:       python3-sqlalchemy
 Requires:       python3-sqlalchemy-utils
 Requires:       python3-swiftclient
-Requires:       python3-voluptuous
+Requires:       python3-voluptuous = 0.10.5
 Requires:       python3-werkzeug
 Requires:       python3-zmq
 Requires:       python-jwt
