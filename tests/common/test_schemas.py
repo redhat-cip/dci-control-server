@@ -214,16 +214,14 @@ class TestComponent(utils.SchemaTesting):
     def generate_invalids_and_errors():
         invalids = []
         errors = []
-        for field in ['title', 'message', 'canonical_project_name', 'type']:
-            invalid, error = utils.generate_invalid_string(field)
-            invalids.append(invalid)
-            errors.append(error)
+
+        invalid, error = utils.generate_invalid_string('type')
 
         invalids = dict([utils.INVALID_NAME, utils.INVALID_DATA,
-                         utils.INVALID_TOPIC] + invalids)
+                         utils.INVALID_TOPIC, invalid])
         errors = dict([utils.INVALID_NAME_ERROR,
                        utils.INVALID_DATA_ERROR,
-                       utils.INVALID_TOPIC_ERROR] + errors)
+                       utils.INVALID_TOPIC_ERROR, error])
 
         return invalids, errors
 
