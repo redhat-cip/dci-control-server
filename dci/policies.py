@@ -69,14 +69,6 @@ ROLES = {
     'purge_jobs_events_from_sequence': SUPER_ADMIN,
     'put_current_sequence': SUPER_ADMIN,
     'get_current_sequence': SUPER_ADMIN,
-    # fingerprint
-    'create_fingerprint': HUMAN,
-    'get_all_fingerprints': HUMAN,
-    'get_fingerprint_by_id': HUMAN,
-    'modify_fingerprint': HUMAN,
-    'delete_fingerprint_by_id': HUMAN,
-    'get_to_purge_archived_fingerprint': SUPER_ADMIN,
-    'purge_fingerprint': SUPER_ADMIN,
     # global status
     'get_global_status': SUPER_ADMIN_PO_RO_USER,
     # identity

@@ -35,7 +35,6 @@ import dci.api.v1.certs  # noqa
 import dci.api.v1.components  # noqa
 import dci.api.v1.feeders  # noqa
 import dci.api.v1.files  # noqa
-import dci.api.v1.fingerprints  # noqa
 import dci.api.v1.identity  # noqa
 import dci.api.v1.jobs  # noqa
 import dci.api.v1.jobstates  # noqa

@@ -579,27 +579,6 @@ PRODUCTS = sa.Table(
               sa.ForeignKey('teams.id', ondelete='SET NULL'),
               nullable=False))
 
-FINGERPRINTS = sa.Table(
-    'fingerprints', metadata,
-    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
-              default=utils.gen_uuid),
-    sa.Column('name', sa.String(255), nullable=False),
-    sa.Column('created_at', sa.DateTime(),
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('updated_at', sa.DateTime(),
-              onupdate=datetime.datetime.utcnow,
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
-    sa.Column('topic_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('topics.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True),
-    sa.Column('fingerprint', sa_utils.JSONType, nullable=False),
-    sa.Column('actions', sa_utils.JSONType, nullable=False),
-    sa.Column('description', sa.String(255), nullable=False),
-    sa.Column('state', STATES, default='active')
-)
-
 FEEDERS = sa.Table(
     'feeders', metadata,
     sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
