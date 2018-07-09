@@ -67,6 +67,25 @@ COMPONENTS = sa.Table(
     sa.Column('state', STATES, default='active')
 )
 
+TAGS = sa.Table(
+    'tags', metadata,
+    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('name', sa.String(40), nullable=False, unique=True),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag)
+)
+
+JOIN_COMPONENTS_TAGS = sa.Table(
+    'components_tags', metadata,
+    sa.Column('tag_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('tags.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('component_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('components.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True)
+)
 
 JOIN_COMPONENTS_ISSUES = sa.Table(
     'components_issues', metadata,
@@ -80,7 +99,6 @@ JOIN_COMPONENTS_ISSUES = sa.Table(
               sa.ForeignKey('users.id'),
               nullable=False),
     sa.Index('components_issues_user_id_idx', 'user_id'))
-
 
 TOPICS = sa.Table(
     'topics', metadata,
