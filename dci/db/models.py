@@ -67,6 +67,15 @@ COMPONENTS = sa.Table(
     sa.Column('state', STATES, default='active')
 )
 
+COMPONENTS_TAGS = sa.Table(
+    'components_tags', metadata,
+    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('component_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('components.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('value', sa.Text, nullable=False, primary_key=True)
+)
 
 JOIN_COMPONENTS_ISSUES = sa.Table(
     'components_issues', metadata,
