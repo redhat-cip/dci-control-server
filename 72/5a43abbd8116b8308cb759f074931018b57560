@@ -1,0 +1,9 @@
+Code-Review+2: Gonéri Le Bouder <goneri@lebouder.net>
+Code-Review+2: Dimitri Savineau <dsavinea@redhat.com>
+Workflow+1: Gonéri Le Bouder <goneri@lebouder.net>
+Verified+2: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-by: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-at: Mon, 09 Jul 2018 13:09:19 +0000
+Reviewed-on: https://softwarefactory-project.io/r/12647
+Project: dci-control-server
+Branch: refs/heads/master
