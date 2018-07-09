@@ -11,6 +11,7 @@ Werkzeug
 pyzmq
 pytz
 lxml
+python-keystoneclient
 python-swiftclient
 cryptography
 pyjwt
