@@ -38,6 +38,9 @@ from dci.stores import files
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.COMPONENTS
+_TABLE_TAGS = models.JOIN_COMPONENTS_TAGS
+
+_TABLE_TAGS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE_TAGS)
 _JJC = models.JOIN_JOBS_COMPONENTS
 _VALID_EMBED = embeds.components()
 _C_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
@@ -482,3 +485,56 @@ def attach_issue_to_component(user, c_id):
 def unattach_issue_from_component(user, c_id, i_id):
     """Unattach an issue to a component."""
     return issues.unattach_issue(c_id, i_id, _TABLE)
+
+
+@api.route('/components/<uuid:c_id>/tags', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def retrieve_tags_from_component(user, c_id):
+    """Retrieve all tags attached to a component."""
+    JCT = models.JOIN_COMPONENTS_TAGS
+    query = (sql.select([models.TAGS])
+             .select_from(JCT.join(models.TAGS))
+             .where(JCT.c.component_id == c_id))
+    rows = flask.g.db_conn.execute(query)
+
+    return flask.jsonify({'tags': rows, '_meta': {'count': rows.rowcount}})
+
+
+@api.route('/components/<uuid:c_id>/tags', methods=['POST'])
+@decorators.login_required
+@decorators.check_roles
+def create_tag_for_component(user, c_id):
+    """Create a tag on a specific component."""
+    # Todo : (thomas) check c_id and tag_id exist in db
+    # Todo : (thomas) use voluptuous schema
+    values = {
+        'component_id': c_id
+    }
+    values.update((flask.request.json))
+    query = _TABLE_TAGS.insert().values(values)
+
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict(_TABLE_TAGS.tag_id, 'tag_id')
+
+    return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/components/<uuid:c_id>/tags/<uuid:tag_id>', methods=['DELETE'])
+@decorators.login_required
+@decorators.check_roles
+def delete_tag_for_component(user, c_id, tag_id):
+    """Delete a tag on a specific component."""
+    # Todo : (thomas) check c_id and tag_id exist in db
+
+    query = _TABLE_TAGS.delete().where(_TABLE_TAGS.c.tag_id == tag_id and
+                                       _TABLE_TAGS.c.component_id == c_id)
+
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict(_TABLE_TAGS.c.tag_id, 'tag_id')
+
+    return flask.Response(None, 204, content_type='application/json')
