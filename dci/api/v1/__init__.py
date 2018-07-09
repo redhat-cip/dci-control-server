@@ -49,3 +49,4 @@ import dci.api.v1.tests  # noqa
 import dci.api.v1.topics  # noqa
 import dci.api.v1.trends  # noqa
 import dci.api.v1.users  # noqa
+import dci.api.v1.tags  # noqa
