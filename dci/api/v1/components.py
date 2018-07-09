@@ -38,6 +38,7 @@ from dci.stores import files
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.COMPONENTS
+_TABLE_TAGS = models.COMPONENTS_TAGS
 _JJC = models.JOIN_JOBS_COMPONENTS
 _VALID_EMBED = embeds.components()
 _C_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
