@@ -45,6 +45,10 @@ ROLES = {
     'retrieve_issues_from_component': ALL,
     'attach_issue_to_component': ALL,
     'unattach_issue_from_component': ALL,
+    'retrieve_tags_from_component': SUPER_ADMIN,
+    'retrieve_tag_from_component': SUPER_ADMIN,
+    'create_tag_for_component': SUPER_ADMIN,
+    'delete_tag_for_component': SUPER_ADMIN,
     # certs
     'verify_repo_access': SUPER_ADMIN,
     # feeder
