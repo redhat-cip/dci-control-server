@@ -194,6 +194,19 @@ def topic_id_product(product_owner, team_id, product):
 
 
 @pytest.fixture
+def component_id(admin, team_id, topic_id):
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'topic_id': topic_id,
+        'export_control': True,
+        'state': 'active'}
+    pc = admin.post('/api/v1/components', data=data).data
+    return pc['component']['id']
+
+
+@pytest.fixture
 def topic(admin, team_user_id, product):
     topic = admin.post('/api/v1/topics', data={
         'name': 'OSP12',
