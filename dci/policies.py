@@ -45,6 +45,9 @@ ROLES = {
     'retrieve_issues_from_component': ALL,
     'attach_issue_to_component': ALL,
     'unattach_issue_from_component': ALL,
+    'create_tag_for_component': ADMINS,
+    'delete_tag_for_component': ADMINS,
+    'retrieve_tags_from_component': ADMINS,
     # certs
     'verify_repo_access': SUPER_ADMIN,
     # feeder
@@ -198,4 +201,9 @@ ROLES = {
     'delete_user_by_id': ADMINS,
     'get_to_purge_archived_users': SUPER_ADMIN,
     'purge_archived_users': SUPER_ADMIN,
+    # tags
+    'create_tags': ADMINS,
+    'get_tags': ADMINS,
+    'get_tag': ADMINS,
+    'delete_tag_by_id': ADMINS
 }
