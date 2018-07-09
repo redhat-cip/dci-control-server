@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9fbf342c_692f21c4",
+        "filename": "dci/alembic/versions/bcd903a35145_add_component_tags_table.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-07-09T12:04:20Z",
+      "side": 1,
+      "message": "Good enough even if I would prefer a dedicated \"tags\" table:\n- faster tag-\u003ecomponent look-up\n- more consistent with the other tables",
+      "revId": "3468c5a0781d009b23c0a1b9f0d54ac2bfe30900",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b1fb88ee_72c9438e",
+        "filename": "dci/db/models.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-07-09T12:04:20Z",
+      "side": 1,
+      "message": "If you have several primary_key, SQLAlchemy will create a composite primary key. I\u0027m not sure it makes sense here.\n\nIMO we should instead have:\n- id: primary_key\n- component_id index like: sa.Index(\u0027you need to add the components_tags_component_id_idx\u0027, \u0027component_id\u0027)\n- value index: I\u0027m not sure this is required at this point",
+      "revId": "3468c5a0781d009b23c0a1b9f0d54ac2bfe30900",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
