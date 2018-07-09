@@ -26,6 +26,7 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import issues
 from dci.api.v1 import remotecis
+from dci.api.v1 import tags
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci import decorators
@@ -38,6 +39,7 @@ from dci.stores import files
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.COMPONENTS
+_TABLE_TAGS = models.COMPONENTS_TAGS
 _JJC = models.JOIN_JOBS_COMPONENTS
 _VALID_EMBED = embeds.components()
 _C_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
@@ -479,3 +481,36 @@ def attach_issue_to_component(user, c_id):
 def unattach_issue_from_component(user, c_id, i_id):
     """Unattach an issue to a component."""
     return issues.unattach_issue(c_id, i_id, _TABLE)
+
+
+@api.route('/components/<c_id>/tags', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def retrieve_tags_from_component(user, c_id):
+    """Retrieve all tags attached to a component."""
+    return tags.get_all_tags_from_object(_TABLE_TAGS, c_id)
+
+
+@api.route('/components/<c_id>/tags/<t_id>', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def retrieve_tag_from_component(user, c_id, t_id):
+    """Retrieve specific tag attached to a component."""
+    return tags.get_tag_from_object(_TABLE_TAGS, c_id, t_id)
+
+
+@api.route('/components/<c_id>/tags', methods=['POST'])
+@decorators.login_required
+@decorators.check_roles
+def create_tag_for_component(user, c_id):
+    """Create a tag on a specific component."""
+    values = schemas.tag.post(flask.request.json)
+    return tags.create_tag(_TABLE_TAGS, c_id, values)
+
+
+@api.route('/components/<c_id>/tags/<t_id>', methods=['DELETE'])
+@decorators.login_required
+@decorators.check_roles
+def delete_tag_for_component(user, c_id, t_id):
+    """Delete a specific tag on a specific component."""
+    return tags.delete_tag(_TABLE_TAGS, c_id, t_id)
