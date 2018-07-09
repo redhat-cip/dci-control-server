@@ -242,10 +242,11 @@ user = utils.dict_merge(base, {
     v.Optional('password'): six.text_type,
     'fullname': six.text_type,
     'email': v.Any(Email, msg=INVALID_EMAIL),
+    'team_id': v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('timezone'): v.Any(Timezone, msg=INVALID_TIMEZONE),
     v.Optional('role_id'): v.Any(UUID, msg=INVALID_UUID),
-    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE),
+    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
+                                                 msg=INVALID_RESOURCE_STATE),
 })
 
 user_put = {
