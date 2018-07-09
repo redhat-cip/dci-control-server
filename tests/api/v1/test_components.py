@@ -651,3 +651,39 @@ def test_verify_and_get_components_ids(engine, admin, topic, topic_user_id):
                                                     ['type_1', 'type_2'],
                                                     db_conn=engine)
     assert set(cids) == {c1, c3}
+
+
+def test_create_tags_components(admin, components_ids):
+    pt = admin.post('/api/v1/tags',
+                    data={'name': 'my tag to delete'})
+    tag_id = pt.data['tag']['id']
+    assert pt.status_code == 201
+
+    pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
+                    data={'tag_id': '%s' % tag_id})
+    assert pt.status_code == 204
+
+
+def test_get_tags_components(admin, components_ids):
+    for x in range(3):
+        pt = admin.post('/api/v1/tags', data={'name': 'my tag %s' % x})
+        admin.post('/api/v1/components/%s/tags/%s' % (components_ids[0],
+                                                      pt.data['tag']['id']
+                                                      ))
+    gt = admin.get('/api/v1/components/%s/tags' % (components_ids[0]))
+    assert gt.status_code == 200
+    assert len(gt.data['tags']) == 3
+
+
+def test_delete_tags_components(admin, components_ids):
+    pt = admin.post('/api/v1/tags', data={'name': 'my tag to delete'})
+    tag_id = pt.data['tag']['id']
+    assert pt.status_code == 201
+
+    pt = admin.post('/api/v1/components/%s/tags/%s' % (components_ids[0],
+                                                       tag_id))
+    assert pt.status_code == 204
+
+    pt = admin.delete('/api/v1/components/%s/tags/%s' % (components_ids[0],
+                                                         tag_id))
+    assert pt.status_code == 204
