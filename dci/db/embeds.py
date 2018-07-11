@@ -326,7 +326,7 @@ def topics(root_select=models.TOPICS):
              'isouter': True}],
         'nexttopic': [
             {'right': NEXT_TOPIC,
-             'onclause': and_(root_select.c.next_topic == NEXT_TOPIC.c.id,
+             'onclause': and_(root_select.c.next_topic_id == NEXT_TOPIC.c.id,
                               NEXT_TOPIC.c.state != 'archived'),
              'isouter': True}],
     }

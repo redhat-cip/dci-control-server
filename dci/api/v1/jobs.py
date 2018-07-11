@@ -302,7 +302,7 @@ def create_new_upgrade_job_from_an_existing_job(user):
         ),
     })
 
-    next_topic_id = topic['next_topic']
+    next_topic_id = topic['next_topic_id']
 
     if not next_topic_id:
         raise dci_exc.DCIException(
