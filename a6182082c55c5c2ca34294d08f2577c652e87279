@@ -1,0 +1,234 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a7465040_c5199c10",
+        "filename": "dci/alembic/versions/bcd903a35145_add_component_tags_table.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-07-12T14:21:32Z",
+      "side": 1,
+      "message": "see db.models",
+      "range": {
+        "startLine": 45,
+        "startChar": 27,
+        "endLine": 45,
+        "endChar": 34
+      },
+      "revId": "a6182082c55c5c2ca34294d08f2577c652e87279",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa1ab6a4_d04ea512",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 498,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-07-12T14:21:32Z",
+      "side": 1,
+      "message": "s/tags/tag/",
+      "range": {
+        "startLine": 498,
+        "startChar": 25,
+        "endLine": 498,
+        "endChar": 29
+      },
+      "revId": "a6182082c55c5c2ca34294d08f2577c652e87279",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9a1daccf_981139b9",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 506,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-07-12T14:21:32Z",
+      "side": 1,
+      "message": "wrong comment, it\u0027s a tag creation",
+      "range": {
+        "startLine": 506,
+        "startChar": 4,
+        "endLine": 506,
+        "endChar": 52
+      },
+      "revId": "a6182082c55c5c2ca34294d08f2577c652e87279",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2e4e9083_56bca005",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 515,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-07-12T14:21:32Z",
+      "side": 1,
+      "message": "wrong comment, it\u0027s a tag deletion",
+      "range": {
+        "startLine": 515,
+        "startChar": 4,
+        "endLine": 515,
+        "endChar": 52
+      },
+      "revId": "a6182082c55c5c2ca34294d08f2577c652e87279",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c34d7c7b_3f251034",
+        "filename": "dci/api/v1/tags.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-07-12T14:21:32Z",
+      "side": 1,
+      "message": "it\u0027s only one tag",
+      "range": {
+        "startLine": 61,
+        "startChar": 11,
+        "endLine": 61,
+        "endChar": 19
+      },
+      "revId": "a6182082c55c5c2ca34294d08f2577c652e87279",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ff2e0eb5_dad81908",
+        "filename": "dci/api/v1/tags.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-07-12T14:21:32Z",
+      "side": 1,
+      "message": "object_id is not used",
+      "range": {
+        "startLine": 63,
+        "startChar": 3,
+        "endLine": 64,
+        "endChar": 42
+      },
+      "revId": "a6182082c55c5c2ca34294d08f2577c652e87279",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4e69e840_08de6a52",
+        "filename": "dci/api/v1/tags.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-07-12T14:21:32Z",
+      "side": 1,
+      "message": "this function should return only one return so it should be tag instead of tags.",
+      "range": {
+        "startLine": 68,
+        "startChar": 26,
+        "endLine": 68,
+        "endChar": 30
+      },
+      "revId": "a6182082c55c5c2ca34294d08f2577c652e87279",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3c33fa79_3bcde4b1",
+        "filename": "dci/api/v1/tags.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-07-12T14:21:32Z",
+      "side": 1,
+      "message": "no soft delete with the purge mechanism ?",
+      "range": {
+        "startLine": 74,
+        "startChar": 0,
+        "endLine": 88,
+        "endChar": 62
+      },
+      "revId": "a6182082c55c5c2ca34294d08f2577c652e87279",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c04c6e3a_2774ffa7",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 534,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-07-12T14:21:32Z",
+      "side": 1,
+      "message": "see db.models",
+      "range": {
+        "startLine": 534,
+        "startChar": 17,
+        "endLine": 534,
+        "endChar": 26
+      },
+      "revId": "a6182082c55c5c2ca34294d08f2577c652e87279",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ca0bc293_5c70c390",
+        "filename": "dci/db/models.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 77,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-07-12T14:21:32Z",
+      "side": 1,
+      "message": "using a Text type is maybe overkill there when you could use String(xx). From my point of view a tag is usually a small word.",
+      "range": {
+        "startLine": 77,
+        "startChar": 23,
+        "endLine": 77,
+        "endChar": 30
+      },
+      "revId": "a6182082c55c5c2ca34294d08f2577c652e87279",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
