@@ -515,7 +515,7 @@ def test_status_from_component_type_last_component(admin, remoteci_context,
         'topic_id': topic_user_id,
         'export_control': True,
         'state': 'active'}
-    admin.post('/api/v1/components', data=data).data
+    admin.post('/api/v1/components', data=data)
 
     status = admin.get('/api/v1/topics/%s/type/type_1/status' %
                        topic_user_id).data
