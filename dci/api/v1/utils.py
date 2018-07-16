@@ -437,7 +437,13 @@ def _format_level_1(rows, root_table_name):
         result_row = {}
         prefixes_to_remove = []
         for field in row:
-            prefix, suffix = field.split('_', 1)
+            if field.startswith('next_topic'):
+                prefix = 'next_topic'
+                suffix = field[11:]
+                if suffix == 'id_1':
+                    suffix = 'id'
+            else:
+                prefix, suffix = field.split('_', 1)
             if suffix == 'id' and row[field] is None:
                 prefixes_to_remove.append(prefix)
             if prefix not in result_row:
