@@ -38,6 +38,7 @@ _EMBED_MANY = {
     'teams': True,
     'product': False,
     'nexttopic': False,
+    'next_topic': False,
 }
 
 
