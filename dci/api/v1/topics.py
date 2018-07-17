@@ -117,13 +117,11 @@ def get_all_topics(user):
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    # get the number of rows for the '_meta' section
-    nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
 
-    return flask.jsonify({'topics': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'topics': rows, '_meta': {'count': len(rows)}})
 
 
 @api.route('/topics/<uuid:topic_id>', methods=['PUT'])

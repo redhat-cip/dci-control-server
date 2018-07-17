@@ -140,6 +140,7 @@ def test_get_all_components_with_pagination(admin, topic_id):
         cs = admin.get(
             '/api/v1/topics/%s/components?limit=5&offset=%s' %
             (topic_id, (i * 5))).data
+        assert cs['_meta']['count'] == 5
         assert len(cs['components']) == 5
 
     # if offset is out of bound, the api returns an empty list

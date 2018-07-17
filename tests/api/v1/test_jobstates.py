@@ -108,9 +108,11 @@ def test_get_all_jobstates_with_pagination(user, job_user_id):
 
     # verify limit and offset are working well
     js = user.get('/api/v1/jobstates?limit=2&offset=0').data
+    assert js['_meta']['count'] == 2
     assert len(js['jobstates']) == 2
 
     js = user.get('/api/v1/jobstates?limit=2&offset=2').data
+    assert js['_meta']['count'] == 2
     assert len(js['jobstates']) == 2
 
     # if offset is out of bound, the api returns an empty list

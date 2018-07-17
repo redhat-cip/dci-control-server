@@ -152,6 +152,7 @@ def test_get_all_topics_with_pagination(admin, product):
     for i in range(4):
         cs = admin.get(
             '/api/v1/topics?limit=5&offset=%s' % (i * 5)).data
+        assert cs['_meta']['count'] == 5
         assert len(cs['topics']) == 5
 
     # if offset is out of bound, the api returns an empty list

@@ -154,9 +154,11 @@ def test_get_all_files_with_pagination(user, jobstate_user_id):
 
     # verify limit and offset are working well
     files = user.get('/api/v1/files?limit=2&offset=0').data
+    assert files['_meta']['count'] == 2
     assert len(files['files']) == 2
 
     files = user.get('/api/v1/files?limit=2&offset=2').data
+    assert files['_meta']['count'] == 2
     assert len(files['files']) == 2
 
     # if offset is out of bound, the api returns an empty list

@@ -143,7 +143,6 @@ def get_all_components(user, topic_id):
         _TABLE.c.topic_id == topic_id,
         _TABLE.c.state != 'archived'))
 
-    nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
@@ -153,7 +152,7 @@ def get_all_components(user, topic_id):
     if not (auth.is_admin(user)):
         rows = [row for row in rows if row['export_control']]
 
-    return flask.jsonify({'components': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'components': rows, '_meta': {'count': len(rows)}})
 
 
 @api.route('/components/latest', methods=['GET'])
@@ -235,13 +234,11 @@ def list_components_files(user, c_id):
     query = v1_utils.QueryBuilder(models.COMPONENTFILES, args, _CF_COLUMNS)
     query.add_extra_condition(models.COMPONENTFILES.c.component_id == c_id)
 
-    nb_rows = query.get_number_of_rows(models.COMPONENTFILES,
-                                       models.COMPONENTFILES.c.component_id == c_id)  # noqa
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, models.COMPONENTFILES.name, None, None)
 
     return flask.jsonify({'component_files': rows,
-                          '_meta': {'count': nb_rows}})
+                          '_meta': {'count': len(rows)}})
 
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['GET'])

@@ -41,8 +41,7 @@ def get_logs(user):
     if not user.is_super_admin():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
 
-    nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'], None)
 
-    return flask.jsonify({'audits': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'audits': rows, '_meta': {'count': len(rows)}})

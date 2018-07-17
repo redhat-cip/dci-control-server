@@ -155,14 +155,13 @@ def _get_job(user, job_id, embed):
     query.add_extra_condition(_TABLE.c.id == job_id)
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
     if len(rows) != 1:
         raise dci_exc.DCINotFound('Job', job_id)
     job = rows[0]
-    return job, nb_rows
+    return job, len(rows)
 
 
 @api.route('/jobs/schedule', methods=['POST'])
@@ -346,12 +345,11 @@ def get_all_jobs(user, topic_id=None):
     # # Get only the non archived jobs
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
 
-    return flask.jsonify({'jobs': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'jobs': rows, '_meta': {'count': len(rows)}})
 
 
 @api.route('/jobs/<uuid:job_id>/components', methods=['GET'])

@@ -107,12 +107,11 @@ def get_all_roles(user):
     if user['role_id'] == auth.get_role_id('USER'):
         query.add_extra_condition(_TABLE.c.id == user['role_id'])
 
-    nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
 
-    return flask.jsonify({'roles': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'roles': rows, '_meta': {'count': len(rows)}})
 
 
 @api.route('/roles/<uuid:role_id>', methods=['GET'])

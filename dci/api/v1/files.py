@@ -197,11 +197,10 @@ def get_all_files(user, j_id=None):
         query.add_extra_condition(_TABLE.c.job_id == j_id)
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
-    return json.jsonify({'files': rows, '_meta': {'count': nb_rows}})
+    return json.jsonify({'files': rows, '_meta': {'count': len(rows)}})
 
 
 @api.route('/files/<uuid:file_id>', methods=['GET'])

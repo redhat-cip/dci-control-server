@@ -102,9 +102,11 @@ def test_get_all_teams_with_pagination(admin):
 
     # verify limit and offset are working well
     ts = admin.get('/api/v1/teams?limit=2&offset=0').data
+    assert ts['_meta']['count'] == 2
     assert len(ts['teams']) == 2
 
     ts = admin.get('/api/v1/teams?limit=2&offset=2').data
+    assert ts['_meta']['count'] == 2
     assert len(ts['teams']) == 2
 
     # if offset is out of bound, the api returns an empty list
