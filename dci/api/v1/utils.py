@@ -245,13 +245,6 @@ def add_where_to_query(query, where_list):
     return query
 
 
-def get_number_of_rows(root_table, where=None):
-    query = sql.select([func.count(root_table.c.id)])
-    if where is not None:
-        query = query.where(where)
-    return flask.g.db_conn.execute(query).scalar()
-
-
 def request_wants_html():
     best = (flask.request.accept_mimetypes
             .best_match(['text/html', 'application/json']))
