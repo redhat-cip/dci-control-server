@@ -1,0 +1,95 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) 2015 Red Hat, Inc
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+from dci.auth import hash_password
+from dci.db import models
+from dci import dci_config
+
+
+def create_user(fullname, team, role):
+    name = fullname.lower().replace(' ', '_')
+    return {
+        'name': name,
+        'fullname': fullname,
+        'email': '%s@example.org' % name,
+        'team_id': team['id'],
+        'role_id': role['id'],
+        'password': hash_password(name)
+    }
+
+
+if __name__ == '__main__':
+    conf = dci_config.generate_conf()
+    engine = dci_config.get_engine(conf).connect()
+
+    admin_team = dict(engine.execute(models.TEAMS.select().where(models.TEAMS.c.name == 'admin')).fetchone())
+    teams = [
+        {'id': '9396e0b6-190d-48cb-a3b3-f330247f6c03', 'name': 'OpenStack', 'parent_id': admin_team['id']},
+        {'id': '9f9a7782-752f-4577-908a-88a1820ab4e5', 'name': 'Ansible', 'parent_id': admin_team['id']},
+        {'id': '3ae3c802-d2be-42a9-9464-8a3253189757', 'name': 'RHEL', 'parent_id': admin_team['id']},
+        {'id': '1dddf476-89f3-4a5a-ab13-99470b8eb941', 'name': 'Dell', 'parent_id': '9396e0b6-190d-48cb-a3b3-f330247f6c03'},
+        {'id': '708a8292-7e7d-4ece-b516-dd3c6461150a', 'name': 'HP', 'parent_id': '9396e0b6-190d-48cb-a3b3-f330247f6c03'},
+        {'id': '352abbc9-0d6c-41e7-abb6-d74af5351e63', 'name': 'Cisco', 'parent_id': '9f9a7782-752f-4577-908a-88a1820ab4e5'},
+        {'id': '8606eb09-394f-40e0-82d0-f02c5c9f7ef1', 'name': 'Veritas', 'parent_id': '3ae3c802-d2be-42a9-9464-8a3253189757'},
+    ]
+    for team in teams:
+        engine.execute(models.TEAMS.insert().values(**team))
+
+
+    # 1ceb6cef-b8f4-4999-90c0-1c1de76330df
+    # de422eb1-c9bf-40ce-b5d3-f3659c210389
+    # f4454189-698f-4bcc-8b73-b5366eee5400
+    # e518489e-722e-4037-8bd8-5a62a4424673
+    # e85c6cd9-9e2e-4c18-8252-b3a2f0bb4d05
+    # 63608c88-eca6-45fc-aa1c-0548512405f0
+    # ed8ba77f-518d-42f5-806a-4c8721c2ab06
+    # de3cbd03-9af8-48a4-ae88-c95eb35cb741
+    # abfbf11b-58d4-4eb5-a2bb-50f78975ec9d
+    # 3f4ff66b-0d64-42db-9939-f004c02312cc
+    # 2bc7cc27-357f-4028-a7bb-720acc0901fc
+    # dffc397a-ae48-4dbd-8922-499e3c0786b1
+    # c8fb99a4-d41b-44af-9cec-cd5094c36021
+    # 753874b2-942b-45bc-9720-db66d439c40e
+    # b6b5873e-4604-49eb-a41b-0d9311f17627
+    # 7aa8a40e-1a81-4905-bbfe-58898f2390b8
+    # c77f7157-5102-4a61-a26a-ea4b6bffc211
+    # 22fbac0e-6ed7-4311-8c9c-3547e446abf9
+    # a8d863f3-c8b7-4a1c-aca7-b3676f5ee62f
+    # e7ade388-a2c2-4b2f-8206-33bbdd0fccfa
+    # ae974e18-a5b8-4068-9ae9-10e0044ca6b0
+    # 51e7ac61-0bc0-4796-bb40-05c7f71f6bbe
+    # 40bcd79e-cf6e-4b1a-a690-06eea91eddca
+    # f182a8bc-bf50-4abf-91bc-a8f96987d6f8
+    # 666662f9-b462-471b-bd57-eba7162d2d2d
+    # 047885b3-3e52-4e0f-b947-ed21ea69313e
+    # e5dcec7d-5184-4d38-bfd9-e241b0be0a41
+    # eecba167-7fd4-4f92-82b8-5a8237544bd5
+    # 8e9506b3-7848-4985-b648-5a345eb53392
+    # e865b609-7e19-420b-a759-7f654da65f59
+    # 45f24785-f8d9-42ab-ac36-ada938c87e36
+    # 9c0ec556-967d-4727-914d-159a5229d9c4
+    # fcfa0d37-7521-4ead-aa9e-b2b4aec04119
+    # 99ccee6a-d544-4d81-8177-4c87c87e4216
+    # 3dd47bf7-5f2e-498d-a0b7-10ab4a97443f
+    # 18216443-1bd0-4195-badf-36d9a57446ca
+    # dbbc4a7a-33bb-475a-a60d-a7d1b52d3ffa
+    # 89d41663-8935-4ab2-9391-6844d27bd7b7
+    # 2253c0e2-6f54-4c2f-9388-ed0e3cdd238b
+    # 017d161f-6c92-4873-99fa-34662a2c81f5
+    # e11f1733-5d18-4016-9e3e-4b8ce79cd9a0
+    # b152e8fa-6073-475a-b044-0aa8e4fb138b
+    # 656b8151-b24d-4049-a343-1a15849fc2b3
