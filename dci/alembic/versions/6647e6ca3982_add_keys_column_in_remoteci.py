@@ -16,14 +16,14 @@
 """Add keys column in remoteci
 
 Revision ID: 6647e6ca3982
-Revises: 3750c0221184
+Revises: d94013e874ab
 Create Date: 2018-03-06 11:55:42.870215
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '6647e6ca3982'
-down_revision = '3750c0221184'
+down_revision = 'd94013e874ab'
 branch_labels = None
 depends_on = None
 

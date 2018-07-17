@@ -6,15 +6,19 @@ This repository is used for the development of the API of Distributed CI. It con
 
 ## Getting started
 
-If you are using the development environment provided [here](https://github.com/redhat-cip/dci-dev-env) you can directly start at step 5.
+### 1. Use dci-dev-env
+
+We recommend you to install the [development environment](https://github.com/redhat-cip/dci-dev-env) provided by the DCI team
+
+### 2. Manual installation
 
 To run the api in development mode follow those steps:
 
 1.  clone the repository: <http://softwarefactory-project.io/r/dci-control-server>
-2.  ensure that a postgresql database is running and accessible on the URI defined in the `src/settings.py` (if no database is running see [database installation]())
+2.  ensure that a postgresql database is running and accessible on the URI defined in the `src/settings.py` (if no database is running see **Database installation**)
 3.  install the python requirements: `pip install -r requirements.txt`
 4.  run the dev server: `./bin/runtestserver`
-5.  provision the database: `python bin/dci-dbprovisioning` (BEWARE: it will erase the previous db)
+5.  provision the database: `./bin/provision_database` (BEWARE: it will empty the previous db)
 
 ## Database installation
 
@@ -196,4 +200,4 @@ Apache 2.0
 
 ## Author Information
 
-Distributed-CI Team &lt;<distributed-ci@redhat.com>&gt;
+Distributed-CI Team <distributed-ci@redhat.com>
