@@ -14,296 +14,429 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import json
-import os
-import time
 
-import requests
-from dci import settings
-from dciauth.signature import Signature
-from dciauth.request import AuthRequest
-
-DCI_LOGIN = os.environ.get('DCI_LOGIN', 'admin')
-DCI_PASSWORD = os.environ.get('DCI_PASSWORD', 'admin')
-DEFAULT_DCI_CS_URL = 'http://{host}:{port}'.format(host=settings.HOST, port=settings.PORT)
-DCI_CS_URL = os.environ.get('DCI_CS_URL', DEFAULT_DCI_CS_URL)
-
-
-def get_url(endpoint):
-    return '%s/api/v1/%s' % (DCI_CS_URL, endpoint)
-
-
-def get(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
-    url = get_url(endpoint)
-    print('-------------')
-    print('GET %s' % url)
-    return requests.get(url, auth=user)
-
-
-def post(endpoint, data, user=(DCI_LOGIN, DCI_PASSWORD,)):
-    url = get_url(endpoint)
-    print('-------------')
-    print('POST %s' % url)
-    print(json.dumps(data, indent=2))
-    return requests.post(url, json=data, auth=user)
-
-
-def delete(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
-    url = get_url(endpoint)
-    print('DELETE %s' % url)
-    return requests.delete(url, auth=user)
-
-
-def get_teams():
-    teams = {}
-    for team in get('teams').json()['teams']:
-        teams[team['name']] = team
-    return teams
-
-
-def create_team(name, parent_team):
-    r = post('teams', {'name': name, 'parent_id': parent_team['id']})
-    return r.json()['team']
-
-
-def create_teams():
-    team_admin = get_teams()['admin']
-    openstack = create_team('OpenStack', team_admin)
-    ansible = create_team('Ansible', team_admin)
-    rhel = create_team('RHEL', team_admin)
-    return {
-        'OpenStack': openstack,
-        'Dell': create_team('Dell', openstack),
-        'HP': create_team('HP', openstack),
-        'Ansible': ansible,
-        'Cisco': create_team('Cisco', ansible),
-        'RHEL': rhel,
-        'Veritas': create_team('Veritas', rhel),
-    }
-
-
-def create_user(fullname, team, role):
-    name = fullname.lower().replace(' ', '_')
-    r = post('users', {
-        'name': name,
-        'fullname': fullname,
-        'email': '%s@example.org' % name,
-        'team_id': team['id'],
-        'role_id': role['id'],
-        'password': name
-    })
-    return r.json()['user']
-
-
-def get_roles():
-    roles = {}
-    for role in get('roles').json()['roles']:
-        roles[role['label']] = role
-    return roles
-
-
-def create_users(teams):
-    roles = get_roles()
-    return {
-        'ansible_po': create_user('Ansible PO', teams['Ansible'], roles['PRODUCT_OWNER']),
-        'openstack_po': create_user('OpenStack PO', teams['OpenStack'], roles['PRODUCT_OWNER']),
-        'rhel_po': create_user('RHEL PO', teams['RHEL'], roles['PRODUCT_OWNER']),
-        'admin_cisco': create_user('Admin Cisco', teams['Cisco'], roles['ADMIN']),
-        'admin_hp': create_user('Admin HP', teams['HP'], roles['ADMIN']),
-        'admin_dell': create_user('Admin Dell', teams['Dell'], roles['ADMIN']),
-        'user_cisco': create_user('User Cisco', teams['Cisco'], roles['USER']),
-        'user_hp': create_user('User HP', teams['HP'], roles['USER']),
-        'user_dell': create_user('User Dell', teams['Dell'], roles['USER']),
-        'admin_veritas': create_user('Admin Veritas', teams['Veritas'], roles['ADMIN']),
-        'user_veritas': create_user('User Veritas', teams['Veritas'], roles['USER']),
-    }
-
-
-def create_product(product, team):
-    r = post('products', {
-        'name': product,
-        'label': product.upper(),
-        'description': 'description for %s' % product,
-        'team_id': team['id']
-    })
-    return r.json()['product']
-
-
-def create_products(teams):
-    return {
-        'OpenStack': create_product('OpenStack', teams['OpenStack']),
-        'Ansible': create_product('Ansible', teams['Ansible']),
-        'RHEL': create_product('RHEL', teams['RHEL']),
-    }
-
-
-def create_topic(name, component_types, product, next_topic=None):
-    topic = {'name': name, 'component_types': component_types, 'product_id': product['id']}
-    if next_topic:
-        topic['next_topic_id'] = next_topic['id']
-    r = post('topics', topic)
-    return r.json()['topic']
-
-
-def create_topics(products):
-    openstack = products['OpenStack']
-    ansible = products['Ansible']
-    rhel = products['RHEL']
-
-    osp12 = create_topic('OSP12', ['puddle'], openstack)
-    osp11 = create_topic('OSP11', ['puddle'], openstack, osp12)
-    osp10 = create_topic('OSP10', ['puddle'], openstack, osp11)
-    ansible_dev = create_topic('ansible-devel', ['snapshot_ansible'], ansible)
-    ansible_24 = create_topic('ansible-2.4', ['snapshot_ansible'], ansible, ansible_dev)
-    rhel8 = create_topic('RHEL-8', ['Compose'], rhel)
-    rhel7 = create_topic('RHEL-7', ['Compose'], rhel, rhel8)
-    return {
-        'OSP12': osp12,
-        'OSP11': osp11,
-        'OSP10': osp10,
-        'ansible-devel': ansible_dev,
-        'ansible-2.4': ansible_24,
-        'RHEL-8': rhel8,
-        'RHEL-7': rhel7,
-    }
-
-
-def associate_topics_to_teams(topics, teams):
-    for topic, topic_value in topics.items():
-        for team, team_value in teams.items():
-            post('topics/%s/teams' % topic_value['id'], {'team_id': team_value['id']})
-
-
-def create_component(name, topic):
-    r = post('components', {
-        'name': name,
-        'type': topic['component_types'][0],
-        'topic_id': topic['id'],
-        'export_control': True
-    })
-    return r.json()['component']
-
-
-def create_components(topics):
-    components = {}
-    for component in [
-        {'name': 'RH7-RHOS-10.0 2016-10-28.1', 'topic_name': 'OSP10'},
-        {'name': 'RH7-RHOS-10.0 2016-11-12.1', 'topic_name': 'OSP10'},
-        {'name': 'RH7-RHOS-11.0 2016-11-11.1', 'topic_name': 'OSP11'},
-        {'name': 'RH7-RHOS-12.0 2016-11-12.1', 'topic_name': 'OSP12'},
-        {'name': 'Ansible devel', 'topic_name': 'ansible-devel'},
-        {'name': 'Ansible 2.4', 'topic_name': 'ansible-2.4'},
-        {'name': 'RHEL-7.6-20180513.n.0', 'topic_name': 'RHEL-7'},
-        {'name': 'RHEL-8.0-20180503.n.2', 'topic_name': 'RHEL-8'},
-    ]:
-        c = create_component(component['name'], topics[component['topic_name']])
-        components[c['name']] = c
-    return components
-
-
-def create_remotecis(teams):
-    remotecis = {}
-    for team, value in teams.items():
-        name = 'Remoteci %s' % team
-        r = post('remotecis', {'name': name, 'team_id': value['id']})
-        remotecis[team] = r.json()['remoteci']
-    return remotecis
-
-
-def create_jobs(topics, remotecis, teams, components):
-    jobs = [
-        {
-            'team_id': teams['Dell']['id'],
-            'topic_id': topics['OSP10']['id'],
-            'components': [components['RH7-RHOS-10.0 2016-10-28.1']['id']]
-        },
-        {
-            'team_id': teams['Dell']['id'],
-            'topic_id': topics['OSP10']['id'],
-            'components': [components['RH7-RHOS-10.0 2016-11-12.1']['id']]
-        },
-        {
-            'team_id': teams['Dell']['id'],
-            'topic_id': topics['OSP11']['id'],
-            'components': [components['RH7-RHOS-11.0 2016-11-11.1']['id']]
-        },
-        {
-            'team_id': teams['Dell']['id'],
-            'topic_id': topics['OSP12']['id'],
-            'components': [components['RH7-RHOS-12.0 2016-11-12.1']['id']]
-        },
-    ]
-
-    client_id = remotecis['Dell']['id']
-    api_secret = remotecis['Dell']['api_secret']
-    for job in jobs:
-        auth_request = AuthRequest(method="POST", endpoint='/api/v1/jobs', payload=job,
-                                   headers={'content-type': 'application/json'})
-        headers = Signature(request=auth_request).generate_headers('remoteci', client_id, api_secret)
-        requests.post('%s/api/v1/jobs' % DCI_CS_URL, headers=headers, json=job)
-
-    return get('jobs', ('admin_dell', 'admin_dell',)).json()['jobs']
-
-
-def create_job_states(jobs):
-    jobstates = [
-        {'job_id': jobs[0]['id'], 'status': 'running'},
-        {'job_id': jobs[1]['id'], 'status': 'error'},
-        {'job_id': jobs[2]['id'], 'status': 'failure'},
-        {'job_id': jobs[3]['id'], 'status': 'success'},
-    ]
-    for jobstate in jobstates:
-        post('jobstates', jobstate, ('admin_dell', 'admin_dell',))
-
-
-def create_file(job_id, file_name, file_path, user, content_type='application/junit'):
-    file_path = os.path.join(file_path)
-    data = open(file_path).read()
-    headers = {'DCI-JOB-ID': job_id, 'DCI-NAME': file_name, 'DCI-MIME': content_type,
-               'Content-Disposition': 'attachment; filename=%s' % os.path.basename(file_path),
-               'Content-Type': content_type}
-    return requests.post(
-        '%s/api/v1/files' % DCI_CS_URL,
-        data=data,
-        headers=headers,
-        auth=user
-    )
-
-
-def create_files(jobs):
-    user_dell = ('admin_dell', 'admin_dell',)
-    create_file(jobs[3]['id'], 'Tempest', 'tests/data/tempest-results.xml', user_dell)
-    create_file(jobs[2]['id'], 'Tempest', 'tests/data/tempest-results.xml', user_dell)
-    create_file(jobs[3]['id'], 'Rally', 'tests/data/rally-results.xml', user_dell)
-    create_file(jobs[2]['id'], 'Rally', 'tests/data/rally-results.regression.xml', user_dell)
-    create_file(jobs[2]['id'], 'certification.xml.gz', 'tests/data/certification.xml.tar.gz', user_dell,
-                'application/x-compressed')
-
-
-def wait_db_ready():
-    while True:
-        try:
-            r = get('identity')
-            if r.status_code == 200:
-                break
-        except requests.exceptions.ConnectionError:
-            continue
-        finally:
-            time.sleep(1)
+from dci.db import models
+from dci import dci_config
 
 
 def main():
-    wait_db_ready()
-    teams = create_teams()
-    create_users(teams)
-    products = create_products(teams)
-    topics = create_topics(products)
-    associate_topics_to_teams(topics, teams)
-    components = create_components(topics)
-    remotecis = create_remotecis(teams)
-    jobs = create_jobs(topics, remotecis, teams, components)
-    create_job_states(jobs)
-    create_files(jobs)
+    conf = dci_config.generate_conf()
+    engine = dci_config.get_engine(conf).connect()
+
+    admin_team = dict(engine.execute(models.TEAMS.select().where(models.TEAMS.c.name == 'admin')).fetchone())
+    teams = [
+        {
+            'id': '9396e0b6-190d-48cb-a3b3-f330247f6c03',
+            'name': 'OpenStack',
+            'parent_id': admin_team['id']
+        },
+        {
+            'id': '9f9a7782-752f-4577-908a-88a1820ab4e5',
+            'name': 'Ansible',
+            'parent_id': admin_team['id']
+        },
+        {
+            'id': '3ae3c802-d2be-42a9-9464-8a3253189757',
+            'name': 'RHEL',
+            'parent_id': admin_team['id']
+        },
+        {
+            'id': '1dddf476-89f3-4a5a-ab13-99470b8eb941',
+            'name': 'Dell',
+            'parent_id': '9396e0b6-190d-48cb-a3b3-f330247f6c03'
+        },
+        {
+            'id': '708a8292-7e7d-4ece-b516-dd3c6461150a',
+            'name': 'HP',
+            'parent_id': '9396e0b6-190d-48cb-a3b3-f330247f6c03'
+        },
+        {
+            'id': '352abbc9-0d6c-41e7-abb6-d74af5351e63',
+            'name': 'Cisco',
+            'parent_id': '9f9a7782-752f-4577-908a-88a1820ab4e5'
+        },
+        {
+            'id': '8606eb09-394f-40e0-82d0-f02c5c9f7ef1',
+            'name': 'Veritas',
+            'parent_id': '3ae3c802-d2be-42a9-9464-8a3253189757'
+        },
+    ]
+    for team in teams:
+        engine.execute(models.TEAMS.insert().values(**team))
+
+    remotecis = [
+        {
+            'id': 'f4454189-698f-4bcc-8b73-b5366eee5400',
+            'name': 'Remoteci openstack',
+            'team_id': '9396e0b6-190d-48cb-a3b3-f330247f6c03'
+        },
+        {
+            'id': 'e518489e-722e-4037-8bd8-5a62a4424673',
+            'name': 'Remoteci ansible',
+            'team_id': '9f9a7782-752f-4577-908a-88a1820ab4e5'
+        },
+        {
+            'id': 'e85c6cd9-9e2e-4c18-8252-b3a2f0bb4d05',
+            'name': 'Remoteci rhel',
+            'team_id': '3ae3c802-d2be-42a9-9464-8a3253189757'
+        },
+        {
+            'id': '63608c88-eca6-45fc-aa1c-0548512405f0',
+            'name': 'Remoteci dell',
+            'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941'
+        },
+        {
+            'id': 'de3cbd03-9af8-48a4-ae88-c95eb35cb741',
+            'name': 'Remoteci hp',
+            'team_id': '708a8292-7e7d-4ece-b516-dd3c6461150a'
+        },
+        {
+            'id': 'abfbf11b-58d4-4eb5-a2bb-50f78975ec9d',
+            'name': 'Remoteci cisco',
+            'team_id': '352abbc9-0d6c-41e7-abb6-d74af5351e63'
+        },
+        {
+            'id': '2bc7cc27-357f-4028-a7bb-720acc0901fc',
+            'name': 'Remoteci veritas',
+            'team_id': '8606eb09-394f-40e0-82d0-f02c5c9f7ef1'
+        },
+    ]
+
+    for remoteci in remotecis:
+        engine.execute(models.REMOTECIS.insert().values(**remoteci))
+
+    roles = list(engine.execute(models.ROLES.select()).fetchall())
+    roles = {dict(role)['name']: str(dict(role)['id']) for role in roles}
+
+    users = [
+        {
+            'name': 'ansible_po',
+            'role_id': roles['Product Owner'],
+            'team_id': '9f9a7782-752f-4577-908a-88a1820ab4e5',
+            'fullname': 'Ansible PO',
+            'password': '$6$rounds=656000$ba7CMHSfOSJ94Zh.$NwCs43eYdPhNs9CuMezt3kTohHXq9W.FameK5/G7G6wBIEQV/C6bt3KNNHejP3F4JL79WHOGD93Mqa59V1CHa1',
+            'email': 'ansible_po@example.org'
+        },
+        {
+            'name': 'openstack_po',
+            'role_id': roles['Product Owner'],
+            'team_id': '9396e0b6-190d-48cb-a3b3-f330247f6c03',
+            'fullname': 'OpenStack PO',
+            'password': '$6$rounds=656000$IFz/d/Cpf45.qKbx$pm9TpaddZVCmsNRXOiCp9OvhZad0hpQ4XyWrj92WaLirD4I61abgHLj9mLVcIc86s02Y5oHpEuqsd60Sv84vQ1',
+            'email': 'openstack_po@example.org'
+        },
+        {
+            'name': 'rhel_po',
+            'role_id': roles['Product Owner'],
+            'team_id': '3ae3c802-d2be-42a9-9464-8a3253189757',
+            'fullname': 'RHEL PO',
+            'password': '$6$rounds=656000$lTflYTMj41ne8vef$r1YjwQnmB4a.Dd4u0JWzR/q4owkrt0uNuI1bCQuQjPiU.SHqYyx8LrjfD/k.FpFAgcHskWqFzOQ9SeE8tVRjd1',
+            'email': 'rhel_po@example.org'
+        },
+        {
+            'name': 'admin_cisco',
+            'role_id': roles['Admin'],
+            'team_id': '352abbc9-0d6c-41e7-abb6-d74af5351e63',
+            'fullname': 'Admin Cisco',
+            'password': '$6$rounds=656000$7JPDlsoVVwo8a/mz$ZAA5juyr7C65GxZvpJ1pyS9Cz9zqEhh7bXnTYykbQaY6J33sdA0yJ4OxTG5U6hXkKTADvmT5jJRJ0SpbzukMh.',
+            'email': 'admin_cisco@example.org'
+        },
+        {
+            'name': 'admin_hp',
+            'role_id': roles['Admin'],
+            'team_id': '708a8292-7e7d-4ece-b516-dd3c6461150a',
+            'fullname': 'Admin HP',
+            'password': '$6$rounds=656000$oGh/2FhjbhpaMyFp$rKcf9QTBa2WIVzdgc1IfmrzJ5feiKkKPcGKQX9/FakhiDpZsL9iYHSTsLlNwNphlLN2wjrcK.82VdONxuGc6u/',
+            'email': 'admin_hp@example.org'
+        },
+        {
+            'name': 'admin_dell',
+            'role_id': roles['Admin'],
+            'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941',
+            'fullname': 'Admin Dell',
+            'password': '$6$rounds=656000$VqaSW7to.FQ8LK9q$6MfA9B4hrBekZlwTXnKWObjYADU3p2ilkm6tf5M4Smq8YEsMHIFjH18O6ny009CVgRI204xZ6C2QcVar73XCw/',
+            'email': 'admin_dell@example.org'
+        },
+        {
+            'name': 'user_cisco',
+            'role_id': roles['User'],
+            'team_id': '352abbc9-0d6c-41e7-abb6-d74af5351e63',
+            'fullname': 'User Cisco',
+            'password': '$6$rounds=656000$htQcbQB3WYyTrvc4$zNzn4u6AF80Rdzw4.SyDEaG3N60f4UxDQm1n.iFkMXpKh2VEZXOs9WLmsgwofhSnrrYbAdxruD9SfQzdGvt3i/',
+            'email': 'user_cisco@example.org'
+        },
+        {
+            'name': 'user_hp',
+            'role_id': roles['User'],
+            'team_id': '708a8292-7e7d-4ece-b516-dd3c6461150a',
+            'fullname': 'User HP',
+            'password': '$6$rounds=656000$eizh7DnxD/4Mglg4$S8KHQ0ktfQOoEU/6b2.iZe44AbOLkZp6Kk9BEdk5ka/X1fnhcixeWeOFd2YNmaD2JCPNHdXTQO3D1En34g3Oh0',
+            'email': 'user_hp@example.org'
+        },
+        {
+            'name': 'user_dell',
+            'role_id': roles['User'],
+            'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941',
+            'fullname': 'User Dell',
+            'password': '$6$rounds=656000$O.SyyWK5Jt3lbdpK$ccGePPlPXLC/OWCBIYofmqXxPH8crNFSFgAdA7x0uL5tIvMAdk2sT0HJ7iv65pFGObR/tVFVAq65ONHmM8Sdj.',
+            'email': 'user_dell@example.org'
+        },
+        {
+            'name': 'admin_veritas',
+            'role_id': roles['Admin'],
+            'team_id': '8606eb09-394f-40e0-82d0-f02c5c9f7ef1',
+            'fullname': 'Admin Veritas',
+            'password': '$6$rounds=656000$EIN.1QcJizcg6bL8$mNog7SGDXmp1WwtOGHv7r7a9.swfVJcE15cnvUJLVzd7lDMu78hnsiUblU5U2Kjs.f6o5aMEWNmSk5ZY.EDei0',
+            'email': 'admin_veritas@example.org'
+        },
+        {
+            'name': 'user_veritas',
+            'role_id': roles['User'],
+            'team_id': '8606eb09-394f-40e0-82d0-f02c5c9f7ef1',
+            'fullname': 'User Veritas',
+            'password': '$6$rounds=656000$Iwd6qSNE1PIn2Si4$aMlv2ie3.lbSJXmXuAw9/UvJgzXrOCLupa4oUcBrUlqHnGpvRgkYYhu/dfQuSOJsfb6GEX5XjutfYIJkmPB7L1',
+            'email': 'user_veritas@example.org'
+        }
+    ]
+    for user in users:
+        engine.execute(models.USERS.insert().values(**user))
+
+    products = [
+        {
+            'id': '1ceb6cef-b8f4-4999-90c0-1c1de76330df',
+            'name': 'OpenStack',
+            'label': 'OPENSTACK'.upper(),
+            'description': 'description for OpenStack',
+            'team_id': '9396e0b6-190d-48cb-a3b3-f330247f6c03'
+        },
+        {
+            'id': 'de422eb1-c9bf-40ce-b5d3-f3659c210389',
+            'name': 'Ansible',
+            'label': 'ANSIBLE'.upper(),
+            'description': 'description for Ansible',
+            'team_id': '9f9a7782-752f-4577-908a-88a1820ab4e5'
+        },
+        {
+            'id': 'f4454189-698f-4bcc-8b73-b5366eee5400',
+            'name': 'RHEL',
+            'label': 'RHEL'.upper(),
+            'description': 'description for RHEL',
+            'team_id': '3ae3c802-d2be-42a9-9464-8a3253189757'
+        }
+
+    ]
+    for product in products:
+        engine.execute(models.PRODUCTS.insert().values(**product))
+
+    topics = [
+        {
+            'id': '1ceb6cef-b8f4-4999-90c0-1c1de76330df',
+            'name': 'OSP12',
+            'component_types': ['puddle'],
+            'product_id': '1ceb6cef-b8f4-4999-90c0-1c1de76330df'
+        },
+        {
+            'id': 'ed8ba77f-518d-42f5-806a-4c8721c2ab06',
+            'name': 'OSP11',
+            'component_types': ['puddle'],
+            'product_id': '1ceb6cef-b8f4-4999-90c0-1c1de76330df',
+            'next_topic_id': '1ceb6cef-b8f4-4999-90c0-1c1de76330df'
+        },
+        {
+            'id': '753874b2-942b-45bc-9720-db66d439c40e',
+            'name': 'OSP10',
+            'component_types': ['puddle'],
+            'product_id': '1ceb6cef-b8f4-4999-90c0-1c1de76330df',
+            'next_topic_id': 'ed8ba77f-518d-42f5-806a-4c8721c2ab06'
+        },
+        {
+            'id': 'ae974e18-a5b8-4068-9ae9-10e0044ca6b0',
+            'name': 'ansible-devel',
+            'component_types': ['snapshot_ansible'],
+            'product_id': 'de422eb1-c9bf-40ce-b5d3-f3659c210389'
+        },
+        {
+            'id': 'e5dcec7d-5184-4d38-bfd9-e241b0be0a41',
+            'name': 'ansible-2.4',
+            'component_types': ['snapshot_ansible'],
+            'product_id': 'de422eb1-c9bf-40ce-b5d3-f3659c210389',
+            'next_topic_id': 'ae974e18-a5b8-4068-9ae9-10e0044ca6b0'
+        },
+        {
+            'id': '99ccee6a-d544-4d81-8177-4c87c87e4216',
+            'name': 'RHEL-8',
+            'component_types': ['Compose'],
+            'product_id': 'f4454189-698f-4bcc-8b73-b5366eee5400'
+        },
+        {
+            'id': '017d161f-6c92-4873-99fa-34662a2c81f5',
+            'name': 'RHEL-7',
+            'component_types': ['Compose'],
+            'product_id': 'f4454189-698f-4bcc-8b73-b5366eee5400',
+            'next_topic_id': '99ccee6a-d544-4d81-8177-4c87c87e4216'
+        },
+    ]
+    for topic in topics:
+        engine.execute(models.TOPICS.insert().values(**topic))
+
+    topics_teams = [
+        # OSP 12 11 10 <-> Team OpenStack
+        {'topic_id': '1ceb6cef-b8f4-4999-90c0-1c1de76330df', 'team_id': '9396e0b6-190d-48cb-a3b3-f330247f6c03'},
+        {'topic_id': 'ed8ba77f-518d-42f5-806a-4c8721c2ab06', 'team_id': '9396e0b6-190d-48cb-a3b3-f330247f6c03'},
+        {'topic_id': '753874b2-942b-45bc-9720-db66d439c40e', 'team_id': '9396e0b6-190d-48cb-a3b3-f330247f6c03'},
+        # OSP 12 11 10 <-> Team Dell
+        {'topic_id': '1ceb6cef-b8f4-4999-90c0-1c1de76330df', 'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941'},
+        {'topic_id': 'ed8ba77f-518d-42f5-806a-4c8721c2ab06', 'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941'},
+        {'topic_id': '753874b2-942b-45bc-9720-db66d439c40e', 'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941'},
+        # OSP 10 <-> Team HP
+        {'topic_id': '753874b2-942b-45bc-9720-db66d439c40e', 'team_id': '708a8292-7e7d-4ece-b516-dd3c6461150a'},
+        # Ansible devel 2.4 <-> Team Ansible
+        {'topic_id': 'ae974e18-a5b8-4068-9ae9-10e0044ca6b0', 'team_id': '9f9a7782-752f-4577-908a-88a1820ab4e5'},
+        {'topic_id': 'e5dcec7d-5184-4d38-bfd9-e241b0be0a41', 'team_id': '9f9a7782-752f-4577-908a-88a1820ab4e5'},
+        # Ansible 2.4 <-> Team Cisco
+        {'topic_id': 'e5dcec7d-5184-4d38-bfd9-e241b0be0a41', 'team_id': '352abbc9-0d6c-41e7-abb6-d74af5351e63'},
+        # RHEL 8 7 <-> Team RHEL
+        {'topic_id': '99ccee6a-d544-4d81-8177-4c87c87e4216', 'team_id': '3ae3c802-d2be-42a9-9464-8a3253189757'},
+        {'topic_id': '017d161f-6c92-4873-99fa-34662a2c81f5', 'team_id': '3ae3c802-d2be-42a9-9464-8a3253189757'},
+        # RHEL 7 <-> Team Veritas
+        {'topic_id': '017d161f-6c92-4873-99fa-34662a2c81f5', 'team_id': '8606eb09-394f-40e0-82d0-f02c5c9f7ef1'},
+    ]
+    for topic_team in topics_teams:
+        engine.execute(models.JOINS_TOPICS_TEAMS.insert().values(**topic_team))
+
+    components = [
+        {
+            'id': 'fcfa0d37-7521-4ead-aa9e-b2b4aec04119',
+            'name': 'RH7-RHOS-10.0 2016-10-28.1',
+            'type': 'puddle',
+            'topic_id': '753874b2-942b-45bc-9720-db66d439c40e',
+            'export_control': True
+        },
+        {
+            'id': '18216443-1bd0-4195-badf-36d9a57446ca',
+            'name': 'RH7-RHOS-10.0 2016-11-12.1',
+            'type': 'puddle',
+            'topic_id': '753874b2-942b-45bc-9720-db66d439c40e',
+            'export_control': True
+        },
+        {
+            'id': 'de422eb1-c9bf-40ce-b5d3-f3659c210389',
+            'name': 'RH7-RHOS-11.0 2016-11-11.1',
+            'type': 'puddle',
+            'topic_id': 'ed8ba77f-518d-42f5-806a-4c8721c2ab06',
+            'export_control': True
+        },
+        {
+            'id': '3f4ff66b-0d64-42db-9939-f004c02312cc',
+            'name': 'RH7-RHOS-12.0 2016-11-12.1',
+            'type': 'puddle',
+            'topic_id': '1ceb6cef-b8f4-4999-90c0-1c1de76330df',
+            'export_control': True
+        },
+        {
+            'id': '22fbac0e-6ed7-4311-8c9c-3547e446abf9',
+            'name': 'Ansible devel',
+            'type': 'snapshot_ansible',
+            'topic_id': 'ae974e18-a5b8-4068-9ae9-10e0044ca6b0',
+            'export_control': True
+        },
+        {
+            'id': '047885b3-3e52-4e0f-b947-ed21ea69313e',
+            'name': 'Ansible 2.4',
+            'type': 'snapshot_ansible',
+            'topic_id': 'e5dcec7d-5184-4d38-bfd9-e241b0be0a41',
+            'export_control': True
+        },
+        {
+            'id': '3dd47bf7-5f2e-498d-a0b7-10ab4a97443f',
+            'name': 'RHEL-7.6-20180513.n.0',
+            'type': 'Compose',
+            'topic_id': '017d161f-6c92-4873-99fa-34662a2c81f5',
+            'export_control': True
+        },
+        {
+            'id': '656b8151-b24d-4049-a343-1a15849fc2b3',
+            'name': 'RHEL-8.0-20180503.n.2',
+            'type': 'Compose',
+            'topic_id': '99ccee6a-d544-4d81-8177-4c87c87e4216',
+            'export_control': True
+        },
+    ]
+    for component in components:
+        engine.execute(models.COMPONENTS.insert().values(**component))
+
+    jobs = [
+        {
+            'id': 'c8fb99a4-d41b-44af-9cec-cd5094c36021',
+            'remoteci_id': '63608c88-eca6-45fc-aa1c-0548512405f0',
+            'status': 'error',
+            'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941',
+            'topic_id': '753874b2-942b-45bc-9720-db66d439c40e',
+            'created_at': '2018-07-15T06:31:02.000000',
+            'updated_at': '2018-07-15T06:36:03.000000'
+
+        },
+        {
+            'id': 'dffc397a-ae48-4dbd-8922-499e3c0786b1',
+            'remoteci_id': '63608c88-eca6-45fc-aa1c-0548512405f0',
+            'status': 'failure',
+            'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941',
+            'topic_id': '753874b2-942b-45bc-9720-db66d439c40e',
+            'created_at': '2018-07-17T10:05:03.000000',
+            'updated_at': '2018-07-17T12:40:32.000000'
+        },
+        {
+            'id': 'f182a8bc-bf50-4abf-91bc-a8f96987d6f8',
+            'remoteci_id': '63608c88-eca6-45fc-aa1c-0548512405f0',
+            'status': 'success',
+            'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941',
+            'topic_id': '753874b2-942b-45bc-9720-db66d439c40e',
+            'created_at': '2018-07-17T12:50:15.000000',
+            'updated_at': '2018-07-17T16:26:06.000000'
+        },
+        {
+            'id': '89d41663-8935-4ab2-9391-6844d27bd7b7',
+            'remoteci_id': '63608c88-eca6-45fc-aa1c-0548512405f0',
+            'status': 'running',
+            'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941',
+            'topic_id': 'ed8ba77f-518d-42f5-806a-4c8721c2ab06',
+            'created_at': '2018-07-17T12:50:15.000000',
+            'updated_at': '2018-07-17T12:50:15.000000'
+        },
+        {
+            'id': 'b6b5873e-4604-49eb-a41b-0d9311f17627',
+            'remoteci_id': '63608c88-eca6-45fc-aa1c-0548512405f0',
+            'status': 'success',
+            'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941',
+            'topic_id': '1ceb6cef-b8f4-4999-90c0-1c1de76330df',
+            'created_at': '2018-07-17T20:53:15.000000',
+            'updated_at': '2018-07-17T22:43:06.000000'
+        },
+    ]
+
+    for job in jobs:
+        engine.execute(models.JOBS.insert().values(**job))
+
+    jobs_components = [
+        {'job_id': 'c8fb99a4-d41b-44af-9cec-cd5094c36021', 'component_id': 'fcfa0d37-7521-4ead-aa9e-b2b4aec04119'},
+        {'job_id': 'dffc397a-ae48-4dbd-8922-499e3c0786b1', 'component_id': '18216443-1bd0-4195-badf-36d9a57446ca'},
+        {'job_id': 'f182a8bc-bf50-4abf-91bc-a8f96987d6f8', 'component_id': '18216443-1bd0-4195-badf-36d9a57446ca'},
+        {'job_id': '89d41663-8935-4ab2-9391-6844d27bd7b7', 'component_id': 'de422eb1-c9bf-40ce-b5d3-f3659c210389'},
+        {'job_id': 'b6b5873e-4604-49eb-a41b-0d9311f17627', 'component_id': '3f4ff66b-0d64-42db-9939-f004c02312cc'},
+    ]
+
+    for job_component in jobs_components:
+        engine.execute(models.JOIN_JOBS_COMPONENTS.insert().values(**job_component))
+
+    jobs_states = [
+        {'job_id': 'c8fb99a4-d41b-44af-9cec-cd5094c36021', 'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941',
+         'status': 'new', 'created_at': '2018-07-15T06:31:02.000000'},
+        {'job_id': 'c8fb99a4-d41b-44af-9cec-cd5094c36021', 'team_id': '1dddf476-89f3-4a5a-ab13-99470b8eb941',
+         'status': 'error', 'created_at': '2018-07-15T06:36:03.000000'},
+    ]
+
+    for job_state in jobs_states:
+        engine.execute(models.JOBSTATES.insert().values(**job_state))
 
 
 if __name__ == '__main__':
