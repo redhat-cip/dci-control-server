@@ -16,129 +16,95 @@
 # under the License.
 
 """
-This module will initialize the database with the admin user and group based
-on DCI environment variable.
+This module will create the database if it does not exist and add initial data
+mandatory for the control server and run alembic script to synchronize the db
 """
 
-import os
-import sys
-
-import sqlalchemy
-from sqlalchemy import exc as sa_exc
 from sqlalchemy_utils import functions as sa_funcs
 
-from dci import auth
+from dci import dci_config, auth
 from dci.db import models
-from dci import dci_config
 from dci.alembic import utils as dci_alembic
 
 
-DCI_LOGIN = os.environ.get('DCI_LOGIN', 'admin')
-DCI_PASSWORD = os.environ.get('DCI_PASSWORD', 'admin')
-DCI_PASSWORD_HASH = auth.hash_password(DCI_PASSWORD)
-
-
-def init_db(db_conn):
-    def db_insert_with_name(model_item, **kwargs):
-        query = sqlalchemy.sql.select([model_item]).where(
-            model_item.c.name == kwargs['name'])
-        try:
-            result = db_conn.execute(query).fetchone()
-        except sa_exc.DBAPIError as e:
-            print(str(e))
-            sys.exit(1)
-
-        if result is None:
-            query = model_item.insert().values(**kwargs)
-            return db_conn.execute(query).inserted_primary_key[0]
-        else:
-            result = dict(result)
-            query = model_item.update().where(
-                model_item.c.name == result['name']).values(**kwargs)
-            try:
-                db_conn.execute(query)
-            except sa_exc.DBAPIError as e:
-                print(str(e))
-                sys.exit(1)
-            return result['id']
-
-    # Create team admin
-    team_admin_id = db_insert_with_name(models.TEAMS, name='admin')
-
-    # Create the three mandatory roles
-    super_admin_role = {
-        'name': 'Super Admin',
-        'label': 'SUPER_ADMIN',
-        'description': 'Admin of the platform',
-    }
-
-    product_owner_role = {
-        'name': 'Product Owner',
-        'label': 'PRODUCT_OWNER',
-        'description': 'Product Owner',
-    }
-
-    admin_role = {
-        'name': 'Admin',
-        'label': 'ADMIN',
-        'description': 'Admin of a team',
-    }
-
-    user_role = {
-        'name': 'User',
-        'label': 'USER',
-        'description': 'Regular User',
-    }
-
-    read_only_user_role = {
-        'name': 'Read only user',
-        'label': 'READ_ONLY_USER',
-        'description': 'User with RO access'
-    }
-
-    remoteci_role = {
-        'name': 'RemoteCI',
-        'label': 'REMOTECI',
-        'description': 'A RemoteCI',
-    }
-
-    feeder_role = {
-        'name': 'Feeder',
-        'label': 'FEEDER',
-        'description': 'A Feeder',
-    }
-
-    db_insert_with_name(models.ROLES, **product_owner_role)
-    db_insert_with_name(models.ROLES, **admin_role)
-    db_insert_with_name(models.ROLES, **user_role)
-    db_insert_with_name(models.ROLES, **read_only_user_role)
-    db_insert_with_name(models.ROLES, **remoteci_role)
-    db_insert_with_name(models.ROLES, **feeder_role)
-    super_admin_role_id = db_insert_with_name(models.ROLES,
-                                              **super_admin_role)
-
-    # Create super admin user
-    db_insert_with_name(models.USERS,
-                        name=DCI_LOGIN,
-                        password=DCI_PASSWORD_HASH,
-                        role_id=super_admin_role_id,
-                        team_id=team_admin_id,
-                        fullname='Admin',
-                        email='admin@example.org')
-
-
-def main():
-    conf = dci_config.generate_conf()
+def init_db(conf):
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
-
     if not sa_funcs.database_exists(db_uri):
         sa_funcs.create_database(db_uri)
 
+
+def add_initial_data(conf):
+    engine = dci_config.get_engine(conf).connect()
+
+    def get_or_create(model, values):
+        query = model.select().where(model.c.name == values['name'])
+        get_result = engine.execute(query).fetchone()
+        if get_result:
+            return dict(get_result)
+        engine.execute(model.insert().values(**values))
+        return dict(engine.execute(query).fetchone())
+
+    admin_team = get_or_create(models.TEAMS, {'name': 'admin'})
+    roles = [
+        {
+            'name': 'Product Owner',
+            'label': 'PRODUCT_OWNER',
+            'description': 'Product Owner role',
+        },
+        {
+            'name': 'Admin',
+            'label': 'ADMIN',
+            'description': 'Admin role',
+        },
+        {
+            'name': 'User',
+            'label': 'USER',
+            'description': 'User role',
+        },
+        {
+            'name': 'Read only user',
+            'label': 'READ_ONLY_USER',
+            'description': 'Read only user role',
+        },
+        {
+            'name': 'RemoteCI',
+            'label': 'REMOTECI',
+            'description': 'RemoteCI role',
+        },
+        {
+            'name': 'Feeder',
+            'label': 'FEEDER',
+            'description': 'Feeder role',
+        }
+    ]
+    for role in roles:
+        get_or_create(models.ROLES, role)
+    super_admin_role = get_or_create(models.ROLES, {
+        'name': 'Super Admin',
+        'label': 'SUPER_ADMIN',
+        'description': 'Super Admin role',
+    })
+    super_admin = {
+        'name': 'admin',
+        'password': auth.hash_password('admin'),
+        'team_id': admin_team['id'],
+        'role_id': super_admin_role['id'],
+        'fullname': 'Admin',
+        'email': 'admin@example.org'
+    }
+    get_or_create(models.USERS, super_admin)
+
+
+def synchronize_alembic():
     dci_alembic.sync()
-    engine = sqlalchemy.create_engine(db_uri)
-    with engine.begin() as conn:
-        init_db(conn)
+
+
+def main(conf):
+    init_db(conf)
+    synchronize_alembic()
+    add_initial_data(conf)
 
 
 if __name__ == '__main__':
-    main()
+    conf = dci_config.generate_conf()
+    main(conf)
