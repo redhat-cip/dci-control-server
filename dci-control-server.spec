@@ -182,6 +182,9 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %exclude %{python2_sitelib}/dci/settings.py?
 
 %changelog
+* Fri Aug 10 2018 Guillaume Vincent <gvincent@redhat.com> 0.2.3-1
+- Remove dbsync script
+
 * Tue Jun 12 2018 Guillaume Vincent <gvincent@redhat.com> 0.2.2-1
 - Use python-sqlalchemy instead of python-flask-sqlalchemy
 
