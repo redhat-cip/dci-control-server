@@ -416,15 +416,18 @@ def update_job_by_id(user, job_id):
                             _TABLE.c.id == job_id)
 
     values['etag'] = utils.gen_etag()
-    query = _TABLE.update().where(where_clause).values(**values)
+    query = _TABLE.update().returning(*_TABLE.columns).\
+        where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
-
     if not result.rowcount:
         raise dci_exc.DCIConflict('Job', job_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({'job': result.fetchone()}), 200,
+        headers={'ETag': values['etag']},
+        content_type='application/json'
+    )
 
 
 @api.route('/jobs/<uuid:j_id>/files', methods=['POST'])

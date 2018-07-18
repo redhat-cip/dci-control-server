@@ -75,14 +75,18 @@ def update_tests(user, t_id):
         _TABLE.c.id == t_id
     )
 
-    query = _TABLE.update().where(where_clause).values(**values)
+    query = _TABLE.update().returning(*_TABLE.columns).\
+        where(where_clause).values(**values)
 
     result = flask.g.db_conn.execute(query)
     if not result.rowcount:
         raise dci_exc.DCIConflict('Test', t_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({'test': result.fetchone()}), 200,
+        headers={'ETag': values['etag']},
+        content_type='application/json'
+    )
 
 
 def get_all_tests(user, team_id):

@@ -136,16 +136,21 @@ def put_remoteci(user, r_id):
 
     query = (_TABLE
              .update()
+             .returning(*_TABLE.columns)
              .where(where_clause)
              .values(**values))
 
     result = flask.g.db_conn.execute(query)
-
     if not result.rowcount:
         raise dci_exc.DCIConflict('RemoteCI', r_id)
 
-    return flask.Response(None, 204, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    _result = dict(result.fetchone())
+    del _result['api_secret']
+
+    return flask.Response(
+        json.dumps({'remoteci': _result}), 200,
+        headers={'ETag': values['etag']}, content_type='application/json'
+    )
 
 
 @api.route('/remotecis/<uuid:remoteci_id>', methods=['DELETE'])

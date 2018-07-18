@@ -79,20 +79,16 @@ def test_success_update_product(admin, product_openstack):
 
     result = admin.put(url, data={'name': 'New OpenStack'},
                        headers={'If-match': product_openstack['etag']})
-    assert result.status_code == 204
-
-    product = admin.get(url).data
-    assert product['product']['name'] == 'New OpenStack'
-    assert product['product']['description'] == \
+    assert result.status_code == 200
+    assert result.data['product']['name'] == 'New OpenStack'
+    assert result.data['product']['description'] == \
         'Red Hat OpenStack Platform'
 
     result = admin.put(url, data={'description': 'new product'},
-                       headers={'If-match': product['product']['etag']})
-    assert result.status_code == 204
-
-    product = admin.get(url).data
-    assert product['product']['name'] == 'New OpenStack'
-    assert product['product']['description'] == 'new product'
+                       headers={'If-match': result.data['product']['etag']})
+    assert result.status_code == 200
+    assert result.data['product']['name'] == 'New OpenStack'
+    assert result.data['product']['description'] == 'new product'
 
 
 def test_success_get_all_products_admin(admin, product, product_openstack):
