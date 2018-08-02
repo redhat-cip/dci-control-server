@@ -1,0 +1,106 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "dadedf62_1322ddfe",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-02T09:20:13Z",
+      "side": 1,
+      "message": "Is there a test for that ?",
+      "revId": "d00143815fbce113c53b5b99e23a66753771adae",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5d8bb499_0df546c8",
+        "filename": "dci/api/v1/tags.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-02T09:20:13Z",
+      "side": 1,
+      "message": "I think these two controllers should be part of components.py under the route\n\n   /components/\u003ccomponent_id\u003e/tags\n\nThe POST payload should contains the name of the tag and the controller should check if this tag name exists within the TAGS table so that it can reuse it in the JOIN table.\n\nPOST /components/\u003ccomponent_id\u003e/tags  name\u003d\u003ctag-name\u003e",
+      "revId": "d00143815fbce113c53b5b99e23a66753771adae",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3bf27033_2e4541dc",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 459,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-02T09:20:13Z",
+      "side": 1,
+      "message": "This should be done in another patch no ?",
+      "revId": "d00143815fbce113c53b5b99e23a66753771adae",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2d1c9363_5d63e9d8",
+        "filename": "dci/db/models.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 117,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-02T09:20:13Z",
+      "side": 1,
+      "message": "How it\u0027s related to this patch ?",
+      "revId": "d00143815fbce113c53b5b99e23a66753771adae",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "53a3dd8c_c7a21410",
+        "filename": "dci/db/models.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 121,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-02T09:20:13Z",
+      "side": 1,
+      "message": "same",
+      "revId": "d00143815fbce113c53b5b99e23a66753771adae",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b8ed5b66_31b2ce5f",
+        "filename": "dci/policies.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 194,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-02T09:20:13Z",
+      "side": 1,
+      "message": "How it\u0027s related to this patch ?",
+      "revId": "d00143815fbce113c53b5b99e23a66753771adae",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
