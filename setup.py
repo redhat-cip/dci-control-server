@@ -38,7 +38,7 @@ def _get_readme():
 
 
 setuptools.setup(
-    name='dci',
+    name='dci-control-server',
     version=version.__version__,
     packages=setuptools.find_packages(exclude=['tests', 'tests.*']),
     author='Distributed ci team.',
@@ -50,7 +50,7 @@ setuptools.setup(
     license='Apache v2.0',
     include_package_data=True,
     package_data={
-        'dci': ['alembic/alembic.ini', 'data/*']},
+        'dci-control-server': ['alembic/alembic.ini', 'data/*']},
     classifiers=[
         'Environment :: Console',
         'Intended Audience :: Developers',

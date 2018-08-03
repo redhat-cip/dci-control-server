@@ -4,13 +4,13 @@
 %global with_python3 0
 %endif
 
-Name:           dci
+Name:           dci-control-server
 Version:        0.2.2
 Release:        1.VERS%{?dist}
 Summary:        DCI control server
 License:        ASL 2.0
 URL:            https://github.com/redhat-cip/dci-control-server
-Source0:        dci-%{version}.tar.gz
+Source0:        dci-control-server-%{version}.tar.gz
 BuildArch:      noarch
 
 %description
