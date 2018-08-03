@@ -4,7 +4,7 @@
 %global with_python3 0
 %endif
 
-Name:           dci
+Name:           dci-control-server
 Version:        0.2.2
 Release:        1.VERS%{?dist}
 Summary:        DCI control server
