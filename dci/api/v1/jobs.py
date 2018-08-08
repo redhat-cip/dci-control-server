@@ -55,6 +55,7 @@ _EMBED_MANY = {
     'topic.tests': True,
     'issues': True,
     'jobstates': True,
+    'jobstates.files': True,
     'remoteci': False,
     'remoteci.tests': True,
     'components': True,

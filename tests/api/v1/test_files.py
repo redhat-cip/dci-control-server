@@ -94,8 +94,6 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
         else:
             return (0, six.StringIO(tests_data.jobtest_with_failures))
 
-    swift_get_mock = mock.MagicMock(side_effect=get_file_content)
-
     f_1 = t_utils.post_file(admin, jobstate_1['id'],
                             FileDesc('Tempest',
                                      tests_data.jobtest_without_failures),
@@ -105,8 +103,7 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
     f_2 = t_utils.post_file(admin, jobstate_2['id'],
                             FileDesc('Tempest',
                                      tests_data.jobtest_with_failures),
-                            mime='application/junit',
-                            swift_get_mock=swift_get_mock)
+                            mime='application/junit')
     assert f_2 is not None
 
     # 4. verify regression in job_2's result which is 'test_3'
@@ -115,42 +112,29 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
     assert job_2_results[0]['regressions'] == 1
 
     # 4. get the job2's tests results
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    job_2_tests_results = admin.get(
+        '/api/v1/jobs/%s/results' % job_2['id'])
 
-        mockito = mock.MagicMock()
+    testcases = job_2_tests_results.data['results'][0]['testscases']
 
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 1
-        }
-
-        mockito.head.return_value = head_result
-        mockito.get = swift_get_mock
-        mockito.build_file_path = Swift.build_file_path
-        mock_swift.return_value = mockito
-        job_2_tests_results = admin.get(
-            '/api/v1/jobs/%s/results' % job_2['id'])
-
-        testcases = job_2_tests_results.data['results'][0]['testscases']
-
-        regression_found = False
-        for testcase in testcases:
-            if testcase['regression'] is True:
-                assert testcase['classname'] == 'Testsuite_1'
-                assert testcase['name'] == 'test_3'
-                regression_found = True
-        assert regression_found is True
+    regression_found = False
+    for testcase in testcases:
+        if testcase['regression'] is True:
+            assert testcase['classname'] == 'Testsuite_1'
+            assert testcase['name'] == 'test_3'
+            regression_found = True
+    assert regression_found is True
 
 
 def test_get_all_files_with_pagination(user, jobstate_user_id):
-    # create 4 files types and check meta count
+    # create 4 files types and check meta count\
+    files_start = user.get('/api/v1/files').data['_meta']['count']
     for i in range(4):
         t_utils.post_file(user, jobstate_user_id, FileDesc('lol%d' % i, ''))
 
     # check meta count
     files = user.get('/api/v1/files').data
-    assert files['_meta']['count'] == 4
+    assert files['_meta']['count'] == files_start + 4
 
     # verify limit and offset are working well
     files = user.get('/api/v1/files?limit=2&offset=0').data
