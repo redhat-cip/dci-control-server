@@ -52,6 +52,7 @@ CURRENTJOB_JOIN_COMPONENTS = models.JOIN_JOBS_COMPONENTS.alias('currentjob.jobco
 
 JOBSTATE = models.JOBSTATES.alias('jobstate')
 JOBSTATE_JOBS = models.JOBS.alias('jobstate.job')
+JOBSTATE_FILES = models.FILES.alias('jobstate.files')
 
 TOPIC = models.TOPICS.alias('topic')
 NEXT_TOPIC = models.TOPICS.alias('next_topic')
@@ -73,6 +74,10 @@ def jobs(root_select=models.JOBS):
         'jobstates': [
             {'right': models.JOBSTATES,
              'onclause': models.JOBSTATES.c.job_id == root_select.c.id,
+             'isouter': True}],
+        'jobstates.files': [
+            {'right': JOBSTATE_FILES,
+             'onclause': and_(JOBSTATE_FILES.c.jobstate_id == models.JOBSTATES.c.id), # noqa
              'isouter': True}],
         'topic': [
             {'right': TOPIC,
@@ -366,6 +371,7 @@ EMBED_STRING_TO_OBJECT = {
         'topic.tests': TOPIC_TESTS,
         'issues': models.ISSUES,
         'jobstates': models.JOBSTATES,
+        'jobstates.files': JOBSTATE_FILES,
         'remoteci': REMOTECI,
         'remoteci.tests': REMOTECI_TESTS,
         'components': models.COMPONENTS,
