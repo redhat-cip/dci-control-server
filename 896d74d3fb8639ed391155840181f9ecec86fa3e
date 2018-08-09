@@ -48,6 +48,29 @@
     },
     {
       "key": {
+        "uuid": "2fb82896_6d83e7f3",
+        "filename": "dci/policies.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 206,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-08-09T14:00:42Z",
+      "side": 1,
+      "message": "ALL",
+      "range": {
+        "startLine": 206,
+        "startChar": 4,
+        "endLine": 206,
+        "endChar": 23
+      },
+      "revId": "896d74d3fb8639ed391155840181f9ecec86fa3e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a321b1bb_7e89df86",
         "filename": "dci/policies.py",
         "patchSetId": 11
@@ -62,6 +85,53 @@
       "range": {
         "startLine": 206,
         "startChar": 0,
+        "endLine": 207,
+        "endChar": 22
+      },
+      "revId": "896d74d3fb8639ed391155840181f9ecec86fa3e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4e49d0b0_90afe872",
+        "filename": "dci/policies.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 207,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-08-09T14:00:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a321b1bb_7e89df86",
+      "range": {
+        "startLine": 206,
+        "startChar": 0,
+        "endLine": 207,
+        "endChar": 22
+      },
+      "revId": "896d74d3fb8639ed391155840181f9ecec86fa3e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3889448d_ac76f2e1",
+        "filename": "dci/policies.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 207,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-08-09T14:00:42Z",
+      "side": 1,
+      "message": "could be removed, don\u0027t needed for now",
+      "range": {
+        "startLine": 207,
+        "startChar": 4,
         "endLine": 207,
         "endChar": 22
       },
