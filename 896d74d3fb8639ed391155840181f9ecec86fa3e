@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fdac7a66_dc20809e",
+        "filename": "dci/policies.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-08-09T13:51:33Z",
+      "side": 1,
+      "message": "SUPER_ADMIN PO FEEDER",
+      "range": {
+        "startLine": 48,
+        "startChar": 0,
+        "endLine": 50,
+        "endChar": 43
+      },
+      "revId": "896d74d3fb8639ed391155840181f9ecec86fa3e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "20cd926c_479567a3",
+        "filename": "dci/policies.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 205,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-08-09T13:51:33Z",
+      "side": 1,
+      "message": "SUPER_ADMIN PO",
+      "range": {
+        "startLine": 205,
+        "startChar": 19,
+        "endLine": 205,
+        "endChar": 25
+      },
+      "revId": "896d74d3fb8639ed391155840181f9ecec86fa3e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a321b1bb_7e89df86",
+        "filename": "dci/policies.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 207,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-08-09T13:51:33Z",
+      "side": 1,
+      "message": "SUPER_ADMIN PO FEEDER",
+      "range": {
+        "startLine": 206,
+        "startChar": 0,
+        "endLine": 207,
+        "endChar": 22
+      },
+      "revId": "896d74d3fb8639ed391155840181f9ecec86fa3e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "49d4a69f_0d578d08",
+        "filename": "dci/policies.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 208,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-08-09T13:51:33Z",
+      "side": 1,
+      "message": "SUPER_ADMIN PO",
+      "range": {
+        "startLine": 208,
+        "startChar": 24,
+        "endLine": 208,
+        "endChar": 30
+      },
+      "revId": "896d74d3fb8639ed391155840181f9ecec86fa3e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
