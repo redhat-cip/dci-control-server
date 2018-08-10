@@ -21,6 +21,7 @@ import os
 HOST = os.getenv('API_HOST', '127.0.0.1')
 PORT = int(os.getenv('API_PORT', '5000'))
 DEBUG = os.getenv('DEBUG', False)
+JSONIFY_PRETTYPRINT_REGULAR = False
 
 # Database (SQLAlchemy) related parameters
 #
@@ -52,7 +53,10 @@ SQLALCHEMY_NATIVE_UNICODE = True
 
 # Stores configuration, to store files and components
 # STORE
-STORE_ENGINE = os.getenv('STORE_ENGINE', 'Swift')
+FILE_STORE = 'file'
+SWIFT_STORE = 'swift'
+STORE_FILE_PATH = os.getenv('STORE_FILE_PATH', '/tmp/')
+STORE_ENGINE = os.getenv('STORE_ENGINE', FILE_STORE)
 STORE_USERNAME = os.getenv('STORE_USERNAME', 'dci')
 STORE_PASSWORD = os.getenv('STORE_PASSWORD', 'dci')
 STORE_TENANT_NAME = os.getenv('STORE_TENANT_NAME', 'dci')
@@ -65,9 +69,9 @@ DEFAULT_STORE_AUTH_URL = 'http://{store_host}:{store_port}/v2.0'.format(
 STORE_AUTH_URL = os.getenv('STORE_AUTH_URL', DEFAULT_STORE_AUTH_URL)
 STORE_REGION = os.getenv('STORE_REGION', 'regionOne')
 STORE_CONTAINER = os.getenv('STORE_CONTAINER', 'dci_components')
-STORE_FILES_CONTAINER = os.getenv('STORE_FILES_CONTAINER', 'dci_components')
+STORE_FILES_CONTAINER = os.getenv('STORE_FILES_CONTAINER', 'dci_files')
 STORE_COMPONENTS_CONTAINER = os.getenv('STORE_COMPONENTS_CONTAINER',
-                                       'dci_files')
+                                       'dci_components')
 
 # ZMQ Connection
 ZMQ_HOST = os.getenv('ZMQ_HOST', '127.0.0.1')
