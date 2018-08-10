@@ -52,7 +52,10 @@ SQLALCHEMY_NATIVE_UNICODE = True
 
 # Stores configuration, to store files and components
 # STORE
-STORE_ENGINE = os.getenv('STORE_ENGINE', 'Swift')
+FILE_STORE = 'file'
+SWIFT_STORE = 'swift'
+PATH = '/tmp/'
+STORE_ENGINE = os.getenv('STORE_ENGINE', FILE_STORE)
 STORE_USERNAME = os.getenv('STORE_USERNAME', 'dci')
 STORE_PASSWORD = os.getenv('STORE_PASSWORD', 'dci')
 STORE_TENANT_NAME = os.getenv('STORE_TENANT_NAME', 'dci')

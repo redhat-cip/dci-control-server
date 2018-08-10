@@ -36,7 +36,7 @@ from dci.common import utils
 from dci.db import embeds
 from dci.db import models
 from dci import dci_config
-from dci.stores import files
+from dci.stores import files_utils
 from swiftclient import exceptions as swift_exc
 
 from sqlalchemy import sql
@@ -123,11 +123,11 @@ def create_files(user):
     file_id = utils.gen_uuid()
     # ensure the directory which will contains the file actually exist
 
-    file_path = swift.build_file_path(user['team_id'],
+    file_path = files_utils.build_file_path(user['team_id'],
                                       values['job_id'],
                                       file_id)
 
-    content = files.get_stream_or_content_from_request(flask.request)
+    content = files_utils.get_stream_or_content_from_request(flask.request)
     swift.upload(file_path, content)
     s_file = swift.head(file_path)
 
@@ -214,7 +214,7 @@ def get_file_by_id(user, file_id):
 
 def get_file_descriptor(file_object):
     swift = dci_config.get_store('files')
-    file_path = swift.build_file_path(file_object['team_id'],
+    file_path = files_utils.build_file_path(file_object['team_id'],
                                       file_object['job_id'],
                                       file_object['id'])
     # Check if file exist on the storage engine
@@ -324,7 +324,7 @@ def purge_archived_files(user):
         query = sql.select([_TABLE]).where(_TABLE.c.state == 'archived')
         files = flask.g.db_conn.execute(query).fetchall()
         for file in files:
-            file_path = swift.build_file_path(user['team_id'], file['job_id'],
+            file_path = files_utils.build_file_path(user['team_id'], file['job_id'],
                                               file['id'])
             swift.delete(file_path)
     except swift_exc.ClientException as e:
