@@ -28,8 +28,7 @@ ENV DISABLE_DB_START 1
 
 EXPOSE 5000
 
-COPY bin/keycloak-provision.py /opt/keycloak-provision.py
 COPY entrypoint.sh /entrypoint.sh
 ENTRYPOINT ["/entrypoint.sh"]
 
-CMD ["python", "/opt/dci-control-server/bin/dci-runtestserver"]
+CMD ["python", "/opt/dci-control-server/bin/runtestserver"]

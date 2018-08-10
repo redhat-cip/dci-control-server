@@ -62,7 +62,6 @@ setuptools.setup(
         'Topic :: System :: Distributed Computing'
     ],
     scripts=[
-        'bin/dci-dbsync',
-        'bin/dci-dbinit',
-        'bin/dci-purge-swift-components'
+        'bin/init_database',
+        'bin/purge_swift_components'
     ])

@@ -13,7 +13,7 @@ To run the api in development mode follow those steps:
 1.  clone the repository: <http://softwarefactory-project.io/r/dci-control-server>
 2.  ensure that a postgresql database is running and accessible on the URI defined in the `src/settings.py` (if no database is running see [database installation]())
 3.  install the python requirements: `pip install -r requirements.txt`
-4.  run the dev server: `./bin/dci-runtestserver`
+4.  run the dev server: `./bin/runtestserver`
 5.  provision the database: `python bin/dci-dbprovisioning` (BEWARE: it will erase the previous db)
 
 ## Database installation
