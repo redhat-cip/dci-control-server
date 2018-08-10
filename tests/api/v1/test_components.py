@@ -15,16 +15,10 @@
 # under the License.
 
 from __future__ import unicode_literals
-import mock
 import pytest
-import six
 import uuid
 from dci.api.v1 import components
-from dci.stores.swift import Swift
 from dci.common import exceptions as dci_exc
-from dci.common import utils
-
-SWIFT = 'dci.stores.swift.Swift'
 
 
 def test_create_components(admin, topic_id):
@@ -363,125 +357,86 @@ def test_export_control_filter(admin, user, team_user_id, topic_user_id):
 
 
 def test_add_file_to_component(admin, topic_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
-        mockito = mock.MagicMock()
+    def create_ct(name):
+        data = {'name': name, 'title': 'aaa',
+                'type': 'gerrit_review',
+                'topic_id': topic_id,
+                'export_control': True}
+        return admin.post(
+            '/api/v1/components',
+            data=data).data['component']
 
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 1
-        }
+    ct_1 = create_ct('pname1')
+    ct_2 = create_ct('pname2')
 
-        mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
+    cts = admin.get(
+        '/api/v1/components/%s?embed=files' % ct_1['id']).data
+    assert len(cts['component']['files']) == 0
 
-        def create_ct(name):
-            data = {'name': name, 'title': 'aaa',
-                    'type': 'gerrit_review',
-                    'topic_id': topic_id,
-                    'export_control': True}
-            return admin.post(
-                '/api/v1/components',
-                data=data).data['component']
+    url = '/api/v1/components/%s/files' % ct_1['id']
+    c_file = admin.post(url, data='lol')
+    c_file_1_id = c_file.data['component_file']['id']
+    url = '/api/v1/components/%s/files' % ct_2['id']
+    c_file = admin.post(url, data='lol2')
+    c_file_2_id = c_file.data['component_file']['id']
 
-        ct_1 = create_ct('pname1')
-        ct_2 = create_ct('pname2')
+    assert c_file.status_code == 201
+    l_file = admin.get(url)
+    assert l_file.status_code == 200
+    assert l_file.data['_meta']['count'] == 1
+    assert l_file.data['component_files'][0]['component_id'] == ct_2['id']
+    cts = admin.get(
+        '/api/v1/components/%s?embed=files' % ct_1['id']).data
+    assert len(cts['component']['files']) == 1
+    assert cts['component']['files'][0]['size'] == 5
 
-        cts = admin.get(
-            '/api/v1/components/%s?embed=files' % ct_1['id']).data
-        assert len(cts['component']['files']) == 0
+    cts = admin.get('/api/v1/components/%s/files' % ct_1['id']).data
+    assert cts['component_files'][0]['id'] == c_file_1_id
 
-        url = '/api/v1/components/%s/files' % ct_1['id']
-        c_file = admin.post(url, data='lol')
-        c_file_1_id = c_file.data['component_file']['id']
-        url = '/api/v1/components/%s/files' % ct_2['id']
-        c_file = admin.post(url, data='lol2')
-        c_file_2_id = c_file.data['component_file']['id']
-
-        assert c_file.status_code == 201
-        l_file = admin.get(url)
-        assert l_file.status_code == 200
-        assert l_file.data['_meta']['count'] == 1
-        assert l_file.data['component_files'][0]['component_id'] == ct_2['id']
-        cts = admin.get(
-            '/api/v1/components/%s?embed=files' % ct_1['id']).data
-        assert len(cts['component']['files']) == 1
-        assert cts['component']['files'][0]['size'] == 1
-
-        cts = admin.get('/api/v1/components/%s/files' % ct_1['id']).data
-        assert cts['component_files'][0]['id'] == c_file_1_id
-
-        cts = admin.get('/api/v1/components/%s/files' % ct_2['id']).data
-        assert cts['component_files'][0]['id'] == c_file_2_id
+    cts = admin.get('/api/v1/components/%s/files' % ct_2['id']).data
+    assert cts['component_files'][0]['id'] == c_file_2_id
 
 
 def test_download_file_from_component(admin, topic_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    data = {'name': "pname1", 'title': 'aaa',
+            'type': 'gerrit_review',
+            'topic_id': topic_id,
+            'export_control': True}
+    ct_1 = admin.post('/api/v1/components', data=data).data['component']
 
-        mockito = mock.MagicMock()
+    url = '/api/v1/components/%s/files' % ct_1['id']
+    data = "lollollel"
+    c_file = admin.post(url, data=data).data['component_file']
 
-        mockito.get.return_value = ["test", six.StringIO("lollollel")]
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 3
-        }
-        mockito.head.return_value = head_result
-
-        mock_swift.return_value = mockito
-
-        data = {'name': "pname1", 'title': 'aaa',
-                'type': 'gerrit_review',
-                'topic_id': topic_id,
-                'export_control': True}
-        ct_1 = admin.post('/api/v1/components', data=data).data['component']
-
-        url = '/api/v1/components/%s/files' % ct_1['id']
-        data = "lol"
-        c_file = admin.post(url, data=data).data['component_file']
-
-        url = '/api/v1/components/%s/files/%s/content' % (ct_1['id'],
-                                                          c_file['id'])
-        d_file = admin.get(url)
-        assert d_file.status_code == 200
-        assert d_file.data == "lollollel"
+    url = '/api/v1/components/%s/files/%s/content' % (ct_1['id'],
+                                                      c_file['id'])
+    d_file = admin.get(url)
+    assert d_file.status_code == 200
+    assert d_file.data == '"lollollel"'
 
 
 def test_delete_file_from_component(admin, topic_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    data = {'name': "pname1", 'title': 'aaa',
+            'type': 'gerrit_review',
+            'topic_id': topic_id,
+            'export_control': True}
+    ct_1 = admin.post('/api/v1/components', data=data).data['component']
 
-        mockito = mock.MagicMock()
+    url = '/api/v1/components/%s/files' % ct_1['id']
+    data = "lol"
+    c_file = admin.post(url, data=data).data['component_file']
+    url = '/api/v1/components/%s/files' % ct_1['id']
+    g_file = admin.get(url)
+    assert g_file.data['_meta']['count'] == 1
 
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 1
-        }
+    url = '/api/v1/components/%s/files/%s' % (ct_1['id'], c_file['id'])
+    d_file = admin.delete(url)
+    assert d_file.status_code == 204
 
-        mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
-
-        data = {'name': "pname1", 'title': 'aaa',
-                'type': 'gerrit_review',
-                'topic_id': topic_id,
-                'export_control': True}
-        ct_1 = admin.post('/api/v1/components', data=data).data['component']
-
-        url = '/api/v1/components/%s/files' % ct_1['id']
-        data = "lol"
-        c_file = admin.post(url, data=data).data['component_file']
-        url = '/api/v1/components/%s/files' % ct_1['id']
-        g_file = admin.get(url)
-        assert g_file.data['_meta']['count'] == 1
-
-        url = '/api/v1/components/%s/files/%s' % (ct_1['id'], c_file['id'])
-        d_file = admin.delete(url)
-        assert d_file.status_code == 204
-
-        url = '/api/v1/components/%s/files' % ct_1['id']
-        g_file = admin.get(url)
-        assert g_file.data['_meta']['count'] == 0
+    url = '/api/v1/components/%s/files' % ct_1['id']
+    g_file = admin.get(url)
+    assert g_file.data['_meta']['count'] == 0
 
 
 def test_change_component_state(admin, topic_id):

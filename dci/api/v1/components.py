@@ -34,7 +34,7 @@ from dci.common import schemas
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
-from dci.stores import files
+from dci.stores import files_utils
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.COMPONENTS
@@ -277,7 +277,7 @@ def list_component_file(user, c_id, f_id):
 @decorators.login_required
 @decorators.check_roles
 def download_component_file(user, c_id, f_id):
-    swift = dci_config.get_store('components')
+    store = dci_config.get_store('components')
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     if (str(component['topic_id']) not in v1_utils.user_topic_ids(user) and
             not user.is_read_only_user()):
@@ -286,12 +286,12 @@ def download_component_file(user, c_id, f_id):
     component_file = v1_utils.verify_existence_and_get(
         f_id, models.COMPONENT_FILES)
     auth.check_export_control(user, component)
-    file_path = swift.build_file_path(component['topic_id'], c_id, f_id)
+    file_path = files_utils.build_file_path(component['topic_id'], c_id, f_id)
 
     # Check if file exist on the storage engine
-    swift.head(file_path)
+    store.head(file_path)
 
-    _, file_descriptor = swift.get(file_path)
+    _, file_descriptor = store.get(file_path)
     return flask.send_file(file_descriptor, mimetype=component_file['mime'])
 
 
@@ -305,14 +305,16 @@ def upload_component_file(user, c_id):
     if str(component['topic_id']) not in v1_utils.user_topic_ids(user):
         raise auth.UNAUTHORIZED
 
-    swift = dci_config.get_store('components')
+    store = dci_config.get_store('components')
 
     file_id = utils.gen_uuid()
-    file_path = swift.build_file_path(component['topic_id'], c_id, file_id)
+    file_path = files_utils.build_file_path(component['topic_id'],
+                                            c_id,
+                                            file_id)
 
-    content = files.get_stream_or_content_from_request(flask.request)
-    swift.upload(file_path, content)
-    s_file = swift.head(file_path)
+    content = files_utils.get_stream_or_content_from_request(flask.request)
+    store.upload(file_path, content)
+    s_file = store.head(file_path)
 
     values = dict.fromkeys(['md5', 'mime', 'component_id', 'name'])
 
@@ -352,9 +354,9 @@ def delete_component_file(user, c_id, f_id):
     if not result.rowcount:
         raise dci_exc.DCIDeleteConflict('Component File', f_id)
 
-    swift = dci_config.get_store('components')
-    file_path = swift.build_file_path(component['topic_id'], c_id, f_id)
-    swift.delete(file_path)
+    store = dci_config.get_store('components')
+    file_path = files_utils.build_file_path(component['topic_id'], c_id, f_id)
+    store.delete(file_path)
 
     return flask.Response(None, 204, content_type='application/json')
 
