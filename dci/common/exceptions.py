@@ -68,3 +68,9 @@ class DCICreationConflict(DCIException):
         msg = 'conflict on %s' % resource_name
         payload = {'error': {field_name: 'already_exists'}}
         super(DCICreationConflict, self).__init__(msg, payload, 409)
+
+
+class StoreExceptions(DCIException):
+    def __init__(self, message, status_code=400):
+        super(StoreExceptions, self).__init__(message,
+                                              status_code=status_code)
