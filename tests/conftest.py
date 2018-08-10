@@ -16,9 +16,7 @@
 
 import dci.app
 from dci.db import models
-from dci.stores.swift import Swift
 import tests.utils as utils
-from dci.common import utils as dci_utils
 import tests.sso_tokens as sso_tokens
 
 from passlib.apps import custom_app_context as pwd_context
@@ -26,11 +24,8 @@ import contextlib
 import pytest
 import sqlalchemy
 import sqlalchemy_utils.functions
-import mock
 
 import uuid
-
-SWIFT = 'dci.stores.swift.Swift'
 
 
 @pytest.fixture(scope='session')
@@ -367,45 +362,23 @@ def jobstate_user_id(user, job_user_id):
 
 @pytest.fixture
 def file_user_id(user, jobstate_user_id, team_user_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
-        mockito = mock.MagicMock()
-
-        head_result = {
-            'etag': dci_utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 1
-        }
-
-        mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
-        headers = {'DCI-JOBSTATE-ID': jobstate_user_id,
-                   'DCI-NAME': 'name'}
-        file = user.post('/api/v1/files',
-                         headers=headers, data='kikoolol').data
-        headers['team_id'] = team_user_id
-        headers['id'] = file['file']['id']
-        return file['file']['id']
+    headers = {'DCI-JOBSTATE-ID': jobstate_user_id,
+               'DCI-NAME': 'name'}
+    file = user.post('/api/v1/files',
+                     headers=headers, data='kikoolol').data
+    headers['team_id'] = team_user_id
+    headers['id'] = file['file']['id']
+    return file['file']['id']
 
 
 @pytest.fixture
 def file_job_user_id(user, job_user_id, team_user_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
-        mockito = mock.MagicMock()
-
-        head_result = {
-            'etag': dci_utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 1
-        }
-
-        mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
-        headers = {'DCI-JOB-ID': job_user_id,
-                   'DCI-NAME': 'name'}
-        file = user.post('/api/v1/files', headers=headers, data='foobar').data
-        headers['team_id'] = team_user_id
-        headers['id'] = file['file']['id']
-        return file['file']['id']
+    headers = {'DCI-JOB-ID': job_user_id,
+               'DCI-NAME': 'name'}
+    file = user.post('/api/v1/files', headers=headers, data='foobar').data
+    headers['team_id'] = team_user_id
+    headers['id'] = file['file']['id']
+    return file['file']['id']
 
 
 @pytest.fixture
