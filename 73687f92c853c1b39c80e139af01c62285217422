@@ -22,6 +22,30 @@
       "revId": "73687f92c853c1b39c80e139af01c62285217422",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1f927fd0_96e4bded",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 504,
+      "author": {
+        "id": 526
+      },
+      "writtenOn": "2018-08-10T14:28:48Z",
+      "side": 1,
+      "message": "docker exec -ti dci-dev-env_api_1 tox -e py27 tests/api/v1/test_components.py::test_create_tags_components",
+      "parentUuid": "6281f8ef_b2b9b1ec",
+      "range": {
+        "startLine": 504,
+        "startChar": 0,
+        "endLine": 504,
+        "endChar": 60
+      },
+      "revId": "73687f92c853c1b39c80e139af01c62285217422",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
