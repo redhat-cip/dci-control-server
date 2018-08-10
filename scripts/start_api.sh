@@ -7,10 +7,10 @@ TIMEOUT=${TIMEOUT:-60}
 ps aux | awk '!/awk/' | awk '/runtestserver/ {print $2}'| xargs -r kill
 
 # init db
-DCI_LOGIN='admin' DCI_PASSWORD='admin' python ./bin/dci-dbinit
+DCI_LOGIN='admin' DCI_PASSWORD='admin' python ./bin/init_database
 
 # run test server
-python ./bin/dci-runtestserver &
+python ./bin/runtestserver &
 
 i=1
 while [ $i -lt $TIMEOUT ]; do
