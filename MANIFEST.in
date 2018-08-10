@@ -4,6 +4,6 @@ include test-requirements.txt
 include LICENSE
 include tox.ini
 include scripts/start_db.sh
-include bin/dci-runtestserver
+include bin/runtestserver
 include dci/alembic/alembic.ini
 include dci/systemd/dci-worker.service
