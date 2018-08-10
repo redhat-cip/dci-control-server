@@ -18,7 +18,7 @@ import os
 import sys
 
 from dci.db import models
-from dci.stores import swift
+from dci.stores import files, swift
 
 import flask
 import sqlalchemy
@@ -44,18 +44,23 @@ def get_engine(conf):
 
 def get_store(container):
     conf = generate_conf()
-    configuration = {
-        'os_username': conf['STORE_USERNAME'],
-        'os_password': conf['STORE_PASSWORD'],
-        'os_tenant_name': conf['STORE_TENANT_NAME'],
-        'os_auth_url': conf['STORE_AUTH_URL'],
-    }
+    configuration = {}
     if container == 'files':
         configuration['container'] = conf['STORE_FILES_CONTAINER']
     elif container == 'components':
         configuration['container'] = conf['STORE_COMPONENTS_CONTAINER']
-    stores_engine = swift.Swift(configuration)
-    return stores_engine
+    if conf['STORE_ENGINE'] == conf['SWIFT_STORE']:
+        configuration = {
+            'os_username': conf['STORE_USERNAME'],
+            'os_password': conf['STORE_PASSWORD'],
+            'os_tenant_name': conf['STORE_TENANT_NAME'],
+            'os_auth_url': conf['STORE_AUTH_URL'],
+        }
+        store_engine = swift.Swift(configuration)
+    elif conf['STORE_ENGINE'] == conf['FILE_STORE']:
+        configuration['path'] = conf['PATH']
+        store_engine = files.File(configuration)
+    return store_engine
 
 
 def sanity_check(conf):

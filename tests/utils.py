@@ -136,28 +136,13 @@ def generate_token_based_client(app, resource):
 
 def post_file(client, jobstate_id, file_desc, mime='text/plain',
               swift_get_mock=None):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
-        mockito = mock.MagicMock()
+    headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
+               'DCI-MIME': mime, 'Content-Type': 'text/plain'}
+    res = client.post('/api/v1/files',
+                      headers=headers,
+                      data=file_desc.content)
 
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': len(file_desc.content)
-        }
-
-        mockito.head.return_value = head_result
-        mockito.get.return_value = (0, six.StringIO(file_desc.content))
-        mockito.build_file_path = Swift.build_file_path
-        if swift_get_mock is not None:
-            mockito.get = swift_get_mock
-        mock_swift.return_value = mockito
-        headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
-                   'DCI-MIME': mime, 'Content-Type': 'text/plain'}
-        res = client.post('/api/v1/files',
-                          headers=headers,
-                          data=file_desc.content)
-
-        return res.data['file']['id']
+    return res.data['file']['id']
 
 
 def provision(db_conn):
