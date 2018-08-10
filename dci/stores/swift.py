@@ -76,10 +76,3 @@ class Swift(stores.Store):
                 self.connection.put_container(self.container)
 
         self.connection.put_object(self.container, file_path, iterable)
-
-    @staticmethod
-    def build_file_path(root, middle, file_id):
-        root = str(root)
-        middle = str(middle)
-        file_id = str(file_id)
-        return "%s/%s/%s" % (root, middle, file_id)
