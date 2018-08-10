@@ -95,8 +95,6 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
         else:
             return (0, six.StringIO(tests_data.jobtest_with_failures))
 
-    swift_get_mock = mock.MagicMock(side_effect=get_file_content)
-
     f_1 = t_utils.post_file(admin, jobstate_1['id'],
                             FileDesc('Tempest',
                                      tests_data.jobtest_without_failures),
@@ -110,8 +108,7 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
     f_2 = t_utils.post_file(admin, jobstate_2['id'],
                             FileDesc('Tempest',
                                      tests_data.jobtest_with_failures),
-                            mime='application/junit',
-                            swift_get_mock=swift_get_mock)
+                            mime='application/junit')
     assert f_2 is not None
     t_utils.post_file(admin, jobstate_2['id'],
                       FileDesc('Rally',
@@ -128,37 +125,24 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
             assert job_res['regressions'] == 0
 
     # 4. get the job2's tests results
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    job_2_tests_results = admin.get(
+        '/api/v1/jobs/%s/results' % job_2['id'])
+    # get Tempest result
+    testcases = job_2_tests_results.data['results'][0]
+    if testcases['name'] == 'Tempest':
+        testcases = job_2_tests_results.data['results'][0]['testscases']
+    else:
+        testcases = job_2_tests_results.data['results'][1]['testscases']
 
-        mockito = mock.MagicMock()
+    testcases = job_2_tests_results.data['results'][0]['testscases']
 
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 1
-        }
-
-        mockito.head.return_value = head_result
-        mockito.get = swift_get_mock
-        mockito.build_file_path = Swift.build_file_path
-        mock_swift.return_value = mockito
-        job_2_tests_results = admin.get(
-            '/api/v1/jobs/%s/results' % job_2['id'])
-
-        # get Tempest result
-        testcases = job_2_tests_results.data['results'][0]
-        if testcases['name'] == 'Tempest':
-            testcases = job_2_tests_results.data['results'][0]['testscases']
-        else:
-            testcases = job_2_tests_results.data['results'][1]['testscases']
-
-        regression_found = False
-        for testcase in testcases:
-            if testcase['regression'] is True:
-                assert testcase['classname'] == 'Testsuite_1'
-                assert testcase['name'] == 'test_3'
-                regression_found = True
-        assert regression_found is True
+    regression_found = False
+    for testcase in testcases:
+        if testcase['regression'] is True:
+            assert testcase['classname'] == 'Testsuite_1'
+            assert testcase['name'] == 'test_3'
+            regression_found = True
+    assert regression_found is True
 
 
 def test_get_all_files_with_pagination(user, jobstate_user_id):
@@ -257,27 +241,16 @@ def test_get_file_not_found(user):
 
 
 def test_get_file_with_embed(user, jobstate_user_id, team_user_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
-        mockito = mock.MagicMock()
+    pt = user.get('/api/v1/teams/%s' % team_user_id).data
+    headers = {'DCI-JOBSTATE-ID': jobstate_user_id, 'DCI-NAME': 'kikoolol'}
+    file = user.post('/api/v1/files', headers=headers).data
 
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 7,
-        }
+    file_id = file['file']['id']
+    file['file']['team'] = pt['team']
 
-        mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
-        pt = user.get('/api/v1/teams/%s' % team_user_id).data
-        headers = {'DCI-JOBSTATE-ID': jobstate_user_id, 'DCI-NAME': 'kikoolol'}
-        file = user.post('/api/v1/files', headers=headers).data
-
-        file_id = file['file']['id']
-        file['file']['team'] = pt['team']
-
-        # verify embed
-        file_embed = user.get('/api/v1/files/%s?embed=team' % file_id).data
-        assert file == file_embed
+    # verify embed
+    file_embed = user.get('/api/v1/files/%s?embed=team' % file_id).data
+    assert file == file_embed
 
 
 def test_get_file_with_embed_not_valid(user, jobstate_user_id):
@@ -304,20 +277,9 @@ def test_delete_file_by_id(user, jobstate_user_id):
 
 
 def test_create_file_as_user(user, jobstate_user_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
-        mockito = mock.MagicMock()
-
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 7
-        }
-
-        mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
-        headers = {'DCI-JOBSTATE-ID': jobstate_user_id, 'DCI-NAME': 'name'}
-        file = user.post('/api/v1/files', headers=headers)
-        assert file.status_code == 201
+    headers = {'DCI-JOBSTATE-ID': jobstate_user_id, 'DCI-NAME': 'name'}
+    file = user.post('/api/v1/files', headers=headers)
+    assert file.status_code == 201
 
 
 def test_get_all_files_as_user(user, team_user_id, file_user_id):
@@ -338,19 +300,8 @@ def test_get_all_files_as_product_owner(product_owner, team_user_id,
 
 
 def test_get_file_as_user(user, file_user_id, jobstate_user_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
-        mockito = mock.MagicMock()
-
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 7
-        }
-
-        mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
-        file = user.get('/api/v1/files/%s' % file_user_id)
-        assert file.status_code == 200
+    file = user.get('/api/v1/files/%s' % file_user_id)
+    assert file.status_code == 200
 
 
 def test_delete_file_as_user(user, file_user_id):
@@ -359,27 +310,14 @@ def test_delete_file_as_user(user, file_user_id):
 
 
 def test_get_file_content_as_user(user, jobstate_user_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
-        mockito = mock.MagicMock()
+    content = "azertyuiop1234567890"
+    file_id = t_utils.post_file(user, jobstate_user_id,
+                                FileDesc('foo', content))
 
-        head_result = {
-            'etag': utils.gen_etag(),
-            'content-type': "stream",
-            'content-length': 7
-        }
+    get_file = user.get('/api/v1/files/%s/content' % file_id)
 
-        mockito.head.return_value = head_result
-        mockito.get.return_value = [
-            head_result, six.StringIO("azertyuiop1234567890")]
-        mock_swift.return_value = mockito
-        content = "azertyuiop1234567890"
-        file_id = t_utils.post_file(user, jobstate_user_id,
-                                    FileDesc('foo', content))
-
-        get_file = user.get('/api/v1/files/%s/content' % file_id)
-
-        assert get_file.status_code == 200
-        assert get_file.data == content
+    assert get_file.status_code == 200
+    assert get_file.data == content
 
 
 def test_change_file_to_invalid_state(admin, file_user_id):
