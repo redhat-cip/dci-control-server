@@ -48,9 +48,12 @@ class Swift(stores.Store):
     def delete(self, filename):
         try:
             self.connection.delete_object(self.container, filename)
-        except swiftclient.exceptions.ClientException:
-            raise exceptions.StoreExceptions('An error occured while '
-                                             'deleting %s' % filename)
+        except swiftclient.exceptions.ClientException as e:
+            if e.http_status == 404:
+                pass
+            else:
+                raise exceptions.StoreExceptions('An error occured while '
+                                                 'deleting %s' % filename)
 
     def get(self, filename):
         try:
@@ -76,10 +79,3 @@ class Swift(stores.Store):
                 self.connection.put_container(self.container)
 
         self.connection.put_object(self.container, file_path, iterable)
-
-    @staticmethod
-    def build_file_path(root, middle, file_id):
-        root = str(root)
-        middle = str(middle)
-        file_id = str(file_id)
-        return "%s/%s/%s" % (root, middle, file_id)
