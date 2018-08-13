@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "3422039f_bf69d01a",
+        "filename": "dci/api/v1/__init__.py",
+        "patchSetId": 17
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-08-13T17:10:18Z",
+      "side": 1,
+      "message": "This list was sorted alphanumerically.",
+      "revId": "90e4ca9666916168594f838736a50fa99d610c2c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "83b9fa82_3ff50a5a",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 17
+      },
+      "lineNbr": 522,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-08-13T17:10:18Z",
+      "side": 1,
+      "message": "We now return the freshly created resource instead of None/204. See:\n\nhttps://github.com/redhat-cip/dci-control-server/commit/ec51178f89f98b65054f5fcf6b4017df1ed1d04f",
+      "revId": "90e4ca9666916168594f838736a50fa99d610c2c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
