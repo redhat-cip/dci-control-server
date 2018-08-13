@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c3189650_9541f56a",
+        "filename": "dci/api/v1/__init__.py",
+        "patchSetId": 18
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-08-13T17:38:37Z",
+      "side": 1,
+      "message": "it was ordered alphabetically so it should be before teams.",
+      "range": {
+        "startLine": 52,
+        "startChar": 0,
+        "endLine": 52,
+        "endChar": 30
+      },
+      "revId": "71f5535c6001a5c39794e0a441e45175c45ecc4a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "58df7429_d8575779",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 18
+      },
+      "lineNbr": 508,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-08-13T17:38:37Z",
+      "side": 1,
+      "message": "It\u0027s a minor thing but it\u0027s not really a resource creation but there\u0027s no tag created. It\u0027s only an association.\nSo it should be more something like \"add tags to component\"",
+      "range": {
+        "startLine": 507,
+        "startChar": 0,
+        "endLine": 508,
+        "endChar": 47
+      },
+      "revId": "71f5535c6001a5c39794e0a441e45175c45ecc4a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "98614a84_526bb4a5",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 18
+      },
+      "lineNbr": 522,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-08-13T17:38:37Z",
+      "side": 1,
+      "message": "for a POST request you should return a 201 http code and the result.\nAs an example : https://github.com/redhat-cip/dci-control-server/blob/master/dci/api/v1/topics.py#L397-L398",
+      "range": {
+        "startLine": 522,
+        "startChar": 26,
+        "endLine": 522,
+        "endChar": 35
+      },
+      "revId": "71f5535c6001a5c39794e0a441e45175c45ecc4a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d4c78a63_5651ee00",
+        "filename": "dci/api/v1/tags.py",
+        "patchSetId": 18
+      },
+      "lineNbr": 3,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-08-13T17:38:37Z",
+      "side": 1,
+      "message": "I guess you can put 2018 because it\u0027s a new file.",
+      "range": {
+        "startLine": 3,
+        "startChar": 16,
+        "endLine": 3,
+        "endChar": 25
+      },
+      "revId": "71f5535c6001a5c39794e0a441e45175c45ecc4a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
