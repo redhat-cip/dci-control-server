@@ -45,6 +45,29 @@
       "revId": "0d89932043b3f0aee57cd8d03d4173f0d378378b",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "65e20753_067b42d1",
+        "filename": "tests/api/v1/test_files.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 526
+      },
+      "writtenOn": "2018-08-20T20:37:22Z",
+      "side": 1,
+      "message": "You should test with \"answer from a get files + 4\" and not assuming current is 0.",
+      "range": {
+        "startLine": 136,
+        "startChar": 4,
+        "endLine": 136,
+        "endChar": 39
+      },
+      "revId": "0d89932043b3f0aee57cd8d03d4173f0d378378b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
