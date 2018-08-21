@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "4bc869cc_449c0a0f",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 280,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-21T12:38:24Z",
+      "side": 1,
+      "message": "better to use a static variable instead of \u0027components\u0027",
+      "revId": "0d89932043b3f0aee57cd8d03d4173f0d378378b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "0c813da5_b8097d95",
         "filename": "dci/api/v1/files.py",
         "patchSetId": 6
@@ -13,6 +30,30 @@
       "writtenOn": "2018-08-20T20:24:04Z",
       "side": 1,
       "message": "Should be store.delete ?",
+      "range": {
+        "startLine": 322,
+        "startChar": 2,
+        "endLine": 335,
+        "endChar": 19
+      },
+      "revId": "0d89932043b3f0aee57cd8d03d4173f0d378378b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9d2114f6_8d2838ce",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 335,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-21T12:38:24Z",
+      "side": 1,
+      "message": "yes and exceptions should be properly encapsulated within dci exceptions namespaces.",
+      "parentUuid": "0c813da5_b8097d95",
       "range": {
         "startLine": 322,
         "startChar": 2,
@@ -48,6 +89,132 @@
     },
     {
       "key": {
+        "uuid": "d8823f33_0248497b",
+        "filename": "dci/settings.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-21T12:38:24Z",
+      "side": 1,
+      "message": "agreed",
+      "parentUuid": "624c12f4_b31bc961",
+      "range": {
+        "startLine": 57,
+        "startChar": 0,
+        "endLine": 57,
+        "endChar": 4
+      },
+      "revId": "0d89932043b3f0aee57cd8d03d4173f0d378378b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7267fc51_d46b1888",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-21T12:38:24Z",
+      "side": 1,
+      "message": "This is hiding the real cause, you should integrate the root cause within StoreException message.",
+      "revId": "0d89932043b3f0aee57cd8d03d4173f0d378378b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8f0f8b00_8dc814e4",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-21T12:38:24Z",
+      "side": 1,
+      "message": "nice to have:  raise exception if the file does not exist",
+      "revId": "0d89932043b3f0aee57cd8d03d4173f0d378378b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2d7185ce_ab5408ab",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-21T12:38:24Z",
+      "side": 1,
+      "message": "what is the purpose of [] ?",
+      "revId": "0d89932043b3f0aee57cd8d03d4173f0d378378b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d400066f_4bf144bf",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-21T12:38:24Z",
+      "side": 1,
+      "message": "you create a private method:\n\ndef _file_path(filename):\n    return \u0027%s/%s/%s\u0027 % (self.path, self.container, filename)",
+      "revId": "0d89932043b3f0aee57cd8d03d4173f0d378378b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4fea8468_7e0e7b4b",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-21T12:38:24Z",
+      "side": 1,
+      "message": "head() should raise a notfound exception if the file does not exsits.\n\nAlso, you should harmonize the return value from File and Swift with the same dictionnary.\n\n\"etag\" key is not appropriate, etag is more for REST api responses.",
+      "revId": "0d89932043b3f0aee57cd8d03d4173f0d378378b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "011a5fac_d5ec7506",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-21T12:38:24Z",
+      "side": 1,
+      "message": "readlines() is dangerous in case of binary file, what happen for a binary file without carriage return ?\n\nI think you should instead use read(CHUNK) with CHUNK a multiple of 2.",
+      "revId": "0d89932043b3f0aee57cd8d03d4173f0d378378b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "65e20753_067b42d1",
         "filename": "tests/api/v1/test_files.py",
         "patchSetId": 6
@@ -59,6 +226,30 @@
       "writtenOn": "2018-08-20T20:37:22Z",
       "side": 1,
       "message": "You should test with \"answer from a get files + 4\" and not assuming current is 0.",
+      "range": {
+        "startLine": 136,
+        "startChar": 4,
+        "endLine": 136,
+        "endChar": 39
+      },
+      "revId": "0d89932043b3f0aee57cd8d03d4173f0d378378b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5d19efe0_6d01b715",
+        "filename": "tests/api/v1/test_files.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 136,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-08-21T12:38:24Z",
+      "side": 1,
+      "message": "agreed. you should get all filles before the post_file() and assert on get_files() + 4",
+      "parentUuid": "65e20753_067b42d1",
       "range": {
         "startLine": 136,
         "startChar": 4,
