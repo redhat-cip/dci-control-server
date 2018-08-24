@@ -1,0 +1,142 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "972e5225_a7698f10",
+        "filename": "dci/alembic/versions/46fa9eb61235_add_analytics.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-08-24T15:28:49Z",
+      "side": 1,
+      "message": "bcd903a35145",
+      "range": {
+        "startLine": 19,
+        "startChar": 9,
+        "endLine": 19,
+        "endChar": 21
+      },
+      "revId": "5ebd690b88da5946c9ab11767c6ee3a4a0da4e65",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b8cb0053_3e95e1eb",
+        "filename": "dci/alembic/versions/46fa9eb61235_add_analytics.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 26,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-08-24T15:28:49Z",
+      "side": 1,
+      "message": "bcd903a35145",
+      "range": {
+        "startLine": 26,
+        "startChar": 17,
+        "endLine": 26,
+        "endChar": 29
+      },
+      "revId": "5ebd690b88da5946c9ab11767c6ee3a4a0da4e65",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c4387ee4_7c320961",
+        "filename": "dci/alembic/versions/46fa9eb61235_add_analytics.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-08-24T15:28:49Z",
+      "side": 1,
+      "message": "it\u0027s not used at all ?",
+      "range": {
+        "startLine": 39,
+        "startChar": 0,
+        "endLine": 40,
+        "endChar": 49
+      },
+      "revId": "5ebd690b88da5946c9ab11767c6ee3a4a0da4e65",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b73bc808_3c96e3f7",
+        "filename": "dci/alembic/versions/46fa9eb61235_add_analytics.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-08-24T15:28:49Z",
+      "side": 1,
+      "message": "indexes ?",
+      "range": {
+        "startLine": 57,
+        "startChar": 0,
+        "endLine": 62,
+        "endChar": 34
+      },
+      "revId": "5ebd690b88da5946c9ab11767c6ee3a4a0da4e65",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f82ad7c3_241d84a5",
+        "filename": "dci/api/v1/analytics.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 120,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-08-24T15:28:49Z",
+      "side": 1,
+      "message": "no soft delete for the moment ?",
+      "range": {
+        "startLine": 106,
+        "startChar": 1,
+        "endLine": 120,
+        "endChar": 59
+      },
+      "revId": "5ebd690b88da5946c9ab11767c6ee3a4a0da4e65",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "41136067_3029f20f",
+        "filename": "dci/db/models.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 622,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-08-24T15:28:49Z",
+      "side": 1,
+      "message": "indexes ?",
+      "range": {
+        "startLine": 617,
+        "startChar": 0,
+        "endLine": 622,
+        "endChar": 30
+      },
+      "revId": "5ebd690b88da5946c9ab11767c6ee3a4a0da4e65",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
