@@ -61,6 +61,7 @@ _EMBED_MANY = {
     'team': False,
     'results': True,
     'rconfiguration': False,
+    'analytics': True
 }
 
 

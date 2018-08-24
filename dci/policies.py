@@ -100,6 +100,12 @@ ROLES = {
     'delete_meta': ALL,
     'get_to_purge_archived_jobs': SUPER_ADMIN,
     'purge_archived_jobs': SUPER_ADMIN,
+    # analytics
+    'create_analytic': ALL,
+    'get_analytic': ALL,
+    'get_all_analytics': ALL,
+    'update_analytic': ALL,
+    'delete_analytics_by_id': ALL,
     # job states
     'create_jobstates': ALL,
     'get_all_jobstates': ALL,
