@@ -51,6 +51,8 @@ PUBLIC = 'public', False
 EXTERNAL = 'external', True
 PREVIOUS_JOB_ID = 'previous_job_id', uuid.uuid4()
 UPDATE_PREVIOUS_JOB_ID = 'update_previous_job_id', uuid.uuid4()
+TYPE = 'type', text_type
+
 
 INVALID_NAME = 'name', None
 INVALID_NAME_ERROR = 'name', schemas.INVALID_STRING
@@ -127,6 +129,10 @@ INVALID_VALUE = 'value', None
 INVALID_VALUE_ERROR = 'value', schemas.INVALID_STRING
 
 
+INVALID_TYPE = 'type', None
+INVALID_TYPE_ERROR = 'type', schemas.INVALID_TYPE
+
+
 def generate_errors(*fields):
     return dict([(field, schemas.INVALID_REQUIRED) for field in fields])
 
@@ -161,13 +167,11 @@ class SchemaTesting(object):
     def test_post_missing_data(self, errors):
         with pytest.raises(exceptions.DCIException) as exc:
             self.schema.post({})
-
         assert exc.value.payload == {'errors': errors}
 
     def test_post_invalid_data(self, data, errors):
         with pytest.raises(exceptions.DCIException) as exc:
             self.schema.post(data)
-
         assert exc.value.payload == {'errors': errors}
 
     def test_post(self, data, expected_data):

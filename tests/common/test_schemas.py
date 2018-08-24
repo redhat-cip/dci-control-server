@@ -610,3 +610,34 @@ class TestArgs(object):
 
     def test_args(self):
         assert schemas.args(self.data) == self.data_expected
+
+
+class TestAnalytics(utils.SchemaTesting):
+    schema = schemas.analytic
+    data = dict([utils.NAME, utils.URL, utils.TYPE, utils.DATA])
+
+    @staticmethod
+    def generate_invalids_and_errors():
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_TYPE])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_TYPE_ERROR])
+        return invalids, errors
+
+    def test_post(self):
+        data_expected = self.data
+        super(TestAnalytics, self).test_post(self.data, data_expected)
+
+    def test_post_invalid_data(self):
+        invalids, errors = TestAnalytics.generate_invalids_and_errors()
+        super(TestAnalytics, self).test_post_invalid_data(invalids, errors)
+
+    def test_post_missing_data(self):
+        errors = utils.generate_errors('name', 'type')
+        super(TestAnalytics, self).test_post_missing_data(errors)
+
+    def test_put(self):
+        data_expected = self.data
+        super(TestAnalytics, self).test_put(self.data, data_expected)
+
+    def test_put_invalid_data(self):
+        invalids, errors = TestAnalytics.generate_invalids_and_errors()
+        super(TestAnalytics, self).test_put_invalid_data(invalids, errors)

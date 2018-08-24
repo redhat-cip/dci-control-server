@@ -620,3 +620,28 @@ FEEDERS = sa.Table(
     sa.UniqueConstraint('name', 'team_id', name='feeders_name_team_id_key'),
     sa.Column('state', STATES, default='active')
 )
+
+ANALYTICS = sa.Table(
+    'analytics', metadata,
+    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('created_at', sa.DateTime(),
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('updated_at', sa.DateTime(),
+              onupdate=datetime.datetime.utcnow,
+              default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('team_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=False),
+    sa.Index('analytics_team_id_idx', 'team_id'),
+    sa.Column('job_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+              nullable=False),
+    sa.Index('analytics_job_id_idx', 'job_id'),
+    sa.Column('type', sa.String(255), nullable=False),
+    sa.Column('name', sa.String(255), unique=True, nullable=False),
+    sa.Column('url', sa.String(255)),
+    sa.Column('data', sa_utils.JSONType, default={}, nullable=False)
+)
