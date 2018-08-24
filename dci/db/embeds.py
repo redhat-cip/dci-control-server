@@ -126,7 +126,11 @@ def jobs(root_select=models.JOBS):
              'isouter': True},
             {'right': models.ISSUES,
              'onclause': and_(models.ISSUES.c.id == models.JOIN_JOBS_ISSUES.c.issue_id),  # noqa
-             'isouter': True}]
+             'isouter': True}],
+        'analytics': [
+            {'right': models.ANALYTICS,
+             'onclause': models.ANALYTICS.c.job_id == root_select.c.id,
+             'isouter': True}],
     }
 
 
@@ -372,6 +376,7 @@ EMBED_STRING_TO_OBJECT = {
         'team': TEAM,
         'results': TESTS_RESULTS,
         'rconfiguration': RCONFIGURATION,
+        'analytics': models.ANALYTICS
     },
     'remotecis': {
         'team': TEAM,

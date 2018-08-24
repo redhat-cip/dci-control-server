@@ -98,6 +98,8 @@ INVALID_STATUS_UPDATE = ('not a valid status update (must be %s)' %
 INVALID_RESOURCE_STATE = ('not a valid resource state (must be %s)' %
                           ' or '.join(VALID_RESOURCE_STATE))
 
+INVALID_TYPE = 'not a valid string'
+
 UUID_FIELD = v.All(six.text_type, msg=INVALID_UUID)
 DATA_FIELD = {v.Optional('data', default={}): dict}
 
@@ -665,3 +667,26 @@ counter_put = {
 }
 
 counter = DCISchema(None, Schema(counter_put))
+
+###############################################################################
+#                                                                             #
+#                             Analytics schemas                               #
+#                                                                             #
+###############################################################################
+
+analytic = {
+    'name': six.text_type,
+    'type': six.text_type,
+    v.Optional('url', default=None): six.text_type,
+    v.Optional('data'): dict,
+}
+
+analytic_put = {
+    v.Optional('name'): six.text_type,
+    v.Optional('type'): six.text_type,
+    v.Optional('url', default=None): six.text_type,
+    v.Optional('data'): dict,
+}
+
+analytic = DCISchema(schema_factory(analytic).post,
+                     Schema(analytic_put))
