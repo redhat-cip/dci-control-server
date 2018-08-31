@@ -27,8 +27,12 @@ from tests.data import JUNIT
 SWIFT = 'dci.stores.swift.Swift'
 
 
-def test_create_jobs(remoteci_context, components_user_ids):
-    data = {'comment': 'kikoolol', 'components': components_user_ids}
+def test_create_jobs(remoteci_context, components_user_ids, job_user_id):
+    data = {
+        'comment': 'kikoolol',
+        'components': components_user_ids,
+        'previous_job_id': job_user_id,
+    }
     job = remoteci_context.post('/api/v1/jobs', data=data)
     job_id = job.data['job']['id']
 
@@ -38,6 +42,17 @@ def test_create_jobs(remoteci_context, components_user_ids):
     job = remoteci_context.get('/api/v1/jobs/%s' % job_id)
     assert job.status_code == 200
     assert job.data['job']['comment'] == 'kikoolol'
+
+
+def test_create_jobs_bad_previous_job_id(remoteci_context,
+                                         components_user_ids):
+    data = {
+        'comment': 'kikoolol',
+        'components': components_user_ids,
+        'previous_job_id': 'foo',
+    }
+    r = remoteci_context.post('/api/v1/jobs', data=data)
+    assert r.status_code == 400
 
 
 def test_create_jobs_empty_comment(remoteci_context, components_user_ids):
