@@ -77,8 +77,12 @@ def create_jobs(user):
     if not user.is_super_admin() and not user.is_in_team(values['team_id']):
         raise auth.UNAUTHORIZED
 
-    if values['topic_id'] is not None:
+    if values.get('topic_id'):
         v1_utils.verify_team_in_topic(user, values['topic_id'])
+
+    if values.get('previous_job_id'):
+        v1_utils.verify_existence_and_get(
+            values.get('previous_job_id'), _TABLE)
 
     values.update({
         'status': 'new',
@@ -89,6 +93,7 @@ def create_jobs(user):
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'
         ),
+        'previous_job_id': values['previous_job_id'],
     })
 
     # create the job and feed the jobs_components table
@@ -144,7 +149,7 @@ def _build_job(topic_id, remoteci, components_ids, values,
     return values
 
 
-def _get_job(user, job_id, embed):
+def _get_job(user, job_id, embed=None):
     # build the query thanks to the QueryBuilder class
     args = {'embed': embed}
     query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS)
