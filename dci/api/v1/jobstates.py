@@ -61,10 +61,18 @@ def create_jobstates(user):
     created_at, _ = utils.get_dates(user)
     values = schemas.jobstate.post(flask.request.json)
 
+    # if one create a 'failed' jobstates and the current state is either
+    # 'run' or 'pre-run' then set the job to 'error' state
+    job_id = values.get('job_id')
+    job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
+    job = dict(job)
+    if values.get('status') in ['failure', 'error']:
+        if job['status'] in ['new', 'pre-run']:
+            values['status'] = 'error'
+
     insert_jobstate(user, values, created_at)
 
     # Update job status
-    job_id = values.get('job_id')
     query_update_job = (models.JOBS.update()
                         .where(
                             sql.and_(
@@ -77,8 +85,7 @@ def create_jobstates(user):
         embeds = ['components', 'topic', 'remoteci']
         embeds_dict = {'components': True, 'topic': False, 'remoteci': False}
 
-        job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
-        job = base.get_resource_by_id(user, dict(job), models.JOBS,
+        job = base.get_resource_by_id(user, job, models.JOBS,
                                       embeds_dict, embeds=embeds,
                                       jsonify=False)
         job = dict(job)
