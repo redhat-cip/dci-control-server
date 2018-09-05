@@ -22,6 +22,30 @@
       "revId": "76dc15fe29c08313fba592419fe3776e4d60c6d2",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e9af0c6d_67e4775a",
+        "filename": "entrypoint.sh",
+        "patchSetId": 1
+      },
+      "lineNbr": 8,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-09-05T13:11:02Z",
+      "side": 1,
+      "message": "dcidbinit is meant to feed the database with domain related datas users/roles...\n\ni can create a new python script if you want :)",
+      "parentUuid": "a457cf8d_9e694f4c",
+      "range": {
+        "startLine": 7,
+        "startChar": 1,
+        "endLine": 8,
+        "endChar": 81
+      },
+      "revId": "76dc15fe29c08313fba592419fe3776e4d60c6d2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
