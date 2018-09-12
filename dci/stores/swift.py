@@ -31,6 +31,9 @@ class Swift(stores.Store):
                                        os.getenv('OS_TENANT_NAME'))
         self.os_auth_url = conf.get('os_auth_url',
                                     os.getenv('OS_AUTH_URL'))
+        self.os_options = dict()
+        self.os_options['region_name'] = conf.get('os_region_name',
+                                                  os.getenv('OS_REGION_NAME'))
         self.container = conf.get('container')
         self.connection = self.get_connection()
 
@@ -39,6 +42,7 @@ class Swift(stores.Store):
                                              user=self.os_username,
                                              key=self.os_password,
                                              tenant_name=self.os_tenant_name,
+                                             os_options=self.os_options,
                                              authurl=self.os_auth_url)
 
     def delete(self, filename):

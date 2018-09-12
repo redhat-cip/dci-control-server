@@ -49,6 +49,7 @@ def get_store(container):
         'os_password': conf['STORE_PASSWORD'],
         'os_tenant_name': conf['STORE_TENANT_NAME'],
         'os_auth_url': conf['STORE_AUTH_URL'],
+        'os_region_name': conf['STORE_REGION'],
     }
     if container == 'files':
         configuration['container'] = conf['STORE_FILES_CONTAINER']
