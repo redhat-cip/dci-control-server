@@ -63,6 +63,7 @@ DEFAULT_STORE_AUTH_URL = 'http://{store_host}:{store_port}/v2.0'.format(
     store_port=STORE_PORT
 )
 STORE_AUTH_URL = os.getenv('STORE_AUTH_URL', DEFAULT_STORE_AUTH_URL)
+STORE_REGION = os.getenv('STORE_REGION', 'regionOne')
 STORE_CONTAINER = os.getenv('STORE_CONTAINER', 'dci_components')
 STORE_FILES_CONTAINER = os.getenv('STORE_FILES_CONTAINER', 'dci_components')
 STORE_COMPONENTS_CONTAINER = os.getenv('STORE_COMPONENTS_CONTAINER',
