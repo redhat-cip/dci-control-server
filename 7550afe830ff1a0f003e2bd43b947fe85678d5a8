@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "8074ade3_12cef8ef",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-09-13T22:01:26Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d9df4358_9bebd7dc",
+      "revId": "7550afe830ff1a0f003e2bd43b947fe85678d5a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "491924e4_dcebf6e9",
         "filename": "tests/api/v1/test_jobs.py",
         "patchSetId": 1
@@ -30,6 +48,24 @@
       "writtenOn": "2018-09-12T20:28:05Z",
       "side": 1,
       "message": "test_create_jobs_bad_previous_job_id(",
+      "revId": "7550afe830ff1a0f003e2bd43b947fe85678d5a8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "17f3bb49_b8a5fb33",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 47,
+      "author": {
+        "id": 30
+      },
+      "writtenOn": "2018-09-13T22:01:26Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "491924e4_dcebf6e9",
       "revId": "7550afe830ff1a0f003e2bd43b947fe85678d5a8",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
