@@ -1,5 +1,5 @@
 [gerrit]
-host=softwarefactory-project.io
-port=29418
+host=sf
+port=22
 project=dci-control-server
 defaultbranch=master
