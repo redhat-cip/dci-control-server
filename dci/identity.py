@@ -30,6 +30,7 @@ class Identity:
         user_team_id = user['team_id']
         self.product_team_id = self._get_product_team_id(
             teams_by_ids, user_team_id)
+        self.all_teams = teams
         teams = self._get_teams_and_child_teams(teams, user_team_id)
         self.teams_ids = [team['id'] for team in teams]
 
@@ -76,6 +77,16 @@ class Identity:
             if user['team_id'] == team['id']:
                 return team
         return {'id': None}
+
+    def is_under_product_team(self, product_team_id, get=False):
+        """check if the user's product's team is the same as the one
+        provided.
+
+        :param product_team_id:
+        :return:
+        """
+
+        return product_team_id == self.product_team_id
 
     def is_not_in_team(self, team_id):
         """Test if user is not in team"""
