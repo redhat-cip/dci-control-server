@@ -51,6 +51,7 @@ PUBLIC = 'public', False
 EXTERNAL = 'external', True
 PREVIOUS_JOB_ID = 'previous_job_id', uuid.uuid4()
 UPDATE_PREVIOUS_JOB_ID = 'update_previous_job_id', uuid.uuid4()
+EXPORT_CONTROL = 'export_control', False
 
 INVALID_NAME = 'name', None
 INVALID_NAME_ERROR = 'name', schemas.INVALID_STRING
