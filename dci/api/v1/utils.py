@@ -590,3 +590,34 @@ def common_values_dict(user):
     }
 
     return values
+
+
+def check_export_control(user, topic, _raise=True):
+    """ If the topic has it's export_control set to True then all the teams
+    under the product team can access to the topic's resources.
+    If the topic has it's export_control set to False then only the teams
+    associated to the topic can access to the topic's resources.
+
+    :param user:
+    :param topic:
+    :param _raise: If true raise an UNAUTHORIZED exception instead of False.
+    :return: True if check is ok
+    """
+    if user.is_super_admin() or user.is_read_only_user():
+        return True
+    # if export_control then check the team is associated to the product
+    # this will actually check that the root team is the same as the main
+    # product team
+    if topic['export_control']:
+        product = verify_existence_and_get(topic['product_id'],
+                                           models.PRODUCTS)
+        if user.product_team_id == product['team_id']:
+            return True
+    else:
+        verify_team_in_topic(user, topic['id'])
+        return True
+
+    if _raise:
+        raise auth.UNAUTHORIZED
+    else:
+        return False
