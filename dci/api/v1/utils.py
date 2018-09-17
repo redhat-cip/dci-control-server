@@ -110,6 +110,22 @@ def verify_existence_and_get(id, table, get_id=False):
     return result
 
 
+def get_parent_root_team(team_id):
+    """Given a team id, this function will return its root team, the one
+    that doesn't have a parent_id field."""
+    seen_teams = [team_id]
+    current_team_id = team_id
+    while True:
+        query = sql.select([models.TEAMS]).where(models.TEAMS.c.id == current_team_id)  # noqa
+        result = flask.g.db_conn.execute(query).fetchone()
+        if not result['parent_id']:
+            return result['id']
+        if result['parent_id'] in seen_teams:
+            raise dci_exc.DCIException('Team ancestry malformed')
+        seen_teams.append(result['parent_id'])
+        current_team_id = result['parent_id']
+
+
 def user_topic_ids(user):
     """Retrieve the list of topics IDs a user has access to."""
 
@@ -590,3 +606,34 @@ def common_values_dict(user):
     }
 
     return values
+
+
+def check_export_control(user, topic, _raise=True):
+    """ If the topic has it's export_control set to True then all the teams
+    under the product team can access to the topic's resources.
+    If the topic has it's export_control set to False then only the teams
+    associated to the topic can access to the topic's resources.
+
+    :param user:
+    :param topic:
+    :param _raise: If true raise an UNAUTHORIZED exception instead of False.
+    :return: True if check is ok
+    """
+    if user.is_admin() or user.is_super_admin():
+        return True
+    # if export_control then check the team is associated to the product
+    # this will actually check that the root team is the same as the main
+    # product team
+    if topic['export_control']:
+        product = verify_existence_and_get(topic['product_id'],
+                                           models.PRODUCTS)
+        if get_parent_root_team(user.team_id) == product['team_id']:
+            return True
+    else:
+        verify_team_in_topic(user, topic['id'])
+        return True
+
+    if _raise:
+        raise auth.UNAUTHORIZED
+    else:
+        return False
