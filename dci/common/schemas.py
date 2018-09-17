@@ -463,6 +463,7 @@ topic = utils.dict_merge(base, DATA_FIELD, {
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
     v.Optional('component_types', default=[]): list,
+    v.Optional('export_control', default=False): bool,
 })
 
 topic_put = {
@@ -474,6 +475,7 @@ topic_put = {
                                msg=INVALID_RESOURCE_STATE),
     v.Optional('component_types'): list,
     v.Optional('data'): dict,
+    v.Optional('export_control'): bool,
 }
 
 topic = DCISchema(schema_factory(topic).post, Schema(topic_put))

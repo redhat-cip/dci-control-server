@@ -139,10 +139,6 @@ def get_all_components(user, topic_id):
 
     args = schemas.args(flask.request.args.to_dict())
 
-    if (str(topic_id) not in v1_utils.user_topic_ids(user) and
-            not user.is_read_only_user()):
-        raise auth.UNAUTHORIZED
-
     query = v1_utils.QueryBuilder(_TABLE, args, _C_COLUMNS)
 
     query.add_extra_condition(sql.and_(
