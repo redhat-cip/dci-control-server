@@ -423,14 +423,11 @@ def delete_team_from_topic(user, topic_id, team_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
-@api.route('/topics/<uuid:topic_id>/teams', methods=['GET'])
-@decorators.login_required
-@decorators.check_roles
-def get_all_teams_from_topic(user, topic_id):
+def util_get_all_team_from_topic(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
     if not user.is_super_admin() and \
-       not user.product_id == topic['product_id']:
+            not user.product_id == topic['product_id']:
         raise auth.UNAUTHORIZED
 
     # Get all teams which belongs to a given topic
@@ -438,11 +435,17 @@ def get_all_teams_from_topic(user, topic_id):
     query = (sql.select([models.TEAMS])
              .select_from(JTT.join(models.TEAMS))
              .where(JTT.c.topic_id == topic['id']))
-    rows = flask.g.db_conn.execute(query)
+    return flask.g.db_conn.execute(query)
 
-    res = flask.jsonify({'teams': rows,
-                         '_meta': {'count': rows.rowcount}})
-    return res
+
+@api.route('/topics/<uuid:topic_id>/teams', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def get_all_teams_from_topic(user, topic_id):
+
+    rows = util_get_all_team_from_topic(user, topic_id)
+    return flask.jsonify({'teams': rows,
+                          '_meta': {'count': rows.rowcount}})
 
 
 @api.route('/topics/purge', methods=['GET'])
