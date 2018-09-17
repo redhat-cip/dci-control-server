@@ -139,10 +139,6 @@ def get_all_components(user, topic_id):
 
     args = schemas.args(flask.request.args.to_dict())
 
-    if (str(topic_id) not in v1_utils.user_topic_ids(user) and
-            not user.is_read_only_user()):
-        raise auth.UNAUTHORIZED
-
     query = v1_utils.QueryBuilder(_TABLE, args, _C_COLUMNS)
 
     query.add_extra_condition(sql.and_(
@@ -183,10 +179,11 @@ def get_latest_components(user):
 @decorators.check_roles
 def get_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    if (str(component['topic_id']) not in v1_utils.user_topic_ids(user) and
-            not user.is_read_only_user()):
-        raise auth.UNAUTHORIZED
-    auth.check_export_control(user, component)
+    topic = v1_utils.verify_existence_and_get(component['topic_id'],
+                                              models.TOPICS)
+
+    if not user.is_read_only_user():
+        v1_utils.check_export_control(user, topic)
     return base.get_resource_by_id(user, component, _TABLE, _EMBED_MANY)
 
 
@@ -232,9 +229,10 @@ def purge_archived_components(user):
 @decorators.check_roles
 def list_components_files(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    if (str(component['topic_id']) not in v1_utils.user_topic_ids(user) and
-            not user.is_read_only_user()):
-        raise auth.UNAUTHORIZED
+    topic = v1_utils.verify_existence_and_get(component['topic_id'],
+                                              models.TOPICS)
+    if not user.is_read_only_user():
+        v1_utils.check_export_control(user, topic)
 
     args = schemas.args(flask.request.args.to_dict())
 
@@ -255,10 +253,10 @@ def list_components_files(user, c_id):
 @decorators.check_roles
 def list_component_file(user, c_id, f_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    auth.check_export_control(user, component)
-    if (str(component['topic_id']) not in v1_utils.user_topic_ids(user) and
-            not user.is_read_only_user()):
-        raise auth.UNAUTHORIZED
+    topic = v1_utils.verify_existence_and_get(component['topic_id'],
+                                              models.TOPICS)
+    if not user.is_read_only_user():
+        v1_utils.check_export_control(user, topic)
 
     COMPONENT_FILES = models.COMPONENT_FILES
     where_clause = sql.and_(COMPONENT_FILES.c.id == f_id,

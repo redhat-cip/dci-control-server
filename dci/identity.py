@@ -14,6 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import flask
+from sqlalchemy import sql
+
+from dci.db import models
+
 
 class Identity:
     """Class that offers helper methods to simplify permission management
@@ -58,6 +63,28 @@ class Identity:
             if user['team_id'] != team['id']:
                 children_teams.append(team)
         return children_teams
+
+    def is_under_product_team(self, product_team_id):
+        """Given a team id and a product team id, this function will return True
+        if the ascendant team is the provided product team id, False otherwise.
+
+        :param team_id: the team id to test the ascendant with
+        :param product_team_id:
+        :return:
+        """
+
+        if self.is_read_only_user():
+            return True
+
+        current_team_id = self.team['id']
+        # 4 =  team_1 -> team_2 -> product_team -> admin_team
+        for _ in range(4):
+            query = sql.select([models.TEAMS]).where(models.TEAMS.c.id == current_team_id)  # noqa
+            result = flask.g.db_conn.execute(query).fetchone()
+            if result['parent_id'] == product_team_id:
+                return True
+            current_team_id = result['parent_id']
+        return False
 
     def is_not_in_team(self, team_id):
         """Test if user is not in team"""
