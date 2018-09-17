@@ -120,10 +120,11 @@ TOPICS = sa.Table(
     sa.Column('next_topic_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('topics.id'),
               nullable=True, default=None),
-    sa.Index('topics_product_id_idx', 'product_id'),
-    sa.Index('topics_next_topic_id_idx', 'next_topic_id'),
+    sa.Column('export_control', sa.BOOLEAN, nullable=False, default=False),
     sa.Column('state', STATES, default='active'),
-    sa.Column('data', sa_utils.JSONType, default={})
+    sa.Column('data', sa_utils.JSONType, default={}),
+    sa.Index('topics_product_id_idx', 'product_id'),
+    sa.Index('topics_next_topic_id_idx', 'next_topic_id')
 )
 
 JOINS_TOPICS_TEAMS = sa.Table(

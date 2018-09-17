@@ -24,6 +24,7 @@ from sqlalchemy import sql
 from dci import dci_config
 from dci.api.v1 import api
 from dci.api.v1 import base
+from dci.api.v1 import export_control
 from dci.api.v1 import issues
 from dci.api.v1 import remotecis
 from dci.api.v1 import utils as v1_utils
@@ -139,10 +140,6 @@ def get_all_components(user, topic_id):
 
     args = schemas.args(flask.request.args.to_dict())
 
-    if (str(topic_id) not in v1_utils.user_topic_ids(user) and
-            not user.is_read_only_user()):
-        raise auth.UNAUTHORIZED
-
     query = v1_utils.QueryBuilder(_TABLE, args, _C_COLUMNS)
 
     query.add_extra_condition(sql.and_(
@@ -183,10 +180,10 @@ def get_latest_components(user):
 @decorators.check_roles
 def get_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    if (str(component['topic_id']) not in v1_utils.user_topic_ids(user) and
-            not user.is_read_only_user()):
-        raise auth.UNAUTHORIZED
-    auth.check_export_control(user, component)
+    topic = v1_utils.verify_existence_and_get(component['topic_id'],
+                                              models.TOPICS)
+
+    export_control.verify_access_to_topic(user, topic)
     return base.get_resource_by_id(user, component, _TABLE, _EMBED_MANY)
 
 
@@ -232,9 +229,9 @@ def purge_archived_components(user):
 @decorators.check_roles
 def list_components_files(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    if (str(component['topic_id']) not in v1_utils.user_topic_ids(user) and
-            not user.is_read_only_user()):
-        raise auth.UNAUTHORIZED
+    topic = v1_utils.verify_existence_and_get(component['topic_id'],
+                                              models.TOPICS)
+    export_control.verify_access_to_topic(user, topic)
 
     args = schemas.args(flask.request.args.to_dict())
 
@@ -255,10 +252,9 @@ def list_components_files(user, c_id):
 @decorators.check_roles
 def list_component_file(user, c_id, f_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    auth.check_export_control(user, component)
-    if (str(component['topic_id']) not in v1_utils.user_topic_ids(user) and
-            not user.is_read_only_user()):
-        raise auth.UNAUTHORIZED
+    topic = v1_utils.verify_existence_and_get(component['topic_id'],
+                                              models.TOPICS)
+    export_control.verify_access_to_topic(user, topic)
 
     COMPONENT_FILES = models.COMPONENT_FILES
     where_clause = sql.and_(COMPONENT_FILES.c.id == f_id,
@@ -282,13 +278,12 @@ def list_component_file(user, c_id, f_id):
 def download_component_file(user, c_id, f_id):
     swift = dci_config.get_store('components')
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    if (str(component['topic_id']) not in v1_utils.user_topic_ids(user) and
-            not user.is_read_only_user()):
-        raise auth.UNAUTHORIZED
-    v1_utils.verify_team_in_topic(user, component['topic_id'])
+    topic = v1_utils.verify_existence_and_get(component['topic_id'],
+                                              models.TOPICS)
+    export_control.verify_access_to_topic(user, topic)
+
     component_file = v1_utils.verify_existence_and_get(
         f_id, models.COMPONENT_FILES)
-    auth.check_export_control(user, component)
     file_path = swift.build_file_path(component['topic_id'], c_id, f_id)
 
     # Check if file exist on the storage engine
