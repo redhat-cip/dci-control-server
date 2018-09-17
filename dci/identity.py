@@ -123,6 +123,10 @@ class Identity:
         """Check if the user is a rh employee."""
         return self.role_label == 'READ_ONLY_USER'
 
+    def is_not_read_only_user(self):
+        """Check if the user is not a read only user."""
+        return not self.is_read_only_user()
+
     def is_team_admin(self, team_id):
         """Ensure the user has the role ADMIN and belongs to the team."""
 

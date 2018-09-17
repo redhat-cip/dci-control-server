@@ -49,8 +49,3 @@ def get_role_id(label):
     )
     result = flask.g.db_conn.execute(query).fetchone()
     return result.id
-
-
-def check_export_control(user, component):
-    if user.is_not_super_admin() and not component['export_control']:
-        raise UNAUTHORIZED
