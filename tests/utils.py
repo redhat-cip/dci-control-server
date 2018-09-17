@@ -167,7 +167,8 @@ def provision(db_conn):
 
     # Create teams
     team_admin_id = db_insert(models.TEAMS, name='admin')
-    team_product_id = db_insert(models.TEAMS, name='product')
+    team_product_id = db_insert(models.TEAMS, name='product',
+                                parent_id=team_admin_id)
     team_user_id = db_insert(models.TEAMS, name='user',
                              parent_id=team_product_id)
 

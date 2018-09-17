@@ -207,21 +207,6 @@ def test_get_latest_components(admin, topic_id):
     assert components[0]['name'] == 'pnamelast'
 
 
-def test_get_component_export_control(admin, user, topic_user_id):
-    data = {'name': 'pname',
-            'type': 'gerrit_review',
-            'topic_id': topic_user_id,
-            'export_control': False
-            }
-    ncomp = admin.post('/api/v1/components', data=data)
-    created_ct = admin.get('/api/v1/components/%s'
-                           % ncomp.data['component']['id'])
-    assert created_ct.status_code == 200
-    created_ct = user.get('/api/v1/components/%s'
-                          % ncomp.data['component']['id'])
-    assert created_ct.status_code == 401
-
-
 def test_get_component_not_found(admin):
     result = admin.get('/api/v1/components/ptdr')
     assert result.status_code == 404
@@ -307,59 +292,6 @@ def test_put_component(admin, user, topic_id):
     assert ct_1['etag'] != ct_2['etag']
     assert not(ct_1['export_control'])
     assert ct_2['export_control']
-
-
-def test_export_control(admin, user, team_user_id, topic_id):
-    # Subscribe user to topic
-    url = '/api/v1/topics/%s/teams' % topic_id
-    data = {'team_id': team_user_id}
-    admin.post(url, data=data)
-
-    # Create two component in the topic
-    data = {'name': "pname1", 'title': 'aaa',
-            'type': 'gerrit_review',
-            'topic_id': topic_id,
-            'export_control': True}
-    ct_1 = admin.post('/api/v1/components', data=data).data['component']
-    data = {'name': "pname2", 'title': 'bbb',
-            'type': 'gerrit_review',
-            'topic_id': topic_id}
-    ct_2 = admin.post('/api/v1/components', data=data).data['component']
-
-    # Test if user can access or not component
-    req = user.get('/api/v1/components/%s' % ct_1['id'])
-    assert req.status_code == 200
-    req = user.get('/api/v1/components/%s' % ct_2['id'])
-    assert req.status_code == 401
-
-
-def test_export_control_filter(admin, user, team_user_id, topic_user_id):
-    # Subscribe user to topic
-    url = '/api/v1/topics/%s/teams' % topic_user_id
-    data = {'team_id': team_user_id}
-    admin.post(url, data=data)
-
-    # Create two component in the topic
-    data = {'name': "pname1", 'title': 'aaa',
-            'type': 'gerrit_review',
-            'topic_id': topic_user_id,
-            'export_control': True}
-    admin.post('/api/v1/components', data=data).data['component']
-    data = {'name': "pname2", 'title': 'bbb',
-            'type': 'gerrit_review',
-            'topic_id': topic_user_id}
-    admin.post('/api/v1/components', data=data).data['component']
-    data = {'name': "pname3", 'title': 'ccc',
-            'type': 'gerrit_review',
-            'topic_id': topic_user_id,
-            'export_control': True}
-    admin.post('/api/v1/components', data=data).data['component']
-
-    req = user.get('/api/v1/topics/%s/components' % topic_user_id)
-    assert len(req.data['components']) == 2
-
-    req = admin.get('/api/v1/topics/%s/components' % topic_user_id)
-    assert len(req.data['components']) == 3
 
 
 def test_add_file_to_component(admin, topic_id):
