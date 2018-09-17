@@ -590,3 +590,20 @@ def common_values_dict(user):
     }
 
     return values
+
+
+def check_export_control(user, topic):
+    """ If the topic has it's export_control set to True then all the teams
+    under the product team can access to the topic's resources.
+
+    :param user:
+    :param topic:
+    :return: True if check is ok, False otherwise
+    """
+    # if export_control then check the team is associated to the product
+    # this will actually check that the root team is the same as the main
+    # product team
+    if topic['export_control']:
+        product = verify_existence_and_get(topic['product_id'],
+                                           models.PRODUCTS)
+        return user.product_team_id == product['team_id']

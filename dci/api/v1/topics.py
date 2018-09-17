@@ -21,6 +21,7 @@ from sqlalchemy import sql, func
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import components
+from dci.api.v1 import export_control
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci import decorators
@@ -196,22 +197,30 @@ def delete_topic_by_id(user, topic_id):
 @decorators.login_required
 @decorators.check_roles
 def get_all_components(user, topic_id):
-    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
-    if not user.is_read_only_user():
-        v1_utils.verify_team_in_topic(user, topic_id)
-    return components.get_all_components(user, topic_id=topic_id)
+    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    if user.is_not_super_admin() and user.is_not_read_only_user():
+        if not export_control.check(user, topic):
+            # If topic has it's export_control set to False then only teams
+            # associated to the topic can access to the topic's resources.
+            v1_utils.verify_team_in_topic(user, topic_id)
+    return components.get_all_components(user, topic_id=topic['id'])
 
 
 @api.route('/topics/<uuid:topic_id>/components/latest', methods=['GET'])
 @decorators.login_required
 @decorators.check_roles
 def get_latest_component_per_topic(user, topic_id):
-    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
-    v1_utils.verify_team_in_topic(user, topic_id)
+    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    if user.is_not_super_admin() and user.is_not_read_only_user():
+        if not export_control.check(user, topic):
+            # If topic has it's export_control set to False then only teams
+            # associated to the topic can access to the topic's resources.
+            v1_utils.verify_team_in_topic(user, topic_id)
 
+    last_component = None
     latest_components = components._get_latest_components()
     for component in latest_components:
-        if component['topic_id'] == topic_id:
+        if component['topic_id'] == topic['id']:
             last_component = component
             break
 
@@ -223,9 +232,12 @@ def get_latest_component_per_topic(user, topic_id):
 @decorators.check_roles
 def get_all_tests(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
-    if not user.is_read_only_user():
-        v1_utils.verify_team_in_topic(user, topic_id)
-    v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    if user.is_not_super_admin() and user.is_not_read_only_user():
+        if not export_control.check(user, topic):
+            # If topic has it's export_control set to False then only teams
+            # associated to the topic can access to the topic's resources.
+            v1_utils.verify_team_in_topic(user, topic_id)
 
     query = sql.select([models.TESTS]).\
         select_from(models.JOIN_TOPICS_TESTS.join(models.TESTS)).\
@@ -359,7 +371,7 @@ def get_all_teams_from_topic(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
     if user.is_not_super_admin() and \
-       not user.product_id == topic['product_id']:
+            not user.product_id == topic['product_id']:
         raise auth.UNAUTHORIZED
 
     # Get all teams which belongs to a given topic
@@ -369,9 +381,8 @@ def get_all_teams_from_topic(user, topic_id):
              .where(JTT.c.topic_id == topic['id']))
     rows = flask.g.db_conn.execute(query)
 
-    res = flask.jsonify({'teams': rows,
-                         '_meta': {'count': rows.rowcount}})
-    return res
+    return flask.jsonify({'teams': rows,
+                          '_meta': {'count': rows.rowcount}})
 
 
 @api.route('/topics/purge', methods=['GET'])
