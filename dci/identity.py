@@ -29,8 +29,8 @@ class Identity:
         # in case of sso user without team
         if self.team is None:
             self.team = {'id': None}
-        self.partner_teams = self._get_partner_teams(user, teams)
-        # TODO: remove teams object and use team and partner_teams
+        self.children_teams = self._get_children_teams(user, teams)
+        # TODO: remove teams object and use team and children_teams
         self.teams = self._get_teams()
 
     # NOTE(spredzy): In order to avoid a huge refactor patch, the __getitem__
@@ -43,7 +43,7 @@ class Identity:
         teams = []
         if self.team:
             teams.append(self.team['id'])
-        for partner_team in self.partner_teams:
+        for partner_team in self.children_teams:
             teams.append(partner_team['id'])
         return teams
 
@@ -52,12 +52,12 @@ class Identity:
             if user['team_id'] == team['id']:
                 return team
 
-    def _get_partner_teams(self, user, teams):
-        partner_teams = []
+    def _get_children_teams(self, user, teams):
+        children_teams = []
         for team in teams:
             if user['team_id'] != team['id']:
-                partner_teams.append(team)
-        return partner_teams
+                children_teams.append(team)
+        return children_teams
 
     def is_not_in_team(self, team_id):
         """Test if user is not in team"""
@@ -69,7 +69,7 @@ class Identity:
             return True
         if team_id == self.team['id']:
             return True
-        for partner_team in self.partner_teams:
+        for partner_team in self.children_teams:
             if team_id == partner_team['id']:
                 return True
         return False
