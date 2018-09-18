@@ -173,8 +173,7 @@ def test_success_get_all_roles_user_admin(user_admin):
     assert result.status_code == 200
 
     roles = [r['label'] for r in result.data['roles']]
-    assert (['ADMIN', 'FEEDER', 'READ_ONLY_USER', 'REMOTECI', 'USER'] ==
-            sorted(roles))
+    assert (['ADMIN', 'USER'] == sorted(roles))
 
 
 def test_failure_get_all_roles_user(user):
