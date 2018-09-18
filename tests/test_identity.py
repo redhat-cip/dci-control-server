@@ -91,10 +91,10 @@ def test_filter_teams():
     assert user.team['parent_id'] is None
     # TODO remove user.teams
     assert user.teams[0] == 'abc'
-    assert len(user.partner_teams) == 1
+    assert len(user.children_teams) == 1
 
 
-def test_filter_teams_with_partner_teams():
+def test_filter_teams_with_children_teams():
     product_owner = {'role_label': 'PRODUCT_OWNER', 'team_id': 'abc'}
     teams = [
         {'id': 'abc', 'parent_id': None},
@@ -106,7 +106,7 @@ def test_filter_teams_with_partner_teams():
     user = Identity(product_owner, teams)
     assert user.team['id'] == 'abc'
     assert user.team['parent_id'] is None
-    assert len(user.partner_teams) == 1
+    assert len(user.children_teams) == 1
     # TODO remove user.teams
     assert user.teams[0] == 'abc'
     assert user.teams[1] == 'def'
@@ -124,7 +124,7 @@ def test_ensure_any_parent_team_member_has_access_to_subteam():
     user = Identity(user, teams)
     assert user.team['id'] == 'abc'
     assert user.team['parent_id'] is None
-    assert len(user.partner_teams) == 1
+    assert len(user.children_teams) == 1
 
 
 def test_if_no_team_id_get_team_and_children_teams_return_empty_array():

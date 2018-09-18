@@ -39,28 +39,28 @@ class BaseMechanism(object):
         pass
 
     def identity_from_db(self, model_cls, model_constraint):
-        partner_team = models.TEAMS.alias('partner_team')
+        children_team = models.TEAMS.alias('children_team')
         product_team = models.TEAMS.alias('product_team')
 
         query_get_identity = (
             sql.select(
                 [
                     model_cls,
-                    partner_team.c.name.label('team_name'),
+                    children_team.c.name.label('team_name'),
                     models.PRODUCTS.c.id.label('product_id'),
                     models.ROLES.c.label.label('role_label'),
-                    partner_team.c.state.label('partner_team_state'),
+                    children_team.c.state.label('children_team_state'),
                 ]
             ).select_from(
                 model_cls.outerjoin(
-                    partner_team,
-                    model_cls.c.team_id == partner_team.c.id
+                    children_team,
+                    model_cls.c.team_id == children_team.c.id
                 ).outerjoin(
                     product_team,
-                    partner_team.c.parent_id == product_team.c.id
+                    children_team.c.parent_id == product_team.c.id
                 ).outerjoin(
                     models.PRODUCTS,
-                    models.PRODUCTS.c.team_id.in_([partner_team.c.id,
+                    models.PRODUCTS.c.team_id.in_([children_team.c.id,
                                                    product_team.c.id])
                 ).join(
                     models.ROLES,
@@ -71,8 +71,8 @@ class BaseMechanism(object):
                     model_constraint,
                     model_cls.c.state == 'active',
                     sql.or_(
-                        partner_team.c.state == 'active',
-                        partner_team.c.state == None  # noqa
+                        children_team.c.state == 'active',
+                        children_team.c.state == None  # noqa
                     )
                 )
             )
