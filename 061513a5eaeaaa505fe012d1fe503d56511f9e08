@@ -19,6 +19,40 @@
     },
     {
       "key": {
+        "uuid": "27ff75b9_f587868c",
+        "filename": "dci/api/v1/analytics.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-09-18T09:02:26Z",
+      "side": 1,
+      "message": "remove this duplicate declaration",
+      "revId": "061513a5eaeaaa505fe012d1fe503d56511f9e08",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bb1b4735_b3a802d1",
+        "filename": "dci/api/v1/analytics.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-09-18T09:02:26Z",
+      "side": 1,
+      "message": "Your forgot the permission right here no?\n    if not user.is_in_team(job[\u0027team_id\u0027]):\n        raise auth.UNAUTHORIZED",
+      "revId": "061513a5eaeaaa505fe012d1fe503d56511f9e08",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c368cd49_7ee47151",
         "filename": "dci/db/models.py",
         "patchSetId": 2
