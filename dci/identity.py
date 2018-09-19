@@ -26,12 +26,44 @@ class Identity:
         # TODO: replace user['role_label'] with user['role']['label']
         self.role_label = user['role_label']
         self.team = self._get_user_team(user, teams)
-        # in case of sso user without team
-        if self.team is None:
-            self.team = {'id': None}
-        self.children_teams = self._get_children_teams(user, teams)
-        # TODO: remove teams object and use team and children_teams
-        self.teams = self._get_teams()
+        teams_by_ids = self._get_teams_by_ids(teams)
+        user_team_id = user['team_id']
+        self.product_team_id = self._get_product_team_id(
+            teams_by_ids, user_team_id)
+        teams = self._get_teams_and_child_teams(teams, user_team_id)
+        self.teams_ids = [team['id'] for team in teams]
+
+    @staticmethod
+    def _get_teams_and_child_teams(teams, team_id):
+        if not team_id:
+            return []
+        return_teams = []
+        for team in teams:
+            if team['id'] == team_id:
+                return_teams.append(team)
+            if team['parent_id'] == team_id:
+                return_teams += Identity._get_teams_and_child_teams(
+                    teams, team['id']
+                )
+        return return_teams
+
+    @staticmethod
+    def _get_product_team_id(teams_by_ids, team_id):
+        if not team_id:
+            return None
+        parent_team_id = teams_by_ids[team_id]
+        if not parent_team_id:
+            return None
+        if not teams_by_ids[parent_team_id]:
+            return team_id
+        return Identity._get_product_team_id(teams_by_ids, parent_team_id)
+
+    @staticmethod
+    def _get_teams_by_ids(teams):
+        teams_by_ids = {}
+        for team in teams:
+            teams_by_ids[team['id']] = team['parent_id']
+        return teams_by_ids
 
     # NOTE(spredzy): In order to avoid a huge refactor patch, the __getitem__
     # function is overloaded so it behaves like a dict and the code in place
@@ -39,25 +71,11 @@ class Identity:
     def __getitem__(self, key):
         return getattr(self, key)
 
-    def _get_teams(self):
-        teams = []
-        if self.team:
-            teams.append(self.team['id'])
-        for children_team in self.children_teams:
-            teams.append(children_team['id'])
-        return teams
-
     def _get_user_team(self, user, teams):
         for team in teams:
             if user['team_id'] == team['id']:
                 return team
-
-    def _get_children_teams(self, user, teams):
-        children_teams = []
-        for team in teams:
-            if user['team_id'] != team['id']:
-                children_teams.append(team)
-        return children_teams
+        return {'id': None}
 
     def is_not_in_team(self, team_id):
         """Test if user is not in team"""
@@ -67,12 +85,7 @@ class Identity:
         """Test if user is in team"""
         if self.is_super_admin():
             return True
-        if team_id == self.team['id']:
-            return True
-        for children_team in self.children_teams:
-            if team_id == children_team['id']:
-                return True
-        return False
+        return team_id in self.teams_ids
 
     def is_super_admin(self):
         """Ensure the user has the role SUPER_ADMIN."""
