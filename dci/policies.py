@@ -111,14 +111,6 @@ ROLES = {
     'get_all_jobstates': ALL,
     'get_jobstate_by_id': ALL,
     'delete_jobstate_by_id': ALL,
-    # permissions
-    'create_permission': SUPER_ADMIN,
-    'update_permission': SUPER_ADMIN,
-    'get_all_permissions': HUMAN,
-    'get_permission_by_id': HUMAN,
-    'delete_permission_by_id': SUPER_ADMIN,
-    'get_to_purge_archived_permissions': SUPER_ADMIN,
-    'purge_archived_permissions': SUPER_ADMIN,
     # products
     'create_product': SUPER_ADMIN,
     'update_product': SUPER_ADMIN,

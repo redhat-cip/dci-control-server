@@ -551,33 +551,6 @@ ROLES = sa.Table(
     sa.Column('state', STATES, default='active')
 )
 
-PERMISSIONS = sa.Table(
-    'permissions', metadata,
-    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
-              default=utils.gen_uuid),
-    sa.Column('created_at', sa.DateTime(),
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('updated_at', sa.DateTime(),
-              onupdate=datetime.datetime.utcnow,
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
-    sa.Column('name', sa.String(255), nullable=False),
-    sa.Column('label', sa.String(255), nullable=False, unique=True),
-    sa.Column('description', sa.Text),
-    sa.Column('state', STATES, default='active')
-)
-
-JOIN_ROLES_PERMISSIONS = sa.Table(
-    'roles_permissions', metadata,
-    sa.Column('role_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('roles.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True),
-    sa.Column('permission_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('permissions.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True)
-)
-
 PRODUCTS = sa.Table(
     'products', metadata,
     sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
