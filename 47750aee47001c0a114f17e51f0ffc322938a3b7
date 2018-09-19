@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "24940470_4f919bd8",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-09-19T09:28:42Z",
+      "side": 1,
+      "message": "Should be done in the Identity object, we already have all the information needed\n\nI think it will not work because parent team id is always admin team and not the product team",
+      "range": {
+        "startLine": 113,
+        "startChar": 0,
+        "endLine": 126,
+        "endChar": 45
+      },
+      "revId": "47750aee47001c0a114f17e51f0ffc322938a3b7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fc529c39_9fe49d77",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 622,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-09-19T09:28:42Z",
+      "side": 1,
+      "message": "is_admin() should be removed here.\nAn admin could be a partner with role ADMIN",
+      "range": {
+        "startLine": 622,
+        "startChar": 7,
+        "endLine": 622,
+        "endChar": 23
+      },
+      "revId": "47750aee47001c0a114f17e51f0ffc322938a3b7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7adc6899_82295182",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 631,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-09-19T09:28:42Z",
+      "side": 1,
+      "message": "replace by \n\nreturn get_parent_root_team(user.team_id) \u003d\u003d product[\u0027team_id\u0027]\n\ndirectly",
+      "range": {
+        "startLine": 630,
+        "startChar": 8,
+        "endLine": 631,
+        "endChar": 23
+      },
+      "revId": "47750aee47001c0a114f17e51f0ffc322938a3b7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
