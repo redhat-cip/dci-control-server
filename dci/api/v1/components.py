@@ -156,7 +156,7 @@ def get_all_components(user, topic_id):
 
     # Return only the component which have the export_control flag set to true
     #
-    if not (auth.is_admin(user)):
+    if user.is_not_super_admin():
         rows = [row for row in rows if row['export_control']]
 
     return flask.jsonify({'components': rows, '_meta': {'count': nb_rows}})
@@ -177,6 +177,9 @@ def get_latest_components(user):
         '_meta': {'count': len(latest_components)}
     })
 
+def check_export_control(user, component):
+    if user.is_not_super_admin() and not component['export_control']:
+        raise UNAUTHORIZED
 
 @api.route('/components/<uuid:c_id>', methods=['GET'])
 @decorators.login_required
@@ -186,7 +189,7 @@ def get_component_by_id(user, c_id):
     if (str(component['topic_id']) not in v1_utils.user_topic_ids(user) and
             not user.is_read_only_user()):
         raise auth.UNAUTHORIZED
-    auth.check_export_control(user, component)
+    check_export_control(user, component)
     return base.get_resource_by_id(user, component, _TABLE, _EMBED_MANY)
 
 
@@ -255,7 +258,7 @@ def list_components_files(user, c_id):
 @decorators.check_roles
 def list_component_file(user, c_id, f_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    auth.check_export_control(user, component)
+    check_export_control(user, component)
     if (str(component['topic_id']) not in v1_utils.user_topic_ids(user) and
             not user.is_read_only_user()):
         raise auth.UNAUTHORIZED
@@ -288,7 +291,7 @@ def download_component_file(user, c_id, f_id):
     v1_utils.verify_team_in_topic(user, component['topic_id'])
     component_file = v1_utils.verify_existence_and_get(
         f_id, models.COMPONENT_FILES)
-    auth.check_export_control(user, component)
+    check_export_control(user, component)
     file_path = swift.build_file_path(component['topic_id'], c_id, f_id)
 
     # Check if file exist on the storage engine

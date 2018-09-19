@@ -30,6 +30,9 @@ def test_is_super_admin():
     super_admin = identity_factory('SUPER_ADMIN')
     assert super_admin.is_super_admin()
 
+def test_is_not_super_admin():
+    assert identity_factory('ADMIN').is_not_super_admin()
+    assert identity_factory('USER').is_not_super_admin()
 
 def test_is_admin():
     admin = identity_factory('ADMIN')
