@@ -24,7 +24,7 @@ from dci.common import signature
 from dci.common import utils
 
 
-def get_resource_by_id(user, resource, table, embed_many,
+def get_resource_by_id(user, resource, table, embed_many=None,
                        ignore_columns=None, resource_name=None, embeds=None,
                        jsonify=True):
     args = schemas.args(flask.request.args.to_dict())

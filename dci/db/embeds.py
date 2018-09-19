@@ -300,19 +300,6 @@ def products(root_select=models.PRODUCTS):
     }
 
 
-def roles(root_select=models.ROLES):
-    return {
-        'permissions': [
-            {'right': models.JOIN_ROLES_PERMISSIONS,
-             'onclause': models.JOIN_ROLES_PERMISSIONS.c.role_id == root_select.c.id,  # noqa
-             'isouter': True},
-            {'right': models.PERMISSIONS,
-             'onclause': and_(models.PERMISSIONS.c.id == models.JOIN_ROLES_PERMISSIONS.c.permission_id,  # noqa
-                              models.PERMISSIONS.c.state != 'archived'),
-             'isouter': True}]
-    }
-
-
 def topics(root_select=models.TOPICS):
     return {
         'teams': [
@@ -403,9 +390,6 @@ EMBED_STRING_TO_OBJECT = {
         'team': TEAM,
         'topics': models.TOPICS,
     },
-    'roles': {
-        'permissions': models.PERMISSIONS,
-    },
     'teams': {
         'remotecis': models.REMOTECIS,
         'topics': models.TOPICS
@@ -435,7 +419,6 @@ EMBED_JOINS = {
     'files': files,
     'jobstates': jobstates,
     'products': products,
-    'roles': roles,
     'teams': teams,
     'tests': tests,
     'topics': topics,

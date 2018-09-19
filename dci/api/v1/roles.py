@@ -33,9 +33,6 @@ from dci.db import models
 
 _TABLE = models.ROLES
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_EMBED_MANY = {
-    'permissions': True
-}
 
 
 @api.route('/roles', methods=['POST'])
@@ -112,8 +109,7 @@ def get_all_roles(user):
 
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'])
 
     return flask.jsonify({'roles': rows, '_meta': {'count': nb_rows}})
 
@@ -130,7 +126,7 @@ def get_role_by_id(user, role_id):
        auth.get_role_id('SUPER_ADMIN') == role_id:
         raise auth.UNAUTHORIZED
 
-    return base.get_resource_by_id(user, role, _TABLE, _EMBED_MANY)
+    return base.get_resource_by_id(user, role, _TABLE)
 
 
 @api.route('/roles/<uuid:role_id>', methods=['DELETE'])
@@ -168,42 +164,3 @@ def get_to_purge_archived_roles(user):
 @decorators.check_roles
 def purge_archived_roles(user):
     return base.purge_archived_resources(user, _TABLE)
-
-
-@api.route('/roles/<uuid:role_id>/permissions', methods=['POST'])
-@decorators.login_required
-@decorators.check_roles
-def add_permission_to_role(user, role_id):
-    data_json = flask.request.json
-    values = {'role_id': role_id,
-              'permission_id': data_json.get('permission_id')}
-
-    v1_utils.verify_existence_and_get(role_id, _TABLE)
-
-    query = models.JOIN_ROLES_PERMISSIONS.insert().values(**values)
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name,
-                                          'role_id, permission_id')
-    result = json.dumps(values)
-    return flask.Response(result, 201, content_type='application/json')
-
-
-@api.route('/roles/<uuid:role_id>/permissions/<uuid:permission_id>',
-           methods=['DELETE'])
-@decorators.login_required
-@decorators.check_roles
-def delete_permission_from_role(user, role_id, permission_id):
-    v1_utils.verify_existence_and_get(role_id, _TABLE)
-
-    JRP = models.JOIN_ROLES_PERMISSIONS
-    where_clause = sql.and_(JRP.c.role_id == role_id,
-                            JRP.c.permission_id == permission_id)
-    query = JRP.delete().where(where_clause)
-    result = flask.g.db_conn.execute(query)
-
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('Role', role_id)
-
-    return flask.Response(None, 204, content_type='application/json')
