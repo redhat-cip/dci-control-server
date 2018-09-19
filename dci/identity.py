@@ -31,7 +31,7 @@ class Identity:
             self.team = {'id': None}
         self.children_teams = self._get_children_teams(user, teams)
         # TODO: remove teams object and use team and children_teams
-        self.teams = self._get_teams()
+        self.teams_ids = self._get_teams_ids()
 
     # NOTE(spredzy): In order to avoid a huge refactor patch, the __getitem__
     # function is overloaded so it behaves like a dict and the code in place
@@ -39,13 +39,13 @@ class Identity:
     def __getitem__(self, key):
         return getattr(self, key)
 
-    def _get_teams(self):
-        teams = []
+    def _get_teams_ids(self):
+        teams_ids = []
         if self.team:
-            teams.append(self.team['id'])
+            teams_ids.append(self.team['id'])
         for children_team in self.children_teams:
-            teams.append(children_team['id'])
-        return teams
+            teams_ids.append(children_team['id'])
+        return teams_ids
 
     def _get_user_team(self, user, teams):
         for team in teams:

@@ -279,7 +279,7 @@ def get_jobs_status_from_components(user, topic_id, type_id):
              .distinct(models.REMOTECIS.c.id))
 
     if not user.is_super_admin():
-        query.append_whereclause(models.TEAMS.c.id.in_(user.teams))
+        query.append_whereclause(models.TEAMS.c.id.in_(user.teams_ids))
     rcs = flask.g.db_conn.execute(query).fetchall()
     nb_row = len(rcs)
 

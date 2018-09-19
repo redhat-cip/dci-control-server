@@ -89,8 +89,7 @@ def test_filter_teams():
     user = Identity({'role_label': 'USER', 'team_id': 'abc'}, teams)
     assert user.team['id'] == 'abc'
     assert user.team['parent_id'] is None
-    # TODO remove user.teams
-    assert user.teams[0] == 'abc'
+    assert user.teams_ids[0] == 'abc'
     assert len(user.children_teams) == 1
 
 
@@ -107,12 +106,11 @@ def test_filter_teams_with_children_teams():
     assert user.team['id'] == 'abc'
     assert user.team['parent_id'] is None
     assert len(user.children_teams) == 1
-    # TODO remove user.teams
-    assert user.teams[0] == 'abc'
-    assert user.teams[1] == 'def'
+    assert user.teams_ids[0] == 'abc'
+    assert user.teams_ids[1] == 'def'
 
 
-def test_ensure_any_parent_team_member_has_access_to_subteam():
+def test_ensure_any_parent_team_member_has_access_to_children_teams():
     user = {'role_label': None, 'team_id': 'abc'}
     teams = [
         {'id': 'abc', 'parent_id': None},
