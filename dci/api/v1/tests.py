@@ -93,7 +93,7 @@ def get_all_tests(user, team_id):
     args = schemas.args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
-    if not user.is_super_admin():
+    if user.is_not_super_admin():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
     query.add_extra_condition(_TABLE.c.state != 'archived')
 

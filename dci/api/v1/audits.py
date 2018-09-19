@@ -38,7 +38,7 @@ def get_logs(user):
 
     query = v1_utils.QueryBuilder(_TABLE, args, _A_COLUMNS)
 
-    if not user.is_super_admin():
+    if user.is_not_super_admin():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     nb_rows = query.get_number_of_rows()

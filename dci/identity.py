@@ -78,6 +78,11 @@ class Identity:
 
         return self.role_label == 'SUPER_ADMIN'
 
+    def is_not_super_admin(self):
+        """Ensure the user has not the role SUPER_ADMIN."""
+
+        return not self.is_super_admin()
+
     def is_product_owner(self):
         """Ensure the user has the role PRODUCT_OWNER."""
 

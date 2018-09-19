@@ -49,15 +49,3 @@ def get_role_id(label):
     )
     result = flask.g.db_conn.execute(query).fetchone()
     return result.id
-
-
-def is_admin(user, super=False):
-    if super and user['role_id'] == get_role_id('ADMIN'):
-        return False
-    return user['team_name'] == 'admin'
-
-
-def check_export_control(user, component):
-    if not is_admin(user):
-        if not component['export_control']:
-            raise UNAUTHORIZED

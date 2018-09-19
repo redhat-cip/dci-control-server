@@ -74,7 +74,7 @@ def create_jobs(user):
 
     values['team_id'] = values.get('team_id', user['team_id'])
     # Only super admin can create job for other teams
-    if not user.is_super_admin() and not user.is_in_team(values['team_id']):
+    if user.is_not_super_admin() and not user.is_in_team(values['team_id']):
         raise auth.UNAUTHORIZED
 
     if values['topic_id'] is not None:
@@ -149,7 +149,7 @@ def _get_job(user, job_id, embed):
     args = {'embed': embed}
     query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS)
 
-    if not user.is_super_admin() and not user.is_read_only_user():
+    if user.is_not_super_admin() and not user.is_read_only_user():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     query.add_extra_condition(_TABLE.c.id == job_id)
@@ -336,7 +336,7 @@ def get_all_jobs(user, topic_id=None):
     # add extra conditions for filtering
 
     # # If not admin nor rh employee then restrict the view to the team
-    if not user.is_super_admin() and not user.is_read_only_user():
+    if user.is_not_super_admin() and not user.is_read_only_user():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     # # If topic_id not None, then filter by topic_id

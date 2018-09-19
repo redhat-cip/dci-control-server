@@ -91,7 +91,7 @@ def get_all_remotecis(user, t_id=None):
     query = v1_utils.QueryBuilder(_TABLE, args, _R_COLUMNS,
                                   ignore_columns=['keys', 'cert_fp'])
 
-    if not user.is_super_admin() and not user.is_read_only_user():
+    if user.is_not_super_admin() and not user.is_read_only_user():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     if t_id is not None:
@@ -203,7 +203,7 @@ def get_remoteci_data(user, r_id):
 def get_remoteci_data_json(user, r_id):
     query = v1_utils.QueryBuilder(_TABLE, {}, _R_COLUMNS)
 
-    if not user.is_super_admin():
+    if user.is_not_super_admin():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     query.add_extra_condition(_TABLE.c.id == r_id)
