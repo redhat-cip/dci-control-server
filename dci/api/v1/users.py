@@ -105,7 +105,7 @@ def get_all_users(user, team_id=None):
     query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
 
     if not user.is_super_admin():
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     if team_id is not None:
         query.add_extra_condition(_TABLE.c.team_id == team_id)

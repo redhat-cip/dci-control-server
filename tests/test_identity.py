@@ -14,8 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-
-import dci.auth_mechanism as authm
+import pytest
 
 from dci.identity import Identity
 
@@ -57,7 +56,7 @@ def test_is_regular_user():
 
 
 def test_user_is_not_in_team():
-    team = {'id': 'id-1', 'parent_id': 'id-0'}
+    team = {'id': 'id-1', 'parent_id': None}
     user = Identity({'role_label': 'USER', 'team_id': 'id-1'}, [team])
     assert user.is_in_team(team_id='id-1')
     assert user.is_not_in_team(team_id='another_team_id')
@@ -89,48 +88,42 @@ def test_filter_teams():
     user = Identity({'role_label': 'USER', 'team_id': 'abc'}, teams)
     assert user.team['id'] == 'abc'
     assert user.team['parent_id'] is None
-    # TODO remove user.teams
-    assert user.teams[0] == 'abc'
-    assert len(user.children_teams) == 1
+    assert user.teams_ids[0] == 'abc'
 
 
-def test_filter_teams_with_children_teams():
-    product_owner = {'role_label': 'PRODUCT_OWNER', 'team_id': 'abc'}
-    teams = [
-        {'id': 'abc', 'parent_id': None},
-        {'id': 'def', 'parent_id': 'abc'},
-        {'id': 'ghi', 'parent_id': None}
-    ]
-    teams = authm.BaseMechanism.get_team_and_children_teams(teams, 'abc')
-
-    user = Identity(product_owner, teams)
-    assert user.team['id'] == 'abc'
-    assert user.team['parent_id'] is None
-    assert len(user.children_teams) == 1
-    # TODO remove user.teams
-    assert user.teams[0] == 'abc'
-    assert user.teams[1] == 'def'
+@pytest.fixture
+def teams():
+    t1 = {'id': 'admin', 'parent_id': None}
+    t2 = {'id': 'openstack', 'parent_id': 'admin'}
+    t3 = {'id': 'partner1', 'parent_id': 'openstack'}
+    t4 = {'id': 'partner2', 'parent_id': 'openstack'}
+    t5 = {'id': 'partner3', 'parent_id': 'openstack'}
+    t6 = {'id': 'partner4', 'parent_id': 'partner3'}
+    t7 = {'id': 'rhel', 'parent_id': 'admin'}
+    t8 = {'id': 'partner5', 'parent_id': 'rhel'}
+    return [t1, t2, t3, t4, t5, t6, t7, t8]
 
 
-def test_ensure_any_parent_team_member_has_access_to_subteam():
-    user = {'role_label': None, 'team_id': 'abc'}
-    teams = [
-        {'id': 'abc', 'parent_id': None},
-        {'id': 'def', 'parent_id': 'abc'},
-        {'id': 'ghi', 'parent_id': None}
-    ]
-    teams = authm.BaseMechanism.get_team_and_children_teams(teams, 'abc')
-
-    user = Identity(user, teams)
-    assert user.team['id'] == 'abc'
-    assert user.team['parent_id'] is None
-    assert len(user.children_teams) == 1
+def test_product_team_id_root_team(teams):
+    user = Identity({'role_label': 'ADMIN', 'team_id': 'admin'}, teams)
+    assert user.product_team_id is None
 
 
-def test_if_no_team_id_get_team_and_children_teams_return_empty_array():
-    teams = [
-        {'id': 'abc', 'parent_id': None},
-        {'id': 'def', 'parent_id': 'abc'}
-    ]
-    teams = authm.BaseMechanism.get_team_and_children_teams(teams, None)
-    assert len(teams) == 0
+def test_product_team_id_product_team(teams):
+    user = Identity({'role_label': 'ADMIN', 'team_id': 'openstack'}, teams)
+    assert user.product_team_id == 'openstack'
+
+
+def test_product_team_id_children_team(teams):
+    user = Identity({'role_label': 'ADMIN', 'team_id': 'partner3'}, teams)
+    assert user.product_team_id == 'openstack'
+
+
+def test_teams_ids(teams):
+    user = Identity({'role_label': 'ADMIN', 'team_id': 'partner3'}, teams)
+    assert sorted(user.teams_ids) == sorted(['partner3', 'partner4'])
+
+
+def test_teams_ids_sso_user(teams):
+    user = Identity({'role_label': 'READ_ONLY_USER', 'team_id': None}, teams)
+    assert len(user.teams_ids) == 0

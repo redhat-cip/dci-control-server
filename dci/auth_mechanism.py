@@ -29,6 +29,7 @@ from jwt import exceptions as jwt_exc
 
 
 class BaseMechanism(object):
+
     def __init__(self, request):
         self.request = request
         self.identity = None
@@ -87,33 +88,17 @@ class BaseMechanism(object):
 
         return Identity(identity, teams)
 
-    @staticmethod
-    def get_team_and_children_teams(teams, team_id):
-        if not team_id:
-            return []
-        return_teams = []
-        for team in teams:
-            if team['id'] == team_id:
-                return_teams.append(team)
-            if team['parent_id'] == team_id:
-                return_teams += BaseMechanism.get_team_and_children_teams(
-                    teams, team['id']
-                )
-
-        return return_teams
-
     def _teams_from_db(self, team_id):
         query = sql.select([models.TEAMS.c.id, models.TEAMS.c.parent_id])
         result = flask.g.db_conn.execute(query).fetchall()
-        teams = [{
+        return [{
             'id': row[models.TEAMS.c.id],
             'parent_id': row[models.TEAMS.c.parent_id]
         } for row in result]
 
-        return BaseMechanism.get_team_and_children_teams(teams, team_id)
-
 
 class BasicAuthMechanism(BaseMechanism):
+
     def authenticate(self):
         auth = self.request.authorization
         if not auth:
@@ -145,6 +130,7 @@ class BasicAuthMechanism(BaseMechanism):
 
 
 class HmacMechanism(BaseMechanism):
+
     def authenticate(self):
         headers = self.request.headers
         auth_request = AuthRequest(
@@ -178,6 +164,7 @@ class HmacMechanism(BaseMechanism):
 
 
 class OpenIDCAuth(BaseMechanism):
+
     def authenticate(self):
         auth_header = self.request.headers.get('Authorization').split(' ')
         if len(auth_header) != 2:
