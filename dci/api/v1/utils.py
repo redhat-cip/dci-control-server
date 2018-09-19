@@ -123,7 +123,7 @@ def user_topic_ids(user):
         where_clause = sql.and_(
             models.TOPICS.c.state == 'active',
             models.TEAMS.c.state == 'active',
-            models.JOINS_TOPICS_TEAMS.c.team_id.in_(user.teams)
+            models.JOINS_TOPICS_TEAMS.c.team_id.in_(user.teams_ids)
         )
         query = (sql.select([models.JOINS_TOPICS_TEAMS.c.topic_id])
                  .select_from(models.JOINS_TOPICS_TEAMS
