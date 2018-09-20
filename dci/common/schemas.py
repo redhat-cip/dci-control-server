@@ -333,7 +333,6 @@ remoteci = utils.dict_merge(base, DATA_FIELD, {
 
 remoteci_put = {
     v.Optional('name'): six.text_type,
-    v.Optional('data'): dict,
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('public'): bool,
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,

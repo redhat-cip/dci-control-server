@@ -243,55 +243,8 @@ def test_get_remoteci_not_found(user):
     assert result.status_code == 404
 
 
-def test_get_remoteci_data(user, team_user_id):
-    data_data = {'key': 'value'}
-    data = {
-        'name': 'pname1',
-        'team_id': team_user_id,
-        'data': data_data
-    }
-
-    premoteci = user.post('/api/v1/remotecis', data=data).data
-
-    r_id = premoteci['remoteci']['id']
-
-    r_data = user.get('/api/v1/remotecis/%s/data' % r_id).data
-    assert r_data == data_data
-
-
-def test_get_remoteci_data_specific_keys(user, team_user_id):
-    data_key = {'key': 'value'}
-    data_key1 = {'key1': 'value1'}
-
-    final_data = {}
-    final_data.update(data_key)
-    final_data.update(data_key1)
-    data = {
-        'name': 'pname1',
-        'team_id': team_user_id,
-        'data': final_data
-    }
-
-    premoteci = user.post('/api/v1/remotecis', data=data).data
-
-    r_id = premoteci['remoteci']['id']
-
-    r_data = user.get('/api/v1/remotecis/%s/data' % r_id).data
-    assert r_data == final_data
-
-    r_data = user.get('/api/v1/remotecis/%s/data?keys=key' % r_id).data
-    assert r_data == data_key
-
-    r_data = user.get('/api/v1/remotecis/%s/data?keys=key1' % r_id).data
-    assert r_data == data_key1
-
-    r_data = user.get('/api/v1/remotecis/%s/data?keys=key,key1' % r_id).data
-    assert r_data == final_data
-
-
 def test_put_remotecis(user, team_user_id):
     pr = user.post('/api/v1/remotecis', data={'name': 'pname',
-                                              'data': {'a': 1, 'b': 2},
                                               'team_id': team_user_id})
     assert pr.status_code == 201
     assert pr.data['remoteci']['public'] is False
@@ -302,12 +255,11 @@ def test_put_remotecis(user, team_user_id):
     assert gr.status_code == 200
 
     ppr = user.put('/api/v1/remotecis/%s' % gr.data['remoteci']['id'],
-                   data={'name': 'nname', 'public': True, 'data': {'c': 3}},
+                   data={'name': 'nname', 'public': True},
                    headers={'If-match': pr_etag})
     assert ppr.status_code == 200
     assert ppr.data['remoteci']['name'] == 'nname'
     assert ppr.data['remoteci']['public'] is True
-    assert set(ppr.data['remoteci']['data']) == set(['c'])
 
 
 def test_delete_remoteci_by_id(user, team_user_id):
@@ -548,11 +500,10 @@ def test_success_ensure_put_api_secret_is_not_leaked(user, team_user_id):
     """Test to ensure API secret is not leaked during update."""
 
     pr = user.post('/api/v1/remotecis', data={'name': 'pname',
-                                              'data': {'a': 1, 'b': 2},
                                               'team_id': team_user_id})
     pr_etag = pr.headers.get("ETag")
     ppr = user.put('/api/v1/remotecis/%s' % pr.data['remoteci']['id'],
-                   data={'name': 'nname', 'public': True, 'data': {'c': 3}},
+                   data={'name': 'nname', 'public': True},
                    headers={'If-match': pr_etag})
     assert ppr.status_code == 200
     assert 'api_secret' not in ppr.data['remoteci']
