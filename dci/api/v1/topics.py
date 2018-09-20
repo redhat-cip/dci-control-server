@@ -259,8 +259,6 @@ def get_all_tests(user, topic_id):
 @decorators.login_required
 @decorators.check_roles
 def add_test_to_topic(user, topic_id):
-    if not auth.is_admin(user):
-        raise auth.UNAUTHORIZED
     # todo(yassine): enforce test_id presence in the data
     data_json = flask.request.json
     values = {'topic_id': topic_id,
@@ -282,7 +280,7 @@ def add_test_to_topic(user, topic_id):
 @decorators.login_required
 @decorators.check_roles
 def delete_test_from_topic(user, t_id, test_id):
-    if not auth.is_admin(user):
+    if user.is_not_super_admin():
         v1_utils.verify_team_in_topic(user, t_id)
     v1_utils.verify_existence_and_get(test_id, models.TESTS)
 

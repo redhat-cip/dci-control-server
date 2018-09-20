@@ -97,14 +97,13 @@ def get_all_roles(user):
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    if not auth.is_admin(user):
+    if user.is_not_super_admin():
         query.add_extra_condition(_TABLE.c.label != 'SUPER_ADMIN')
 
-    if not (auth.is_admin(user) or
-            user['role_id'] == auth.get_role_id('PRODUCT_OWNER')):
+    if user.is_not_super_admin() and user.is_not_product_owner():
         query.add_extra_condition(_TABLE.c.label != 'PRODUCT_OWNER')
 
-    if user['role_id'] == auth.get_role_id('USER'):
+    if user.is_regular_user():
         query.add_extra_condition(_TABLE.c.id == user['role_id'])
 
     nb_rows = query.get_number_of_rows()

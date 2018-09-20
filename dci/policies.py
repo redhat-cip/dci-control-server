@@ -180,7 +180,7 @@ ROLES = {
     'get_latest_component_per_topic': ALL,
     'get_jobs_status_from_components': ALL,
     'get_all_tests': ALL,
-    'add_test_to_topic': ALL,
+    'add_test_to_topic': SUPER_ADMIN,
     'delete_test_from_topic': ALL,
     'add_team_to_topic': SUPER_ADMIN_PO,
     'delete_team_from_topic': SUPER_ADMIN_PO,

@@ -92,10 +92,20 @@ class Identity:
 
         return self.role_label == 'SUPER_ADMIN'
 
+    def is_not_super_admin(self):
+        """Ensure the user has not the role SUPER_ADMIN."""
+
+        return not self.is_super_admin()
+
     def is_product_owner(self):
         """Ensure the user has the role PRODUCT_OWNER."""
 
         return self.role_label == 'PRODUCT_OWNER'
+
+    def is_not_product_owner(self):
+        """Ensure the user has not the role PRODUCT_OWNER."""
+
+        return not self.is_product_owner()
 
     # TODO: replace team_id with object team
     def is_team_product_owner(self, team_id):
