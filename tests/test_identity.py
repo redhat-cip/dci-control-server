@@ -35,9 +35,19 @@ def test_is_admin():
     assert admin.is_admin()
 
 
+def test_is_not_super_admin():
+    assert identity_factory('ADMIN').is_not_super_admin()
+    assert identity_factory('USER').is_not_super_admin()
+
+
 def test_is_product_owner():
     product_owner = identity_factory('PRODUCT_OWNER')
     assert product_owner.is_product_owner()
+
+
+def test_is_not_product_owner():
+    assert identity_factory('ADMIN').is_not_product_owner()
+    assert identity_factory('USER').is_not_product_owner()
 
 
 def test_is_feeder():

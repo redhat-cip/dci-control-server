@@ -156,7 +156,7 @@ def get_all_components(user, topic_id):
 
     # Return only the component which have the export_control flag set to true
     #
-    if not (auth.is_admin(user)):
+    if user.is_not_super_admin():
         rows = [row for row in rows if row['export_control']]
 
     return flask.jsonify({'components': rows, '_meta': {'count': nb_rows}})
