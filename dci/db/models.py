@@ -211,7 +211,6 @@ REMOTECIS = sa.Table(
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255)),
-    sa.Column('data', sa_utils.JSONType),
     sa.Column('api_secret', sa.String(64), default=signature.gen_secret),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),

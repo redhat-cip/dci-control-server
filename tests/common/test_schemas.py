@@ -266,7 +266,7 @@ class TestRemoteCI(utils.SchemaTesting):
 
     def test_post(self):
         # add default values to voluptuous output
-        data_expected = utils.dict_merge(self.data, {'data': {}})
+        data_expected = utils.dict_merge(self.data, {'public': false})
         super(TestRemoteCI, self).test_post(self.data, data_expected)
 
     def test_put_invalid_data(self):
