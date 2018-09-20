@@ -69,7 +69,7 @@ def create_users(user):
         raise auth.UNAUTHORIZED
 
     role_id = values.get('role_id', auth.get_role_id('USER'))
-    if not user.is_super_admin() and \
+    if user.is_not_super_admin() and \
        role_id == auth.get_role_id('SUPER_ADMIN'):
         raise auth.UNAUTHORIZED
 
@@ -104,7 +104,7 @@ def get_all_users(user, team_id=None):
     args = schemas.args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
 
-    if not user.is_super_admin():
+    if user.is_not_super_admin():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     if team_id is not None:
@@ -196,7 +196,7 @@ def put_user(user, user_id):
 
     # if the caller wants to update the team_id then it must be done by a super
     # admin
-    if 'team_id' in values and not user.is_super_admin() and \
+    if 'team_id' in values and user.is_not_super_admin() and \
        not user.is_team_product_owner(values['team_id']):
         raise auth.UNAUTHORIZED
 

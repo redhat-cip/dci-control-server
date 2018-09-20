@@ -121,7 +121,7 @@ def get_role_by_id(user, role_id):
 
     if user.role_id != role_id and user.is_regular_user():
         raise auth.UNAUTHORIZED
-    if not user.is_super_admin() and \
+    if user.is_not_super_admin() and \
        auth.get_role_id('SUPER_ADMIN') == role_id:
         raise auth.UNAUTHORIZED
 
