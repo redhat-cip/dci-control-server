@@ -61,7 +61,6 @@ def create_remotecis(user):
         raise auth.UNAUTHORIZED
 
     values.update({
-        'data': values.get('data', {}),
         # XXX(fc): this should be populated as a default value from the
         # model, but we don't return values from the database :(
         'api_secret': signature.gen_secret(),
@@ -184,35 +183,6 @@ def delete_remoteci_by_id(user, remoteci_id):
             flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
-
-
-@api.route('/remotecis/<uuid:r_id>/data', methods=['GET'])
-@decorators.login_required
-@decorators.check_roles
-def get_remoteci_data(user, r_id):
-    remoteci_data = get_remoteci_data_json(user, r_id)
-
-    if 'keys' in 'keys' in flask.request.args:
-        keys = flask.request.args.get('keys').split(',')
-        remoteci_data = {k: remoteci_data[k] for k in keys
-                         if k in remoteci_data}
-
-    return flask.jsonify(remoteci_data)
-
-
-def get_remoteci_data_json(user, r_id):
-    query = v1_utils.QueryBuilder(_TABLE, {}, _R_COLUMNS)
-
-    if not user.is_super_admin():
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams))
-
-    query.add_extra_condition(_TABLE.c.id == r_id)
-    row = query.execute(fetchone=True)
-
-    if row is None:
-        raise dci_exc.DCINotFound('RemoteCI', r_id)
-
-    return row['remotecis_data']
 
 
 @api.route('/remotecis/<uuid:r_id>/users', methods=['POST'])
