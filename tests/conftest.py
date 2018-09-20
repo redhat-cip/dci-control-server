@@ -301,8 +301,7 @@ def remoteci_configuration_user_id(user, remoteci_user_id, topic_user_id):
     rc = user.post('/api/v1/remotecis/%s/configurations' % remoteci_user_id,
                    data={'name': 'cname',
                          'topic_id': topic_user_id,
-                         'component_types': ['kikoo', 'lol'],
-                         'data': {'lol': 'lol'}}).data
+                         'component_types': ['kikoo', 'lol']}).data
     return str(rc['configuration']['id'])
 
 

@@ -125,7 +125,6 @@ ROLES = {
     'get_remoteci_by_id': ALL,
     'put_remoteci': ALL,
     'delete_remoteci_by_id': ALL,
-    'get_remoteci_data': ALL,
     'add_user_to_remoteci': ALL,
     'get_all_users_from_remotecis': ALL,
     'delete_user_from_remoteci': ALL,
