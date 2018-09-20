@@ -113,7 +113,7 @@ def create_files(user):
         values['job_id'] = row['jobstates_job_id']
 
     query = v1_utils.QueryBuilder(models.JOBS)
-    if not auth.is_admin(user):
+    if user.is_not_super_admin():
         query.add_extra_condition(models.JOBS.c.team_id == user['team_id'])
     query.add_extra_condition(models.JOBS.c.id == values['job_id'])
     job = query.execute(fetchone=True, use_labels=False)
