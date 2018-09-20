@@ -78,7 +78,7 @@ def get_all_feeders(user):
 
     query = v1_utils.QueryBuilder(_TABLE, args, _F_COLUMNS)
 
-    if not user.is_super_admin():
+    if user.is_not_super_admin():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     query.add_extra_condition(_TABLE.c.state != 'archived')

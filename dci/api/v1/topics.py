@@ -51,7 +51,7 @@ def create_topics(user):
     if not values['product_id']:
         values['product_id'] = user.product_id
 
-    if not user.is_super_admin() and \
+    if user.is_not_super_admin() and \
        not user.product_id == values['product_id']:
         raise auth.UNAUTHORIZED
 
@@ -78,13 +78,13 @@ def get_topic_by_id(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
-    if not user.is_super_admin() and not user.is_product_owner():
+    if user.is_not_super_admin() and user.is_not_product_owner():
         if not user.is_read_only_user():
             v1_utils.verify_team_in_topic(user, topic_id)
         if 'teams' in args['embed']:
             raise auth.UNAUTHORIZED
 
-    if (not user.is_super_admin() and
+    if (user.is_not_super_admin() and
         user.product_id != topic['product_id'] and
         not user.is_read_only_user()):
             raise auth.UNAUTHORIZED
@@ -100,7 +100,7 @@ def get_all_topics(user):
     # if the user is an admin then he can get all the topics
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
-    if not user.is_super_admin() and not user.is_product_owner():
+    if user.is_not_super_admin() and user.is_not_product_owner():
         if 'teams' in args['embed']:
             raise dci_exc.DCIException('embed=teams not authorized.',
                                        status_code=401)
@@ -130,7 +130,7 @@ def put_topic(user, topic_id):
     values = schemas.topic.put(flask.request.json)
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
-    if not user.is_super_admin() and \
+    if user.is_not_super_admin() and \
        not user.product_id == topic['product_id']:
         raise auth.UNAUTHORIZED
 
@@ -168,7 +168,7 @@ def put_topic(user, topic_id):
 @decorators.check_roles
 def delete_topic_by_id(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
-    if not user.is_super_admin() and \
+    if user.is_not_super_admin() and \
        not user.product_id == topic['product_id']:
         raise auth.UNAUTHORIZED
 
@@ -309,7 +309,7 @@ def add_team_to_topic(user, topic_id):
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
                                                 get_id=True)
 
-    if not user.is_super_admin() and \
+    if user.is_not_super_admin() and \
        not (user.is_team_product_owner(team_id) and
             user.product_id == topic['product_id']):
         raise auth.UNAUTHORIZED
@@ -335,7 +335,7 @@ def delete_team_from_topic(user, topic_id, team_id):
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
                                                 get_id=True)
 
-    if not user.is_super_admin() and \
+    if user.is_not_super_admin() and \
        not (user.is_team_product_owner(team_id) and
             user.product_id == topic['product_id']):
         raise auth.UNAUTHORIZED
@@ -358,7 +358,7 @@ def delete_team_from_topic(user, topic_id, team_id):
 def get_all_teams_from_topic(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
-    if not user.is_super_admin() and \
+    if user.is_not_super_admin() and \
        not user.product_id == topic['product_id']:
         raise auth.UNAUTHORIZED
 
