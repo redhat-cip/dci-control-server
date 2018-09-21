@@ -1,0 +1,96 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8a0b8622_d8a71da0",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-09-21T11:50:31Z",
+      "side": 1,
+      "message": "auth is_not_admin doesn\u0027t exist anymore\n\nuse user.is_not_super_admin() instead",
+      "range": {
+        "startLine": 282,
+        "startChar": 7,
+        "endLine": 282,
+        "endChar": 31
+      },
+      "revId": "553cbe4353d954a63a88d3ff3853e041be48bce0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "36a7f8b8_db28c7f4",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 366,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-09-21T11:50:31Z",
+      "side": 1,
+      "message": "SRP is not respected\ndo the role check outside this method and consider util_get_all_teams_from_topic as a service taking all the topics for a user",
+      "range": {
+        "startLine": 357,
+        "startChar": 0,
+        "endLine": 366,
+        "endChar": 41
+      },
+      "revId": "553cbe4353d954a63a88d3ff3853e041be48bce0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "de5e40d7_b7859156",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 595,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-09-21T11:50:31Z",
+      "side": 1,
+      "message": "maybe a better name is\n\ncheck_user_has_access_to_a_topic or user_can_download_a_topic\n\nif user_can_download_a_topic(user,topic):\nthen ...\nelse ...",
+      "range": {
+        "startLine": 595,
+        "startChar": 4,
+        "endLine": 595,
+        "endChar": 24
+      },
+      "revId": "553cbe4353d954a63a88d3ff3853e041be48bce0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a0858b9d_4f216bea",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 623,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-09-21T11:50:31Z",
+      "side": 1,
+      "message": "SRP is not respected here neither\n\nThe check should be done inside the controller or in a dedicated function. Not here.\nThis method should return a bool and don\u0027t have side effect.\n\nYou should only test if topic is export control and user.product_team_id \u003d\u003d product.team_id or team_in_topic",
+      "range": {
+        "startLine": 606,
+        "startChar": 0,
+        "endLine": 623,
+        "endChar": 20
+      },
+      "revId": "553cbe4353d954a63a88d3ff3853e041be48bce0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
