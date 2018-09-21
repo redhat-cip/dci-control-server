@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "6ff3eea2_a4d00e73",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 262,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-09-21T11:25:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a75b214a_c9799939",
+      "range": {
+        "startLine": 261,
+        "startChar": 0,
+        "endLine": 262,
+        "endChar": 31
+      },
+      "revId": "f68d80869a499e7f6febd932e50eec1890705b6e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dd85ccc2_c3a47a9a",
         "filename": "dci/api/v1/topics.py",
         "patchSetId": 9
@@ -36,6 +60,30 @@
       "writtenOn": "2018-09-21T11:18:47Z",
       "side": 1,
       "message": "keep the shortcut for consistency",
+      "range": {
+        "startLine": 284,
+        "startChar": 0,
+        "endLine": 284,
+        "endChar": 31
+      },
+      "revId": "f68d80869a499e7f6febd932e50eec1890705b6e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ba7e2cb1_0fc87ac5",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 284,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-09-21T11:25:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dd85ccc2_c3a47a9a",
       "range": {
         "startLine": 284,
         "startChar": 0,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "c6e3dfa7_22829178",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 313,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-09-21T11:25:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "53104614_336b4bc5",
+      "range": {
+        "startLine": 313,
+        "startChar": 0,
+        "endLine": 313,
+        "endChar": 32
+      },
+      "revId": "f68d80869a499e7f6febd932e50eec1890705b6e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e74e3902_0ccff0d2",
         "filename": "dci/api/v1/topics.py",
         "patchSetId": 9
@@ -82,6 +154,30 @@
       "writtenOn": "2018-09-21T11:18:47Z",
       "side": 1,
       "message": "keep the shortcut for consistency",
+      "range": {
+        "startLine": 359,
+        "startChar": 0,
+        "endLine": 359,
+        "endChar": 38
+      },
+      "revId": "f68d80869a499e7f6febd932e50eec1890705b6e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b220de74_b10cfdd6",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 359,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-09-21T11:25:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e74e3902_0ccff0d2",
       "range": {
         "startLine": 359,
         "startChar": 0,
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "c87762a0_7a379f22",
+        "filename": "dci/identity.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-09-21T11:25:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "85af3803_2c024ca1",
+      "range": {
+        "startLine": 33,
+        "startChar": 0,
+        "endLine": 33,
+        "endChar": 30
+      },
+      "revId": "f68d80869a499e7f6febd932e50eec1890705b6e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "02413442_0a442e96",
         "filename": "dci/identity.py",
         "patchSetId": 9
@@ -128,6 +248,30 @@
       "writtenOn": "2018-09-21T11:18:47Z",
       "side": 1,
       "message": "could you remove this and use it directly. I would like to keep Identity for domain related to user and role.\n\nfor example we could imagine some feeder or remoteci (which are some other identity) without a product team because attached to the root team",
+      "range": {
+        "startLine": 81,
+        "startChar": 0,
+        "endLine": 89,
+        "endChar": 54
+      },
+      "revId": "f68d80869a499e7f6febd932e50eec1890705b6e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "20a8811c_cf022a3f",
+        "filename": "dci/identity.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 89,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-09-21T11:25:35Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "02413442_0a442e96",
       "range": {
         "startLine": 81,
         "startChar": 0,
