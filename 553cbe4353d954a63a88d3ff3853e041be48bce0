@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "8092a45f_3997a13f",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 282,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-09-24T11:22:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8a0b8622_d8a71da0",
+      "range": {
+        "startLine": 282,
+        "startChar": 7,
+        "endLine": 282,
+        "endChar": 31
+      },
+      "revId": "553cbe4353d954a63a88d3ff3853e041be48bce0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "36a7f8b8_db28c7f4",
         "filename": "dci/api/v1/topics.py",
         "patchSetId": 10
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "729d52bf_3da97491",
+        "filename": "dci/api/v1/topics.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 366,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-09-24T11:22:38Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "36a7f8b8_db28c7f4",
+      "range": {
+        "startLine": 357,
+        "startChar": 0,
+        "endLine": 366,
+        "endChar": 41
+      },
+      "revId": "553cbe4353d954a63a88d3ff3853e041be48bce0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "de5e40d7_b7859156",
         "filename": "dci/api/v1/utils.py",
         "patchSetId": 10
@@ -59,6 +107,30 @@
       "writtenOn": "2018-09-21T11:50:31Z",
       "side": 1,
       "message": "maybe a better name is\n\ncheck_user_has_access_to_a_topic or user_can_download_a_topic\n\nif user_can_download_a_topic(user,topic):\nthen ...\nelse ...",
+      "range": {
+        "startLine": 595,
+        "startChar": 4,
+        "endLine": 595,
+        "endChar": 24
+      },
+      "revId": "553cbe4353d954a63a88d3ff3853e041be48bce0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "079ace3c_e1ef5ccf",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 10
+      },
+      "lineNbr": 595,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-09-24T11:22:38Z",
+      "side": 1,
+      "message": "I think it will be confusing with the export_control field of the topic.",
+      "parentUuid": "de5e40d7_b7859156",
       "range": {
         "startLine": 595,
         "startChar": 4,
