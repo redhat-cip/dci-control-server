@@ -27,6 +27,7 @@ from flask import json
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import transformations as tsfm
+from dci.api.v1 import notifications
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci import decorators

@@ -574,3 +574,29 @@ def test_get_results_by_job_id(user, job_user_id):
         assert file_from_job.data['_meta']['count'] == 1
         assert file_from_job.data['results'][0]['total'] == 6
         assert len(file_from_job.data['results'][0]['testscases']) > 0
+
+
+def test_job_notification(app, user, remoteci_user_id, user_id, job_user_id):
+
+    with app.app_context():
+        data = {'user_id': user_id}
+        user.post('/api/v1/remotecis/%s/users' % remoteci_user_id,
+                  data=data)
+
+        job = user.get('/api/v1/jobs/%s' % job_user_id)
+        job = job.data['job']
+
+        data_post = {'mesg': 'test'}
+
+        with mock.patch('dci.api.v1.jobs.flask.g.sender.send_json') as f_s:
+            res = user.post('/api/v1/jobs/%s/notify' % job_user_id,
+                            data=data_post)
+            assert res.status_code == 204
+            f_s.assert_called_once_with(
+                {'event': 'notification',
+                 'emails': ['user@example.org'],
+                 'job_id': job_user_id,
+                 'remoteci_id': remoteci_user_id,
+                 'topic_id': job['topic_id'],
+                 'status': 'new',
+                 'mesg': 'test'})

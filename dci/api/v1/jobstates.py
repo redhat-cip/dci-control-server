@@ -81,18 +81,21 @@ def create_jobstates(user):
                         .values(status=values.get('status')))
     result = flask.g.db_conn.execute(query_update_job)
 
+    # send notification in case of final jobstate status
     if result.rowcount and values.get('status') in models.FINAL_STATUSES:
-        embeds = ['components', 'topic', 'remoteci']
-        embeds_dict = {'components': True, 'topic': False, 'remoteci': False}
+        embeds = ['components', 'topic', 'remoteci', 'results']
+        embeds_many = {'components': True, 'topic': False, 'remoteci': False,
+                       'results': True}
 
         job = base.get_resource_by_id(user, job, models.JOBS,
-                                      embeds_dict, embeds=embeds,
+                                      embed_many=embeds_many, embeds=embeds,
                                       jsonify=False)
         job = dict(job)
         jobs_events.create_event(job['id'],
                                  values['status'],
                                  job['topic_id'])
-        notifications.dispatcher(job)
+        if values.get('status') in models.FINAL_FAILURE_STATUSES:
+            notifications.dispatcher(job)
 
     result = json.dumps({'jobstate': values})
     return flask.Response(result, 201, content_type='application/json')

@@ -41,14 +41,27 @@ def test_create_jobstates(user, job_user_id):
 def test_create_jobstates_failure(user, job_user_id):
     data = {'job_id': job_user_id, 'status': 'failure'}
 
-    with mock.patch('dci.api.v1.notifications') as mocked_notif:
+    with mock.patch('dci.api.v1.notifications.dispatcher') as mocked_disp:
         user.post('/api/v1/jobstates', data=data).data
         # Notification should be sent just one time
         user.post('/api/v1/jobstates', data=data).data
-        assert mocked_notif.dispatcher.called_once()
+        assert mocked_disp.called_once()
 
     job = user.get('/api/v1/jobs/%s' % job_user_id).data
     assert job['job']['status'] == 'failure'
+
+
+def test_create_jobstates_notification(user, job_user_id):
+    data = {'job_id': job_user_id, 'status': 'failure'}
+
+    with mock.patch('dci.api.v1.notifications.dispatcher') as mocked_disp:
+        user.post('/api/v1/jobstates', data=data).data
+        args, _ = mocked_disp.call_args
+        called_args = args[0]
+        assert 'components' in called_args
+        assert 'topic' in called_args
+        assert 'remoteci' in called_args
+        assert 'results' in called_args
 
 
 def test_create_jobstates_new_to_failure(user, job_user_id):
