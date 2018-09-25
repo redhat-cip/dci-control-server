@@ -44,7 +44,7 @@ def get_email_configuration():
     }
 
     if not configuration['account'] or not configuration['password']:
-        raise
+        return None
 
     return configuration
 
@@ -94,16 +94,24 @@ def dlrn_publish(event):
 def mail(mesg):
     email_configuration = get_email_configuration()
     if email_configuration:
+        # compute test name:regressions number
+        regressions = '\n'.join(['    %s: %s' % (k, v)
+                                 for (k, v) in mesg['regressions'].items()])
+        if not regressions:
+            regressions = 'no regressions found'
+
         subject = '[DCI Status][%s][%s][%s]' % (
             mesg['topic_name'], mesg['remoteci_name'], mesg['status'])
         message = "You are receiving this email because of the DCI job %s\n"\
                   "For the topic: %s on the Remote CI: %s\n"\
                   "The current status of the job is: %s\n"\
                   "The components used are the following: %s\n"\
+                  "Regressions: %s\n"\
                   "For more information: "\
                   "https://www.distributed-ci.io/jobs/%s/jobStates"\
                   % (mesg['job_id'], mesg['topic_name'], mesg['remoteci_name'],
                      mesg['status'], ', '.join(mesg['components']),
+                     regressions,
                      mesg['job_id'])
 
         email = MIMEText(message)
