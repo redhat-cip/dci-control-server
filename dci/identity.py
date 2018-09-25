@@ -97,6 +97,11 @@ class Identity:
 
         return not self.is_super_admin()
 
+    def is_not_admin(self):
+        """Ensure the user has not the role ADMIN."""
+
+        return not self.is_admin()
+
     def is_product_owner(self):
         """Ensure the user has the role PRODUCT_OWNER."""
 
