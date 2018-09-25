@@ -19,36 +19,51 @@ from dci.db import models
 from sqlalchemy import sql
 
 
-def email(job):
+def format_mail_message(mesg):
+    # compute test name:regressions number
+    regressions = ', '.join(['%s: %s' % (k, v)
+                             for (k, v) in mesg['regressions'].items()])
+    if not regressions:
+        regressions = 'no regressions found'
 
-    if job['status'] != 'failure':
-        return None
+    return """
+You are receiving this email because of the DCI job {job} for the
+topic {topic} on the Remote CI {remoteci}.
+
+The final status of the job is: {status}
+
+The components used are: {components}
+The regressions found are: {regressions}
+
+For more information:
+https://www.distributed-ci.io/jobs/job_id/jobStates""".format(
+        job=mesg['job_id'],
+        topic=mesg['topic_name'],
+        remoteci=mesg['remoteci_name'],
+        status=mesg['status'],
+        components=', '.join(mesg['components']),
+        regressions=regressions,
+        job_id=mesg['job_id'])
+
+
+def get_email_info(job, emails):
 
     components_names = [c['name'] for c in job['components']]
+    regressions = {res['name']: res['regressions']
+                   for res in job['results']}
 
-    _TABLE_URCIS = models.JOIN_USER_REMOTECIS
-
-    query = (sql.select([models.USERS.c.email]).
-             select_from(models.USERS.join(_TABLE_URCIS)).
-             where(_TABLE_URCIS.c.remoteci_id == job['remoteci_id']))
-    result = flask.g.db_conn.execute(query).fetchall()
-
-    emails = [k['email'] for k in result]
-    if emails:
-        msg = {
-            'event': 'notification',
-            'emails': emails,
-            'job_id': str(job['id']),
-            'status': job['status'],
-            'topic_id': str(job['topic_id']),
-            'topic_name': job['topic']['name'],
-            'remoteci_id': str(job['remoteci_id']),
-            'remoteci_name': job['remoteci']['name'],
-            'components': components_names
-        }
-        return msg
-
-    return None
+    return {
+        'event': 'notification',
+        'emails': emails,
+        'job_id': str(job['id']),
+        'status': job['status'],
+        'topic_id': str(job['topic_id']),
+        'topic_name': job['topic']['name'],
+        'remoteci_id': str(job['remoteci_id']),
+        'remoteci_name': job['remoteci']['name'],
+        'components': components_names,
+        'regressions': regressions
+    }
 
 
 def dlrn(job):
@@ -71,13 +86,25 @@ def dlrn(job):
     return None
 
 
+def get_emails(remoteci_id):
+    _USER_REMOTECIS = models.JOIN_USER_REMOTECIS
+
+    query = (sql.select([models.USERS.c.email]).
+             select_from(models.USERS.join(_USER_REMOTECIS)).
+             where(_USER_REMOTECIS.c.remoteci_id == remoteci_id))
+    emails = flask.g.db_conn.execute(query).fetchall()
+
+    return [email['email'] for email in emails]
+
+
 def dispatcher(job):
 
     events = []
-
-    email_event = email(job)
-    if email_event:
-        events.append(email_event)
+    emails = get_emails(job['remoteci_id'])
+    if emails:
+        email_event = get_email_info(job, emails)
+        if email_event:
+            events.append(email_event)
 
     dlrn_event = dlrn(job)
     if dlrn_event:
