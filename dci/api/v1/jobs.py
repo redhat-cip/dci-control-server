@@ -600,41 +600,6 @@ def delete_meta(user, j_id, m_id):
     return metas.delete_meta(j_id, m_id)
 
 
-@api.route('/jobs/<uuid:j_id>/notify', methods=['POST'])
-@decorators.login_required
-def notify(user, j_id):
-    _TABLE_URCIS = models.JOIN_USER_REMOTECIS
-    _TABLE_USERS = models.USERS
-
-    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-
-    values = schemas.job_notify.post(flask.request.json)
-
-    if not user.is_in_team(job['team_id']):
-        raise auth.UNAUTHORIZED
-
-    # Select all email user attach to this remoteci
-    query = (sql.select([_TABLE_USERS.c.email]).
-             select_from(_TABLE_USERS.join(_TABLE_URCIS)).
-             where(_TABLE_URCIS.c.remoteci_id == job['remoteci_id']))
-    result = flask.g.db_conn.execute(query).fetchall()
-
-    # For each email send a notification
-    emails = [k['email'] for k in result]
-
-    if emails:
-        msg = {'event': 'notification',
-               'emails': emails,
-               'job_id': str(job['id']),
-               'status': job['status'],
-               'topic_id': str(job['topic_id']),
-               'remoteci_id': str(job['remoteci_id']),
-               'mesg': values['mesg']}
-        flask.g.sender.send_json(msg)
-
-    return flask.Response(None, 204, content_type='application/json')
-
-
 @api.route('/jobs/purge', methods=['GET'])
 @decorators.login_required
 @decorators.check_roles
