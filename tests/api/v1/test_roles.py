@@ -173,8 +173,8 @@ def test_success_get_all_roles_user_admin(user_admin):
     assert result.status_code == 200
 
     roles = [r['label'] for r in result.data['roles']]
-    assert (['ADMIN', 'FEEDER', 'READ_ONLY_USER', 'REMOTECI', 'USER'] ==
-            sorted(roles))
+
+    assert (['ADMIN', 'FEEDER', 'REMOTECI', 'USER'] == sorted(roles))
 
 
 def test_failure_get_all_roles_user(user):
@@ -184,6 +184,15 @@ def test_failure_get_all_roles_user(user):
 
     roles = [r['label'] for r in result.data['roles']]
     assert ['USER'] == sorted(roles)
+
+
+def test_success_get_all_roles_product_owner(product_owner):
+    result = product_owner.get('/api/v1/roles')
+
+    assert result.status_code == 200
+
+    roles = [r['label'] for r in result.data['roles']]
+    assert (['ADMIN', 'FEEDER', 'PRODUCT_OWNER', 'REMOTECI', 'USER'] == sorted(roles))  # noqa
 
 
 def test_success_delete_role_admin(admin, role):

@@ -70,7 +70,8 @@ def create_users(user):
 
     role_id = values.get('role_id', auth.get_role_id('USER'))
     if user.is_not_super_admin() and \
-       role_id == auth.get_role_id('SUPER_ADMIN'):
+            (role_id == auth.get_role_id('SUPER_ADMIN') or
+             role_id == auth.get_role_id('READ_ONLY_USER')):
         raise auth.UNAUTHORIZED
 
     values.update({
