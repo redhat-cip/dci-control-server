@@ -34,7 +34,7 @@ import sqlalchemy as sa
 def upgrade():
     op.add_column('topics',
                   sa.Column('export_control', sa.BOOLEAN, nullable=False,
-                            default=False))
+                            default=False, server_default=False))
 
 
 def downgrade():
