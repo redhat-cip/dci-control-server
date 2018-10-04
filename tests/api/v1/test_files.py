@@ -18,6 +18,7 @@ from __future__ import unicode_literals
 
 import base64
 
+import flask
 import mock
 import six
 
@@ -409,3 +410,40 @@ def test_build_certification():
         assert cert['filename'] == 'certification.xml.tar.gz'
 
         base64.decodestring(cert['data'])
+
+
+def test_get_previous_job_in_topic(app, user, remoteci_context,
+                                   components_user_ids, team_user_id,
+                                   engine):
+    def get_new_remoteci_context():
+        data = {'name': 'rname_new', 'team_id': team_user_id}
+        remoteci = user.post('/api/v1/remotecis', data=data).data
+        remoteci_id = str(remoteci['remoteci']['id'])
+        api_secret = user.get('/api/v1/remotecis/%s' % remoteci_id).data
+        api_secret = api_secret['remoteci']['api_secret']
+
+        remoteci = {'id': remoteci_id, 'api_secret': api_secret,
+                    'type': 'remoteci'}
+        return t_utils.generate_token_based_client(app, remoteci)
+
+    # job_1 from remoteci_context
+    data = {
+        'comment': 'kikoolol',
+        'components': components_user_ids
+    }
+    prev_job = remoteci_context.post('/api/v1/jobs', data=data).data
+    prev_job_id = prev_job['job']['id']
+
+    # adding a job in between from a new remoteci
+    new_remoteci = get_new_remoteci_context()
+    # job_2 from new remoteci
+    new_remoteci.post('/api/v1/jobs', data=data)
+
+    # job_3 from remoteci_context
+    # prev(job_3) must be job_1 and not job_2
+    new_job = remoteci_context.post('/api/v1/jobs', data=data).data
+    new_job = new_job['job']
+    with app.app_context():
+        flask.g.db_conn = engine.connect()
+        test_prev_job_id = str(files.get_previous_job_in_topic(new_job)['id'])
+        assert prev_job_id == test_prev_job_id
