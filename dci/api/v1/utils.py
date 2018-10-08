@@ -92,6 +92,11 @@ def verify_existence_and_get(id, table, get_id=False):
     """Verify the existence of a resource in the database and then
     return it if it exists, according to the condition, or raise an
     exception.
+
+    :param id: either the id or the name of the resource
+    :param table: the table object to retrieve from
+    :param get_id: if True returns only the id
+    :return:
     """
 
     where_clause = table.c.id == id
