@@ -98,6 +98,9 @@ ROLES = {
     'get_all_metas': ALL,
     'put_meta': ALL,
     'delete_meta': ALL,
+    'add_tag_to_job': ALL,
+    'get_tags_from_job': ALL,
+    'delete_tag_from_job': ALL,
     'get_to_purge_archived_jobs': SUPER_ADMIN,
     'purge_archived_jobs': SUPER_ADMIN,
     # analytics
