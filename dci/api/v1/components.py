@@ -27,6 +27,7 @@ from dci.api.v1 import base
 from dci.api.v1 import export_control
 from dci.api.v1 import issues
 from dci.api.v1 import remotecis
+from dci.api.v1 import tags
 from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci import decorators
@@ -501,21 +502,18 @@ def retrieve_tags_from_component(user, c_id):
 @decorators.check_roles
 def add_tag_for_component(user, c_id):
     """Add a tag on a specific component."""
-    # Todo : (thomas) check c_id and tag_id exist in db
-    # Todo : (thomas) use voluptuous schema
+
+    v1_utils.verify_existence_and_get(c_id, _TABLE)
+
     values = {
         'component_id': c_id
     }
-    values.update((flask.request.json))
-    query = _TABLE_TAGS.insert().values(values)
 
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE_TAGS.tag_id, 'tag_id')
+    component_tagged = tags.add_tag_to_resource(values,
+                                                models.JOIN_COMPONENTS_TAGS)
 
-    result = json.dumps({'components_tags': values})
-    return flask.Response(result, 201, content_type='application/json')
+    return flask.Response(json.dumps(component_tagged), 201,
+                          content_type='application/json')
 
 
 @api.route('/components/<uuid:c_id>/tags/<uuid:tag_id>', methods=['DELETE'])

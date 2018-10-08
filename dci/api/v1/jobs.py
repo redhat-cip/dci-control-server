@@ -18,14 +18,15 @@ import datetime
 
 import flask
 from flask import json
+from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
-
 
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import components
 from dci.api.v1 import utils as v1_utils
 from dci.api.v1 import jobs_events
+from dci.api.v1 import tags
 from dci import auth
 from dci import decorators
 from dci.common import audits
@@ -61,7 +62,8 @@ _EMBED_MANY = {
     'team': False,
     'results': True,
     'rconfiguration': False,
-    'analytics': True
+    'analytics': True,
+    'tags': True
 }
 
 
@@ -598,6 +600,68 @@ def delete_meta(user, j_id, m_id):
     if not user.is_in_team(job['team_id']):
         raise auth.UNAUTHORIZED
     return metas.delete_meta(j_id, m_id)
+
+
+@api.route('/jobs/<uuid:job_id>/tags', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def get_tags_from_job(user, job_id):
+    """Retrieve all tags attached to a job."""
+
+    job = v1_utils.verify_existence_and_get(job_id, _TABLE)
+    if not user.is_in_team(job['team_id']) and not user.is_read_only_user():
+        raise auth.UNAUTHORIZED
+
+    JTT = models.JOIN_JOBS_TAGS
+    query = (sql.select([models.TAGS])
+             .select_from(JTT.join(models.TAGS))
+             .where(JTT.c.job_id == job_id))
+    rows = flask.g.db_conn.execute(query)
+
+    return flask.jsonify({'tags': rows, '_meta': {'count': rows.rowcount}})
+
+
+@api.route('/jobs/<uuid:job_id>/tags', methods=['POST'])
+@decorators.login_required
+@decorators.check_roles
+def add_tag_to_job(user, job_id):
+    """Add a tag to a job."""
+
+    job = v1_utils.verify_existence_and_get(job_id, _TABLE)
+    if not user.is_in_team(job['team_id']):
+        raise auth.UNAUTHORIZED
+
+    values = {
+        'job_id': job_id
+    }
+
+    job_tagged = tags.add_tag_to_resource(values, models.JOIN_JOBS_TAGS)
+
+    return flask.Response(json.dumps(job_tagged), 201,
+                          content_type='application/json')
+
+
+@api.route('/jobs/<uuid:job_id>/tags/<uuid:tag_id>', methods=['DELETE'])
+@decorators.login_required
+@decorators.check_roles
+def delete_tag_from_job(user, job_id, tag_id):
+    """Delete a tag from a job."""
+
+    _JJT = models.JOIN_JOBS_TAGS
+    job = v1_utils.verify_existence_and_get(job_id, _TABLE)
+    if not user.is_in_team(job['team_id']):
+        raise auth.UNAUTHORIZED
+    v1_utils.verify_existence_and_get(tag_id, models.TAGS)
+
+    query = _JJT.delete().where(sql.and_(_JJT.c.tag_id == tag_id,
+                                         _JJT.c.job_id == job_id))
+
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict('tag', 'tag_id')
+
+    return flask.Response(None, 204, content_type='application/json')
 
 
 @api.route('/jobs/purge', methods=['GET'])
