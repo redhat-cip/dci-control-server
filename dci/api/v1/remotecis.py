@@ -54,7 +54,7 @@ _RCONFIGURATIONS_COLUMNS = v1_utils.get_columns_name_with_objects(
 @decorators.login_required
 @decorators.check_roles
 def create_remotecis(user):
-    values = v1_utils.common_values_dict(user)
+    values = v1_utils.common_values_dict()
     values.update(schemas.remoteci.post(flask.request.json))
 
     if not user.is_in_team(values['team_id']):
@@ -364,23 +364,22 @@ def put_api_secret(user, r_id):
 @decorators.login_required
 @decorators.check_roles
 def create_configuration(user, r_id):
-    values_configuration = v1_utils.common_values_dict(user)
-    values_configuration.update(
-        schemas.rconfiguration.post(flask.request.json))
-    values_configuration.update(flask.request.json)
+    values = v1_utils.common_values_dict()
+    values.update(schemas.rconfiguration.post(flask.request.json))
+    values.update(flask.request.json)
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
     if not user.is_in_team(remoteci['team_id']):
         raise auth.UNAUTHORIZED
 
-    rconfiguration_id = values_configuration.get('id')
+    rconfiguration_id = values.get('id')
 
     with flask.g.db_conn.begin():
         try:
             # insert configuration
             query = _RCONFIGURATIONS.insert().\
-                values(**values_configuration)
+                values(**values)
             flask.g.db_conn.execute(query)
             # insert join between rconfiguration and remoteci
             values_join = {
@@ -393,8 +392,8 @@ def create_configuration(user, r_id):
             raise dci_exc.DCIException('Integrity Error: %s' % str(ie))
 
     return flask.Response(
-        json.dumps({'rconfiguration': values_configuration}), 201,
-        headers={'ETag': values_configuration['etag']},
+        json.dumps({'rconfiguration': values}), 201,
+        headers={'ETag': values['etag']},
         content_type='application/json'
     )
 

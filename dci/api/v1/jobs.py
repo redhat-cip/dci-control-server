@@ -69,7 +69,7 @@ _EMBED_MANY = {
 @decorators.login_required
 @decorators.check_roles
 def create_jobs(user):
-    values = v1_utils.common_values_dict(user)
+    values = v1_utils.common_values_dict()
     values.update(schemas.job.post(flask.request.json))
     components_ids = values.pop('components')
 
@@ -412,9 +412,10 @@ def update_job_by_id(user, job_id):
     # Update jobstate if needed
     status = values.get('status')
     if status and job.get('status') != status:
-        jobstates.insert_jobstate(user, {
+        jobstates.insert_jobstate({
             'status': status,
-            'job_id': job_id
+            'job_id': job_id,
+            'team_id': user['team_id']
         })
         if status in models.FINAL_STATUSES:
             jobs_events.create_event(job_id, status, job['topic_id'])

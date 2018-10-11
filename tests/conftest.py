@@ -41,6 +41,7 @@ def engine(request):
     engine = sqlalchemy.create_engine(db_uri)
 
     if not sqlalchemy_utils.functions.database_exists(db_uri):
+        print(db_uri)
         sqlalchemy_utils.functions.create_database(db_uri)
     utils.restore_db(engine)
     return engine

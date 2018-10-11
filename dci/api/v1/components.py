@@ -87,7 +87,7 @@ def _get_latest_components():
 @decorators.login_required
 @decorators.check_roles
 def create_components(user):
-    values = v1_utils.common_values_dict(user)
+    values = v1_utils.common_values_dict()
     values.update(schemas.component.post(flask.request.json))
 
     if str(values['topic_id']) not in v1_utils.user_topic_ids(user):

@@ -42,15 +42,8 @@ _EMBED_MANY = {
 }
 
 
-def insert_jobstate(user, values, created_at=None):
-    values.update({
-        'id': utils.gen_uuid(),
-        'created_at': created_at or datetime.datetime.utcnow().isoformat(),
-        'team_id': user['team_id']
-    })
-
+def insert_jobstate(values):
     query = _TABLE.insert().values(**values)
-
     flask.g.db_conn.execute(query)
 
 
@@ -58,8 +51,11 @@ def insert_jobstate(user, values, created_at=None):
 @decorators.login_required
 @decorators.check_roles
 def create_jobstates(user):
-    created_at, _ = utils.get_dates(user)
-    values = schemas.jobstate.post(flask.request.json)
+    values = v1_utils.common_values_dict()
+    values.update(schemas.jobstate.post(flask.request.json))
+    values.update({
+        'team_id': user['team_id']
+    })
 
     # if one create a 'failed' jobstates and the current state is either
     # 'run' or 'pre-run' then set the job to 'error' state
@@ -70,7 +66,7 @@ def create_jobstates(user):
         if job['status'] in ['new', 'pre-run']:
             values['status'] = 'error'
 
-    insert_jobstate(user, values, created_at)
+    insert_jobstate(values)
 
     # Update job status
     query_update_job = (models.JOBS.update()

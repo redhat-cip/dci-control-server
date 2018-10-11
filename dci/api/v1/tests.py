@@ -44,7 +44,7 @@ _EMBED_MANY = {
 @decorators.login_required
 @decorators.check_roles
 def create_tests(user):
-    values = v1_utils.common_values_dict(user)
+    values = v1_utils.common_values_dict()
     values.update(schemas.test.post(flask.request.json))
 
     query = _TABLE.insert().values(**values)
