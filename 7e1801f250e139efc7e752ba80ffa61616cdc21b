@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "12c3f965_7ba0f3de",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 697,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2018-10-11T12:56:29Z",
+      "side": 1,
+      "message": "I don\u0027t think a tag_id is mandatory, we can base the delete on the str",
+      "revId": "7e1801f250e139efc7e752ba80ffa61616cdc21b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "a747ef41_69048e40",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 709,
+      "author": {
+        "id": 107
+      },
+      "writtenOn": "2018-10-11T12:56:29Z",
+      "side": 1,
+      "message": "We can add a condition to delete entry in tags table if there is no more join in the join table. It will help keep a table clean.",
+      "revId": "7e1801f250e139efc7e752ba80ffa61616cdc21b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
