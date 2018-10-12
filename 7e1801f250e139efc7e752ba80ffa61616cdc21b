@@ -51,6 +51,24 @@
       "revId": "7e1801f250e139efc7e752ba80ffa61616cdc21b",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7b499fef_8711eccb",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 709,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-12T11:36:10Z",
+      "side": 1,
+      "message": "This cannot be done because a tag could be used by other resources. To do so we must check every JOIN_RESOURCE_TAGS tables which would be messy.",
+      "parentUuid": "a747ef41_69048e40",
+      "revId": "7e1801f250e139efc7e752ba80ffa61616cdc21b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
