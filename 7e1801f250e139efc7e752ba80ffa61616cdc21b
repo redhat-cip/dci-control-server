@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "f39e7045_5ac7190f",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 697,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-10-12T09:17:58Z",
+      "side": 1,
+      "message": "I would like to keep this url for consistency between our API. Also a payload in DELETE HTTP request is not very RESTFul.\n\nIt will be easier to implement it in python-dciclient to make the usage more friendly.\n\ndcictl delete-tag \"\u003ctag_name\u003e\" for \"job_id\"",
+      "parentUuid": "12c3f965_7ba0f3de",
+      "revId": "7e1801f250e139efc7e752ba80ffa61616cdc21b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a747ef41_69048e40",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 6
