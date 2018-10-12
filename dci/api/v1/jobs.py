@@ -69,7 +69,7 @@ _EMBED_MANY = {
 @decorators.login_required
 @decorators.check_roles
 def create_jobs(user):
-    values = v1_utils.common_values_dict(user)
+    values = v1_utils.common_values_dict()
     values.update(schemas.job.post(flask.request.json))
     components_ids = values.pop('components')
 

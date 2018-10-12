@@ -46,7 +46,7 @@ _EMBED_MANY = {
 @decorators.login_required
 @decorators.check_roles
 def create_topics(user):
-    values = v1_utils.common_values_dict(user)
+    values = v1_utils.common_values_dict()
     values.update(schemas.topic.post(flask.request.json))
 
     if not values['product_id']:

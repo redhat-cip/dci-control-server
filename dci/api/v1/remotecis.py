@@ -54,7 +54,7 @@ _RCONFIGURATIONS_COLUMNS = v1_utils.get_columns_name_with_objects(
 @decorators.login_required
 @decorators.check_roles
 def create_remotecis(user):
-    values = v1_utils.common_values_dict(user)
+    values = v1_utils.common_values_dict()
     values.update(schemas.remoteci.post(flask.request.json))
 
     if not user.is_in_team(values['team_id']):
@@ -364,7 +364,7 @@ def put_api_secret(user, r_id):
 @decorators.login_required
 @decorators.check_roles
 def create_configuration(user, r_id):
-    values_configuration = v1_utils.common_values_dict(user)
+    values_configuration = v1_utils.common_values_dict()
     values_configuration.update(
         schemas.rconfiguration.post(flask.request.json))
     values_configuration.update(flask.request.json)

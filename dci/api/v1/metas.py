@@ -31,7 +31,7 @@ def create_meta(user, job_id):
     """Create a meta information associated to a specific job."""
     v1_utils.verify_existence_and_get(job_id, models.JOBS)
 
-    values = v1_utils.common_values_dict(user)
+    values = v1_utils.common_values_dict()
     values.update(schemas.meta.post(flask.request.json))
 
     values.update({
