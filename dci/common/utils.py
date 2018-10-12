@@ -108,17 +108,6 @@ def dict_merge(*dict_list):
     return dict(result)
 
 
-def get_dates(user):
-    now = datetime.datetime.utcnow().isoformat()
-    if user['team_name'] == 'admin' and flask.request.json:
-        created_at = flask.request.json.pop('created_at', now)
-        updated_at = flask.request.json.pop('updated_at', now)
-    else:
-        created_at = now
-        updated_at = now
-    return created_at, updated_at
-
-
 class memoized(object):
     '''Decorator. Caches a function's return value each time it is called.
     If called later with the same arguments, the cached value is returned

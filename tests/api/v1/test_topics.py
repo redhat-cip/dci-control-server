@@ -300,37 +300,21 @@ def test_purge_topic(admin, product):
     assert ppt.status_code == 204
 
 
-def test_get_all_topics_with_sort(admin, product):
-    # create 4 topics ordered by created time
-    data = {'name': "tname3", 'created_at': '2015-01-01',
-            'product_id': product['id'],
-            'component_types': ['type1', 'type2']}
-    ct_2_1 = admin.post('/api/v1/topics', data=data).data['topic']['id']
-    data = {'name': "tname4", 'created_at': '2016-01-01',
-            'product_id': product['id'],
-            'component_types': ['type1', 'type2']}
-    ct_2_2 = admin.post('/api/v1/topics', data=data).data['topic']['id']
-    data = {'name': "tname1", 'created_at': '2010-01-01',
-            'product_id': product['id'],
-            'component_types': ['type1', 'type2']}
-    ct_1_1 = admin.post('/api/v1/topics', data=data).data['topic']['id']
-    data = {'name': "tname2", 'created_at': '2011-01-01',
-            'product_id': product['id'],
-            'component_types': ['type1', 'type2']}
-    ct_1_2 = admin.post('/api/v1/topics', data=data).data['topic']['id']
+def test_get_all_topics_sorted(admin, product):
+    t1 = {'name': "c", 'product_id': product['id'], 'component_types': ['ct1']}
+    tid_1 = admin.post('/api/v1/topics', data=t1).data['topic']['id']
+    t2 = {'name': "b", 'product_id': product['id'], 'component_types': ['ct1']}
+    tid_2 = admin.post('/api/v1/topics', data=t2).data['topic']['id']
+    t3 = {'name': "a", 'product_id': product['id'], 'component_types': ['ct1']}
+    tid_3 = admin.post('/api/v1/topics', data=t3).data['topic']['id']
 
     def get_ids(path):
         return [i['id'] for i in admin.get(path).data['topics']]
 
-    # default is to sort by created_at
-    cts_ids = get_ids('/api/v1/topics')
-    assert cts_ids == [ct_2_2, ct_2_1, ct_1_2, ct_1_1]
-
-    cts_ids = get_ids('/api/v1/topics?sort=created_at')
-    assert cts_ids == [ct_1_1, ct_1_2, ct_2_1, ct_2_2]
-
-    cts_ids = get_ids('/api/v1/topics?sort=-name')
-    assert cts_ids == [ct_2_2, ct_2_1, ct_1_2, ct_1_1]
+    assert get_ids('/api/v1/topics') == [tid_3, tid_2, tid_1]
+    assert get_ids('/api/v1/topics?sort=created_at') == [tid_1, tid_2, tid_3]
+    assert get_ids('/api/v1/topics?sort=-created_at') == [tid_3, tid_2, tid_1]
+    assert get_ids('/api/v1/topics?sort=name') == [tid_3, tid_2, tid_1]
 
 
 def test_delete_topic_not_found(admin):

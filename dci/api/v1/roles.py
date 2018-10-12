@@ -40,7 +40,7 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 @decorators.check_roles
 @audits.log
 def create_roles(user):
-    values = v1_utils.common_values_dict(user)
+    values = v1_utils.common_values_dict()
     values.update(schemas.role.post(flask.request.json))
 
     if not values['label']:

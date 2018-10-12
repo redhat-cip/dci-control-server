@@ -42,10 +42,10 @@ _EMBED_MANY = {
 }
 
 
-def insert_jobstate(user, values, created_at=None):
+def insert_jobstate(user, values):
     values.update({
         'id': utils.gen_uuid(),
-        'created_at': created_at or datetime.datetime.utcnow().isoformat(),
+        'created_at': datetime.datetime.utcnow().isoformat(),
         'team_id': user['team_id']
     })
 
@@ -58,7 +58,6 @@ def insert_jobstate(user, values, created_at=None):
 @decorators.login_required
 @decorators.check_roles
 def create_jobstates(user):
-    created_at, _ = utils.get_dates(user)
     values = schemas.jobstate.post(flask.request.json)
 
     # if one create a 'failed' jobstates and the current state is either
@@ -70,7 +69,7 @@ def create_jobstates(user):
         if job['status'] in ['new', 'pre-run']:
             values['status'] = 'error'
 
-    insert_jobstate(user, values, created_at)
+    insert_jobstate(user, values)
 
     # Update job status
     query_update_job = (models.JOBS.update()

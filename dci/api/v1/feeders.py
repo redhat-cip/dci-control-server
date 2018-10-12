@@ -43,7 +43,7 @@ _EMBED_MANY = {
 @decorators.login_required
 @decorators.check_roles
 def create_feeders(user):
-    values = v1_utils.common_values_dict(user)
+    values = v1_utils.common_values_dict()
     values.update(schemas.feeder.post(flask.request.json))
 
     if not user.is_in_team(values['team_id']):

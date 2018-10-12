@@ -47,7 +47,7 @@ _EMBED_MANY = {
 @decorators.check_roles
 @audits.log
 def create_teams(user):
-    values = v1_utils.common_values_dict(user)
+    values = v1_utils.common_values_dict()
     values.update(schemas.team.post(flask.request.json))
 
     if not values['parent_id'] or \

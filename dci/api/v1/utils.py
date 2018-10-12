@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import datetime
 import flask
 from sqlalchemy import sql, func
 import uuid
@@ -572,20 +573,19 @@ def format_result(rows, root_table_name, list_embeds=None, embed_many=None):
     return result_rows
 
 
-def common_values_dict(user):
+def common_values_dict():
     """Build a basic values object used in every create method.
 
        All our resources contain a same subset of value. Instead of
        redoing this code everytime, this method ensures it is done only at
        one place.
     """
-
-    created_at, updated_at = utils.get_dates(user)
+    now = datetime.datetime.utcnow().isoformat()
     etag = utils.gen_etag()
     values = {
         'id': utils.gen_uuid(),
-        'created_at': created_at,
-        'updated_at': updated_at,
+        'created_at': now,
+        'updated_at': now,
         'etag': etag
     }
 

@@ -62,7 +62,7 @@ def _verify_existence_and_get_user(user_id):
 @decorators.login_required
 @decorators.check_roles
 def create_users(user):
-    values = v1_utils.common_values_dict(user)
+    values = v1_utils.common_values_dict()
     values.update(schemas.user.post(flask.request.json))
 
     if not user.is_in_team(values['team_id']):
