@@ -37,6 +37,24 @@
     },
     {
       "key": {
+        "uuid": "50cfa5e5_19ea701d",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 697,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-15T14:39:36Z",
+      "side": 1,
+      "message": "agreed",
+      "parentUuid": "f39e7045_5ac7190f",
+      "revId": "7e1801f250e139efc7e752ba80ffa61616cdc21b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "a747ef41_69048e40",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 6
