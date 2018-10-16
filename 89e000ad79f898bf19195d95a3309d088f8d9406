@@ -22,6 +22,30 @@
       "revId": "89e000ad79f898bf19195d95a3309d088f8d9406",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "93e4ad69_3c7cf0b7",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 659,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-16T16:28:15Z",
+      "side": 1,
+      "message": "Yes we have a dedicated endpoint for each resource to associate tags with.\n\n/components/\u003cc_id\u003e/tags\n\n/jobs/\u003cjob_id\u003e/tags",
+      "parentUuid": "ec68e523_ac6d9c5a",
+      "range": {
+        "startLine": 623,
+        "startChar": 0,
+        "endLine": 659,
+        "endChar": 58
+      },
+      "revId": "89e000ad79f898bf19195d95a3309d088f8d9406",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
