@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "ec68e523_ac6d9c5a",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 659,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-10-16T14:49:19Z",
+      "side": 1,
+      "message": "I thought we were doing the same than for components. Does that mean we are maintaining two implementations for associate tags on different resources ?\n/components/\u003cjob_id\u003e/tags\n/jobs/\u003cjob_id\u003e/tags",
+      "range": {
+        "startLine": 623,
+        "startChar": 0,
+        "endLine": 659,
+        "endChar": 58
+      },
+      "revId": "89e000ad79f898bf19195d95a3309d088f8d9406",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
