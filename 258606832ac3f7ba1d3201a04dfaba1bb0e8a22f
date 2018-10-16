@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "bb69b84f_80667471",
+        "filename": "tox.ini",
+        "patchSetId": 4
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-10-16T14:34:33Z",
+      "side": 1,
+      "message": "is it really necessary or is it just for debug ?",
+      "range": {
+        "startLine": 22,
+        "startChar": 13,
+        "endLine": 22,
+        "endChar": 16
+      },
+      "revId": "258606832ac3f7ba1d3201a04dfaba1bb0e8a22f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
