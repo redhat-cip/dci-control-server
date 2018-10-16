@@ -46,6 +46,30 @@
       "revId": "89e000ad79f898bf19195d95a3309d088f8d9406",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "04422e7b_ebb46c42",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 659,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-10-16T17:08:04Z",
+      "side": 1,
+      "message": "Yes I know that. My point is that we don\u0027t have the same code for both endpoints",
+      "parentUuid": "93e4ad69_3c7cf0b7",
+      "range": {
+        "startLine": 623,
+        "startChar": 0,
+        "endLine": 659,
+        "endChar": 58
+      },
+      "revId": "89e000ad79f898bf19195d95a3309d088f8d9406",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
