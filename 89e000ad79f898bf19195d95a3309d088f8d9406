@@ -70,6 +70,30 @@
       "revId": "89e000ad79f898bf19195d95a3309d088f8d9406",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ff1564cb_af860cd3",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 659,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-17T13:25:02Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "04422e7b_ebb46c42",
+      "range": {
+        "startLine": 623,
+        "startChar": 0,
+        "endLine": 659,
+        "endChar": 58
+      },
+      "revId": "89e000ad79f898bf19195d95a3309d088f8d9406",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
