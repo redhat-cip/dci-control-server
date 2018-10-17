@@ -2,6 +2,52 @@
   "comments": [
     {
       "key": {
+        "uuid": "e7f1e5b8_87ffb132",
+        "filename": "dci/api/v1/notifications.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-10-17T08:32:35Z",
+      "side": 1,
+      "message": "Nice separation of concern!",
+      "range": {
+        "startLine": 22,
+        "startChar": 4,
+        "endLine": 22,
+        "endChar": 23
+      },
+      "revId": "258606832ac3f7ba1d3201a04dfaba1bb0e8a22f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f14e52a8_d0e2553c",
+        "filename": "tests/api/v1/test_notifications.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-10-17T08:32:35Z",
+      "side": 1,
+      "message": "In term of UX I\u0027m not a big fan of this line.\n\nIf no regression, just hide this line.\nOnly display \"The regressions found are: if one+ regressions found.",
+      "range": {
+        "startLine": 62,
+        "startChar": 0,
+        "endLine": 62,
+        "endChar": 47
+      },
+      "revId": "258606832ac3f7ba1d3201a04dfaba1bb0e8a22f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "bb69b84f_80667471",
         "filename": "tox.ini",
         "patchSetId": 4
@@ -13,6 +59,30 @@
       "writtenOn": "2018-10-16T14:34:33Z",
       "side": 1,
       "message": "is it really necessary or is it just for debug ?",
+      "range": {
+        "startLine": 22,
+        "startChar": 13,
+        "endLine": 22,
+        "endChar": 16
+      },
+      "revId": "258606832ac3f7ba1d3201a04dfaba1bb0e8a22f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9fd2b9de_ba504d73",
+        "filename": "tox.ini",
+        "patchSetId": 4
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-10-17T08:32:35Z",
+      "side": 1,
+      "message": "same, if it\u0027s only for debug, you can remove this",
+      "parentUuid": "bb69b84f_80667471",
       "range": {
         "startLine": 22,
         "startChar": 13,
