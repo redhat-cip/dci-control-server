@@ -64,18 +64,20 @@ def get_file_info_from_headers(headers):
     return new_headers
 
 
-def _get_test_result_of_previous_job(job):
-    def _get_previous_job_in_topic(job):
-        topic_id = job['topic_id']
-        query = sql.select([models.JOBS]). \
-            where(sql.and_(models.JOBS.c.topic_id == topic_id,
-                           models.JOBS.c.created_at < job['created_at'],
-                           models.JOBS.c.id != job['id'],
-                           models.JOBS.c.state != 'archived')). \
-            order_by(sql.desc(models.JOBS.c.created_at))
-        return flask.g.db_conn.execute(query).fetchone()
+def get_previous_job_in_topic(job):
+    topic_id = job['topic_id']
+    query = sql.select([models.JOBS]). \
+        where(sql.and_(models.JOBS.c.topic_id == topic_id,
+                       models.JOBS.c.created_at < job['created_at'],
+                       models.JOBS.c.id != job['id'],
+                       models.JOBS.c.remoteci_id == job['remoteci_id'],
+                       models.JOBS.c.state != 'archived')). \
+        order_by(sql.desc(models.JOBS.c.created_at))
+    return flask.g.db_conn.execute(query).fetchone()
 
-    prev_job = _get_previous_job_in_topic(job)
+
+def _get_test_result_of_previous_job(job):
+    prev_job = get_previous_job_in_topic(job)
     if prev_job is None:
         return None
     query = sql.select([models.TESTS_RESULTS]). \
@@ -153,12 +155,12 @@ def create_files(user):
         if values['mime'] == 'application/junit':
             _, file_descriptor = swift.get(file_path)
             jsonunit = tsfm.junit2dict(file_descriptor.read())
-            prev_testresult = _get_test_result_of_previous_job(job)
-            if prev_testresult is not None:
-                prev_testresult['testscases'] = prev_testresult['tests_cases']
-                if len(prev_testresult['testscases']) > 0:
+            prev_test_result = _get_test_result_of_previous_job(job)
+            if prev_test_result is not None:
+                prev_test_result['testscases'] = prev_test_result['tests_cases']  # noqa
+                if len(prev_test_result['testscases']) > 0:
                     tsfm.add_regressions_and_successfix_to_tests(
-                        prev_testresult, jsonunit)
+                        prev_test_result, jsonunit)
             query = models.TESTS_RESULTS.insert().values({
                 'id': utils.gen_uuid(),
                 'created_at': values['created_at'],
