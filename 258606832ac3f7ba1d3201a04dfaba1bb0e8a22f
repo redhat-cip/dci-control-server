@@ -48,6 +48,30 @@
     },
     {
       "key": {
+        "uuid": "c7af2005_8d94eb85",
+        "filename": "tests/api/v1/test_notifications.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 62,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-18T11:34:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "f14e52a8_d0e2553c",
+      "range": {
+        "startLine": 62,
+        "startChar": 0,
+        "endLine": 62,
+        "endChar": 47
+      },
+      "revId": "258606832ac3f7ba1d3201a04dfaba1bb0e8a22f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "bb69b84f_80667471",
         "filename": "tox.ini",
         "patchSetId": 4
@@ -83,6 +107,30 @@
       "side": 1,
       "message": "same, if it\u0027s only for debug, you can remove this",
       "parentUuid": "bb69b84f_80667471",
+      "range": {
+        "startLine": 22,
+        "startChar": 13,
+        "endLine": 22,
+        "endChar": 16
+      },
+      "revId": "258606832ac3f7ba1d3201a04dfaba1bb0e8a22f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c786773e_474bb5da",
+        "filename": "tox.ini",
+        "patchSetId": 4
+      },
+      "lineNbr": 22,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-18T11:34:54Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9fd2b9de_ba504d73",
       "range": {
         "startLine": 22,
         "startChar": 13,
