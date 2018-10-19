@@ -21,6 +21,7 @@ import os
 HOST = os.getenv('API_HOST', '127.0.0.1')
 PORT = int(os.getenv('API_PORT', '5000'))
 DEBUG = os.getenv('DEBUG', False)
+JSONIFY_PRETTYPRINT_REGULAR = False
 
 # Database (SQLAlchemy) related parameters
 #

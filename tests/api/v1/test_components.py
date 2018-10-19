@@ -15,9 +15,12 @@
 # under the License.
 
 from __future__ import unicode_literals
+import mock
 import pytest
 import uuid
+from dci import dci_config
 from dci.api.v1 import components
+from dci.stores import files_utils
 from dci.common import exceptions as dci_exc
 
 
@@ -571,3 +574,65 @@ def test_delete_tags_components(admin, components_ids):
     assert gt.status_code == 200
     count = gt.data['_meta']['count']
     assert count == 0
+
+
+def test_purge(admin, components_user_ids, topic_user_id):
+    component_id = components_user_ids[0]
+
+    url = '/api/v1/components/%s/files' % component_id
+    c_file1 = admin.post(url, data='lol')
+    assert c_file1.status_code == 201
+
+    url = '/api/v1/components/%s/files' % component_id
+    c_file2 = admin.post(url, data='lol')
+    assert c_file2.status_code == 201
+
+    admin.delete('/api/v1/components/%s' % component_id)
+    to_purge = admin.get('/api/v1/components/purge').data
+    assert len(to_purge['components']) == 1
+    admin.post('/api/v1/components/purge')
+
+    store = dci_config.get_store('files')
+
+    path1 = files_utils.build_file_path(topic_user_id,
+                                        component_id,
+                                        c_file1.data['component_file']['id'])
+    with pytest.raises(dci_exc.StoreExceptions):
+        store.get(path1)
+
+    path2 = files_utils.build_file_path(topic_user_id,
+                                        component_id,
+                                        c_file2.data['component_file']['id'])
+    with pytest.raises(dci_exc.StoreExceptions):
+        store.get(path2)
+
+    to_purge = admin.get('/api/v1/components/purge').data
+    assert len(to_purge['components']) == 0
+
+
+def test_purge_failure(admin, components_user_ids, topic_user_id):
+    component_id = components_user_ids[0]
+
+    url = '/api/v1/components/%s/files' % component_id
+    c_file1 = admin.post(url, data='lol')
+    assert c_file1.status_code == 201
+
+    c_files = admin.get('/api/v1/components/%s/files' % component_id)
+    assert len(c_files.data['component_files']) == 1
+
+    d_component = admin.delete('/api/v1/components/%s' % component_id)
+    assert d_component.status_code == 204
+    to_purge = admin.get('/api/v1/components/purge').data
+    assert len(to_purge['components']) == 1
+    # purge will fail
+    with mock.patch('dci.stores.filesystem.FileSystem.delete') as mock_delete:
+        path1 = files_utils.build_file_path(topic_user_id,
+                                            component_id,
+                                            c_file1.data['component_file']['id'])  # noqa
+        mock_delete.side_effect = dci_exc.StoreExceptions('error')
+        purge_res = admin.post('/api/v1/components/purge')
+        assert purge_res.status_code == 400
+        store = dci_config.get_store('components')
+        store.get(path1)
+        to_purge = admin.get('/api/v1/components/purge').data
+        assert len(to_purge['components']) == 1

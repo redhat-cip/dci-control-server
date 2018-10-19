@@ -47,13 +47,12 @@ class Swift(stores.Store):
 
     def delete(self, filename):
         try:
-            self.connection.delete_object(self.container, filename)
+            self.connection.delete_object(self.container, filename,
+                                          headers={'X-Delete-After': 1})
         except swiftclient.exceptions.ClientException as e:
-            if e.http_status == 404:
-                pass
-            else:
-                raise exceptions.StoreExceptions('An error occured while '
-                                                 'deleting %s' % filename)
+                raise exceptions.StoreExceptions('Error while deleting file '
+                                                 '%s: %s' % (filename, str(e)),
+                                                 status_code=e.http_status)
 
     def get(self, filename):
         try:
