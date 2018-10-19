@@ -38,7 +38,7 @@ ROLES = {
     'get_to_purge_archived_components': SUPER_ADMIN,
     'purge_archived_components': SUPER_ADMIN,
     'list_components_files': ALL,
-    'list_component_file': ALL,
+    'get_component_file': ALL,
     'download_component_file': ALL,
     'upload_component_file': SUPER_ADMIN_PO_FEEDER,
     'delete_component_file': SUPER_ADMIN_PO_FEEDER,

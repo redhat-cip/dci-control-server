@@ -31,23 +31,36 @@ class FileSystem(stores.Store):
         try:
             os.remove(os.path.join(self.path, self.container, filename))
         except OSError as e:
-            if e.errno != errno.ENOENT:
-                raise exceptions.StoreExceptions('An error occured while '
-                                                 'deleting %s\n with error %s'
-                                                 % (filename, str(e)))
+            status_code = 400
+            if e.errno == errno.ENOENT:
+                status_code = 404
+            raise exceptions.StoreExceptions('Error while deleting file '
+                                             '%s: %s' % (filename, str(e)),
+                                             status_code=status_code)
 
     def get(self, filename):
         file_path = os.path.join(self.path, self.container, filename)
         try:
             return ([], open(file_path, 'r'))
         except IOError as e:
-            raise exceptions.StoreExceptions('An error occured while '
-                                             'accessing %s\n with error %s'
-                                             % (filename, str(e)))
+            status_code = 400
+            if e.errno == errno.ENOENT:
+                status_code = 404
+            raise exceptions.StoreExceptions('Error while accessing file '
+                                             '%s: %s' % (filename, str(e)),
+                                             status_code=status_code)
 
     def head(self, filename):
         file_path = os.path.join(self.path, self.container, filename)
-        file_size = os.path.getsize(file_path)
+        try:
+            file_size = os.path.getsize(file_path)
+        except IOError as e:
+            status_code = 400
+            if e.errno == errno.ENOENT:
+                status_code = 404
+            raise exceptions.StoreExceptions('Error while accessing file '
+                                             '%s: %s' % (filename, str(e)),
+                                             status_code=status_code)
         md5 = files_utils.md5Checksum(file_path)
         return {'content-length': file_size, 'etag': md5,
                 'content-type': 'test'}

@@ -37,9 +37,11 @@ from dci.db import embeds
 from dci.db import models
 from dci import dci_config
 from dci.stores import files_utils
+import logging
 
 from sqlalchemy import sql
 
+LOG = logging.getLogger(__name__)
 _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
@@ -322,16 +324,35 @@ def get_to_purge_archived_files(user):
 @decorators.check_roles
 def purge_archived_files(user):
 
-    try:
-        store = dci_config.get_store('files')
-        query = sql.select([_TABLE]).where(_TABLE.c.state == 'archived')
-        files = flask.g.db_conn.execute(query).fetchall()
-        for file in files:
-            file_path = files_utils.build_file_path(user['team_id'],
+    # get all archived files
+    archived_files = base.get_archived_resources(_TABLE)
+
+    store = dci_config.get_store('files')
+
+    # for each file delete it from within a transaction
+    # if the SQL deletion or the Store deletion fail then
+    # rollback the transaction, otherwise commit.
+    for file in archived_files:
+        tx = flask.g.db_conn.begin()
+        try:
+            q_delete_file = _TABLE.delete().where(_TABLE.c.id == file['id'])
+            flask.g.db_conn.execute(q_delete_file)
+            file_path = files_utils.build_file_path(file['team_id'],
                                                     file['job_id'],
                                                     file['id'])
-            store.delete(file_path)
-    except dci_exc.StoreExceptions as e:
-        raise e
+            try:
+                store.delete(file_path)
+            except dci_exc.StoreExceptions as e:
+                if e.status_code == 404:
+                    LOG.warn('file %s not found in store' % file_path)
+                else:
+                    raise e
+            tx.commit()
+            LOG.debug('file %s removed' % file_path)
+        except Exception as e:
+            LOG.error('Error while removing file %s, message: %s', (file_path,
+                                                                    str(e)))
+            tx.rollback()
+            raise dci_exc.DCIException(str(e))
 
-    return base.purge_archived_resources(user, _TABLE)
+    return flask.Response(None, 204, content_type='application/json')
