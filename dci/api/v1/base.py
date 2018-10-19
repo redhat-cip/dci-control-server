@@ -63,17 +63,19 @@ def get_resource_by_id(user, resource, table, embed_many=None,
         return resource
 
 
+def get_archived_resources(table):
+    q_archived_files = v1_utils.QueryBuilder(table)
+    q_archived_files.add_extra_condition(table.c.state == 'archived')
+    return q_archived_files.execute(fetchall=True, use_labels=False)
+
+
 def get_to_purge_archived_resources(user, table):
     """List the entries to be purged from the database. """
 
-    where_clause = sql.and_(
-        table.c.state == 'archived'
-    )
-    query = sql.select([table]).where(where_clause)
-    result = flask.g.db_conn.execute(query).fetchall()
+    archived_resources = get_archived_resources(table)
 
-    return flask.jsonify({table.name: result,
-                          '_meta': {'count': len(result)}})
+    return flask.jsonify({table.name: archived_resources,
+                          '_meta': {'count': len(archived_resources)}})
 
 
 def purge_archived_resources(user, table):
