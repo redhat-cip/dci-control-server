@@ -36,11 +36,13 @@ from dci.common import utils
 from dci.db import embeds
 from dci.db import models
 from dci import dci_config
-from dci.stores import files
+from dci.stores import files as store_file
+import logging
 from swiftclient import exceptions as swift_exc
 
 from sqlalchemy import sql
 
+LOG = logging.getLogger(__name__)
 _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
 _FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
@@ -129,7 +131,7 @@ def create_files(user):
                                       values['job_id'],
                                       file_id)
 
-    content = files.get_stream_or_content_from_request(flask.request)
+    content = store_file.get_stream_or_content_from_request(flask.request)
     swift.upload(file_path, content)
     s_file = swift.head(file_path)
 
@@ -321,18 +323,35 @@ def get_to_purge_archived_files(user):
 @decorators.check_roles
 def purge_archived_files(user):
 
-    try:
-        swift = dci_config.get_store('files')
-        query = sql.select([_TABLE]).where(_TABLE.c.state == 'archived')
-        files = flask.g.db_conn.execute(query).fetchall()
-        for file in files:
-            file_path = swift.build_file_path(user['team_id'], file['job_id'],
-                                              file['id'])
-            swift.delete(file_path)
-    except swift_exc.ClientException as e:
-        if e.http_status == 404:
-            pass
-        else:
-            raise e
+    # get all archived files
+    archived_files = base.get_archived_resources(_TABLE)
 
-    return base.purge_archived_resources(user, _TABLE)
+    store = dci_config.get_store('files')
+
+    # for each file delete it from within a transaction
+    # if the SQL deletion or the Store deletion fail then
+    # rollback the transaction, otherwise commit.
+    for file in archived_files:
+        tx = flask.g.db_conn.begin()
+        try:
+            q_delete_file = _TABLE.delete().where(_TABLE.c.id == file['id'])
+            flask.g.db_conn.execute(q_delete_file)
+            file_path = store.build_file_path(file['team_id'],
+                                              file['job_id'],
+                                              file['id'])
+            try:
+                store.delete(file_path)
+            except swift_exc.ClientException as e:
+                if e.http_status == 404:
+                    LOG.warn('file %s not found in store' % file_path)
+                else:
+                    raise e
+            tx.commit()
+            LOG.debug('file %s removed' % file_path)
+        except Exception as e:
+            LOG.error('Error while removing file %s, message: %s', (file_path,
+                                                                    str(e)))
+            tx.rollback()
+            raise dci_exc.DCIException(str(e))
+
+    return flask.Response(None, 204, content_type='application/json')

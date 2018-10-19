@@ -24,6 +24,8 @@ from dci.stores.swift import Swift
 from dci.common import utils
 from tests.data import JUNIT
 
+from swiftclient import exceptions as swift_exc
+
 SWIFT = 'dci.stores.swift.Swift'
 
 
@@ -574,3 +576,77 @@ def test_get_results_by_job_id(user, job_user_id):
         assert file_from_job.data['_meta']['count'] == 1
         assert file_from_job.data['results'][0]['total'] == 6
         assert len(file_from_job.data['results'][0]['testscases']) > 0
+
+
+def test_purge(user, admin, job_user_id):
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+        mockito.head.return_value = head_result
+        mock_swift.return_value = mockito
+
+        job = user.get('/api/v1/jobs/%s' % job_user_id).data['job']
+
+        # create a file
+        headers = {'DCI-JOB-ID': job_user_id,
+                   'DCI-NAME': 'foobar'}
+        user.post('/api/v1/files', headers=headers)
+
+        djob = admin.delete('/api/v1/jobs/%s' % job_user_id,
+                            headers={'If-match': job['etag']})
+        assert djob.status_code == 204
+        to_purge_jobs = admin.get('/api/v1/jobs/purge').data
+        assert len(to_purge_jobs['jobs']) == 1
+        to_purge_files = admin.get('/api/v1/files/purge').data
+        assert len(to_purge_files['files']) == 1
+
+        admin.post('/api/v1/jobs/purge')
+        to_purge_jobs = admin.get('/api/v1/jobs/purge').data
+        assert len(to_purge_jobs['jobs']) == 0
+        to_purge_files = admin.get('/api/v1/files/purge').data
+        assert len(to_purge_files['files']) == 0
+
+
+def test_purge_failure(user, admin, job_user_id):
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
+        mockito.head.return_value = head_result
+        mock_delete = mock.MagicMock()
+        mock_delete.side_effect = swift_exc.ClientException(
+            'error', http_status=400)
+        mockito.delete = mock_delete
+        mockito.build_file_path = Swift.build_file_path
+        mock_swift.return_value = mockito
+
+        job = user.get('/api/v1/jobs/%s' % job_user_id).data['job']
+
+        # create a file
+        headers = {'DCI-JOB-ID': job_user_id,
+                   'DCI-NAME': 'foobar'}
+        user.post('/api/v1/files', headers=headers)
+
+        djob = admin.delete('/api/v1/jobs/%s' % job_user_id,
+                            headers={'If-match': job['etag']})
+        assert djob.status_code == 204
+        to_purge_jobs = admin.get('/api/v1/jobs/purge').data
+        assert len(to_purge_jobs['jobs']) == 1
+        to_purge_files = admin.get('/api/v1/files/purge').data
+        assert len(to_purge_files['files']) == 1
+
+        purge_res = admin.post('/api/v1/jobs/purge')
+        assert purge_res.status_code == 400
+        to_purge_jobs = admin.get('/api/v1/jobs/purge').data
+        assert len(to_purge_jobs['jobs']) == 1
+        to_purge_files = admin.get('/api/v1/files/purge').data
+        assert len(to_purge_files['files']) == 1

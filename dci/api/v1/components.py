@@ -18,8 +18,10 @@ import datetime
 
 import flask
 from flask import json
+import logging
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
+from swiftclient import exceptions as swift_exc
 
 from dci import dci_config
 from dci.api.v1 import api
@@ -52,6 +54,8 @@ _EMBED_MANY = {
     'files': True,
     'jobs': True
 }
+
+LOG = logging.getLogger(__name__)
 
 
 def _get_latest_components():
@@ -211,20 +215,6 @@ def delete_component_by_id(user, c_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
-@api.route('/components/purge', methods=['GET'])
-@decorators.login_required
-@decorators.check_roles
-def get_to_purge_archived_components(user):
-    return base.get_to_purge_archived_resources(user, _TABLE)
-
-
-@api.route('/components/purge', methods=['POST'])
-@decorators.login_required
-@decorators.check_roles
-def purge_archived_components(user):
-    return base.purge_archived_resources(user, _TABLE)
-
-
 @api.route('/components/<uuid:c_id>/files', methods=['GET'])
 @decorators.login_required
 @decorators.check_roles
@@ -251,7 +241,7 @@ def list_components_files(user, c_id):
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['GET'])
 @decorators.login_required
 @decorators.check_roles
-def list_component_file(user, c_id, f_id):
+def get_component_file(user, c_id, f_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     topic = v1_utils.verify_existence_and_get(component['topic_id'],
                                               models.TOPICS)
@@ -530,5 +520,59 @@ def delete_tag_for_component(user, c_id, tag_id):
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError:
         raise dci_exc.DCICreationConflict(_TABLE_TAGS.c.tag_id, 'tag_id')
+
+    return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/components/purge', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def get_to_purge_archived_components(user):
+    return base.get_to_purge_archived_resources(user, _TABLE)
+
+
+@api.route('/components/purge', methods=['POST'])
+@decorators.login_required
+@decorators.check_roles
+def purge_archived_components(user):
+
+    # get all archived components
+    archived_components = base.get_archived_resources(_TABLE)
+
+    store = dci_config.get_store('files')
+
+    # for each component delete it and all the component_files associated
+    # from within a transaction
+    # if the SQL deletion or the Store deletion fail then
+    # rollback the transaction, otherwise commit.
+    for cmpt in archived_components:
+        get_cmpt_files = v1_utils.QueryBuilder(models.COMPONENT_FILES)
+        get_cmpt_files.add_extra_condition(
+            models.COMPONENT_FILES.c.component_id == cmpt['id'])
+        cmpt_files = get_cmpt_files.execute(fetchall=True, use_labels=False)
+        for cmpt_file in cmpt_files:
+            tx = flask.g.db_conn.begin()
+            file_path = store.build_file_path(cmpt['topic_id'],
+                                              cmpt['id'],
+                                              cmpt_file['id'])
+            try:
+                q_delete_cfile = models.COMPONENT_FILES.delete().\
+                    where(_TABLE.c.id == cmpt_file['id'])
+                flask.g.db_conn.execute(q_delete_cfile)
+                try:
+                    store.delete(file_path)
+                except swift_exc.ClientException as e:
+                    if e.http_status == 404:
+                        LOG.warn('file %s not found in store' % file_path)
+                    else:
+                        raise e
+                tx.commit()
+            except Exception as e:
+                tx.rollback()
+                LOG.error('Error while removing component file %s, message: %s',  # noqa
+                          (file_path, str(e)))
+                raise dci_exc.DCIException(str(e))
+        flask.g.db_conn.execute(_TABLE.delete().
+                                where(_TABLE.c.id == cmpt['id']))
 
     return flask.Response(None, 204, content_type='application/json')

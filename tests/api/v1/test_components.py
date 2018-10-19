@@ -23,6 +23,7 @@ from dci.api.v1 import components
 from dci.stores.swift import Swift
 from dci.common import exceptions as dci_exc
 from dci.common import utils
+from swiftclient import exceptions as swift_exc
 
 SWIFT = 'dci.stores.swift.Swift'
 
@@ -616,3 +617,92 @@ def test_delete_tags_components(admin, components_ids):
     assert gt.status_code == 200
     count = gt.data['_meta']['count']
     assert count == 0
+
+
+def test_purge(admin, components_user_ids, topic_user_id):
+    component_id = components_user_ids[0]
+
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 1
+        }
+
+        mockito.head.return_value = head_result
+        mock_delete = mock.MagicMock()
+        mockito.delete = mock_delete
+        mockito.build_file_path = Swift.build_file_path
+        mock_swift.return_value = mockito
+
+        url = '/api/v1/components/%s/files' % component_id
+        c_file1 = admin.post(url, data='lol')
+        assert c_file1.status_code == 201
+
+        url = '/api/v1/components/%s/files' % component_id
+        c_file2 = admin.post(url, data='lol')
+        assert c_file2.status_code == 201
+
+        admin.delete('/api/v1/components/%s' % component_id)
+        to_purge = admin.get('/api/v1/components/purge').data
+        assert len(to_purge['components']) == 1
+        admin.post('/api/v1/components/purge')
+        path1 = Swift.build_file_path(topic_user_id,
+                                      component_id,
+                                      c_file1.data['component_file']['id'])
+        mock_delete.assert_any_call(path1)
+        path2 = Swift.build_file_path(topic_user_id,
+                                      component_id,
+                                      c_file2.data['component_file']['id'])
+        mock_delete.assert_any_call(path2)
+        to_purge = admin.get('/api/v1/components/purge').data
+        assert len(to_purge['components']) == 0
+
+
+def test_purge_failure(admin, components_user_ids, topic_user_id):
+    component_id = components_user_ids[0]
+
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+
+        mockito = mock.MagicMock()
+
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 1
+        }
+
+        mockito.head.return_value = head_result
+        mock_delete = mock.MagicMock()
+        mock_delete.side_effect = swift_exc.ClientException(
+            'error', http_status=400)
+        mockito.delete = mock_delete
+        mockito.build_file_path = Swift.build_file_path
+        mock_swift.return_value = mockito
+
+        url = '/api/v1/components/%s/files' % component_id
+        c_file1 = admin.post(url, data='lol')
+        assert c_file1.status_code == 201
+
+        c_files = admin.get('/api/v1/components/%s/files' % component_id)
+        assert len(c_files.data['component_files']) == 1
+
+        d_component = admin.delete('/api/v1/components/%s' % component_id)
+        assert d_component.status_code == 204
+        to_purge = admin.get('/api/v1/components/purge').data
+        assert len(to_purge['components']) == 1
+        # purge will fail
+        purge_res = admin.post('/api/v1/components/purge')
+        assert purge_res.status_code == 400
+        path1 = Swift.build_file_path(topic_user_id,
+                                      component_id,
+                                      c_file1.data['component_file']['id'])
+        print('file1 %s' % c_file1.data['component_file']['id'])
+        print(mock_delete.call_args_list)
+        mock_delete.assert_called_once_with(path1)
+
+        to_purge = admin.get('/api/v1/components/purge').data
+        assert len(to_purge['components']) == 1
