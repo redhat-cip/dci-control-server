@@ -675,4 +675,5 @@ def get_to_purge_archived_jobs(user):
 @decorators.login_required
 @decorators.check_roles
 def purge_archived_jobs(user):
+    files.purge_archived_files()
     return base.purge_archived_resources(user, _TABLE)

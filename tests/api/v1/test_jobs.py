@@ -20,10 +20,17 @@ import pytest
 import six
 import uuid
 
-from dci.stores.swift import Swift
+from dci import dci_config
+from dci.common import exceptions as dci_exc
 from dci.common import utils
+from dci.stores import files_utils
+from dci.stores.swift import Swift
 from tests.data import JUNIT
+import tests.utils as t_utils
 
+import collections
+
+FileDesc = collections.namedtuple('FileDesc', ['name', 'content'])
 SWIFT = 'dci.stores.swift.Swift'
 
 
@@ -574,3 +581,63 @@ def test_get_results_by_job_id(user, job_user_id):
         assert file_from_job.data['_meta']['count'] == 1
         assert file_from_job.data['results'][0]['total'] == 6
         assert len(file_from_job.data['results'][0]['testscases']) > 0
+
+
+def test_purge(user, admin, job_user_id, jobstate_user_id, team_user_id):
+    job = user.get('/api/v1/jobs/%s' % job_user_id).data['job']
+
+    # create a file
+    file_id1 = t_utils.post_file(user, jobstate_user_id,
+                                 FileDesc('kikoolol', 'content'))
+
+    djob = admin.delete('/api/v1/jobs/%s' % job_user_id,
+                        headers={'If-match': job['etag']})
+    assert djob.status_code == 204
+    to_purge_jobs = admin.get('/api/v1/jobs/purge').data
+    assert len(to_purge_jobs['jobs']) == 1
+    to_purge_files = admin.get('/api/v1/files/purge').data
+    assert len(to_purge_files['files']) == 1
+
+    admin.post('/api/v1/jobs/purge')
+    path1 = files_utils.build_file_path(team_user_id, job_user_id, file_id1)
+    store = dci_config.get_store('files')
+    with pytest.raises(dci_exc.StoreExceptions):
+        store.get(path1)
+
+    to_purge_jobs = admin.get('/api/v1/jobs/purge').data
+    assert len(to_purge_jobs['jobs']) == 0
+    to_purge_files = admin.get('/api/v1/files/purge').data
+    assert len(to_purge_files['files']) == 0
+
+
+def test_purge_failure(user, admin, job_user_id, jobstate_user_id,
+                       team_user_id):
+
+    job = user.get('/api/v1/jobs/%s' % job_user_id).data['job']
+
+    # create a file
+    file_id1 = t_utils.post_file(user, jobstate_user_id,
+                                 FileDesc('kikoolol', 'content'))
+
+    djob = admin.delete('/api/v1/jobs/%s' % job_user_id,
+                        headers={'If-match': job['etag']})
+    assert djob.status_code == 204
+    to_purge_jobs = admin.get('/api/v1/jobs/purge').data
+    assert len(to_purge_jobs['jobs']) == 1
+    to_purge_files = admin.get('/api/v1/files/purge').data
+    assert len(to_purge_files['files']) == 1
+
+    # purge will fail
+    with mock.patch('dci.stores.filesystem.FileSystem.delete') as mock_delete:
+        mock_delete.side_effect = dci_exc.StoreExceptions('error')
+        purge_res = admin.post('/api/v1/jobs/purge')
+        assert purge_res.status_code == 400
+        path1 = files_utils.build_file_path(team_user_id,
+                                            job_user_id,
+                                            file_id1)
+        store = dci_config.get_store('files')
+        store.get(path1)
+    to_purge_files = admin.get('/api/v1/files/purge').data
+    assert len(to_purge_files['files']) == 1
+    to_purge_jobs = admin.get('/api/v1/jobs/purge').data
+    assert len(to_purge_jobs['jobs']) == 1
