@@ -16,7 +16,9 @@
 import flask
 
 from flask import json
+from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
+
 from dci.common import exceptions as dci_exc
 from dci.db import models
 from dci import decorators
@@ -28,6 +30,41 @@ from dci.api.v1 import utils as v1_utils
 
 _TABLE = models.TAGS
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+
+
+def add_tag_to_resource(values, join_resource_tags):
+    """
+
+    :param values: the dict must contain the id of the resource as specified
+                   in the join_resource_tags table
+    :param join_resource_tags: the association table between the resource
+                               and the tag
+    :return: a dict with both the tag name and the tag id
+    """
+
+    values = dict(values)
+    values.update(schemas.tag.post(flask.request.json))
+    tag_name = values.pop('name')
+
+    try:
+        tag_id = v1_utils.verify_existence_and_get(None,
+                                                   models.TAGS,
+                                                   name=tag_name,
+                                                   get_id=True)
+    except dci_exc.DCIException:
+        tag_id = utils.gen_uuid()
+        flask.g.db_conn.execute(models.TAGS.insert().values(
+            id=tag_id,
+            name=tag_name))
+    values['tag_id'] = tag_id
+    query = join_resource_tags.insert().values(values)
+
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict('tag', tag_name)
+
+    return {'tag': {'id': tag_id, 'name': tag_name}}
 
 
 @api.route('/tags', methods=['POST'])
