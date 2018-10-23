@@ -1,0 +1,72 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "cce7589e_9ac56a41",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 325,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-23T14:10:49Z",
+      "side": 1,
+      "message": "s/swift/store",
+      "revId": "707d4165ae8c5d40e72aea83b9edf3c3fca09fcb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6becc179_ee9a49aa",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 333,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-23T14:10:49Z",
+      "side": 1,
+      "message": "use StoreExceptions",
+      "revId": "707d4165ae8c5d40e72aea83b9edf3c3fca09fcb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fb1448fd_47deeae0",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 23,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-23T14:10:49Z",
+      "side": 1,
+      "message": "I would prefer FileSystem instead of File",
+      "revId": "707d4165ae8c5d40e72aea83b9edf3c3fca09fcb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e67680e8_f914c209",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 33,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-23T14:10:49Z",
+      "side": 1,
+      "message": "You should capture the Exception to have the reason of the failure.\n\nAlso, if the file does not exist in Swift backend we know it from http_code, so you need to find a common way in StoreExceptions.",
+      "revId": "707d4165ae8c5d40e72aea83b9edf3c3fca09fcb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
