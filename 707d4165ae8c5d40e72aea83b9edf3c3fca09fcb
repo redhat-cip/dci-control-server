@@ -67,6 +67,138 @@
       "revId": "707d4165ae8c5d40e72aea83b9edf3c3fca09fcb",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7a5ac35f_f2cb8af8",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-23T14:45:24Z",
+      "side": 1,
+      "message": "os.path.join()",
+      "range": {
+        "startLine": 37,
+        "startChar": 20,
+        "endLine": 37,
+        "endChar": 30
+      },
+      "revId": "707d4165ae8c5d40e72aea83b9edf3c3fca09fcb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e5e828e2_d1c662e0",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-23T14:45:24Z",
+      "side": 1,
+      "message": "os.path.join()",
+      "range": {
+        "startLine": 41,
+        "startChar": 20,
+        "endLine": 41,
+        "endChar": 30
+      },
+      "revId": "707d4165ae8c5d40e72aea83b9edf3c3fca09fcb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "0b6e92a8_40534818",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-23T14:45:24Z",
+      "side": 1,
+      "message": "Do we really want to compute the md5 checksum each time we stat a file ?\nCan\u0027t this be stored inside the database or file extattr instead ?",
+      "range": {
+        "startLine": 43,
+        "startChar": 8,
+        "endLine": 43,
+        "endChar": 48
+      },
+      "revId": "707d4165ae8c5d40e72aea83b9edf3c3fca09fcb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "86b21b5a_b21fe5eb",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-23T14:45:24Z",
+      "side": 1,
+      "message": "You\u0027re creating your path twice. You could instead do:\n\n  filepath \u003d os.path.join(…)\n  path \u003d basedir(filepath)\n  if not os.path.exists(path):\n      …",
+      "range": {
+        "startLine": 49,
+        "startChar": 8,
+        "endLine": 53,
+        "endChar": 70
+      },
+      "revId": "707d4165ae8c5d40e72aea83b9edf3c3fca09fcb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "46d3471d_bcf76d00",
+        "filename": "dci/stores/files.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-23T14:45:24Z",
+      "side": 1,
+      "message": "Here would be a good place to compute the md5 checksum and then store it somewhere (db, extattr, …)",
+      "revId": "707d4165ae8c5d40e72aea83b9edf3c3fca09fcb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "24887a46_bf36570e",
+        "filename": "dci/stores/files_utils.py",
+        "patchSetId": 13
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-23T14:45:24Z",
+      "side": 1,
+      "message": "is this os.path.join() ?\nIf yes, this can be removed and call os.path.join() instead everywhere.",
+      "range": {
+        "startLine": 44,
+        "startChar": 0,
+        "endLine": 48,
+        "endChar": 47
+      },
+      "revId": "707d4165ae8c5d40e72aea83b9edf3c3fca09fcb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
