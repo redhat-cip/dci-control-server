@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2ba5c5ed_40a74e0c",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 543,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-23T14:34:54Z",
+      "side": 1,
+      "message": "Isn\u0027t this duplicated code with the code in \u0027base.get_to_purge_archived_resources()\u0027 ?\nIf yes, could this be de-duplicated ?",
+      "range": {
+        "startLine": 540,
+        "startChar": 0,
+        "endLine": 543,
+        "endChar": 73
+      },
+      "revId": "045aa30c9bcb281861cc60e2fac05ec64faf1bc1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "22959577_404b9e7d",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 329,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-23T14:34:54Z",
+      "side": 1,
+      "message": "Same here, isn\u0027t this duplicated code with \u0027get_to_purge_archived_resources()\u0027 or \u0027get_to_purge_archived_files()\u0027 ?",
+      "range": {
+        "startLine": 327,
+        "startChar": 0,
+        "endLine": 329,
+        "endChar": 78
+      },
+      "revId": "045aa30c9bcb281861cc60e2fac05ec64faf1bc1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
