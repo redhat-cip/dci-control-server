@@ -15,6 +15,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from dci.api.v1 import notifications
+
 import json
 import os
 import smtplib
@@ -44,7 +46,7 @@ def get_email_configuration():
     }
 
     if not configuration['account'] or not configuration['password']:
-        raise
+        return None
 
     return configuration
 
@@ -91,21 +93,12 @@ def dlrn_publish(event):
                   headers={'Content-type': 'application/json'})
 
 
-def mail(mesg):
+def send_mail(mesg):
     email_configuration = get_email_configuration()
     if email_configuration:
         subject = '[DCI Status][%s][%s][%s]' % (
             mesg['topic_name'], mesg['remoteci_name'], mesg['status'])
-        message = "You are receiving this email because of the DCI job %s\n"\
-                  "For the topic: %s on the Remote CI: %s\n"\
-                  "The current status of the job is: %s\n"\
-                  "The components used are the following: %s\n"\
-                  "For more information: "\
-                  "https://www.distributed-ci.io/jobs/%s/jobStates"\
-                  % (mesg['job_id'], mesg['topic_name'], mesg['remoteci_name'],
-                     mesg['status'], ', '.join(mesg['components']),
-                     mesg['job_id'])
-
+        message = notifications.format_mail_message(mesg)
         email = MIMEText(message)
         email["From"] = 'Distributed-CI Notification <%s>' % \
             email_configuration['account']
@@ -133,7 +126,7 @@ def loop(msg):
         events = json.loads(msg[0])
         for event in events:
             if event['event'] == 'notification':
-                mail(event)
+                send_mail(event)
             elif event['event'] == 'dlrn_publish':
                 dlrn_publish(event)
     except:
