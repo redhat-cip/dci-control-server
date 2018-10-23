@@ -48,7 +48,7 @@ jobtest_without_failures = """
     </testcase>
     <testcase
             classname="Testsuite_1"
-            name="test_3"
+            name="test_3[id-2fc6822e-b5a8-42ed-967b-11d86e881ce3,smoke]"
             time="29.419">
     </testcase>
 </testsuite>
@@ -68,7 +68,7 @@ jobtest_with_failures = """
     </testcase>
     <testcase
             classname="Testsuite_1"
-            name="test_3"
+            name="test_3[id-ea3084e4-bde9-4be0-90ec-46b478db894c,smoke]"
             time="29.419">
         <failure type="Exception">Traceback</failure>
     </testcase>
