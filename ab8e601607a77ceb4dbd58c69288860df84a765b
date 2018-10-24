@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8657ed59_4ceb0046",
+        "filename": "dci/stores/filesystem.py",
+        "patchSetId": 15
+      },
+      "lineNbr": 51,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-24T08:44:13Z",
+      "side": 1,
+      "message": "heh I told you wrong, it\u0027s of course os.path.dirname() as you had earlier ;-)",
+      "range": {
+        "startLine": 51,
+        "startChar": 15,
+        "endLine": 51,
+        "endChar": 22
+      },
+      "revId": "ab8e601607a77ceb4dbd58c69288860df84a765b",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
