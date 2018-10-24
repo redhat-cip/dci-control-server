@@ -115,10 +115,12 @@ def add_regressions_and_successfix_to_tests(testsuite1, testsuite2):
     # dict from testcase's name to each testcase itself for fast access
     testscases1_map = dict()
     for testcase in testsuite1['testscases']:
+        testcase['name'] = testcase['name'].split('[')[0]
         testname = '%s:%s' % (testcase['classname'], testcase['name'])
         testscases1_map[testname] = testcase
 
     for testcase in testsuite2['testscases']:
+        testcase['name'] = testcase['name'].split('[')[0]
         testname = '%s:%s' % (testcase['classname'], testcase['name'])
         # this is a new test then ignore it
         if testname not in testscases1_map:
