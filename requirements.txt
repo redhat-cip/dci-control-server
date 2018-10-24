@@ -4,6 +4,7 @@ six
 SQLAlchemy
 SQLAlchemy-Utils
 psycopg2
+psycopg2-binary
 requests
 voluptuous<0.11.1
 passlib
