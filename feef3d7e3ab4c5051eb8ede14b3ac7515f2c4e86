@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2d3f83bb_00e37639",
+        "filename": "dci/stores/filesystem.py",
+        "patchSetId": 22
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-25T10:37:11Z",
+      "side": 1,
+      "message": "Although we\u0027re using this for dev purpose, loading the whole file into memory may not be a very good idea.\n\nSomething looking like this would be better\n\n   while data \u003d read(A_REASONABLE_BUFFER_SIZE):\n      f.write(data)",
+      "range": {
+        "startLine": 56,
+        "startChar": 0,
+        "endLine": 58,
+        "endChar": 30
+      },
+      "revId": "feef3d7e3ab4c5051eb8ede14b3ac7515f2c4e86",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
