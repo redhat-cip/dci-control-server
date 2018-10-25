@@ -2,6 +2,57 @@
   "comments": [
     {
       "key": {
+        "uuid": "6097f8c0_1a28e563",
+        "filename": "dci/stores/filesystem.py",
+        "patchSetId": 22
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-25T11:07:46Z",
+      "side": 1,
+      "message": "This error message is hiding the real error message from the OSError exception. You should rewrite str(e) in StoreExceptions to know what\u0027s going on.",
+      "revId": "feef3d7e3ab4c5051eb8ede14b3ac7515f2c4e86",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "0b91a954_33e89550",
+        "filename": "dci/stores/filesystem.py",
+        "patchSetId": 22
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-25T11:07:46Z",
+      "side": 1,
+      "message": "raise exception if filename doesn\u0027t exist\n\ns/open(file_path)/open(file_path, \u0027r\u0027)",
+      "revId": "feef3d7e3ab4c5051eb8ede14b3ac7515f2c4e86",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "71f1cedc_4f328e3b",
+        "filename": "dci/stores/filesystem.py",
+        "patchSetId": 22
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-25T11:07:46Z",
+      "side": 1,
+      "message": "raise exception if filename doesn\u0027t exist",
+      "revId": "feef3d7e3ab4c5051eb8ede14b3ac7515f2c4e86",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2d3f83bb_00e37639",
         "filename": "dci/stores/filesystem.py",
         "patchSetId": 22
@@ -19,6 +70,40 @@
         "endLine": 58,
         "endChar": 30
       },
+      "revId": "feef3d7e3ab4c5051eb8ede14b3ac7515f2c4e86",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "577ca0cb_676e9fe7",
+        "filename": "dci/stores/swift.py",
+        "patchSetId": 22
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-25T11:07:46Z",
+      "side": 1,
+      "message": "if e.http_status !\u003d 404:\n    raise exceptions.StoreExceptions(\u0027delete file %s error: %s\u0027 % (filename, str(e))\nelse:\n    LOG.warn(\u0027file %s not found\u0027 % filename)",
+      "revId": "feef3d7e3ab4c5051eb8ede14b3ac7515f2c4e86",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8b2991e1_a9d1a1a3",
+        "filename": "dci/stores/swift.py",
+        "patchSetId": 22
+      },
+      "lineNbr": 78,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-10-25T11:07:46Z",
+      "side": 1,
+      "message": "It\u0027s not part of the patch but could you replace http_reason by http_code \u003d\u003d 404 ?",
       "revId": "feef3d7e3ab4c5051eb8ede14b3ac7515f2c4e86",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
