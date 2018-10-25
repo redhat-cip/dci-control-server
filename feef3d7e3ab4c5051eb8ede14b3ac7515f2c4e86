@@ -100,6 +100,30 @@
     },
     {
       "key": {
+        "uuid": "92dcaffc_a94051b4",
+        "filename": "dci/stores/filesystem.py",
+        "patchSetId": 22
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-25T12:14:14Z",
+      "side": 1,
+      "message": "Quoting [1]: \"The whole point of readlines() is that it reads the entire file into memory at once and parses it into a list.\"\n\nAlso: https://docs.python.org/2/library/stdtypes.html?highlight\u003dreadlines#file.readlines\n\nEventually using readline() (without an \u0027s\u0027) would be better, but nothing warrants that the file is a text file and has line ends/carriage returns, so better suppose that this is a binary file and read it chunk by chunk.\n\n\n[1]http://stupidpythonideas.blogspot.com/2013/06/readlines-considered-silly.html",
+      "parentUuid": "64bbcb87_a5bf38a0",
+      "range": {
+        "startLine": 56,
+        "startChar": 0,
+        "endLine": 58,
+        "endChar": 30
+      },
+      "revId": "feef3d7e3ab4c5051eb8ede14b3ac7515f2c4e86",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "577ca0cb_676e9fe7",
         "filename": "dci/stores/swift.py",
         "patchSetId": 22
