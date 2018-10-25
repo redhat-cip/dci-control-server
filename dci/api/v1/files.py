@@ -76,12 +76,13 @@ def get_previous_job_in_topic(job):
     return flask.g.db_conn.execute(query).fetchone()
 
 
-def _get_test_result_of_previous_job(job):
+def _get_test_result_of_previous_job(job, filename):
     prev_job = get_previous_job_in_topic(job)
     if prev_job is None:
         return None
     query = sql.select([models.TESTS_RESULTS]). \
-        where(models.TESTS_RESULTS.c.job_id == prev_job['id'])
+        where(sql.and_(models.TESTS_RESULTS.c.job_id == prev_job['id'],
+                       models.TESTS_RESULTS.c.name == filename))
     res = flask.g.db_conn.execute(query).fetchone()
     if res is not None:
         res = dict(res)
@@ -155,7 +156,8 @@ def create_files(user):
         if values['mime'] == 'application/junit':
             _, file_descriptor = swift.get(file_path)
             jsonunit = tsfm.junit2dict(file_descriptor.read())
-            prev_test_result = _get_test_result_of_previous_job(job)
+            prev_test_result = _get_test_result_of_previous_job(job,
+                                                                values['name'])
             if prev_test_result is not None:
                 prev_test_result['testscases'] = prev_test_result['tests_cases']  # noqa
                 if len(prev_test_result['testscases']) > 0:

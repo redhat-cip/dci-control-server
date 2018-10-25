@@ -102,6 +102,10 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
                                      tests_data.jobtest_without_failures),
                             mime='application/junit')
     assert f_1 is not None
+    t_utils.post_file(admin, jobstate_1['id'],
+                      FileDesc('Rally',
+                               tests_data.jobtest_without_failures),
+                      mime='application/junit')
 
     f_2 = t_utils.post_file(admin, jobstate_2['id'],
                             FileDesc('Tempest',
@@ -109,11 +113,19 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
                             mime='application/junit',
                             swift_get_mock=swift_get_mock)
     assert f_2 is not None
+    t_utils.post_file(admin, jobstate_2['id'],
+                      FileDesc('Rally',
+                               tests_data.jobtest_without_failures),
+                      mime='application/junit')
 
     # 4. verify regression in job_2's result which is 'test_3'
     job_2_results = admin.get(
         '/api/v1/jobs/%s?embed=results' % job_2['id']).data['job']['results']
-    assert job_2_results[0]['regressions'] == 1
+    for job_res in job_2_results:
+        if job_res['name'] == 'Tempest':
+            assert job_res['regressions'] == 1
+        elif job_res['name'] == 'Rally':
+            assert job_res['regressions'] == 0
 
     # 4. get the job2's tests results
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
@@ -133,7 +145,12 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
         job_2_tests_results = admin.get(
             '/api/v1/jobs/%s/results' % job_2['id'])
 
-        testcases = job_2_tests_results.data['results'][0]['testscases']
+        # get Tempest result
+        testcases = job_2_tests_results.data['results'][0]
+        if testcases['name'] == 'Tempest':
+            testcases = job_2_tests_results.data['results'][0]['testscases']
+        else:
+            testcases = job_2_tests_results.data['results'][1]['testscases']
 
         regression_found = False
         for testcase in testcases:
