@@ -102,6 +102,10 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
                                      tests_data.jobtest_without_failures),
                             mime='application/junit')
     assert f_1 is not None
+    t_utils.post_file(admin, jobstate_1['id'],
+                      FileDesc('Rally',
+                               tests_data.jobtest_without_failures),
+                      mime='application/junit')
 
     f_2 = t_utils.post_file(admin, jobstate_2['id'],
                             FileDesc('Tempest',
@@ -109,6 +113,10 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
                             mime='application/junit',
                             swift_get_mock=swift_get_mock)
     assert f_2 is not None
+    t_utils.post_file(admin, jobstate_2['id'],
+                      FileDesc('Rally',
+                               tests_data.jobtest_without_failures),
+                      mime='application/junit')
 
     # 4. verify regression in job_2's result which is 'test_3'
     job_2_results = admin.get(
