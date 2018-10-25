@@ -36,6 +36,24 @@
     },
     {
       "key": {
+        "uuid": "8c965cf4_9de2b2da",
+        "filename": "dci/stores/filesystem.py",
+        "patchSetId": 22
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-25T12:18:30Z",
+      "side": 1,
+      "message": "An exception will be raised if the file does not exist when trying open it.\n\nAlso \" If mode is omitted, it defaults to \u0027r\u0027. \" [1] Not sure there\u0027s a gain to being explicit with the mode.\n\n[1] https://docs.python.org/2/library/functions.html#open",
+      "parentUuid": "0b91a954_33e89550",
+      "revId": "feef3d7e3ab4c5051eb8ede14b3ac7515f2c4e86",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "71f1cedc_4f328e3b",
         "filename": "dci/stores/filesystem.py",
         "patchSetId": 22
@@ -47,6 +65,24 @@
       "writtenOn": "2018-10-25T11:07:46Z",
       "side": 1,
       "message": "raise exception if filename doesn\u0027t exist",
+      "revId": "feef3d7e3ab4c5051eb8ede14b3ac7515f2c4e86",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ccdd24c0_e369b169",
+        "filename": "dci/stores/filesystem.py",
+        "patchSetId": 22
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-10-25T12:18:30Z",
+      "side": 1,
+      "message": "An exception will be raised if the file does not exist when trying open it",
+      "parentUuid": "71f1cedc_4f328e3b",
       "revId": "feef3d7e3ab4c5051eb8ede14b3ac7515f2c4e86",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
