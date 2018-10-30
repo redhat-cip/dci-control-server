@@ -1,19 +1,37 @@
-alembic
-flask==0.10.1
-six
-SQLAlchemy
-SQLAlchemy-Utils
-psycopg2
-requests
-voluptuous<0.11.1
-passlib
-Werkzeug
-pyzmq
-pytz
-lxml
-python-keystoneclient
-python-swiftclient
-cryptography
-pyjwt
-dciauth
-pyopenssl
+################################################
+# http://mirror.centos.org/centos/7/os/x86_64/ #
+################################################
+six==1.9.0  # python-six
+SQLAlchemy==0.9.8  # python-sqlalchemy
+psycopg2==2.5.1  # python-psycopg2
+requests==2.6.0  # python-requests
+pytz==2016.10  # pytz
+lxml==3.2.1  # python-lxml
+cryptography==1.7.2  # python2-cryptography
+pyjwt==1.5.3  # python-jwt
+pyopenssl==0.13.1  # pyOpenSSL
+####################################################
+# http://mirror.centos.org/centos/7/extras/x86_64/ #
+####################################################
+flask==0.10.1  # python-flask
+passlib==1.6.5  # python-passlib
+Werkzeug==0.9.1  # python-werkzeug
+#################################################################
+# https://packages.distributed-ci.io/repos/current/el/7/x86_64/ #
+#################################################################
+dciauth==2.0.2  # python2-dciauth
+################################################################
+# https://packages.distributed-ci.io/repos/extras/el/7/x86_64/ #
+################################################################
+SQLAlchemy-Utils==0.31.3  # python-sqlalchemy-utils
+voluptuous==0.10.5  # python2-voluptuous
+###################################################
+# https://dl.fedoraproject.org/pub/epel/6/x86_64/ #
+###################################################
+alembic==0.4.2  # python-alembic
+pyzmq==14.3.1  # python-zmq
+##################################################################
+# http://mirror.centos.org/centos/7/cloud/x86_64/openstack-pike/ #
+##################################################################
+python-keystoneclient==3.13.0  # python2-keystoneclient
+python-swiftclient==3.4.0  # python2-swiftclient
