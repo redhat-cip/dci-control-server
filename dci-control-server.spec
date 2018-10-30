@@ -147,14 +147,6 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %py3_install
 %endif
 
-
-%check -n dci-api
-%{__python2} setup.py test
-%if 0%{?with_python3}
-%{__python3} setup.py test
-%endif
-
-
 %files -n dci-api
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
