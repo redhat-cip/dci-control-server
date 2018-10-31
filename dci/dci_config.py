@@ -54,6 +54,7 @@ def get_store(container):
         configuration['os_password'] = conf['STORE_PASSWORD']
         configuration['os_tenant_name'] = conf['STORE_TENANT_NAME']
         configuration['os_auth_url'] = conf['STORE_AUTH_URL']
+        configuration['os_region_name']: conf['STORE_REGION']
         store_engine = swift.Swift(configuration)
     else:
         configuration['path'] = conf['STORE_FILE_PATH']
