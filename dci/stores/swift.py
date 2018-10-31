@@ -1,17 +1,18 @@
-# Copyright 2016 Yanis Guenane <yguenane@redhat.com>
-# Author: Yanis Guenane <yguenane@redhat.com>
+# -*- coding: utf-8 -*-
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Copyright (C) Red Hat, Inc
 #
-#   http://www.apache.org/licenses/LICENSE-2.0
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
 
 from dci import stores
 from dci.common import exceptions
@@ -47,10 +48,12 @@ class Swift(stores.Store):
 
     def delete(self, filename):
         try:
-            self.connection.delete_object(self.container, filename)
-        except swiftclient.exceptions.ClientException:
-            raise exceptions.StoreExceptions('An error occured while '
-                                             'deleting %s' % filename)
+            self.connection.delete_object(self.container, filename,
+                                          headers={'X-Delete-After': 1})
+        except swiftclient.exceptions.ClientException as e:
+            raise exceptions.StoreExceptions('Error while deleting file '
+                                             '%s: %s' % (filename, str(e)),
+                                             status_code=e.http_status)
 
     def get(self, filename):
         try:
@@ -64,8 +67,10 @@ class Swift(stores.Store):
     def head(self, filename):
         try:
             return self.connection.head_object(self.container, filename)
-        except swiftclient.exceptions.ClientException:
-            raise exceptions.DCINotFound('Content File', filename)
+        except swiftclient.exceptions.ClientException as exc:
+            if exc.http_code == 404:
+                raise exceptions.DCINotFound('file not found', filename)
+            raise exceptions.DCIException(exc.http_reason)
 
     def upload(self, file_path, iterable, pseudo_folder=None,
                create_container=True):
@@ -76,10 +81,3 @@ class Swift(stores.Store):
                 self.connection.put_container(self.container)
 
         self.connection.put_object(self.container, file_path, iterable)
-
-    @staticmethod
-    def build_file_path(root, middle, file_id):
-        root = str(root)
-        middle = str(middle)
-        file_id = str(file_id)
-        return "%s/%s/%s" % (root, middle, file_id)
