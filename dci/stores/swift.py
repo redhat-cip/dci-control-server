@@ -60,7 +60,7 @@ class Swift(stores.Store):
             return self.connection.get_object(self.container, filename,
                                               resp_chunk_size=65535)
         except swiftclient.exceptions.ClientException as exc:
-            if exc.http_code == 404:
+            if exc.http_status == 404:
                 raise exceptions.DCINotFound('file not found', filename)
             raise exceptions.DCIException(exc.http_reason)
 
@@ -68,7 +68,7 @@ class Swift(stores.Store):
         try:
             return self.connection.head_object(self.container, filename)
         except swiftclient.exceptions.ClientException as exc:
-            if exc.http_code == 404:
+            if exc.http_status == 404:
                 raise exceptions.DCINotFound('file not found', filename)
             raise exceptions.DCIException(exc.http_reason)
 
