@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "66ac46c0_c8120504",
+        "filename": "dci/dci_config.py",
+        "patchSetId": 25
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-10-31T07:50:07Z",
+      "side": 1,
+      "message": "I would have use \u0027else\u0027 instead of \u0027elif\u0027 to get file store engine as default if \u0027swift is not configured\nBecause store_engine could have been referenced before assignment (if we never enter the 2 if)",
+      "range": {
+        "startLine": 58,
+        "startChar": 4,
+        "endLine": 58,
+        "endChar": 8
+      },
+      "revId": "ac4e70efca21cc569174117833e029d67e19bfbe",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
