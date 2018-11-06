@@ -60,24 +60,29 @@ class Swift(stores.Store):
             return self.connection.get_object(self.container, filename,
                                               resp_chunk_size=65535)
         except swiftclient.exceptions.ClientException as exc:
-            if exc.http_status == 404:
-                raise exceptions.DCINotFound('file not found', filename)
-            raise exceptions.DCIException(exc.http_reason)
+            raise exceptions.StoreExceptions('Error while getting file '
+                                             '%s: %s' % (filename, str(exc)),
+                                             status_code=exc.http_status)
 
     def head(self, filename):
         try:
             return self.connection.head_object(self.container, filename)
         except swiftclient.exceptions.ClientException as exc:
-            if exc.http_status == 404:
-                raise exceptions.DCINotFound('file not found', filename)
-            raise exceptions.DCIException(exc.http_reason)
+            raise exceptions.StoreExceptions('Error while heading file '
+                                             '%s: %s' % (filename, str(exc)),
+                                             status_code=exc.http_status)
 
     def upload(self, file_path, iterable, pseudo_folder=None,
                create_container=True):
         try:
             self.connection.head_container(self.container)
         except swiftclient.exceptions.ClientException as exc:
-            if exc.http_reason == 'Not Found' and create_container:
-                self.connection.put_container(self.container)
+            if exc.http_status == 404 and create_container:
+                try:
+                    self.connection.put_container(self.container)
+                except swiftclient.exceptions.ClientException as exc:
+                    raise exceptions.StoreExceptions('Error while creating file '  # noqa
+                                                     '%s: %s' % (file_path, str(exc)),  # noqa
+                                                     status_code=exc.http_status)  # noqa
 
         self.connection.put_object(self.container, file_path, iterable)
