@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "9b54ec1b_870092dd",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 568,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-06T15:11:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "064704ef_846d243d",
+      "range": {
+        "startLine": 562,
+        "startChar": 0,
+        "endLine": 568,
+        "endChar": 31
+      },
+      "revId": "679fbab790fa3152e7feee7ced599cea830bda6a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "65aafa20_aa6c6191",
         "filename": "dci/api/v1/files.py",
         "patchSetId": 11
@@ -36,6 +60,30 @@
       "writtenOn": "2018-11-06T13:54:13Z",
       "side": 1,
       "message": "same here use only one try except",
+      "range": {
+        "startLine": 343,
+        "startChar": 0,
+        "endLine": 347,
+        "endChar": 70
+      },
+      "revId": "679fbab790fa3152e7feee7ced599cea830bda6a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b1169ed0_fd15a53f",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 347,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-06T15:11:03Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "65aafa20_aa6c6191",
       "range": {
         "startLine": 343,
         "startChar": 0,
