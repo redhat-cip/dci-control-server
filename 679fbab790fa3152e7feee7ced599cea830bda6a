@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "064704ef_846d243d",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 568,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-11-06T13:54:13Z",
+      "side": 1,
+      "message": "Use only one try except with multiple exception handler \n\nexcept dci_exc.StoreExceptions as e:\n ...\nexcept Exception as e:\n ...",
+      "range": {
+        "startLine": 562,
+        "startChar": 0,
+        "endLine": 568,
+        "endChar": 31
+      },
+      "revId": "679fbab790fa3152e7feee7ced599cea830bda6a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "65aafa20_aa6c6191",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 347,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-11-06T13:54:13Z",
+      "side": 1,
+      "message": "same here use only one try except",
+      "range": {
+        "startLine": 343,
+        "startChar": 0,
+        "endLine": 347,
+        "endChar": 70
+      },
+      "revId": "679fbab790fa3152e7feee7ced599cea830bda6a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
