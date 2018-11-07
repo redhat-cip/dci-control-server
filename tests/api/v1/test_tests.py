@@ -43,39 +43,11 @@ def test_create_tests_already_exist(user, team_user_id):
     assert pstatus_code == 409
 
 
-def test_get_all_tests_from_topic(admin, user, team_user_id, topic_user_id):
-    test_1 = user.post('/api/v1/tests', data={'name': 'pname1',
-                                              'team_id': team_user_id}).data
-    test_2 = user.post('/api/v1/tests', data={'name': 'pname2',
-                                              'team_id': team_user_id}).data
+def test_get_all_tests(admin, user):
+    test_1 = user.post('/api/v1/tests', data={'name': 'pname1'}).data
+    test_2 = user.post('/api/v1/tests', data={'name': 'pname2'}).data
 
-    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
-               data={'test_id': test_1['test']['id']})
-    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
-               data={'test_id': test_2['test']['id']})
-
-    db_all_tests = user.get(
-        '/api/v1/topics/%s/tests?sort=created_at' % topic_user_id).data
-
-    db_all_tests = db_all_tests['tests']
-    db_all_tests_ids = [db_t['id'] for db_t in db_all_tests]
-
-    assert db_all_tests_ids == [test_1['test']['id'], test_2['test']['id']]
-
-
-def test_get_all_tests(admin, user, team_user_id, topic_user_id):
-    test_1 = user.post('/api/v1/tests', data={'name': 'pname1',
-                                              'team_id': team_user_id}).data
-    test_2 = user.post('/api/v1/tests', data={'name': 'pname2',
-                                              'team_id': team_user_id}).data
-
-    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
-               data={'test_id': test_1['test']['id']})
-    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
-               data={'test_id': test_2['test']['id']})
-
-    # get tests by user
-    db_all_tests = user.get('/api/v1/topics/%s/tests' % topic_user_id).data
+    db_all_tests = user.get('/api/v1/tests').data
 
     db_all_tests = db_all_tests['tests']
     assert len(db_all_tests) == 2
@@ -84,86 +56,46 @@ def test_get_all_tests(admin, user, team_user_id, topic_user_id):
     assert db_all_tests_ids == {test_1['test']['id'], test_2['test']['id']}
 
 
-def test_get_all_tests_not_in_topic(admin, user, product_openstack):
-    topic = admin.post('/api/v1/topics',
-                       data={'name': 'topic_test',
-                             'product_id': product_openstack['id'],
-                             'component_types': ['type1', 'type2']}).data
-    topic_id = topic['topic']['id']
-    res = user.get(
-        '/api/v1/topics/%s/tests' % topic_id)
-    assert res.status_code == 401
-    assert res.data['message'] == 'Operation not authorized.'
+def test_get_all_tests_with_pagination(admin, user):
+    # create 4 tests and check meta data count
+    admin.post('/api/v1/tests', data={'name': 'pname1'})
+    admin.post('/api/v1/tests', data={'name': 'pname2'})
+    admin.post('/api/v1/tests', data={'name': 'pname3'})
+    admin.post('/api/v1/tests', data={'name': 'pname4'})
 
-
-def test_get_all_tests_with_pagination(admin, user, team_user_id,
-                                       topic_user_id):
-    # create 4 components types and check meta data count
-    test1 = admin.post('/api/v1/tests',
-                       data={'name': 'pname1', 'team_id': team_user_id}).data
-    test2 = admin.post('/api/v1/tests',
-                       data={'name': 'pname2', 'team_id': team_user_id}).data
-    test3 = admin.post('/api/v1/tests',
-                       data={'name': 'pname3', 'team_id': team_user_id}).data
-    test4 = admin.post('/api/v1/tests',
-                       data={'name': 'pname4', 'team_id': team_user_id}).data
-
-    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
-               data={'test_id': test1['test']['id']})
-    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
-               data={'test_id': test2['test']['id']})
-    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
-               data={'test_id': test3['test']['id']})
-    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
-               data={'test_id': test4['test']['id']})
-    ts = admin.get('/api/v1/topics/%s/tests' % topic_user_id).data
-
+    ts = admin.get('/api/v1/tests').data
     assert ts['_meta']['count'] == 4
 
     # verify limit and offset are working well
-    ts = user.get(
-        '/api/v1/topics/%s/tests?limit=2&offset=0' % topic_user_id).data
+    ts = user.get('/api/v1/tests?limit=2&offset=0').data
     assert len(ts['tests']) == 2
 
-    ts = user.get(
-        '/api/v1/topics/%s/tests?limit=2&offset=2' % topic_user_id).data
+    ts = user.get('/api/v1/tests?limit=2&offset=2').data
     assert len(ts['tests']) == 2
 
     # if offset is out of bound, the api returns an empty list
-    ts = user.get('/api/v1/topics/%s/tests?limit=5&offset=300' % topic_user_id)
+    ts = user.get('/api/v1/tests?limit=5&offset=300')
     assert ts.status_code == 200
     assert ts.data['tests'] == []
 
 
 def test_get_all_tests_with_sort(admin, user, team_user_id, topic_user_id):
     # create 2 tests ordered by created time
-    t_1 = admin.post('/api/v1/tests',
-                     data={'name': 'pname1',
-                           'team_id': team_user_id}).data['test']
-    t_2 = admin.post('/api/v1/tests',
-                     data={'name': 'pname2',
-                           'team_id': team_user_id}).data['test']
+    t_1 = admin.post('/api/v1/tests', data={'name': 'pname1'}).data['test']
+    t_2 = admin.post('/api/v1/tests', data={'name': 'pname2'}).data['test']
 
-    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
-               data={'test_id': t_1['id']})
-    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
-               data={'test_id': t_2['id']})
-
-    gts = user.get('/api/v1/topics/%s/tests?sort=created_at' %
-                   topic_user_id).data
+    gts = user.get('/api/v1/tests?sort=created_at').data
     assert gts['tests'][0]['id'] == t_1['id']
     assert gts['tests'][1]['id'] == t_2['id']
 
     # test in reverse order
-    gts = user.get('/api/v1/topics/%s/tests?sort=-created_at' %
-                   topic_user_id).data
+    gts = user.get('/api/v1/tests?sort=-created_at').data
     assert gts['tests'][0]['id'] == t_2['id']
     assert gts['tests'][1]['id'] == t_1['id']
 
 
 def test_get_test_by_id(admin, team_user_id):
-    pt = admin.post('/api/v1/tests', data={'name': 'pname',
-                                           'team_id': team_user_id}).data
+    pt = admin.post('/api/v1/tests', data={'name': 'pname'}).data
     pt_id = pt['test']['id']
 
     # get by uuid
@@ -179,111 +111,8 @@ def test_get_test_not_found(admin):
     assert result.status_code == 404
 
 
-def test_get_tests_from_teams(admin, user, team_user_id, team_id):
-    # Create two test 1 for each team
-    test_1 = admin.post('/api/v1/tests',
-                        data={'name': 'pname1',
-                              'team_id': team_user_id}).data['test']
-    test_id_1 = test_1['id']
-    test_2 = admin.post('/api/v1/tests',
-                        data={'name': 'pname2',
-                              'team_id': team_id}).data['test']
-    test_id_2 = test_2['id']
-
-    # Verify user can get tests in his team
-    t_tests = user.get('/api/v1/tests/%s' % test_id_1)
-    assert t_tests.status_code == 200
-    assert t_tests.data['test']['id'] == test_id_1
-
-    # Verify user can't get tests from other teams
-    t_tests = user.get('/api/v1/tests/%s' % test_id_2)
-    assert t_tests.status_code == 401
-
-
-def test_get_tests_from_remotecis(admin, user, team_user_id, team_id):
-    # Create 2 remoteCI
-    rci_1 = user.post('/api/v1/remotecis',
-                      data={'name': 'foo', 'team_id': team_user_id})
-    rci_id_1 = rci_1.data['remoteci']['id']
-    rci_2 = admin.post('/api/v1/remotecis',
-                       data={'name': 'foo2', 'team_id': team_id})
-    rci_id_2 = rci_2.data['remoteci']['id']
-
-    # Create two tests
-    test_1 = admin.post('/api/v1/tests',
-                        data={'name': 'pname1',
-                              'team_id': team_user_id}).data['test']
-    test_id_1 = test_1['id']
-    test_2 = admin.post('/api/v1/tests',
-                        data={'name': 'pname2',
-                              'team_id': team_user_id}).data['test']
-    test_id_2 = test_2['id']
-
-    # Attach tests to remote CI
-    admin.post('/api/v1/remotecis/%s/tests' % rci_id_1,
-               data={'test_id': test_id_1})
-    admin.post('/api/v1/remotecis/%s/tests' % rci_id_2,
-               data={'test_id': test_id_2})
-
-    # Verify user can access his remoteci test
-    t_tests = user.get('/api/v1/remotecis/%s/tests' % rci_id_1)
-    assert t_tests.status_code == 200
-    # Verify user can access the test linked to remoteci
-    assert t_tests.data['tests'][0]['id'] == test_id_1
-
-    # Verify user can't access to other remoteci tests
-    t_tests = user.get('/api/v1/remoteci/%s/tests' % rci_id_2)
-    assert t_tests.status_code == 404
-
-
-def test_get_tests_from_topics(admin, user, team_user_id, team_id, product):
-    # Create two test 1 for each team
-    test_1 = admin.post('/api/v1/tests',
-                        data={'name': 'pname1',
-                              'team_id': team_user_id}).data['test']
-    test_id_1 = test_1['id']
-    test_2 = admin.post('/api/v1/tests',
-                        data={'name': 'pname2',
-                              'team_id': team_id}).data['test']
-    test_id_2 = test_2['id']
-
-    # Create two different topic
-    topic_1 = admin.post('/api/v1/topics',
-                         data={'name': 'topic_test_1',
-                               'product_id': product['id'],
-                               'component_types': ['type1', 'type2']}).data
-    topic_id_1 = topic_1['topic']['id']
-    topic_2 = admin.post('/api/v1/topics',
-                         data={'name': 'topic_test_2',
-                               'product_id': product['id'],
-                               'component_types': ['type1', 'type2']}).data
-    topic_id_2 = topic_2['topic']['id']
-
-    # Attach the user's team to topic 1
-    admin.post('/api/v1/topics/%s/teams' % topic_id_1,
-               data={'team_id': team_user_id})
-
-    # Attach tests to topics
-    admin.post('/api/v1/topics/%s/tests' % topic_id_1,
-               data={'test_id': test_id_1})
-    admin.post('/api/v1/topics/%s/tests' % topic_id_2,
-               data={'test_id': test_id_2})
-
-    # Verify user can access his topic test
-    t_tests = user.get('/api/v1/topics/%s/tests?sort=created_at' % topic_id_1)
-    assert t_tests.status_code == 200
-    # Verify user can access the test linked in the topic
-    assert t_tests.data['tests'][0]['id'] == test_id_1
-
-    # Verify user can't access to other topic tests
-    t_tests = user.get('/api/v1/topics/%s/tests' % topic_id_2)
-    assert t_tests.status_code == 401
-    assert t_tests.data['message'] == 'Operation not authorized.'
-
-
 def test_delete_test_by_id(admin, team_user_id):
-    pt = admin.post('/api/v1/tests', data={'name': 'pname',
-                                           'team_id': team_user_id})
+    pt = admin.post('/api/v1/tests', data={'name': 'pname'})
     pt_id = pt.data['test']['id']
     assert pt.status_code == 201
 
@@ -319,8 +148,7 @@ def test_delete_test_archive_dependencies(admin, job_user_id, team_user_id):
         mockito.head.return_value = head_result
         mock_swift.return_value = mockito
 
-        test = admin.post('/api/v1/tests', data={'name': 'pname',
-                                                 'team_id': team_user_id})
+        test = admin.post('/api/v1/tests', data={'name': 'pname'})
         test_id = test.data['test']['id']
         assert test.status_code == 201
         test_etag = \

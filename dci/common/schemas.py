@@ -219,7 +219,7 @@ team = DCISchema(schema_factory(team).post,
 ###############################################################################
 
 test = utils.dict_merge(base, DATA_FIELD, {
-    'team_id': v.Any(UUID, msg=INVALID_TEAM),
+    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 })

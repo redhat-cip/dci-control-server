@@ -16,7 +16,7 @@
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
-from sqlalchemy import sql, func
+from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -192,7 +192,7 @@ def delete_topic_by_id(user, topic_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
-# components, tests GET
+# component GET
 @api.route('/topics/<uuid:topic_id>/components', methods=['GET'])
 @decorators.login_required
 @decorators.check_roles
@@ -217,83 +217,6 @@ def get_latest_component_per_topic(user, topic_id):
             break
 
     return flask.jsonify({'component': last_component})
-
-
-@api.route('/topics/<uuid:topic_id>/tests', methods=['GET'])
-@decorators.login_required
-@decorators.check_roles
-def get_all_tests(user, topic_id):
-    args = schemas.args(flask.request.args.to_dict())
-    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
-    export_control.verify_access_to_topic(user, topic)
-
-    query = sql.select([models.TESTS]).\
-        select_from(models.JOIN_TOPICS_TESTS.join(models.TESTS)).\
-        where(models.JOIN_TOPICS_TESTS.c.topic_id == topic_id)
-
-    T_COLUMNS = v1_utils.get_columns_name_with_objects(models.TESTS)
-    sort_list = v1_utils.sort_query(args['sort'], T_COLUMNS)
-    where_list = v1_utils.where_query(args['where'], models.TESTS, T_COLUMNS)
-
-    query = v1_utils.add_sort_to_query(query, sort_list)
-    query = v1_utils.add_where_to_query(query, where_list)
-    if args.get('limit', None):
-        query = query.limit(args.get('limit'))
-    if args.get('offset', None):
-        query = query.offset(args.get('offset'))
-
-    rows = flask.g.db_conn.execute(query).fetchall()
-
-    query_nb_rows = sql.select([func.count(models.TESTS.c.id)]). \
-        select_from(models.JOIN_TOPICS_TESTS.join(models.TESTS)). \
-        where(models.JOIN_TOPICS_TESTS.c.topic_id == topic_id)
-    nb_rows = flask.g.db_conn.execute(query_nb_rows).scalar()
-
-    res = flask.jsonify({'tests': rows,
-                         '_meta': {'count': nb_rows}})
-    res.status_code = 200
-    return res
-
-
-@api.route('/topics/<uuid:topic_id>/tests', methods=['POST'])
-@decorators.login_required
-@decorators.check_roles
-def add_test_to_topic(user, topic_id):
-    # todo(yassine): enforce test_id presence in the data
-    data_json = flask.request.json
-    values = {'topic_id': topic_id,
-              'test_id': data_json.get('test_id', None)}
-
-    v1_utils.verify_existence_and_get(topic_id, _TABLE)
-
-    query = models.JOIN_TOPICS_TESTS.insert().values(**values)
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name,
-                                          'topic_id, test_id')
-    result = json.dumps(values)
-    return flask.Response(result, 201, content_type='application/json')
-
-
-@api.route('/topics/<uuid:t_id>/tests/<uuid:test_id>', methods=['DELETE'])
-@decorators.login_required
-@decorators.check_roles
-def delete_test_from_topic(user, t_id, test_id):
-    if user.is_not_super_admin():
-        v1_utils.verify_team_in_topic(user, t_id)
-    v1_utils.verify_existence_and_get(test_id, models.TESTS)
-
-    JTT = models.JOIN_TOPICS_TESTS
-    where_clause = sql.and_(JTT.c.topic_id == t_id,
-                            JTT.c.test_id == test_id)
-    query = JTT.delete().where(where_clause)
-    result = flask.g.db_conn.execute(query)
-
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('Test', test_id)
-
-    return flask.Response(None, 204, content_type='application/json')
 
 
 # teams set apis

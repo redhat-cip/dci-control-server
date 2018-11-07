@@ -29,8 +29,6 @@ def ignore_columns_from_table(table, ignored_columns):
 
 
 # Create necessary aliases
-REMOTECI_TESTS = models.TESTS.alias('remoteci.tests')
-TOPIC_TESTS = models.TESTS.alias('topic.tests')
 TEAM = models.TEAMS.alias('team')
 PRODUCT = models.PRODUCTS.alias('product')
 REMOTECI = models.REMOTECIS.alias('remoteci')
@@ -78,27 +76,10 @@ def jobs(root_select=models.JOBS):
             {'right': TOPIC,
              'onclause': and_(root_select.c.topic_id == TOPIC.c.id,
                               TOPIC.c.state != 'archived')}],
-        'topic.tests': [
-            {'right': models.JOIN_TOPICS_TESTS,
-             'onclause': models.JOIN_TOPICS_TESTS.c.topic_id == TOPIC.c.id,
-             'isouter': True},
-            {'right': TOPIC_TESTS,
-             'onclause': and_(models.JOIN_TOPICS_TESTS.c.test_id == TOPIC_TESTS.c.id,  # noqa
-                              TOPIC_TESTS.c.state != 'archived'),
-             'isouter': True}
-        ],
         'remoteci': [
             {'right': REMOTECI,
              'onclause': and_(root_select.c.remoteci_id == REMOTECI.c.id,
                               REMOTECI.c.state != 'archived')}],
-        'remoteci.tests': [
-            {'right': models.JOIN_REMOTECIS_TESTS,
-             'onclause': models.JOIN_REMOTECIS_TESTS.c.remoteci_id == REMOTECI.c.id,  # noqa
-             'isouter': True},
-            {'right': REMOTECI_TESTS,
-             'onclause': and_(REMOTECI_TESTS.c.id == models.JOIN_REMOTECIS_TESTS.c.test_id,  # noqa
-                              REMOTECI_TESTS.c.state != 'archived'),
-             'isouter': True}],
         'components': [
             {'right': models.JOIN_JOBS_COMPONENTS,
              'onclause': models.JOIN_JOBS_COMPONENTS.c.job_id == root_select.c.id,  # noqa
@@ -269,19 +250,6 @@ def teams(root_select=models.TEAMS):
     }
 
 
-def tests(root_select=models.TESTS):
-    return {
-        'topics': [
-            {'right': models.JOIN_TOPICS_TESTS,
-             'onclause': models.JOIN_TOPICS_TESTS.c.test_id == root_select.c.id,  # noqa
-             'isouter': True},
-            {'right': models.TOPICS,
-             'onclause': and_(models.TOPICS.c.id == models.JOIN_TOPICS_TESTS.c.topic_id,  # noqa
-                              models.TOPICS.c.state != 'archived'),
-             'isouter': True}]
-    }
-
-
 def feeders(root_select=models.FEEDERS):
     return {
         'team': [
@@ -361,11 +329,9 @@ EMBED_STRING_TO_OBJECT = {
         'files': models.FILES,
         'metas': models.METAS,
         'topic': TOPIC,
-        'topic.tests': TOPIC_TESTS,
         'issues': models.ISSUES,
         'jobstates': models.JOBSTATES,
         'remoteci': REMOTECI,
-        'remoteci.tests': REMOTECI_TESTS,
         'components': models.COMPONENTS,
         'team': TEAM,
         'results': TESTS_RESULTS,
@@ -402,9 +368,6 @@ EMBED_STRING_TO_OBJECT = {
         'remotecis': models.REMOTECIS,
         'topics': models.TOPICS
     },
-    'tests': {
-        'topics': models.TOPICS
-    },
     'topics': {
         'teams': models.TEAMS,
         'product': PRODUCT,
@@ -428,7 +391,6 @@ EMBED_JOINS = {
     'jobstates': jobstates,
     'products': products,
     'teams': teams,
-    'tests': tests,
     'topics': topics,
     'users': users
 }

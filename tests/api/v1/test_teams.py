@@ -223,11 +223,6 @@ def test_delete_team_archive_dependencies(admin, remoteci_context, product,
     team_user = admin.get('/api/v1/teams/%s' % team_user_id).data['team']
     team_user_etag = team_user['etag']
 
-    test = admin.post('/api/v1/tests',
-                      data={'name': 'pname', 'team_id': team_user_id})
-    test_id = test.data['test']['id']
-    assert test.status_code == 201
-
     user = admin.post('/api/v1/users',
                       data={'name': 'pname', 'password': 'ppass',
                             'fullname': 'P Name',
@@ -278,9 +273,6 @@ def test_delete_team_archive_dependencies(admin, remoteci_context, product,
 
     deleted_job = admin.get('/api/v1/jobs/%s' % job_id)
     assert deleted_job.status_code == 404
-
-    deleted_test = admin.get('/api/v1/tests/%s' % test_id)
-    assert deleted_test.status_code == 404
 
 
 # Tests for the isolation
@@ -359,22 +351,6 @@ def test_delete_as_user_admin(user, team_user_id, user_admin):
     team_delete = user_admin.delete('/api/v1/teams/%s' % team_user_id,
                                     headers={'If-match': team_etag})
     assert team_delete.status_code == 401
-
-
-def test_get_tests_by_team(user, admin, team_user_id, team_admin_id):
-    tests = user.get('/api/v1/teams/' + team_admin_id + '/tests/')
-    assert tests.status_code == 401
-    tests = user.get('/api/v1/teams/' + team_user_id + '/tests/')
-    assert tests.status_code == 200
-    assert tests.data['_meta']['count'] == 0
-
-
-def test_list_tests_by_team(admin, team_id, test_id):
-    tests = admin.get('/api/v1/teams/' + team_id + '/tests/')
-    assert tests.status_code == 200
-    assert tests.data['_meta']['count'] == 1
-    assert tests.data['tests'][0]['team_id'] == team_id
-    assert tests.data['tests'][0]['id'] == test_id
 
 
 def test_success_update_field_by_field(admin, team_id):

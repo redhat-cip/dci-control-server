@@ -158,35 +158,11 @@ TESTS = sa.Table(
     sa.Column('updated_at', sa.DateTime(),
               onupdate=datetime.datetime.utcnow,
               default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('name', sa.String(255), nullable=False, unique=True),
+    sa.Column('name', sa.Text, nullable=False, unique=True),
     sa.Column('data', sa_utils.JSONType),
-    sa.Column('team_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
-              nullable=False),
-    sa.Index('tests_team_id_idx', 'team_id'),
     sa.Column('state', STATES, default='active'),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
-)
-
-JOIN_REMOTECIS_TESTS = sa.Table(
-    'remoteci_tests', metadata,
-    sa.Column('remoteci_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('remotecis.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True),
-    sa.Column('test_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('tests.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True)
-)
-
-JOIN_TOPICS_TESTS = sa.Table(
-    'topic_tests', metadata,
-    sa.Column('topic_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('topics.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True),
-    sa.Column('test_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('tests.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True)
 )
 
 TEAMS = sa.Table(
@@ -545,6 +521,18 @@ ISSUES = sa.Table(
     sa.Column('url', sa.Text, unique=True),
     sa.Column('tracker', TRACKERS, nullable=False)
 )
+
+
+JOIN_ISSUES_TESTS = sa.Table(
+    'issues_tests', metadata,
+    sa.Column('issue_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('issues.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('test_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('tests.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+)
+
 
 ROLES = sa.Table(
     'roles', metadata,
