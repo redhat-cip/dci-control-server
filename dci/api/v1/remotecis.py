@@ -275,62 +275,6 @@ def delete_user_from_remoteci(user, r_id, u_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
-@api.route('/remotecis/<uuid:r_id>/tests', methods=['POST'])
-@decorators.login_required
-@decorators.check_roles
-def add_test_to_remoteci(user, r_id):
-    data_json = flask.request.json
-    values = {'remoteci_id': r_id,
-              'test_id': data_json.get('test_id', None)}
-
-    v1_utils.verify_existence_and_get(r_id, _TABLE)
-
-    query = models.JOIN_REMOTECIS_TESTS.insert().values(**values)
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name,
-                                          'remoteci_id, test_id')
-    result = json.dumps(values)
-    return flask.Response(result, 201, content_type='application/json')
-
-
-@api.route('/remotecis/<uuid:r_id>/tests', methods=['GET'])
-@decorators.login_required
-@decorators.check_roles
-def get_all_tests_from_remotecis(user, r_id):
-    v1_utils.verify_existence_and_get(r_id, _TABLE)
-
-    # Get all components which belongs to a given remoteci
-    JDC = models.JOIN_REMOTECIS_TESTS
-    query = (sql.select([models.TESTS])
-             .select_from(JDC.join(models.TESTS))
-             .where(JDC.c.remoteci_id == r_id))
-    rows = flask.g.db_conn.execute(query)
-
-    res = flask.jsonify({'tests': rows,
-                         '_meta': {'count': rows.rowcount}})
-    return res
-
-
-@api.route('/remotecis/<uuid:r_id>/tests/<uuid:t_id>', methods=['DELETE'])
-@decorators.login_required
-@decorators.check_roles
-def delete_test_from_remoteci(user, r_id, t_id):
-    v1_utils.verify_existence_and_get(r_id, _TABLE)
-
-    JDC = models.JOIN_REMOTECIS_TESTS
-    where_clause = sql.and_(JDC.c.remoteci_id == r_id,
-                            JDC.c.test_id == t_id)
-    query = JDC.delete().where(where_clause)
-    result = flask.g.db_conn.execute(query)
-
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('Test', t_id)
-
-    return flask.Response(None, 204, content_type='application/json')
-
-
 @api.route('/remotecis/purge', methods=['GET'])
 @decorators.login_required
 @decorators.check_roles

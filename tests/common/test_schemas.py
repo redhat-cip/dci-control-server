@@ -134,14 +134,12 @@ class TestTest(utils.SchemaTesting):
 
     @staticmethod
     def generate_invalids_and_errors():
-        invalids = dict([utils.INVALID_NAME, utils.INVALID_DATA,
-                         utils.INVALID_TEAM])
-        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_DATA_ERROR,
-                       utils.INVALID_TEAM_ERROR])
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_DATA])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_DATA_ERROR])
         return invalids, errors
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'team_id')
+        errors = utils.generate_errors('name')
         super(TestTest, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):

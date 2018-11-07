@@ -117,7 +117,7 @@ def get_tests_by_team(user, team_id):
         raise auth.UNAUTHORIZED
 
     team = v1_utils.verify_existence_and_get(team_id, _TABLE)
-    return tests.get_all_tests(user, team['id'])
+    return tests.get_all_tests_by_team(user, team['id'])
 
 
 @api.route('/teams/<uuid:t_id>', methods=['PUT'])
@@ -176,7 +176,7 @@ def delete_team_by_id(user, t_id):
         if not result.rowcount:
             raise dci_exc.DCIDeleteConflict('Team', t_id)
 
-        for model in [models.FILES, models.TESTS, models.REMOTECIS,
+        for model in [models.FILES, models.REMOTECIS,
                       models.USERS, models.JOBS]:
             query = model.update().where(model.c.team_id == t_id).values(
                 **values

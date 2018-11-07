@@ -22,22 +22,16 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import remotecis
 from dci.api.v1 import utils as v1_utils
-from dci import auth
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
-from dci.db import embeds
 from dci.db import models
 
 
 _TABLE = models.TESTS
-_VALID_EMBED = embeds.tests()
 # associate column names with the corresponding SA Column object
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_EMBED_MANY = {
-    'topics': True
-}
 
 
 @api.route('/tests', methods=['POST'])
@@ -46,6 +40,8 @@ _EMBED_MANY = {
 def create_tests(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.test.post(flask.request.json))
+    if 'team_id' in values:
+        del values['team_id']
 
     query = _TABLE.insert().values(**values)
 
@@ -89,21 +85,25 @@ def update_tests(user, t_id):
     )
 
 
-def get_all_tests(user, team_id):
+def get_all_tests_by_team(user, team_id):
     args = schemas.args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
-    if user.is_not_super_admin():
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
     # get the number of rows for the '_meta' section
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
+    rows = v1_utils.format_result(rows, _TABLE.name)
 
     return flask.jsonify({'tests': rows, '_meta': {'count': nb_rows}})
+
+
+@api.route('/tests', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def get_all_tests(user):
+    return get_all_tests_by_team(user, None)
 
 
 @api.route('/tests/<uuid:t_id>', methods=['GET'])
@@ -111,8 +111,6 @@ def get_all_tests(user, team_id):
 @decorators.check_roles
 def get_test_by_id(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
-    if not user.is_in_team(test['team_id']) and not user.is_read_only_user():
-        raise auth.UNAUTHORIZED
     res = flask.jsonify({'test': test})
     return res
 
@@ -129,10 +127,7 @@ def get_remotecis_by_test(user, test_id):
 @decorators.login_required
 @decorators.check_roles
 def delete_test_by_id(user, t_id):
-    test = v1_utils.verify_existence_and_get(t_id, _TABLE)
-
-    if not user.is_in_team(test['team_id']):
-        raise auth.UNAUTHORIZED
+    v1_utils.verify_existence_and_get(t_id, _TABLE)
 
     with flask.g.db_conn.begin():
         values = {'state': 'archived'}

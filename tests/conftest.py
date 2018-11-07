@@ -207,15 +207,8 @@ def topic(admin, team_user_id, product):
 
 
 @pytest.fixture
-def test_id(admin, team_id):
-    data = {'name': 'pname', 'team_id': team_id}
-    test = admin.post('/api/v1/tests', data=data).data
-    return str(test['test']['id'])
-
-
-@pytest.fixture
-def test_user_id(admin, team_user_id):
-    data = {'name': 'pname', 'team_id': team_user_id}
+def test_id(admin):
+    data = {'name': 'pname'}
     test = admin.post('/api/v1/tests', data=data).data
     return str(test['test']['id'])
 
