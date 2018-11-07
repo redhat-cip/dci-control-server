@@ -42,7 +42,6 @@ def test_topics_export_control_true(user, admin, team_user_id, topic_user_id,
     # is the team_product_id thus it can access topic's components
     assert user.get('/api/v1/topics/%s/components' % topic_user_id).status_code == 200  # noqa
     assert user.get('/api/v1/topics/%s/components/latest' % topic_user_id).status_code == 200  # noqa
-    assert user.get('/api/v1/topics/%s/tests' % topic_user_id).status_code == 200  # noqa
 
 
 def test_topics_export_control_false(user, admin, team_user_id, topic_user_id):
@@ -51,13 +50,11 @@ def test_topics_export_control_false(user, admin, team_user_id, topic_user_id):
     assert topic['export_control'] is False
     assert user.get('/api/v1/topics/%s/components' % topic_user_id).status_code == 200  # noqa
     assert user.get('/api/v1/topics/%s/components/latest' % topic_user_id).status_code == 200  # noqa
-    assert user.get('/api/v1/topics/%s/tests' % topic_user_id).status_code == 200  # noqa
 
     # team_user_id is not subscribing to topic_user_id
     admin.delete('/api/v1/topics/%s/teams/%s' % (topic_user_id, team_user_id))
     assert user.get('/api/v1/topics/%s/components' % topic_user_id).status_code == 401  # noqa
     assert user.get('/api/v1/topics/%s/components/latest' % topic_user_id).status_code == 401  # noqa
-    assert user.get('/api/v1/topics/%s/tests' % topic_user_id).status_code == 401  # noqa
 
 
 def test_components_export_control_true(user, admin, team_user_id,
