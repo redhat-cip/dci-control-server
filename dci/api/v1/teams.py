@@ -176,7 +176,7 @@ def delete_team_by_id(user, t_id):
         if not result.rowcount:
             raise dci_exc.DCIDeleteConflict('Team', t_id)
 
-        for model in [models.FILES, models.TESTS, models.REMOTECIS,
+        for model in [models.FILES, models.REMOTECIS,
                       models.USERS, models.JOBS]:
             query = model.update().where(model.c.team_id == t_id).values(
                 **values

@@ -193,32 +193,18 @@ def test_get_all_jobs_with_duplicated_embed(admin, team_user_id,
                                             remoteci_user_id,
                                             components_user_ids,
                                             topic_user_id):
-    test_jd = admin.post('/api/v1/tests',
-                         data={'name': 'test_topic',
-                               'team_id': team_user_id}).data
-    test_jd_id = test_jd['test']['id']
-    test_rci = admin.post('/api/v1/tests',
-                          data={'name': 'test_remoteci',
-                                'team_id': team_user_id}).data
-    test_rci_id = test_rci['test']['id']
-    admin.post('/api/v1/topics/%s/tests' % topic_user_id,
-               data={'test_id': test_jd_id})
-    admin.post('/api/v1/remotecis/%s/tests' % remoteci_user_id,
-               data={'test_id': test_rci_id})
-
     data = {'topic_id': topic_user_id,
             'components': components_user_ids}
 
     remoteci_context.post('/api/v1/jobs', data=data)
     query_embed = (('/api/v1/jobs?embed='
-                    'metas,topic,topic.tests,components,'
-                    'files,topic,team,remoteci,remoteci.tests'))
+                    'metas,topic,components,'
+                    'files,topic,team,remoteci'))
     jobs = remoteci_context.get(query_embed).data
     assert len(jobs['jobs']) == 1
     assert len(jobs['jobs'][0]['components']) == 3
-    assert len(jobs['jobs'][0]['topic']['tests']) == 1
-    assert jobs['jobs'][0]['topic']['tests'][0]['id'] == test_jd_id
-    assert jobs['jobs'][0]['remoteci']['tests'][0]['id'] == test_rci_id
+    assert 'topic' in jobs['jobs'][0]
+    assert 'remoteci' in jobs['jobs'][0]
 
 
 def test_get_all_jobs_with_embed_and_limit(remoteci_context,
