@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a12f3b1a_e1098389",
+        "filename": "dci/api/v1/tests.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2018-11-08T16:16:47Z",
+      "side": 1,
+      "message": "is team_id used somewhere or is it for future use ?",
+      "range": {
+        "startLine": 87,
+        "startChar": 32,
+        "endLine": 87,
+        "endChar": 39
+      },
+      "revId": "ebb5ec42f0fb028fac43945c5e192ea171b2f345",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
