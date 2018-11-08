@@ -29,6 +29,14 @@ def index():
                           content_type='application/json')
 
 
+@api.route('/test', strict_slashes=False)
+def index():
+    return flask.Response(json.dumps({'_status': 'OKIDOKI',
+                                      'message': 'Distributed CI.'}),
+                          status=200,
+                          content_type='application/json')
+
+
 import dci.api.v1.analytics  # noqa
 import dci.api.v1.audits  # noqa
 import dci.api.v1.base  # noqa
