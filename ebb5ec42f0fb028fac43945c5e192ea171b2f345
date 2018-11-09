@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "22ed4eac_c0050c4e",
+        "filename": "dci/api/v1/tests.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 87,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-09T13:09:12Z",
+      "side": 1,
+      "message": "team_id is still used by the client\u0027s tests. it will be definitely removed in future patch.",
+      "parentUuid": "a12f3b1a_e1098389",
+      "range": {
+        "startLine": 87,
+        "startChar": 32,
+        "endLine": 87,
+        "endChar": 39
+      },
+      "revId": "ebb5ec42f0fb028fac43945c5e192ea171b2f345",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "41e99480_74601f7a",
         "filename": "tests/api/v1/test_tests.py",
         "patchSetId": 2
@@ -36,6 +60,30 @@
       "writtenOn": "2018-11-09T09:29:36Z",
       "side": 1,
       "message": "you drop team_id but let it in the tests?",
+      "range": {
+        "startLine": 48,
+        "startChar": 46,
+        "endLine": 48,
+        "endChar": 69
+      },
+      "revId": "ebb5ec42f0fb028fac43945c5e192ea171b2f345",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "de2c4265_54614e52",
+        "filename": "tests/api/v1/test_tests.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 48,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-09T13:09:12Z",
+      "side": 1,
+      "message": "i will make it optional and remove team_id from the tests",
+      "parentUuid": "41e99480_74601f7a",
       "range": {
         "startLine": 48,
         "startChar": 46,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "663ab9f5_135e080c",
+        "filename": "tests/api/v1/test_tests.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-09T13:09:12Z",
+      "side": 1,
+      "message": "i will make it optional and remove team_id from the tests",
+      "parentUuid": "d6b5bda7_d5182b92",
+      "range": {
+        "startLine": 50,
+        "startChar": 46,
+        "endLine": 50,
+        "endChar": 69
+      },
+      "revId": "ebb5ec42f0fb028fac43945c5e192ea171b2f345",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "2bfe4503_b72be753",
         "filename": "tests/api/v1/test_tests.py",
         "patchSetId": 2
@@ -94,6 +166,30 @@
     },
     {
       "key": {
+        "uuid": "a16bd947_716b6c0a",
+        "filename": "tests/api/v1/test_tests.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 52,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-09T13:09:12Z",
+      "side": 1,
+      "message": "thanks, these lines are useless.\n\nthe association between test and issue will be done in another patch. in this patch i focus on cleaning the tests endpoint",
+      "parentUuid": "2bfe4503_b72be753",
+      "range": {
+        "startLine": 52,
+        "startChar": 16,
+        "endLine": 52,
+        "endChar": 29
+      },
+      "revId": "ebb5ec42f0fb028fac43945c5e192ea171b2f345",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "e116dcf3_f3dc98f5",
         "filename": "tests/api/v1/test_tests.py",
         "patchSetId": 2
@@ -105,6 +201,30 @@
       "writtenOn": "2018-11-09T09:29:36Z",
       "side": 1,
       "message": "same here and the following",
+      "range": {
+        "startLine": 69,
+        "startChar": 39,
+        "endLine": 69,
+        "endChar": 62
+      },
+      "revId": "ebb5ec42f0fb028fac43945c5e192ea171b2f345",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "976015e9_97ff0bef",
+        "filename": "tests/api/v1/test_tests.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-09T13:09:12Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "e116dcf3_f3dc98f5",
       "range": {
         "startLine": 69,
         "startChar": 39,
