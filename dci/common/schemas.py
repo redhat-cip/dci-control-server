@@ -507,6 +507,12 @@ issue = {
 
 issue = schema_factory(issue)
 
+issue_test = {
+    v.Optional('test_id'): v.Any(UUID, msg=INVALID_UUID),
+}
+
+issue_test = schema_factory(issue_test)
+
 ###############################################################################
 #                                                                             #
 #                                Metas schemas                                #
