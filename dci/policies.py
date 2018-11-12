@@ -171,6 +171,9 @@ ROLES = {
     'get_test_by_id': HUMAN,
     'get_remotecis_by_test': HUMAN,
     'delete_test_by_id': ADMINS,
+    'add_test_to_issue': HUMAN,
+    'get_tests_from_issue': HUMAN,
+    'remove_test_from_issue': HUMAN,
     'get_to_purge_archived_tests': SUPER_ADMIN,
     'purge_archived_tests': SUPER_ADMIN,
     # topics
@@ -210,7 +213,7 @@ ROLES = {
     'create_issue': ALL,
     'get_all_issues': ALL,
     'get_issue': ALL,
-    'delete_issue_by_id': ALL,
+    'delete_issue_by_id': SUPER_ADMIN_PO,
     'get_to_purge_archived_issues': SUPER_ADMIN,
     'purge_archived_issues': SUPER_ADMIN
 }

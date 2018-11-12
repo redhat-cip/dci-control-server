@@ -359,7 +359,7 @@ def test_create_get_issues(user, topic_user_id):
     assert g_issue_id2.data['issue']['url'] == 'http://bugzilla/43'
 
 
-def test_delete_issues(user, topic_user_id):
+def test_delete_issues(admin, user, topic_user_id):
     pissue = user.post('/api/v1/issues',
                        data={'url': 'http://bugzilla/42',
                              'topic_id': topic_user_id})
@@ -369,8 +369,36 @@ def test_delete_issues(user, topic_user_id):
     assert len(issues.data['issues']) == 1
     pissue_etag = pissue.headers.get("ETag")
 
-    dissue = user.delete('/api/v1/issues/%s' % pissue_id1,
-                         headers={'If-match': pissue_etag})
+    dissue = admin.delete('/api/v1/issues/%s' % pissue_id1,
+                          headers={'If-match': pissue_etag})
     assert dissue.status_code == 204
     issues = user.get('/api/v1/issues')
     assert len(issues.data['issues']) == 0
+
+
+# test issues - tests
+def test_crd_test_to_issue(admin, user, topic_user_id):
+    pissue = user.post('/api/v1/issues', data={'url': 'http://bugzilla/42',
+                                               'topic_id': topic_user_id})
+    pissue_id1 = pissue.data['issue']['id']
+    test = user.post('/api/v1/tests', data={'name': 'pname1'})
+    test_id1 = test.data['test']['id']
+
+    # 0 tests from issues pissue_id1
+    issues_tests = user.get('/api/v1/issues/%s/tests' % pissue_id1)
+    assert len(issues_tests.data['tests']) == 0
+
+    # associate test_id1 to issue pissue_id1
+    ptest = user.post('/api/v1/issues/%s/tests' % pissue_id1,
+                      data={'test_id': test_id1,
+                            'topic_id': topic_user_id})
+    assert ptest.status_code == 201
+
+    issues_tests = user.get('/api/v1/issues/%s/tests' % pissue_id1)
+    assert len(issues_tests.data['tests']) == 1
+    assert issues_tests.data['tests'][0]['id'] == test_id1
+
+    # remove test_id1 from issue pissue_id1
+    admin.delete('/api/v1/issues/%s/tests/%s' % (pissue_id1, test_id1))
+    issues_tests = user.get('/api/v1/issues/%s/tests' % pissue_id1)
+    assert len(issues_tests.data['tests']) == 0
