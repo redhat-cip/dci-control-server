@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "70aac831_d820222f",
+        "filename": "dci/api/v1/tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-12T10:19:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9a13d8aa_658c7f95",
+      "revId": "66697630e81c3185fd561fc1c6966c21d2a2df57",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "dca8b609_12c821d0",
         "filename": "dci/api/v1/tests.py",
         "patchSetId": 3
@@ -42,6 +60,30 @@
     },
     {
       "key": {
+        "uuid": "81e0c44e_a5727e66",
+        "filename": "dci/api/v1/tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 88,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-12T10:19:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dca8b609_12c821d0",
+      "range": {
+        "startLine": 88,
+        "startChar": 32,
+        "endLine": 88,
+        "endChar": 39
+      },
+      "revId": "66697630e81c3185fd561fc1c6966c21d2a2df57",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8cc2895b_aab980b3",
         "filename": "tests/api/v1/test_tests.py",
         "patchSetId": 3
@@ -53,6 +95,30 @@
       "writtenOn": "2018-11-12T08:10:01Z",
       "side": 1,
       "message": "remove the .data here if you don\u0027t affect them to a variable",
+      "range": {
+        "startLine": 61,
+        "startChar": 56,
+        "endLine": 61,
+        "endChar": 61
+      },
+      "revId": "66697630e81c3185fd561fc1c6966c21d2a2df57",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bf38c20d_10112e63",
+        "filename": "tests/api/v1/test_tests.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-12T10:19:20Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8cc2895b_aab980b3",
       "range": {
         "startLine": 61,
         "startChar": 56,
