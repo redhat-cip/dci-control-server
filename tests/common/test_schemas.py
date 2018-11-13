@@ -391,14 +391,16 @@ class TestJobSchedule(utils.SchemaTesting):
 
 class TestIssue(utils.SchemaTesting):
     schema = schemas.issue
-    data = dict([utils.URL])
+    data = dict([utils.URL, utils.TOPIC])
 
     @staticmethod
     def generate_invalids_and_errors():
         status_invalid, status_error = utils.generate_invalid_url('url')
 
-        invalids = dict([utils.INVALID_URL, status_invalid])
-        errors = dict([utils.INVALID_URL_ERROR, status_error])
+        invalids = dict([utils.INVALID_URL, status_invalid,
+                         utils.INVALID_TOPIC])
+        errors = dict([utils.INVALID_URL_ERROR, status_error,
+                       utils.INVALID_TOPIC_ERROR])
         return invalids, errors
 
     def test_post_missing_data(self):

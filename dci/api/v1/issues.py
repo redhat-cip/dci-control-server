@@ -14,25 +14,53 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import datetime
 import flask
 
 from flask import json
 from sqlalchemy import sql
 from sqlalchemy import exc as sa_exc
+from dci.api.v1 import api
+from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
 from dci.db import models
+from dci import decorators
 from dci.trackers import github
 from dci.trackers import bugzilla
 
 
 _TABLE = models.ISSUES
+_I_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
-def get_all_issues(resource_id, table):
+def _get_or_create_issue(data):
+    values = v1_utils.common_values_dict()
+    values.update(data)
+    if 'github.com' in values['url']:
+        type = 'github'
+    else:
+        type = 'bugzilla'
+    values['tracker'] = type
+
+    # First, insert the issue if it doesn't already exist
+    # in the issues table. If it already exists, ignore the
+    # exceptions, and keep proceeding.
+    query = _TABLE.insert().returning(*_TABLE.columns).values(**values)
+    try:
+        return flask.g.db_conn.execute(query).fetchone()
+    except sa_exc.IntegrityError:
+        # It is not a real failure it the issue have been tried
+        # to inserted a second time. As long as it is once, we are
+        # good to proceed
+        query = (sql.select([_TABLE])
+                 .where(sql.and_(_TABLE.c.url == values['url'],
+                                 _TABLE.c.topic_id == values['topic_id'])))
+        return flask.g.db_conn.execute(query).fetchone()
+
+
+def get_issues_by_resource(resource_id, table):
     """Get all issues for a specific job."""
 
     v1_utils.verify_existence_and_get(resource_id, table)
@@ -123,35 +151,8 @@ def unattach_issue(resource_id, issue_id, table):
 
 def attach_issue(resource_id, table, user_id):
     """Attach an issue to a specific job."""
-
-    values = schemas.issue.post(flask.request.json)
-
-    if 'github.com' in values['url']:
-        type = 'github'
-    else:
-        type = 'bugzilla'
-
-    issue_id = utils.gen_uuid()
-    values.update({
-        'id': issue_id,
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'tracker': type,
-    })
-
-    # First, insert the issue if it doesn't already exist
-    # in the issues table. If it already exists, ignore the
-    # exceptions, and keep proceeding.
-    query = _TABLE.insert().values(**values)
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        # It is not a real failure it the issue have been tried
-        # to inserted a second time. As long as it is once, we are
-        # good to proceed
-        query = (sql.select([_TABLE])
-                 .where(_TABLE.c.url == values['url']))
-        rows = list(flask.g.db_conn.execute(query))
-        issue_id = rows[0][0]  # the 'id' field of the issues table.
+    data = schemas.issue.post(flask.request.json)
+    issue = _get_or_create_issue(data)
 
     # Second, insert a join record in the JOIN_JOBS_ISSUES or
     # JOIN_COMPONENTS_ISSUES database.
@@ -163,7 +164,7 @@ def attach_issue(resource_id, table, user_id):
     key = '%s_id' % table.name[0:-1]
     query = join_table.insert().values({
         'user_id': user_id,
-        'issue_id': issue_id,
+        'issue_id': issue['id'],
         key: resource_id
     })
 
@@ -173,5 +174,77 @@ def attach_issue(resource_id, table, user_id):
         raise dci_exc.DCICreationConflict(join_table.name,
                                           '%s, issue_id' % key)
 
-    result = json.dumps({'issue': values})
+    result = json.dumps({'issue': dict(issue)})
     return flask.Response(result, 201, content_type='application/json')
+
+
+# CRD /issues
+@api.route('/issues', methods=['POST'])
+@decorators.login_required
+@decorators.check_roles
+def create_issue(user):
+    data = schemas.issue.post(flask.request.json)
+    issue = _get_or_create_issue(data)
+    result = json.dumps({'issue': dict(issue)})
+    return flask.Response(result, 201,
+                          headers={'ETag': issue['etag']},
+                          content_type='application/json')
+
+
+@api.route('/issues', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def get_all_issues(user):
+    args = schemas.args(flask.request.args.to_dict())
+
+    query = v1_utils.QueryBuilder(_TABLE, args, _I_COLUMNS)
+    query.add_extra_condition(_TABLE.c.state != 'archived')
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name)
+
+    return flask.jsonify({'issues': rows, '_meta': {'count': nb_rows}})
+
+
+@api.route('/issues/<uuid:issue_id>', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def get_issue(user, issue_id):
+    issue = v1_utils.verify_existence_and_get(issue_id, _TABLE)
+    return flask.jsonify({'issue': issue})
+
+
+@api.route('/issues/<uuid:issue_id>', methods=['DELETE'])
+@decorators.login_required
+@decorators.check_roles
+def delete_issue_by_id(user, issue_id):
+    # get If-Match header
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+    v1_utils.verify_existence_and_get(issue_id, _TABLE)
+
+    with flask.g.db_conn.begin():
+        values = {'state': 'archived'}
+        where_clause = sql.and_(
+            _TABLE.c.etag == if_match_etag,
+            _TABLE.c.id == issue_id
+        )
+        query = _TABLE.update().where(where_clause).values(**values)
+        result = flask.g.db_conn.execute(query)
+        if not result.rowcount:
+            raise dci_exc.DCIDeleteConflict('Issue', issue_id)
+
+    return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/issues/purge', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def get_to_purge_archived_issues(user):
+    return base.get_to_purge_archived_resources(user, _TABLE)
+
+
+@api.route('/issues/purge', methods=['POST'])
+@decorators.login_required
+@decorators.check_roles
+def purge_archived_issues(user):
+    return base.purge_archived_resources(user, _TABLE)
