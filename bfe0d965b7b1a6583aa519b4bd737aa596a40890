@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8f69835f_5b59a743",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 43,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-11-13T17:37:49Z",
+      "side": 1,
+      "message": "this isn\u0027t the goal of this review but I\u0027m wondering if this could be an enum in the DB instead of having this in the code.\nBecause currently we only support BZ and github (no launchpad ?) but maybe more in the future",
+      "range": {
+        "startLine": 40,
+        "startChar": 0,
+        "endLine": 43,
+        "endChar": 25
+      },
+      "revId": "bfe0d965b7b1a6583aa519b4bd737aa596a40890",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "23901a24_ab2269da",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 230,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2018-11-13T17:37:49Z",
+      "side": 1,
+      "message": "soft delete ?",
+      "range": {
+        "startLine": 219,
+        "startChar": 0,
+        "endLine": 230,
+        "endChar": 69
+      },
+      "revId": "bfe0d965b7b1a6583aa519b4bd737aa596a40890",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
