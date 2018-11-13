@@ -205,5 +205,10 @@ ROLES = {
     # tags
     'create_tags': SUPER_ADMIN_PO,
     'get_tags': ALL,
-    'delete_tag_by_id': SUPER_ADMIN_PO
+    'delete_tag_by_id': SUPER_ADMIN_PO,
+    # issues
+    'create_issue': ALL,
+    'get_all_issues': ALL,
+    'get_issue': ALL,
+    'delete_issue_by_id': ALL
 }

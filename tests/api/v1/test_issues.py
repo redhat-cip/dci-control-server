@@ -319,3 +319,45 @@ def test_bugzilla_tracker_with_non_existent_issue(user, job_user_id):
         assert result['created_at'] is None
         assert result['updated_at'] is None
         assert result['closed_at'] is None
+
+
+def test_create_get_issues(user):
+    issues = user.get('/api/v1/issues')
+    assert issues.data['issues'] == []
+    pissue = user.post('/api/v1/issues',
+                       data={'url': 'http://bugzilla/42'})
+    assert pissue.status_code == 201
+    pissue_id1 = pissue.data['issue']['id']
+
+    pissue = user.post('/api/v1/issues',
+                       data={'url': 'http://bugzilla/43'})
+    assert pissue.status_code == 201
+    pissue_id2 = pissue.data['issue']['id']
+    issues = user.get('/api/v1/issues')
+    assert len(issues.data['issues']) == 2
+    assert set([pissue_id1, pissue_id2]) == {i['id']
+                                             for i in issues.data['issues']}
+
+    g_issue_id1 = user.get('/api/v1/issues/%s' % pissue_id1)
+    assert g_issue_id1.status_code == 200
+    assert g_issue_id1.data['issue']['url'] == 'http://bugzilla/42'
+
+    g_issue_id2 = user.get('/api/v1/issues/%s' % pissue_id2)
+    assert g_issue_id2.status_code == 200
+    assert g_issue_id2.data['issue']['url'] == 'http://bugzilla/43'
+
+
+def test_delete_issues(user):
+    pissue = user.post('/api/v1/issues',
+                       data={'url': 'http://bugzilla/42'})
+    assert pissue.status_code == 201
+    pissue_id1 = pissue.data['issue']['id']
+    issues = user.get('/api/v1/issues')
+    assert len(issues.data['issues']) == 1
+    pissue_etag = pissue.headers.get("ETag")
+
+    dissue = user.delete('/api/v1/issues/%s' % pissue_id1,
+                         headers={'If-match': pissue_etag})
+    assert dissue.status_code == 204
+    issues = user.get('/api/v1/issues')
+    assert len(issues.data['issues']) == 0
