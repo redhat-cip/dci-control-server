@@ -385,7 +385,7 @@ def get_job_by_id(user, job_id):
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     job_dict = dict(job)
     job_dict['issues'] = json.loads(
-        issues.get_all_issues(job_id, _TABLE).response[0]
+        issues.get_issues_by_resource(job_id, _TABLE).response[0]
     )['issues']
     return base.get_resource_by_id(user, job_dict, _TABLE, _EMBED_MANY)
 
@@ -453,7 +453,7 @@ def add_file_to_jobs(user, j_id):
 @decorators.check_roles
 def retrieve_issues_from_job(user, j_id):
     """Retrieve all issues attached to a job."""
-    return issues.get_all_issues(j_id, _TABLE)
+    return issues.get_issues_by_resource(j_id, _TABLE)
 
 
 @api.route('/jobs/<uuid:j_id>/issues', methods=['POST'])
