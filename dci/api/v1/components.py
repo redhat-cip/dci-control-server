@@ -454,7 +454,7 @@ def get_schedule_components_ids(topic_id, component_types, components_ids):
 @decorators.check_roles
 def retrieve_issues_from_component(user, c_id):
     """Retrieve all issues attached to a component."""
-    return issues.get_all_issues(c_id, _TABLE)
+    return issues.get_issues_by_resource(c_id, _TABLE)
 
 
 @api.route('/components/<c_id>/issues', methods=['POST'])

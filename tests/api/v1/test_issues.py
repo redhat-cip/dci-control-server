@@ -23,7 +23,7 @@ GITHUB_TRACKER = 'dci.trackers.github.requests'
 BUGZILLA_TRACKER = 'dci.trackers.bugzilla.requests'
 
 
-def test_attach_issue_to_job(user, job_user_id):
+def test_attach_issue_to_job(user, job_user_id, topic_user_id):
     with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
 
         mock_github_result = mock.Mock()
@@ -44,7 +44,8 @@ def test_attach_issue_to_job(user, job_user_id):
         }
 
         data = {
-            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
+            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1',
+            'topic_id': topic_user_id
         }
         issue = user.post('/api/v1/jobs/%s/issues' % job_user_id,
                           data=data).data
@@ -86,22 +87,24 @@ def test_attach_issue_to_component(admin, user, topic_user_id):
         }
 
         data = {
-            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
+            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1',
+            'topic_id': topic_user_id
         }
         admin.post('/api/v1/components/%s/issues' % component_id, data=data)
         result = user.get('/api/v1/components/%s/issues' % component_id).data
         assert result['issues'][0]['url'] == data['url']
 
 
-def test_attach_invalid_issue(admin, job_user_id):
+def test_attach_invalid_issue(admin, job_user_id, topic_user_id):
     data = {
-        'url': '<script>alert("booo")</script>'
+        'url': '<script>alert("booo")</script>',
+        'topic_id': topic_user_id
     }
     r = admin.post('/api/v1/jobs/%s/issues' % job_user_id, data=data)
     assert r.status_code == 400
 
 
-def test_unattach_issue_from_job(user, job_user_id):
+def test_unattach_issue_from_job(user, job_user_id, topic_user_id):
     with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
         mock_github_result = mock.Mock()
         mock_github_request.get.return_value = mock_github_result
@@ -121,7 +124,8 @@ def test_unattach_issue_from_job(user, job_user_id):
         }
 
         data = {
-            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
+            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1',
+            'topic_id': topic_user_id
         }
         result = user.post('/api/v1/jobs/%s/issues' % job_user_id, data=data)
         issue_id = result.data['issue']['id']
@@ -165,7 +169,8 @@ def test_unattach_issue_from_component(admin, user, topic_user_id):
         }
 
         data = {
-            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
+            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1',
+            'topic_id': topic_user_id
         }
         result = admin.post('/api/v1/components/%s/issues' % component_id,
                             data=data)
@@ -178,7 +183,7 @@ def test_unattach_issue_from_component(admin, user, topic_user_id):
         assert result['_meta']['count'] == 0
 
 
-def test_github_tracker(user, job_user_id):
+def test_github_tracker(user, job_user_id, topic_user_id):
     with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
         mock_github_result = mock.Mock()
         mock_github_request.get.return_value = mock_github_result
@@ -198,7 +203,8 @@ def test_github_tracker(user, job_user_id):
         }
 
         data = {
-            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
+            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1',
+            'topic_id': topic_user_id
         }
         user.post('/api/v1/jobs/%s/issues' % job_user_id, data=data)
         result = (
@@ -220,7 +226,7 @@ def test_github_tracker(user, job_user_id):
         assert result['assignee'] is None
 
 
-def test_github_tracker_with_private_issue(user, job_user_id):
+def test_github_tracker_with_private_issue(user, job_user_id, topic_user_id):
     with mock.patch(GITHUB_TRACKER, spec=requests) as mock_github_request:
         mock_github_result = mock.Mock()
         mock_github_request.get.return_value = mock_github_result
@@ -228,7 +234,8 @@ def test_github_tracker_with_private_issue(user, job_user_id):
         mock_github_result.status_code = 404
 
         data = {
-            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
+            'url': 'https://github.com/redhat-cip/dci-control-server/issues/1',
+            'topic_id': topic_user_id
         }
         user.post('/api/v1/jobs/%s/issues' % job_user_id, data=data)
         result = (
@@ -248,7 +255,7 @@ def test_github_tracker_with_private_issue(user, job_user_id):
         assert result['assignee'] is None
 
 
-def test_bugzilla_tracker(user, job_user_id):
+def test_bugzilla_tracker(user, job_user_id, topic_user_id):
     with mock.patch(BUGZILLA_TRACKER, spec=requests) as mock_bugzilla_request:
         mock_bugzilla_result = mock.Mock()
         mock_bugzilla_request.get.return_value = mock_bugzilla_result
@@ -273,7 +280,8 @@ def test_bugzilla_tracker(user, job_user_id):
 """
 
         data = {
-            'url': 'https://bugzilla.redhat.com/show_bug.cgi?id=1184949'
+            'url': 'https://bugzilla.redhat.com/show_bug.cgi?id=1184949',
+            'topic_id': topic_user_id
         }
         user.post('/api/v1/jobs/%s/issues' % job_user_id, data=data)
         result = (
@@ -293,7 +301,8 @@ def test_bugzilla_tracker(user, job_user_id):
         assert result['closed_at'] is None
 
 
-def test_bugzilla_tracker_with_non_existent_issue(user, job_user_id):
+def test_bugzilla_tracker_with_non_existent_issue(user, job_user_id,
+                                                  topic_user_id):
     with mock.patch(BUGZILLA_TRACKER, spec=requests) as mock_bugzilla_request:
         mock_bugzilla_result = mock.Mock()
         mock_bugzilla_request.get.return_value = mock_bugzilla_result
@@ -301,7 +310,8 @@ def test_bugzilla_tracker_with_non_existent_issue(user, job_user_id):
         mock_bugzilla_result.status_code = 400
 
         data = {
-            'url': 'https://bugzilla.redhat.com/show_bug.cgi?id=1184949'
+            'url': 'https://bugzilla.redhat.com/show_bug.cgi?id=1184949',
+            'topic_id': topic_user_id
         }
         user.post('/api/v1/jobs/%s/issues' % job_user_id, data=data)
         result = (
@@ -319,3 +329,48 @@ def test_bugzilla_tracker_with_non_existent_issue(user, job_user_id):
         assert result['created_at'] is None
         assert result['updated_at'] is None
         assert result['closed_at'] is None
+
+
+def test_create_get_issues(user, topic_user_id):
+    issues = user.get('/api/v1/issues')
+    assert issues.data['issues'] == []
+    pissue = user.post('/api/v1/issues',
+                       data={'url': 'http://bugzilla/42',
+                             'topic_id': topic_user_id})
+    assert pissue.status_code == 201
+    pissue_id1 = pissue.data['issue']['id']
+
+    pissue = user.post('/api/v1/issues',
+                       data={'url': 'http://bugzilla/43',
+                             'topic_id': topic_user_id})
+    assert pissue.status_code == 201
+    pissue_id2 = pissue.data['issue']['id']
+    issues = user.get('/api/v1/issues')
+    assert len(issues.data['issues']) == 2
+    assert set([pissue_id1, pissue_id2]) == {i['id']
+                                             for i in issues.data['issues']}
+
+    g_issue_id1 = user.get('/api/v1/issues/%s' % pissue_id1)
+    assert g_issue_id1.status_code == 200
+    assert g_issue_id1.data['issue']['url'] == 'http://bugzilla/42'
+
+    g_issue_id2 = user.get('/api/v1/issues/%s' % pissue_id2)
+    assert g_issue_id2.status_code == 200
+    assert g_issue_id2.data['issue']['url'] == 'http://bugzilla/43'
+
+
+def test_delete_issues(user, topic_user_id):
+    pissue = user.post('/api/v1/issues',
+                       data={'url': 'http://bugzilla/42',
+                             'topic_id': topic_user_id})
+    assert pissue.status_code == 201
+    pissue_id1 = pissue.data['issue']['id']
+    issues = user.get('/api/v1/issues')
+    assert len(issues.data['issues']) == 1
+    pissue_etag = pissue.headers.get("ETag")
+
+    dissue = user.delete('/api/v1/issues/%s' % pissue_id1,
+                         headers={'If-match': pissue_etag})
+    assert dissue.status_code == 204
+    issues = user.get('/api/v1/issues')
+    assert len(issues.data['issues']) == 0
