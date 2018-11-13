@@ -502,6 +502,7 @@ audit = schema_factory(audit)
 
 issue = {
     'url': Url(),
+    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
 }
 
 issue = schema_factory(issue)

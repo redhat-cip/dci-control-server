@@ -114,7 +114,8 @@ def test_get_all_jobs_with_pagination(remoteci_context,
 
 
 def test_get_all_jobs_with_embed(admin, remoteci_context, team_user_id,
-                                 remoteci_user_id, components_user_ids):
+                                 remoteci_user_id, components_user_ids,
+                                 topic_user_id):
     # create 2 jobs and check meta data count
     data = {'components': components_user_ids}
     job_1 = remoteci_context.post('/api/v1/jobs', data=data)
@@ -122,12 +123,14 @@ def test_get_all_jobs_with_embed(admin, remoteci_context, team_user_id,
 
     # Create two ISSUES
     data = {
-        'url': 'https://github.com/redhat-cip/dci-control-server/issues/1'
+        'url': 'https://github.com/redhat-cip/dci-control-server/issues/1',
+        'topic_id': topic_user_id
     }
     issue_1 = admin.post('/api/v1/jobs/%s/issues' % job_1.data['job']['id'],
                          data=data).data
     data = {
-        'url': 'https://github.com/redhat-cip/dci-control-server/issues/2'
+        'url': 'https://github.com/redhat-cip/dci-control-server/issues/2',
+        'topic_id': topic_user_id
     }
     issue_2 = admin.post('/api/v1/jobs/%s/issues' % job_2.data['job']['id'],
                          data=data).data

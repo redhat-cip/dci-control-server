@@ -518,8 +518,14 @@ ISSUES = sa.Table(
     sa.Column('updated_at', sa.DateTime(),
               onupdate=datetime.datetime.utcnow,
               default=datetime.datetime.utcnow, nullable=False),
+    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
+              onupdate=utils.gen_etag),
+    sa.Column('topic_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              nullable=False),
     sa.Column('url', sa.Text, unique=True),
-    sa.Column('tracker', TRACKERS, nullable=False)
+    sa.Column('tracker', TRACKERS, nullable=False),
+    sa.Column('state', STATES, default='active')
 )
 
 
