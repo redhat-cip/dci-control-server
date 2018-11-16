@@ -110,7 +110,10 @@ WHERE
     teams.external = '1' AND
     (jobs.status = 'failure' OR jobs.status = 'success') AND
     remotecis.state = 'active' AND
-    components.id IN (Select DISTINCT ON (topic_id) id from components ORDER By topic_id, created_at DESC)
+    components.id IN (SELECT DISTINCT ON (topic_id) id
+                      FROM components
+                      WHERE state = 'active'
+                      ORDER BY topic_id, created_at DESC)
 ORDER BY
     components.id,
     jobs.remoteci_id,
