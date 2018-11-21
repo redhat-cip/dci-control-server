@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "a25a70f8_4c3eabd0",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-21T13:41:46Z",
+      "side": 1,
+      "message": "Agreed.\nThis code was already here. I plan to clean it in another patch.",
+      "parentUuid": "e166bd3b_ec186a40",
+      "range": {
+        "startLine": 41,
+        "startChar": 0,
+        "endLine": 44,
+        "endChar": 25
+      },
+      "revId": "a1ecef9d62e1a9fd7086561e9dc40610a3f28d9c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "34bb5a0e_a5af29de",
         "filename": "dci/api/v1/issues.py",
         "patchSetId": 5
@@ -36,6 +60,30 @@
       "writtenOn": "2018-11-21T09:55:40Z",
       "side": 1,
       "message": "use v1_utils.common_values_dict() instead",
+      "range": {
+        "startLine": 46,
+        "startChar": 4,
+        "endLine": 46,
+        "endChar": 31
+      },
+      "revId": "a1ecef9d62e1a9fd7086561e9dc40610a3f28d9c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "dae13dea_88a523db",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-21T13:41:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "34bb5a0e_a5af29de",
       "range": {
         "startLine": 46,
         "startChar": 4,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "0bb9c746_6cafdb97",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 192,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-21T13:41:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "dc7b2a63_944f50f3",
+      "range": {
+        "startLine": 192,
+        "startChar": 4,
+        "endLine": 192,
+        "endChar": 42
+      },
+      "revId": "a1ecef9d62e1a9fd7086561e9dc40610a3f28d9c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "cfa35d0c_8258f44e",
         "filename": "dci/policies.py",
         "patchSetId": 5
@@ -82,6 +154,30 @@
       "writtenOn": "2018-11-21T09:55:40Z",
       "side": 1,
       "message": "for me this is SUPER_ADMIN_PO instead of ALL",
+      "range": {
+        "startLine": 213,
+        "startChar": 0,
+        "endLine": 213,
+        "endChar": 30
+      },
+      "revId": "a1ecef9d62e1a9fd7086561e9dc40610a3f28d9c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "49dfdfdc_fc1d2e8a",
+        "filename": "dci/policies.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 213,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2018-11-21T13:41:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "cfa35d0c_8258f44e",
       "range": {
         "startLine": 213,
         "startChar": 0,
