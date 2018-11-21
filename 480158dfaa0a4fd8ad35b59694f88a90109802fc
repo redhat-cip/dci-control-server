@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7683ad51_40b5b452",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-11-21T15:59:18Z",
+      "side": 1,
+      "message": "you should pass the data (schemas.issue.post(flask.request.json)) from the controller.\nno side effect\n\ncreate_issue(schemas.issue.post(flask.request.json)) \n\ncreate_issue is a service responsible for writing and issue in the database and returning it",
+      "range": {
+        "startLine": 40,
+        "startChar": 18,
+        "endLine": 40,
+        "endChar": 56
+      },
+      "revId": "480158dfaa0a4fd8ad35b59694f88a90109802fc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
