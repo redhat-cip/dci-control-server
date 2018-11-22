@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2e1b2ad2_7eef2e5d",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-11-22T13:56:45Z",
+      "side": 1,
+      "message": "looking at the code it\u0027s more _get_or_create_issue",
+      "range": {
+        "startLine": 38,
+        "startChar": 4,
+        "endLine": 38,
+        "endChar": 17
+      },
+      "revId": "27226aab0d6469481d85db823d8ae20388dd58e0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f014b59d_755c737f",
+        "filename": "dci/db/models.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 526,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-11-22T13:56:45Z",
+      "side": 1,
+      "message": "maybe I\u0027m wrong, and you don\u0027t need to update this for now\nbut the unicity is more on the couple (topic_id, url)",
+      "range": {
+        "startLine": 526,
+        "startChar": 4,
+        "endLine": 526,
+        "endChar": 43
+      },
+      "revId": "27226aab0d6469481d85db823d8ae20388dd58e0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
