@@ -19,6 +19,9 @@ import mock
 
 from dci.stores.swift import Swift
 from dci.common import utils
+from dci.api.v1 import tests
+
+import flask
 
 SWIFT = 'dci.stores.swift.Swift'
 
@@ -228,3 +231,31 @@ def test_success_update_field_by_field(admin, test_id):
     assert t['name'] == 'pname2'
     assert t['state'] == 'inactive'
     assert t['data'] == {'test': 'toto'}
+
+
+def test_get_tests_to_issues(user, topic_user_id, app, engine):
+    # associate one test to two issues
+    # {'pname1': [{'url': 'http://bugzilla/42', 'id': <id1>},
+    #             {'url': 'http://bugzilla/43', 'id': <id2>}]}
+    pissue = user.post('/api/v1/issues', data={'url': 'http://bugzilla/42',
+                                               'topic_id': topic_user_id})
+    pissue_id1 = pissue.data['issue']['id']
+    pissue = user.post('/api/v1/issues', data={'url': 'http://bugzilla/43',
+                                               'topic_id': topic_user_id})
+    pissue_id2 = pissue.data['issue']['id']
+    test = user.post('/api/v1/tests', data={'name': 'pname1'})
+    test_id1 = test.data['test']['id']
+    user.post('/api/v1/issues/%s/tests' % pissue_id1,
+              data={'test_id': test_id1,
+                    'topic_id': topic_user_id})
+    user.post('/api/v1/issues/%s/tests' % pissue_id2,
+              data={'test_id': test_id1,
+                    'topic_id': topic_user_id})
+    with app.app_context():
+        flask.g.db_conn = engine.connect()
+        all_tests_to_issues = tests.get_tests_to_issues(topic_user_id)
+        assert 'pname1' in all_tests_to_issues
+        assert len(all_tests_to_issues['pname1']) == 2
+        tests_ids = {str(issue['id'])
+                     for issue in all_tests_to_issues['pname1']}
+        assert tests_ids == {pissue_id1, pissue_id2}

@@ -86,6 +86,23 @@ def update_tests(user, t_id):
     )
 
 
+def get_tests_to_issues(topic_id):
+    query = (sql.select([models.TESTS, models.ISSUES], use_labels=True)
+             .select_from(models.TESTS.join(
+                          models.JOIN_ISSUES_TESTS).join(models.ISSUES))
+             .where(models.ISSUES.c.topic_id == topic_id))
+    tests_join_issues = flask.g.db_conn.execute(query).fetchall()
+    tests_to_issues = {}
+    for tji in tests_join_issues:
+        test_name = tji['tests_name']
+        issue = {'id': tji['issues_id'], 'url': tji['issues_url']}
+        if test_name not in tests_to_issues:
+            tests_to_issues[test_name] = [issue]
+        else:
+            tests_to_issues[test_name].append(issue)
+    return tests_to_issues
+
+
 def get_all_tests_by_team(user, team_id):
     # todo: remove team_id
     args = schemas.args(flask.request.args.to_dict())

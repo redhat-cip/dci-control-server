@@ -108,26 +108,16 @@ def create_files(user):
     if values.get('name') is None:
         raise dci_exc.DCIException('HTTP header DCI-NAME must be specified')
 
-    if values['jobstate_id']:
-        query = v1_utils.QueryBuilder(models.JOBSTATES)
-        query.add_extra_condition(
-            models.JOBSTATES.c.id == values['jobstate_id'])
-        row = query.execute(fetchone=True)
-        if row is None:
-            raise dci_exc.DCINotFound('Jobstate', values['jobstate_id'])
-        values['job_id'] = row['jobstates_job_id']
+    if values.get('jobstate_id') and values.get('job_id') is None:
+        jobstate = v1_utils.verify_existence_and_get(values.get('jobstate_id'),
+                                                     models.JOBSTATES)
+        values['job_id'] = jobstate['job_id']
 
-    query = v1_utils.QueryBuilder(models.JOBS)
-    if user.is_not_super_admin():
-        query.add_extra_condition(models.JOBS.c.team_id == user['team_id'])
-    query.add_extra_condition(models.JOBS.c.id == values['job_id'])
-    job = query.execute(fetchone=True, use_labels=False)
-    if job is None:
-        raise dci_exc.DCINotFound('Job', values['job_id'])
+    job = v1_utils.verify_existence_and_get(values.get('job_id'), models.JOBS)
+    if user.is_not_in_team(job['team_id']) or user.is_read_only_user():
+        raise auth.UNAUTHORIZED
 
     file_id = utils.gen_uuid()
-    # ensure the directory which will contains the file actually exist
-
     file_path = files_utils.build_file_path(user['team_id'],
                                             values['job_id'],
                                             file_id)
@@ -141,17 +131,15 @@ def create_files(user):
         'id': file_id,
         'created_at': datetime.datetime.utcnow().isoformat(),
         'updated_at': datetime.datetime.utcnow().isoformat(),
-        'team_id': user['team_id'],
+        'team_id': job['team_id'],
         'md5': None,
         'size': s_file['content-length'],
         'state': 'active',
         'etag': etag,
     })
 
-    query = _TABLE.insert().values(**values)
-
     with flask.g.db_conn.begin():
-
+        query = _TABLE.insert().values(**values)
         flask.g.db_conn.execute(query)
         result = json.dumps({'file': values})
 
