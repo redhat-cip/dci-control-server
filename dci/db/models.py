@@ -272,6 +272,7 @@ TESTS_RESULTS = sa.Table(
     sa.Column('skips', sa.Integer),
     sa.Column('failures', sa.Integer),
     sa.Column('regressions', sa.Integer, default=0),
+    sa.Column('successfixes', sa.Integer, default=0),
     sa.Column('errors', sa.Integer),
     sa.Column('time', sa.Integer),
     sa.Column('job_id', pg.UUID(as_uuid=True),

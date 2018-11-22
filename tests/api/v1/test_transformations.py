@@ -34,6 +34,7 @@ JSONUNIT = {
     'errors': 1,
     'skips': 1,
     'regressions': 0,
+    'successfixes': 0,
     'total': 6,
     'time': 9759,
     'testscases': [

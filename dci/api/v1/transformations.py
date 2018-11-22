@@ -76,6 +76,7 @@ def junit2dict(string):
         'errors': 0,
         'failures': 0,
         'regressions': 0,
+        'successfixes': 0,
         'skips': 0,
         'total': 0,
         'testscases': [],
@@ -137,3 +138,15 @@ def add_regressions_and_successfix_to_tests(testsuite1, testsuite2):
             if (prev_testcase['action'] == 'failure' or
                     prev_testcase['regression']):
                 testcase['successfix'] = True
+                testsuite2['successfixes'] += 1
+
+
+def add_known_issues_to_tests(testsuite, tests_to_issues):
+    for testcase in testsuite['testscases']:
+        if testcase['action'] == 'failure':
+            testcase['name'] = testcase['name'].split('[')[0]
+            testname = '%s:%s' % (testcase['classname'], testcase['name'])
+            if testname in tests_to_issues:
+                testcase['issues'] = tests_to_issues[testname]
+            else:
+                testcase['issues'] = []

@@ -21,7 +21,6 @@ import base64
 import flask
 import mock
 import pytest
-import six
 
 from dci import dci_config
 from dci.api.v1 import files
@@ -87,35 +86,27 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
     data = {'job_id': job_2['id'], 'status': 'failure'}
     jobstate_2 = admin.post('/api/v1/jobstates', data=data).data['jobstate']
 
-    # 3. upload junit file for each job
-    # mock side_effect function
-    def get_file_content(filename):
-        if str(job_1['id']) in str(filename):
-            return (0, six.StringIO(tests_data.jobtest_without_failures))
-        else:
-            return (0, six.StringIO(tests_data.jobtest_with_failures))
-
     f_1 = t_utils.post_file(admin, jobstate_1['id'],
                             FileDesc('Tempest',
-                                     tests_data.jobtest_without_failures),
+                                     tests_data.jobtest_one),
                             mime='application/junit')
     assert f_1 is not None
     t_utils.post_file(admin, jobstate_1['id'],
                       FileDesc('Rally',
-                               tests_data.jobtest_without_failures),
+                               tests_data.jobtest_one),
                       mime='application/junit')
 
     f_2 = t_utils.post_file(admin, jobstate_2['id'],
                             FileDesc('Tempest',
-                                     tests_data.jobtest_with_failures),
+                                     tests_data.jobtest_two),
                             mime='application/junit')
     assert f_2 is not None
     t_utils.post_file(admin, jobstate_2['id'],
                       FileDesc('Rally',
-                               tests_data.jobtest_without_failures),
+                               tests_data.jobtest_one),
                       mime='application/junit')
 
-    # 4. verify regression in job_2's result which is 'test_3'
+    # 3. verify regression in job_2's result which is 'test_3'
     job_2_results = admin.get(
         '/api/v1/jobs/%s?embed=results' % job_2['id']).data['job']['results']
     for job_res in job_2_results:
@@ -400,6 +391,40 @@ def test_get_previous_job_in_topic(app, user, remoteci_context,
         flask.g.db_conn = engine.connect()
         test_prev_job_id = str(files.get_previous_job_in_topic(new_job)['id'])
         assert prev_job_id == test_prev_job_id
+
+
+def test_known_issues_in_tests(admin, user, job_user_id, topic_user_id):
+
+    pissue = user.post('/api/v1/issues', data={'url': 'http://bugzilla/42',
+                                               'topic_id': topic_user_id})
+    pissue_id1 = pissue.data['issue']['id']
+    pissue = user.post('/api/v1/issues', data={'url': 'http://bugzilla/43',
+                                               'topic_id': topic_user_id})
+    pissue_id2 = pissue.data['issue']['id']
+    test = user.post('/api/v1/tests', data={'name': 'Testsuite_1:test_3'})
+    test_id1 = test.data['test']['id']
+    user.post('/api/v1/issues/%s/tests' % pissue_id1,
+              data={'test_id': test_id1,
+                    'topic_id': topic_user_id})
+    user.post('/api/v1/issues/%s/tests' % pissue_id2,
+              data={'test_id': test_id1,
+                    'topic_id': topic_user_id})
+
+    data = {'job_id': job_user_id, 'status': 'failure'}
+    jobstate_1 = admin.post('/api/v1/jobstates', data=data).data['jobstate']
+    t_utils.post_file(admin, jobstate_1['id'],
+                      FileDesc('Tempest', tests_data.jobtest_two),
+                      mime='application/junit')
+
+    job_tests_results = admin.get(
+        '/api/v1/jobs/%s/results' % job_user_id)
+    testscases = job_tests_results.data['results'][0]['testscases']
+    for testcase in testscases:
+        if testcase['name'] == 'Testsuite_1:test_3':
+            assert len(testcase['issues']) == 2
+            issues_ids = {issue['id']
+                          for issue in testcase['issues']}
+            assert issues_ids == {pissue_id1, pissue_id2}
 
 
 def test_purge(app, admin, user, jobstate_user_id, team_user_id, job_user_id):
