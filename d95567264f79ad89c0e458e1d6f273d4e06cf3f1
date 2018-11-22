@@ -1,0 +1,73 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b2da596b_2f2b4f05",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 38,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-11-22T12:59:38Z",
+      "side": 1,
+      "message": "def _create_issue(data):\n  values \u003d v1_utils.common_values_dict()\n  values.update(data)",
+      "range": {
+        "startLine": 38,
+        "startChar": 0,
+        "endLine": 38,
+        "endChar": 26
+      },
+      "revId": "d95567264f79ad89c0e458e1d6f273d4e06cf3f1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "55d5a34f_4cb7dedd",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 153,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-11-22T12:59:38Z",
+      "side": 1,
+      "message": "data \u003d schemas.issue.post(flask.request.json)\nissue \u003d _create_issue(data)",
+      "range": {
+        "startLine": 151,
+        "startChar": 0,
+        "endLine": 153,
+        "endChar": 33
+      },
+      "revId": "d95567264f79ad89c0e458e1d6f273d4e06cf3f1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "50196f0b_320f8cd8",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 186,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-11-22T12:59:38Z",
+      "side": 1,
+      "message": "data \u003d schemas.issue.post(flask.request.json)\nissue \u003d _create_issue(data)",
+      "range": {
+        "startLine": 184,
+        "startChar": 0,
+        "endLine": 186,
+        "endChar": 33
+      },
+      "revId": "d95567264f79ad89c0e458e1d6f273d4e06cf3f1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
