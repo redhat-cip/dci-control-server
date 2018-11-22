@@ -131,8 +131,7 @@ def generate_token_based_client(app, resource):
     return client
 
 
-def post_file(client, jobstate_id, file_desc, mime='text/plain',
-              swift_get_mock=None):
+def post_file(client, jobstate_id, file_desc, mime='text/plain'):
     headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
                'DCI-MIME': mime, 'Content-Type': 'text/plain'}
     res = client.post('/api/v1/files',

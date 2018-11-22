@@ -28,6 +28,8 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import transformations as tsfm
 from dci.api.v1 import utils as v1_utils
+from dci.api.v1 import tests
+from dci import auth
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
@@ -90,6 +92,50 @@ def _get_test_result_of_previous_job(job, filename):
     return res
 
 
+def _process_junit_file(values, store, file_path, job, file_id):
+    _, file_descriptor = store.get(file_path)
+    jsonunit = tsfm.junit2dict(file_descriptor.read())
+    # the following two inner functions update in place the jsonunit
+    # structure
+
+    def compute_regressions():
+        # get the tests results of the previous job for regressions computation
+        # between current and previous job tests results
+        prev_test_result = _get_test_result_of_previous_job(job,
+                                                            values['name'])
+        if prev_test_result is not None:
+            prev_test_result['testscases'] = prev_test_result['tests_cases']  # noqa
+            if len(prev_test_result['testscases']) > 0:
+                tsfm.add_regressions_and_successfix_to_tests(
+                    prev_test_result, jsonunit)
+
+    def compute_known_tests_cases():
+        tests_to_issues = tests.get_tests_to_issues(job['topic_id'])
+        tsfm.add_known_issues_to_tests(jsonunit, tests_to_issues)
+
+    compute_regressions()
+    compute_known_tests_cases()
+
+    query = models.TESTS_RESULTS.insert().values({
+        'id': utils.gen_uuid(),
+        'created_at': values['created_at'],
+        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'file_id': file_id,
+        'job_id': job['id'],
+        'name': values['name'],
+        'success': jsonunit['success'],
+        'failures': jsonunit['failures'],
+        'errors': jsonunit['errors'],
+        'regressions': jsonunit['regressions'],
+        'skips': jsonunit['skips'],
+        'total': jsonunit['total'],
+        'time': jsonunit['time'],
+        'tests_cases': jsonunit['testscases']
+    })
+
+    flask.g.db_conn.execute(query)
+
+
 @api.route('/files', methods=['POST'])
 @decorators.login_required
 @decorators.check_roles
@@ -107,27 +153,17 @@ def create_files(user):
     if values.get('name') is None:
         raise dci_exc.DCIException('HTTP header DCI-NAME must be specified')
 
-    if values['jobstate_id']:
-        query = v1_utils.QueryBuilder(models.JOBSTATES)
-        query.add_extra_condition(
-            models.JOBSTATES.c.id == values['jobstate_id'])
-        row = query.execute(fetchone=True)
-        if row is None:
-            raise dci_exc.DCINotFound('Jobstate', values['jobstate_id'])
-        values['job_id'] = row['jobstates_job_id']
+    if values.get('jobstate_id') and values.get('job_id') is None:
+        jobstate = v1_utils.verify_existence_and_get(values.get('jobstate_id'),
+                                                     models.JOBSTATES)
+        values['job_id'] = jobstate['job_id']
 
-    query = v1_utils.QueryBuilder(models.JOBS)
-    if user.is_not_super_admin():
-        query.add_extra_condition(models.JOBS.c.team_id == user['team_id'])
-    query.add_extra_condition(models.JOBS.c.id == values['job_id'])
-    job = query.execute(fetchone=True, use_labels=False)
-    if job is None:
-        raise dci_exc.DCINotFound('Job', values['job_id'])
+    job = v1_utils.verify_existence_and_get(values.get('job_id'), models.JOBS)
+    if user.is_not_in_team(job['team_id']) or user.is_read_only_user():
+        raise auth.UNAUTHORIZED
 
     file_id = utils.gen_uuid()
-    # ensure the directory which will contains the file actually exist
-
-    file_path = files_utils.build_file_path(user['team_id'],
+    file_path = files_utils.build_file_path(job['team_id'],
                                             values['job_id'],
                                             file_id)
 
@@ -140,47 +176,20 @@ def create_files(user):
         'id': file_id,
         'created_at': datetime.datetime.utcnow().isoformat(),
         'updated_at': datetime.datetime.utcnow().isoformat(),
-        'team_id': user['team_id'],
+        'team_id': job['team_id'],
         'md5': None,
         'size': s_file['content-length'],
         'state': 'active',
         'etag': etag,
     })
 
-    query = _TABLE.insert().values(**values)
-
     with flask.g.db_conn.begin():
-
-        flask.g.db_conn.execute(query)
+        q_insert_file = _TABLE.insert().values(**values)
+        flask.g.db_conn.execute(q_insert_file)
         result = json.dumps({'file': values})
 
         if values['mime'] == 'application/junit':
-            _, file_descriptor = store.get(file_path)
-            jsonunit = tsfm.junit2dict(file_descriptor.read())
-            prev_test_result = _get_test_result_of_previous_job(job,
-                                                                values['name'])
-            if prev_test_result is not None:
-                prev_test_result['testscases'] = prev_test_result['tests_cases']  # noqa
-                if len(prev_test_result['testscases']) > 0:
-                    tsfm.add_regressions_and_successfix_to_tests(
-                        prev_test_result, jsonunit)
-            query = models.TESTS_RESULTS.insert().values({
-                'id': utils.gen_uuid(),
-                'created_at': values['created_at'],
-                'updated_at': datetime.datetime.utcnow().isoformat(),
-                'file_id': file_id,
-                'job_id': values['job_id'],
-                'name': values['name'],
-                'success': jsonunit['success'],
-                'failures': jsonunit['failures'],
-                'errors': jsonunit['errors'],
-                'regressions': jsonunit['regressions'],
-                'skips': jsonunit['skips'],
-                'total': jsonunit['total'],
-                'time': jsonunit['time'],
-                'tests_cases': jsonunit['testscases']
-            })
-            flask.g.db_conn.execute(query)
+            _process_junit_file(values, store, file_path, job, file_id)
 
     return flask.Response(result, 201, content_type='application/json')
 
