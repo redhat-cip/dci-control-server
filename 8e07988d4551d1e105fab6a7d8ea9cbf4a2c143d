@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0b46c965_9785241f",
+        "filename": "dci/api/v1/issues.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-11-23T07:44:46Z",
+      "side": 1,
+      "message": "because you added the (topic_id, url) unicity maybe here you want to select the topic id no?\n\nthis is why I said that maybe this unicity should not be in this patch",
+      "range": {
+        "startLine": 58,
+        "startChar": 24,
+        "endLine": 58,
+        "endChar": 54
+      },
+      "revId": "8e07988d4551d1e105fab6a7d8ea9cbf4a2c143d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
