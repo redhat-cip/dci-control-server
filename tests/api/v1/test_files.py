@@ -64,8 +64,8 @@ def test_get_all_files(user, jobstate_user_id):
     assert db_all_files_ids == [file_1, file_2]
 
 
-def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
-                                             topic):
+def test_upload_tests_with_regressions_successfix(admin, remoteci_context,
+                                                  remoteci, topic):
     headers = {
         'User-Agent': 'python-dciclient',
         'Client-Version': 'python-dciclient_0.1.0'
@@ -112,8 +112,10 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
     for job_res in job_2_results:
         if job_res['name'] == 'Tempest':
             assert job_res['regressions'] == 1
+            assert job_res['successfixes'] == 1
         elif job_res['name'] == 'Rally':
             assert job_res['regressions'] == 0
+            assert job_res['successfixes'] == 0
 
     # 4. get the job2's tests results
     job_2_tests_results = admin.get(

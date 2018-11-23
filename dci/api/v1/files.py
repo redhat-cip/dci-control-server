@@ -127,6 +127,7 @@ def _process_junit_file(values, store, file_path, job, file_id):
         'failures': jsonunit['failures'],
         'errors': jsonunit['errors'],
         'regressions': jsonunit['regressions'],
+        'successfixes': jsonunit['successfixes'],
         'skips': jsonunit['skips'],
         'total': jsonunit['total'],
         'time': jsonunit['time'],
