@@ -98,7 +98,7 @@ def _process_junit_file(values, store, file_path, job, file_id):
     # the following two inner functions update in place the jsonunit
     # structure
 
-    def compute_regressions():
+    def compute_regressions_successfix():
         # get the tests results of the previous job for regressions computation
         # between current and previous job tests results
         prev_test_result = _get_test_result_of_previous_job(job,
@@ -113,7 +113,7 @@ def _process_junit_file(values, store, file_path, job, file_id):
         tests_to_issues = tests.get_tests_to_issues(job['topic_id'])
         tsfm.add_known_issues_to_tests(jsonunit, tests_to_issues)
 
-    compute_regressions()
+    compute_regressions_successfix()
     compute_known_tests_cases()
 
     query = models.TESTS_RESULTS.insert().values({
@@ -127,6 +127,7 @@ def _process_junit_file(values, store, file_path, job, file_id):
         'failures': jsonunit['failures'],
         'errors': jsonunit['errors'],
         'regressions': jsonunit['regressions'],
+        'successfixes': jsonunit['successfixes'],
         'skips': jsonunit['skips'],
         'total': jsonunit['total'],
         'time': jsonunit['time'],
