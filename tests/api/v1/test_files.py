@@ -64,8 +64,8 @@ def test_get_all_files(user, jobstate_user_id):
     assert db_all_files_ids == [file_1, file_2]
 
 
-def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
-                                             topic):
+def test_upload_tests_with_regressions_successfix(admin, remoteci_context,
+                                                  remoteci, topic):
     headers = {
         'User-Agent': 'python-dciclient',
         'Client-Version': 'python-dciclient_0.1.0'
@@ -88,22 +88,22 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
 
     f_1 = t_utils.post_file(admin, jobstate_1['id'],
                             FileDesc('Tempest',
-                                     tests_data.jobtest_without_failures),
+                                     tests_data.jobtest_one),
                             mime='application/junit')
     assert f_1 is not None
     t_utils.post_file(admin, jobstate_1['id'],
                       FileDesc('Rally',
-                               tests_data.jobtest_without_failures),
+                               tests_data.jobtest_one),
                       mime='application/junit')
 
     f_2 = t_utils.post_file(admin, jobstate_2['id'],
                             FileDesc('Tempest',
-                                     tests_data.jobtest_with_failures),
+                                     tests_data.jobtest_two),
                             mime='application/junit')
     assert f_2 is not None
     t_utils.post_file(admin, jobstate_2['id'],
                       FileDesc('Rally',
-                               tests_data.jobtest_without_failures),
+                               tests_data.jobtest_one),
                       mime='application/junit')
 
     # 3. verify regression in job_2's result which is 'test_3'
@@ -112,8 +112,10 @@ def test_create_junit_files_with_regressions(admin, remoteci_context, remoteci,
     for job_res in job_2_results:
         if job_res['name'] == 'Tempest':
             assert job_res['regressions'] == 1
+            assert job_res['successfixes'] == 1
         elif job_res['name'] == 'Rally':
             assert job_res['regressions'] == 0
+            assert job_res['successfixes'] == 0
 
     # 4. get the job2's tests results
     job_2_tests_results = admin.get(
@@ -413,7 +415,7 @@ def test_known_issues_in_tests(admin, user, job_user_id, topic_user_id):
     data = {'job_id': job_user_id, 'status': 'failure'}
     jobstate_1 = admin.post('/api/v1/jobstates', data=data).data['jobstate']
     t_utils.post_file(admin, jobstate_1['id'],
-                      FileDesc('Tempest', tests_data.jobtest_with_failures),
+                      FileDesc('Tempest', tests_data.jobtest_two),
                       mime='application/junit')
 
     job_tests_results = admin.get(
