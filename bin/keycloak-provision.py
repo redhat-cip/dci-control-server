@@ -238,7 +238,7 @@ def create_and_associate_redhat_role_to_dci_user(access_token):
     r = requests.post(url,
                       data=json.dumps([redhat_employees]),
                       headers=get_auth_headers(access_token))
-    if r.status_code in (201, 409):
+    if r.status_code in (201, 204, 409):
         print('Role "redhat:employees" created successfully.')
     else:
         raise Exception('Error while creating role redhat:employees:\nstatus code %s\n'  # noqa
