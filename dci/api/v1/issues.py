@@ -21,12 +21,12 @@ from sqlalchemy import sql
 from sqlalchemy import exc as sa_exc
 from dci.api.v1 import api
 from dci.api.v1 import base
+from dci import decorators
 from dci.api.v1 import utils as v1_utils
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.common import utils
 from dci.db import models
-from dci import decorators
 from dci.trackers import github
 from dci.trackers import bugzilla
 
@@ -234,6 +234,62 @@ def delete_issue_by_id(user, issue_id):
             raise dci_exc.DCIDeleteConflict('Issue', issue_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+# issues-tests
+@api.route('/issues/<uuid:issue_id>/tests', methods=['POST'])
+@decorators.login_required
+@decorators.check_roles
+def add_test_to_issue(user, issue_id):
+    values = schemas.issue_test.post(flask.request.json)
+
+    issue_id = v1_utils.verify_existence_and_get(issue_id, _TABLE, get_id=True)
+
+    values['issue_id'] = issue_id
+    v1_utils.verify_existence_and_get(values.get('test_id'),
+                                      models.TESTS,
+                                      get_id=True)
+    q_insert = models.JOIN_ISSUES_TESTS.insert().values(**values)
+    flask.g.db_conn.execute(q_insert)
+    return flask.Response(json.dumps(values),
+                          201,
+                          content_type='application/json')
+
+
+@api.route('/issues/<uuid:issue_id>/tests/<uuid:test_id>', methods=['DELETE'])
+@decorators.login_required
+@decorators.check_roles
+def remove_test_from_issue(users, issue_id, test_id):
+    v1_utils.verify_existence_and_get(issue_id, _TABLE)
+    v1_utils.verify_existence_and_get(test_id, models.TESTS)
+
+    _JIT = models.JOIN_ISSUES_TESTS
+    query = _JIT.delete().where(sql.and_(_JIT.c.issue_id == issue_id,
+                                         _JIT.c.test_id == test_id))
+
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCIDeleteConflict('tests', 'test_id')
+
+    return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/issues/<uuid:issue_id>/tests', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def get_tests_from_issue(user, issue_id):
+    JIT = models.JOIN_ISSUES_TESTS
+
+    query = (sql.select([models.TESTS])
+                .select_from(JIT.join(models.TESTS))
+                .where(JIT.c.issue_id == issue_id))
+
+    results = flask.g.db_conn.execute(query).fetchall()
+
+    return flask.Response(json.dumps({'tests': results}),
+                          200,
+                          content_type='application/json')
 
 
 @api.route('/issues/purge', methods=['GET'])
