@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fdec73d1_f4a68312",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 151,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-11-27T11:26:59Z",
+      "side": 1,
+      "message": "better if you can move this line 159",
+      "range": {
+        "startLine": 151,
+        "startChar": 4,
+        "endLine": 151,
+        "endChar": 19
+      },
+      "revId": "64051635a40dbcb3423ef530b0a4511baa1005c2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "3de76a6b_c1080b41",
+        "filename": "tests/conftest.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2018-11-27T11:26:59Z",
+      "side": 1,
+      "message": "I don\u0027t understand this one",
+      "range": {
+        "startLine": 126,
+        "startChar": 0,
+        "endLine": 127,
+        "endChar": 34
+      },
+      "revId": "64051635a40dbcb3423ef530b0a4511baa1005c2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
