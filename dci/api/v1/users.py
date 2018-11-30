@@ -149,29 +149,33 @@ def put_current_user(user):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.current_user.put(flask.request.json)
 
-    current_password = values['current_password']
-    encrypted_password = user['password']
-    if not auth.check_passwords_equal(current_password, encrypted_password):
-        raise dci_exc.DCIException('current_password invalid')
+    if user.is_not_read_only_user():
+        current_password = values['current_password']
+        encrypted_password = user['password']
+        if not auth.check_passwords_equal(current_password,
+                                          encrypted_password):
+            raise dci_exc.DCIException('current_password invalid')
 
+    new_values = {}
     new_password = values.get('new_password')
     if new_password:
         encrypted_password = auth.hash_password(new_password)
+        new_values['password'] = encrypted_password
 
     etag = utils.gen_etag()
+    new_values.update({'etag': etag,
+                       'fullname': values.get('fullname') or user['fullname'],
+                       'email': values.get('email') or user['email'],
+                       'timezone': values.get('timezone') or user['timezone']})
 
     query = _TABLE.update().returning(*_TABLE.columns).where(sql.and_(
         _TABLE.c.etag == if_match_etag,
         _TABLE.c.id == user['id']
-    )).values({
-        'etag': etag,
-        'fullname': values.get('fullname') or user['fullname'],
-        'email': values.get('email') or user['email'],
-        'timezone': values.get('timezone') or user['timezone'],
-        'password': encrypted_password,
-    })
+    )).values(new_values)
 
     result = flask.g.db_conn.execute(query)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('User', user['id'])
     _result = dict(result.fetchone())
     del _result['password']
 
