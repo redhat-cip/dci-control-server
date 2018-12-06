@@ -17,10 +17,6 @@ from __future__ import unicode_literals
 
 
 class DCIException(Exception):
-    """Exception raised for all errors on call REST API, customize
-    error output
-    """
-
     def __init__(self, message, payload=None, status_code=400):
         super(DCIException, self).__init__()
         self.status_code = status_code
@@ -29,9 +25,9 @@ class DCIException(Exception):
 
     def to_dict(self):
         return {
-            'status_code': self.status_code,
-            'message': self.message,
-            'payload': self.payload or {}
+            "status_code": self.status_code,
+            "message": self.message,
+            "payload": self.payload or {},
         }
 
     def __str__(self):
@@ -39,22 +35,21 @@ class DCIException(Exception):
 
 
 class DCIConflict(DCIException):
-
     def __init__(self, resource_name, resource_value):
-        self.resource_name = resource_name
-        self.resource_value = resource_value
-        super(DCIConflict, self).__init__(self._message(), status_code=409)
-
-    def _message(self):
-        msg = 'conflict on %s "%s" or etag not matched'
-        return msg % (self.resource_name, self.resource_value)
+        msg = 'conflict on %s "%s" or etag not matched' % (
+            resource_name,
+            resource_value,
+        )
+        super(DCIConflict, self).__init__(msg, status_code=409)
 
 
 class DCIDeleteConflict(DCIException):
-
-    def _message(self):
-        msg = '%s "%s" already deleted or etag not matched.'
-        return msg % (self.resource_name, self.resource_value)
+    def __init__(self, resource_name, resource_value):
+        msg = '%s "%s" already deleted or etag not matched.' % (
+            resource_name,
+            resource_value,
+        )
+        super(DCIDeleteConflict, self).__init__(msg, status_code=400)
 
 
 class DCINotFound(DCIException):
@@ -65,12 +60,17 @@ class DCINotFound(DCIException):
 
 class DCICreationConflict(DCIException):
     def __init__(self, resource_name, field_name):
-        msg = 'conflict on %s' % resource_name
-        payload = {'error': {field_name: 'already_exists'}}
+        msg = "conflict on %s" % resource_name
+        payload = {"error": {field_name: "already_exists"}}
         super(DCICreationConflict, self).__init__(msg, payload, 409)
 
 
 class StoreExceptions(DCIException):
     def __init__(self, message, status_code=400):
-        super(StoreExceptions, self).__init__(message,
-                                              status_code=status_code)
+        super(StoreExceptions, self).__init__(message, status_code=status_code)
+
+
+class Unauthorized(DCIException):
+    def __init__(self):
+        msg = "Operation not authorized."
+        super(Unauthorized, self).__init__(msg, status_code=401)

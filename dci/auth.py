@@ -19,10 +19,7 @@ import jwt
 from passlib.apps import custom_app_context as pwd_context
 
 from dci.db import models
-from dci.common import exceptions as exc
 from sqlalchemy import sql
-
-UNAUTHORIZED = exc.DCIException('Operation not authorized.', status_code=401)
 
 
 def hash_password(password):

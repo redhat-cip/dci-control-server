@@ -20,7 +20,6 @@ from sqlalchemy import sql, func
 import uuid
 from OpenSSL import crypto
 
-from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common import utils
 from dci.db import models
@@ -150,7 +149,7 @@ def verify_team_in_topic(user, topic_id):
     if user.is_super_admin() or user.is_read_only_user():
         return
     if str(topic_id) not in user_topic_ids(user):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
 
 def get_columns_name_with_objects(table, table_prefix=False):

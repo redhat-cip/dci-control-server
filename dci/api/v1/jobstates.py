@@ -25,7 +25,6 @@ from dci.api.v1 import base
 from dci.api.v1 import jobs_events
 from dci.api.v1 import notifications
 from dci.api.v1 import utils as v1_utils
-from dci import auth
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
@@ -140,7 +139,7 @@ def delete_jobstate_by_id(user, js_id):
     jobstate = v1_utils.verify_existence_and_get(js_id, _TABLE)
 
     if not user.is_in_team(jobstate['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     where_clause = _TABLE.c.id == js_id
     query = _TABLE.delete().where(where_clause)

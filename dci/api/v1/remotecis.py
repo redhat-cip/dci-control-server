@@ -58,7 +58,7 @@ def create_remotecis(user):
     values.update(schemas.remoteci.post(flask.request.json))
 
     if not user.is_in_team(values['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     values.update({
         'data': values.get('data', {}),
@@ -127,7 +127,7 @@ def put_remoteci(user, r_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
     if not user.is_in_team(remoteci['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(_TABLE.c.etag == if_match_etag,
@@ -163,7 +163,7 @@ def delete_remoteci_by_id(user, remoteci_id):
     remoteci = v1_utils.verify_existence_and_get(remoteci_id, _TABLE)
 
     if not user.is_in_team(remoteci['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     with flask.g.db_conn.begin():
         values = {'state': 'archived'}
@@ -222,7 +222,7 @@ def add_user_to_remoteci(user, r_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
     if user.is_not_in_team(remoteci['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     query = models.JOIN_USER_REMOTECIS.insert().values({'user_id': user.id,
                                                         'remoteci_id': r_id})
@@ -261,7 +261,7 @@ def delete_user_from_remoteci(user, r_id, u_id):
     if u_id != user['id'] and \
        not user.is_in_team(remoteci['team_id']) and \
        user.is_regular_user():
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     JUR = models.JOIN_USER_REMOTECIS
     where_clause = sql.and_(JUR.c.remoteci_id == r_id,
@@ -297,7 +297,7 @@ def put_api_secret(user, r_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
     if not user.is_in_team(remoteci['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     return base.refresh_api_secret(user, remoteci, _TABLE)
 
@@ -316,7 +316,7 @@ def create_configuration(user, r_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
     if not user.is_in_team(remoteci['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     rconfiguration_id = values_configuration.get('id')
 
@@ -351,7 +351,7 @@ def get_all_configurations(user, r_id):
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
     if not user.is_in_team(remoteci['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     query = sql.select([_RCONFIGURATIONS]). \
         select_from(models.JOIN_REMOTECIS_RCONFIGURATIONS.
@@ -407,7 +407,7 @@ def delete_configuration_by_id(user, r_id, c_id):
     v1_utils.verify_existence_and_get(c_id, _RCONFIGURATIONS)
 
     if not user.is_in_team(remoteci['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     with flask.g.db_conn.begin():
         values = {'state': 'archived'}

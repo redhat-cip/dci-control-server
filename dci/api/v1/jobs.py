@@ -27,7 +27,6 @@ from dci.api.v1 import components
 from dci.api.v1 import utils as v1_utils
 from dci.api.v1 import jobs_events
 from dci.api.v1 import tags
-from dci import auth
 from dci import decorators
 from dci.common import audits
 from dci.common import exceptions as dci_exc
@@ -76,7 +75,7 @@ def create_jobs(user):
     values['team_id'] = values.get('team_id', user['team_id'])
     # Only super admin can create job for other teams
     if user.is_not_super_admin() and not user.is_in_team(values['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     topic_id = values.get('topic_id')
     if topic_id:
@@ -243,7 +242,7 @@ def create_new_update_job_from_an_existing_job(user, job_id):
                                                      models.JOBS)
 
     if not user.is_in_team(original_job['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     # get the remoteci
     remoteci_id = str(original_job['remoteci_id'])
@@ -290,7 +289,7 @@ def create_new_upgrade_job_from_an_existing_job(user):
     original_job = v1_utils.verify_existence_and_get(original_job_id,
                                                      models.JOBS)
     if not user.is_in_team(original_job['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     # get the remoteci
     remoteci_id = str(original_job['remoteci_id'])
@@ -407,7 +406,7 @@ def update_job_by_id(user, job_id):
     job = dict(job)
 
     if not user.is_in_team(job['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     # Update jobstate if needed
     status = values.get('status')
@@ -491,7 +490,7 @@ def get_all_results_from_jobs(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
     if not user.is_in_team(job['team_id']) and not user.is_read_only_user():
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     # get testscases from tests_results
     query = sql.select([models.TESTS_RESULTS]). \
@@ -526,7 +525,7 @@ def delete_job_by_id(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
     if not user.is_in_team(job['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     with flask.g.db_conn.begin():
         values = {'state': 'archived'}
@@ -556,7 +555,7 @@ def delete_job_by_id(user, j_id):
 def associate_meta(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
     return metas.create_meta(user, j_id)
 
 
@@ -566,7 +565,7 @@ def associate_meta(user, j_id):
 def get_meta_by_id(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']) and not user.is_read_only_user():
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
     return metas.get_meta_by_id(m_id)
 
 
@@ -576,7 +575,7 @@ def get_meta_by_id(user, j_id, m_id):
 def get_all_metas(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']) and not user.is_read_only_user():
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
     return metas.get_all_metas_from_job(j_id)
 
 
@@ -586,7 +585,7 @@ def get_all_metas(user, j_id):
 def put_meta(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
     return metas.put_meta(j_id, m_id)
 
 
@@ -596,7 +595,7 @@ def put_meta(user, j_id, m_id):
 def delete_meta(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
     return metas.delete_meta(j_id, m_id)
 
 
@@ -608,7 +607,7 @@ def get_tags_from_job(user, job_id):
 
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     if not user.is_in_team(job['team_id']) and not user.is_read_only_user():
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     JTT = models.JOIN_JOBS_TAGS
     query = (sql.select([models.TAGS])
@@ -627,7 +626,7 @@ def add_tag_to_job(user, job_id):
 
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     if not user.is_in_team(job['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     values = {
         'job_id': job_id
@@ -648,7 +647,7 @@ def delete_tag_from_job(user, job_id, tag_id):
     _JJT = models.JOIN_JOBS_TAGS
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     if not user.is_in_team(job['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
     v1_utils.verify_existence_and_get(tag_id, models.TAGS)
 
     query = _JJT.delete().where(sql.and_(_JJT.c.tag_id == tag_id,
