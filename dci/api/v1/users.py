@@ -66,13 +66,13 @@ def create_users(user):
     values.update(schemas.user.post(flask.request.json))
 
     if not user.is_in_team(values['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     role_id = values.get('role_id', auth.get_role_id('USER'))
     if user.is_not_super_admin() and \
             (role_id == auth.get_role_id('SUPER_ADMIN') or
              role_id == auth.get_role_id('READ_ONLY_USER')):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     values.update({
         'password': auth.hash_password(values.get('password')),
@@ -197,13 +197,13 @@ def put_user(user, user_id):
     # or a super admin
     puser = dict(_verify_existence_and_get_user(user_id))
     if puser['id'] != str(user_id) and not user.is_in_team(puser['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     # if the caller wants to update the team_id then it must be done by a super
     # admin
     if 'team_id' in values and user.is_not_super_admin() and \
        not user.is_team_product_owner(values['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     values['etag'] = utils.gen_etag()
 
@@ -240,7 +240,7 @@ def delete_user_by_id(user, user_id):
     duser = _verify_existence_and_get_user(user_id)
 
     if user.is_not_in_team(duser['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     values = {'state': 'archived'}
     where_clause = sql.and_(

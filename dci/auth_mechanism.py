@@ -100,10 +100,6 @@ class BaseMechanism(object):
 class BasicAuthMechanism(BaseMechanism):
 
     def authenticate(self):
-        auth = self.request.authorization
-        if not auth:
-            raise dci_exc.DCIException('Authorization header missing',
-                                       status_code=401)
         user, is_authenticated = \
             self.get_user_and_check_auth(auth.username, auth.password)
         if not is_authenticated:

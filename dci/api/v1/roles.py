@@ -125,10 +125,10 @@ def get_role_by_id(user, role_id):
     role = v1_utils.verify_existence_and_get(role_id, _TABLE)
 
     if user.role_id != role_id and user.is_regular_user():
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
     if user.is_not_super_admin() and \
        auth.get_role_id('SUPER_ADMIN') == role_id:
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     return base.get_resource_by_id(user, role, _TABLE)
 

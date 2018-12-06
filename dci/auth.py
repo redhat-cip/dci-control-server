@@ -22,9 +22,6 @@ from dci.db import models
 from dci.common import exceptions as exc
 from sqlalchemy import sql
 
-UNAUTHORIZED = exc.DCIException('Operation not authorized.', status_code=401)
-
-
 def hash_password(password):
     return pwd_context.encrypt(password)
 

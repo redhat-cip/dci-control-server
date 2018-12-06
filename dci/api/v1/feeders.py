@@ -47,7 +47,7 @@ def create_feeders(user):
     values.update(schemas.feeder.post(flask.request.json))
 
     if not user.is_in_team(values['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     values.update({
         # XXX(fc): this should be populated as a default value from the
@@ -96,7 +96,7 @@ def get_all_feeders(user):
 def get_feeder_by_id(user, f_id):
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
     if not user.is_in_team(feeder['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
     return base.get_resource_by_id(user, feeder, _TABLE, _EMBED_MANY)
 
 
@@ -109,7 +109,7 @@ def put_feeder(user, f_id):
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
 
     if not user.is_in_team(feeder['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(_TABLE.c.etag == if_match_etag,
@@ -143,7 +143,7 @@ def delete_feeder_by_id(user, f_id):
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
 
     if not user.is_in_team(feeder['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     with flask.g.db_conn.begin():
         values = {'state': 'archived'}
@@ -182,6 +182,6 @@ def put_api_secret_feeder(user, f_id):
     utils.check_and_get_etag(flask.request.headers)
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
     if not user.is_in_team(feeder['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     return base.refresh_api_secret(user, feeder, _TABLE)
