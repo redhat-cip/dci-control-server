@@ -19,8 +19,10 @@ from functools import wraps
 
 import flask
 
+from dci.api.v1 import utils as v1_utils
 import dci.auth_mechanism as am
 from dci.common import exceptions as dci_exc
+from dci.db import models
 from dci.policies import ROLES
 
 
@@ -74,3 +76,17 @@ def check_roles(f):
         raise dci_exc.Unauthorized()
 
     return decorated
+
+
+def check_identity_is_in_user_id_team(f):
+    @wraps(f)
+    def decorator(identity, user_id):
+        u = v1_utils.verify_existence_and_get(user_id, models.USERS)
+        team_id = dict(u)["team_id"]
+        if identity.is_super_admin() or (
+            team_id and team_id == identity.team["id"]
+        ):
+            return f(identity, user_id)
+        raise dci_exc.Unauthorized()
+
+    return decorator
