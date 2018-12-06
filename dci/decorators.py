@@ -18,40 +18,44 @@ import json
 from functools import wraps
 
 import flask
+from sqlalchemy import sql
 
-import dci.auth_mechanism as am
+from dci import auth_mechanism
 from dci.common import exceptions as dci_exc
 from dci.policies import ROLES
+from dci.db import models
 
 
 def reject():
     """Sends a 401 reject response that enables basic auth."""
 
-    auth_message = ('Could not verify your access level for that URL.'
-                    'Please login with proper credentials.')
-    auth_message = json.dumps({'_status': 'Unauthorized',
-                               'message': auth_message})
+    auth_message = (
+        "Could not verify your access level for that URL."
+        "Please login with proper credentials."
+    )
+    auth_message = json.dumps({"_status": "Unauthorized", "message": auth_message})
 
-    headers = {'WWW-Authenticate': 'Basic realm="Login required"'}
-    return flask.Response(auth_message, 401, headers=headers,
-                          content_type='application/json')
+    headers = {"WWW-Authenticate": 'Basic realm="Login required"'}
+    return flask.Response(
+        auth_message, 401, headers=headers, content_type="application/json"
+    )
 
 
 def _get_auth_class_from_headers(headers):
-    if 'Authorization' not in headers:
-        raise dci_exc.DCIException('Authorization header missing',
-                                   status_code=401)
+    if "Authorization" not in headers:
+        raise dci_exc.DCIException("Authorization header missing", status_code=401)
 
-    auth_type = headers.get('Authorization').split(' ')[0]
-    if auth_type == 'Bearer':
-        return am.OpenIDCAuth
-    elif auth_type == 'DCI-HMAC-SHA256':
-        return am.HmacMechanism
-    elif auth_type == 'Basic':
-        return am.BasicAuthMechanism
+    auth_type = headers.get("Authorization").split(" ")[0]
+    if auth_type == "Bearer":
+        return auth_mechanism.OpenIDCAuth
+    elif auth_type == "DCI-HMAC-SHA256":
+        return auth_mechanism.HmacMechanism
+    elif auth_type == "Basic":
+        return auth_mechanism.BasicAuthMechanism
 
-    raise dci_exc.DCIException('Authorization scheme %s unknown' % auth_type,
-                               status_code=401)
+    raise dci_exc.DCIException(
+        "Authorization scheme %s unknown" % auth_type, status_code=401
+    )
 
 
 def login_required(f):
@@ -74,3 +78,25 @@ def check_roles(f):
         raise dci_exc.Unauthorized
 
     return decorated
+
+
+def check_identity_is_in_user_id_team(get_user_id):
+    def decorator(f):
+        @wraps(f)
+        def wrap(*args, **kwargs):
+            identity = args[0]
+            user_id = get_user_id(*args, **kwargs)
+            query = sql.select([models.USERS]).where(models.USERS.c.id == user_id)
+            r = flask.g.db_conn.execute(query).fetchone()
+            if not r:
+                raise dci_exc.DCINotFound
+            team_id = dict(r)["team_id"]
+            if identity.is_super_admin() or (
+                team_id and team_id == identity.team["id"]
+            ):
+                return f(*args, **kwargs)
+            raise dci_exc.Unauthorized
+
+        return wrap
+
+    return decorator
