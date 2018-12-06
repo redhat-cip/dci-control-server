@@ -233,15 +233,10 @@ def put_user(user, user_id):
 @api.route('/users/<uuid:user_id>', methods=['DELETE'])
 @decorators.login_required
 @decorators.check_roles
-def delete_user_by_id(user, user_id):
-    # get If-Match header
+@decorators.check_identity_is_in_user_id_team(lambda i, user_id: user_id)
+def delete_user_by_id(identity, user_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
     duser = _verify_existence_and_get_user(user_id)
-
-    if user.is_not_in_team(duser['team_id']):
-        raise dci_exc.Unauthorized()
-
     values = {'state': 'archived'}
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
