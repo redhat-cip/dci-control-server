@@ -28,7 +28,6 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import transformations as tsfm
 from dci.api.v1 import utils as v1_utils
-from dci import auth
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
@@ -239,7 +238,7 @@ def get_file_object(file_id):
 def get_file_content(user, file_id):
     file = get_file_object(file_id)
     if not user.is_in_team(file['team_id']) and not user.is_read_only_user():
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
     file_descriptor = get_file_descriptor(file)
     return flask.send_file(
         file_descriptor,
@@ -256,7 +255,7 @@ def delete_file_by_id(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
     if not user.is_in_team(file['team_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     values = {'state': 'archived'}
     where_clause = _TABLE.c.id == file_id

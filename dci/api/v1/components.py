@@ -30,7 +30,6 @@ from dci.api.v1 import issues
 from dci.api.v1 import remotecis
 from dci.api.v1 import tags
 from dci.api.v1 import utils as v1_utils
-from dci import auth
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
@@ -95,7 +94,7 @@ def create_components(user):
     values.update(schemas.component.post(flask.request.json))
 
     if str(values['topic_id']) not in v1_utils.user_topic_ids(user):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     query = _TABLE.insert().values(**values)
 
@@ -116,7 +115,7 @@ def update_components(user, c_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     if str(component['topic_id']) not in v1_utils.user_topic_ids(user):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     values = schemas.component.put(flask.request.json)
     values['etag'] = utils.gen_etag()
@@ -198,7 +197,7 @@ def delete_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
 
     if str(component['topic_id']) not in v1_utils.user_topic_ids(user):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     values = {'state': 'archived'}
     where_clause = sql.and_(
@@ -291,7 +290,7 @@ def upload_component_file(user, c_id):
 
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     if str(component['topic_id']) not in v1_utils.user_topic_ids(user):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     store = dci_config.get_store('components')
 
@@ -329,7 +328,7 @@ def delete_component_file(user, c_id, f_id):
     COMPONENT_FILES = models.COMPONENT_FILES
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     if str(component['topic_id']) not in v1_utils.user_topic_ids(user):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
     v1_utils.verify_existence_and_get(f_id, COMPONENT_FILES)
 
     where_clause = COMPONENT_FILES.c.id == f_id

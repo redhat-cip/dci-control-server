@@ -19,7 +19,6 @@ from functools import wraps
 
 import flask
 
-from dci.auth import UNAUTHORIZED
 import dci.auth_mechanism as am
 from dci.common import exceptions as dci_exc
 from dci.policies import ROLES
@@ -72,6 +71,6 @@ def check_roles(f):
         identity = args[0]
         if identity.role_label in ROLES[f.__name__]:
             return f(*args, **kwargs)
-        raise UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     return decorated

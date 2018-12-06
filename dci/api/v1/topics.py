@@ -23,7 +23,6 @@ from dci.api.v1 import base
 from dci.api.v1 import components
 from dci.api.v1 import export_control
 from dci.api.v1 import utils as v1_utils
-from dci import auth
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
@@ -54,7 +53,7 @@ def create_topics(user):
 
     if user.is_not_super_admin() and \
        not user.product_id == values['product_id']:
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     # todo(yassine): enabled when client updated.
     # if values['component_types'] == []:
@@ -83,12 +82,12 @@ def get_topic_by_id(user, topic_id):
         if not user.is_read_only_user():
             v1_utils.verify_team_in_topic(user, topic_id)
         if 'teams' in args['embed']:
-            raise auth.UNAUTHORIZED
+            raise dci_exc.Unauthorized
 
     if (user.is_not_super_admin() and
         user.product_id != topic['product_id'] and
         not user.is_read_only_user()):
-            raise auth.UNAUTHORIZED
+            raise dci_exc.Unauthorized
 
     return base.get_resource_by_id(user, topic, _TABLE, _EMBED_MANY)
 
@@ -133,7 +132,7 @@ def put_topic(user, topic_id):
 
     if user.is_not_super_admin() and \
        not user.product_id == topic['product_id']:
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     n_topic = None
     if values.get('next_topic_id'):
@@ -143,7 +142,7 @@ def put_topic(user, topic_id):
     if user.is_product_owner() and \
        (user.product_id != topic['product_id'] or
        (n_topic and user.product_id != n_topic['product_id'])):
-            raise auth.UNAUTHORIZED
+            raise dci_exc.Unauthorized
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
@@ -171,7 +170,7 @@ def delete_topic_by_id(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     if user.is_not_super_admin() and \
        not user.product_id == topic['product_id']:
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
 
@@ -235,7 +234,7 @@ def add_team_to_topic(user, topic_id):
     if user.is_not_super_admin() and \
        not (user.is_team_product_owner(team_id) and
             user.product_id == topic['product_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     values = {'topic_id': topic['id'],
               'team_id': team_id}
@@ -261,7 +260,7 @@ def delete_team_from_topic(user, topic_id, team_id):
     if user.is_not_super_admin() and \
        not (user.is_team_product_owner(team_id) and
             user.product_id == topic['product_id']):
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     JTT = models.JOINS_TOPICS_TEAMS
     where_clause = sql.and_(JTT.c.topic_id == topic['id'],
@@ -283,7 +282,7 @@ def get_all_teams_from_topic(user, topic_id):
 
     if user.is_not_super_admin() and \
             not user.product_id == topic['product_id']:
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized
 
     # Get all teams which belongs to a given topic
     JTT = models.JOINS_TOPICS_TEAMS
