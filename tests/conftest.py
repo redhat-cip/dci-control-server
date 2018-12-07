@@ -67,12 +67,6 @@ def delete_db(request, engine, teardown_db_clean):
     engine.execute("DROP TABLE IF EXISTS alembic_version")
 
 
-@pytest.fixture(scope='session', autouse=True)
-def memoize_password_hash():
-    pwd_context.verify = utils.memoized(pwd_context.verify)
-    pwd_context.encrypt = utils.memoized(pwd_context.encrypt)
-
-
 @pytest.fixture
 def teardown_db_clean(request, engine):
     request.addfinalizer(lambda: utils.restore_db(engine))
