@@ -28,9 +28,9 @@ import shutil
 import six
 
 import dci.auth as auth
-import dci.common.utils as utils
 import dci.db.models as models
 import dci.dci_config as config
+from dci.common import utils
 from dciauth.request import AuthRequest
 from dciauth.signature import Signature
 
@@ -38,7 +38,6 @@ import os
 import subprocess
 
 # convenient alias
-memoized = utils.memoized
 conf = config.generate_conf()
 
 
