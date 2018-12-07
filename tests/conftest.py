@@ -69,8 +69,19 @@ def delete_db(request, engine, teardown_db_clean):
 
 @pytest.fixture(scope='session', autouse=True)
 def memoize_password_hash():
-    pwd_context.verify = utils.memoized(pwd_context.verify)
-    pwd_context.encrypt = utils.memoized(pwd_context.encrypt)
+    def memoize(func):
+        cache = {}
+
+        def helper(*args):
+            if args in cache:
+                return cache[args]
+            else:
+                value = func(*args)
+                cache[args] = value
+                return value
+        return helper
+    pwd_context.verify = memoize(pwd_context.verify)
+    pwd_context.encrypt = memoize(pwd_context.encrypt)
 
 
 @pytest.fixture
