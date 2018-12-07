@@ -17,13 +17,11 @@ from __future__ import unicode_literals
 
 import dci.common.exceptions as exceptions
 import dci.common.schemas as schemas
-import dci.common.utils as utils
 import pytest
 import six
 import uuid
 
 # convenient alias
-dict_merge = utils.dict_merge
 text_type = six.text_type()
 
 ID = 'id', uuid.uuid4()
