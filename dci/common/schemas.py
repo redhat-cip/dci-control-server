@@ -14,16 +14,17 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from __future__ import unicode_literals
-from six.moves.urllib.parse import urlparse
 
 import collections
-import dci.common.exceptions as exceptions
-import dci.common.utils as utils
+import itertools
 import pytz
 import re
 import six
 import uuid
 import voluptuous as v
+from six.moves.urllib.parse import urlparse
+
+from dci.common import exceptions
 
 
 # Url validator is not powerfull enough let unleash its power
@@ -104,6 +105,28 @@ UUID_FIELD = v.All(six.text_type, msg=INVALID_UUID)
 DATA_FIELD = {v.Optional('data', default={}): dict}
 
 
+def dict_merge(*dict_list):
+    """recursively merges dict's. not just simple a['key'] = b['key'], if
+    both a and bhave a key who's value is a dict then dict_merge is called
+    on both values and the result stored in the returned dictionary.
+    """
+    result = collections.defaultdict(dict)
+    dicts_items = itertools.chain(*[six.iteritems(d or {}) for d in dict_list])
+
+    for key, value in dicts_items:
+        src = result[key]
+        if isinstance(src, dict) and isinstance(value, dict):
+            result[key] = dict_merge(src, value)
+        elif isinstance(src, dict) or isinstance(src, six.text_type):
+            result[key] = value
+        elif hasattr(src, "__iter__") and hasattr(value, "__iter__"):
+            result[key] += value
+        else:
+            result[key] = value
+
+    return dict(result)
+
+
 class Schema(v.Schema):
     """Override voluptuous schema to return our own error"""
 
@@ -136,7 +159,7 @@ class Schema(v.Schema):
         except v.MultipleInvalid as exc:
             errors = format_error(exc.errors.pop())
             for error in exc.errors:
-                errors = utils.dict_merge(errors, format_error(error))
+                errors = dict_merge(errors, format_error(error))
             raise exceptions.DCIException('Request malformed',
                                           {'errors': errors})
 
@@ -191,7 +214,7 @@ componenttype = schema_factory(base)
 #                                                                             #
 ###############################################################################
 
-team = utils.dict_merge(base, {
+team = dict_merge(base, {
     v.Optional('country', default=None): v.Any(six.text_type, None),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
@@ -218,7 +241,7 @@ team = DCISchema(schema_factory(team).post,
 #                                                                             #
 ###############################################################################
 
-test = utils.dict_merge(base, DATA_FIELD, {
+test = dict_merge(base, DATA_FIELD, {
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
@@ -240,7 +263,7 @@ test = DCISchema(schema_factory(test).post, Schema(test_put))
 #                                                                             #
 ###############################################################################
 
-user = utils.dict_merge(base, {
+user = dict_merge(base, {
     v.Optional('password'): six.text_type,
     'fullname': six.text_type,
     'email': v.Any(Email, msg=INVALID_EMAIL),
@@ -288,7 +311,7 @@ current_user = DCISchema(schema_factory({}).post, Schema(current_user_put))
 #                                                                             #
 ###############################################################################
 
-component = utils.dict_merge(base, DATA_FIELD, {
+component = dict_merge(base, DATA_FIELD, {
     v.Optional('title', default=None): v.Any(six.text_type, None),
     v.Optional('message', default=None): v.Any(six.text_type, None),
     v.Optional('canonical_project_name', default=None): v.Any(six.text_type,
@@ -324,7 +347,7 @@ component = DCISchema(schema_factory(component).post,
 #                                                                             #
 ###############################################################################
 
-remoteci = utils.dict_merge(base, DATA_FIELD, {
+remoteci = dict_merge(base, DATA_FIELD, {
     'team_id': v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('public', default=False): bool,
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
@@ -423,7 +446,7 @@ jobstate = schema_factory(jobstate)
 #                                                                             #
 ###############################################################################
 
-file = utils.dict_merge(base, {
+file = dict_merge(base, {
     v.Optional('content', default=''): six.text_type,
     v.Optional('md5', default=None): v.Any(six.text_type, None),
     v.Optional('mime', default=None): v.Any(six.text_type, None),
@@ -454,7 +477,7 @@ file_upload_certification = schema_factory({
 #                                                                             #
 ###############################################################################
 
-topic = utils.dict_merge(base, DATA_FIELD, {
+topic = dict_merge(base, DATA_FIELD, {
     v.Optional('product_id', default=None): v.Any(
         v.All(UUID, msg=INVALID_PRODUCT), None
     ),
@@ -574,7 +597,7 @@ role = DCISchema(schema_factory(role).post, Schema(role_put))
 #                                                                             #
 ###############################################################################
 
-rconfiguration = utils.dict_merge(base, DATA_FIELD, {
+rconfiguration = dict_merge(base, DATA_FIELD, {
     'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
     v.Optional('component_types', default=None): list
 })
@@ -636,7 +659,7 @@ product = DCISchema(schema_factory(product).post, Schema(product_put))
 #                                                                             #
 ###############################################################################
 
-feeder = utils.dict_merge(base, DATA_FIELD, {
+feeder = dict_merge(base, DATA_FIELD, {
     'team_id': v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
@@ -658,7 +681,7 @@ feeder = DCISchema(schema_factory(feeder).post, Schema(feeder_put))
 #                                                                             #
 ###############################################################################
 
-fingerprint = utils.dict_merge(base, {
+fingerprint = dict_merge(base, {
     'fingerprint': dict,
     'actions': dict,
     'description': six.text_type,

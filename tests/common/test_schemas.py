@@ -38,6 +38,19 @@ def test_validation_error_handling(app):
     }
 
 
+def test_dict_merge():
+    a = {'jim': 123, 'a': {'b': {'c': {'d': 'bob'}}}, 'rob': 34}
+    b = {'tot': {'a': {'b': 'string'}, 'c': [1, 2]}}
+    c = {'tot': {'c': [3, 4]}}
+
+    assert schemas.dict_merge(a, b, c) == {
+        'a': {'b': {'c': {'d': 'bob'}}},
+        'jim': 123,
+        'rob': 34,
+        'tot': {'a': {'b': 'string'}, 'c': [1, 2, 3, 4]}
+    }
+
+
 class BaseSchemaTesting(utils.SchemaTesting):
 
     data = dict([utils.NAME])
@@ -148,7 +161,7 @@ class TestTest(utils.SchemaTesting):
 
     def test_post(self):
         # add default values to voluptuous output
-        data_expected = utils.dict_merge(self.data, {'data': {}})
+        data_expected = schemas.dict_merge(self.data, {'data': {}})
         super(TestTest, self).test_post(self.data, data_expected)
 
     def test_put_invalid_data(self):
@@ -157,7 +170,7 @@ class TestTest(utils.SchemaTesting):
 
     def test_put(self):
         # add default values to voluptuous output
-        data_expected = utils.dict_merge(self.data, {'data': {}})
+        data_expected = schemas.dict_merge(self.data, {'data': {}})
         super(TestTest, self).test_put(self.data, data_expected)
 
 
@@ -233,8 +246,10 @@ class TestComponent(utils.SchemaTesting):
 
     def test_post(self):
         # add default values to voluptuous output
-        data_expected = utils.dict_merge(self.data,
-                                         TestComponent.generate_optionals())
+        data_expected = schemas.dict_merge(
+            self.data,
+            TestComponent.generate_optionals()
+        )
         super(TestComponent, self).test_post(self.data, data_expected)
 
     def test_put_invalid_data(self):
@@ -264,7 +279,7 @@ class TestRemoteCI(utils.SchemaTesting):
 
     def test_post(self):
         # add default values to voluptuous output
-        data_expected = utils.dict_merge(self.data, {'data': {}})
+        data_expected = schemas.dict_merge(self.data, {'data': {}})
         super(TestRemoteCI, self).test_post(self.data, data_expected)
 
     def test_put_invalid_data(self):
@@ -300,8 +315,10 @@ class TestRemoteciRconfigurations(utils.SchemaTesting):
 
     def test_post(self):
         # add default values to voluptuous output
-        data_expected = utils.dict_merge(self.data,
-                                         {'data': {}, 'component_types': None})
+        data_expected = schemas.dict_merge(
+            self.data,
+            {'data': {}, 'component_types': None}
+        )
         super(TestRemoteciRconfigurations, self).test_post(self.data,
                                                            data_expected)
 
@@ -348,7 +365,7 @@ class TestJob(utils.SchemaTesting):
 
     def test_post(self):
         # add default values to voluptuous output
-        data_expected = utils.dict_merge(self.data, {'comment': None})
+        data_expected = schemas.dict_merge(self.data, {'comment': None})
         super(TestJob, self).test_post(self.data, data_expected)
 
     def test_put_invalid_data(self):
@@ -476,7 +493,7 @@ class TestJobState(utils.SchemaTesting):
     def test_post(self):
         pass
         # add default values to voluptuous output
-        data_expected = utils.dict_merge(self.data, {'comment': None})
+        data_expected = schemas.dict_merge(self.data, {'comment': None})
         super(TestJobState, self).test_post(self.data, data_expected)
 
     def test_put_invalid_data(self):
@@ -485,7 +502,7 @@ class TestJobState(utils.SchemaTesting):
 
     def test_put(self):
         # add default values to voluptuous output
-        data_expected = utils.dict_merge(self.data, {'comment': None})
+        data_expected = schemas.dict_merge(self.data, {'comment': None})
         super(TestJobState, self).test_put(self.data, data_expected)
 
 
@@ -523,8 +540,10 @@ class LolTestFile(utils.SchemaTesting):
 
     def test_post(self):
         # add default values to voluptuous output
-        data_expected = utils.dict_merge(self.data,
-                                         {'mime': None, 'md5': None})
+        data_expected = schemas.dict_merge(
+            self.data,
+            {'mime': None, 'md5': None}
+        )
         super(LolTestFile, self).test_post(self.data, data_expected)
 
     def test_put_invalid_data(self):
@@ -533,8 +552,10 @@ class LolTestFile(utils.SchemaTesting):
 
     def test_put(self):
         # add default values to voluptuous output
-        data_expected = utils.dict_merge(self.data,
-                                         {'mime': None, 'md5': None})
+        data_expected = schemas.dict_merge(
+            self.data,
+            {'mime': None, 'md5': None}
+        )
         super(LolTestFile, self).test_put(self.data, data_expected)
 
 
@@ -558,7 +579,7 @@ class TestTopic(utils.SchemaTesting):
         super(TestTopic, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
-        expected = utils.dict_merge(self.data, {'component_types': []})
+        expected = schemas.dict_merge(self.data, {'component_types': []})
         super(TestTopic, self).test_post(self.data, expected)
 
     def test_put_invalid_data(self):
@@ -586,7 +607,7 @@ class TestArgs(object):
     }
 
     def test_extra_args(self):
-        extra_data = utils.dict_merge(self.data, {'foo': 'bar'})
+        extra_data = schemas.dict_merge(self.data, {'foo': 'bar'})
         assert schemas.args(extra_data) == self.data_expected
 
     def test_default_args(self):
