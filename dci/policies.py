@@ -165,6 +165,9 @@ ROLES = {
     'delete_team_by_id': SUPER_ADMIN_PO,
     'get_to_purge_archived_teams': SUPER_ADMIN,
     'purge_archived_teams': SUPER_ADMIN,
+    'get_users_from_team': HUMAN,
+    'add_user_to_team': ADMINS,
+    'remove_user_from_team': ADMINS,
     # tests
     'create_tests': HUMAN,
     'update_tests': HUMAN,
@@ -198,6 +201,7 @@ ROLES = {
     # users
     'create_users': ADMINS,
     'get_all_users': HUMAN,
+    'get_teams_of_user': HUMAN,
     'get_user_by_id': HUMAN,
     'get_current_user': HUMAN,
     'put_current_user': HUMAN,
