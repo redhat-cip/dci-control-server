@@ -25,8 +25,23 @@ def test_create_users(admin, team_id, role_user):
     pu = admin.post('/api/v1/users',
                     data={'name': 'pname', 'password': 'ppass',
                           'fullname': 'P Name', 'email': 'pname@example.org',
-                          'team_id': team_id}).data
+                          'team_id': team_id})
+    assert pu.status_code == 201
+    pu = pu.data
+    pu_id = pu['user']['id']
+    assert pu['user']['role_id'] == role_user['id']
+    gu = admin.get('/api/v1/users/%s' % pu_id).data
+    assert gu['user']['name'] == 'pname'
+    assert gu['user']['timezone'] == 'UTC'
 
+
+def test_create_user_withouta_team_and_role(admin, role_user):
+    pu = admin.post('/api/v1/users',
+                    data={'name': 'pname', 'password': 'ppass',
+                          'fullname': 'P Name',
+                          'email': 'pname@example.org'})
+    assert pu.status_code == 201
+    pu = pu.data
     pu_id = pu['user']['id']
     assert pu['user']['role_id'] == role_user['id']
     gu = admin.get('/api/v1/users/%s' % pu_id).data
@@ -65,6 +80,19 @@ def test_create_users_already_exist(admin, team_id):
                                     'email': 'pname@example.org',
                                     'team_id': team_id}).status_code
     assert pstatus_code == 409
+
+
+def test_get_teams_of_user(admin, user_id, team_id, team_user_id):
+    admin.post('/api/v1/teams/%s/users/%s' % (team_id, user_id),
+               data={'role': 'USER'})
+    admin.post('/api/v1/teams/%s/users/%s' % (team_user_id, user_id),
+               data={'role': 'USER'})
+
+    uteams = admin.get('/api/v1/users/%s/teams' % user_id)
+    assert uteams.status_code == 200
+    assert len(uteams.data['teams']) == 2
+    team_ids = {t['id'] for t in uteams.data['teams']}
+    assert team_ids == set([team_id, team_user_id])
 
 
 def test_get_all_users(admin, team_id):

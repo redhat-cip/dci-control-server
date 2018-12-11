@@ -192,7 +192,7 @@ class TestUser(utils.SchemaTesting):
         return invalids, errors
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name', 'fullname', 'email', 'team_id')
+        errors = utils.generate_errors('name', 'fullname', 'email')
         super(TestUser, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):

@@ -65,8 +65,9 @@ def create_users(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.user.post(flask.request.json))
 
-    if not user.is_in_team(values['team_id']):
-        raise dci_exc.Unauthorized()
+    if values.get('team_id'):
+        if not user.is_in_team(values['team_id']):
+            raise dci_exc.Unauthorized()
 
     role_id = values.get('role_id', auth.get_role_id('USER'))
     if user.is_not_super_admin() and \

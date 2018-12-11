@@ -37,6 +37,9 @@ STATES = sa.Enum(*RESOURCE_STATES, name='states')
 ISSUE_TRACKERS = ['github', 'bugzilla']
 TRACKERS = sa.Enum(*ISSUE_TRACKERS, name='trackers')
 
+ROLES = ['SUPER_ADMIN', 'USER', 'ADMIN', 'PRODUCT_OWNER', 'FEEDER', 'REMOTECI',
+         'READ_ONLY_USER']
+
 
 COMPONENTS = sa.Table(
     'components', metadata,
@@ -205,7 +208,8 @@ REMOTECIS = sa.Table(
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
     sa.Column('role_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('roles.id', ondelete='SET NULL')),
+              sa.ForeignKey('roles.id', ondelete='SET NULL'),
+              nullable=True),
     sa.Index('remotecis_team_id_idx', 'team_id'),
     sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key'),
     sa.Column('public', sa.BOOLEAN, default=False),
@@ -458,12 +462,25 @@ USERS = sa.Table(
     sa.Column('password', sa.Text, nullable=True),
     sa.Column('timezone', sa.String(255), nullable=False, default='UTC'),
     sa.Column('role_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('roles.id', ondelete='SET NULL')),
+              sa.ForeignKey('roles.id', ondelete='SET NULL'),
+              nullable=True),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=True),
     sa.Index('users_team_id_idx', 'team_id'),
     sa.Column('state', STATES, default='active')
+)
+
+JOIN_USERS_TEAMS_ROLES = sa.Table(
+    'users_teams_roles', metadata,
+    sa.Column('user_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('users.id', ondelete='CASCADE'),
+              nullable=False),
+    sa.Column('team_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=True),
+    sa.Column('role', sa.String(255), default='USER', nullable=False),
+    sa.UniqueConstraint('user_id', 'team_id', name='users_teams_roles_key')
 )
 
 JOIN_USER_REMOTECIS = sa.Table(
