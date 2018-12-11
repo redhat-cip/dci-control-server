@@ -37,6 +37,10 @@ STATES = sa.Enum(*RESOURCE_STATES, name='states')
 ISSUE_TRACKERS = ['github', 'bugzilla']
 TRACKERS = sa.Enum(*ISSUE_TRACKERS, name='trackers')
 
+ROLES = ['SUPER_ADMIN', 'USER', 'ADMIN', 'PRODUCT_OWNER', 'FEEDER', 'REMOTECI',
+         'READ_ONLY_USER']
+ROLES_ENUM = sa.Enum(*ROLES, name='role')
+
 
 COMPONENTS = sa.Table(
     'components', metadata,
@@ -481,6 +485,17 @@ USERS = sa.Table(
               nullable=True),
     sa.Index('users_team_id_idx', 'team_id'),
     sa.Column('state', STATES, default='active')
+)
+
+JOIN_USERS_TEAMS_ROLES = sa.Table(
+    'users_teams_roles', metadata,
+    sa.Column('user_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('users.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('team_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('role', ROLES_ENUM, default='USER', nullable=False)
 )
 
 JOIN_USER_REMOTECIS = sa.Table(
