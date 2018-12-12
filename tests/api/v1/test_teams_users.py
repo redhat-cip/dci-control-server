@@ -90,7 +90,6 @@ def test_add_get_users_from_to_team(admin, team_id, user_id):
 
     users = admin.get('/api/v1/teams/%s/users' % team_id)
     assert users.status_code == 200
-    print(users.data)
     assert len(users.data['users']) == (current_len + 1)
     for u in users.data['users']:
         assert 'role' in u
