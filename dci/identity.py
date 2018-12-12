@@ -31,7 +31,7 @@ class Identity:
         self.product_team_id = self._get_product_team_id(
             teams_by_ids, user_team_id)
         teams = self._get_teams_and_child_teams(teams, user_team_id)
-        self.teams_ids = [team['id'] for team in teams]
+        self.teams_ids = [str(team['id']) for team in teams]
 
     @staticmethod
     def _get_teams_and_child_teams(teams, team_id):
@@ -85,7 +85,7 @@ class Identity:
         """Test if user is in team"""
         if self.is_super_admin():
             return True
-        return team_id in self.teams_ids
+        return str(team_id) in self.teams_ids
 
     def is_super_admin(self):
         """Ensure the user has the role SUPER_ADMIN."""
