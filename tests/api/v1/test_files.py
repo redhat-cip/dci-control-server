@@ -259,7 +259,6 @@ def test_get_previous_job_in_topic(app, user, remoteci_context,
         'team_id': team_user_id
     }
     prev_job = remoteci_context.post('/api/v1/jobs', data=data).data
-    print(prev_job)
     prev_job_id = prev_job['job']['id']
 
     # adding a job in between from a new remoteci
