@@ -28,7 +28,7 @@ from dci.common import schemas
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
-
+from dci.common.schemas2 import check_json_is_valid, create_user_schema
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.USERS
@@ -60,8 +60,9 @@ def _verify_existence_and_get_user(user_id):
 @api.route('/users', methods=['POST'])
 @decorators.login_required
 def create_users(user):
+    check_json_is_valid(create_user_schema, flask.request.json)
     values = v1_utils.common_values_dict()
-    values.update(schemas.user.post(flask.request.json))
+    values.update(flask.request.json)
 
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()

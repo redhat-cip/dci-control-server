@@ -34,6 +34,7 @@ BuildRequires:  python-dciauth
 BuildRequires:  python2-pytest
 BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
+BuildRequires:  python2-jsonschema
 BuildRequires:  systemd
 %{?systemd_requires}
 Requires:       pyOpenSSL
@@ -53,6 +54,7 @@ Requires:       python-zmq
 Requires:       python-jwt
 Requires:       python-dciauth
 Requires:       python2-swiftclient
+Requires:       python2-jsonschema
 Requires:       pytz
 
 %description
