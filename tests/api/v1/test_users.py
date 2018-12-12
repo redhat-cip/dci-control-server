@@ -19,6 +19,14 @@ import datetime
 import uuid
 
 import mock
+import pytest
+
+from dci.common.exceptions import DCIException
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    create_user_schema,
+    update_user_schema,
+)
 
 
 def test_create_users(admin, team_id, role_user):
@@ -619,3 +627,79 @@ def test_success_ensure_put_api_secret_is_not_leaked(admin, team_id):
                     headers={'If-match': pu_etag})
     assert ppu.status_code == 200
     assert 'password' not in ppu.data['user']
+
+
+@pytest.fixture
+def user_json():
+    return {
+        "name": "jdoe",
+        "password": "password",
+        "fullname": "John Doe",
+        "email": "jdoe@example.org",
+        "team_id": "a1965a65-1948-4f07-acdb-c27a808a5ed5",
+    }
+
+
+def test_create_user_schema(user_json):
+    try:
+        check_json_is_valid(create_user_schema, user_json)
+    except DCIException:
+        pytest.fail("create_user_schema is invalid")
+
+
+def test_create_user_schema_required_value(user_json):
+    with pytest.raises(DCIException) as e:
+        check_json_is_valid(create_user_schema, {})
+    result = e.value
+    assert result.status_code == 400
+    assert len(result.payload["errors"]) == len(user_json.keys())
+    errors = "\n".join(result.payload["errors"])
+    for key in user_json.keys():
+        assert "'%s' is a required property" % key in errors
+
+
+def test_create_user_schema_optional_value(user_json):
+    try:
+        user_json["timezone"] = "Europe/Paris"
+        check_json_is_valid(create_user_schema, user_json)
+    except DCIException:
+        pytest.fail("create_user_schema is invalid")
+
+
+def test_create_user_schema_no_extra_field(user_json):
+    with pytest.raises(DCIException):
+        user_json["extra_field"] = "extra field"
+        check_json_is_valid(create_user_schema, user_json)
+
+
+def test_create_user_schema_team_id_type(user_json):
+    with pytest.raises(DCIException):
+        user_json["team_id"] = "not an uuid"
+        check_json_is_valid(create_user_schema, user_json)
+
+
+def test_create_user_schema_email_format(user_json):
+    with pytest.raises(DCIException):
+        user_json["email"] = "not an email"
+        check_json_is_valid(create_user_schema, user_json)
+
+
+def test_update_user_schema(user_json):
+    try:
+        user_json["id"] = "909b4ad1-1c38-4fc3-9454-57dc6d80b44d"
+        user_json["etag"] = "8407cdbf-04d1-4453-8d35-19e4425c535b"
+        check_json_is_valid(update_user_schema, user_json)
+    except DCIException:
+        pytest.fail("create_user_schema is invalid")
+
+
+def test_update_user_missing_id(user_json):
+    with pytest.raises(DCIException):
+        user_json["etag"] = "8407cdbf-04d1-4453-8d35-19e4425c535b"
+        check_json_is_valid(update_user_schema, user_json)
+
+
+def test_update_user_missing_etag(user_json):
+    with pytest.raises(DCIException):
+        user_json["id"] = "909b4ad1-1c38-4fc3-9454-57dc6d80b44d"
+        check_json_is_valid(update_user_schema, user_json)
