@@ -1,5 +1,5 @@
 %if 0%{?fedora}
-# NOTE(Gonéri): We will trun this on when python3-swiftclient
+# NOTE(Gonéri): We will trun this on when python3swiftclient
 # will be available
 %global with_python3 0
 %endif
@@ -44,6 +44,7 @@ BuildRequires:  python-dciauth
 BuildRequires:  python2-pytest
 BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
+BuildRequires:  python2-jsonschema
 BuildRequires:  systemd
 BuildRequires:  systemd-units
 Requires:       pyOpenSSL
@@ -63,6 +64,7 @@ Requires:       python-zmq
 Requires:       python-jwt
 Requires:       python-dciauth
 Requires:       python2-swiftclient
+Requires:       python2-jsonschema
 Requires:       pytz
 
 %description -n dci-api
@@ -90,6 +92,7 @@ BuildRequires:  python3-six
 BuildRequires:  python3-sqlalchemy
 BuildRequires:  python3-sqlalchemy-utils
 BuildRequires:  python3-swiftclient
+BuildRequires:  python3-jsonschema
 BuildRequires:  python3-voluptuous = 0.10.5
 BuildRequires:  python3-werkzeug
 BuildRequires:  python3-zmq
@@ -109,6 +112,7 @@ Requires:       python3-six
 Requires:       python3-sqlalchemy
 Requires:       python3-sqlalchemy-utils
 Requires:       python3-swiftclient
+Requires:       python3-jsonschema
 Requires:       python3-voluptuous = 0.10.5
 Requires:       python3-werkzeug
 Requires:       python3-zmq
