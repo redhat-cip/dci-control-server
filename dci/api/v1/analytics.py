@@ -22,9 +22,15 @@ from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
 from dci.common import utils
 from dci.db import models
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    create_analytic_schema,
+    update_analytic_schema,
+    args_schema
+)
+from dci.common.args import parse_args
 
 
 _TABLE = models.ANALYTICS
@@ -34,12 +40,13 @@ _A_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 @api.route('/jobs/<uuid:job_id>/analytics', methods=['POST'])
 @decorators.login_required
 def create_analytic(user, job_id):
-    values = schemas.analytic.post(flask.request.json)
-    job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
-    job = dict(job)
-
-    values['team_id'] = job['team_id']
-    values['job_id'] = job_id
+    job = dict(v1_utils.verify_existence_and_get(job_id, models.JOBS))
+    check_json_is_valid(create_analytic_schema, flask.request.json)
+    values = flask.request.json
+    values.update({
+        'team_id': job['team_id'],
+        'job_id': job_id
+    })
 
     query = _TABLE.insert().returning(*_TABLE.columns).values(**values)
     result = flask.g.db_conn.execute(query)
@@ -51,10 +58,11 @@ def create_analytic(user, job_id):
 @api.route('/jobs/<uuid:job_id>/analytics', methods=['GET'])
 @decorators.login_required
 def get_all_analytics(user, job_id):
-    """Get all analytics of a job."""
-
-    args = schemas.args(flask.request.args.to_dict())
     v1_utils.verify_existence_and_get(job_id, models.JOBS)
+
+    raw_args = flask.request.args.to_dict()
+    check_json_is_valid(args_schema, raw_args)
+    args = parse_args(raw_args)
 
     query = v1_utils.QueryBuilder(_TABLE, args, _A_COLUMNS)
     # If not admin nor rh employee then restrict the view to the team
@@ -73,11 +81,8 @@ def get_all_analytics(user, job_id):
 @api.route('/jobs/<uuid:job_id>/analytics/<uuid:anc_id>', methods=['GET'])
 @decorators.login_required
 def get_analytic(user, job_id, anc_id):
-    """Get an analytic."""
-
     v1_utils.verify_existence_and_get(job_id, models.JOBS)
-    analytic = v1_utils.verify_existence_and_get(anc_id, _TABLE)
-    analytic = dict(analytic)
+    analytic = dict(v1_utils.verify_existence_and_get(anc_id, _TABLE))
     if not user.is_in_team(analytic['team_id']):
         raise dci_exc.Unauthorized()
     return flask.jsonify({'analytic': analytic})
@@ -93,8 +98,11 @@ def update_analytic(user, job_id, anc_id):
     if not user.is_in_team(job['team_id']):
         raise dci_exc.Unauthorized()
 
-    values = schemas.analytic.put(flask.request.json)
-    values['etag'] = utils.gen_etag()
+    values = flask.request.json
+    check_json_is_valid(update_analytic_schema, values)
+    values.update({
+        'etag': utils.gen_etag()
+    })
 
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
