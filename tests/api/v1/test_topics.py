@@ -73,14 +73,12 @@ def test_create_topics_as_user(user, product):
 
 def test_update_topics_as_admin(admin, topic_id):
     topic = topic_update(admin, topic_id).data['topic']
-    assert topic['label'] == 'my comment'
     assert topic['component_types'] == ['lol1', 'lol2']
     assert topic['data']['foo'] == 'bar'
 
 
 def test_update_topic_as_feeder(feeder_context, topic_id):
     topic = topic_update(feeder_context, topic_id).data['topic']
-    assert topic['label'] == 'my comment'
     assert topic['component_types'] == ['lol1', 'lol2']
     assert topic['data']['foo'] == 'bar'
 

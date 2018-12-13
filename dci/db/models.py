@@ -123,7 +123,6 @@ TOPICS = sa.Table(
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), unique=True, nullable=False),
-    sa.Column('label', sa.Text),
     sa.Column('component_types', pg.JSON, default=[]),
     sa.Column('product_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('products.id'),
