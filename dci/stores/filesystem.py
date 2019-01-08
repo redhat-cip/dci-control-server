@@ -66,7 +66,7 @@ class FileSystem(stores.Store):
                                              status_code=status_code)
         md5 = files_utils.md5Checksum(file_path)
         return {'content-length': file_size, 'etag': md5,
-                'content-type': 'test'}
+                'content-type': 'application/octet-stream'}
 
     def upload(self, filename, iterable, pseudo_folder=None,
                create_container=True):
@@ -76,8 +76,11 @@ class FileSystem(stores.Store):
             os.makedirs(path)
 
         with open(file_path, 'wb') as f:
-            while True:
-                data = iterable.read(1024)
-                if not data:
-                    break
-                f.write(data)
+            if hasattr(iterable, 'read'):
+                while True:
+                    data = iterable.read(1024)
+                    if not data:
+                        break
+                    f.write(data)
+            else:
+                f.write(iterable)
