@@ -147,4 +147,13 @@ def create_app(conf):
     # Registering custom encoder
     dci_app.json_encoder = utils.JSONEncoder
 
+    @dci_app.route('/api')
+    def show_api():
+        mapping = {}
+        for rule in dci_app.url_map.iter_rules():
+            mapping[rule.rule] = {'methods': list(rule.methods)}
+        return flask.Response(
+            flask.json.dumps(mapping),
+            mimetype="application/json")
+
     return dci_app

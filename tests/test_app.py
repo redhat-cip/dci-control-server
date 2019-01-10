@@ -14,6 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import flask
+
 import alembic.autogenerate
 import alembic.environment
 import alembic.script
@@ -42,6 +44,11 @@ def test_cors_preflight(admin):
 def test_cors_headers(admin):
     resp = admin.get('/api/v1/jobs')
     assert resp.headers['Access-Control-Allow-Origin'] == '*'
+
+
+def test_api_listing(unauthorized):
+    resp = unauthorized.get('/api')
+    assert isinstance(resp.data['/api/v1/topics']['methods'], list)
 
 
 def test_db_migration(engine, delete_db):
