@@ -44,6 +44,11 @@ def test_cors_headers(admin):
     assert resp.headers['Access-Control-Allow-Origin'] == '*'
 
 
+def test_api_listing(unauthorized):
+    resp = unauthorized.get('/api')
+    assert isinstance(resp.data['/api/v1/topics']['methods'], list)
+
+
 def test_db_migration(engine, delete_db):
     config = dci.alembic.utils.generate_conf()
     context = alembic.context
