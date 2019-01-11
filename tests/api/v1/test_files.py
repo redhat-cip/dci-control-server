@@ -117,24 +117,6 @@ def test_upload_tests_with_regressions_successfix(admin, remoteci_context,
             assert job_res['regressions'] == 0
             assert job_res['successfixes'] == 0
 
-    # 4. get the job2's tests results
-    job_2_tests_results = admin.get(
-        '/api/v1/jobs/%s/results' % job_2['id'])
-    # get Tempest result
-    testcases = job_2_tests_results.data['results'][0]
-    if testcases['name'] == 'Tempest':
-        testcases = job_2_tests_results.data['results'][0]['testscases']
-    else:
-        testcases = job_2_tests_results.data['results'][1]['testscases']
-
-    regression_found = False
-    for testcase in testcases:
-        if testcase['regression'] is True:
-            assert testcase['classname'] == 'Testsuite_1'
-            assert testcase['name'] == 'test_3'
-            regression_found = True
-    assert regression_found is True
-
 
 def test_get_all_files_with_pagination(user, jobstate_user_id):
     # create 4 files types and check meta count
@@ -414,13 +396,14 @@ def test_known_issues_in_tests(admin, user, job_user_id, topic_user_id):
 
     data = {'job_id': job_user_id, 'status': 'failure'}
     jobstate_1 = admin.post('/api/v1/jobstates', data=data).data['jobstate']
-    t_utils.post_file(admin, jobstate_1['id'],
-                      FileDesc('Tempest', tests_data.jobtest_two),
-                      mime='application/junit')
-
-    job_tests_results = admin.get(
-        '/api/v1/jobs/%s/results' % job_user_id)
-    testscases = job_tests_results.data['results'][0]['testscases']
+    file_id = t_utils.post_file(
+        admin,
+        jobstate_1['id'],
+        FileDesc('Tempest', tests_data.jobtest_two),
+        mime='application/junit'
+    )
+    testscases = admin.get(
+        '/api/v1/files/%s/testscases' % file_id).data["testscases"]
     for testcase in testscases:
         if testcase['name'] == 'Testsuite_1:test_3':
             assert len(testcase['issues']) == 2

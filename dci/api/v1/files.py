@@ -79,7 +79,7 @@ def get_previous_job_in_topic(job):
     return flask.g.db_conn.execute(query).fetchone()
 
 
-def _get_test_result_of_previous_job(job, filename):
+def _get_previous_jsonunit(job, filename):
     prev_job = get_previous_job_in_topic(job)
     if prev_job is None:
         return None
@@ -87,40 +87,39 @@ def _get_test_result_of_previous_job(job, filename):
         where(sql.and_(models.TESTS_RESULTS.c.job_id == prev_job['id'],
                        models.TESTS_RESULTS.c.name == filename))
     res = flask.g.db_conn.execute(query).fetchone()
-    if res is not None:
-        res = dict(res)
-    return res
+    if res is None:
+        return None
+    test_file = get_file_object(res.file_id)
+    file_descriptor = get_file_descriptor(test_file)
+    return tsfm.junit2dict(file_descriptor.read())
 
 
-def _process_junit_file(values, store, file_path, job, file_id):
-    _, file_descriptor = store.get(file_path)
-    jsonunit = tsfm.junit2dict(file_descriptor.read())
-    # the following two inner functions update in place the jsonunit
-    # structure
+def _compute_regressions_successfix(jsonunit, previous_jsonunit):
+    if previous_jsonunit and len(previous_jsonunit['testscases']) > 0:
+        return tsfm.add_regressions_and_successfix_to_tests(
+            previous_jsonunit,
+            jsonunit
+        )
+    return jsonunit
 
-    def compute_regressions_successfix():
-        # get the tests results of the previous job for regressions computation
-        # between current and previous job tests results
-        prev_test_result = _get_test_result_of_previous_job(job,
-                                                            values['name'])
-        if prev_test_result is not None:
-            prev_test_result['testscases'] = prev_test_result['tests_cases']  # noqa
-            if len(prev_test_result['testscases']) > 0:
-                tsfm.add_regressions_and_successfix_to_tests(
-                    prev_test_result, jsonunit)
 
-    def compute_known_tests_cases():
-        tests_to_issues = tests.get_tests_to_issues(job['topic_id'])
-        tsfm.add_known_issues_to_tests(jsonunit, tests_to_issues)
+def _compute_known_tests_cases(jsonunit, job):
+    tests_to_issues = tests.get_tests_to_issues(job['topic_id'])
+    return tsfm.add_known_issues_to_tests(jsonunit, tests_to_issues)
 
-    compute_regressions_successfix()
-    compute_known_tests_cases()
+
+def _process_junit_file(values, junit_content, job):
+    jsonunit = tsfm.junit2dict(junit_content)
+    previous_jsonunit = _get_previous_jsonunit(job, values['name'])
+
+    jsonunit = _compute_regressions_successfix(jsonunit, previous_jsonunit)
+    jsonunit = _compute_known_tests_cases(jsonunit, job)
 
     query = models.TESTS_RESULTS.insert().values({
         'id': utils.gen_uuid(),
         'created_at': values['created_at'],
         'updated_at': datetime.datetime.utcnow().isoformat(),
-        'file_id': file_id,
+        'file_id': values['id'],
         'job_id': job['id'],
         'name': values['name'],
         'success': jsonunit['success'],
@@ -130,8 +129,7 @@ def _process_junit_file(values, store, file_path, job, file_id):
         'successfixes': jsonunit['successfixes'],
         'skips': jsonunit['skips'],
         'total': jsonunit['total'],
-        'time': jsonunit['time'],
-        'tests_cases': jsonunit['testscases']
+        'time': jsonunit['time']
     })
 
     flask.g.db_conn.execute(query)
@@ -190,7 +188,8 @@ def create_files(user):
         result = json.dumps({'file': values})
 
         if values['mime'] == 'application/junit':
-            _process_junit_file(values, store, file_path, job, file_id)
+            junit_content = store.get(file_path)[1].read()
+            _process_junit_file(values, junit_content, job)
 
     return flask.Response(result, 201, content_type='application/json')
 
@@ -256,6 +255,19 @@ def get_file_content(user, file_id):
         as_attachment=True,
         attachment_filename=file['name'].replace(' ', '_')
     )
+
+
+@api.route('/files/<uuid:file_id>/testscases', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def get_file_testscases(user, file_id):
+    file = get_file_object(file_id)
+    if not user.is_in_team(file['team_id']) and not user.is_read_only_user():
+        raise dci_exc.Unauthorized()
+    file_descriptor = get_file_descriptor(file)
+    return flask.Response(json.dumps({
+        "testscases": tsfm.junit2dict(file_descriptor.read())["testscases"]
+    }), 200, content_type='application/json')
 
 
 @api.route('/files/<uuid:file_id>', methods=['DELETE'])

@@ -277,7 +277,6 @@ TESTS_RESULTS = sa.Table(
     sa.Column('job_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('jobs.id', ondelete='CASCADE'),
               nullable=False),
-    sa.Column('tests_cases', pg.JSON, default=[]),
     sa.Index('tests_results_job_id_idx', 'job_id'),
     sa.Column('file_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('files.id', ondelete='CASCADE'),

@@ -139,6 +139,7 @@ def add_regressions_and_successfix_to_tests(testsuite1, testsuite2):
                     prev_testcase['regression']):
                 testcase['successfix'] = True
                 testsuite2['successfixes'] += 1
+    return testsuite2
 
 
 def add_known_issues_to_tests(testsuite, tests_to_issues):
@@ -150,3 +151,4 @@ def add_known_issues_to_tests(testsuite, tests_to_issues):
                 testcase['issues'] = tests_to_issues[testname]
             else:
                 testcase['issues'] = []
+    return testsuite

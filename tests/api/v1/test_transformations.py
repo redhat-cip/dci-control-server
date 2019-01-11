@@ -263,72 +263,31 @@ def test_create_file_fill_tests_results_table(engine, admin, job_user_id):
 
 
 def test_add_regressions_successfix():
-    jobtest1 = """
+    old_junit = """
 <testsuite errors="0" failures="60" name="" tests="2289" time="3385.127">
-    <testcase
-            classname="Testsuite1"
-            name="test_1"
-            time="28.810">
+    <testcase classname="Testsuite1" name="test_1" time="28.810">
         <failure type="Exception">Traceback</failure>
     </testcase>
-    <testcase
-            classname="Testsuite1"
-            name="test_2"
-            time="29.419">
+    <testcase classname="Testsuite1" name="test_2" time="29.419" />
+    <testcase classname="Testsuite1" name="test_3" time="29.419" />
+</testsuite>
+"""
+    new_junit = """
+<testsuite errors="0" failures="60" name="" tests="2289" time="3385.127">
+    <testcase classname="Testsuite1" name="test_1" time="28.810" />
+    <testcase classname="Testsuite1" name="test_2" time="29.419">
+        <failure type="Exception">Traceback</failure>
     </testcase>
-        <testcase
-            classname="Testsuite1"
-            name="test_3"
-            time="29.419">
+    <testcase classname="Testsuite1" name="test_3" time="29.419">
+        <failure type="Exception">Traceback</failure>
     </testcase>
 </testsuite>
 """
-    jobtest2 = """
-<testsuite errors="0" failures="60" name="" tests="2289" time="3385.127">
-    <testcase
-            classname="Testsuite1"
-            name="test_1"
-            time="28.810">
-    </testcase>
-    <testcase
-            classname="Testsuite1"
-            name="test_2"
-            time="29.419">
-        <failure type="Exception">Traceback</failure>
-    </testcase>
-    <testcase
-            classname="Testsuite1"
-            name="test_3"
-            time="29.419">
-            <failure type="Exception">Traceback</failure>
-    </testcase>
-</testsuite>
-"""
-    testsuite1 = transformations.junit2dict(jobtest1)
-    testsuite2 = transformations.junit2dict(jobtest2)
-    transformations.add_regressions_and_successfix_to_tests(testsuite1,
-                                                            testsuite2)
-
-    # test regressions and successfix are properly catched
-    for testcase in testsuite2['testscases']:
-        if testcase['name'] == 'test_1':
-            assert testcase['successfix'] is True
-        elif testcase['name'] == 'test_2':
-            assert testcase['regression'] is True
-        elif testcase['name'] == 'test_3':
-            assert testcase['regression'] is True
-    assert testsuite2['regressions'] == 2
-
-    # test regressions are properly replicated from previous job
-    testsuite2_bis = transformations.junit2dict(jobtest2)
-    transformations.add_regressions_and_successfix_to_tests(testsuite2,
-                                                            testsuite2_bis)
-    for testcase in testsuite2_bis['testscases']:
-        if testcase['name'] == 'test_1':
-            assert testcase['successfix'] is False
-            assert testcase['regression'] is False
-        elif testcase['name'] == 'test_2':
-            assert testcase['regression'] is True
-        elif testcase['name'] == 'test_3':
-            assert testcase['regression'] is True
-    assert testsuite2_bis['regressions'] == 2
+    old_tests = transformations.junit2dict(old_junit)
+    new_tests = transformations.junit2dict(new_junit)
+    tests = transformations.add_regressions_and_successfix_to_tests(
+        old_tests,
+        new_tests
+    )
+    assert tests['successfixes'] == 1
+    assert tests['regressions'] == 2

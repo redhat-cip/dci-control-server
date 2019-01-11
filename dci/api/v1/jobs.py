@@ -509,7 +509,7 @@ def get_all_results_from_jobs(user, j_id):
                         'time': test_result['time'],
                         'regressions': test_result['regressions'],
                         'success': test_result['success'],
-                        'testscases': test_result['tests_cases']})
+                        'file_id': test_result['file_id']})
 
     return flask.jsonify({'results': results,
                           '_meta': {'count': len(results)}})

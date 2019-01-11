@@ -64,6 +64,7 @@ ROLES = {
     'get_all_files': ALL,
     'get_file_by_id': ALL,
     'get_file_content': ALL,
+    'get_file_testscases': ALL,
     'delete_file_by_id': ALL,
     'get_to_purge_archived_files': SUPER_ADMIN,
     'purge_archived_files': SUPER_ADMIN,
