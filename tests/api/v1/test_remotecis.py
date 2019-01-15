@@ -33,13 +33,12 @@ def test_generate_keys(user, team_user_id, remoteci_user_id, cakeys):
     assert tmp_cert.decode('utf-8') == keys['keys']['cert']
 
 
-def test_create_remotecis(user, team_user_id, role_remoteci):
+def test_create_remotecis(user, team_user_id):
     pr = user.post('/api/v1/remotecis',
                    data={'name': 'pname', 'team_id': team_user_id}).data
     pr_id = pr['remoteci']['id']
     gr = user.get('/api/v1/remotecis/%s' % pr_id).data
     assert gr['remoteci']['name'] == 'pname'
-    assert gr['remoteci']['role_id'] == role_remoteci['id']
 
 
 def test_create_remotecis_already_exist(user, team_user_id):

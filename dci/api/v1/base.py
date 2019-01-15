@@ -37,11 +37,6 @@ def get_resource_by_id(user, resource, table, embed_many=None,
 
     query = v1_utils.QueryBuilder(table, args, columns, ignore_columns)
 
-    if (user.is_not_super_admin() and 'team_id' in resource and
-            resource['team_id'] is not None and
-        not user.is_read_only_user()):
-        query.add_extra_condition(table.c.team_id.in_(user.teams_ids))
-
     if 'state' in resource:
         query.add_extra_condition(table.c.state != 'archived')
 
@@ -72,6 +67,9 @@ def get_archived_resources(table):
 def get_to_purge_archived_resources(user, table):
     """List the entries to be purged from the database. """
 
+    if user.is_not_super_admin():
+        raise dci_exc.Unauthorized()
+
     archived_resources = get_archived_resources(table)
 
     return flask.jsonify({table.name: archived_resources,
@@ -80,6 +78,9 @@ def get_to_purge_archived_resources(user, table):
 
 def purge_archived_resources(user, table):
     """Remove the entries to be purged from the database. """
+
+    if user.is_not_super_admin():
+        raise dci_exc.Unauthorized()
 
     where_clause = sql.and_(
         table.c.state == 'archived'
