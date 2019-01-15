@@ -14,140 +14,105 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+import uuid
+
 
 class Identity:
-    """Class that offers helper methods to simplify permission management
-    """
 
-    def __init__(self, user, teams):
-        for key in user.keys():
-            setattr(self, key, user[key])
+    def __init__(self, user_info, all_teams):
 
-        # TODO: replace user['role_label'] with user['role']['label']
-        self.role_label = user['role_label']
-        self.team = self._get_user_team(user, teams)
-        teams_by_ids = self._get_teams_by_ids(teams)
-        user_team_id = user['team_id']
-        self.product_team_id = self._get_product_team_id(
-            teams_by_ids, user_team_id)
-        teams = self._get_teams_and_child_teams(teams, user_team_id)
-        self.teams_ids = [team['id'] for team in teams]
-
-    @staticmethod
-    def _get_teams_and_child_teams(teams, team_id):
-        if not team_id:
-            return []
-        return_teams = []
-        for team in teams:
-            if team['id'] == team_id:
-                return_teams.append(team)
-            if team['parent_id'] == team_id:
-                return_teams += Identity._get_teams_and_child_teams(
-                    teams, team['id']
-                )
-        return return_teams
+        self.id = user_info.get('id')
+        self.password = user_info.get('password', None)
+        self.name = user_info.get('name', None)
+        self.fullname = user_info.get('fullname', None)
+        self.timezone = user_info.get('timezone', None)
+        self.email = user_info.get('email', None)
+        self.sso_username = user_info.get('sso_username', None)
+        self.etag = user_info.get('etag', None)
+        self.api_secret = user_info.get('api_secret', '')
+        # user_info['teams'] = {'<team-id1>': {'parent_id': <id>,
+        #                                      'team_name': <name> 
+        #                                      'role': <role>},
+        #                       '<team-id2>: {...}}
+        self.teams = user_info.get('teams', {})
+        self.teams_ids = self.teams.keys()
+        self._is_super_admin = user_info.get('is_super_admin', False)
+        # if the user's team is a product team then it does have some
+        # child teams, then get all the child teams
+        self.child_teams_ids, self.parent_teams_ids = self._get_child_and_parent_teams_ids(self.teams, all_teams)  # noqa
 
     @staticmethod
-    def _get_product_team_id(teams_by_ids, team_id):
-        if not team_id:
-            return None
-        parent_team_id = teams_by_ids[team_id]
-        if not parent_team_id:
-            return None
-        if not teams_by_ids[parent_team_id]:
-            return team_id
-        return Identity._get_product_team_id(teams_by_ids, parent_team_id)
-
-    @staticmethod
-    def _get_teams_by_ids(teams):
-        teams_by_ids = {}
-        for team in teams:
-            teams_by_ids[team['id']] = team['parent_id']
-        return teams_by_ids
-
-    # NOTE(spredzy): In order to avoid a huge refactor patch, the __getitem__
-    # function is overloaded so it behaves like a dict and the code in place
-    # can work transparently
-    def __getitem__(self, key):
-        return getattr(self, key)
-
-    def _get_user_team(self, user, teams):
-        for team in teams:
-            if user['team_id'] == team['id']:
-                return team
-        return {'id': None}
-
-    def is_not_in_team(self, team_id):
-        """Test if user is not in team"""
-        return not self.is_in_team(team_id)
-
-    def is_in_team(self, team_id):
-        """Test if user is in team"""
-        if self.is_super_admin():
-            return True
-        return team_id in self.teams_ids
+    def _get_child_and_parent_teams_ids(user_teams, all_teams):
+        child_teams = set()
+        parent_teams = set()
+        for u_t, v_t in user_teams.items():
+            if v_t['parent_id']:
+                parent_teams.add(v_t['parent_id'])
+            for a_team in all_teams:
+                if a_team['parent_id'] == u_t:
+                    child_teams.add(a_team['id'])
+        return child_teams, parent_teams
 
     def is_super_admin(self):
         """Ensure the user has the role SUPER_ADMIN."""
 
-        return self.role_label == 'SUPER_ADMIN'
+        return self._is_super_admin
 
     def is_not_super_admin(self):
         """Ensure the user has not the role SUPER_ADMIN."""
 
         return not self.is_super_admin()
 
-    def is_not_admin(self):
-        """Ensure the user has not the role ADMIN."""
+    def is_product_owner(self, team_id):
+        """Ensure the user is a PRODUCT_OWNER."""
 
-        return not self.is_admin()
+        if self.is_super_admin():
+            return True
+        team_id = uuid.UUID(str(team_id))
+        return team_id in self.child_teams_ids
 
-    def is_product_owner(self):
-        """Ensure the user has the role PRODUCT_OWNER."""
-
-        return self.role_label == 'PRODUCT_OWNER'
-
-    def is_not_product_owner(self):
+    def is_not_product_owner(self, team_id):
         """Ensure the user has not the role PRODUCT_OWNER."""
 
-        return not self.is_product_owner()
-
-    # TODO: replace team_id with object team
-    def is_team_product_owner(self, team_id):
-        """Ensure the user has the role PRODUCT_OWNER and belongs
-           to the team."""
-
-        return self.role_label == 'PRODUCT_OWNER' and self.is_in_team(team_id)
-
-    def is_admin(self):
-        """Ensure the user has the role ADMIN."""
-
-        return self.role_label == 'ADMIN'
+        return not self.is_product_owner(team_id)
 
     def is_read_only_user(self):
         """Check if the user is a rh employee."""
-        return self.role_label == 'READ_ONLY_USER'
+
+        if None in self.teams:
+            return self.teams[None]['role'] == 'READ_ONLY_USER'
+        return False
 
     def is_not_read_only_user(self):
         """Check if the user is not a read only user."""
+
         return not self.is_read_only_user()
 
-    def is_team_admin(self, team_id):
-        """Ensure the user has the role ADMIN and belongs to the team."""
+    def is_in_team(self, team_id):
+        """Test if user is in team"""
 
-        return self.role_label == 'ADMIN' and self.is_in_team(team_id)
+        if self.is_super_admin():
+            return True
+        team_id = uuid.UUID(str(team_id))
+        return team_id in self.teams or team_id in self.child_teams_ids
 
-    def is_regular_user(self):
-        """Ensure the user has the role USER."""
+    def is_not_in_team(self, team_id):
+        """Test if user is not in team"""
 
-        return self.role_label == 'USER'
+        return not self.is_in_team(team_id)
 
-    def is_remoteci(self):
+    def is_remoteci(self, team_id):
         """Ensure ther resource has the role REMOTECI."""
 
-        return self.role_label == 'REMOTECI'
+        team_id = uuid.UUID(str(team_id))
+        if team_id not in self.teams_ids:
+            return False
+        return self.teams[team_id]['role'] == 'REMOTECI'
 
-    def is_feeder(self):
+    def is_feeder(self, team_id):
         """Ensure ther resource has the role FEEDER."""
 
-        return self.role_label == 'FEEDER'
+        team_id = uuid.UUID(str(team_id))
+        if team_id not in self.teams_ids:
+            return False
+        return self.teams[team_id]['role'] == 'FEEDER'

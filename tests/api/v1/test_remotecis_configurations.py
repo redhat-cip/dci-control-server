@@ -112,7 +112,6 @@ def test_get_last_rconfiguration_id(engine, admin, remoteci_context, topic):
             data={'topic_id': topic['id']}
         )
         assert r.status_code == 201
-        print(r.data)
         expected_rconfig_id = r.data['job']['rconfiguration_id']
     rconf_id = remotecis.get_last_rconfiguration_id(topic['id'],
                                                     remoteci['id'],

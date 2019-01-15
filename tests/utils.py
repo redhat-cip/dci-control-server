@@ -82,7 +82,6 @@ def generate_client(app, credentials=None, access_token=None):
                 data = flask.json.loads(data or '{}')
             if type(data) == six.binary_type:
                 data = data.decode('utf8')
-
             return Response(response.status_code, data, response.headers)
 
         return wrapper
@@ -137,17 +136,20 @@ def post_file(client, jobstate_id, file_desc, mime='text/plain'):
     res = client.post('/api/v1/files',
                       headers=headers,
                       data=file_desc.content)
-
     return res.data['file']['id']
 
 
 def provision(db_conn):
-    def db_insert(model_item, **kwargs):
+    def db_insert(model_item, return_pk=True, **kwargs):
         query = model_item.insert().values(**kwargs)
-        return db_conn.execute(query).inserted_primary_key[0]
+        if return_pk:
+            return db_conn.execute(query).inserted_primary_key[0]
+        else:
+            db_conn.execute(query)
 
     # Create teams
     team_admin_id = db_insert(models.TEAMS, name='admin')
+    team_redhat_id = db_insert(models.TEAMS, name='redhat')
     team_product_id = db_insert(models.TEAMS, name='product',
                                 parent_id=team_admin_id)
     team_user_id = db_insert(models.TEAMS, name='user',
@@ -206,17 +208,23 @@ def provision(db_conn):
 
     # Create users
     user_pw_hash = auth.hash_password('user')
-    db_insert(models.USERS,
-              name='user',
-              sso_username='user',
-              role_id=user_role_id,
-              password=user_pw_hash,
-              fullname='User',
-              email='user@example.org',
-              team_id=team_user_id)
+    u_id = db_insert(models.USERS,
+                     name='user',
+                     sso_username='user',
+                     role_id=user_role_id,
+                     password=user_pw_hash,
+                     fullname='User',
+                     email='user@example.org',
+                     team_id=team_user_id)
+
+    db_insert(models.JOIN_USERS_TEAMS_ROLES,
+              return_pk=False,
+              user_id=u_id,
+              team_id=team_user_id,
+              role='USER')
 
     user_no_team_pw_hash = auth.hash_password('user_no_team')
-    db_insert(models.USERS,
+    u_id = db_insert(models.USERS,
               name='user_no_team',
               sso_username='user_no_team',
               role_id=user_role_id,
@@ -225,8 +233,14 @@ def provision(db_conn):
               email='user_no_team@example.org',
               team_id=None)
 
+    db_insert(models.JOIN_USERS_TEAMS_ROLES,
+              return_pk=False,
+              user_id=u_id,
+              team_id=None,
+              role='USER')
+
     user_admin_pw_hash = auth.hash_password('user_admin')
-    db_insert(models.USERS,
+    u_id = db_insert(models.USERS,
               name='user_admin',
               sso_username='user_admin',
               role_id=admin_role_id,
@@ -235,8 +249,14 @@ def provision(db_conn):
               email='user_admin@example.org',
               team_id=team_user_id)
 
+    db_insert(models.JOIN_USERS_TEAMS_ROLES,
+              return_pk=False,
+              user_id=u_id,
+              team_id=team_user_id,
+              role='ADMIN')
+
     product_owner_pw_hash = auth.hash_password('product_owner')
-    db_insert(models.USERS,
+    u_id = db_insert(models.USERS,
               name='product_owner',
               sso_username='product_owner',
               role_id=product_owner_role_id,
@@ -245,8 +265,14 @@ def provision(db_conn):
               email='product_ownern@example.org',
               team_id=team_product_id)
 
+    db_insert(models.JOIN_USERS_TEAMS_ROLES,
+              return_pk=False,
+              user_id=u_id,
+              team_id=team_product_id,
+              role='PRODUCT_OWNER')
+
     admin_pw_hash = auth.hash_password('admin')
-    db_insert(models.USERS,
+    u_id = db_insert(models.USERS,
               name='admin',
               sso_username='admin',
               role_id=super_admin_role_id,
@@ -254,6 +280,12 @@ def provision(db_conn):
               fullname='Admin',
               email='admin@example.org',
               team_id=team_admin_id)
+
+    db_insert(models.JOIN_USERS_TEAMS_ROLES,
+              return_pk=False,
+              user_id=u_id,
+              team_id=team_admin_id,
+              role='SUPER_ADMIN')
 
     # Create a product
     db_insert(models.PRODUCTS,

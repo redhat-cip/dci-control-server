@@ -492,14 +492,15 @@ def test_component_success_update_field_by_field(admin, topic_id):
     assert t['state'] == 'inactive'
 
 
-def test_success_get_topics_embed(admin, topic_id):
+def test_success_get_topics_embed(admin, topic_id, product_id):
     result = admin.get('/api/v1/topics/%s/?embed=product' % topic_id)
 
     assert result.status_code == 200
     assert 'product' in result.data['topic'].keys()
 
     request = admin.post('/api/v1/topics',
-                         data={'name': 'topic_without_product'})
+                         data={'name': 'topic_without_product',
+                               'product_id': product_id})
 
     result = admin.get('/api/v1/topics')
     assert request.data['topic'] == result.data['topics'][0]

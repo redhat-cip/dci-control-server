@@ -46,14 +46,13 @@ def create_feeders(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.feeder.post(flask.request.json))
 
-    if not user.is_in_team(values['team_id']):
+    if user.is_not_in_team(values['team_id']):
         raise dci_exc.Unauthorized()
 
     values.update({
         # XXX(fc): this should be populated as a default value from the
         # model, but we don't return values from the database :(
         'api_secret': signature.gen_secret(),
-        'role_id': auth.get_role_id('FEEDER'),
         'data': values.get('data', {}),
     })
 
@@ -79,7 +78,12 @@ def get_all_feeders(user):
     query = v1_utils.QueryBuilder(_TABLE, args, _F_COLUMNS)
 
     if user.is_not_super_admin():
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
+        query.add_extra_condition(
+            sql.or_(
+                _TABLE.c.team_id.in_(user.teams_ids),
+                _TABLE.c.team_id.in_(user.child_teams_ids)
+            )
+        )
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
