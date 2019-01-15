@@ -26,7 +26,7 @@ def test_log_action_with_remoteci_id(engine, admin, remoteci_id, team_id):
 
     _g = flask.g
     flask.g = Flask_g_mock()
-    log_action(remoteci_id, team_id, 'some_action')
+    log_action(remoteci_id, 'some_action')
     flask.g = _g
 
     gaudits = admin.get('/api/v1/audits')

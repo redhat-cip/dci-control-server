@@ -23,10 +23,9 @@ from dci.db import models
 _TABLE = models.LOGS
 
 
-def log_action(user_id, team_id, action):
+def log_action(user_id, action):
     values = {
         'user_id': user_id,
-        'team_id': team_id,
         'action': action,
         'created_at': datetime.datetime.utcnow().isoformat()
     }
@@ -36,6 +35,7 @@ def log_action(user_id, team_id, action):
 def log(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        log_action(args[0]['id'], args[0]['team_id'], f.__name__)
+        user = args[0]
+        log_action(user.id, f.__name__)
         return f(*args, **kwargs)
     return decorated

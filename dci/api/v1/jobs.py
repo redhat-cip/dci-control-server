@@ -66,15 +66,13 @@ _EMBED_MANY = {
 
 @api.route('/jobs', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_jobs(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.job.post(flask.request.json))
     components_ids = values.pop('components')
 
-    values['team_id'] = values.get('team_id', user['team_id'])
     # Only super admin can create job for other teams
-    if user.is_not_super_admin() and not user.is_in_team(values['team_id']):
+    if user.is_not_super_admin() and user.is_not_in_team(values['team_id']):
         raise dci_exc.Unauthorized()
 
     topic_id = values.get('topic_id')
@@ -173,7 +171,6 @@ def _get_job(user, job_id, embed=None):
 
 @api.route('/jobs/schedule', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def schedule_jobs(user):
     """Dispatch jobs to remotecis.
 
@@ -224,7 +221,6 @@ def schedule_jobs(user):
 
 @api.route('/jobs/<uuid:job_id>/update', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_new_update_job_from_an_existing_job(user, job_id):
     """Create a new job in the same topic as the job_id provided and
     associate the latest components of this topic."""
@@ -271,7 +267,6 @@ def create_new_update_job_from_an_existing_job(user, job_id):
 
 @api.route('/jobs/upgrade', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_new_upgrade_job_from_an_existing_job(user):
     """Create a new job in the 'next topic' of the topic of
     the provided job_id."""
@@ -326,7 +321,6 @@ def create_new_upgrade_job_from_an_existing_job(user):
 
 @api.route('/jobs', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_all_jobs(user, topic_id=None):
     """Get all jobs.
 
@@ -343,7 +337,10 @@ def get_all_jobs(user, topic_id=None):
 
     # # If not admin nor rh employee then restrict the view to the team
     if user.is_not_super_admin() and not user.is_read_only_user():
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
+        query.add_extra_condition(
+            sql.or_(
+                _TABLE.c.team_id.in_(user.teams_ids),
+                _TABLE.c.team_id.in_(user.child_teams_ids)))
 
     # # If topic_id not None, then filter by topic_id
     if topic_id is not None:
@@ -362,24 +359,21 @@ def get_all_jobs(user, topic_id=None):
 
 @api.route('/jobs/<uuid:job_id>/components', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_components_from_job(user, job_id):
     job, nb_rows = _get_job(user, job_id, ['components'])
     return flask.jsonify({'components': job['components'],
                           '_meta': {'count': nb_rows}})
 
 
-@api.route('/jobs/<uuid:j_id>/jobstates', methods=['GET'])
+@api.route('/jobs/<uuid:job_id>/jobstates', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
-def get_jobstates_by_job(user, j_id):
-    v1_utils.verify_existence_and_get(j_id, _TABLE)
-    return jobstates.get_all_jobstates(j_id=j_id)
+def get_jobstates_by_job(user, job_id):
+    v1_utils.verify_existence_and_get(job_id, _TABLE)
+    return jobstates.get_all_jobstates(user, job_id)
 
 
 @api.route('/jobs/<uuid:job_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_job_by_id(user, job_id):
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     job_dict = dict(job)
@@ -391,7 +385,6 @@ def get_job_by_id(user, job_id):
 
 @api.route('/jobs/<uuid:job_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 @audits.log
 def update_job_by_id(user, job_id):
     """Update a job
@@ -438,7 +431,6 @@ def update_job_by_id(user, job_id):
 
 @api.route('/jobs/<uuid:j_id>/files', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def add_file_to_jobs(user, j_id):
     values = schemas.job.post(flask.request.json)
 
@@ -449,7 +441,6 @@ def add_file_to_jobs(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>/issues', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def retrieve_issues_from_job(user, j_id):
     """Retrieve all issues attached to a job."""
     return issues.get_issues_by_resource(j_id, _TABLE)
@@ -457,15 +448,13 @@ def retrieve_issues_from_job(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>/issues', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def attach_issue_to_jobs(user, j_id):
     """Attach an issue to a job."""
-    return issues.attach_issue(j_id, _TABLE, user['id'])
+    return issues.attach_issue(j_id, _TABLE, user.id)
 
 
 @api.route('/jobs/<uuid:j_id>/issues/<uuid:i_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def unattach_issue_from_job(user, j_id, i_id):
     """Unattach an issue to a job."""
     return issues.unattach_issue(j_id, i_id, _TABLE)
@@ -473,16 +462,14 @@ def unattach_issue_from_job(user, j_id, i_id):
 
 @api.route('/jobs/<uuid:j_id>/files', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_all_files_from_jobs(user, j_id):
     """Get all files.
     """
-    return files.get_all_files(j_id)
+    return files.get_all_files(user, j_id)
 
 
 @api.route('/jobs/<uuid:j_id>/results', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_all_results_from_jobs(user, j_id):
     """Get all results from job.
     """
@@ -517,7 +504,6 @@ def get_all_results_from_jobs(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_job_by_id(user, j_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -551,7 +537,6 @@ def delete_job_by_id(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>/metas', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def associate_meta(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']):
@@ -561,7 +546,6 @@ def associate_meta(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_meta_by_id(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']) and not user.is_read_only_user():
@@ -571,7 +555,6 @@ def get_meta_by_id(user, j_id, m_id):
 
 @api.route('/jobs/<uuid:j_id>/metas', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_all_metas(user, j_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']) and not user.is_read_only_user():
@@ -581,7 +564,6 @@ def get_all_metas(user, j_id):
 
 @api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def put_meta(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']):
@@ -591,7 +573,6 @@ def put_meta(user, j_id, m_id):
 
 @api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_meta(user, j_id, m_id):
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
     if not user.is_in_team(job['team_id']):
@@ -601,7 +582,6 @@ def delete_meta(user, j_id, m_id):
 
 @api.route('/jobs/<uuid:job_id>/tags', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_tags_from_job(user, job_id):
     """Retrieve all tags attached to a job."""
 
@@ -620,7 +600,6 @@ def get_tags_from_job(user, job_id):
 
 @api.route('/jobs/<uuid:job_id>/tags', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def add_tag_to_job(user, job_id):
     """Add a tag to a job."""
 
@@ -640,7 +619,6 @@ def add_tag_to_job(user, job_id):
 
 @api.route('/jobs/<uuid:job_id>/tags/<uuid:tag_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_tag_from_job(user, job_id, tag_id):
     """Delete a tag from a job."""
 
@@ -663,14 +641,12 @@ def delete_tag_from_job(user, job_id, tag_id):
 
 @api.route('/jobs/purge', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_to_purge_archived_jobs(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/jobs/purge', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def purge_archived_jobs(user):
     files.purge_archived_files()
     return base.purge_archived_resources(user, _TABLE)

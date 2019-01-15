@@ -16,14 +16,14 @@
 """add join_teams_roles
 
 Revision ID: 4c70cf0e4637
-Revises: 732a3e25e65e
+Revises: 3b7aaa1c90da
 Create Date: 2018-12-07 15:27:31.181051
 
 """
 
 # revision identifiers, used by Alembic.
 revision = '4c70cf0e4637'
-down_revision = '732a3e25e65e'
+down_revision = '3b7aaa1c90da'
 branch_labels = None
 depends_on = None
 
@@ -38,11 +38,24 @@ def upgrade():
         'users_teams_roles',
         sa.Column('user_id', pg.UUID(as_uuid=True),
                   sa.ForeignKey('users.id', ondelete='CASCADE'),
-                  nullable=False, primary_key=True),
+                  nullable=False),
         sa.Column('team_id', pg.UUID(as_uuid=True),
                   sa.ForeignKey('teams.id', ondelete='CASCADE'),
-                  nullable=False, primary_key=True),
-        sa.Column('role', models.ROLES_ENUM, default='USER', nullable=False))
+                  nullable=True),
+        sa.Column('role', models.ROLES_ENUM, default='USER', nullable=False),
+        sa.UniqueConstraint('user_id', 'team_id', name='users_teams_roles_key')
+    )
+
+    op.alter_column('users', 'role_id', nullable=True)
+    op.alter_column('remotecis', 'role_id', nullable=True)
+
+    op.drop_index('jobstates_team_id_idx', table_name='jobstates')
+    op.drop_column('jobstates', 'team_id')
+
+    op.drop_index('logs_team_id_idx', table_name='logs')
+    op.drop_column('logs', 'team_id')
+
+    op.drop_column('feeders', 'role_id')
 
 
 def downgrade():

@@ -60,23 +60,17 @@ def _verify_existence_and_get_user(user_id):
 
 @api.route('/users', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_users(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.user.post(flask.request.json))
 
-    if not user.is_in_team(values['team_id']):
-        raise dci_exc.Unauthorized()
-
-    role_id = values.get('role_id', auth.get_role_id('USER'))
-    if user.is_not_super_admin() and \
-            (role_id == auth.get_role_id('SUPER_ADMIN') or
-             role_id == auth.get_role_id('READ_ONLY_USER')):
+    if (user.is_not_super_admin and
+        user.is_not_product_owner(values['team_id'])):
         raise dci_exc.Unauthorized()
 
     values.update({
         'password': auth.hash_password(values.get('password')),
-        'role_id': role_id,
+        'role_id': None,
         'fullname': values.get('fullname', values['name']),
         'timezone': values.get('timezone', 'UTC'),
         'sso_username': None
@@ -100,16 +94,12 @@ def create_users(user):
 
 @api.route('/users', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
-def get_all_users(user, team_id=None):
+def get_all_users(user):
     args = schemas.args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
 
     if user.is_not_super_admin():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
-
-    if team_id is not None:
-        query.add_extra_condition(_TABLE.c.team_id == team_id)
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
@@ -123,6 +113,8 @@ def get_all_users(user, team_id=None):
 
 
 def user_by_id(user, user_id):
+    if user.id != user_id and user.is_not_super_admin():
+        raise dci_exc.Unauthorized()
     user_res = v1_utils.verify_existence_and_get(user_id, _TABLE)
     return base.get_resource_by_id(user, user_res, _TABLE, _EMBED_MANY,
                                    ignore_columns=['password'])
@@ -130,28 +122,25 @@ def user_by_id(user, user_id):
 
 @api.route('/users/<uuid:user_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_user_by_id(user, user_id):
-    return user_by_id(user, user_id)
+    return user_by_id(user, str(user_id))
 
 
 @api.route('/users/me', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_current_user(user):
-    return user_by_id(user, user['id'])
+    return user_by_id(user, user.id)
 
 
 @api.route('/users/me', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def put_current_user(user):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.current_user.put(flask.request.json)
 
     if user.is_not_read_only_user():
         current_password = values['current_password']
-        encrypted_password = user['password']
+        encrypted_password = user.password
         if not auth.check_passwords_equal(current_password,
                                           encrypted_password):
             raise dci_exc.DCIException('current_password invalid')
@@ -164,18 +153,18 @@ def put_current_user(user):
 
     etag = utils.gen_etag()
     new_values.update({'etag': etag,
-                       'fullname': values.get('fullname') or user['fullname'],
-                       'email': values.get('email') or user['email'],
-                       'timezone': values.get('timezone') or user['timezone']})
+                       'fullname': values.get('fullname') or user.fullname,
+                       'email': values.get('email') or user.email,
+                       'timezone': values.get('timezone') or user.timezone})
 
     query = _TABLE.update().returning(*_TABLE.columns).where(sql.and_(
         _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == user['id']
+        _TABLE.c.id == user.id
     )).values(new_values)
 
     result = flask.g.db_conn.execute(query)
     if not result.rowcount:
-        raise dci_exc.DCIConflict('User', user['id'])
+        raise dci_exc.DCIConflict('User', user.id)
     _result = dict(result.fetchone())
     del _result['password']
 
@@ -187,22 +176,13 @@ def put_current_user(user):
 
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def put_user(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.user.put(flask.request.json)
 
-    # to update a user the caller must be either the admin of its team
-    # or a super admin
-    puser = dict(_verify_existence_and_get_user(user_id))
-    if puser['id'] != str(user_id) and not user.is_in_team(puser['team_id']):
-        raise dci_exc.Unauthorized()
-
-    # if the caller wants to update the team_id then it must be done by a super
-    # admin
-    if 'team_id' in values and user.is_not_super_admin() and \
-       not user.is_team_product_owner(values['team_id']):
+    # to update a user the caller must be a super admin
+    if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
     values['etag'] = utils.gen_etag()
@@ -232,14 +212,13 @@ def put_user(user, user_id):
 
 @api.route('/users/<uuid:user_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_user_by_id(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    duser = _verify_existence_and_get_user(user_id)
+    _verify_existence_and_get_user(user_id)
 
-    if user.is_not_in_team(duser['team_id']):
+    if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
     values = {'state': 'archived'}
@@ -259,13 +238,11 @@ def delete_user_by_id(user, user_id):
 
 @api.route('/users/purge', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_to_purge_archived_users(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/users/purge', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def purge_archived_users(user):
     return base.purge_archived_resources(user, _TABLE)

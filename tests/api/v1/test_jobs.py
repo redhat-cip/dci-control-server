@@ -34,11 +34,13 @@ FileDesc = collections.namedtuple('FileDesc', ['name', 'content'])
 SWIFT = 'dci.stores.swift.Swift'
 
 
-def test_create_jobs(remoteci_context, components_user_ids, job_user_id):
+def test_create_jobs(remoteci_context, components_user_ids, job_user_id,
+                     team_user_id):
     data = {
         'comment': 'kikoolol',
         'components': components_user_ids,
         'previous_job_id': job_user_id,
+        'team_id': team_user_id
     }
     job = remoteci_context.post('/api/v1/jobs', data=data)
     job_id = job.data['job']['id']
@@ -53,18 +55,22 @@ def test_create_jobs(remoteci_context, components_user_ids, job_user_id):
 
 
 def test_create_jobs_bad_previous_job_id(remoteci_context,
-                                         components_user_ids):
+                                         components_user_ids,
+                                         team_user_id):
     data = {
         'comment': 'kikoolol',
         'components': components_user_ids,
         'previous_job_id': 'foo',
+        'team_id': team_user_id
     }
     r = remoteci_context.post('/api/v1/jobs', data=data)
     assert r.status_code == 400
 
 
-def test_create_jobs_empty_comment(remoteci_context, components_user_ids):
-    data = {'components': components_user_ids}
+def test_create_jobs_empty_comment(remoteci_context, components_user_ids,
+                                   team_user_id):
+    data = {'components': components_user_ids,
+            'team_id': team_user_id}
     job = remoteci_context.post('/api/v1/jobs', data=data).data
     assert job['job']['comment'] is None
 
@@ -73,9 +79,10 @@ def test_create_jobs_empty_comment(remoteci_context, components_user_ids):
 
 
 def test_get_all_jobs(user, remoteci_context, topic_user_id,
-                      components_user_ids):
+                      components_user_ids, team_user_id):
     data = {'components_ids': components_user_ids,
-            'topic_id': topic_user_id}
+            'topic_id': topic_user_id,
+            'team_id': team_user_id}
     job_1 = remoteci_context.post('/api/v1/jobs/schedule', data=data)
     job_1_id = job_1.data['job']['id']
 
@@ -90,8 +97,10 @@ def test_get_all_jobs(user, remoteci_context, topic_user_id,
 
 
 def test_get_all_jobs_with_pagination(remoteci_context,
-                                      components_user_ids, test_id):
-    data = {'components': components_user_ids}
+                                      components_user_ids, test_id,
+                                      team_user_id):
+    data = {'components': components_user_ids,
+            'team_id': team_user_id}
     remoteci_context.post('/api/v1/jobs', data=data)
     remoteci_context.post('/api/v1/jobs', data=data)
     remoteci_context.post('/api/v1/jobs', data=data)
@@ -117,7 +126,8 @@ def test_get_all_jobs_with_embed(admin, remoteci_context, team_user_id,
                                  remoteci_user_id, components_user_ids,
                                  topic_user_id):
     # create 2 jobs and check meta data count
-    data = {'components': components_user_ids}
+    data = {'components': components_user_ids,
+            'team_id': team_user_id}
     job_1 = remoteci_context.post('/api/v1/jobs', data=data)
     job_2 = remoteci_context.post('/api/v1/jobs', data=data)
 
@@ -197,7 +207,8 @@ def test_get_all_jobs_with_duplicated_embed(admin, team_user_id,
                                             components_user_ids,
                                             topic_user_id):
     data = {'topic_id': topic_user_id,
-            'components': components_user_ids}
+            'components': components_user_ids,
+            'team_id': team_user_id}
 
     remoteci_context.post('/api/v1/jobs', data=data)
     query_embed = (('/api/v1/jobs?embed='
@@ -211,9 +222,11 @@ def test_get_all_jobs_with_duplicated_embed(admin, team_user_id,
 
 
 def test_get_all_jobs_with_embed_and_limit(remoteci_context,
-                                           components_user_ids):
+                                           components_user_ids,
+                                           team_user_id):
     # create 2 jobs and check meta data count
-    data = {'components': components_user_ids}
+    data = {'components': components_user_ids,
+            'team_id': team_user_id}
     remoteci_context.post('/api/v1/jobs', data=data)
     remoteci_context.post('/api/v1/jobs', data=data)
 
@@ -275,7 +288,6 @@ def test_get_all_jobs_with_where(admin, team_user_id, job_user_id):
     db_job = admin.get(
         '/api/v1/jobs?where=team_id:%s' % team_user_id).data
     db_job_id = db_job['jobs'][0]['id']
-    print(db_job)
     assert db_job_id == job_user_id
 
 
@@ -292,9 +304,11 @@ def test_where_invalid(admin):
     }
 
 
-def test_get_all_jobs_with_sort(remoteci_context, components_user_ids):
+def test_get_all_jobs_with_sort(remoteci_context, components_user_ids,
+                                team_user_id):
     # create 3 jobs ordered by created time
-    data = {'components': components_user_ids}
+    data = {'components': components_user_ids,
+            'team_id': team_user_id}
     job_1 = remoteci_context.post('/api/v1/jobs', data=data).data['job']
     job_2 = remoteci_context.post('/api/v1/jobs', data=data).data['job']
     job_3 = remoteci_context.post('/api/v1/jobs', data=data).data['job']
@@ -307,9 +321,10 @@ def test_get_all_jobs_with_sort(remoteci_context, components_user_ids):
     assert jobs['jobs'] == [job_3, job_2, job_1]
 
 
-def test_get_job_by_id(remoteci_context, components_user_ids):
+def test_get_job_by_id(remoteci_context, components_user_ids, team_user_id):
     job = remoteci_context.post('/api/v1/jobs',
-                                data={'components': components_user_ids})
+                                data={'components': components_user_ids,
+                                      'team_id': team_user_id})
     job_id = job.data['job']['id']
 
     job = remoteci_context.get('/api/v1/jobs/%s' % job_id)
@@ -319,8 +334,10 @@ def test_get_job_by_id(remoteci_context, components_user_ids):
     assert job['job']['id'] == job_id
 
 
-def test_get_jobstates_by_job_id(admin, job_user_id):
-    data = {'status': 'new', 'job_id': job_user_id}
+def test_get_jobstates_by_job_id(admin, job_user_id, team_user_id):
+    data = {'status': 'new',
+            'job_id': job_user_id,
+            'team_id': team_user_id}
     jobstate_ids = set([
         admin.post('/api/v1/jobstates', data=data).data['jobstate']['id'],
         admin.post('/api/v1/jobstates', data=data).data['jobstate']['id']])
@@ -400,9 +417,10 @@ def test_get_job_not_found(admin):
 
 
 def test_get_jobs_with_schedule(remoteci_context, topic_user_id,
-                                components_user_ids):
+                                components_user_ids, team_user_id):
     # schedule a job
-    data = {'topic_id': topic_user_id}
+    data = {'topic_id': topic_user_id,
+            'team_id': team_user_id}
     job = remoteci_context.post('/api/v1/jobs/schedule', data=data)
     assert job.status_code == 201
     job_id = job.data['job']['id']
@@ -417,10 +435,12 @@ def test_get_jobs_with_schedule(remoteci_context, topic_user_id,
         assert component['component']['jobs'][0]['id'] == job_id
 
 
-def test_delete_job_by_id(remoteci_context, components_user_ids):
+def test_delete_job_by_id(remoteci_context, components_user_ids,
+                          team_user_id):
 
     job = remoteci_context.post('/api/v1/jobs',
-                                data={'components': components_user_ids})
+                                data={'components': components_user_ids,
+                                      'team_id': team_user_id})
     job_id = job.data['job']['id']
     job_etag = job.headers.get("ETag")
     assert job.status_code == 201
@@ -489,9 +509,11 @@ def test_get_all_jobs_as_product_owner(product_owner, team_user_id,
         assert job['team_id'] == team_user_id
 
 
-def test_get_job_as_user(user, remoteci_context, components_user_ids):
+def test_get_job_as_user(user, remoteci_context, components_user_ids,
+                         team_user_id):
     job = remoteci_context.post('/api/v1/jobs',
-                                data={'components': components_user_ids}).data
+                                data={'components': components_user_ids,
+                                      'team_id': team_user_id}).data
     job_id = job['job']['id']
     job = user.get('/api/v1/jobs/%s' % job_id)
     assert job.status_code == 200
@@ -506,7 +528,8 @@ def test_delete_job_as_user(user, job_user_id):
     assert job_delete.status_code == 204
 
 
-def test_create_file_for_job_id(user, remoteci_context, components_user_ids):
+def test_create_file_for_job_id(user, remoteci_context, components_user_ids,
+                                team_user_id):
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
 
         mockito = mock.MagicMock()
@@ -519,7 +542,8 @@ def test_create_file_for_job_id(user, remoteci_context, components_user_ids):
         mock_swift.return_value = mockito
         # create a job
         job = remoteci_context.post('/api/v1/jobs',
-                                    data={'components': components_user_ids})
+                                    data={'components': components_user_ids,
+                                          'team_id': team_user_id})
         job_id = job.data['job']['id']
         assert job.status_code == 201
 
