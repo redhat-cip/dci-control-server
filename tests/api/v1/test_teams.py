@@ -180,7 +180,8 @@ def test_put_team_external_flag(user, admin, product_owner, team_product_id):
     cteam_id = cteam.data['team']['id']
 
     cteam = product_owner.get('/api/v1/teams/%s' % cteam_id)
-    cteam_etag = cteam.headers.get('Etag')
+    assert cteam.status_code == 200
+    cteam_etag = cteam.headers.get('ETag')
 
     cteam_put = user.put('/api/v1/teams/%s' % cteam_id,
                          data={'external': False},
@@ -300,23 +301,7 @@ def test_get_teams_as_user(user, team_user_id, team_admin_id):
     assert len(teams.data['teams']) == 1
 
 
-# Only super admin and an admin of a team can update the team
-def test_put_team_as_user_admin(user, team_user_id, user_admin):
-    team = user.get('/api/v1/teams/%s' % team_user_id)
-    team_etag = team.headers.get("ETag")
-    team_user_id = team.data['team']['id']
-
-    team_put = user.put('/api/v1/teams/%s' % team_user_id,
-                        data={'name': 'nname'},
-                        headers={'If-match': team_etag})
-    assert team_put.status_code == 401
-
-    team_put = user_admin.put('/api/v1/teams/%s' % team_user_id,
-                              data={'name': 'nname'},
-                              headers={'If-match': team_etag})
-    assert team_put.status_code == 200
-
-
+# Only super admin can update the team
 def test_change_team_state(admin, team_id):
     t = admin.get('/api/v1/teams/' + team_id).data['team']
     data = {'state': 'inactive'}
@@ -340,7 +325,7 @@ def test_change_team_to_invalid_state(admin, team_id):
 
 
 # Only super admin can delete a team
-def test_delete_as_user_admin(user, team_user_id, user_admin):
+def test_delete_as_user_admin(user, team_user_id, admin):
     team = user.get('/api/v1/teams/%s' % team_user_id)
     team_etag = team.headers.get("ETag")
 
@@ -348,9 +333,9 @@ def test_delete_as_user_admin(user, team_user_id, user_admin):
                               headers={'If-match': team_etag})
     assert team_delete.status_code == 401
 
-    team_delete = user_admin.delete('/api/v1/teams/%s' % team_user_id,
-                                    headers={'If-match': team_etag})
-    assert team_delete.status_code == 401
+    team_delete = admin.delete('/api/v1/teams/%s' % team_user_id,
+                               headers={'If-match': team_etag})
+    assert team_delete.status_code == 204
 
 
 def test_success_update_field_by_field(admin, team_id):
@@ -377,7 +362,7 @@ def test_success_update_field_by_field(admin, team_id):
     assert t['country'] == 'FR'
 
 
-def test_add_get_users_from_to_team(admin, team_id, user_id, user_admin_id):
+def test_add_get_users_from_to_team(admin, team_id, user_id, admin_id):
     # adding two users to the same team
     users = admin.get('/api/v1/teams/%s/users' % team_id)
     current_len = len(users.data['users'])
@@ -391,7 +376,7 @@ def test_add_get_users_from_to_team(admin, team_id, user_id, user_admin_id):
     assert len(users.data['users']) == (current_len + 1)
     current_len += 1
 
-    pu = admin.post('/api/v1/teams/%s/users/%s' % (team_id, user_admin_id),
+    pu = admin.post('/api/v1/teams/%s/users/%s' % (team_id, admin_id),
                     data={'role': 'USER'})
     assert pu.status_code == 201
 
@@ -400,12 +385,9 @@ def test_add_get_users_from_to_team(admin, team_id, user_id, user_admin_id):
     assert len(users.data['users']) == (current_len + 1)
 
 
-def test_add_user_to_different_teams(admin, user_id, team_id, team_user_id):
+def test_add_user_to_different_teams(admin, user_id, team_id,
+                                     team_user_id, user):
     pu = admin.post('/api/v1/teams/%s/users/%s' % (team_id, user_id),
-                    data={'role': 'USER'})
-    assert pu.status_code == 201
-
-    pu = admin.post('/api/v1/teams/%s/users/%s' % (team_user_id, user_id),
                     data={'role': 'USER'})
     assert pu.status_code == 201
 
@@ -415,7 +397,10 @@ def test_add_user_to_different_teams(admin, user_id, team_id, team_user_id):
 
     users = admin.get('/api/v1/teams/%s/users' % team_user_id)
     assert users.status_code == 200
-    assert users.data['users'][0]['id'] == user_id
+    assert (users.data['users'][0]['id'] == user_id or
+            users.data['users'][1]['id'] == user_id)
+
+    user.get('/api/v1/jobs')
 
 
 def test_delete_user_from_team(admin, user_id, team_id):

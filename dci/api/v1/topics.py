@@ -48,11 +48,11 @@ def create_topics(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.topic.post(flask.request.json))
 
-    if not values['product_id']:
-        values['product_id'] = user.product_id
+    product = v1_utils.verify_existence_and_get(values['product_id'],
+                                                models.PRODUCTS)
+    team_product_id = product['team_id']
 
-    if user.is_not_super_admin() and \
-       not user.product_id == values['product_id']:
+    if user.is_not_super_admin() and user.is_not_in_team(team_product_id):
         raise dci_exc.Unauthorized()
 
     # todo(yassine): enabled when client updated.
@@ -77,16 +77,13 @@ def create_topics(user):
 def get_topic_by_id(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    product = v1_utils.verify_existence_and_get(topic['product_id'],
+                                                models.PRODUCTS)
 
-    if user.is_not_super_admin() and user.is_not_product_owner():
+    if user.is_not_super_admin() and user.is_not_in_team(product['team_id']):
         if not user.is_read_only_user():
             v1_utils.verify_team_in_topic(user, topic_id)
         if 'teams' in args['embed']:
-            raise dci_exc.Unauthorized()
-
-    if (user.is_not_super_admin() and
-        user.product_id != topic['product_id'] and
-        not user.is_read_only_user()):
             raise dci_exc.Unauthorized()
 
     return base.get_resource_by_id(user, topic, _TABLE, _EMBED_MANY)
@@ -100,15 +97,11 @@ def get_all_topics(user):
     # if the user is an admin then he can get all the topics
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
-    if user.is_not_super_admin() and user.is_not_product_owner():
+    if user.is_not_super_admin() and user.is_not_read_only_user():
         if 'teams' in args['embed']:
             raise dci_exc.DCIException('embed=teams not authorized.',
                                        status_code=401)
-        if not user.is_read_only_user():
-            query.add_extra_condition(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))  # noqa
-
-    if user.is_product_owner():
-        query.add_extra_condition(_TABLE.c.product_id == user.product_id)
+        query.add_extra_condition(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))  # noqa
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
@@ -129,19 +122,21 @@ def put_topic(user, topic_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.topic.put(flask.request.json)
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    product = v1_utils.verify_existence_and_get(topic['product_id'],
+                                                models.PRODUCTS)
 
-    if user.is_not_super_admin() and \
-       not user.product_id == topic['product_id']:
+    if user.is_not_super_admin() and user.is_not_in_team(product['team_id']):
         raise dci_exc.Unauthorized()
 
     n_topic = None
     if values.get('next_topic_id'):
         n_topic = v1_utils.verify_existence_and_get(values['next_topic_id'],
                                                     _TABLE)
+        product = v1_utils.verify_existence_and_get(n_topic['product_id'],
+                                                    models.PRODUCTS)
 
-    if user.is_product_owner() and \
-       (user.product_id != topic['product_id'] or
-       (n_topic and user.product_id != n_topic['product_id'])):
+        if (user.is_not_super_admin() and
+            user.is_not_in_team(product['team_id'])):
             raise dci_exc.Unauthorized()
 
     values['etag'] = utils.gen_etag()
@@ -168,8 +163,9 @@ def put_topic(user, topic_id):
 @decorators.check_roles
 def delete_topic_by_id(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
-    if user.is_not_super_admin() and \
-       not user.product_id == topic['product_id']:
+    product = v1_utils.verify_existence_and_get(topic['product_id'],
+                                                models.PRODUCTS)
+    if user.is_not_super_admin() and user.is_not_in_team(product['team_id']):
         raise dci_exc.Unauthorized()
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
@@ -231,9 +227,13 @@ def add_team_to_topic(user, topic_id):
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
                                                 get_id=True)
 
-    if user.is_not_super_admin() and \
-       not (user.is_team_product_owner(team_id) and
-            user.product_id == topic['product_id']):
+    product = v1_utils.verify_existence_and_get(topic['product_id'],
+                                                models.PRODUCTS)
+    team_product_id = product['team_id']
+
+    if (user.is_not_super_admin() and
+        user.is_not_in_team(team_product_id) and
+        user.is_not_product_owner(team_id)):
         raise dci_exc.Unauthorized()
 
     values = {'topic_id': topic['id'],
@@ -256,10 +256,10 @@ def delete_team_from_topic(user, topic_id, team_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
                                                 get_id=True)
+    product = v1_utils.verify_existence_and_get(topic['product_id'],
+                                                models.PRODUCTS)
 
-    if user.is_not_super_admin() and \
-       not (user.is_team_product_owner(team_id) and
-            user.product_id == topic['product_id']):
+    if user.is_not_super_admin() and user.is_not_in_team(product['team_id']):
         raise dci_exc.Unauthorized()
 
     JTT = models.JOINS_TOPICS_TEAMS

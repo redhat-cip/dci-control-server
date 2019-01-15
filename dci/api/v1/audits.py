@@ -19,6 +19,7 @@ import flask
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
+from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.db import models
 
@@ -39,7 +40,7 @@ def get_logs(user):
     query = v1_utils.QueryBuilder(_TABLE, args, _A_COLUMNS)
 
     if user.is_not_super_admin():
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
+        raise dci_exc.Unauthorized()
 
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)

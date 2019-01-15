@@ -42,27 +42,19 @@ def test_success_create_feeder_authorized_users(admin, product_owner,
     assert po_result.data['feeder']['name'] == feeder_from_po['name']
 
 
-def test_failure_create_feeder_unauthorized_users(user_admin, user,
-                                                  team_product_id):
+def test_failure_create_feeder_unauthorized_users(user, team_product_id):
     """Test to ensure user w/o proper permissions can't create feeders
 
        Currently only the role SUPER_ADMIN and PRODUCT_OWNER have such
-       a permission. So we test with the other roles ADMIN and USER.
+       a permission. So we test with a regular USER.
     """
 
-    feeder_from_user_admin = {
-        'name': 'feeder-from-user-admin', 'team_id': team_product_id
-    }
     feeder_from_user = {
         'name': 'feeder-from-user', 'team_id': team_product_id
     }
 
-    user_admin_result = user_admin.post(
-        '/api/v1/feeders', data=feeder_from_user_admin
-    )
     user_result = user.post('/api/v1/feeders', data=feeder_from_user)
 
-    assert user_admin_result.status_code == 401
     assert user_result.status_code == 401
 
 
@@ -79,14 +71,12 @@ def test_success_get_feeder_authorized_users(admin, product_owner, feeder):
     assert po_result.data['feeders'][0]['name'] == 'random-name-feeder'
 
 
-def test_failure_get_feeder_unauthorized_users(user_admin, user, feeder):
+def test_failure_get_feeder_unauthorized_users(user, feeder):
     """Test to ensure user w/o proper permissions can'tretrieve feeders."""
 
-    user_admin_result = user_admin.get('/api/v1/feeders')
     user_result = user.get('/api/v1/feeders')
-
-    assert user_admin_result.status_code == 401
-    assert user_result.status_code == 401
+    assert user_result.status_code == 200
+    assert user_result.data['feeders'] == []
 
 
 def test_success_delete_feeder_authorized_users(admin, product_owner, feeder,
@@ -113,15 +103,11 @@ def test_success_delete_feeder_authorized_users(admin, product_owner, feeder,
     assert po_retrieve.status_code == 404
 
 
-def test_failure_delete_feeder_unauthorized_users(user_admin, user, feeder):
+def test_failure_delete_feeder_unauthorized_users(user, feeder):
     """Test to ensure user w/o proper permissions can't delete feeders."""
 
-    user_admin_result = user_admin.delete('/api/v1/feeders/%s' % feeder['id'],
-                                          headers={'If-match': feeder['etag']})
     user_result = user.delete('/api/v1/feeders/%s' % feeder['id'],
                               headers={'If-match': feeder['etag']})
-
-    assert user_admin_result.status_code == 401
     assert user_result.status_code == 401
 
 
@@ -145,17 +131,12 @@ def test_success_put_feeder_authorized_users(admin, product_owner, feeder):
     assert po_result.data['feeder']['name'] == 'newname-po'
 
 
-def test_failure_put_feeder_unauthorized_users(user_admin, user, feeder):
+def test_failure_put_feeder_unauthorized_users(user, feeder):
     """Test to ensure user w/o proper permissions can't update feeders."""
 
-    user_admin_result = user_admin.put('/api/v1/feeders/%s' % feeder['id'],
-                                       data={'name': 'newname'},
-                                       headers={'If-match': feeder['etag']})
     user_result = user.put('/api/v1/feeders/%s' % feeder['id'],
                            data={'name': 'newname'},
                            headers={'If-match': feeder['etag']})
-
-    assert user_admin_result.status_code == 401
     assert user_result.status_code == 401
 
 
@@ -183,21 +164,13 @@ def test_success_refresh_secret_feeder_authorized_users(admin, product_owner,
     assert po_result.data['feeder']['api_secret'] != original_api_secret
 
 
-def test_failure_refresh_secret_feeder_unauthorized_users(user_admin, user,
-                                                          feeder):
+def test_failure_refresh_secret_feeder_unauthorized_users(user, feeder):
     """Test to ensure user w/o proper permissions can't update feeders."""
-
-    user_admin_result = user_admin.put(
-        '/api/v1/feeders/%s/api_secret' % feeder['id'],
-        data={'name': 'newname'}, headers={'If-match': feeder['etag']}
-    )
 
     user_result = user.put(
         '/api/v1/feeders/%s/api_secret' % feeder['id'],
         data={'name': 'newname'}, headers={'If-match': feeder['etag']}
     )
-
-    assert user_admin_result.status_code == 401
     assert user_result.status_code == 401
 
 

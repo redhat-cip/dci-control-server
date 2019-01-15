@@ -461,7 +461,7 @@ def retrieve_issues_from_component(user, c_id):
 @decorators.check_roles
 def attach_issue_to_component(user, c_id):
     """Attach an issue to a component."""
-    return issues.attach_issue(c_id, _TABLE, user['id'])
+    return issues.attach_issue(c_id, _TABLE, user.id)
 
 
 @api.route('/components/<c_id>/issues/<i_id>', methods=['DELETE'])

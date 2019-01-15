@@ -374,7 +374,7 @@ remoteci = DCISchema(schema_factory(remoteci).post, Schema(remoteci_put))
 
 job = {
     v.Optional('remoteci_id'): v.Any(UUID, msg=INVALID_REMOTE_CI),
-    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
+    'team_id': v.Any(UUID, msg=INVALID_TEAM),
     'components': list,
     v.Optional('comment', default=None): v.Any(six.text_type, None),
     v.Optional('previous_job_id', default=None): v.Any(v.All(UUID,
@@ -478,7 +478,7 @@ file_upload_certification = schema_factory({
 ###############################################################################
 
 topic = dict_merge(base, DATA_FIELD, {
-    v.Optional('product_id', default=None): v.Any(
+    'product_id': v.Any(
         v.All(UUID, msg=INVALID_PRODUCT), None
     ),
     v.Optional('next_topic_id', default=None): v.Any(
