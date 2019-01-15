@@ -21,14 +21,13 @@ import uuid
 import mock
 
 
-def test_create_users(admin, team_id, role_user):
+def test_create_users(admin, team_id):
     pu = admin.post('/api/v1/users',
                     data={'name': 'pname', 'password': 'ppass',
                           'fullname': 'P Name', 'email': 'pname@example.org',
                           'team_id': team_id}).data
 
     pu_id = pu['user']['id']
-    assert pu['user']['role_id'] == role_user['id']
     gu = admin.get('/api/v1/users/%s' % pu_id).data
     assert gu['user']['name'] == 'pname'
     assert gu['user']['timezone'] == 'UTC'
@@ -346,7 +345,7 @@ def test_delete_user_not_found(admin):
 
 # Tests for the isolation
 
-def test_create_user_as_user(user, user_admin, team_user_id):
+def test_create_user_as_user(user, team_user_id):
     # simple user cannot add a new user to its team
     pu = user.post('/api/v1/users',
                    data={'name': 'pname',
@@ -355,15 +354,6 @@ def test_create_user_as_user(user, user_admin, team_user_id):
                          'email': 'pname@example.org',
                          'team_id': team_user_id})
     assert pu.status_code == 401
-
-    # admin user can add a new user to its team
-    pu = user_admin.post('/api/v1/users',
-                         data={'name': 'pname',
-                               'password': 'ppass',
-                               'fullname': 'P Name',
-                               'email': 'pname@example.org',
-                               'team_id': team_user_id})
-    assert pu.status_code == 201
 
 
 def test_get_all_users_as_user(user, team_user_id):
@@ -397,20 +387,26 @@ def get_user(flask_user, name):
     return get2.data['user'], get2.headers.get("ETag")
 
 
-def test_admin_or_team_admin_can_update_another_user(admin, user_admin):
-    user, etag = get_user(admin, 'user')
+def test_admin_only_can_update_another_user(admin, product_owner, user):
+    regular_user, etag = get_user(admin, 'user')
     assert admin.put(
-        '/api/v1/users/%s' % user['id'],
+        '/api/v1/users/%s' % regular_user['id'],
         data={'name': 'new_name'},
         headers={'If-match': etag}
     ).status_code == 200
 
-    user, etag = get_user(admin, 'new_name')
-    assert user_admin.put(
-        '/api/v1/users/%s' % user['id'],
+    regular_user, etag = get_user(admin, 'new_name')
+    assert product_owner.put(
+        '/api/v1/users/%s' % regular_user['id'],
         data={'name': 'user'},
         headers={'If-match': etag}
-    ).status_code == 200
+    ).status_code == 401
+
+    assert user.put(
+        '/api/v1/users/%s' % regular_user['id'],
+        data={'name': 'user'},
+        headers={'If-match': etag}
+    ).status_code == 401
 
 
 def test_user_cant_update_him(admin, user):
@@ -424,7 +420,7 @@ def test_user_cant_update_him(admin, user):
 
 
 # Only super admin can delete a user
-def test_delete_as_user_admin(user, user_admin):
+def test_delete_as_user_product_owner(user, product_owner, admin):
     puser = user.get('/api/v1/users?where=name:user')
     puser = user.get('/api/v1/users/%s' % puser.data['users'][0]['id'])
     user_etag = puser.headers.get("ETag")
@@ -433,9 +429,14 @@ def test_delete_as_user_admin(user, user_admin):
                               headers={'If-match': user_etag})
     assert user_delete.status_code == 401
 
-    user_delete = user_admin.delete('/api/v1/users/%s'
-                                    % puser.data['user']['id'],
-                                    headers={'If-match': user_etag})
+    user_delete = product_owner.delete('/api/v1/users/%s'
+                                       % puser.data['user']['id'],
+                                       headers={'If-match': user_etag})
+    assert user_delete.status_code == 401
+
+    user_delete = admin.delete('/api/v1/users/%s'
+                               % puser.data['user']['id'],
+                               headers={'If-match': user_etag})
     assert user_delete.status_code == 204
 
 
@@ -592,16 +593,6 @@ def test_user_cannot_update_team(user, user_id, team_admin_id):
 
     guser = user.get('/api/v1/users/%s' % user_id)
     assert guser.data['user']['team_id'] != team_admin_id
-
-
-def test_team_admin_user_cannot_update_team(user_admin, user, user_id,
-                                            team_admin_id):
-    guser = user.get('/api/v1/users/%s' % user_id)
-    etag = guser.data['user']['etag']
-    data = {'team_id': team_admin_id}
-    r = user_admin.put('/api/v1/users/%s' % user_id, data=data,
-                       headers={'If-match': etag})
-    assert r.status_code == 401
 
 
 def test_success_ensure_put_me_api_secret_is_not_leaked(admin, user):

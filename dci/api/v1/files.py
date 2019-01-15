@@ -159,7 +159,7 @@ def create_files(user):
 
     job = v1_utils.verify_existence_and_get(values.get('job_id'), models.JOBS)
     if user.is_not_in_team(job['team_id']) or user.is_read_only_user():
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     file_id = utils.gen_uuid()
     file_path = files_utils.build_file_path(job['team_id'],

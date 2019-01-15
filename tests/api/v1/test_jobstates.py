@@ -92,164 +92,6 @@ def test_create_jobstates_empty_comment(user, job_user_id):
     assert js['jobstate']['comment'] is None
 
 
-def test_get_all_jobstates(user, job_user_id):
-    js_1 = user.post('/api/v1/jobstates',
-                     data={'job_id': job_user_id,
-                           'status': 'running', 'comment': 'kikoolol1'}).data
-    js_1_id = js_1['jobstate']['id']
-
-    js_2 = user.post('/api/v1/jobstates',
-                     data={'job_id': job_user_id,
-                           'status': 'running', 'comment': 'kikoolol2'}).data
-    js_2_id = js_2['jobstate']['id']
-
-    db_all_js = user.get('/api/v1/jobstates?sort=created_at').data
-    db_all_js = db_all_js['jobstates']
-    db_all_js_ids = [db_js['id'] for db_js in db_all_js]
-
-    assert db_all_js_ids == [js_1_id, js_2_id]
-
-
-def test_get_all_jobstates_with_pagination(user, job_user_id):
-    # create 4 jobstates types and check meta count
-    data = {'job_id': job_user_id, 'status': 'running',
-            'comment': 'kikoolol1'}
-    user.post('/api/v1/jobstates', data=data)
-    data = {'job_id': job_user_id, 'status': 'running',
-            'comment': 'kikoolol2'}
-    user.post('/api/v1/jobstates', data=data)
-    data = {'job_id': job_user_id, 'status': 'running',
-            'comment': 'kikoolol3'}
-    user.post('/api/v1/jobstates', data=data)
-    data = {'job_id': job_user_id, 'status': 'running',
-            'comment': 'kikoolol4'}
-    user.post('/api/v1/jobstates', data=data)
-
-    # check meta count
-    js = user.get('/api/v1/jobstates').data
-    assert js['_meta']['count'] == 4
-
-    # verify limit and offset are working well
-    js = user.get('/api/v1/jobstates?limit=2&offset=0').data
-    assert len(js['jobstates']) == 2
-
-    js = user.get('/api/v1/jobstates?limit=2&offset=2').data
-    assert len(js['jobstates']) == 2
-
-    # if offset is out of bound, the api returns an empty list
-    js = user.get('/api/v1/jobstates?limit=5&offset=300')
-    assert js.status_code == 200
-    assert js.data['jobstates'] == []
-
-
-def test_get_all_jobstates_with_embed(user, job_user_id, team_user_id):
-    # create 2 jobstates and check meta data count
-    data = {'job_id': job_user_id, 'status': 'running', 'comment': 'kikoolol1'}
-    user.post('/api/v1/jobstates', data=data)
-    js = user.post('/api/v1/jobstates', data=data).data
-
-    t_utils.post_file(user, js['jobstate']['id'],
-                      files.FileDesc('foo', 'bar'))
-
-    data = {'job_id': job_user_id, 'status': 'running', 'comment': 'kikoolol2'}
-    user.post('/api/v1/jobstates', data=data)
-
-    # verify embed
-    js = user.get('/api/v1/jobstates?embed=team,files&sort=created_at').data
-    js_1 = js['jobstates'][0]
-    js_2 = js['jobstates'][1]
-
-    assert 'team' in js_1
-    assert js_1['team']['id'] == team_user_id
-    assert len(js_1['files']) == 0
-
-    assert 'team' in js_2
-    assert js_2['team']['id'] == team_user_id
-    assert len(js_2['files']) == 1
-    assert js_2['files'][0]['name'] == 'foo'
-
-
-def test_get_all_jobstates_with_where(user, job_user_id):
-    js = user.post('/api/v1/jobstates',
-                   data={'job_id': job_user_id, 'status': 'running',
-                         'comment': 'kikoolol'}).data
-    js_id = js['jobstate']['id']
-
-    db_js = user.get('/api/v1/jobstates?where=id:%s' % js_id).data
-    db_js_id = db_js['jobstates'][0]['id']
-    assert db_js_id == js_id
-
-    db_js = user.get('/api/v1/jobstates?where=comment:kikoolol').data
-    db_js_id = db_js['jobstates'][0]['id']
-    assert db_js_id == js_id
-
-
-def test_where_invalid(user):
-    err = user.get('/api/v1/jobstates?where=id')
-
-    assert err.status_code == 400
-    assert err.data == {
-        'status_code': 400,
-        'message': 'Invalid where key: "id"',
-        'payload': {
-            'error': 'where key must have the following form "key:value"'
-        }
-    }
-
-
-def test_get_all_jobstates_with_sort(user, job_user_id):
-    # create 4 jobstates ordered by created time
-    jd_1_1 = user.post('/api/v1/jobstates',
-                       data={'job_id': job_user_id,
-                             'status': 'running',
-                             'comment': 'a'}).data['jobstate']
-    jd_1_2 = user.post('/api/v1/jobstates',
-                       data={'job_id': job_user_id,
-                             'status': 'running',
-                             'comment': 'a'}).data['jobstate']
-    jd_2_1 = user.post('/api/v1/jobstates',
-                       data={'job_id': job_user_id,
-                             'status': 'running',
-                             'comment': 'b'}).data['jobstate']
-    jd_2_2 = user.post('/api/v1/jobstates',
-                       data={'job_id': job_user_id,
-                             'status': 'running',
-                             'comment': 'b'}).data['jobstate']
-
-    jds = user.get('/api/v1/jobstates?sort=created_at').data
-    assert jds['jobstates'] == [jd_1_1, jd_1_2, jd_2_1, jd_2_2]
-
-    # sort by comment first and then reverse by created_at
-    jds = user.get('/api/v1/jobstates?sort=comment,-created_at').data
-    assert jds['jobstates'] == [jd_1_2, jd_1_1, jd_2_2, jd_2_1]
-
-
-def test_get_all_jobstates_with_sub_sort(user, job_user_id):
-    # create 4 jobstates ordered by created time
-    jd_1_1 = user.post('/api/v1/jobstates',
-                       data={'job_id': job_user_id,
-                             'status': 'running',
-                             'comment': 'b'}).data['jobstate']
-    jd_1_2 = user.post('/api/v1/jobstates',
-                       data={'job_id': job_user_id,
-                             'status': 'running',
-                             'comment': 'a'}).data['jobstate']
-    t_utils.post_file(user, jd_1_1['id'], files.FileDesc('foo', 'bar'))
-    t_utils.post_file(user, jd_1_2['id'], files.FileDesc('older', 'bar'))
-    t_utils.post_file(user, jd_1_2['id'], files.FileDesc('something', 'bar'))
-    t_utils.post_file(user, jd_1_2['id'], files.FileDesc('latest', 'bar'))
-
-    jds = user.get('/api/v1/jobstates?sort=comment' +
-                   '&embed=files').data
-    # check the sort by comment
-    commands = [j['comment'] for j in jds['jobstates']]
-    assert ['a', 'b'] == commands
-    # check the order by file creation date
-    names = [f['name'] for f in jds['jobstates'][0]['files']]
-    # We don't preserve order of embedded resources
-    assert {'latest', 'something', 'older'} == set(names)
-
-
 def test_get_jobstate_by_id(user, job_user_id):
     js = user.post('/api/v1/jobstates',
                    data={'job_id': job_user_id,
@@ -269,18 +111,16 @@ def test_get_jobstate_not_found(user):
     assert result.status_code == 404
 
 
-def test_get_jobstate_with_embed(user, job_user_id, team_user_id):
-    pt = user.get('/api/v1/teams/%s' % team_user_id).data
+def test_get_jobstate_with_embed(user, job_user_id):
     js = user.post('/api/v1/jobstates',
                    data={'job_id': job_user_id,
                          'comment': 'kikoolol',
                          'status': 'running'}).data
     js_id = js['jobstate']['id']
-    js['jobstate'][u'team'] = pt['team']
 
     # verify embed
-    js_embed = user.get('/api/v1/jobstates/%s?embed=team' % js_id).data
-    assert js == js_embed
+    js_embed = user.get('/api/v1/jobstates/%s?embed=files,job' % js_id)
+    assert js_embed.status_code == 200
 
 
 def test_get_jobstate_with_embed_not_valid(user, job_user_id):
@@ -313,7 +153,7 @@ def test_delete_jobstate_by_id(user, job_user_id):
 # Tests for the isolation
 
 
-def test_create_jobstate_as_user(user, team_user_id, job_user_id):
+def test_create_jobstate_as_user(user, job_user_id):
     jobstate = user.post('/api/v1/jobstates',
                          data={'job_id': job_user_id,
                                'comment': 'kikoolol',
@@ -322,24 +162,8 @@ def test_create_jobstate_as_user(user, team_user_id, job_user_id):
 
     jobstate_id = jobstate.data['jobstate']['id']
     jobstate = user.get('/api/v1/jobstates/%s' % jobstate_id)
-    assert jobstate.data['jobstate']['team_id'] == team_user_id
-
-
-def test_get_all_jobstates_as_user(user, team_user_id, jobstate_user_id):
-    jobstates = user.get('/api/v1/jobstates')
-    assert jobstates.status_code == 200
-    assert jobstates.data['_meta']['count'] == 1
-    for jobstate in jobstates.data['jobstates']:
-        assert jobstate['team_id'] == team_user_id
-
-
-def test_get_all_jobstates_as_product_owner(product_owner, team_user_id,
-                                            jobstate_user_id):
-    jobstates = product_owner.get('/api/v1/jobstates')
-    assert jobstates.status_code == 200
-    assert jobstates.data['_meta']['count'] == 1
-    for jobstate in jobstates.data['jobstates']:
-        assert jobstate['team_id'] == team_user_id
+    assert jobstate.status_code == 200
+    assert jobstate.data['jobstate']['job_id'] == job_user_id
 
 
 def test_get_jobstate_as_user(user, jobstate_user_id, job_user_id):

@@ -161,18 +161,6 @@ def user_no_team(admin):
 
 
 @pytest.fixture
-def user_admin(app, db_provisioning):
-    return utils.generate_client(app, ('user_admin', 'user_admin'))
-
-
-@pytest.fixture
-def user_admin_id(admin):
-    team = admin.get('/api/v1/users?where=name:user_admin')
-    team = admin.get('/api/v1/users/%s' % team.data['users'][0]['id']).data
-    return str(team['user']['id'])
-
-
-@pytest.fixture
 def product_owner(app, db_provisioning):
     return utils.generate_client(app, ('product_owner', 'product_owner'))
 
@@ -392,17 +380,6 @@ def file_job_user_id(user, job_user_id, team_user_id):
 
 
 @pytest.fixture
-def role(admin):
-    data = {
-        'name': 'Manager',
-        'label': 'MANAGER',
-        'description': 'A Manager role',
-    }
-    role = admin.post('/api/v1/roles', data=data).data
-    return role['role']
-
-
-@pytest.fixture
 def feeder(admin, team_product_id):
     data = {
         'name': 'random-name-feeder',
@@ -426,33 +403,6 @@ def product_openstack(admin, team_id):
 @pytest.fixture
 def product(admin):
     return admin.get('/api/v1/products?where=label:AWSM').data['products'][0]
-
-
-@pytest.fixture
-def role_super_admin(admin):
-    return admin.get('/api/v1/roles?where=label:SUPER_ADMIN').data['roles'][0]
-
-
-@pytest.fixture
-def role_product_owner(admin):
-    return admin.get(
-        '/api/v1/roles?where=label:PRODUCT_OWNER'
-    ).data['roles'][0]
-
-
-@pytest.fixture
-def role_admin(admin):
-    return admin.get('/api/v1/roles?where=label:ADMIN').data['roles'][0]
-
-
-@pytest.fixture
-def role_user(admin):
-    return admin.get('/api/v1/roles?where=label:USER').data['roles'][0]
-
-
-@pytest.fixture
-def role_remoteci(admin):
-    return admin.get('/api/v1/roles?where=label:REMOTECI').data['roles'][0]
 
 
 @pytest.fixture
