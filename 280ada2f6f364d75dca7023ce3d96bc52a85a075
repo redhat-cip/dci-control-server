@@ -16,6 +16,24 @@
       "revId": "280ada2f6f364d75dca7023ce3d96bc52a85a075",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b6d8a93b_401789f9",
+        "filename": "Dockerfile",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 56
+      },
+      "writtenOn": "2019-01-15T18:08:48Z",
+      "side": 1,
+      "message": "yep I know we are already mounting the source code in this directory. It\u0027s only for backward compatibility.\n\nI would love to remove that line but we need to be sure that we don\u0027t need the code if someone is using the container image without docker-compose.",
+      "parentUuid": "23dd4129_88b27b61",
+      "revId": "280ada2f6f364d75dca7023ce3d96bc52a85a075",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
