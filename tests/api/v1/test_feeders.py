@@ -46,7 +46,7 @@ def test_failure_create_feeder_unauthorized_users(user, team_product_id):
     """Test to ensure user w/o proper permissions can't create feeders
 
        Currently only the role SUPER_ADMIN and PRODUCT_OWNER have such
-       a permission. So we test with the other roles ADMIN and USER.
+       a permission. So we test with a regular USER.
     """
 
     feeder_from_user = {
@@ -54,6 +54,7 @@ def test_failure_create_feeder_unauthorized_users(user, team_product_id):
     }
 
     user_result = user.post('/api/v1/feeders', data=feeder_from_user)
+
     assert user_result.status_code == 401
 
 
@@ -74,7 +75,8 @@ def test_failure_get_feeder_unauthorized_users(user, feeder):
     """Test to ensure user w/o proper permissions can'tretrieve feeders."""
 
     user_result = user.get('/api/v1/feeders')
-    assert user_result.status_code == 401
+    assert user_result.status_code == 200
+    assert user_result.data['feeders'] == []
 
 
 def test_success_delete_feeder_authorized_users(admin, product_owner, feeder,
@@ -106,7 +108,6 @@ def test_failure_delete_feeder_unauthorized_users(user, feeder):
 
     user_result = user.delete('/api/v1/feeders/%s' % feeder['id'],
                               headers={'If-match': feeder['etag']})
-
     assert user_result.status_code == 401
 
 
@@ -136,7 +137,6 @@ def test_failure_put_feeder_unauthorized_users(user, feeder):
     user_result = user.put('/api/v1/feeders/%s' % feeder['id'],
                            data={'name': 'newname'},
                            headers={'If-match': feeder['etag']})
-
     assert user_result.status_code == 401
 
 
@@ -171,7 +171,6 @@ def test_failure_refresh_secret_feeder_unauthorized_users(user, feeder):
         '/api/v1/feeders/%s/api_secret' % feeder['id'],
         data={'name': 'newname'}, headers={'If-match': feeder['etag']}
     )
-
     assert user_result.status_code == 401
 
 
