@@ -74,3 +74,6 @@ def sanity_check(conf):
         print("Admin team not found. Please init the database"
               " with the 'admin' team and 'admin' user.")
         sys.exit(1)
+
+    # return the team admin id
+    return row.id

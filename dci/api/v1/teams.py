@@ -50,9 +50,11 @@ def create_teams(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.team.post(flask.request.json))
 
-    if not values['parent_id'] or \
-       (user.is_product_owner() and values['parent_id'] != user.team_id):
-        values['parent_id'] = user.team_id
+    if user.is_not_super_admin():
+        raise dci_exc.Unauthorized()
+    
+    if not values.get('parent_id'):
+        values['parent_id'] = flask.g.team_admin_id
 
     query = _TABLE.insert().values(**values)
 
@@ -93,9 +95,10 @@ def get_all_teams(user):
 @decorators.check_roles
 def get_team_by_id(user, t_id):
     team = v1_utils.verify_existence_and_get(t_id, _TABLE)
-    if not user.is_in_team(t_id):
+    if user.is_not_in_team(t_id):
         raise dci_exc.Unauthorized()
-    return base.get_resource_by_id(user, team, _TABLE, _EMBED_MANY)
+    res = base.get_resource_by_id(user, team, _TABLE, _EMBED_MANY)
+    return res
 
 
 @api.route('/teams/<uuid:team_id>/remotecis', methods=['GET'])
@@ -128,8 +131,7 @@ def put_team(user, t_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     values = schemas.team.put(flask.request.json)
-
-    if not user.is_in_team(t_id):
+    if user.is_not_product_owner(t_id):
         raise dci_exc.Unauthorized()
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
@@ -161,7 +163,7 @@ def delete_team_by_id(user, t_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     v1_utils.verify_existence_and_get(t_id, _TABLE)
 
-    if not user.is_in_team(t_id):
+    if user.is_not_product_owner(t_id):
         raise dci_exc.Unauthorized()
 
     with flask.g.db_conn.begin():
@@ -195,16 +197,11 @@ def add_user_to_team(user, team_id, user_id):
     # todo: check role in models.ROLES
     role = values.get('role', 'USER')
 
-    if user.is_not_in_team(team_id):
+    if user.is_not_product_owner(team_id):
         raise dci_exc.Unauthorized()
 
     if role == 'SUPER_ADMIN' or role == 'READ_ONLY_USER':
         if user.is_not_super_admin():
-            raise dci_exc.Unauthorized()
-
-    if role == 'ADMIN' or role == 'PRODUCT_OWNER':
-        if (user.is_not_admin() and user.is_not_product_owner and
-            user.is_not_super_admin()):
             raise dci_exc.Unauthorized()
 
     query = models.JOIN_USERS_TEAMS_ROLES.insert().values(
@@ -233,7 +230,7 @@ def get_users_from_team(user, team_id):
                                   root_join_condition=sql.and_(_JUTR.c.user_id == models.USERS.c.id,  # noqa
                                                                _JUTR.c.team_id == team_id))  # noqa
 
-    if user.is_not_super_admin() and user.is_not_in_team(team_id):
+    if user.is_not_product_owner(team_id) and user.is_not_in_team(team_id):
         raise dci_exc.Unauthorized()
 
     query.add_extra_condition(models.USERS.c.state != 'archived')
@@ -259,7 +256,7 @@ def get_teams_of_user(user, user_id):
                                   root_join_condition=sql.and_(_JUTR.c.team_id == models.TEAMS.c.id,  # noqa
                                                                _JUTR.c.user_id == user_id))  # noqa
 
-    if user.is_not_super_admin() and user['id'] != user_id:
+    if user.is_not_super_admin() and user.id != user_id:
         raise dci_exc.Unauthorized()
 
     query.add_extra_condition(models.TEAMS.c.state != 'archived')
@@ -278,11 +275,7 @@ def get_teams_of_user(user, user_id):
 @decorators.check_roles
 def remove_user_from_team(user, team_id, user_id):
 
-    if user.is_not_in_team(team_id):
-        raise dci_exc.Unauthorized()
-
-    if (user.is_not_super_admin() and user.is_not_product_owner() and
-        user.is_not_admin()):
+    if user.is_not_product_owner(team_id):
         raise dci_exc.Unauthorized()
 
     _JUTR = models.JOIN_USERS_TEAMS_ROLES

@@ -478,7 +478,7 @@ USERS = sa.Table(
     sa.Column('password', sa.Text, nullable=True),
     sa.Column('timezone', sa.String(255), nullable=False, default='UTC'),
     sa.Column('role_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('roles.id', ondelete='SET NULL')),
+              sa.ForeignKey('roles.id', ondelete='SET NULL'), nullable=True),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=True),
@@ -490,11 +490,12 @@ JOIN_USERS_TEAMS_ROLES = sa.Table(
     'users_teams_roles', metadata,
     sa.Column('user_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('users.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True),
+              nullable=False),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True),
-    sa.Column('role', ROLES_ENUM, default='USER', nullable=False)
+              nullable=True),
+    sa.Column('role', ROLES_ENUM, default='USER', nullable=False),
+    sa.UniqueConstraint('user_id', 'team_id', name='users_teams_roles_key')
 )
 
 JOIN_USER_REMOTECIS = sa.Table(
@@ -516,10 +517,6 @@ LOGS = sa.Table(
     sa.Column('user_id', pg.UUID(as_uuid=True),
               nullable=False),
     sa.Index('logs_user_id_idx', 'user_id'),
-    sa.Column('team_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
-              nullable=False),
-    sa.Index('logs_team_id_idx', 'team_id'),
     sa.Column('action', sa.Text, nullable=False)
 )
 
