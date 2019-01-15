@@ -21,7 +21,7 @@ import uuid
 import mock
 
 
-def test_create_users(admin, team_id, role_user):
+def test_create_users(admin, team_id):
     pu = admin.post('/api/v1/users',
                     data={'name': 'pname', 'password': 'ppass',
                           'fullname': 'P Name', 'email': 'pname@example.org',
@@ -29,13 +29,12 @@ def test_create_users(admin, team_id, role_user):
     assert pu.status_code == 201
     pu = pu.data
     pu_id = pu['user']['id']
-    assert pu['user']['role_id'] == role_user['id']
     gu = admin.get('/api/v1/users/%s' % pu_id).data
     assert gu['user']['name'] == 'pname'
     assert gu['user']['timezone'] == 'UTC'
 
 
-def test_create_user_withouta_team_and_role(admin, role_user):
+def test_create_user_withouta_team_and_role(admin):
     pu = admin.post('/api/v1/users',
                     data={'name': 'pname', 'password': 'ppass',
                           'fullname': 'P Name',
@@ -43,7 +42,6 @@ def test_create_user_withouta_team_and_role(admin, role_user):
     assert pu.status_code == 201
     pu = pu.data
     pu_id = pu['user']['id']
-    assert pu['user']['role_id'] == role_user['id']
     gu = admin.get('/api/v1/users/%s' % pu_id).data
     assert gu['user']['name'] == 'pname'
     assert gu['user']['timezone'] == 'UTC'
@@ -127,14 +125,6 @@ def test_get_all_users_with_team(admin):
     db_users = admin.get('/api/v1/users?embed=team&where=name:admin').data
     db_users = db_users['users']
     assert db_users[0]['team']['id']
-
-
-def test_get_all_users_with_role(admin):
-    db_users = admin.get(
-        '/api/v1/users?embed=role&where=name:admin'
-    ).data['users']
-
-    assert db_users[0]['role']['label'] == 'SUPER_ADMIN'
 
 
 def test_get_all_users_with_where(admin, team_id):
@@ -391,7 +381,7 @@ def test_get_user_as_user(user, admin):
     puser = user.get('/api/v1/users/%s' % puser.data['users'][0]['id'])
 
     guser = user.get('/api/v1/users/%s' % padmin.data['user']['id'])
-    assert guser.status_code == 404
+    assert guser.status_code == 401
 
     guser = user.get('/api/v1/users/%s' % puser.data['user']['id'])
     assert guser.status_code == 200
@@ -420,6 +410,26 @@ def test_user_cant_update_him(admin, user):
         data={'name': 'new_name'},
         headers={'If-match': user_etag}
     ).status_code == 401
+
+
+def test_delete_as_user_product_owner(user, product_owner, admin):
+    puser = user.get('/api/v1/users?where=name:user')
+    puser = user.get('/api/v1/users/%s' % puser.data['users'][0]['id'])
+    user_etag = puser.headers.get("ETag")
+
+    user_delete = user.delete('/api/v1/users/%s' % puser.data['user']['id'],
+                              headers={'If-match': user_etag})
+    assert user_delete.status_code == 401
+
+    user_delete = product_owner.delete('/api/v1/users/%s'
+                                       % puser.data['user']['id'],
+                                       headers={'If-match': user_etag})
+    assert user_delete.status_code == 401
+
+    user_delete = admin.delete('/api/v1/users/%s'
+                               % puser.data['user']['id'],
+                               headers={'If-match': user_etag})
+    assert user_delete.status_code == 204
 
 
 def test_success_update_field_by_field(admin, team_id):

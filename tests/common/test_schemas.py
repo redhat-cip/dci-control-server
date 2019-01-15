@@ -358,7 +358,7 @@ class TestJob(utils.SchemaTesting):
         return invalids, errors
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('components')
+        errors = utils.generate_errors('components', 'team_id')
         super(TestJob, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
@@ -570,12 +570,12 @@ class TestTopic(utils.SchemaTesting):
 
     @staticmethod
     def generate_invalids_and_errors():
-        invalids = dict([utils.INVALID_NAME])
-        errors = dict([utils.INVALID_NAME_ERROR])
+        invalids = dict([utils.INVALID_NAME, utils.INVALID_PRODUCT])
+        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_PRODUCT_ERROR])
         return invalids, errors
 
     def test_post_missing_data(self):
-        errors = utils.generate_errors('name')
+        errors = utils.generate_errors('name', 'product_id')
         super(TestTopic, self).test_post_missing_data(errors)
 
     def test_post_invalid_data(self):
