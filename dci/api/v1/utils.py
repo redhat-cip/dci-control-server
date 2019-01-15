@@ -123,20 +123,15 @@ def user_topic_ids(user):
 
     if user.is_super_admin() or user.is_read_only_user():
         query = sql.select([models.TOPICS])
-    elif user.is_product_owner(None) or user.is_feeder(None):
-        query = sql.select([models.TOPICS]).where(
-            models.TOPICS.c.product_id == user.product_id
-        )
     else:
-        where_clause = sql.and_(
-            models.TOPICS.c.state == 'active',
-            models.TEAMS.c.state == 'active',
-            models.JOINS_TOPICS_TEAMS.c.team_id.in_(user.teams_ids)
-        )
         query = (sql.select([models.JOINS_TOPICS_TEAMS.c.topic_id])
-                 .select_from(models.JOINS_TOPICS_TEAMS
-                              .join(models.TOPICS).join(models.TEAMS))
-                 .where(where_clause))
+                 .select_from(
+                     models.JOINS_TOPICS_TEAMS.join(
+                         models.TOPICS, sql.and_(models.JOINS_TOPICS_TEAMS.c.topic_id == models.TOPICS.c.id,  # noqa
+                                                 models.TOPICS.c.state == 'active'))  # noqa
+                  ).where(
+                      sql.or_(models.JOINS_TOPICS_TEAMS.c.team_id.in_(user.teams_ids),  # noqa
+                              models.JOINS_TOPICS_TEAMS.c.team_id.in_(user.child_teams_ids))))  # noqa
 
     rows = flask.g.db_conn.execute(query).fetchall()
     return [str(row[0]) for row in rows]

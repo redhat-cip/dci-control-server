@@ -44,8 +44,7 @@ _EMBED_MANY = {
 def insert_jobstate(user, values):
     values.update({
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'team_id': user['team_id']
+        'created_at': datetime.datetime.utcnow().isoformat()
     })
 
     query = _TABLE.insert().values(**values)
@@ -55,7 +54,6 @@ def insert_jobstate(user, values):
 
 @api.route('/jobstates', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_jobstates(user):
     values = schemas.jobstate.post(flask.request.json)
 
@@ -99,10 +97,7 @@ def create_jobstates(user):
     return flask.Response(result, 201, content_type='application/json')
 
 
-@api.route('/jobstates', methods=['GET'])
-@decorators.login_required
-@decorators.check_roles
-def get_all_jobstates(user, j_id=None):
+def get_all_jobstates(user, job_id):
     """Get all jobstates.
     """
     args = schemas.args(flask.request.args.to_dict())
@@ -111,22 +106,18 @@ def get_all_jobstates(user, j_id=None):
     if user.is_not_super_admin() and not user.is_read_only_user():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
-    # used for counting the number of rows when j_id is not None
-    if j_id is not None:
-        query.add_extra_condition(_TABLE.c.job_id == j_id)
+    query.add_extra_condition(_TABLE.c.job_id == job_id)
 
     # get the number of rows for the '_meta' section
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
-
     return flask.jsonify({'jobstates': rows, '_meta': {'count': nb_rows}})
 
 
 @api.route('/jobstates/<uuid:js_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_jobstate_by_id(user, js_id):
     jobstate = v1_utils.verify_existence_and_get(js_id, _TABLE)
     return base.get_resource_by_id(user, jobstate, _TABLE, _EMBED_MANY)
@@ -134,11 +125,11 @@ def get_jobstate_by_id(user, js_id):
 
 @api.route('/jobstates/<uuid:js_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_jobstate_by_id(user, js_id):
     jobstate = v1_utils.verify_existence_and_get(js_id, _TABLE)
+    _job = v1_utils.verify_existence_and_get(jobstate['job_id'], models.JOBS)
 
-    if not user.is_in_team(jobstate['team_id']):
+    if not user.is_in_team(_job['team_id']):
         raise dci_exc.Unauthorized()
 
     where_clause = _TABLE.c.id == js_id
