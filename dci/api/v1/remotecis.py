@@ -258,7 +258,7 @@ def get_all_users_from_remotecis(user, r_id):
 def delete_user_from_remoteci(user, r_id, u_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
-    if u_id != user['id'] and \
+    if u_id != user.id and \
        not user.is_in_team(remoteci['team_id']) and \
        user.is_regular_user():
         raise dci_exc.Unauthorized()

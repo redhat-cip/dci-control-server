@@ -25,7 +25,8 @@ import pytest
 
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
-def test_sso_auth_verified(m_datetime, admin, app, engine, access_token):
+def test_sso_auth_verified(m_datetime, admin, app, engine, access_token,
+                           team_admin_id):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
         fromtimestamp(1518653629).timetuple()
@@ -34,19 +35,20 @@ def test_sso_auth_verified(m_datetime, admin, app, engine, access_token):
     sso_headers.headers = {'Authorization': 'Bearer %s' % access_token}
     nb_users = len(admin.get('/api/v1/users').data['users'])
     with app.app_context():
+        flask.g.team_admin_id = team_admin_id
         flask.g.db_conn = engine.connect()
         mech = authm.OpenIDCAuth(sso_headers)
         mech.authenticate()
-        assert mech.identity['team_id'] is None
-        assert mech.identity['name'] == 'dci'
-        assert mech.identity['sso_username'] == 'dci'
-        assert mech.identity['email'] == 'dci@distributed-ci.io'
+        assert mech.identity.name == 'dci'
+        assert mech.identity.sso_username == 'dci'
+        assert mech.identity.email == 'dci@distributed-ci.io'
         nb_users_after_sso = len(admin.get('/api/v1/users').data['users'])
         assert (nb_users + 1) == nb_users_after_sso
 
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
-def test_sso_auth_not_verified(m_datetime, admin, app, engine, access_token):
+def test_sso_auth_not_verified(m_datetime, admin, app, engine, access_token,
+                               team_admin_id):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
         fromtimestamp(1518653629).timetuple()
@@ -57,6 +59,7 @@ def test_sso_auth_not_verified(m_datetime, admin, app, engine, access_token):
     sso_headers.headers = {'Authorization': 'Bearer %s' % access_token}
     nb_users = len(admin.get('/api/v1/users').data['users'])
     with app.app_context():
+        flask.g.team_admin_id = team_admin_id
         flask.g.db_conn = engine.connect()
         mech = authm.OpenIDCAuth(sso_headers)
         with pytest.raises(dci_exc.DCIException):
@@ -67,24 +70,27 @@ def test_sso_auth_not_verified(m_datetime, admin, app, engine, access_token):
 
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
-def test_sso_auth_get_users(m_datetime, user_sso, app, engine):
+def test_sso_auth_get_users(m_datetime, user_sso, app, engine, team_admin_id):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
         fromtimestamp(1518653629).timetuple()
     m_datetime.utcnow.return_value = m_utcnow
     with app.app_context():
+        flask.g.team_admin_id = team_admin_id
         flask.g.db_conn = engine.connect()
         gusers = user_sso.get('/api/v1/users')
         assert gusers.status_code == 200
 
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
-def test_sso_auth_get_current_user(m_datetime, user_sso, app, engine):
+def test_sso_auth_get_current_user(m_datetime, user_sso, app, engine,
+                                   team_admin_id):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
         fromtimestamp(1518653629).timetuple()
     m_datetime.utcnow.return_value = m_utcnow
     with app.app_context():
+        flask.g.team_admin_id = team_admin_id
         flask.g.db_conn = engine.connect()
-        request = user_sso.get('/api/v1/users/me?embed=team,role,remotecis')
+        request = user_sso.get('/api/v1/users/me?embed=team,remotecis')
         assert request.status_code == 200

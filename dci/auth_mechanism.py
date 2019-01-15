@@ -38,55 +38,73 @@ class BaseMechanism(object):
         """Authenticate the user, if the user fail to authenticate then the
         method must raise an exception with proper error message."""
         pass
-
+    
     def identity_from_db(self, model_cls, model_constraint):
-        children_team = models.TEAMS.alias('children_team')
-        product_team = models.TEAMS.alias('product_team')
 
-        query_get_identity = (
+        q_get_user_teams = (
             sql.select(
                 [
                     model_cls,
-                    children_team.c.name.label('team_name'),
-                    models.PRODUCTS.c.id.label('product_id'),
-                    models.ROLES.c.label.label('role_label'),
-                    children_team.c.state.label('children_team_state'),
-                ]
+                    models.TEAMS,
+                    models.JOIN_USERS_TEAMS_ROLES
+                ],
+                use_labels=True
             ).select_from(
-                model_cls.outerjoin(
-                    children_team,
-                    model_cls.c.team_id == children_team.c.id
+                model_cls.join(
+                    models.JOIN_USERS_TEAMS_ROLES,
+                    models.JOIN_USERS_TEAMS_ROLES.c.user_id == model_cls.c.id
                 ).outerjoin(
-                    product_team,
-                    children_team.c.parent_id == product_team.c.id
-                ).outerjoin(
-                    models.PRODUCTS,
-                    models.PRODUCTS.c.team_id.in_([children_team.c.id,
-                                                   product_team.c.id])
-                ).join(
-                    models.ROLES,
-                    model_cls.c.role_id == models.ROLES.c.id
+                    models.TEAMS,
+                    (models.JOIN_USERS_TEAMS_ROLES.c.team_id ==
+                     models.TEAMS.c.id)
                 )
             ).where(
                 sql.and_(
                     model_constraint,
                     model_cls.c.state == 'active',
-                    sql.or_(
-                        children_team.c.state == 'active',
-                        children_team.c.state == None  # noqa
-                    )
                 )
             )
         )
 
-        identity = flask.g.db_conn.execute(query_get_identity).fetchone()
-        if identity is None:
+        _user_teams = flask.g.db_conn.execute(q_get_user_teams).fetchall()
+        if not _user_teams:
             return None
 
-        identity = dict(identity)
-        teams = self._teams_from_db(identity['team_id'])
+        user_info = {
+            # UUID to str
+            'id': str(_user_teams[0][model_cls.c.id]),
+            'password': _user_teams[0][model_cls.c.password],
+            'name': _user_teams[0][model_cls.c.name],
+            'fullname': _user_teams[0][model_cls.c.fullname],
+            'timezone': _user_teams[0][model_cls.c.timezone],
+            'email': _user_teams[0][model_cls.c.email],
+            'sso_username': _user_teams[0][model_cls.c.sso_username],
+            'etag': _user_teams[0][model_cls.c.etag]
+        }
 
-        return Identity(identity, teams)
+        is_super_admin = False
+        user_teams = {}
+        for user_team in _user_teams:
+            if user_team[models.TEAMS.c.id] == flask.g.team_admin_id:
+                is_super_admin = True
+            user_teams[user_team[models.TEAMS.c.id]] = {
+                'parent_id': user_team[models.TEAMS.c.parent_id],
+                'role': user_team[models.JOIN_USERS_TEAMS_ROLES.c.role],
+                'team_name': user_team[models.TEAMS.c.name]}
+
+        all_teams = self._get_all_teams()
+        user_info['teams'] = user_teams
+        user_info['is_super_admin'] = is_super_admin
+        
+        return Identity(user_info, all_teams)
+
+    def _get_all_teams(self):
+        query = sql.select([models.TEAMS.c.id, models.TEAMS.c.parent_id])
+        result = flask.g.db_conn.execute(query).fetchall()
+        return [{
+            'id': row[models.TEAMS.c.id],
+            'parent_id': row[models.TEAMS.c.parent_id]
+        } for row in result]
 
     def _teams_from_db(self, team_id):
         query = sql.select([models.TEAMS.c.id, models.TEAMS.c.parent_id])
@@ -142,7 +160,7 @@ class HmacMechanism(BaseMechanism):
         )
         hmac_signature = Signature(request=auth_request)
         self.identity = self.build_identity(auth_request.get_client_info())
-        secret = getattr(self.identity, 'api_secret', '')
+        secret = self.identity.api_secret
         if not hmac_signature.is_valid(secret):
             raise dci_exc.DCIException(
                 'Authentication failed: signature invalid', status_code=401)
@@ -150,6 +168,53 @@ class HmacMechanism(BaseMechanism):
             raise dci_exc.DCIException(
                 'Authentication failed: signature expired', status_code=401)
         return True
+
+    def identity_from_db(self, model_cls, model_constraint):
+        q_get_identity = (
+            sql.select(
+                [
+                    model_cls,
+                    models.TEAMS
+                ],
+                use_labels=True
+            ).select_from(
+                model_cls.join(
+                    models.TEAMS,
+                    models.TEAMS.c.id == model_cls.c.team_id
+                )
+            ).where(
+                sql.and_(
+                    model_constraint,
+                    model_cls.c.state == 'active',
+                )
+            )
+        )
+
+        _identity_info = flask.g.db_conn.execute(q_get_identity).fetchone()
+        if not _identity_info:
+            return None
+        
+        # feeders and remotecis belongs to only one team
+        user_teams = {
+            _identity_info[models.TEAMS.c.id]: {
+                'parent_id': _identity_info[models.TEAMS.c.parent_id],
+                'team_name': _identity_info[models.TEAMS.c.name]
+            }
+        }
+
+        if model_cls is models.REMOTECIS:
+            user_teams[_identity_info[models.TEAMS.c.id]]['ROLE'] = 'REMOTECI'
+        if model_cls is models.FEEDERS:
+            user_teams[_identity_info[models.TEAMS.c.id]]['ROLE'] = 'FEEDER'
+
+        user_info = {
+            # UUID to str
+            'id': str(_identity_info[model_cls.c.id]),
+            'teams': user_teams,
+            'api_secret': str(_identity_info[model_cls.c.api_secret])
+        }
+
+        return Identity(user_info, [])
 
     def build_identity(self, client_info):
         allowed_types_model = {
@@ -182,13 +247,13 @@ class OpenIDCAuth(BaseMechanism):
             raise dci_exc.DCIException('JWT token expired, please refresh.',
                                        status_code=401)
 
-        role_id = auth.get_role_id('USER')
+        role = 'USER'
         ro_group = dci_config.generate_conf().get('SSO_READ_ONLY_GROUP')
         realm_access = decoded_token['realm_access']
         if 'roles' in realm_access and ro_group in realm_access['roles']:
-            role_id = auth.get_role_id('READ_ONLY_USER')
+            role = 'READ_ONLY_USER'
 
-        user_info = self._get_user_info(decoded_token, role_id)
+        user_info = self._get_user_info(decoded_token, role)
         try:
             self.identity = self._get_or_create_user(user_info)
         except sa_exc.IntegrityError:
@@ -196,9 +261,9 @@ class OpenIDCAuth(BaseMechanism):
         return True
 
     @staticmethod
-    def _get_user_info(token, user_role_id):
+    def _get_user_info(token, role):
         return {
-            'role_id': user_role_id,
+            'role': role,
             'name': token.get('username'),
             'fullname': token.get('username'),
             'sso_username': token.get('username'),
@@ -213,8 +278,18 @@ class OpenIDCAuth(BaseMechanism):
             models.USERS.c.email == user_info['sso_username'],
             models.USERS.c.email == user_info['email']
         )
-        identity = self.identity_from_db(models.USERS, constraint)
+        identity = self.identity_from_db(models.USERS,
+                                         constraint)
+        role = user_info.pop('role')
         if identity is None:
-            flask.g.db_conn.execute(models.USERS.insert().values(user_info))
-            return self.identity_from_db(models.USERS, constraint)
+            u_id = flask.g.db_conn.execute(models.USERS.insert().values(user_info)).inserted_primary_key[0]  # noqa
+            flask.g.db_conn.execute(
+                models.JOIN_USERS_TEAMS_ROLES.insert().values(
+                    user_id=u_id,
+                    team_id=None,
+                    role=role)
+            )
+            identity = self.identity_from_db(models.USERS,
+                                             constraint)
+            return identity
         return identity

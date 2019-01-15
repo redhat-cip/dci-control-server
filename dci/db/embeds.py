@@ -35,10 +35,7 @@ REMOTECI = models.REMOTECIS.alias('remoteci')
 CFILES = models.COMPONENT_FILES.alias('files')
 RCONFIGURATION = models.REMOTECIS_RCONFIGURATIONS.alias('rconfiguration')
 
-# ignore tests_cases as its too heavy to be embeded by jobs
-TESTS_RESULTS = sql.select(ignore_columns_from_table(
-    models.TESTS_RESULTS,
-    ['tests_cases'])).alias('results')
+TESTS_RESULTS = models.TESTS_RESULTS.alias('results')
 JOB = models.JOBS.alias('job')
 LASTJOB = models.JOBS.alias('lastjob')
 LASTJOB_COMPONENTS = models.COMPONENTS.alias('lastjob.components')
@@ -301,15 +298,13 @@ def topics(root_select=models.TOPICS):
 def users(root_select=models.USERS):
     return {
         'team': [
+            {'right': models.JOIN_USERS_TEAMS_ROLES,
+             'onclause': models.JOIN_USERS_TEAMS_ROLES.c.user_id == root_select.c.id,  # noqa
+             'isouter': True},
             {'right': TEAM,
-             'onclause': and_(TEAM.c.id == root_select.c.team_id,
+             'onclause': and_(TEAM.c.id == models.JOIN_USERS_TEAMS_ROLES.c.team_id,  # noqa
                               TEAM.c.state != 'archived'),
              'isouter': True}
-        ],
-        'role': [
-            {'right': ROLE,
-             'onclause': and_(ROLE.c.id == root_select.c.role_id,
-                              ROLE.c.state != 'archived')}
         ],
         'remotecis': [
             {'right': models.JOIN_USER_REMOTECIS,

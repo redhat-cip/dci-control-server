@@ -123,15 +123,12 @@ def user_topic_ids(user):
 
     if user.is_super_admin() or user.is_read_only_user():
         query = sql.select([models.TOPICS])
-    elif user.is_product_owner() or user.is_feeder():
-        query = sql.select([models.TOPICS]).where(
-            models.TOPICS.c.product_id == user.product_id
-        )
     else:
         where_clause = sql.and_(
             models.TOPICS.c.state == 'active',
             models.TEAMS.c.state == 'active',
-            models.JOINS_TOPICS_TEAMS.c.team_id.in_(user.teams_ids)
+            sql.or_(models.JOINS_TOPICS_TEAMS.c.team_id.in_(user.teams_ids),
+                    models.JOINS_TOPICS_TEAMS.c.team_id.in_(user.child_teams_ids))  # noqa
         )
         query = (sql.select([models.JOINS_TOPICS_TEAMS.c.topic_id])
                  .select_from(models.JOINS_TOPICS_TEAMS

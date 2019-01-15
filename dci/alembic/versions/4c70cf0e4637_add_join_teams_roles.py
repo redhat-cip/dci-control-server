@@ -38,11 +38,17 @@ def upgrade():
         'users_teams_roles',
         sa.Column('user_id', pg.UUID(as_uuid=True),
                   sa.ForeignKey('users.id', ondelete='CASCADE'),
-                  nullable=False, primary_key=True),
+                  nullable=False),
         sa.Column('team_id', pg.UUID(as_uuid=True),
                   sa.ForeignKey('teams.id', ondelete='CASCADE'),
-                  nullable=False, primary_key=True),
-        sa.Column('role', models.ROLES_ENUM, default='USER', nullable=False))
+                  nullable=True),
+        sa.Column('role', models.ROLES_ENUM, default='USER', nullable=False),
+        sa.UniqueConstraint('user_id', 'team_id', name='users_teams_roles_key')
+    )
+    op.alter_column('users', 'role_id', nullable=True)
+    op.drop_index('logs_team_id_idx', table_name='logs')
+    op.drop_column('logs', 'team_id')
+    op.drop_column('feeders', 'role_id')
 
 
 def downgrade():
