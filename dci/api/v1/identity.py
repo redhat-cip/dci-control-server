@@ -20,6 +20,17 @@ from dci.api.v1 import api
 from dci import decorators
 
 
+# TODO: replace this properly with JSONEncoder
+def _encode_dict(_dict):
+    res = {}
+    for d in _dict:
+        _values = {}
+        for i in _dict[d]:
+            _values[str(i)] = str(_dict[d][i])
+        res[str(d)] = _values
+    return res
+
+
 @api.route('/identity', methods=['GET'])
 @decorators.login_required
 @decorators.check_roles
@@ -31,10 +42,7 @@ def get_identity(identity):
                 'identity': {
                     'id': identity.id,
                     'name': identity.name,
-                    'team_id': identity.team_id,
-                    'team_name': identity.team_name,
-                    'role_id': identity.role_id,
-                    'role_label': identity.role_label,
+                    'teams': _encode_dict(identity.teams)
                 }
             }
         ), 200,
