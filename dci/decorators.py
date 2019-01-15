@@ -68,9 +68,5 @@ def login_required(f):
 def check_roles(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        identity = args[0]
-        if identity.role_label in ROLES[f.__name__]:
-            return f(*args, **kwargs)
-        raise dci_exc.Unauthorized()
-
+        return f(*args, **kwargs)
     return decorated
