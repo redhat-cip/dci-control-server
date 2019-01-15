@@ -325,11 +325,7 @@ JOBSTATES = sa.Table(
     sa.Column('job_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('jobs.id', ondelete='CASCADE'),
               nullable=False),
-    sa.Index('jobstates_job_id_idx', 'job_id'),
-    sa.Column('team_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
-              nullable=False),
-    sa.Index('jobstates_team_id_idx', 'team_id')
+    sa.Index('jobstates_job_id_idx', 'job_id')
 )
 
 JOIN_REMOTECIS_RCONFIGURATIONS = sa.Table(
@@ -502,10 +498,6 @@ LOGS = sa.Table(
     sa.Column('user_id', pg.UUID(as_uuid=True),
               nullable=False),
     sa.Index('logs_user_id_idx', 'user_id'),
-    sa.Column('team_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('teams.id', ondelete='CASCADE'),
-              nullable=False),
-    sa.Index('logs_team_id_idx', 'team_id'),
     sa.Column('action', sa.Text, nullable=False)
 )
 
@@ -595,8 +587,6 @@ FEEDERS = sa.Table(
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
-    sa.Column('role_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('roles.id', ondelete='SET NULL')),
     sa.Index('feeders_team_id_idx', 'team_id'),
     sa.UniqueConstraint('name', 'team_id', name='feeders_name_team_id_key'),
     sa.Column('state', STATES, default='active')

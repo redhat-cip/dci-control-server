@@ -23,7 +23,6 @@ from OpenSSL import crypto
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
-from dci import auth
 from dci import dci_config
 from dci import decorators
 from dci.common import exceptions as dci_exc
@@ -65,7 +64,7 @@ def create_remotecis(user):
         # XXX(fc): this should be populated as a default value from the
         # model, but we don't return values from the database :(
         'api_secret': signature.gen_secret(),
-        'role_id': auth.get_role_id('REMOTECI'),
+        'role_id': None
     })
 
     query = _TABLE.insert().values(**values)
@@ -111,6 +110,8 @@ def get_all_remotecis(user, t_id=None):
 @decorators.check_roles
 def get_remoteci_by_id(user, r_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+    if user.is_not_in_team(remoteci['team_id']):
+        raise dci_exc.DCINotFound('RemoteCI', remoteci['id'])
     return base.get_resource_by_id(user, remoteci, _TABLE, _EMBED_MANY,
                                    ignore_columns=["keys", "cert_fp"])
 
@@ -258,7 +259,7 @@ def get_all_users_from_remotecis(user, r_id):
 def delete_user_from_remoteci(user, r_id, u_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
-    if u_id != user['id'] and \
+    if u_id != user.id and \
        not user.is_in_team(remoteci['team_id']) and \
        user.is_regular_user():
         raise dci_exc.Unauthorized()

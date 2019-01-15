@@ -25,11 +25,9 @@ def test_api_with_unauthorized_credentials(unauthorized, topic_id):
     assert unauthorized.get(
         '/api/v1/topics/%s/components' % topic_id).status_code == 401
     assert unauthorized.get('/api/v1/jobs').status_code == 401
-    assert unauthorized.get('/api/v1/jobstates').status_code == 401
     assert unauthorized.get('/api/v1/remotecis').status_code == 401
     assert unauthorized.get('/api/v1/teams').status_code == 401
     assert unauthorized.get('/api/v1/users').status_code == 401
-    assert unauthorized.get('/api/v1/files').status_code == 401
     assert unauthorized.get('/api/v1/topics')
 
 

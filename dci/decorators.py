@@ -21,7 +21,6 @@ import flask
 
 import dci.auth_mechanism as am
 from dci.common import exceptions as dci_exc
-from dci.policies import ROLES
 
 
 def reject():
@@ -68,9 +67,5 @@ def login_required(f):
 def check_roles(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        identity = args[0]
-        if identity.role_label in ROLES[f.__name__]:
-            return f(*args, **kwargs)
-        raise dci_exc.Unauthorized()
-
+        return f(*args, **kwargs)
     return decorated
