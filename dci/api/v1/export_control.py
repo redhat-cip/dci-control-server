@@ -26,13 +26,15 @@ def _check(user, topic):
     :param topic:
     :return: True if check is ok, False otherwise
     """
-    # if export_control then check the team is associated to the product
-    # this will actually check that the root team is the same as the main
-    # product team
+    # if export_control then check the team is associated to the product, ie.:
+    #   - the current user belongs to the product's team
+    #   OR
+    #   - the product's team belongs to the user's parents teams
     if topic['export_control']:
         product = v1_utils.verify_existence_and_get(topic['product_id'],
                                                     models.PRODUCTS)
-        return user.product_team_id == product['team_id']
+        return (user.is_in_team(product['team_id']) or
+                product['team_id'] in user.parent_teams_ids)
     return False
 
 
