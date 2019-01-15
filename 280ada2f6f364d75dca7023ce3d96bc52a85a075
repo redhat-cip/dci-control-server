@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "23dd4129_88b27b61",
+        "filename": "Dockerfile",
+        "patchSetId": 1
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2019-01-15T16:05:12Z",
+      "side": 1,
+      "message": "In the docker-compose file, we\u0027re mounting the code into /opt/dci-control-server.\n\nDo we also need to copy the code into the container ? Or is it expected that the container will be executed not from docker-compose ?",
+      "revId": "280ada2f6f364d75dca7023ce3d96bc52a85a075",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
