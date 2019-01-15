@@ -112,7 +112,6 @@ def test_get_last_rconfiguration_id(engine, admin, remoteci_context, topic):
             data={'topic_id': topic['id']}
         )
         assert r.status_code == 201
-        print(r.data)
         expected_rconfig_id = r.data['job']['rconfiguration_id']
     rconf_id = remotecis.get_last_rconfiguration_id(topic['id'],
                                                     remoteci['id'],
@@ -151,16 +150,16 @@ def test_get_remoteci_configuration(engine, admin, remoteci_context, topic):
             assert rconf_id == rconfig_ids[i - 1]
 
 
-def test_purge(admin, remoteci_user_id, topic_user_id):
+def test_purge(user, admin, remoteci_user_id, topic_user_id):
     for i in range(3):
-        rc = admin.post('/api/v1/remotecis/%s/rconfigurations' %
-                        remoteci_user_id,
-                        data={'name': 'cname%s' % i,
-                              'topic_id': topic_user_id,
-                              'data': {'lol': 'lol%s' % i}})
+        rc = user.post('/api/v1/remotecis/%s/rconfigurations' %
+                       remoteci_user_id,
+                       data={'name': 'cname%s' % i,
+                             'topic_id': topic_user_id,
+                             'data': {'lol': 'lol%s' % i}})
         assert rc.status_code == 201
-        dr = admin.delete('/api/v1/remotecis/%s/rconfigurations/%s' %
-                          (remoteci_user_id, rc.data['rconfiguration']['id']))
+        dr = user.delete('/api/v1/remotecis/%s/rconfigurations/%s' %
+                         (remoteci_user_id, rc.data['rconfiguration']['id']))
         assert dr.status_code == 204
 
     prg = admin.get('/api/v1/remotecis/rconfigurations/purge')
