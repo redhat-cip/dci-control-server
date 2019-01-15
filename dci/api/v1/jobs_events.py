@@ -34,11 +34,13 @@ _JOBS_EVENTS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 @api.route('/jobs_events/<int:sequence>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_jobs_events_from_sequence(user, sequence):
     """Get all the jobs events from a given sequence number."""
 
     args = schemas.args(flask.request.args.to_dict())
+
+    if user.is_not_super_admin():
+        raise dci_exc.Unauthorized()
 
     query = sql.select([models.JOBS_EVENTS]). \
         select_from(models.JOBS_EVENTS.join(models.JOBS,
@@ -63,8 +65,9 @@ def get_jobs_events_from_sequence(user, sequence):
 
 @api.route('/jobs_events/<int:sequence>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def purge_jobs_events_from_sequence(user, sequence):
+    if user.is_not_super_admin():
+        raise dci_exc.Unauthorized()
     query = _TABLE.delete(). \
         where(_TABLE.c.id >= sequence)
     flask.g.db_conn.execute(query)
@@ -86,8 +89,9 @@ def create_event(job_id, status, topic_id=None):
 
 @api.route('/jobs_events/sequence', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_current_sequence(user):
+    if user.is_not_super_admin():
+        raise dci_exc.Unauthorized()
 
     def create_sequence():
         etag = utils.gen_etag()
@@ -112,8 +116,10 @@ def get_current_sequence(user):
 
 @api.route('/jobs_events/sequence', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def put_current_sequence(user):
+    if user.is_not_super_admin():
+        raise dci_exc.Unauthorized()
+
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.counter.put(flask.request.json)

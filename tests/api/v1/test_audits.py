@@ -32,19 +32,16 @@ def test_audits(admin):
     assert 'logs_user_id' not in fields
     assert 'created_at' in fields
     assert 'id' in fields
-    assert 'team_id' in fields
     assert 'user_id' in fields
     assert fields['action'] == 'create_teams'
 
 
 def test_audits_acls(admin, user, team_admin_id):
     pt = admin.post('/api/v1/teams', data={'name': 'kikoolol'})
-
     assert pt.status_code == 201
 
     gaudits = admin.get('/api/v1/audits')
     assert gaudits.status_code == 200
-    assert gaudits.data['audits'][0]['team_id'] == team_admin_id
 
     gaudits = user.get('/api/v1/audits')
     assert gaudits.status_code == 401
