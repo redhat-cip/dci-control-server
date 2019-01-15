@@ -92,7 +92,7 @@ def test_components(m_datetime, admin, user_sso_rh_employee, app, engine,
 # FILES
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
 def test_files(m_datetime, admin, user_sso_rh_employee, app, engine,
-               jobstate_user_id):
+               jobstate_user_id, job_user_id):
     user_sso = user_sso_rh_employee
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
@@ -101,7 +101,7 @@ def test_files(m_datetime, admin, user_sso_rh_employee, app, engine,
     with app.app_context():
         flask.g.db_conn = engine.connect()
         # get all files
-        files = user_sso.get('/api/v1/files')
+        files = user_sso.get('/api/v1/jobs/%s/files' % job_user_id)
         assert files.status_code == 200
         # get file content
         with mock.patch(SWIFT, spec=Swift) as mock_swift:
@@ -122,7 +122,7 @@ def test_files(m_datetime, admin, user_sso_rh_employee, app, engine,
             file_id = t_utils.post_file(admin, jobstate_user_id,
                                         FileDesc('foo', content))
 
-            get_file = user_sso.get('/api/v1/files/%s/content' % file_id)
+            get_file = user_sso.get('/api/v1/files/%s' % file_id)
 
             assert get_file.status_code == 200
 
@@ -159,7 +159,7 @@ def test_jobs(m_datetime, user_sso_rh_employee, app, engine,
 
 # JOBSTATES
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
-def test_jobstates(m_datetime, user_sso_rh_employee, app, engine):
+def test_jobstates(m_datetime, user_sso_rh_employee, job_user_id, app, engine):
     user_sso = user_sso_rh_employee
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
@@ -167,7 +167,7 @@ def test_jobstates(m_datetime, user_sso_rh_employee, app, engine):
     m_datetime.utcnow.return_value = m_utcnow
     with app.app_context():
         # get all the jobstates
-        jobstates = user_sso.get('/api/v1/jobstates')
+        jobstates = user_sso.get('/api/v1/jobs/%s/jobstates' % job_user_id)
         assert jobstates.status_code == 200
 
 
