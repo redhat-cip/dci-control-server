@@ -24,6 +24,7 @@ from dciauth.request import AuthRequest
 from dciauth.signature import Signature
 from dci.db import models
 from dci.identity import Identity
+from dci.identity import Identity2
 
 from jwt import exceptions as jwt_exc
 
@@ -38,8 +39,67 @@ class BaseMechanism(object):
         """Authenticate the user, if the user fail to authenticate then the
         method must raise an exception with proper error message."""
         pass
-
+    
     def identity_from_db(self, model_cls, model_constraint):
+        _TEAMS = models.TEAMS
+        _JUTR = models.JOIN_USERS_TEAMS_ROLES
+
+        query = (
+            sql.select(
+                [
+                    model_cls,
+                    _TEAMS,
+                    _JUTR
+                ],
+                use_labels=True
+            ).select_from(
+                model_cls.join(
+                    _JUTR,
+                    _JUTR.c.user_id == model_cls.c.id
+                ).outerjoin(
+                    _TEAMS,
+                    _JUTR.c.team_id == _TEAMS.c.id
+                )
+            ).where(
+                sql.and_(
+                    model_constraint,
+                    model_cls.c.state == 'active',
+                )
+            )
+        )
+
+        identity = flask.g.db_conn.execute(query).fetchall()
+        if not identity:
+            return None
+        user_id = identity[0][model_cls.c.id]
+        password = identity[0][model_cls.c.password]
+
+        is_super_admin = False
+        _identity = {}
+        for i in identity:
+            if i[models.TEAMS.c.id] == flask.g.team_admin_id:
+                is_super_admin = True
+            _identity[i[models.TEAMS.c.id]] = {
+                'parent_id': i[models.TEAMS.c.parent_id],
+                'role': i[models.JOIN_USERS_TEAMS_ROLES.c.role]}
+
+        all_teams = self._get_all_teams()
+
+        with open('/tmp/all_teams', 'w') as f:
+            f.write(str(all_teams))
+        
+        return Identity2(user_id, password, is_super_admin, _identity,
+                         all_teams)
+
+    def _get_all_teams(self):
+        query = sql.select([models.TEAMS.c.id, models.TEAMS.c.parent_id])
+        result = flask.g.db_conn.execute(query).fetchall()
+        return [{
+            'id': row[models.TEAMS.c.id],
+            'parent_id': row[models.TEAMS.c.parent_id]
+        } for row in result]
+
+    def identity_from_db2(self, model_cls, model_constraint):
         children_team = models.TEAMS.alias('children_team')
         product_team = models.TEAMS.alias('product_team')
 
@@ -213,8 +273,15 @@ class OpenIDCAuth(BaseMechanism):
             models.USERS.c.email == user_info['sso_username'],
             models.USERS.c.email == user_info['email']
         )
-        identity = self.identity_from_db(models.USERS, constraint)
+        identity = self.identity_from_db(models.USERS,
+                                         constraint)
         if identity is None:
-            flask.g.db_conn.execute(models.USERS.insert().values(user_info))
-            return self.identity_from_db(models.USERS, constraint)
+            u_id = flask.g.db_conn.execute(models.USERS.insert().values(user_info)).inserted_primary_key[0]  # noqa
+            flask.g.db_conn.execute(
+                models.JOIN_USERS_TEAMS_ROLES.insert().values(user_id=u_id,
+                                                              team_id=None,
+                                                              role='USER')
+            )
+            return self.identity_from_db(models.USERS,
+                                         constraint)
         return identity

@@ -149,5 +149,92 @@ class Identity:
 
     def is_feeder(self):
         """Ensure ther resource has the role FEEDER."""
-
         return self.role_label == 'FEEDER'
+
+
+class Identity2:
+    """Class that offers helper methods to simplify permission management
+    """
+
+    def __init__(self, user_id, password, is_super_admin, user_teams,
+                 all_teams):
+        
+        # user_teams = {'<team-id1>': {'parent_id': <id>,
+        #                              'role': <role>},
+        #               '<team-id2>: {...}}
+        self.teams = user_teams
+        self.teams_ids = self.teams.keys()
+        self._is_super_admin = is_super_admin
+        self.id = user_id
+        self.password = password
+
+        # if the user's team is a product team, get all the child teams
+        self.child_teams_ids = self._get_child_teams_ids(all_teams,
+                                                         self.teams_ids)
+
+    @staticmethod
+    def _get_child_teams_ids(all_teams, teams_ids):
+        child_teams = set()
+        for team_id in teams_ids:
+            for a_team in all_teams:
+                if a_team['parent_id'] == team_id:
+                    child_teams.add(a_team['id'])
+        return child_teams
+
+    def is_super_admin(self):
+        """Ensure the user has the role SUPER_ADMIN."""
+
+        return self._is_super_admin
+
+    def is_not_super_admin(self):
+        """Ensure the user has not the role SUPER_ADMIN."""
+
+        return not self.is_super_admin()
+
+    def is_product_owner(self, team_id):
+        """Ensure the user is a PRODUCT_OWNER."""
+
+        if self.is_super_admin():
+            return True
+        return team_id in self.child_teams_ids
+
+    def is_not_product_owner(self, team_id):
+        """Ensure the user has not the role PRODUCT_OWNER."""
+
+        return not self.is_product_owner(team_id)
+
+    def is_read_only_user(self):
+        """Check if the user is a rh employee."""
+        if None in self.teams:
+            return self.teams[None] == 'READ_ONLY_USER'
+
+    def is_not_read_only_user(self):
+        """Check if the user is not a read only user."""
+
+        return not self.is_read_only_user()
+
+    def is_in_team(self, team_id):
+        """Test if user is in team"""
+
+        if self.is_super_admin():
+            return True
+        return team_id in self.teams
+
+    def is_not_in_team(self, team_id):
+        """Test if user is not in team"""
+
+        return not self.is_in_team(team_id)
+
+    def is_remoteci(self, team_id):
+        """Ensure ther resource has the role REMOTECI."""
+
+        if team_id not in self.teams_ids:
+            return False
+        return self.teams[team_id]['role'] == 'REMOTECI'
+
+    def is_feeder(self, team_id):
+        """Ensure ther resource has the role FEEDER."""
+
+        if team_id not in self.teams_ids:
+            return False
+        return self.teams[team_id]['role'] == 'FEEDER'

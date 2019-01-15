@@ -31,10 +31,7 @@ def get_identity(identity):
                 'identity': {
                     'id': identity.id,
                     'name': identity.name,
-                    'team_id': identity.team_id,
-                    'team_name': identity.team_name,
-                    'role_id': identity.role_id,
-                    'role_label': identity.role_label,
+                    'teams': identity.user_teams
                 }
             }
         ), 200,

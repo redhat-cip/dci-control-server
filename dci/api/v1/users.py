@@ -60,7 +60,6 @@ def _verify_existence_and_get_user(user_id):
 
 @api.route('/users', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_users(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.user.post(flask.request.json))
@@ -100,16 +99,12 @@ def create_users(user):
 
 @api.route('/users', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
-def get_all_users(user, team_id=None):
+def get_all_users(user):
     args = schemas.args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
 
     if user.is_not_super_admin():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
-
-    if team_id is not None:
-        query.add_extra_condition(_TABLE.c.team_id == team_id)
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
@@ -130,21 +125,18 @@ def user_by_id(user, user_id):
 
 @api.route('/users/<uuid:user_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_user_by_id(user, user_id):
     return user_by_id(user, user_id)
 
 
 @api.route('/users/me', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_current_user(user):
     return user_by_id(user, user['id'])
 
 
 @api.route('/users/me', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def put_current_user(user):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.current_user.put(flask.request.json)
@@ -187,7 +179,6 @@ def put_current_user(user):
 
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def put_user(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -232,7 +223,6 @@ def put_user(user, user_id):
 
 @api.route('/users/<uuid:user_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_user_by_id(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -259,13 +249,11 @@ def delete_user_by_id(user, user_id):
 
 @api.route('/users/purge', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_to_purge_archived_users(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/users/purge', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def purge_archived_users(user):
     return base.purge_archived_resources(user, _TABLE)

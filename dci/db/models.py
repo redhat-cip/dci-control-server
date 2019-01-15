@@ -491,11 +491,12 @@ JOIN_USERS_TEAMS_ROLES = sa.Table(
     'users_teams_roles', metadata,
     sa.Column('user_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('users.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True),
+              nullable=False),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True),
-    sa.Column('role', ROLES_ENUM, default='USER', nullable=False)
+              nullable=True),
+    sa.Column('role', ROLES_ENUM, default='USER', nullable=False),
+    sa.UniqueConstraint('user_id', 'team_id', name='users_teams_roles_key')
 )
 
 JOIN_USER_REMOTECIS = sa.Table(

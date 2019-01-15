@@ -400,12 +400,9 @@ def test_add_get_users_from_to_team(admin, team_id, user_id, user_admin_id):
     assert len(users.data['users']) == (current_len + 1)
 
 
-def test_add_user_to_different_teams(admin, user_id, team_id, team_user_id):
+def test_add_user_to_different_teams(admin, user_id, team_id,
+                                     team_user_id, user):
     pu = admin.post('/api/v1/teams/%s/users/%s' % (team_id, user_id),
-                    data={'role': 'USER'})
-    assert pu.status_code == 201
-
-    pu = admin.post('/api/v1/teams/%s/users/%s' % (team_user_id, user_id),
                     data={'role': 'USER'})
     assert pu.status_code == 201
 
@@ -415,7 +412,10 @@ def test_add_user_to_different_teams(admin, user_id, team_id, team_user_id):
 
     users = admin.get('/api/v1/teams/%s/users' % team_user_id)
     assert users.status_code == 200
-    assert users.data['users'][0]['id'] == user_id
+    assert (users.data['users'][0]['id'] == user_id or
+            users.data['users'][1]['id'] == user_id)
+
+    user.get('/api/v1/jobs')
 
 
 def test_delete_user_from_team(admin, user_id, team_id):

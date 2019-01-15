@@ -36,6 +36,6 @@ def log_action(user_id, team_id, action):
 def log(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        log_action(args[0]['id'], args[0]['team_id'], f.__name__)
+        # log_action(args[0]['id'], args[0]['team_id'], f.__name__)
         return f(*args, **kwargs)
     return decorated
