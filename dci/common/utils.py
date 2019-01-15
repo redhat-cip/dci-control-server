@@ -47,6 +47,8 @@ class UUIDConverter(BaseConverter):
 class JSONEncoder(flask.json.JSONEncoder):
     """Default JSON encoder."""
     def default(self, o):
+        with open('/tmp/uuid', 'w') as f:
+            f.write('mdr')
         if isinstance(o, datetime.datetime):
             return o.isoformat()
         elif isinstance(o, result.RowProxy):
