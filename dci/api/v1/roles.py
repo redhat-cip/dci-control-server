@@ -97,19 +97,6 @@ def get_all_roles(user):
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    if user.is_not_super_admin():
-        query.add_extra_condition(_TABLE.c.label != 'SUPER_ADMIN')
-        query.add_extra_condition(_TABLE.c.label != 'READ_ONLY_USER')
-
-    if user.is_not_super_admin() and user.is_not_product_owner(None):
-        query.add_extra_condition(_TABLE.c.label != 'PRODUCT_OWNER')
-
-    if user.is_not_super_admin() and user.is_not_product_owner(None):
-        query.add_extra_condition(_TABLE.c.label != 'ADMIN')
-
-    if user.is_regular_user():
-        query.add_extra_condition(_TABLE.c.id == user['role_id'])
-
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'])
