@@ -51,19 +51,6 @@ def test_create_files_jobstate_id_and_job_id_missing(admin):
     assert file.status_code == 400
 
 
-def test_get_all_files(user, jobstate_user_id):
-    file_1 = t_utils.post_file(user, jobstate_user_id,
-                               FileDesc('kikoolol1', ''))
-    file_2 = t_utils.post_file(user, jobstate_user_id,
-                               FileDesc('kikoolol2', ''))
-
-    db_all_files = user.get('/api/v1/files?sort=created_at').data
-    db_all_files = db_all_files['files']
-    db_all_files_ids = [file['id'] for file in db_all_files]
-
-    assert db_all_files_ids == [file_1, file_2]
-
-
 def test_upload_tests_with_regressions_successfix(admin, remoteci_context,
                                                   remoteci, topic):
     headers = {
@@ -116,86 +103,6 @@ def test_upload_tests_with_regressions_successfix(admin, remoteci_context,
         elif job_res['name'] == 'Rally':
             assert job_res['regressions'] == 0
             assert job_res['successfixes'] == 0
-
-
-def test_get_all_files_with_pagination(user, jobstate_user_id):
-    # create 4 files types and check meta count
-    for i in range(4):
-        t_utils.post_file(user, jobstate_user_id, FileDesc('lol%d' % i, ''))
-
-    # check meta count
-    files = user.get('/api/v1/files').data
-    assert files['_meta']['count'] == 4
-
-    # verify limit and offset are working well
-    files = user.get('/api/v1/files?limit=2&offset=0').data
-    assert len(files['files']) == 2
-
-    files = user.get('/api/v1/files?limit=2&offset=2').data
-    assert len(files['files']) == 2
-
-    # if offset is out of bound, the api returns an empty list
-    files = user.get('/api/v1/files?limit=5&offset=300')
-    assert files.status_code == 200
-    assert files.data['files'] == []
-
-
-def test_get_all_files_with_embed(user, jobstate_user_id, team_user_id,
-                                  job_user_id):
-    t_utils.post_file(user, jobstate_user_id, FileDesc('lol1', ''))
-    t_utils.post_file(user, jobstate_user_id, FileDesc('lol2', ''))
-
-    # verify embed
-    files = user.get('/api/v1/files?embed=team,jobstate,jobstate.job').data
-
-    for file in files['files']:
-        assert 'team' in file
-        assert file['team']['id'] == team_user_id
-        assert 'jobstate' in file
-        assert file['jobstate']['id'] == jobstate_user_id
-        assert file['jobstate']['job']['id'] == job_user_id
-
-
-def test_get_all_files_with_where(user, jobstate_user_id):
-    file_id = t_utils.post_file(user, jobstate_user_id, FileDesc('lol1', ''))
-
-    db_job = user.get('/api/v1/files?where=id:%s' % file_id).data
-    db_job_id = db_job['files'][0]['id']
-    assert db_job_id == file_id
-
-    db_job = user.get('/api/v1/files?where=name:lol1').data
-    db_job_id = db_job['files'][0]['id']
-    assert db_job_id == file_id
-
-
-def test_where_invalid(admin):
-    err = admin.get('/api/v1/files?where=id')
-
-    assert err.status_code == 400
-    assert err.data == {
-        'status_code': 400,
-        'message': 'Invalid where key: "id"',
-        'payload': {
-            'error': 'where key must have the following form "key:value"'
-        }
-    }
-
-
-def test_get_all_files_with_sort(user, jobstate_user_id):
-    # create 4 files ordered by created time
-    file_1_1 = t_utils.post_file(user, jobstate_user_id, FileDesc('a', ''))
-    file_1_2 = t_utils.post_file(user, jobstate_user_id, FileDesc('a', ''))
-    file_2_1 = t_utils.post_file(user, jobstate_user_id, FileDesc('b', ''))
-    file_2_2 = t_utils.post_file(user, jobstate_user_id, FileDesc('b', ''))
-
-    files = user.get('/api/v1/files?sort=created_at').data
-    files = [file['id'] for file in files['files']]
-    assert files == [file_1_1, file_1_2, file_2_1, file_2_2]
-
-    # sort by name first and then reverse by created_at
-    files = user.get('/api/v1/files?sort=name,-created_at').data
-    files_ids = [file['id'] for file in files['files']]
-    assert files_ids == [file_1_2, file_1_1, file_2_2, file_2_1]
 
 
 def test_get_file_by_id(user, jobstate_user_id):
@@ -253,23 +160,6 @@ def test_create_file_as_user(user, jobstate_user_id):
     headers = {'DCI-JOBSTATE-ID': jobstate_user_id, 'DCI-NAME': 'name'}
     file = user.post('/api/v1/files', headers=headers)
     assert file.status_code == 201
-
-
-def test_get_all_files_as_user(user, team_user_id, file_user_id):
-    files = user.get('/api/v1/files')
-    assert files.status_code == 200
-    assert files.data['_meta']['count']
-    for file in files.data['files']:
-        assert file['team_id'] == team_user_id
-
-
-def test_get_all_files_as_product_owner(product_owner, team_user_id,
-                                        file_user_id):
-    files = product_owner.get('/api/v1/files')
-    assert files.status_code == 200
-    assert files.data['_meta']['count']
-    for file in files.data['files']:
-        assert file['team_id'] == team_user_id
 
 
 def test_get_file_as_user(user, file_user_id, jobstate_user_id):
@@ -357,9 +247,11 @@ def test_get_previous_job_in_topic(app, user, remoteci_context,
     # job_1 from remoteci_context
     data = {
         'comment': 'kikoolol',
-        'components': components_user_ids
+        'components': components_user_ids,
+        'team_id': team_user_id
     }
     prev_job = remoteci_context.post('/api/v1/jobs', data=data).data
+    print(prev_job)
     prev_job_id = prev_job['job']['id']
 
     # adding a job in between from a new remoteci

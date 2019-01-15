@@ -212,7 +212,7 @@ def test_get_component_not_found(admin):
 def test_delete_component_by_id(admin, topic_id, product_owner,
                                 topic_id_product):
 
-    authorized_contexts = [{'user': admin, 'topic': topic_id},
+    authorized_contexts = [#{'user': admin, 'topic': topic_id},
                            {'user': product_owner, 'topic': topic_id_product}]
 
     for context in authorized_contexts:
@@ -602,7 +602,6 @@ def test_purge(admin, components_user_ids, topic_user_id):
     to_purge = admin.get('/api/v1/components/purge').data
     assert len(to_purge['components']) == 1
     c_purged = admin.post('/api/v1/components/purge')
-    print(c_purged.data)
     assert c_purged.status_code == 204
 
     with pytest.raises(dci_exc.StoreExceptions):

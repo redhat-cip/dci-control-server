@@ -14,126 +14,179 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from uuid import UUID
 import pytest
 
 from dci.identity import Identity
 
 
-def identity_factory(role_label):
-    user = {'role_label': role_label, 'team_id': 'abc'}
-    team = {'id': 'abc', 'parent_id': None}
-    return Identity(user, [team])
+all_teams = [{'id': UUID('eaa68feb-0e23-4dee-9737-7538af531024'),
+              'parent_id': None},
+             {'id': UUID('2975580b-1915-41b7-9672-c16ccbcc6fc1'),
+              'parent_id': None},
+             {'id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'),
+              'parent_id': None},
+             {'id': UUID('2d89a1ad-0638-4738-940d-166c6a8105ec'),
+              'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327')},
+             {'id': UUID('894c7af1-f90f-48dd-8276-fbc4bfa80371'),
+              'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327')}]
+
+
+def identity_factory(is_user=False, is_product_owner=False,
+                     is_super_admin=False, is_read_only_user=False):
+    user_info = {
+        'id': '12368feb-0e23-4dee-9737-7538af531234',
+        'password': 'password',
+        'name': 'name',
+        'fullname': 'fullname',
+        'timezone': 'UTC',
+        'email': 'user@email.com',
+        'etag': '2975580b-1915-41b7-9672-c16ccbcc1234',
+        'is_super_admin': is_super_admin
+    }
+
+    if is_super_admin:
+        team_name = 'admin'
+        user_info['teams'] = {
+            UUID('2975580b-1915-41b7-9672-c16ccbcc6fc1'): {
+                'team_name': team_name,
+                'parent_id': None,
+                'role': 'USER'
+            }
+        }
+    elif is_product_owner:
+        team_name = 'product_owner_team'
+        user_info['teams'] = {
+            UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'): {
+                'team_name': team_name,
+                'parent_id': None,
+                'role': 'USER'
+            }
+        }
+    elif is_user:
+        team_name = 'user'
+        user_info['teams'] = {
+            UUID('894c7af1-f90f-48dd-8276-fbc4bfa80371'): {
+                'team_name': team_name,
+                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'),
+                'role': 'USER'
+            },
+            UUID('2d89a1ad-0638-4738-940d-166c6a8105ec'): {
+                'team_name': team_name,
+                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'),
+                'role': 'USER'
+            }
+        }
+    elif is_read_only_user:
+        user_info['teams'] = {
+            None: {
+                'team_name': 'read_only_teams',
+                'parent_id': None,
+                'role': 'READ_ONLY_USER'
+            }
+        }
+
+    return Identity(user_info, all_teams)
 
 
 def test_is_super_admin():
-    super_admin = identity_factory('SUPER_ADMIN')
+    super_admin = identity_factory(is_super_admin=True)
     assert super_admin.is_super_admin()
 
 
-def test_is_admin():
-    admin = identity_factory('ADMIN')
-    assert admin.is_admin()
-
-
 def test_is_not_super_admin():
-    assert identity_factory('ADMIN').is_not_super_admin()
-    assert identity_factory('USER').is_not_super_admin()
+    assert identity_factory(is_user=True).is_not_super_admin()
 
 
 def test_is_product_owner():
-    product_owner = identity_factory('PRODUCT_OWNER')
-    assert product_owner.is_product_owner()
+    product_owner = identity_factory(is_product_owner=True)
+    assert product_owner.is_product_owner(
+        '894c7af1-f90f-48dd-8276-fbc4bfa80371')
 
 
 def test_is_not_product_owner():
-    assert identity_factory('ADMIN').is_not_product_owner()
-    assert identity_factory('USER').is_not_product_owner()
+    assert identity_factory(is_product_owner=True).is_not_product_owner(
+        'eaa68feb-0e23-4dee-9737-7538af531024')
 
 
 def test_is_feeder():
-    feeder = identity_factory('FEEDER')
-    assert feeder.is_feeder()
+    user_info = {
+        'id': '894c7af1-f90f-48dd-8276-fbc4bfa80371',
+        'api_secret': 'secret',
+        'teams': {
+            UUID('eaa68feb-0e23-4dee-9737-7538af531024'): {
+                'team_name': 'team_name',
+                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'),
+                'role': 'FEEDER'
+            }
+        }
+    }
+    user = Identity(user_info, [])
+    assert user.is_feeder(team_id='eaa68feb-0e23-4dee-9737-7538af531024')
 
 
 def test_is_remoteci():
-    remoteci = identity_factory('REMOTECI')
-    assert remoteci.is_remoteci()
+    user_info = {
+        'id': '894c7af1-f90f-48dd-8276-fbc4bfa80371',
+        'api_secret': 'secret',
+        'teams': {
+            UUID('eaa68feb-0e23-4dee-9737-7538af531024'): {
+                'team_name': 'team_name',
+                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'),
+                'role': 'REMOTECI'
+            }
+        }
+    }
+    user = Identity(user_info, [])
+    assert user.is_remoteci(team_id='eaa68feb-0e23-4dee-9737-7538af531024')
 
 
-def test_is_regular_user():
-    user = identity_factory('USER')
-    assert user.is_regular_user()
+def test_user_is_in_team():
+    user = identity_factory(is_user=True)
+    assert user.is_in_team(team_id='894c7af1-f90f-48dd-8276-fbc4bfa80371')
+    assert user.is_in_team(team_id='2d89a1ad-0638-4738-940d-166c6a8105ec')
 
 
 def test_user_is_not_in_team():
-    team = {'id': 'id-1', 'parent_id': None}
-    user = Identity({'role_label': 'USER', 'team_id': 'id-1'}, [team])
-    assert user.is_in_team(team_id='id-1')
-    assert user.is_not_in_team(team_id='another_team_id')
+    user = identity_factory(is_user=True)
+    assert user.is_not_in_team(team_id='eaa68feb-0e23-4dee-9737-7538af531024')
+    assert user.is_not_in_team(team_id='2975580b-1915-41b7-9672-c16ccbcc6fc1')
 
 
-def test_super_admin_is_not_in_team_all_teams():
-    super_admin = identity_factory('SUPER_ADMIN')
-    assert super_admin.is_in_team(team_id='id-1')
-    assert super_admin.is_in_team(team_id='id-2')
+def test_super_admin_is_in_all_teams():
+    super_admin = identity_factory(is_super_admin=True)
+
+    for team in all_teams:
+        assert super_admin.is_in_team(team_id=str(team['id']))
 
 
-def test_product_owner_is_not_in_team_all_child_teams():
-    product_owner = {'role_label': 'PRODUCT_OWNER', 'team_id': 'abc'}
-    teams = [
-        {'id': 'abc', 'parent_id': None},
-        {'id': 'def', 'parent_id': 'abc'},
-        {'id': 'ghi', 'parent_id': None}
-    ]
-    user = Identity(product_owner, teams)
-    assert user.is_in_team(team_id='abc')
-    assert user.is_in_team(team_id='def')
+def test_super_admin_is_product_owner_of_all_teams():
+    super_admin = identity_factory(is_super_admin=True)
+
+    for team in all_teams:
+        assert super_admin.is_product_owner(team_id=str(team['id']))
 
 
-def test_filter_teams():
-    teams = [
-        {'id': 'abc', 'parent_id': None},
-        {'id': 'cde', 'parent_id': 'abc'}
-    ]
-    user = Identity({'role_label': 'USER', 'team_id': 'abc'}, teams)
-    assert user.team['id'] == 'abc'
-    assert user.team['parent_id'] is None
-    assert user.teams_ids[0] == 'abc'
+def test_product_owner_is_in_child_teams():
+    product_owner = identity_factory(is_product_owner=True)
+    assert product_owner.is_in_team(
+        '894c7af1-f90f-48dd-8276-fbc4bfa80371')
+    assert product_owner.is_in_team(
+        '2d89a1ad-0638-4738-940d-166c6a8105ec')
 
 
-@pytest.fixture
-def teams():
-    t1 = {'id': 'admin', 'parent_id': None}
-    t2 = {'id': 'openstack', 'parent_id': 'admin'}
-    t3 = {'id': 'partner1', 'parent_id': 'openstack'}
-    t4 = {'id': 'partner2', 'parent_id': 'openstack'}
-    t5 = {'id': 'partner3', 'parent_id': 'openstack'}
-    t6 = {'id': 'partner4', 'parent_id': 'partner3'}
-    t7 = {'id': 'rhel', 'parent_id': 'admin'}
-    t8 = {'id': 'partner5', 'parent_id': 'rhel'}
-    return [t1, t2, t3, t4, t5, t6, t7, t8]
+def test_parent_teams():
+    user = identity_factory(is_user=True)
+    assert (set([UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327')]) ==
+            user.parent_teams_ids)
 
 
-def test_product_team_id_root_team(teams):
-    user = Identity({'role_label': 'ADMIN', 'team_id': 'admin'}, teams)
-    assert user.product_team_id is None
+def test_teams_ids():
+    user = identity_factory(is_user=True)
+    assert (set([UUID('894c7af1-f90f-48dd-8276-fbc4bfa80371'),
+                 UUID('2d89a1ad-0638-4738-940d-166c6a8105ec')]) == set(user.teams_ids))  # noqa
 
 
-def test_product_team_id_product_team(teams):
-    user = Identity({'role_label': 'ADMIN', 'team_id': 'openstack'}, teams)
-    assert user.product_team_id == 'openstack'
-
-
-def test_product_team_id_children_team(teams):
-    user = Identity({'role_label': 'ADMIN', 'team_id': 'partner3'}, teams)
-    assert user.product_team_id == 'openstack'
-
-
-def test_teams_ids(teams):
-    user = Identity({'role_label': 'ADMIN', 'team_id': 'partner3'}, teams)
-    assert sorted(user.teams_ids) == sorted(['partner3', 'partner4'])
-
-
-def test_teams_ids_sso_user(teams):
-    user = Identity({'role_label': 'READ_ONLY_USER', 'team_id': None}, teams)
-    assert len(user.teams_ids) == 0
+def test_teams_ids_sso_user():
+    user = identity_factory(is_read_only_user=True)
+    assert user.is_read_only_user()

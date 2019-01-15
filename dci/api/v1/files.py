@@ -159,7 +159,7 @@ def create_files(user):
 
     job = v1_utils.verify_existence_and_get(values.get('job_id'), models.JOBS)
     if user.is_not_in_team(job['team_id']) or user.is_read_only_user():
-        raise auth.UNAUTHORIZED
+        raise dci_exc.Unauthorized()
 
     file_id = utils.gen_uuid()
     file_path = files_utils.build_file_path(job['team_id'],
@@ -194,10 +194,7 @@ def create_files(user):
     return flask.Response(result, 201, content_type='application/json')
 
 
-@api.route('/files', methods=['GET'])
-@decorators.login_required
-@decorators.check_roles
-def get_all_files(user, j_id=None):
+def get_all_files(user, job_id):
     """Get all files.
     """
     args = schemas.args(flask.request.args.to_dict())
@@ -207,8 +204,8 @@ def get_all_files(user, j_id=None):
     # If it's not an admin then restrict the view to the team's file
     if user.is_not_super_admin() and not user.is_read_only_user():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
-    if j_id is not None:
-        query.add_extra_condition(_TABLE.c.job_id == j_id)
+
+    query.add_extra_condition(_TABLE.c.job_id == job_id)
     query.add_extra_condition(_TABLE.c.state != 'archived')
 
     nb_rows = query.get_number_of_rows()

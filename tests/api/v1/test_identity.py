@@ -17,14 +17,14 @@
 from __future__ import unicode_literals
 
 
-def test_get_identity_admin(admin):
+def test_get_identity_admin(admin, team_admin_id):
     response = admin.get('/api/v1/identity')
     assert response.status_code == 200
     assert 'identity' in response.data
     identity = response.data['identity']
-    assert identity['name'] == 'admin'
-    assert identity['team_name'] == 'admin'
-    assert identity['role_label'] == 'SUPER_ADMIN'
+    assert team_admin_id in identity['teams']
+    assert identity['teams'][team_admin_id]['team_name'] == 'admin'
+    assert identity['teams'][team_admin_id]['role'] == 'SUPER_ADMIN'
 
 
 def test_get_identity_unauthorized(unauthorized):
@@ -32,11 +32,11 @@ def test_get_identity_unauthorized(unauthorized):
     assert response.status_code == 401
 
 
-def test_get_identity_user(user):
+def test_get_identity_user(user, team_user_id):
     response = user.get('/api/v1/identity')
     assert response.status_code == 200
     assert 'identity' in response.data
     identity = response.data['identity']
     assert identity['name'] == 'user'
-    assert identity['team_name'] == 'user'
-    assert identity['role_label'] == 'USER'
+    assert identity['teams'][team_user_id]['team_name'] == 'user'
+    assert identity['teams'][team_user_id]['role'] == 'USER'

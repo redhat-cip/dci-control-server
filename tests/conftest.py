@@ -161,18 +161,6 @@ def user_no_team(admin):
 
 
 @pytest.fixture
-def user_admin(app, db_provisioning):
-    return utils.generate_client(app, ('user_admin', 'user_admin'))
-
-
-@pytest.fixture
-def user_admin_id(admin):
-    team = admin.get('/api/v1/users?where=name:user_admin')
-    team = admin.get('/api/v1/users/%s' % team.data['users'][0]['id']).data
-    return str(team['user']['id'])
-
-
-@pytest.fixture
 def product_owner(app, db_provisioning):
     return utils.generate_client(app, ('product_owner', 'product_owner'))
 
@@ -200,8 +188,9 @@ def topic_id_product(product_owner, team_id, product):
             'component_types': ['git-commit']}
     topic = product_owner.post('/api/v1/topics', data=data).data
     t_id = topic['topic']['id']
-    product_owner.post('/api/v1/topics/%s/teams' % t_id,
-                       data={'team_id': team_id})
+    pp = product_owner.post('/api/v1/topics/%s/teams' % t_id,
+                            data={'team_id': team_id})
+    assert pp.status_code == 201
     return str(t_id)
 
 
@@ -231,9 +220,10 @@ def test_id(admin):
 
 
 @pytest.fixture
-def team_id(admin):
-    team = admin.post('/api/v1/teams', data={'name': 'pname'}).data
-    return str(team['team']['id'])
+def team_id(admin, team_product_id):
+    team = admin.post('/api/v1/teams', data={'name': 'pname',
+                                             'parent_id': team_product_id})
+    return str(team.data['team']['id'])
 
 
 @pytest.fixture
@@ -312,8 +302,8 @@ def remoteci_configuration_user_id(user, remoteci_user_id, topic_user_id):
 
 
 @pytest.fixture
-def feeder_id(product_owner, team_user_id):
-    data = {'name': 'feeder_osp', 'team_id': team_user_id}
+def feeder_id(product_owner, team_product_id):
+    data = {'name': 'feeder_osp', 'team_id': team_product_id}
     feeder = product_owner.post('/api/v1/feeders', data=data).data
     return str(feeder['feeder']['id'])
 
@@ -392,17 +382,6 @@ def file_job_user_id(user, job_user_id, team_user_id):
 
 
 @pytest.fixture
-def role(admin):
-    data = {
-        'name': 'Manager',
-        'label': 'MANAGER',
-        'description': 'A Manager role',
-    }
-    role = admin.post('/api/v1/roles', data=data).data
-    return role['role']
-
-
-@pytest.fixture
 def feeder(admin, team_product_id):
     data = {
         'name': 'random-name-feeder',
@@ -429,30 +408,8 @@ def product(admin):
 
 
 @pytest.fixture
-def role_super_admin(admin):
-    return admin.get('/api/v1/roles?where=label:SUPER_ADMIN').data['roles'][0]
-
-
-@pytest.fixture
-def role_product_owner(admin):
-    return admin.get(
-        '/api/v1/roles?where=label:PRODUCT_OWNER'
-    ).data['roles'][0]
-
-
-@pytest.fixture
-def role_admin(admin):
-    return admin.get('/api/v1/roles?where=label:ADMIN').data['roles'][0]
-
-
-@pytest.fixture
-def role_user(admin):
-    return admin.get('/api/v1/roles?where=label:USER').data['roles'][0]
-
-
-@pytest.fixture
-def role_remoteci(admin):
-    return admin.get('/api/v1/roles?where=label:REMOTECI').data['roles'][0]
+def product_id(product):
+    return str(product['id'])
 
 
 @pytest.fixture
