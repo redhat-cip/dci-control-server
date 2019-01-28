@@ -201,7 +201,7 @@ def test_get_all_jobs_with_duplicated_embed(admin, team_user_id,
 
     remoteci_context.post('/api/v1/jobs', data=data)
     query_embed = (('/api/v1/jobs?embed='
-                    'metas,topic,components,'
+                    'topic,components,'
                     'files,topic,team,remoteci'))
     jobs = remoteci_context.get(query_embed).data
     assert len(jobs['jobs']) == 1

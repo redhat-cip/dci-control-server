@@ -152,10 +152,6 @@ def test_jobs(m_datetime, user_sso_rh_employee, app, engine,
         job_result = user_sso.get('/api/v1/jobs/%s/results' % job_id)
         assert job_result.status_code == 200
 
-        # get job's metas
-        metas = user_sso.get('/api/v1/jobs/%s/metas' % job_id)
-        assert metas.status_code == 200
-
 
 # JOBSTATES
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
