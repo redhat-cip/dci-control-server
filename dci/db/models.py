@@ -284,25 +284,6 @@ TESTS_RESULTS = sa.Table(
     sa.Index('tests_results_file_id_idx', 'file_id')
 )
 
-METAS = sa.Table(
-    'metas', metadata,
-    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
-              default=utils.gen_uuid),
-    sa.Column('created_at', sa.DateTime(),
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('updated_at', sa.DateTime(),
-              onupdate=datetime.datetime.utcnow,
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
-    sa.Column('name', sa.Text),
-    sa.Column('value', sa.Text),
-    sa.Column('job_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('jobs.id', ondelete='CASCADE'),
-              nullable=False),
-    sa.Index('metas_job_id_idx', 'job_id')
-)
-
 JOIN_JOBS_COMPONENTS = sa.Table(
     'jobs_components', metadata,
     sa.Column('job_id', pg.UUID(as_uuid=True),
