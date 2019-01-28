@@ -117,6 +117,14 @@ def test_upload_tests_with_regressions_successfix(admin, remoteci_context,
             assert job_res['regressions'] == 0
             assert job_res['successfixes'] == 0
 
+    tcs = admin.get('/api/v1/files/%s/testscases' % f_2).data['testscases']
+    assert tcs[0]['successfix']
+    assert not tcs[0]['regression']
+    assert not tcs[1]['successfix']
+    assert not tcs[1]['regression']
+    assert not tcs[2]['successfix']
+    assert tcs[2]['regression']
+
 
 def test_get_all_files_with_pagination(user, jobstate_user_id):
     # create 4 files types and check meta count
