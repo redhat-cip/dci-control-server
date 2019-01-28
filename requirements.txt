@@ -4,7 +4,7 @@ cryptography  # ignore: use latest version of cryptography to avoid building it 
 lxml  # ignore: use latest version of lxml to avoid building it during pip install
 alembic==0.8.3  # ignore: use the epel version instead of the centos version
 six==1.9.0  # python-six
-SQLAlchemy==0.9.8  # python-sqlalchemy
+#SQLAlchemy==0.9.8  # python-sqlalchemy
 requests==2.6.0  # python-requests
 pytz==2016.10  # pytz
 pyjwt==1.5.3  # python-jwt
@@ -14,5 +14,5 @@ dciauth==2.0.2  # python2-dciauth
 SQLAlchemy-Utils==0.31.3  # python-sqlalchemy-utils
 voluptuous==0.10.5  # python2-voluptuous
 pyzmq==14.3.1  # python-zmq
-python-keystoneclient==3.13.0  # python2-keystoneclient
-python-swiftclient==3.4.0  # python2-swiftclient
+#python-keystoneclient==3.13.0  # python2-keystoneclient
+#python-swiftclient==3.4.0  # python2-swiftclient

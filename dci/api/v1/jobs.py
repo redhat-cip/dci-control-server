@@ -38,7 +38,6 @@ from dci.db import models
 from dci.api.v1 import files
 from dci.api.v1 import issues
 from dci.api.v1 import jobstates
-from dci.api.v1 import metas
 from dci.api.v1 import remotecis
 from dci import dci_config
 
@@ -50,7 +49,6 @@ _VALID_EMBED = embeds.jobs()
 _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
     'files': True,
-    'metas': True,
     'topic': False,
     'issues': True,
     'jobstates': True,
