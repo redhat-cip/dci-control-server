@@ -38,7 +38,6 @@ from dci.db import models
 from dci.api.v1 import files
 from dci.api.v1 import issues
 from dci.api.v1 import jobstates
-from dci.api.v1 import metas
 from dci.api.v1 import remotecis
 from dci import dci_config
 
@@ -50,7 +49,6 @@ _VALID_EMBED = embeds.jobs()
 _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
     'files': True,
-    'metas': True,
     'topic': False,
     'issues': True,
     'jobstates': True,
@@ -545,58 +543,6 @@ def delete_job_by_id(user, j_id):
             flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
-
-
-# jobs metas controllers
-
-@api.route('/jobs/<uuid:j_id>/metas', methods=['POST'])
-@decorators.login_required
-@decorators.check_roles
-def associate_meta(user, j_id):
-    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not user.is_in_team(job['team_id']):
-        raise dci_exc.Unauthorized()
-    return metas.create_meta(user, j_id)
-
-
-@api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['GET'])
-@decorators.login_required
-@decorators.check_roles
-def get_meta_by_id(user, j_id, m_id):
-    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not user.is_in_team(job['team_id']) and not user.is_read_only_user():
-        raise dci_exc.Unauthorized()
-    return metas.get_meta_by_id(m_id)
-
-
-@api.route('/jobs/<uuid:j_id>/metas', methods=['GET'])
-@decorators.login_required
-@decorators.check_roles
-def get_all_metas(user, j_id):
-    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not user.is_in_team(job['team_id']) and not user.is_read_only_user():
-        raise dci_exc.Unauthorized()
-    return metas.get_all_metas_from_job(j_id)
-
-
-@api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['PUT'])
-@decorators.login_required
-@decorators.check_roles
-def put_meta(user, j_id, m_id):
-    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not user.is_in_team(job['team_id']):
-        raise dci_exc.Unauthorized()
-    return metas.put_meta(j_id, m_id)
-
-
-@api.route('/jobs/<uuid:j_id>/metas/<uuid:m_id>', methods=['DELETE'])
-@decorators.login_required
-@decorators.check_roles
-def delete_meta(user, j_id, m_id):
-    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
-    if not user.is_in_team(job['team_id']):
-        raise dci_exc.Unauthorized()
-    return metas.delete_meta(j_id, m_id)
 
 
 @api.route('/jobs/<uuid:job_id>/tags', methods=['GET'])
