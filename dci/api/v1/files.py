@@ -265,8 +265,12 @@ def get_file_testscases(user, file_id):
     if not user.is_in_team(file['team_id']) and not user.is_read_only_user():
         raise dci_exc.Unauthorized()
     file_descriptor = get_file_descriptor(file)
+    jsonunit = tsfm.junit2dict(file_descriptor.read())
+    job = v1_utils.verify_existence_and_get(file['job_id'], models.JOBS)
+    previous_jsonunit = _get_previous_jsonunit(job, file['name'])
+    jsonunit = _compute_regressions_successfix(jsonunit, previous_jsonunit)
     return flask.Response(json.dumps({
-        "testscases": tsfm.junit2dict(file_descriptor.read())["testscases"]
+        "testscases": jsonunit["testscases"]
     }), 200, content_type='application/json')
 
 

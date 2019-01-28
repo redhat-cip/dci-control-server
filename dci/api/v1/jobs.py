@@ -508,6 +508,7 @@ def get_all_results_from_jobs(user, j_id):
                         'skips': test_result['skips'],
                         'time': test_result['time'],
                         'regressions': test_result['regressions'],
+                        'successfixes': test_result['successfixes'],
                         'success': test_result['success'],
                         'file_id': test_result['file_id']})
 
