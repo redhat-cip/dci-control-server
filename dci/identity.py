@@ -97,20 +97,15 @@ class Identity:
 
         return not self.is_super_admin()
 
-    def is_not_admin(self):
-        """Ensure the user has not the role ADMIN."""
-
-        return not self.is_admin()
-
-    def is_product_owner(self):
+    def is_product_owner(self, team_id):
         """Ensure the user has the role PRODUCT_OWNER."""
 
         return self.role_label == 'PRODUCT_OWNER'
 
-    def is_not_product_owner(self):
+    def is_not_product_owner(self, team_id):
         """Ensure the user has not the role PRODUCT_OWNER."""
 
-        return not self.is_product_owner()
+        return not self.is_product_owner(team_id)
 
     # TODO: replace team_id with object team
     def is_team_product_owner(self, team_id):
@@ -118,11 +113,6 @@ class Identity:
            to the team."""
 
         return self.role_label == 'PRODUCT_OWNER' and self.is_in_team(team_id)
-
-    def is_admin(self):
-        """Ensure the user has the role ADMIN."""
-
-        return self.role_label == 'ADMIN'
 
     def is_read_only_user(self):
         """Check if the user is a rh employee."""
@@ -132,22 +122,17 @@ class Identity:
         """Check if the user is not a read only user."""
         return not self.is_read_only_user()
 
-    def is_team_admin(self, team_id):
-        """Ensure the user has the role ADMIN and belongs to the team."""
-
-        return self.role_label == 'ADMIN' and self.is_in_team(team_id)
-
     def is_regular_user(self):
         """Ensure the user has the role USER."""
 
         return self.role_label == 'USER'
 
-    def is_remoteci(self):
+    def is_remoteci(self, team_id):
         """Ensure ther resource has the role REMOTECI."""
 
         return self.role_label == 'REMOTECI'
 
-    def is_feeder(self):
+    def is_feeder(self, team_id):
         """Ensure ther resource has the role FEEDER."""
 
         return self.role_label == 'FEEDER'
