@@ -44,18 +44,6 @@ def test_success_create_role_admin_default_label(admin):
     assert result.data['role']['label'] == data['name'].upper()
 
 
-def test_fail_create_role_team_admin(user_admin):
-    data = {
-        'name': 'Manager',
-        'label': 'MANAGER',
-        'description': 'A Manager role',
-    }
-
-    result = user_admin.post('/api/v1/roles', data=data)
-
-    assert result.status_code == 401
-
-
 def test_fail_create_role_user(user):
     data = {
         'name': 'Manager',
@@ -129,14 +117,11 @@ def test_success_get_role_by_id(admin, role):
     assert result.data['role']['name'] == 'Manager'
 
 
-def test_failure_get_super_admin_role_by_id(admin, user_admin, user):
+def test_failure_get_super_admin_role_by_id(admin, user):
     result = admin.get('/api/v1/roles?where=label:SUPER_ADMIN')
 
     assert result.status_code == 200
     super_admin_role_id = result.data['roles'][0]['id']
-
-    ua_request = user_admin.get('/api/v1/roles/%s' % super_admin_role_id)
-    assert ua_request.status_code == 401
 
     u_request = user.get('/api/v1/roles/%s' % super_admin_role_id)
     assert u_request.status_code == 401
@@ -165,16 +150,6 @@ def test_success_get_all_roles_admin(admin):
     roles = [r['label'] for r in result.data['roles']]
     assert ['ADMIN', 'FEEDER', 'PRODUCT_OWNER', 'READ_ONLY_USER', 'REMOTECI',
             'SUPER_ADMIN', 'USER'] == sorted(roles)
-
-
-def test_success_get_all_roles_user_admin(user_admin):
-    result = user_admin.get('/api/v1/roles')
-
-    assert result.status_code == 200
-
-    roles = [r['label'] for r in result.data['roles']]
-
-    assert (['ADMIN', 'FEEDER', 'REMOTECI', 'USER'] == sorted(roles))
 
 
 def test_failure_get_all_roles_user(user):

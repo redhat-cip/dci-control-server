@@ -101,11 +101,10 @@ def get_all_roles(user):
         query.add_extra_condition(_TABLE.c.label != 'SUPER_ADMIN')
         query.add_extra_condition(_TABLE.c.label != 'READ_ONLY_USER')
 
-    if user.is_not_super_admin() and user.is_not_product_owner():
+    if user.is_not_super_admin() and user.is_not_product_owner(None):
         query.add_extra_condition(_TABLE.c.label != 'PRODUCT_OWNER')
 
-    if user.is_not_super_admin() and user.is_not_product_owner() and \
-            user.is_not_admin():
+    if user.is_not_super_admin() and user.is_not_product_owner(None):
         query.add_extra_condition(_TABLE.c.label != 'ADMIN')
 
     if user.is_regular_user():

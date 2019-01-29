@@ -30,11 +30,6 @@ def test_is_super_admin():
     assert super_admin.is_super_admin()
 
 
-def test_is_admin():
-    admin = identity_factory('ADMIN')
-    assert admin.is_admin()
-
-
 def test_is_not_super_admin():
     assert identity_factory('ADMIN').is_not_super_admin()
     assert identity_factory('USER').is_not_super_admin()
@@ -42,22 +37,22 @@ def test_is_not_super_admin():
 
 def test_is_product_owner():
     product_owner = identity_factory('PRODUCT_OWNER')
-    assert product_owner.is_product_owner()
+    assert product_owner.is_product_owner(None)
 
 
 def test_is_not_product_owner():
-    assert identity_factory('ADMIN').is_not_product_owner()
-    assert identity_factory('USER').is_not_product_owner()
+    assert identity_factory('ADMIN').is_not_product_owner(None)
+    assert identity_factory('USER').is_not_product_owner(None)
 
 
 def test_is_feeder():
     feeder = identity_factory('FEEDER')
-    assert feeder.is_feeder()
+    assert feeder.is_feeder(None)
 
 
 def test_is_remoteci():
     remoteci = identity_factory('REMOTECI')
-    assert remoteci.is_remoteci()
+    assert remoteci.is_remoteci(None)
 
 
 def test_is_regular_user():
