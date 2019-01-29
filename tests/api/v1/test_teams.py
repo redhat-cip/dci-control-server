@@ -300,23 +300,6 @@ def test_get_teams_as_user(user, team_user_id, team_admin_id):
     assert len(teams.data['teams']) == 1
 
 
-# Only super admin and an admin of a team can update the team
-def test_put_team_as_user_admin(user, team_user_id, user_admin):
-    team = user.get('/api/v1/teams/%s' % team_user_id)
-    team_etag = team.headers.get("ETag")
-    team_user_id = team.data['team']['id']
-
-    team_put = user.put('/api/v1/teams/%s' % team_user_id,
-                        data={'name': 'nname'},
-                        headers={'If-match': team_etag})
-    assert team_put.status_code == 401
-
-    team_put = user_admin.put('/api/v1/teams/%s' % team_user_id,
-                              data={'name': 'nname'},
-                              headers={'If-match': team_etag})
-    assert team_put.status_code == 200
-
-
 def test_change_team_state(admin, team_id):
     t = admin.get('/api/v1/teams/' + team_id).data['team']
     data = {'state': 'inactive'}
@@ -337,20 +320,6 @@ def test_change_team_to_invalid_state(admin, team_id):
     current_team = admin.get('/api/v1/teams/' + team_id)
     assert current_team.status_code == 200
     assert current_team.data['team']['state'] == 'active'
-
-
-# Only super admin can delete a team
-def test_delete_as_user_admin(user, team_user_id, user_admin):
-    team = user.get('/api/v1/teams/%s' % team_user_id)
-    team_etag = team.headers.get("ETag")
-
-    team_delete = user.delete('/api/v1/teams/%s' % team_user_id,
-                              headers={'If-match': team_etag})
-    assert team_delete.status_code == 401
-
-    team_delete = user_admin.delete('/api/v1/teams/%s' % team_user_id,
-                                    headers={'If-match': team_etag})
-    assert team_delete.status_code == 401
 
 
 def test_success_update_field_by_field(admin, team_id):
@@ -377,21 +346,12 @@ def test_success_update_field_by_field(admin, team_id):
     assert t['country'] == 'FR'
 
 
-def test_add_get_users_from_to_team(admin, team_id, user_id, user_admin_id):
+def test_add_get_users_from_to_team(admin, team_id, user_id):
     # adding two users to the same team
     users = admin.get('/api/v1/teams/%s/users' % team_id)
     current_len = len(users.data['users'])
 
     pu = admin.post('/api/v1/teams/%s/users/%s' % (team_id, user_id),
-                    data={'role': 'USER'})
-    assert pu.status_code == 201
-
-    users = admin.get('/api/v1/teams/%s/users' % team_id)
-    assert users.status_code == 200
-    assert len(users.data['users']) == (current_len + 1)
-    current_len += 1
-
-    pu = admin.post('/api/v1/teams/%s/users/%s' % (team_id, user_admin_id),
                     data={'role': 'USER'})
     assert pu.status_code == 201
 

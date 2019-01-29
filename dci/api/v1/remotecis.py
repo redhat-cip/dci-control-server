@@ -57,7 +57,7 @@ def create_remotecis(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.remoteci.post(flask.request.json))
 
-    if not user.is_in_team(values['team_id']):
+    if user.is_not_in_team(values['team_id']):
         raise dci_exc.Unauthorized()
 
     values.update({
@@ -315,7 +315,7 @@ def create_configuration(user, r_id):
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
-    if not user.is_in_team(remoteci['team_id']):
+    if user.is_not_in_team(remoteci['team_id']):
         raise dci_exc.Unauthorized()
 
     rconfiguration_id = values_configuration.get('id')
