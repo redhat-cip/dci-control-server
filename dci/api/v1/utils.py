@@ -123,7 +123,7 @@ def user_topic_ids(user):
 
     if user.is_super_admin() or user.is_read_only_user():
         query = sql.select([models.TOPICS])
-    elif user.is_product_owner() or user.is_feeder():
+    elif user.is_product_owner(None) or user.is_feeder(None):
         query = sql.select([models.TOPICS]).where(
             models.TOPICS.c.product_id == user.product_id
         )

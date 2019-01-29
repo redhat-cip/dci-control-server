@@ -50,9 +50,11 @@ def create_teams(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.team.post(flask.request.json))
 
-    if not values['parent_id'] or \
-       (user.is_product_owner() and values['parent_id'] != user.team_id):
-        values['parent_id'] = user.team_id
+    if user.is_not_super_admin():
+        raise dci_exc.Unauthorized()
+
+    if not values.get('parent_id'):
+        values['parent_id'] = flask.g.team_admin_id
 
     query = _TABLE.insert().values(**values)
 
@@ -203,7 +205,7 @@ def add_user_to_team(user, team_id, user_id):
             raise dci_exc.Unauthorized()
 
     if role == 'ADMIN' or role == 'PRODUCT_OWNER':
-        if (user.is_not_admin() and user.is_not_product_owner and
+        if (user.is_not_product_owner(team_id) and
             user.is_not_super_admin()):
             raise dci_exc.Unauthorized()
 
@@ -281,8 +283,7 @@ def remove_user_from_team(user, team_id, user_id):
     if user.is_not_in_team(team_id):
         raise dci_exc.Unauthorized()
 
-    if (user.is_not_super_admin() and user.is_not_product_owner() and
-        user.is_not_admin()):
+    if user.is_not_super_admin() and user.is_not_product_owner(team_id):
         raise dci_exc.Unauthorized()
 
     _JUTR = models.JOIN_USERS_TEAMS_ROLES

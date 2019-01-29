@@ -78,7 +78,7 @@ def get_topic_by_id(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
-    if user.is_not_super_admin() and user.is_not_product_owner():
+    if user.is_not_super_admin() and user.is_not_product_owner(None):
         if not user.is_read_only_user():
             v1_utils.verify_team_in_topic(user, topic_id)
         if 'teams' in args['embed']:
@@ -100,14 +100,14 @@ def get_all_topics(user):
     # if the user is an admin then he can get all the topics
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
-    if user.is_not_super_admin() and user.is_not_product_owner():
+    if user.is_not_super_admin() and user.is_not_product_owner(None):
         if 'teams' in args['embed']:
             raise dci_exc.DCIException('embed=teams not authorized.',
                                        status_code=401)
         if not user.is_read_only_user():
             query.add_extra_condition(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))  # noqa
 
-    if user.is_product_owner():
+    if user.is_product_owner(None):
         query.add_extra_condition(_TABLE.c.product_id == user.product_id)
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
@@ -139,7 +139,7 @@ def put_topic(user, topic_id):
         n_topic = v1_utils.verify_existence_and_get(values['next_topic_id'],
                                                     _TABLE)
 
-    if user.is_product_owner() and \
+    if user.is_product_owner(None) and \
        (user.product_id != topic['product_id'] or
        (n_topic and user.product_id != n_topic['product_id'])):
             raise dci_exc.Unauthorized()
