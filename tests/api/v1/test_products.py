@@ -116,13 +116,6 @@ def test_success_delete_product_admin(admin, product):
     assert len(result.data['products']) == 1
 
 
-def test_fail_delete_product_user_admin(user_admin, product):
-    result = user_admin.delete('/api/v1/products/%s' % product['id'],
-                               headers={'If-match': product['etag']})
-
-    assert result.status_code == 401
-
-
 def test_fail_delete_product_user(user, product):
     result = user.delete('/api/v1/products/%s' % product['id'],
                          headers={'If-match': product['etag']})
