@@ -225,16 +225,6 @@ def provision(db_conn):
               email='user_no_team@example.org',
               team_id=None)
 
-    user_admin_pw_hash = auth.hash_password('user_admin')
-    db_insert(models.USERS,
-              name='user_admin',
-              sso_username='user_admin',
-              role_id=admin_role_id,
-              password=user_admin_pw_hash,
-              fullname='User Admin',
-              email='user_admin@example.org',
-              team_id=team_user_id)
-
     product_owner_pw_hash = auth.hash_password('product_owner')
     db_insert(models.USERS,
               name='product_owner',
