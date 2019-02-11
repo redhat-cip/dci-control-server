@@ -101,8 +101,11 @@ def _update_topic(admin, topic, data):
     return admin.get(url).data['topic']
 
 
-def test_schedule_jobs_on_topic_inactive(admin, remoteci_context, remoteci,
-                                         topic):
+def test_schedule_jobs_on_topic_inactive(admin, remoteci_context, topic,
+                                         team_user_id):
+
+    admin.post('/api/v1/topics/%s/teams' % topic['id'],
+               data={'team_id': team_user_id})
     topic = _update_topic(admin, topic, {'state': 'inactive'})
     data = {'topic_id': topic['id']}
     r = remoteci_context.post('/api/v1/jobs/schedule', data=data)
@@ -170,3 +173,34 @@ def test_schedule_jobs_round_robin_rconfiguration(admin, remoteci_context,
     assert j1['rconfiguration_id'] in list_round_robin
     assert j2['rconfiguration_id'] in list_round_robin
     assert j1['rconfiguration_id'] != j2['rconfiguration_id']
+
+
+def test_schedule_jobs_multi_topics(remoteci_context, remoteci, topic,
+                                    topic_user, admin):
+    headers = {
+        'User-Agent': 'python-dciclient',
+        'Client-Version': 'python-dciclient_0.1.0'
+    }
+    data = {'topic_id': topic['id'],
+            'topic_id_secondary': topic_user['id']}
+    r = remoteci_context.post(
+        '/api/v1/jobs/schedule',
+        headers=headers,
+        data=data
+    )
+    assert r.status_code == 201
+    job = r.data['job']
+    assert job['topic_id'] == topic['id']
+    assert job['user_agent'] == headers['User-Agent']
+    assert job['client_version'] == headers['Client-Version']
+    assert job['rconfiguration_id'] is None
+
+    job_infos = admin.get('/api/v1/jobs/%s?embed=topic,components,topicsecondary,componentssecondary' % job['id'])  # noqa
+    assert job_infos.status_code == 200
+    job_infos = job_infos.data['job']
+    assert job_infos['topicsecondary']['id'] == topic_user['id']
+    assert len(job_infos['componentssecondary']) == 3
+
+    job_multi = admin.get('/api/v1/jobs?where=topic_id:%s,topic_id_secondary:%s' % (topic['id'], topic_user['id']))  # noqa
+    assert job_multi.status_code == 200
+    assert job_multi.data['jobs'][0]['id'] == job['id']
