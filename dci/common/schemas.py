@@ -387,6 +387,8 @@ job = {
                                                  msg=INVALID_RESOURCE_STATE),
     v.Optional('topic_id', default=None): v.Any(v.All(UUID, msg=INVALID_TOPIC),
                                                 None),
+    v.Optional('topic_id_secondary', default=None): v.Any(v.All(UUID, msg=INVALID_TOPIC),  # noqa
+                                                None),
     v.Optional('rconfiguration_id', default=None): v.Any(
         v.All(UUID, msg=INVALID_RCONFIGURATION), None
     )
@@ -405,6 +407,9 @@ job = DCISchema(schema_factory(job).post, Schema(job_put))
 job_schedule = {
     v.Optional('remoteci_id'): v.Any(UUID, msg=INVALID_REMOTE_CI),
     'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
+    v.Optional('topic_id_secondary', default=None): v.Any(v.All(UUID,
+                                                          msg=INVALID_TOPIC),
+                                                          None),
     v.Optional('components_ids', default=[]): list
 }
 

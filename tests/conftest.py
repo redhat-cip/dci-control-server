@@ -258,14 +258,19 @@ def team_admin_id(admin):
 
 
 @pytest.fixture
-def topic_user_id(admin, user, team_user_id, product):
+def topic_user(admin, user, team_user_id, product):
     data = {'name': 'topic_user_name', 'product_id': product['id'],
             'component_types': ['type_1', 'type_2', 'type_3']}
     topic = admin.post('/api/v1/topics', data=data).data
     t_id = topic['topic']['id']
     admin.post('/api/v1/topics/%s/teams' % t_id,
                data={'team_id': team_user_id})
-    return str(t_id)
+    return topic['topic']
+
+
+@pytest.fixture
+def topic_user_id(topic_user):
+    return topic_user['id']
 
 
 @pytest.fixture
@@ -282,9 +287,10 @@ def remoteci_user_api_secret(user, remoteci_user_id):
 
 
 @pytest.fixture
-def remoteci_user_id(user, team_user_id):
+def remoteci_user_id(user, admin, team_user_id, topic_user_id):
     data = {'name': 'rname', 'team_id': team_user_id}
     remoteci = user.post('/api/v1/remotecis', data=data).data
+
     return str(remoteci['remoteci']['id'])
 
 

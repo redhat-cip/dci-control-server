@@ -117,7 +117,8 @@ def test_get_all_jobs_with_embed(admin, remoteci_context, team_user_id,
                                  remoteci_user_id, components_user_ids,
                                  topic_user_id):
     # create 2 jobs and check meta data count
-    data = {'components': components_user_ids}
+    data = {'components': components_user_ids,
+            'topic_id': topic_user_id}
     job_1 = remoteci_context.post('/api/v1/jobs', data=data)
     job_2 = remoteci_context.post('/api/v1/jobs', data=data)
 
@@ -211,9 +212,11 @@ def test_get_all_jobs_with_duplicated_embed(admin, team_user_id,
 
 
 def test_get_all_jobs_with_embed_and_limit(remoteci_context,
-                                           components_user_ids):
+                                           components_user_ids,
+                                           topic_user_id):
     # create 2 jobs and check meta data count
-    data = {'components': components_user_ids}
+    data = {'components': components_user_ids,
+            'topic_id': topic_user_id}
     remoteci_context.post('/api/v1/jobs', data=data)
     remoteci_context.post('/api/v1/jobs', data=data)
 
