@@ -1,25 +1,15 @@
-%if 0%{?fedora}
-# NOTE(Gonéri): We will trun this on when python3-swiftclient
-# will be available
-%global with_python3 0
-%endif
-
 Name:           dci-control-server
 Version:        0.2.2
-Release:        1.VERS%{?dist}
+Release:        2.VERS%{?dist}
 Summary:        DCI control server
 License:        ASL 2.0
 URL:            https://github.com/redhat-cip/dci-control-server
 Source0:        dci-control-server-%{version}.tar.gz
 BuildArch:      noarch
 
-%description
-DCI control server
-
-%package -n dci-api
-Summary:        DCI control server API
 Conflicts:      dci-common < %{version}
 Obsoletes:      dci-common
+Obsoletes:      dci-api < 0.2.2.2
 BuildRequires:  net-tools
 BuildRequires:  rh-postgresql94-postgresql-devel
 BuildRequires:  rh-postgresql94
@@ -45,7 +35,7 @@ BuildRequires:  python2-pytest
 BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
 BuildRequires:  systemd
-BuildRequires:  systemd-units
+%{?systemd_requires}
 Requires:       pyOpenSSL
 Requires:       python-alembic
 Requires:       python-flask
@@ -65,71 +55,14 @@ Requires:       python-dciauth
 Requires:       python2-swiftclient
 Requires:       pytz
 
-%description -n dci-api
+%description
 The implementation of the DCI control server API.
-
-%if 0%{?with_python3}
-%package -n dci-api-python3
-Summary:        DCI control server API
-Conflicts:      dci-common-python3 < %{version}
-Obsoletes:      dci-common-python3
-BuildRequires:  net-tools
-BuildRequires:  rh-postgresql94-postgresql-devel
-BuildRequires:  rh-postgresql94
-BuildRequires:  pyOpenSSL
-BuildRequires:  python3-alembic
-BuildRequires:  python3-flask
-BuildRequires:  python3-lxml
-BuildRequires:  python3-passlib
-BuildRequires:  python3-psycopg2
-BuildRequires:  python3-pytest
-BuildRequires:  python3-requests
-BuildRequires:  python3-rpm-macros
-BuildRequires:  python3-setuptools
-BuildRequires:  python3-six
-BuildRequires:  python3-sqlalchemy
-BuildRequires:  python3-sqlalchemy-utils
-BuildRequires:  python3-swiftclient
-BuildRequires:  python3-voluptuous = 0.10.5
-BuildRequires:  python3-werkzeug
-BuildRequires:  python3-zmq
-BuildRequires:  python-jwt
-BuildRequires:  python3-dciauth
-BuildRequires:  systemd
-BuildRequires:  systemd-units
-Requires:       pyOpenSSL
-Requires:       python3-alembic
-Requires:       python3-flask
-Requires:       python3-lxml
-Requires:       python3-passlib
-Requires:       python3-psycopg2
-Requires:       python3-pytz
-Requires:       python3-requests
-Requires:       python3-six
-Requires:       python3-sqlalchemy
-Requires:       python3-sqlalchemy-utils
-Requires:       python3-swiftclient
-Requires:       python3-voluptuous = 0.10.5
-Requires:       python3-werkzeug
-Requires:       python3-zmq
-Requires:       python-jwt
-Requires:       python3-dciauth
-
-
-%description -n dci-api-python3
-The implementation of the DCI control server API.
-%endif
-
 
 %prep -a
 %autosetup -n %{name}-%{version}
 
 %build
 %py2_build
-%if 0%{?with_python3}
-%py3_build
-%endif
-
 
 %install
 %py2_install
@@ -143,11 +76,8 @@ mv %{buildroot}/%{python2_sitelib}/dci/settings.py %{buildroot}/%{_sysconfdir}/d
 %{__ln_s} %{_sysconfdir}/dci-api/settings.py %{buildroot}/%{python2_sitelib}/dci/settings.py
 rm -rf %{buildroot}/%{python2_sitelib}/sample
 install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-worker.service
-%if 0%{?with_python3}
-%py3_install
-%endif
 
-%files -n dci-api
+%files
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
 %{_bindir}/dci-purge-swift-components
@@ -158,24 +88,17 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %{_unitdir}
 %config(noreplace) %{_sysconfdir}/dci-api/settings.py
 %{_datarootdir}/dci-api/wsgi.py
-
-%if 0%{?with_python3}
-%{_bindir}/dci-dbsync
-%{_bindir}/dci-dbinit
-%{_bindir}/dci-purge-swift-components
-%files -n dci-api-python3
-%doc
-%{python3_sitelib}/dci
-%{python3_sitelib}/*.egg-info
-%config(noreplace) %{_sysconfdir}/dci-api/settings.py
-%endif
-
 # NOTE(Gonéri): the content of settings.py is likely to evolve.
 # We don't want to end up with outdated cache on the hard drive.
 %exclude %{_sysconfdir}/dci-api/settings.py?
 %exclude %{python2_sitelib}/dci/settings.py?
 
 %changelog
+* Mon Feb 11 2019 Haïkel Guémar <hguemar@fedoraproject.org> - 0.2.2-2
+- Rename dci-api to dci-control-server
+- Drop python3 variant subpackage
+- Fix systemd requirements
+
 * Tue Jun 12 2018 Guillaume Vincent <gvincent@redhat.com> 0.2.2-1
 - Use python-sqlalchemy instead of python-flask-sqlalchemy
 
