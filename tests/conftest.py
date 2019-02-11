@@ -429,6 +429,11 @@ def product(admin):
 
 
 @pytest.fixture
+def product2(admin):
+    return admin.get('/api/v1/products?where=label:BEST').data['products'][0]
+
+
+@pytest.fixture
 def role_super_admin(admin):
     return admin.get('/api/v1/roles?where=label:SUPER_ADMIN').data['roles'][0]
 

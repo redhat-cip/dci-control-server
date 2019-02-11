@@ -514,3 +514,41 @@ def test_get_latest_component_per_topic(admin, topic_id):
     component = admin.get('/api/v1/topics/%s/components/latest' % topic_id). \
         data['component']
     assert component['name'] == 'pnamelast'
+
+
+def test_add_multiple_topic_and_get(admin, user, product, product2):
+    # create a topic from product
+    data = {'name': 'tname', 'product_id': product['id'],
+            'component_types': ['type1', 'type2']}
+    pt = admin.post('/api/v1/topics', data=data).data
+    pt_id = pt['topic']['id']
+
+    # create a topic from product2
+    data2 = {'name': 'tname2', 'product_id': product2['id'],
+            'component_types': ['type1', 'type2']}
+    pt2 = admin.post('/api/v1/topics', data=data2).data
+    print pt2
+    pt2_id = pt2['topic']['id']
+
+    # create a team
+    data = {'name': 'tname1'}
+    pc = admin.post('/api/v1/teams', data=data).data
+    team_id = pc['team']['id']
+
+    url = '/api/v1/topics/%s/teams' % pt_id
+    # add team to topic
+    data = {'team_id': team_id}
+    res = admin.post(url, data=data)
+    assert res.status_code == 201
+    add_data = res.data
+    assert add_data['topic_id'] == pt_id
+    assert add_data['team_id'] == team_id
+
+    url = '/api/v1/topics/%s/teams' % pt2_id
+    # add team to topic2
+    data = {'team_id': team_id}
+    res = admin.post(url, data=data)
+    assert res.status_code == 201
+    add_data = res.data
+    assert add_data['topic_id'] == pt2_id
+    assert add_data['team_id'] == team_id
