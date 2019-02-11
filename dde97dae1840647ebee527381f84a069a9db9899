@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "21c5a18a_23aa5f5b",
+        "filename": "tests/api/v1/test_topics.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 530,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-02-11T14:34:29Z",
+      "side": 1,
+      "message": "remove",
+      "revId": "dde97dae1840647ebee527381f84a069a9db9899",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
