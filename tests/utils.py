@@ -262,6 +262,13 @@ def provision(db_conn):
               description='My Awesome product',
               team_id=team_product_id)
 
+    # Create a product
+    db_insert(models.PRODUCTS,
+              name='Best product',
+              label='BEST',
+              description='My best product',
+              team_id=team_product_id)
+
 
 SWIFT = 'dci.stores.swift.Swift'
 
