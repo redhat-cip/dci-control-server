@@ -97,7 +97,7 @@ def test_success_get_all_products_admin(admin, product, product_openstack):
     assert result.status_code == 200
 
     products = [r['label'] for r in result.data['products']]
-    assert ['AWSM', 'OPENSTACK'] == sorted(products)
+    assert ['AWSM', 'BEST', 'OPENSTACK'] == sorted(products)
 
 
 def test_success_delete_product_admin(admin, product):
@@ -140,10 +140,10 @@ def test_success_get_products_embed(admin, product):
 def test_success_get_only_po_product(admin, product_owner, product_openstack):
 
     products_admin = admin.get('/api/v1/products').data
-    assert len(products_admin['products']) == 2
+    assert len(products_admin['products']) == 3
     products = [p['label'] for p in products_admin['products']]
-    assert ['AWSM', product_openstack['label']] == sorted(products)
+    assert ['AWSM', 'BEST', product_openstack['label']] == sorted(products)
 
     products_po = product_owner.get('/api/v1/products').data
-    assert len(products_po['products']) == 1
+    assert len(products_po['products']) == 2
     assert products_po['products'][0]['label'] == 'AWSM'
