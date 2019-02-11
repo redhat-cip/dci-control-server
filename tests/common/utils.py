@@ -92,6 +92,10 @@ TOPIC = 'topic_id', ID[1]
 INVALID_TOPIC = 'topic_id', INVALID_ID
 INVALID_TOPIC_ERROR = 'topic_id', schemas.INVALID_TOPIC
 
+TOPIC_SECONDARY = 'topic_id_secondary', ID[1]
+INVALID_TOPIC_SECONDARY = 'topic_id_secondary', INVALID_ID
+INVALID_TOPIC_SECONDARY_ERROR = 'topic_id_secondary', schemas.INVALID_TOPIC
+
 PRODUCT = 'product_id', ID[1]
 INVALID_PRODUCT = 'product_id', INVALID_ID
 INVALID_PRODUCT_ERROR = 'product_id', schemas.INVALID_PRODUCT

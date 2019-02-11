@@ -52,7 +52,11 @@ JOBSTATE = models.JOBSTATES.alias('jobstate')
 JOBSTATE_JOBS = models.JOBS.alias('jobstate.job')
 
 TOPIC = models.TOPICS.alias('topic')
+TOPIC_SECONDARY = models.TOPICS.alias('topicsecondary')
 NEXT_TOPIC = models.TOPICS.alias('next_topic')
+
+JOIN_JOBS_COMPONENTS_SECONDARY = models.JOIN_JOBS_COMPONENTS.alias('jobs_components_secondary')  # noqa
+COMPONENTS_SECONDARY = models.COMPONENTS.alias('componentssecondary')
 
 ROLE = models.ROLES.alias('role')
 
@@ -72,6 +76,11 @@ def jobs(root_select=models.JOBS):
             {'right': TOPIC,
              'onclause': and_(root_select.c.topic_id == TOPIC.c.id,
                               TOPIC.c.state != 'archived')}],
+        'topicsecondary': [
+            {'right': TOPIC_SECONDARY,
+             'onclause': and_(root_select.c.topic_id_secondary == TOPIC_SECONDARY.c.id,  # noqa
+                              TOPIC_SECONDARY.c.state != 'archived'),
+              'isouter': True}],
         'remoteci': [
             {'right': REMOTECI,
              'onclause': and_(root_select.c.remoteci_id == REMOTECI.c.id,
@@ -82,7 +91,17 @@ def jobs(root_select=models.JOBS):
              'isouter': True},
             {'right': models.COMPONENTS,
              'onclause': and_(models.COMPONENTS.c.id == models.JOIN_JOBS_COMPONENTS.c.component_id,  # noqa
+                              models.COMPONENTS.c.topic_id == root_select.c.topic_id,  # noqa
                               models.COMPONENTS.c.state != 'archived'),
+             'isouter': True}],
+        'componentssecondary': [
+            {'right': JOIN_JOBS_COMPONENTS_SECONDARY,
+             'onclause': JOIN_JOBS_COMPONENTS_SECONDARY.c.job_id == root_select.c.id,  # noqa
+             'isouter': True},
+            {'right': COMPONENTS_SECONDARY,
+             'onclause': and_(COMPONENTS_SECONDARY.c.id == JOIN_JOBS_COMPONENTS_SECONDARY.c.component_id,  # noqa
+                              COMPONENTS_SECONDARY.c.topic_id == root_select.c.topic_id_secondary,  # noqa
+                              COMPONENTS_SECONDARY.c.state != 'archived'),
              'isouter': True}],
         'team': [
             {'right': TEAM,
@@ -324,10 +343,12 @@ EMBED_STRING_TO_OBJECT = {
     'jobs': {
         'files': models.FILES,
         'topic': TOPIC,
+        'topicsecondary': TOPIC_SECONDARY,
         'issues': models.ISSUES,
         'jobstates': models.JOBSTATES,
         'remoteci': REMOTECI,
         'components': models.COMPONENTS,
+        'componentssecondary': COMPONENTS_SECONDARY,
         'team': TEAM,
         'results': TESTS_RESULTS,
         'rconfiguration': RCONFIGURATION,

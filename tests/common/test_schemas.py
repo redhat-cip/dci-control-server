@@ -333,7 +333,7 @@ class TestJob(utils.SchemaTesting):
     schema = schemas.job
     data = dict([utils.TEAM, utils.COMPONENTS, utils.PREVIOUS_JOB_ID,
                  utils.UPDATE_PREVIOUS_JOB_ID, utils.STATE, utils.TOPIC,
-                 utils.RCONFIGURATION])
+                 utils.RCONFIGURATION, utils.TOPIC_SECONDARY])
     data_put = dict([('status', 'success'), utils.COMMENT])
 
     @staticmethod
@@ -341,11 +341,13 @@ class TestJob(utils.SchemaTesting):
         invalids = dict([utils.INVALID_TEAM,
                          utils.INVALID_COMPONENTS,
                          utils.INVALID_TOPIC,
-                         utils.INVALID_RCONFIGURATION])
+                         utils.INVALID_RCONFIGURATION,
+                         utils.INVALID_TOPIC_SECONDARY])
         errors = dict([utils.INVALID_TEAM_ERROR,
                        utils.INVALID_COMPONENTS_ERROR,
                        utils.INVALID_TOPIC_ERROR,
-                       utils.INVALID_RCONFIGURATION_ERROR])
+                       utils.INVALID_RCONFIGURATION_ERROR,
+                       utils.INVALID_TOPIC_SECONDARY_ERROR])
         return invalids, errors
 
     @staticmethod
@@ -378,14 +380,16 @@ class TestJob(utils.SchemaTesting):
 
 class TestJobSchedule(utils.SchemaTesting):
     schema = schemas.job_schedule
-    data = dict([utils.TOPIC, utils.COMPONENTS_IDS])
+    data = dict([utils.TOPIC, utils.COMPONENTS_IDS, utils.TOPIC_SECONDARY])
 
     @staticmethod
     def generate_invalids_and_errors():
         invalids = dict([utils.INVALID_TOPIC,
-                         utils.INVALID_COMPONENTS_IDS])
+                         utils.INVALID_COMPONENTS_IDS,
+                         utils.INVALID_TOPIC_SECONDARY])
         errors = dict([utils.INVALID_TOPIC_ERROR,
-                       utils.INVALID_COMPONENTS_IDS_ERROR])
+                       utils.INVALID_COMPONENTS_IDS_ERROR,
+                       utils.INVALID_TOPIC_SECONDARY_ERROR])
         return invalids, errors
 
     def test_post_missing_data(self):
