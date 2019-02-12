@@ -22,18 +22,8 @@ import os
 import smtplib
 import requests
 import time
-import zmq
 
 from email.MIMEText import MIMEText
-from zmq.eventloop import ioloop, zmqstream
-
-
-ioloop.install()
-
-context = zmq.Context()
-receiver = context.socket(zmq.PULL)
-receiver.bind('tcp://0.0.0.0:5557')
-stream = zmqstream.ZMQStream(receiver)
 
 
 def get_email_configuration():
@@ -120,10 +110,9 @@ def send_mail(mesg):
         server.quit()
 
 
-def loop(msg):
+def process_events(events):
 
     try:
-        events = json.loads(msg[0])
         for event in events:
             if event['event'] == 'notification':
                 send_mail(event)
@@ -132,6 +121,3 @@ def loop(msg):
     except:
         pass
 
-
-stream.on_recv(loop)
-ioloop.IOLoop.instance().start()

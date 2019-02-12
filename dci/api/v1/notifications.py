@@ -16,6 +16,7 @@
 
 import flask
 from dci.db import models
+from dci.worker.worker import process_events
 from sqlalchemy import sql
 
 
@@ -111,4 +112,5 @@ def dispatcher(job):
         events.append(dlrn_event)
 
     if events:
-        flask.g.sender.send_json(events)
+        # TODO(hguemar): storing futures in order to track tasks completion
+        flask.g.executor.submit(process_events, events)
