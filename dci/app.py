@@ -17,33 +17,37 @@ from dci.api import v1 as api_v1
 from dci.common import exceptions
 from dci.common import utils
 
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import flask
 import logging
 import logging.handlers
 import time
-import zmq
 
 from sqlalchemy import exc as sa_exc
 
 from dci import dci_config
 
-zmq_sender = None
-
 
 class DciControlServer(flask.Flask):
+    pool_executor = None
+
     def __init__(self, conf):
         super(DciControlServer, self).__init__(__name__)
         self.config.update(conf)
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
-        self.sender = self._get_zmq_sender(conf['ZMQ_CONN'])
+        self.pool_executor = self._get_pool_executor(conf)
 
-    def _get_zmq_sender(self, zmq_conn):
-        global zmq_sender
-        if not zmq_sender:
-            zmq_sender = zmq.Context().socket(zmq.PUSH)
-            zmq_sender.connect(zmq_conn)
-        return zmq_sender
+    def _get_pool_executor(self, conf):
+        if DciControlServer.pool_executor is None:
+            worker_number = conf['WORKER_NUMBER']
+            if conf['WORKER_TYPE'] == 'process':
+                DciControlServer.pool_executor = \
+                    ProcessPoolExecutor(worker_number)
+            else:
+                DciControlServer.pool_executor = \
+                    ThreadPoolExecutor(worker_number)
+        return DciControlServer.pool_executor
 
     def make_default_options_response(self):
         resp = super(DciControlServer, self).make_default_options_response()
@@ -125,7 +129,7 @@ def create_app(conf):
                 time.sleep(1)
                 pass
 
-        flask.g.sender = dci_app.sender
+        flask.g.executor = dci_app.executor
 
     @dci_app.teardown_request
     def teardown_request(_):
