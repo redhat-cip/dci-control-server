@@ -12,7 +12,11 @@ DCI_DB_DIR="$(cd "$(dirname "$0")/.." && pwd)/$DCI_DB_DIR"
 # if the database is already running we do not want to run this script
 [ ! -z "$DISABLE_DB_START" ] &&exit 0
 
-source /opt/rh/rh-postgresql94/enable
+# Check distro, use base OS postgres on Fedora, SCL on RHEL/CentOS
+DISTRO=$(awk -F "=" '/^ID/ { print $2 }' /etc/os-release)
+if [[ $DISTRO != fedora ]]; then
+    source /opt/rh/rh-postgresql94/enable
+fi
 
 # checks if pg_ctl command exists
 type "pg_ctl"
