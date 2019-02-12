@@ -17,23 +17,39 @@
 
 from dci.api.v1 import notifications
 
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import json
 import os
 import smtplib
 import requests
 import time
-import zmq
 
-from email.MIMEText import MIMEText
-from zmq.eventloop import ioloop, zmqstream
+from six.moves import email_mime_text
 
 
-ioloop.install()
+def process_events_loop(events):
+    try:
+        for event in events:
+            if event['event'] == 'notification':
+                send_mail(event)
+            elif event['event'] == 'dlrn_publish':
+                dlrn_publish(event)
+    except:
+        pass
 
-context = zmq.Context()
-receiver = context.socket(zmq.PULL)
-receiver.bind('tcp://0.0.0.0:5557')
-stream = zmqstream.ZMQStream(receiver)
+
+class Executor(object):
+    def __init__(self, worker_type, worker_number):
+        if worker_type == 'process':
+            self.pool_executor = \
+                ProcessPoolExecutor(worker_number)
+        else:
+            self.pool_executor = \
+                ThreadPoolExecutor(worker_number)
+
+    def process_events(self, events):
+        return
+        self.pool_executor.submit(process_events_loop, events)
 
 
 def get_email_configuration():
@@ -99,7 +115,7 @@ def send_mail(mesg):
         subject = '[DCI Status][%s][%s][%s]' % (
             mesg['topic_name'], mesg['remoteci_name'], mesg['status'])
         message = notifications.format_mail_message(mesg)
-        email = MIMEText(message)
+        email = email_mime_text(message)
         email["From"] = 'Distributed-CI Notification <%s>' % \
             email_configuration['account']
         email["subject"] = subject
@@ -118,20 +134,3 @@ def send_mail(mesg):
             email['To'] = contact
             server.sendmail(email['From'], email['To'], email.as_string())
         server.quit()
-
-
-def loop(msg):
-
-    try:
-        events = json.loads(msg[0])
-        for event in events:
-            if event['event'] == 'notification':
-                send_mail(event)
-            elif event['event'] == 'dlrn_publish':
-                dlrn_publish(event)
-    except:
-        pass
-
-
-stream.on_recv(loop)
-ioloop.IOLoop.instance().start()
