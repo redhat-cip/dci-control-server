@@ -17,6 +17,7 @@
 # Global parameters about the API itself
 #
 import os
+import six
 
 HOST = os.getenv('API_HOST', '127.0.0.1')
 PORT = int(os.getenv('API_PORT', '5000'))
@@ -73,14 +74,10 @@ STORE_FILES_CONTAINER = os.getenv('STORE_FILES_CONTAINER', 'dci_files')
 STORE_COMPONENTS_CONTAINER = os.getenv('STORE_COMPONENTS_CONTAINER',
                                        'dci_components')
 
-# ZMQ Connection
-ZMQ_HOST = os.getenv('ZMQ_HOST', '127.0.0.1')
-ZMQ_PORT = int(os.getenv('ZMQ_PORT', '5557'))
-DEFAULT_ZMQ_CONN = 'tcp://{zmq_host}:{zmq_port}'.format(
-    zmq_host=ZMQ_HOST,
-    zmq_port=ZMQ_PORT
-)
-ZMQ_CONN = os.getenv('ZMQ_CONN', DEFAULT_ZMQ_CONN)
+# Process Pool
+# Note(hguemar): ProcessPoolExecutor is buggy with Python 2.7
+WORKER_TYPE = 'process' if six.PY3 else 'thread'
+WORKER_NUMBER = 6
 
 # Logging related parameters
 LOG_FORMAT = '[%(asctime)s] %(name)-12s %(levelname)-8s %(message)s'
