@@ -28,7 +28,7 @@ BuildRequires:  python-sqlalchemy-utils
 BuildRequires:  python-tornado
 BuildRequires:  python-voluptuous = 0.10.5
 BuildRequires:  python-werkzeug
-BuildRequires:  python-zmq
+BuildRequires:  python-futures
 BuildRequires:  python-jwt
 BuildRequires:  python-dciauth
 BuildRequires:  python2-pytest
@@ -49,7 +49,7 @@ Requires:       python-sqlalchemy-utils
 Requires:       python-tornado
 Requires:       python-voluptuous = 0.10.5
 Requires:       python-werkzeug
-Requires:       python-zmq
+Requires:       python-futures
 Requires:       python-jwt
 Requires:       python-dciauth
 Requires:       python2-swiftclient
