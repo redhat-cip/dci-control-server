@@ -63,6 +63,7 @@ def get_store(container):
 
 
 def sanity_check(conf):
+    panic = False
     query_team_admin_id = sqlalchemy.sql.select([models.TEAMS]).where(
         models.TEAMS.c.name == 'admin')
 
@@ -73,6 +74,18 @@ def sanity_check(conf):
     if row is None:
         print("Admin team not found. Please init the database"
               " with the 'admin' team and 'admin' user.")
+        panic = True
+
+    if conf['WORKER_TYPE'] not in ["process", "thread"]:
+        print("WORKER_TYPE has incorrect value ({}). Valid values are "
+              "'process', 'thread'.", conf['WORKER_TYPE'])
+        panic = True
+
+    if not isinstance(conf['WORKER_NUMBER'], int):
+        print("WORKER_NUMBER must be an integer")
+        panic = True
+
+    if panic:
         sys.exit(1)
 
     # return the team admin id
