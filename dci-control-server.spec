@@ -1,4 +1,4 @@
-%if 0%{?fedora}
+%futif 0%{?fedora}
 # NOTE(Gonéri): We will trun this on when python3-swiftclient
 # will be available
 %global with_python3 0
@@ -38,7 +38,7 @@ BuildRequires:  python-sqlalchemy-utils
 BuildRequires:  python-tornado
 BuildRequires:  python-voluptuous = 0.10.5
 BuildRequires:  python-werkzeug
-BuildRequires:  python-zmq
+BuildRequires:  python-futures
 BuildRequires:  python-jwt
 BuildRequires:  python-dciauth
 BuildRequires:  python2-pytest
@@ -59,7 +59,7 @@ Requires:       python-sqlalchemy-utils
 Requires:       python-tornado
 Requires:       python-voluptuous = 0.10.5
 Requires:       python-werkzeug
-Requires:       python-zmq
+Requires:       python-futures
 Requires:       python-jwt
 Requires:       python-dciauth
 Requires:       python2-swiftclient
@@ -92,7 +92,6 @@ BuildRequires:  python3-sqlalchemy-utils
 BuildRequires:  python3-swiftclient
 BuildRequires:  python3-voluptuous = 0.10.5
 BuildRequires:  python3-werkzeug
-BuildRequires:  python3-zmq
 BuildRequires:  python-jwt
 BuildRequires:  python3-dciauth
 BuildRequires:  systemd
@@ -111,7 +110,6 @@ Requires:       python3-sqlalchemy-utils
 Requires:       python3-swiftclient
 Requires:       python3-voluptuous = 0.10.5
 Requires:       python3-werkzeug
-Requires:       python3-zmq
 Requires:       python-jwt
 Requires:       python3-dciauth
 
