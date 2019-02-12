@@ -111,4 +111,4 @@ def dispatcher(job):
         events.append(dlrn_event)
 
     if events:
-        flask.g.sender.send_json(events)
+        flask.g.executor.process_events(events)
