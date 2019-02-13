@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2f19ff31_e31cf08e",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-02-13T13:10:30Z",
+      "side": 1,
+      "message": "s/worker_number/worker_type",
+      "revId": "60de597dc75fd4bdc3ed46780eb71d5d2642eddf",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
