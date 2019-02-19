@@ -16,6 +16,24 @@
       "revId": "60de597dc75fd4bdc3ed46780eb71d5d2642eddf",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5f150a01_2218d1e3",
+        "filename": "dci/worker/worker.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 32,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-02-19T13:46:11Z",
+      "side": 1,
+      "message": "Oops!",
+      "parentUuid": "2f19ff31_e31cf08e",
+      "revId": "60de597dc75fd4bdc3ed46780eb71d5d2642eddf",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
