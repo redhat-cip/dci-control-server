@@ -22,6 +22,30 @@
       "revId": "65513523b9bfb8b9b5883f33f56e2af696140cde",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8e50a739_67fb4e5b",
+        "filename": "dci-control-server.spec",
+        "patchSetId": 4
+      },
+      "lineNbr": 75,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-02-22T14:56:20Z",
+      "side": 1,
+      "message": "We can but not mandatory according guidelines.\n\nIf we go that way, it will trigger few things:\n1. check this doesn\u0027t break the package itself\n2. check if it doesn\u0027t break existing playbooks\n3. check upgrade path (what happens if the old config file is still around)\n\nIt can be done in two steps.",
+      "parentUuid": "f6e60fd9_65ecf426",
+      "range": {
+        "startLine": 75,
+        "startChar": 79,
+        "endLine": 75,
+        "endChar": 86
+      },
+      "revId": "65513523b9bfb8b9b5883f33f56e2af696140cde",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
