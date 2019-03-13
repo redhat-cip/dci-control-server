@@ -552,3 +552,19 @@ def test_add_multiple_topic_and_get(admin, user, product, product2):
     add_data = res.data
     assert add_data['topic_id'] == pt2_id
     assert add_data['team_id'] == team_id
+
+
+def test_get_topic_with_export_control_true(admin, user, team_user_id):
+    product = admin.post('/api/v1/products', data={
+        'name': 'p',
+        'label': 'P',
+        'description': '',
+        'team_id': team_user_id
+    }).data['product']
+    admin.post('/api/v1/topics', data={
+        'name': 'test topic',
+        'product_id': product['id'],
+        'export_control': True
+    })
+    topics = user.get('/api/v1/topics').data['topics']
+    assert topics[0]['product_id'] == product['id']
