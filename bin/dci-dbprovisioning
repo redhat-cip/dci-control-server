@@ -71,6 +71,7 @@ def create_teams():
     openstack = create_team('OpenStack', team_admin)
     ansible = create_team('Ansible', team_admin)
     rhel = create_team('RHEL', team_admin)
+    ocp = create_team('OpenShift', team_admin)
     return {
         'OpenStack': openstack,
         'Dell': create_team('Dell', openstack),
@@ -79,6 +80,7 @@ def create_teams():
         'Cisco': create_team('Cisco', ansible),
         'RHEL': rhel,
         'Veritas': create_team('Veritas', rhel),
+        'OpenShift': ocp,
     }
 
 
@@ -134,6 +136,7 @@ def create_products(teams):
         'OpenStack': create_product('OpenStack', teams['OpenStack']),
         'Ansible': create_product('Ansible', teams['Ansible']),
         'RHEL': create_product('RHEL', teams['RHEL']),
+        'OCP': create_product('OCP', teams['OpenShift']),
     }
 
 
@@ -149,22 +152,59 @@ def create_topics(products):
     openstack = products['OpenStack']
     ansible = products['Ansible']
     rhel = products['RHEL']
+    ocp = products['OCP']
 
-    osp12 = create_topic('OSP12', ['puddle'], openstack)
+    osp15 = create_topic('OSP15', ['puddle'], openstack)
+    osp14 = create_topic('OSP14', ['puddle'], openstack, osp15)
+    osp13 = create_topic('OSP13', ['puddle'], openstack, osp14)
+    osp12 = create_topic('OSP12', ['puddle'], openstack, osp13)
     osp11 = create_topic('OSP11', ['puddle'], openstack, osp12)
     osp10 = create_topic('OSP10', ['puddle'], openstack, osp11)
+    osp9 = create_topic('OSP9', ['puddle'], openstack, osp10)
+    osp8 = create_topic('OSP8', ['puddle'], openstack, osp9)
+
+    rdorocky = create_topic('RDO-Rocky', ['snapshot_rdo'], openstack)
+    rdoqueens = create_topic('RDO-Queens', ['snapshot_rdo'], openstack, rdorocky)
+    rdopike = create_topic('RDO-Pike', ['snapshot_rdo'], openstack, rdoqueens)
+    rdoocata = create_topic('RDO-Ocata', ['snapshot_rdo'], openstack, rdopike)
+    rdonewton = create_topic('RDO-Newton', ['snapshot_rdo'], openstack, rdoocata)
+
     ansible_dev = create_topic('ansible-devel', ['snapshot_ansible'], ansible)
     ansible_24 = create_topic('ansible-2.4', ['snapshot_ansible'], ansible, ansible_dev)
+    ansible_27 = create_topic('Ansible-2.7', ['snapshot_ansible'], ansible)
+
     rhel8 = create_topic('RHEL-8', ['Compose'], rhel)
     rhel7 = create_topic('RHEL-7', ['Compose'], rhel, rhel8)
+    rhel76 = create_topic('RHEL-76', ['Compose'], rhel, rhel8)
+    rhel77 = create_topic('RHEL-77', ['Compose'], rhel, rhel8)
+
+    ocp40 = create_topic('OCP-4.0', ['puddle_ocp'], ocp)
+    ocp311 = create_topic('OCP-3.11', ['puddle_ocp'], ocp)
+    ocp310 = create_topic('OCP-3.10', ['puddle_ocp'], ocp, ocp311)
+
     return {
+        'OSP15': osp15,
+        'OSP14': osp14,
+        'OSP13': osp13,
         'OSP12': osp12,
         'OSP11': osp11,
         'OSP10': osp10,
+        'OSP9': osp9,
+        'OSP8': osp8,
+        'RDOROCKY': rdorocky,
+        'RDOQUEENS': rdoqueens,
+        'RDOPIKE': rdopike,
+        'RDOOCATA': rdoocata,
+        'RDONEWTON': rdonewton,
         'ansible-devel': ansible_dev,
         'ansible-2.4': ansible_24,
         'RHEL-8': rhel8,
         'RHEL-7': rhel7,
+        'RHEL-76': rhel76,
+        'RHEL-77': rhel77,
+        'OCP-4.0': ocp40,
+        'OCP-3.11': ocp311,
+        'OCP-3.10': ocp310,
     }
 
 
