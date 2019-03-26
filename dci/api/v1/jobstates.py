@@ -101,11 +101,11 @@ def get_all_jobstates(user, job_id):
     """Get all jobstates.
     """
     args = schemas.args(flask.request.args.to_dict())
+    job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
+    if job['team_id'] not in user.teams_ids:
+        raise dci_exc.Unauthorized()
 
     query = v1_utils.QueryBuilder(_TABLE, args, _JS_COLUMNS)
-    if user.is_not_super_admin() and not user.is_read_only_user():
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
-
     query.add_extra_condition(_TABLE.c.job_id == job_id)
 
     # get the number of rows for the '_meta' section
