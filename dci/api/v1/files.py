@@ -197,12 +197,12 @@ def get_all_files(user, job_id):
     """Get all files.
     """
     args = schemas.args(flask.request.args.to_dict())
+    job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
+    if user.is_not_super_admin() and user.is_not_read_only_user():
+        if job['team_id'] not in user.teams_ids:
+            raise dci_exc.Unauthorized()
 
     query = v1_utils.QueryBuilder(_TABLE, args, _FILES_COLUMNS)
-
-    # If it's not an admin then restrict the view to the team's file
-    if user.is_not_super_admin() and not user.is_read_only_user():
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     query.add_extra_condition(_TABLE.c.job_id == job_id)
     query.add_extra_condition(_TABLE.c.state != 'archived')

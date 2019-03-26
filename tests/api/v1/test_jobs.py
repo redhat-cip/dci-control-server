@@ -337,7 +337,7 @@ def test_get_job_by_id(remoteci_context, components_user_ids, team_user_id):
     assert job['job']['id'] == job_id
 
 
-def test_get_jobstates_by_job_id(admin, job_user_id, team_user_id):
+def test_get_jobstates_by_job_id(admin, user, job_user_id, team_user_id):
     data = {'status': 'new',
             'job_id': job_user_id,
             'team_id': team_user_id}
@@ -345,7 +345,8 @@ def test_get_jobstates_by_job_id(admin, job_user_id, team_user_id):
         admin.post('/api/v1/jobstates', data=data).data['jobstate']['id'],
         admin.post('/api/v1/jobstates', data=data).data['jobstate']['id']])
 
-    jobstates = admin.get('/api/v1/jobs/%s/jobstates' % job_user_id)
+    jobstates = user.get('/api/v1/jobs/%s/jobstates' % job_user_id)
+    assert jobstates.status_code == 200
     jobstates = jobstates.data['jobstates']
 
     found_jobstate_ids = set(i['id'] for i in jobstates)
@@ -559,12 +560,9 @@ def test_create_file_for_job_id(user, remoteci_context, components_user_ids,
         assert file['file']['name'] == 'foobar'
 
 
-@pytest.mark.usefixtures('file_job_user_id')
-def test_get_file_by_job_id(user, job_user_id):
-    url = '/api/v1/jobs/%s/files' % job_user_id
-
-    # get file from job
-    file_from_job = user.get(url)
+def test_get_files_by_job_id(user, job_user_id, file_job_user_id):
+    # get files from job
+    file_from_job = user.get('/api/v1/jobs/%s/files' % job_user_id)
     assert file_from_job.status_code == 200
     assert file_from_job.data['_meta']['count'] == 1
 
