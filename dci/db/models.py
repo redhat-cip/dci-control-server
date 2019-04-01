@@ -37,8 +37,8 @@ STATES = sa.Enum(*RESOURCE_STATES, name='states')
 ISSUE_TRACKERS = ['github', 'bugzilla']
 TRACKERS = sa.Enum(*ISSUE_TRACKERS, name='trackers')
 
-ROLES = ['SUPER_ADMIN', 'USER', 'ADMIN', 'PRODUCT_OWNER', 'FEEDER', 'REMOTECI',
-         'READ_ONLY_USER']
+ROLES_LABELS = ['SUPER_ADMIN', 'USER', 'ADMIN', 'PRODUCT_OWNER', 'FEEDER',
+                'REMOTECI', 'READ_ONLY_USER']
 
 
 COMPONENTS = sa.Table(
@@ -207,9 +207,6 @@ REMOTECIS = sa.Table(
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=False),
-    sa.Column('role_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('roles.id', ondelete='SET NULL'),
-              nullable=True),
     sa.Index('remotecis_team_id_idx', 'team_id'),
     sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key'),
     sa.Column('public', sa.BOOLEAN, default=False),
@@ -457,9 +454,6 @@ USERS = sa.Table(
     sa.Column('email', sa.String(255), nullable=False, unique=True),
     sa.Column('password', sa.Text, nullable=True),
     sa.Column('timezone', sa.String(255), nullable=False, default='UTC'),
-    sa.Column('role_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('roles.id', ondelete='SET NULL'),
-              nullable=True),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='CASCADE'),
               nullable=True),
@@ -532,24 +526,6 @@ JOIN_ISSUES_TESTS = sa.Table(
               nullable=False, primary_key=True),
 )
 
-
-ROLES = sa.Table(
-    'roles', metadata,
-    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
-              default=utils.gen_uuid),
-    sa.Column('created_at', sa.DateTime(),
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('updated_at', sa.DateTime(),
-              onupdate=datetime.datetime.utcnow,
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
-    sa.Column('name', sa.String(255), nullable=False),
-    sa.Column('label', sa.String(255), nullable=False),
-    sa.Column('description', sa.Text),
-    sa.UniqueConstraint('label', name='roles_label_key'),
-    sa.Column('state', STATES, default='active')
-)
 
 PRODUCTS = sa.Table(
     'products', metadata,

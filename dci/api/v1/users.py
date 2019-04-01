@@ -35,8 +35,7 @@ _TABLE = models.USERS
 _VALID_EMBED = embeds.users()
 _USERS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
-    'team': False,
-    'role': False,
+    'team': True,
     'remotecis': True,
 }
 
@@ -69,7 +68,6 @@ def create_users(user):
 
     values.update({
         'password': auth.hash_password(values.get('password')),
-        'role_id': None,
         'fullname': values.get('fullname', values['name']),
         'timezone': values.get('timezone', 'UTC'),
         'sso_username': None
