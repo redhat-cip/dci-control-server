@@ -43,9 +43,9 @@ import dci.api.v1.jobs_events  # noqa
 import dci.api.v1.global_status  # noqa
 import dci.api.v1.products  # noqa
 import dci.api.v1.remotecis  # noqa
-import dci.api.v1.roles  # noqa
 import dci.api.v1.tags  # noqa
 import dci.api.v1.teams  # noqa
+import dci.api.v1.teams_users  # noqa
 import dci.api.v1.tests  # noqa
 import dci.api.v1.topics  # noqa
 import dci.api.v1.trends  # noqa

@@ -1,6 +1,5 @@
-# -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2016 Red Hat, Inc
+# Copyright (C) 2019 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,18 +13,28 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import jwt
-from passlib.apps import custom_app_context as pwd_context
+"""remove role
+
+Revision ID: 3eccf653cd30
+Revises: 406efd744a11
+Create Date: 2019-04-01 18:42:29.715157
+
+"""
+
+# revision identifiers, used by Alembic.
+revision = '3eccf653cd30'
+down_revision = '406efd744a11'
+branch_labels = None
+depends_on = None
+
+from alembic import op
 
 
-def hash_password(password):
-    return pwd_context.encrypt(password)
+def upgrade():
+    op.drop_column('users', 'role_id')
+    op.drop_column('remotecis', 'role_id')
+    op.drop_table('roles')
 
 
-def check_passwords_equal(password, encrypted_password):
-    return pwd_context.verify(password, encrypted_password)
-
-
-def decode_jwt(access_token, pem_public_key, audience):
-    return jwt.decode(access_token, verify=True, key=pem_public_key,
-                      audience=audience, algorithms=['RS256'])
+def downgrade():
+    pass

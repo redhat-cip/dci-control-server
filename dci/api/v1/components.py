@@ -227,8 +227,7 @@ def list_components_files(user, c_id):
     query = v1_utils.QueryBuilder(models.COMPONENTFILES, args, _CF_COLUMNS)
     query.add_extra_condition(models.COMPONENTFILES.c.component_id == c_id)
 
-    nb_rows = query.get_number_of_rows(models.COMPONENTFILES,
-                                       models.COMPONENTFILES.c.component_id == c_id)  # noqa
+    nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, models.COMPONENTFILES.name, None, None)
 

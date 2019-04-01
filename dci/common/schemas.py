@@ -269,7 +269,6 @@ user = dict_merge(base, {
     'email': v.Any(Email, msg=INVALID_EMAIL),
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('timezone'): v.Any(Timezone, msg=INVALID_TIMEZONE),
-    v.Optional('role_id'): v.Any(UUID, msg=INVALID_UUID),
     v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
                                                  msg=INVALID_RESOURCE_STATE),
 })
@@ -280,7 +279,6 @@ user_put = {
     v.Optional('email'): v.Any(Email, msg=INVALID_EMAIL),
     v.Optional('timezone'): v.Any(Timezone, msg=INVALID_TIMEZONE),
     v.Optional('password'): six.text_type,
-    v.Optional('role_id'): v.Any(UUID, msg=INVALID_UUID),
     v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
                                msg=INVALID_RESOURCE_STATE),
