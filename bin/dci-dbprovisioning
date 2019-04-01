@@ -173,7 +173,6 @@ def create_topics(products):
 
     rhel8 = create_topic('RHEL-8', ['Compose'], rhel)
     rhel7 = create_topic('RHEL-7', ['Compose'], rhel, rhel8)
-    rhel76 = create_topic('RHEL-76', ['Compose'], rhel, rhel8)
     rhel77 = create_topic('RHEL-77', ['Compose'], rhel, rhel8)
 
     ocp40 = create_topic('OCP-4.0', ['puddle_ocp'], ocp)
@@ -198,7 +197,6 @@ def create_topics(products):
         'ansible-2.4': ansible_24,
         'RHEL-8': rhel8,
         'RHEL-7': rhel7,
-        'RHEL-76': rhel76,
         'RHEL-77': rhel77,
         'OCP-4.0': ocp40,
         'OCP-3.11': ocp311,
