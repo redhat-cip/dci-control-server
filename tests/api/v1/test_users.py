@@ -123,8 +123,9 @@ def test_get_all_users_with_team(admin):
     # TODO(yassine): Currently there is already 3 users created in the DB,
     # this will be fixed later.
     db_users = admin.get('/api/v1/users?embed=team&where=name:admin').data
+    assert 'users' in db_users
     db_users = db_users['users']
-    assert db_users[0]['team']['id']
+    assert 'team' in db_users[0]
 
 
 def test_get_all_users_with_where(admin, team_id):
