@@ -65,63 +65,10 @@ def init_db(db_conn):
     # Create team admin
     team_admin_id = db_insert_with_name(models.TEAMS, name='admin')
 
-    # Create the three mandatory roles
-    super_admin_role = {
-        'name': 'Super Admin',
-        'label': 'SUPER_ADMIN',
-        'description': 'Admin of the platform',
-    }
-
-    product_owner_role = {
-        'name': 'Product Owner',
-        'label': 'PRODUCT_OWNER',
-        'description': 'Product Owner',
-    }
-
-    admin_role = {
-        'name': 'Admin',
-        'label': 'ADMIN',
-        'description': 'Admin of a team',
-    }
-
-    user_role = {
-        'name': 'User',
-        'label': 'USER',
-        'description': 'Regular User',
-    }
-
-    read_only_user_role = {
-        'name': 'Read only user',
-        'label': 'READ_ONLY_USER',
-        'description': 'User with RO access'
-    }
-
-    remoteci_role = {
-        'name': 'RemoteCI',
-        'label': 'REMOTECI',
-        'description': 'A RemoteCI',
-    }
-
-    feeder_role = {
-        'name': 'Feeder',
-        'label': 'FEEDER',
-        'description': 'A Feeder',
-    }
-
-    db_insert_with_name(models.ROLES, **product_owner_role)
-    db_insert_with_name(models.ROLES, **admin_role)
-    db_insert_with_name(models.ROLES, **user_role)
-    db_insert_with_name(models.ROLES, **read_only_user_role)
-    db_insert_with_name(models.ROLES, **remoteci_role)
-    db_insert_with_name(models.ROLES, **feeder_role)
-    super_admin_role_id = db_insert_with_name(models.ROLES,
-                                              **super_admin_role)
-
     # Create super admin user
     super_admin_id = db_insert_with_name(models.USERS,
                                          name=DCI_LOGIN,
                                          password=DCI_PASSWORD_HASH,
-                                         role_id=super_admin_role_id,
                                          team_id=team_admin_id,
                                          fullname='Admin',
                                          email='admin@example.org')
