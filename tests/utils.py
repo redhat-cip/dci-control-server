@@ -154,56 +154,11 @@ def provision(db_conn):
     team_user_id = db_insert(models.TEAMS, name='user',
                              parent_id=team_product_id)
 
-    # Create the three mandatory roles
-    super_admin_role = {
-        'name': 'Super Admin',
-        'label': 'SUPER_ADMIN',
-        'description': 'Admin of the platform',
-    }
-
-    product_owner_role = {
-        'name': 'Product Owner',
-        'label': 'PRODUCT_OWNER',
-        'description': 'Product Owner',
-    }
-
-    user_role = {
-        'name': 'User',
-        'label': 'USER',
-        'description': 'Regular User',
-    }
-
-    remoteci_role = {
-        'name': 'RemoteCI',
-        'label': 'REMOTECI',
-        'description': 'A RemoteCI',
-    }
-
-    rh_employee_role = {
-        'name': 'Rh_employee',
-        'label': 'READ_ONLY_USER',
-        'description': 'RH employee with RO access'
-    }
-
-    feeder_role = {
-        'name': 'Feeder',
-        'label': 'FEEDER',
-        'description': 'A Feeder',
-    }
-
-    user_role_id = db_insert(models.ROLES, **user_role)
-    super_admin_role_id = db_insert(models.ROLES, **super_admin_role)
-    product_owner_role_id = db_insert(models.ROLES, **product_owner_role)
-    db_insert(models.ROLES, **rh_employee_role)
-    db_insert(models.ROLES, **remoteci_role)
-    db_insert(models.ROLES, **feeder_role)
-
     # Create users
     user_pw_hash = auth.hash_password('user')
     u_id = db_insert(models.USERS,
                      name='user',
                      sso_username='user',
-                     role_id=user_role_id,
                      password=user_pw_hash,
                      fullname='User',
                      email='user@example.org',
@@ -219,7 +174,6 @@ def provision(db_conn):
     u_id = db_insert(models.USERS,
                      name='user_no_team',
                      sso_username='user_no_team',
-                     role_id=user_role_id,
                      password=user_no_team_pw_hash,
                      fullname='User No Team',
                      email='user_no_team@example.org',
@@ -235,7 +189,6 @@ def provision(db_conn):
     u_id = db_insert(models.USERS,
                      name='product_owner',
                      sso_username='product_owner',
-                     role_id=product_owner_role_id,
                      password=product_owner_pw_hash,
                      fullname='Product Owner',
                      email='product_ownern@example.org',
@@ -251,7 +204,6 @@ def provision(db_conn):
     u_id = db_insert(models.USERS,
                      name='admin',
                      sso_username='admin',
-                     role_id=super_admin_role_id,
                      password=admin_pw_hash,
                      fullname='Admin',
                      email='admin@example.org',
