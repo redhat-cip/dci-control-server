@@ -22,7 +22,6 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import remotecis
 from dci.api.v1 import tests
-from dci.api.v1 import users
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import audits
@@ -183,104 +182,6 @@ def delete_team_by_id(user, t_id):
                 **values
             )
             flask.g.db_conn.execute(query)
-
-    return flask.Response(None, 204, content_type='application/json')
-
-
-@api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['POST'])
-@decorators.login_required
-@decorators.check_roles
-def add_user_to_team(user, team_id, user_id):
-    # filter payload and role
-    values = flask.request.json
-    # todo: check role in models.ROLES
-    role = values.get('role', 'USER')
-
-    if user.is_not_product_owner(team_id):
-        raise dci_exc.Unauthorized()
-
-    if role == 'SUPER_ADMIN' or role == 'READ_ONLY_USER':
-        if user.is_not_super_admin():
-            raise dci_exc.Unauthorized()
-
-    query = models.JOIN_USERS_TEAMS_ROLES.insert().values(
-        user_id=user_id,
-        team_id=team_id,
-        role=role)
-
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError as e:
-        raise dci_exc.DCIException('Adding user to team failed: %s' % str(e))
-
-    return flask.Response(None, 201, content_type='application/json')
-
-
-@api.route('/teams/<uuid:team_id>/users', methods=['GET'])
-@decorators.login_required
-@decorators.check_roles
-def get_users_from_team(user, team_id):
-    args = schemas.args(flask.request.args.to_dict())
-    _JUTR = models.JOIN_USERS_TEAMS_ROLES
-    query = v1_utils.QueryBuilder(models.USERS, args,
-                                  users._USERS_COLUMNS,
-                                  ['password'],
-                                  root_join_table=_JUTR,
-                                  root_join_condition=sql.and_(_JUTR.c.user_id == models.USERS.c.id,  # noqa
-                                                               _JUTR.c.team_id == team_id))  # noqa
-
-    if user.is_not_product_owner(team_id) and user.is_not_in_team(team_id):
-        raise dci_exc.Unauthorized()
-
-    query.add_extra_condition(models.USERS.c.state != 'archived')
-
-    # get the number of rows for the '_meta' section
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, models.USERS.name, args['embed'],
-                                  _EMBED_MANY)
-
-    return flask.jsonify({'users': rows, '_meta': {'count': nb_rows}})
-
-
-@api.route('/users/<uuid:user_id>/teams', methods=['GET'])
-@decorators.login_required
-@decorators.check_roles
-def get_teams_of_user(user, user_id):
-    args = schemas.args(flask.request.args.to_dict())
-    _JUTR = models.JOIN_USERS_TEAMS_ROLES
-    query = v1_utils.QueryBuilder(models.TEAMS, args,
-                                  _T_COLUMNS,
-                                  root_join_table=_JUTR,
-                                  root_join_condition=sql.and_(_JUTR.c.team_id == models.TEAMS.c.id,  # noqa
-                                                               _JUTR.c.user_id == user_id))  # noqa
-
-    if user.is_not_super_admin() and user.id != user_id:
-        raise dci_exc.Unauthorized()
-
-    query.add_extra_condition(models.TEAMS.c.state != 'archived')
-
-    # get the number of rows for the '_meta' section
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, models.TEAMS.name, args['embed'],
-                                  _EMBED_MANY)
-
-    return flask.jsonify({'teams': rows, '_meta': {'count': nb_rows}})
-
-
-@api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['DELETE'])
-@decorators.login_required
-@decorators.check_roles
-def remove_user_from_team(user, team_id, user_id):
-
-    if user.is_not_product_owner(team_id):
-        raise dci_exc.Unauthorized()
-
-    _JUTR = models.JOIN_USERS_TEAMS_ROLES
-    query = _JUTR.delete().where(sql.and_(_JUTR.c.user_id == user_id,
-                                          _JUTR.c.team_id == team_id))
-    flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
 
