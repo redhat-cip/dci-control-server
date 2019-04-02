@@ -92,6 +92,16 @@ def test_recreate_components_with_same_name_on_same_topics(admin, topic_id):
         assert result.status_code == 204
 
 
+def test_create_components_with_same_name_and_different_type(admin, topic_id):
+    data = {'name': 'pname', 'type': 'first_type', 'topic_id': topic_id}
+    pstatus_code = admin.post('/api/v1/components', data=data).status_code
+    assert pstatus_code == 201
+
+    data = {'name': 'pname', 'type': 'second_type', 'topic_id': topic_id}
+    pstatus_code = admin.post('/api/v1/components', data=data).status_code
+    assert pstatus_code == 201
+
+
 def test_get_all_components(admin, topic_id):
     created_c_ids = []
     for i in range(5):
