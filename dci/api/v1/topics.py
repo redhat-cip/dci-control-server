@@ -214,6 +214,21 @@ def get_latest_component_per_topic(user, topic_id):
     return flask.jsonify({'component': last_component})
 
 
+@api.route('/topics/<uuid:topic_id>/components/scheduler', methods=['GET'])
+@decorators.login_required
+@decorators.check_roles
+def get_schedulable_component_per_topic(user, topic_id):
+    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    export_control.verify_access_to_topic(user, topic)
+
+    p_component_types, _ = components.get_component_types(
+        topic_id, user.id)
+    p_schedule_components_ids = components.get_schedule_components_ids(
+        topic_id, p_component_types, [])
+
+    return flask.jsonify({'components': p_schedule_components_ids})
+
+
 # teams set apis
 @api.route('/topics/<uuid:topic_id>/teams', methods=['POST'])
 @decorators.login_required

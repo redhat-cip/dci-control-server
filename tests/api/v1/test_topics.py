@@ -517,6 +517,34 @@ def test_get_latest_component_per_topic(admin, topic_id):
     assert component['name'] == 'pnamelast'
 
 
+def test_get_schedulable_component_per_topic(admin, topic_id):
+    data = {'name': 't1', 'type': 'type_1', 'topic_id': topic_id,
+            'export_control': True, 'active': True}
+    admin.post('/api/v1/components', data=data)
+    data = {'name': 't1last', 'type': 'type_1', 'topic_id': topic_id,
+            'export_control': True, 'active': True}
+    t1 = admin.post('/api/v1/components', data=data).data
+    data = {'name': 't2', 'type': 'type_2', 'topic_id': topic_id,
+            'export_control': True, 'active': True}
+    admin.post('/api/v1/components', data=data)
+    data = {'name': 't2last', 'type': 'type_2', 'topic_id': topic_id,
+            'export_control': True, 'active': True}
+    t2 = admin.post('/api/v1/components', data=data).data
+    data = {'name': 't3', 'type': 'type_3', 'topic_id': topic_id,
+            'export_control': True, 'active': True}
+    admin.post('/api/v1/components', data=data)
+    data = {'name': 't3last', 'type': 'type_3', 'topic_id': topic_id,
+            'export_control': True, 'active': True}
+    t3 = admin.post('/api/v1/components', data=data).data
+
+    component = admin.get('/api/v1/topics/%s/components/scheduler' % topic_id)
+    component = component.data['components']
+    assert len(component) == 3
+    assert t1['component']['id'] in component
+    assert t2['component']['id'] in component
+    assert t3['component']['id'] in component
+
+
 def test_add_multiple_topic_and_get(admin, user, product, product2):
     # create a topic from product
     data = {'name': 'tname', 'product_id': product['id'],
