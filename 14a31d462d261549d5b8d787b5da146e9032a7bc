@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "465ba5e6_31375cdb",
+        "filename": "dci/api/v1/utils.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 392,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-04-09T12:57:19Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "708c45f0_589fa642",
+      "range": {
+        "startLine": 390,
+        "startChar": 3,
+        "endLine": 392,
+        "endChar": 47
+      },
+      "revId": "14a31d462d261549d5b8d787b5da146e9032a7bc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "be33da6a_23a23e56",
         "filename": "dci/db/models.py",
         "patchSetId": 7
@@ -36,6 +60,30 @@
       "writtenOn": "2019-04-09T09:21:14Z",
       "side": 1,
       "message": "Why not creating a sa.Enum ?",
+      "range": {
+        "startLine": 40,
+        "startChar": 0,
+        "endLine": 41,
+        "endChar": 45
+      },
+      "revId": "14a31d462d261549d5b8d787b5da146e9032a7bc",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8d839aa0_77b60ef3",
+        "filename": "dci/db/models.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 41,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-04-09T12:57:19Z",
+      "side": 1,
+      "message": "yes, it will be add after",
+      "parentUuid": "be33da6a_23a23e56",
       "range": {
         "startLine": 40,
         "startChar": 0,

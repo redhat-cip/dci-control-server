@@ -22,6 +22,30 @@
       "revId": "da8130bfb53a2d82e353a57b97ca7d330ad3605c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "da0df477_0b32e905",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 231,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-04-09T12:57:19Z",
+      "side": 0,
+      "message": "Done",
+      "parentUuid": "6bc293e1_a07e8b7f",
+      "range": {
+        "startLine": 230,
+        "startChar": 39,
+        "endLine": 231,
+        "endChar": 83
+      },
+      "revId": "da8130bfb53a2d82e353a57b97ca7d330ad3605c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
