@@ -54,7 +54,7 @@ NEXT_TOPIC = models.TOPICS.alias('next_topic')
 JOIN_JOBS_COMPONENTS_SECONDARY = models.JOIN_JOBS_COMPONENTS.alias('jobs_components_secondary')  # noqa
 COMPONENTS_SECONDARY = models.COMPONENTS.alias('componentssecondary')
 
-ROLE = models.ROLES.alias('role')
+JOIN_USERS_TEAMS_ROLES = models.JOIN_USERS_TEAMS_ROLES.alias('join_users_teams_roles')  # noqa
 
 
 def jobs(root_select=models.JOBS):
@@ -308,11 +308,11 @@ def topics(root_select=models.TOPICS):
 def users(root_select=models.USERS):
     return {
         'team': [
-            {'right': models.JOIN_USERS_TEAMS_ROLES,
-             'onclause': models.JOIN_USERS_TEAMS_ROLES.c.user_id == root_select.c.id,  # noqa
+            {'right': JOIN_USERS_TEAMS_ROLES,
+             'onclause': JOIN_USERS_TEAMS_ROLES.c.user_id == root_select.c.id,
              'isouter': True},
             {'right': TEAM,
-             'onclause': and_(TEAM.c.id == models.JOIN_USERS_TEAMS_ROLES.c.team_id,  # noqa
+             'onclause': and_(TEAM.c.id == JOIN_USERS_TEAMS_ROLES.c.team_id,
                               TEAM.c.state != 'archived'),
              'isouter': True}
         ],
@@ -380,8 +380,7 @@ EMBED_STRING_TO_OBJECT = {
     },
     'users': {
         'team': TEAM,
-        'role': ROLE,
-        'remotecis': models.REMOTECIS,
+        'remotecis': models.REMOTECIS
     }
 }
 

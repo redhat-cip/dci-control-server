@@ -63,8 +63,7 @@ def create_remotecis(user):
         'data': values.get('data', {}),
         # XXX(fc): this should be populated as a default value from the
         # model, but we don't return values from the database :(
-        'api_secret': signature.gen_secret(),
-        'role_id': None
+        'api_secret': signature.gen_secret()
     })
 
     query = _TABLE.insert().values(**values)

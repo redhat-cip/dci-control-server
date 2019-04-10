@@ -112,6 +112,7 @@ def create_users(teams):
         'ansible_po': create_user('Ansible PO', teams['Ansible'], 'PRODUCT_OWNER'),
         'openstack_po': create_user('OpenStack PO', teams['OpenStack'], 'PRODUCT_OWNER'),
         'rhel_po': create_user('RHEL PO', teams['RHEL'], 'PRODUCT_OWNER'),
+        'rhel_user': create_user('user RHEL', teams['RHEL'], 'USER'),
         'user_cisco': create_user('User Cisco', teams['Cisco'], 'USER'),
         'user_hp': create_user('User HP', teams['HP'], 'USER'),
         'user_dell': create_user('User Dell', teams['Dell'], 'USER'),

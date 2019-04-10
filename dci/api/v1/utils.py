@@ -348,16 +348,16 @@ class QueryBuilder(object):
             select_clause = [root_subquery]
             root_select = root_subquery
 
-        children = None
+        children = root_select
         if (self._root_join_table is not None) and (self._root_join_condition is not None):  # noqa
             children = root_select.join(self._root_join_table,
                                         self._root_join_condition)
+            select_clause.append(self._root_join_table)
 
         query = sql.select(select_clause, use_labels=use_labels, from_obj=children)  # noqa
         if self._embeds:
             embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select)  # noqa
             embed_list = self._get_embed_list(embed_joins)
-            children = children or root_select
             # embed sort for embeds such like lastjob
             embed_sorts = []
             for embed_elem in embed_list:
