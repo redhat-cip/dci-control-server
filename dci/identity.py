@@ -29,7 +29,10 @@ class Identity:
         self.email = user_info.get('email', None)
         self.sso_username = user_info.get('sso_username', None)
         self.etag = user_info.get('etag', None)
+        self._is_user = user_info.get('is_user', False)
         self.api_secret = user_info.get('api_secret', '')
+        self._is_remoteci = user_info.get('is_remoteci', False)
+        self._is_feeder = user_info.get('is_feeder', False)
         # user_info['teams'] = {'<team-id1>': {'parent_id': <id>,
         #                                      'id': <id>,
         #                                      'name': <name>,
@@ -103,17 +106,22 @@ class Identity:
 
         return not self.is_in_team(team_id)
 
-    def is_remoteci(self, team_id):
-        """Ensure ther resource has the role REMOTECI."""
+    def is_user(self):
+        return self._is_user
 
+    def is_remoteci(self, team_id=None):
+        """Ensure ther resource has the role REMOTECI."""
+        if team_id is None:
+            return self._is_remoteci
         team_id = uuid.UUID(str(team_id))
         if team_id not in self.teams_ids:
             return False
         return self.teams[team_id]['role'] == 'REMOTECI'
 
-    def is_feeder(self, team_id):
+    def is_feeder(self, team_id=None):
         """Ensure ther resource has the role FEEDER."""
-
+        if team_id is None:
+            return self._is_feeder
         team_id = uuid.UUID(str(team_id))
         if team_id not in self.teams_ids:
             return False

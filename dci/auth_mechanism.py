@@ -79,7 +79,8 @@ class BaseMechanism(object):
             'timezone': _user_teams[0][model_cls.c.timezone],
             'email': _user_teams[0][model_cls.c.email],
             'sso_username': _user_teams[0][model_cls.c.sso_username],
-            'etag': _user_teams[0][model_cls.c.etag]
+            'etag': _user_teams[0][model_cls.c.etag],
+            'is_user': True
         }
 
         is_super_admin = False
@@ -206,16 +207,22 @@ class HmacMechanism(BaseMechanism):
             }
         }
 
+        is_remoteci = False
         if model_cls is models.REMOTECIS:
             user_teams[_identity_info[models.TEAMS.c.id]]['ROLE'] = 'REMOTECI'
+            is_remoteci = True
+        is_feeder = False
         if model_cls is models.FEEDERS:
             user_teams[_identity_info[models.TEAMS.c.id]]['ROLE'] = 'FEEDER'
+            is_feeder = True
 
         user_info = {
             # UUID to str
             'id': str(_identity_info[model_cls.c.id]),
             'teams': user_teams,
-            'api_secret': str(_identity_info[model_cls.c.api_secret])
+            'api_secret': str(_identity_info[model_cls.c.api_secret]),
+            'is_remoteci': is_remoteci,
+            'is_feeder': is_feeder
         }
         return Identity(user_info, [])
 
