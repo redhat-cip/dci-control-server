@@ -372,7 +372,7 @@ remoteci = DCISchema(schema_factory(remoteci).post, Schema(remoteci_put))
 
 job = {
     v.Optional('remoteci_id'): v.Any(UUID, msg=INVALID_REMOTE_CI),
-    'team_id': v.Any(UUID, msg=INVALID_TEAM),
+    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
     'components': list,
     v.Optional('comment', default=None): v.Any(six.text_type, None),
     v.Optional('previous_job_id', default=None): v.Any(v.All(UUID,

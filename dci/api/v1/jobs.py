@@ -71,9 +71,8 @@ def create_jobs(user):
     values.update(schemas.job.post(flask.request.json))
     components_ids = values.pop('components')
 
-    # Only super admin can create job for other teams
-    if user.is_not_super_admin() and user.is_not_in_team(values['team_id']):
-        raise dci_exc.Unauthorized()
+    if not user.is_remoteci():
+        raise dci_exc.DCIException('jobs must be created by remoteci')
 
     topic_id = values.get('topic_id')
     if topic_id:
@@ -93,6 +92,7 @@ def create_jobs(user):
             'HTTP_CLIENT_VERSION'
         ),
         'previous_job_id': previous_job_id,
+        'team_id': user.teams_ids[0]
     })
 
     # create the job and feed the jobs_components table
