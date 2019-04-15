@@ -55,7 +55,7 @@ def add_user_to_team(user, team_id, user_id):
     return flask.Response(None, 201, content_type='application/json')
 
 
-def serialize(users):
+def serialize_users(users):
     # get rid of the teams_roles prefix
     res = []
     for user in users:
@@ -92,9 +92,23 @@ def get_users_from_team(user, team_id):
     rows = query.execute(fetchall=True)
     team_users = v1_utils.format_result(rows, models.USERS.name, args['embed'],
                                         users._EMBED_MANY)
-    team_users = serialize(team_users)
+    team_users = serialize_users(team_users)
 
     return flask.jsonify({'users': team_users, '_meta': {'count': len(rows)}})
+
+
+def serialize_teams(teams):
+    # get rid of the teams_roles prefix
+    res = []
+    for team in teams:
+        new_team = {}
+        for k, v in team.items():
+            if k == 'users':
+                new_team['role'] = team['users']['teams_roles_role']
+            else:
+                new_team[k] = v
+        res.append(new_team)
+    return res
 
 
 @api.route('/users/<uuid:user_id>/teams', methods=['GET'])
@@ -117,10 +131,12 @@ def get_teams_of_user(user, user_id):
     # get the number of rows for the '_meta' section
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, models.TEAMS.name, args['embed'],
-                                  teams._EMBED_MANY)
+    users_teams = v1_utils.format_result(rows, models.TEAMS.name,
+                                         args['embed'],
+                                         teams._EMBED_MANY)
+    users_teams = serialize_teams(users_teams)
 
-    return flask.jsonify({'teams': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'teams': users_teams, '_meta': {'count': nb_rows}})
 
 
 @api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['DELETE'])

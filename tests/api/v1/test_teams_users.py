@@ -12,10 +12,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from dci.api.v1.teams_users import serialize
+from dci.api.v1.teams_users import serialize_users, serialize_teams
 
 
-def test_serialize():
+def test_serialize_users():
     users = [{'timezone': 'UTC',
               'teams_roles_role': 'USER',
               'teams_roles_user_id': '0fbaf062-b040-42d0-bc44-8550a92532f0',
@@ -42,11 +42,41 @@ def test_serialize():
                        'state': 'active',
                        'sso_username': 'user'}]
 
-    new_users = serialize(users)
-    import pprint
-    pprint.pprint(new_users[0])
-    pprint.pprint(users_expected[0])
+    new_users = serialize_users(users)
     assert new_users[0] == users_expected[0]
+
+
+def test_serialize_teams():
+    teams = [{"country": None,
+              "created_at": "2019-04-11T08:32:16.619884",
+              "etag": "07db9594266d1569813441163a546331",
+              "external": True,
+              "id": "36f4c548-162a-4b65-bce4-76613398bf5c",
+              "name": "RHEL",
+              "parent_id": "4b48ae10-1b9e-42e2-a5d3-113ab365d6c4",
+              "state": "active",
+              "updated_at": "2019-04-11T08:32:16.619884",
+              "users": {
+                  "teams_roles_role": "USER",
+                  "teams_roles_team_id": "36f4c548-162a-4b65-bce4-76613398bf5c",  # noqa
+                  "teams_roles_user_id": "bc7949a2-c821-4e3e-930e-d0fbfacb0e1f"
+              }}]
+
+    teams_expected = [{
+        "country": None,
+        "created_at": "2019-04-11T08:32:16.619884",
+        "etag": "07db9594266d1569813441163a546331",
+        "external": True,
+        "id": "36f4c548-162a-4b65-bce4-76613398bf5c",
+        "name": "RHEL",
+        "parent_id": "4b48ae10-1b9e-42e2-a5d3-113ab365d6c4",
+        "role": "USER",
+        "state": "active",
+        "updated_at": "2019-04-11T08:32:16.619884"
+    }]
+
+    new_teams = serialize_teams(teams)
+    assert new_teams[0] == teams_expected[0]
 
 
 def test_add_get_users_from_to_team(admin, team_id, user_id):
