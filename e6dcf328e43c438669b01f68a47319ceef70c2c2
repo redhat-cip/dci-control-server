@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b9b1534d_33f04058",
+        "filename": "dci/api/v1/tags.py",
+        "patchSetId": 8
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-04-16T14:10:33Z",
+      "side": 0,
+      "message": ":+1: ;-)",
+      "revId": "e6dcf328e43c438669b01f68a47319ceef70c2c2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}

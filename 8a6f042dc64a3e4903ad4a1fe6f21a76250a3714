@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "aa01c9c6_4b786866",
+        "filename": "dci-control-server.spec",
+        "patchSetId": 8
+      },
+      "lineNbr": 57,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-04-16T14:10:33Z",
+      "side": 1,
+      "message": "ack",
+      "revId": "8a6f042dc64a3e4903ad4a1fe6f21a76250a3714",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "65f61187_1e97ab80",
+        "filename": "requirements.txt",
+        "patchSetId": 8
+      },
+      "lineNbr": 15,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-04-16T14:10:33Z",
+      "side": 1,
+      "message": "OK, still partial replacement.",
+      "revId": "8a6f042dc64a3e4903ad4a1fe6f21a76250a3714",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
