@@ -31,7 +31,6 @@ def splitpath(path):
 
 @api.route('/certs/verify', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def verify_repo_access(user):
     headers = flask.request.headers
     verify = headers.get('SSLVerify')

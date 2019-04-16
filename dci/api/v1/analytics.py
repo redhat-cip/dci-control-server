@@ -33,7 +33,6 @@ _A_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 @api.route('/jobs/<uuid:job_id>/analytics', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_analytic(user, job_id):
     values = schemas.analytic.post(flask.request.json)
     job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
@@ -51,7 +50,6 @@ def create_analytic(user, job_id):
 
 @api.route('/jobs/<uuid:job_id>/analytics', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_all_analytics(user, job_id):
     """Get all analytics of a job."""
 
@@ -74,7 +72,6 @@ def get_all_analytics(user, job_id):
 
 @api.route('/jobs/<uuid:job_id>/analytics/<uuid:anc_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_analytic(user, job_id, anc_id):
     """Get an analytic."""
 
@@ -88,7 +85,6 @@ def get_analytic(user, job_id, anc_id):
 
 @api.route('/jobs/<uuid:job_id>/analytics/<uuid:anc_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def update_analytic(user, job_id, anc_id):
     job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
     v1_utils.verify_existence_and_get(anc_id, _TABLE)
@@ -120,7 +116,6 @@ def update_analytic(user, job_id, anc_id):
 
 @api.route('/jobs/<uuid:job_id>/analytics/<uuid:anc_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_analytics_by_id(user, job_id, anc_id):
     job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
     v1_utils.verify_existence_and_get(anc_id, _TABLE)

@@ -136,7 +136,6 @@ def _process_junit_file(values, junit_content, job):
 
 @api.route('/files', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_files(user):
     file_info = get_file_info_from_headers(dict(flask.request.headers))
     store = dci_config.get_store('files')
@@ -216,7 +215,6 @@ def get_all_files(user, job_id):
 
 @api.route('/files/<uuid:file_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_file_by_id(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
     return base.get_resource_by_id(user, file, _TABLE, _EMBED_MANY)
@@ -239,7 +237,6 @@ def get_file_object(file_id):
 
 @api.route('/files/<uuid:file_id>/content', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_file_content(user, file_id):
     file = get_file_object(file_id)
     if not user.is_in_team(file['team_id']) and not user.is_read_only_user():
@@ -255,7 +252,6 @@ def get_file_content(user, file_id):
 
 @api.route('/files/<uuid:file_id>/testscases', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_file_testscases(user, file_id):
     file = get_file_object(file_id)
     if not user.is_in_team(file['team_id']) and not user.is_read_only_user():
@@ -272,7 +268,6 @@ def get_file_testscases(user, file_id):
 
 @api.route('/files/<uuid:file_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_file_by_id(user, file_id):
     file = v1_utils.verify_existence_and_get(file_id, _TABLE)
 
@@ -306,7 +301,6 @@ def build_certification(username, password, node_id, file_name, file_content):
 
 @api.route('/files/<uuid:file_id>/certifications', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def upload_certification(user, file_id):
     data = schemas.file_upload_certification.post(flask.request.json)
 
@@ -336,14 +330,12 @@ def upload_certification(user, file_id):
 
 @api.route('/files/purge', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_to_purge_archived_files(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/files/purge', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def purge_archived_files(user):
 
     # get all archived files

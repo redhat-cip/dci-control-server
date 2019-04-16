@@ -40,7 +40,6 @@ _EMBED_MANY = {
 
 @api.route('/feeders', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_feeders(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.feeder.post(flask.request.json))
@@ -70,7 +69,6 @@ def create_feeders(user):
 
 @api.route('/feeders', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_all_feeders(user):
     args = schemas.args(flask.request.args.to_dict())
 
@@ -95,7 +93,6 @@ def get_all_feeders(user):
 
 @api.route('/feeders/<uuid:f_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_feeder_by_id(user, f_id):
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
     if not user.is_in_team(feeder['team_id']):
@@ -105,7 +102,6 @@ def get_feeder_by_id(user, f_id):
 
 @api.route('/feeders/<uuid:f_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def put_feeder(user, f_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = schemas.feeder.put(flask.request.json)
@@ -140,7 +136,6 @@ def put_feeder(user, f_id):
 
 @api.route('/feeders/<uuid:f_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_feeder_by_id(user, f_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
@@ -166,21 +161,18 @@ def delete_feeder_by_id(user, f_id):
 
 @api.route('/feeders/purge', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_to_purge_archived_feeders(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/feeders/purge', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def purge_archived_feeders(user):
     return base.purge_archived_resources(user, _TABLE)
 
 
 @api.route('/feeders/<uuid:f_id>/api_secret', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def put_api_secret_feeder(user, f_id):
     utils.check_and_get_etag(flask.request.headers)
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)

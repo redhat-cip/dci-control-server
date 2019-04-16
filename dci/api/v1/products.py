@@ -66,7 +66,6 @@ def create_product(user):
 
 @api.route('/products/<uuid:product_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def update_product(user, product_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)

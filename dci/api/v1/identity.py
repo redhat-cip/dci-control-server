@@ -33,7 +33,6 @@ def _encode_dict(_dict):
 
 @api.route('/identity', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_identity(identity):
     """Returns some information about the currently authenticated identity"""
     return flask.Response(

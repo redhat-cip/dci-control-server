@@ -88,7 +88,6 @@ def _get_latest_components():
 
 @api.route('/components', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_components(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.component.post(flask.request.json))
@@ -109,7 +108,6 @@ def create_components(user):
 
 @api.route('/components/<uuid:c_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def update_components(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -164,7 +162,6 @@ def get_all_components(user, topic_id):
 
 @api.route('/components/latest', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_latest_components(user):
     authorized_topics = v1_utils.user_topic_ids(user)
 
@@ -180,7 +177,6 @@ def get_latest_components(user):
 
 @api.route('/components/<uuid:c_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     topic = v1_utils.verify_existence_and_get(component['topic_id'],
@@ -192,7 +188,6 @@ def get_component_by_id(user, c_id):
 
 @api.route('/components/<uuid:c_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
 
@@ -215,7 +210,6 @@ def delete_component_by_id(user, c_id):
 
 @api.route('/components/<uuid:c_id>/files', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def list_components_files(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     topic = v1_utils.verify_existence_and_get(component['topic_id'],
@@ -238,7 +232,6 @@ def list_components_files(user, c_id):
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_component_file(user, c_id, f_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     topic = v1_utils.verify_existence_and_get(component['topic_id'],
@@ -263,7 +256,6 @@ def get_component_file(user, c_id, f_id):
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>/content',
            methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def download_component_file(user, c_id, f_id):
     store = dci_config.get_store('components')
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
@@ -284,7 +276,6 @@ def download_component_file(user, c_id, f_id):
 
 @api.route('/components/<uuid:c_id>/files', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def upload_component_file(user, c_id):
     COMPONENT_FILES = models.COMPONENT_FILES
 
@@ -323,7 +314,6 @@ def upload_component_file(user, c_id):
 
 @api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_component_file(user, c_id, f_id):
     COMPONENT_FILES = models.COMPONENT_FILES
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
@@ -450,7 +440,6 @@ def get_schedule_components_ids(topic_id, component_types, components_ids):
 
 @api.route('/components/<c_id>/issues', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def retrieve_issues_from_component(user, c_id):
     """Retrieve all issues attached to a component."""
     return issues.get_issues_by_resource(c_id, _TABLE)
@@ -458,7 +447,6 @@ def retrieve_issues_from_component(user, c_id):
 
 @api.route('/components/<c_id>/issues', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def attach_issue_to_component(user, c_id):
     """Attach an issue to a component."""
     return issues.attach_issue(c_id, _TABLE, user.id)
@@ -466,7 +454,6 @@ def attach_issue_to_component(user, c_id):
 
 @api.route('/components/<c_id>/issues/<i_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def unattach_issue_from_component(user, c_id, i_id):
     """Unattach an issue to a component."""
     return issues.unattach_issue(c_id, i_id, _TABLE)
@@ -474,7 +461,6 @@ def unattach_issue_from_component(user, c_id, i_id):
 
 @api.route('/components/<uuid:c_id>/tags', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def retrieve_tags_from_component(user, c_id):
     """Retrieve all tags attached to a component."""
     JCT = models.JOIN_COMPONENTS_TAGS
@@ -488,7 +474,6 @@ def retrieve_tags_from_component(user, c_id):
 
 @api.route('/components/<uuid:c_id>/tags', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def add_tag_for_component(user, c_id):
     """Add a tag on a specific component."""
 
@@ -507,7 +492,6 @@ def add_tag_for_component(user, c_id):
 
 @api.route('/components/<uuid:c_id>/tags/<uuid:tag_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_tag_for_component(user, c_id, tag_id):
     """Delete a tag on a specific component."""
     # Todo : check c_id and tag_id exist in db
@@ -525,14 +509,12 @@ def delete_tag_for_component(user, c_id, tag_id):
 
 @api.route('/components/purge', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_to_purge_archived_components(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/components/purge', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def purge_archived_components(user):
 
     # get all archived components

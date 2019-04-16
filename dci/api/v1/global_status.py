@@ -78,7 +78,6 @@ def add_percentage_of_success(global_status):
 
 @api.route('/global_status', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_global_status(user):
     conf = generate_conf()
     engine = get_engine(conf)

@@ -28,7 +28,6 @@ from dci.db import models
 
 @api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def add_user_to_team(user, team_id, user_id):
     # filter payload and role
     values = flask.request.json
@@ -73,7 +72,6 @@ def serialize_users(users):
 
 @api.route('/teams/<uuid:team_id>/users', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_users_from_team(user, team_id):
     args = schemas.args(flask.request.args.to_dict())
     _JUTR = models.JOIN_USERS_TEAMS_ROLES
@@ -113,7 +111,6 @@ def serialize_teams(teams):
 
 @api.route('/users/<uuid:user_id>/teams', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_teams_of_user(user, user_id):
     args = schemas.args(flask.request.args.to_dict())
     _JUTR = models.JOIN_USERS_TEAMS_ROLES
@@ -141,7 +138,6 @@ def get_teams_of_user(user, user_id):
 
 @api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def remove_user_from_team(user, team_id, user_id):
 
     if user.is_not_product_owner(team_id):

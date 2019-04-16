@@ -62,10 +62,3 @@ def login_required(f):
         return f(auth_scheme.identity, *args, **kwargs)
 
     return decorated
-
-
-def check_roles(f):
-    @wraps(f)
-    def decorated(*args, **kwargs):
-        return f(*args, **kwargs)
-    return decorated

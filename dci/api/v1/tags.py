@@ -69,7 +69,6 @@ def add_tag_to_resource(values, join_resource_tags):
 
 @api.route('/tags', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_tags(user):
     """Create a tag."""
 
@@ -96,7 +95,6 @@ def create_tags(user):
 
 @api.route('/tags', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_tags(user):
     """Get all tags."""
     args = schemas.args(flask.request.args.to_dict())
@@ -109,7 +107,6 @@ def get_tags(user):
 
 @api.route('/tags/<uuid:tag_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_tag_by_id(user, tag_id):
     """Delete a tag."""
     query = _TABLE.delete().where(_TABLE.c.id == tag_id)

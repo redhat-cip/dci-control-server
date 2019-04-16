@@ -181,7 +181,6 @@ def attach_issue(resource_id, table, user_id):
 # CRD /issues
 @api.route('/issues', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_issue(user):
     data = schemas.issue.post(flask.request.json)
     issue = _get_or_create_issue(data)
@@ -193,7 +192,6 @@ def create_issue(user):
 
 @api.route('/issues', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_all_issues(user):
     args = schemas.args(flask.request.args.to_dict())
 
@@ -208,7 +206,6 @@ def get_all_issues(user):
 
 @api.route('/issues/<uuid:issue_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_issue(user, issue_id):
     issue = v1_utils.verify_existence_and_get(issue_id, _TABLE)
     return flask.jsonify({'issue': issue})
@@ -216,7 +213,6 @@ def get_issue(user, issue_id):
 
 @api.route('/issues/<uuid:issue_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_issue_by_id(user, issue_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -239,7 +235,6 @@ def delete_issue_by_id(user, issue_id):
 # issues-tests
 @api.route('/issues/<uuid:issue_id>/tests', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def add_test_to_issue(user, issue_id):
     values = schemas.issue_test.post(flask.request.json)
 
@@ -258,7 +253,6 @@ def add_test_to_issue(user, issue_id):
 
 @api.route('/issues/<uuid:issue_id>/tests/<uuid:test_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def remove_test_from_issue(users, issue_id, test_id):
     v1_utils.verify_existence_and_get(issue_id, _TABLE)
     v1_utils.verify_existence_and_get(test_id, models.TESTS)
@@ -277,7 +271,6 @@ def remove_test_from_issue(users, issue_id, test_id):
 
 @api.route('/issues/<uuid:issue_id>/tests', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_tests_from_issue(user, issue_id):
     JIT = models.JOIN_ISSUES_TESTS
 
@@ -294,13 +287,11 @@ def get_tests_from_issue(user, issue_id):
 
 @api.route('/issues/purge', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_to_purge_archived_issues(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/issues/purge', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def purge_archived_issues(user):
     return base.purge_archived_resources(user, _TABLE)

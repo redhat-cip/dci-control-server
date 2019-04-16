@@ -30,7 +30,6 @@ _A_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 @api.route('/audits', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_logs(user):
     args = schemas.args(flask.request.args.to_dict())
 

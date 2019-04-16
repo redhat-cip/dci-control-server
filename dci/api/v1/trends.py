@@ -55,7 +55,6 @@ def get_trends_from_jobs(jobs):
 
 @api.route('/trends/topics', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_trends_of_topics(user):
     conf = generate_conf()
     engine = get_engine(conf)

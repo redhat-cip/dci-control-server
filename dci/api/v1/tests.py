@@ -36,7 +36,6 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 @api.route('/tests', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_tests(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.test.post(flask.request.json))
@@ -59,7 +58,6 @@ def create_tests(user):
 
 @api.route('/tests/<uuid:t_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def update_tests(user, t_id):
     v1_utils.verify_existence_and_get(t_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -121,14 +119,12 @@ def get_all_tests_by_team(user, team_id):
 
 @api.route('/tests', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_all_tests(user):
     return get_all_tests_by_team(user, None)
 
 
 @api.route('/tests/<uuid:t_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_test_by_id(user, t_id):
     test = v1_utils.verify_existence_and_get(t_id, _TABLE)
     res = flask.jsonify({'test': test})
@@ -137,7 +133,6 @@ def get_test_by_id(user, t_id):
 
 @api.route('/tests/<uuid:t_id>/remotecis', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_remotecis_by_test(user, test_id):
     test = v1_utils.verify_existence_and_get(test_id, _TABLE)
     return remotecis.get_all_remotecis(test['id'])
@@ -145,7 +140,6 @@ def get_remotecis_by_test(user, test_id):
 
 @api.route('/tests/<uuid:t_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_test_by_id(user, t_id):
     v1_utils.verify_existence_and_get(t_id, _TABLE)
 
@@ -169,13 +163,11 @@ def delete_test_by_id(user, t_id):
 
 @api.route('/tests/purge', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_to_purge_archived_tests(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/tests/purge', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def purge_archived_tests(user):
     return base.purge_archived_resources(user, _TABLE)

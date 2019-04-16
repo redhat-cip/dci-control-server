@@ -43,7 +43,6 @@ _EMBED_MANY = {
 
 @api.route('/topics', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def create_topics(user):
     values = v1_utils.common_values_dict()
     values.update(schemas.topic.post(flask.request.json))
@@ -73,7 +72,6 @@ def create_topics(user):
 
 @api.route('/topics/<uuid:topic_id>', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_topic_by_id(user, topic_id):
     args = schemas.args(flask.request.args.to_dict())
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
@@ -91,7 +89,6 @@ def get_topic_by_id(user, topic_id):
 
 @api.route('/topics', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_all_topics(user):
     args = schemas.args(flask.request.args.to_dict())
     # if the user is an admin then he can get all the topics
@@ -116,7 +113,6 @@ def get_all_topics(user):
 
 @api.route('/topics/<uuid:topic_id>', methods=['PUT'])
 @decorators.login_required
-@decorators.check_roles
 def put_topic(user, topic_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -160,7 +156,6 @@ def put_topic(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_topic_by_id(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     product = v1_utils.verify_existence_and_get(topic['product_id'],
@@ -190,7 +185,6 @@ def delete_topic_by_id(user, topic_id):
 # component GET
 @api.route('/topics/<uuid:topic_id>/components', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_all_components(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     export_control.verify_access_to_topic(user, topic)
@@ -199,7 +193,6 @@ def get_all_components(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>/components/latest', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_latest_component_per_topic(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     export_control.verify_access_to_topic(user, topic)
@@ -217,7 +210,6 @@ def get_latest_component_per_topic(user, topic_id):
 # teams set apis
 @api.route('/topics/<uuid:topic_id>/teams', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def add_team_to_topic(user, topic_id):
     # TODO(yassine): use voluptuous schema
     data_json = flask.request.json
@@ -251,7 +243,6 @@ def add_team_to_topic(user, topic_id):
 
 @api.route('/topics/<uuid:topic_id>/teams/<uuid:team_id>', methods=['DELETE'])
 @decorators.login_required
-@decorators.check_roles
 def delete_team_from_topic(user, topic_id, team_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
@@ -276,7 +267,6 @@ def delete_team_from_topic(user, topic_id, team_id):
 
 @api.route('/topics/<uuid:topic_id>/teams', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_all_teams_from_topic(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
@@ -297,13 +287,11 @@ def get_all_teams_from_topic(user, topic_id):
 
 @api.route('/topics/purge', methods=['GET'])
 @decorators.login_required
-@decorators.check_roles
 def get_to_purge_archived_topics(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
 @api.route('/topics/purge', methods=['POST'])
 @decorators.login_required
-@decorators.check_roles
 def purge_archived_topics(user):
     return base.purge_archived_resources(user, _TABLE)
