@@ -401,7 +401,8 @@ class TestJobSchedule(utils.SchemaTesting):
         super(TestJobSchedule, self).test_post_invalid_data(invalids, errors)
 
     def test_post(self):
-        super(TestJobSchedule, self).test_post(self.data, self.data)
+        data_expected = schemas.dict_merge(self.data, {'dry_run': False})
+        super(TestJobSchedule, self).test_post(self.data, data_expected)
 
     def test_put_invalid_data(self):
         pass

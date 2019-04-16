@@ -221,7 +221,7 @@ def schedule_jobs(user):
     topic_id_secondary = values.pop('topic_id_secondary')
     components_ids = values.pop('components_ids')
 
-    # check remoteci and primary topic
+    # check remoteci
     remoteci = v1_utils.verify_existence_and_get(user.id, models.REMOTECIS)
     if remoteci['state'] != 'active':
         message = 'RemoteCI "%s" is disabled.' % remoteci['id']
@@ -243,6 +243,19 @@ def schedule_jobs(user):
                                                topic['name'])
             raise dci_exc.DCIException(msg, status_code=412)
         v1_utils.verify_team_in_topic(user, topic_id_secondary)
+
+    dry_run = values.pop('dry_run')
+    if dry_run:
+        component_types = components.get_component_types_from_topic(topic_id)
+        components_ids = components.get_last_components_by_type(
+            component_types,
+            topic_id
+        )
+        return flask.Response(
+            json.dumps({'components_ids': components_ids, 'job': None}),
+            201,
+            content_type='application/json'
+        )
 
     remotecis.kill_existing_jobs(remoteci['id'])
 

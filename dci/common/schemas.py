@@ -404,6 +404,7 @@ job = DCISchema(schema_factory(job).post, Schema(job_put))
 
 job_schedule = {
     v.Optional('remoteci_id'): v.Any(UUID, msg=INVALID_REMOTE_CI),
+    v.Optional('dry_run', default=False): bool,
     'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
     v.Optional('topic_id_secondary', default=None): v.Any(v.All(UUID,
                                                           msg=INVALID_TOPIC),
