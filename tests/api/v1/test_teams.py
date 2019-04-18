@@ -120,10 +120,10 @@ def test_get_all_teams_with_sort(admin):
     db_teams = db_teams['teams']
 
     # create 2 teams ordered by created time
-    t_1 = admin.post('/api/v1/teams',
-                     data={'name': 'pname1'}).data['team']
-    t_2 = admin.post('/api/v1/teams',
-                     data={'name': 'pname2'}).data['team']
+    admin.post('/api/v1/teams', data={'name': 'pname1'})
+    t_1 = admin.get('/api/v1/teams?where=name:pname1').data['teams'][0]
+    admin.post('/api/v1/teams', data={'name': 'pname2'})
+    t_2 = admin.get('/api/v1/teams?where=name:pname2').data['teams'][0]
 
     gts = admin.get('/api/v1/teams?sort=created_at').data
     db_teams.extend([t_1, t_2])
@@ -138,6 +138,16 @@ def test_get_all_teams_with_sort(admin):
 def test_get_all_teams_with_embed(admin, topic_user_id):
     db_teams = admin.get('/api/v1/teams?embed=topics&where=name:user').data
     assert db_teams['teams'][0]['topics'][0]['id'] == topic_user_id
+
+
+def test_get_all_teams_as_product_owner(admin, product_owner):
+    child_teams = admin.get('/api/v1/teams?where=name:user').data['teams']
+    child_teams_names = {t['name'] for t in child_teams}
+
+    po_child_teams = product_owner.get('/api/v1/teams').data['child_teams']
+    po_child_teams_names = {t['name'] for t in po_child_teams}
+
+    assert child_teams_names == po_child_teams_names
 
 
 def test_get_team_by_id(admin):
