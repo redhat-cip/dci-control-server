@@ -90,7 +90,6 @@ def test_add_get_users_from_to_team(admin, team_id, user_id):
 
     users = admin.get('/api/v1/teams/%s/users' % team_id)
     assert users.status_code == 200
-    print(users.data)
     assert len(users.data['users']) == (current_len + 1)
     for u in users.data['users']:
         assert 'role' in u
@@ -110,6 +109,36 @@ def test_add_user_to_different_teams(admin, user_id, team_id,
     assert users.status_code == 200
     assert (users.data['users'][0]['id'] == user_id or
             users.data['users'][1]['id'] == user_id)
+
+
+def test_get_teams_of_user(admin, user_id):
+    user_teams = admin.get('/api/v1/users/%s/teams' % user_id).data
+    user_teams_names = {t['name'] for t in user_teams['teams']}
+    assert user_teams_names == {'user', 'user_bis'}
+    for t in user_teams['teams']:
+        assert t['role'] == 'USER'
+    assert user_teams['child_teams'] == []
+
+
+def test_get_teams_of_user_as_product_owner(user_id, product_owner):
+    user_teams = product_owner.get('/api/v1/users/%s/teams' % user_id).data
+    user_teams_names = {t['name'] for t in user_teams['teams']}
+    # product owner will not see the 'user_bis' team because it's not in
+    # it's child team
+    assert user_teams_names == {'user'}
+    for t in user_teams['teams']:
+        assert t['role'] == 'USER'
+    assert user_teams['child_teams'] == []
+
+
+def test_get_teams_of_product_owner(admin, product_owner_id):
+    user_teams = admin.get('/api/v1/users/%s/teams' % product_owner_id).data
+    print(user_teams['teams'])
+    print(user_teams['child_teams'])
+    user_teams_names = {t['name'] for t in user_teams['teams']}
+    assert user_teams_names == {'product'}
+    user_child_teams_names = {t['name'] for t in user_teams['child_teams']}
+    assert user_child_teams_names == {'user'}
 
 
 def test_delete_user_from_team(admin, user_id, team_id):

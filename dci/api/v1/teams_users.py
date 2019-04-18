@@ -24,6 +24,7 @@ from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
 from dci.db import models
+from dci import auth_mechanism
 
 
 @api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['POST'])
@@ -109,31 +110,38 @@ def serialize_teams(teams):
     return res
 
 
+def get_child_teams_ids(user_teams):
+    all_teams = auth_mechanism.BaseMechanism.get_all_teams()
+    child_teams_ids = []
+    for u_t in user_teams:
+        for a_team in all_teams:
+            if a_team['parent_id'] == u_t['id']:
+                child_teams_ids.append(a_team['id'])
+    return child_teams_ids
+
+
 @api.route('/users/<uuid:user_id>/teams', methods=['GET'])
 @decorators.login_required
 def get_teams_of_user(user, user_id):
-    args = schemas.args(flask.request.args.to_dict())
-    _JUTR = models.JOIN_USERS_TEAMS_ROLES
-    query = v1_utils.QueryBuilder(models.TEAMS, args,
-                                  teams._T_COLUMNS,
-                                  root_join_table=_JUTR,
-                                  root_join_condition=sql.and_(_JUTR.c.team_id == models.TEAMS.c.id,  # noqa
-                                                               _JUTR.c.user_id == user_id))  # noqa
+    v1_utils.verify_existence_and_get(user_id, models.USERS)
+    if user.is_super_admin():
+        # get the all the full teams associated to the user_id
+        user_teams = teams._get_user_teams(user_id)
+    else:
+        # get all the teams associated to the user_id but only the teams
+        # that belongs to the child teams of the caller
+        # ie. a product owner should only see the teams of the user that it's
+        # under it's product team
+        user_teams = teams._get_user_teams(user_id, user.child_teams_ids)
+    # for each team get their child teams
+    # this is usefull for the super admin to see the child teams
+    # of a product team
+    child_teams_ids = get_child_teams_ids(user_teams)
+    child_teams = teams._get_user_child_teams(child_teams_ids)
 
-    if user.is_not_super_admin() and user.id != user_id:
-        raise dci_exc.Unauthorized()
-
-    query.add_extra_condition(models.TEAMS.c.state != 'archived')
-
-    # get the number of rows for the '_meta' section
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
-    users_teams = v1_utils.format_result(rows, models.TEAMS.name,
-                                         args['embed'],
-                                         teams._EMBED_MANY)
-    users_teams = serialize_teams(users_teams)
-
-    return flask.jsonify({'teams': users_teams, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'teams': user_teams,
+                          'child_teams': child_teams,
+                          '_meta': {'count': len(user_teams) + len(child_teams)}})  # noqa
 
 
 @api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['DELETE'])
