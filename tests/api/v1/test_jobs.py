@@ -344,6 +344,25 @@ def test_get_jobstates_by_job_id(admin, user, job_user_id):
     assert len(jobstates.data['job']['jobstates']) == len(found_jobstate_ids)
 
 
+def test_get_jobstates_by_job_id_by_product_owner(product_owner, admin, job_user_id):  # noqa
+    data = {'status': 'new',
+            'job_id': job_user_id}
+    jobstate_ids = set([
+        admin.post('/api/v1/jobstates', data=data).data['jobstate']['id'],
+        admin.post('/api/v1/jobstates', data=data).data['jobstate']['id']])
+
+    jobstates = product_owner.get('/api/v1/jobs/%s/jobstates' % job_user_id)
+    assert jobstates.status_code == 200
+    jobstates = jobstates.data['jobstates']
+
+    found_jobstate_ids = set(i['id'] for i in jobstates)
+    assert jobstate_ids == found_jobstate_ids
+
+    # verify embed with all embedded options
+    jobstates = admin.get('/api/v1/jobs/%s?embed=jobstates' % job_user_id)
+    assert len(jobstates.data['job']['jobstates']) == len(found_jobstate_ids)
+
+
 def test_get_jobstates_by_job_id_with_embed(admin, job_user_id, jobstate_user_id):  # noqa
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
         mockito = mock.MagicMock()
@@ -543,6 +562,13 @@ def test_create_file_for_job_id(user, remoteci_context, components_user_ids):
 def test_get_files_by_job_id(user, job_user_id, file_job_user_id):
     # get files from job
     file_from_job = user.get('/api/v1/jobs/%s/files' % job_user_id)
+    assert file_from_job.status_code == 200
+    assert file_from_job.data['_meta']['count'] == 1
+
+
+def test_get_files_by_job_id_as_product_owner(product_owner, job_user_id, file_job_user_id):  # noqa
+    # get files from job
+    file_from_job = product_owner.get('/api/v1/jobs/%s/files' % job_user_id)
     assert file_from_job.status_code == 200
     assert file_from_job.data['_meta']['count'] == 1
 
