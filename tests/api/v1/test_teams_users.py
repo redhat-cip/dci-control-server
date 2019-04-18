@@ -112,6 +112,23 @@ def test_add_user_to_different_teams(admin, user_id, team_id,
             users.data['users'][1]['id'] == user_id)
 
 
+def test_get_teams_of_user(admin, user_id):
+    user_teams = admin.get('/api/v1/users/%s/teams' % user_id).data
+    assert user_teams['teams'][0]['name'] == 'user'
+    assert user_teams['teams'][0]['role'] == 'USER'
+    assert user_teams['child_teams'] == []
+
+
+def test_get_teams_of_product_owner(admin, product_owner_id):
+    user_teams = admin.get('/api/v1/users/%s/teams' % product_owner_id).data
+    print(user_teams['teams'])
+    print(user_teams['child_teams'])
+    user_teams_names = {t['name'] for t in user_teams['teams']}
+    assert user_teams_names == {'product'}
+    user_child_teams_names = {t['name'] for t in user_teams['child_teams']}
+    assert user_child_teams_names == {'user'}
+
+
 def test_delete_user_from_team(admin, user_id, team_id):
     pu = admin.post('/api/v1/teams/%s/users/%s' % (team_id, user_id),
                     data={'role': 'USER'})

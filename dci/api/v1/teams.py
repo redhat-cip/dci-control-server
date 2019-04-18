@@ -67,24 +67,77 @@ def create_teams(user):
     )
 
 
+def serialize_teams(teams):
+    # get rid of the teams_roles prefix
+    res = []
+    for team in teams:
+        new_team = {}
+        for k, v in team.items():
+            if k == 'users':
+                new_team['role'] = team['users']['teams_roles_role']
+            else:
+                new_team[k] = v
+        res.append(new_team)
+    return res
+
+
+def _get_teams_of_user(user, user_id):
+    args = schemas.args(flask.request.args.to_dict())
+    _JUTR = models.JOIN_USERS_TEAMS_ROLES
+    # first, get direct teams
+    query = v1_utils.QueryBuilder(_TABLE, args,
+                                  _T_COLUMNS,
+                                  root_join_table=_JUTR,
+                                  root_join_condition=sql.and_(_JUTR.c.team_id == models.TEAMS.c.id,  # noqa
+                                                               _JUTR.c.user_id == user_id))  # noqa
+
+    query.add_extra_condition(models.TEAMS.c.state != 'archived')
+
+    rows = query.execute(fetchall=True)
+    users_teams = v1_utils.format_result(rows, models.TEAMS.name,
+                                         args['embed'],
+                                         _EMBED_MANY)
+    return serialize_teams(users_teams)
+
+
+def _get_child_teams_of_user(user, child_teams_ids=None):
+    if child_teams_ids is None:
+        child_teams_ids = user.child_teams_ids
+    args = schemas.args(flask.request.args.to_dict())
+    query = v1_utils.QueryBuilder(models.TEAMS, args, _T_COLUMNS)
+    query.add_extra_condition(models.TEAMS.c.state != 'archived')
+    query.add_extra_condition(models.TEAMS.c.id.in_(child_teams_ids))
+    rows = query.execute(fetchall=True)
+    child_teams = v1_utils.format_result(rows, models.TEAMS.name,
+                                         args['embed'],
+                                         _EMBED_MANY)
+
+    return child_teams
+
+
 @api.route('/teams', methods=['GET'])
 @decorators.login_required
-def get_all_teams(user):
-    args = schemas.args(flask.request.args.to_dict())
-
-    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
-
+def get_teams(user):
     if user.is_not_super_admin():
-        query.add_extra_condition(_TABLE.c.id.in_(user.teams_ids))
+        user_teams = _get_teams_of_user(user, user.id)
+        child_teams = _get_child_teams_of_user(user)
 
-    query.add_extra_condition(_TABLE.c.state != 'archived')
+        return flask.jsonify({'teams': user_teams,
+                              'child_teams': child_teams,
+                              '_meta': {'count': len(user_teams) + len(child_teams)}})  # noqa
+    else:
+        args = schemas.args(flask.request.args.to_dict())
+        query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
+        query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-
-    return flask.jsonify({'teams': rows, '_meta': {'count': nb_rows}})
+        nb_teams = query.get_number_of_rows()
+        all_teams = query.execute(fetchall=True)
+        all_teams = v1_utils.format_result(all_teams, _TABLE.name,
+                                           args['embed'],
+                                           _EMBED_MANY)
+        return flask.jsonify({'teams': all_teams,
+                              'child_teams': [],
+                              '_meta': {'count': nb_teams}})
 
 
 @api.route('/teams/<uuid:t_id>', methods=['GET'])

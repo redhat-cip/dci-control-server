@@ -44,10 +44,10 @@ class Identity:
         self._is_super_admin = user_info.get('is_super_admin', False)
         # if the user's team is a product team then it does have some
         # child teams, then get all the child teams
-        self.child_teams_ids, self.parent_teams_ids = self._get_child_and_parent_teams_ids(self.teams, all_teams)  # noqa
+        self.child_teams_ids, self.parent_teams_ids = Identity.get_child_and_parent_teams_ids(self.teams, all_teams)  # noqa
 
     @staticmethod
-    def _get_child_and_parent_teams_ids(user_teams, all_teams):
+    def get_child_and_parent_teams_ids(user_teams, all_teams):
         child_teams = set()
         parent_teams = set()
         for u_t, v_t in user_teams.items():

@@ -94,13 +94,14 @@ class BaseMechanism(object):
                 'role': user_team[models.JOIN_USERS_TEAMS_ROLES.c.role],
                 'name': user_team[models.TEAMS.c.name]}
 
-        all_teams = self._get_all_teams()
+        all_teams = BaseMechanism.get_all_teams()
         user_info['teams'] = user_teams
         user_info['is_super_admin'] = is_super_admin
 
         return Identity(user_info, all_teams)
 
-    def _get_all_teams(self):
+    @staticmethod
+    def get_all_teams():
         query = sql.select([models.TEAMS.c.id, models.TEAMS.c.parent_id])
         result = flask.g.db_conn.execute(query).fetchall()
         return [{

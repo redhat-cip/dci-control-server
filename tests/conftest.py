@@ -228,6 +228,7 @@ def team_id(admin, team_product_id):
 
 @pytest.fixture
 def team_product_id(admin):
+    print(admin.get('/api/v1/teams').data['teams'])
     team = admin.get('/api/v1/teams?where=name:product')
     team = admin.get('/api/v1/teams/%s' % team.data['teams'][0]['id']).data
     return str(team['team']['id'])
