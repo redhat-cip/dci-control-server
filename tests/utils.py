@@ -153,6 +153,8 @@ def provision(db_conn):
                                 parent_id=team_admin_id)
     team_user_id = db_insert(models.TEAMS, name='user',
                              parent_id=team_product_id)
+    team_user_id_bis = db_insert(models.TEAMS, name='user_bis',
+                                 parent_id=team_admin_id)
 
     # Create users
     user_pw_hash = auth.hash_password('user')
@@ -168,6 +170,12 @@ def provision(db_conn):
               return_pk=False,
               user_id=u_id,
               team_id=team_user_id,
+              role='USER')
+
+    db_insert(models.JOIN_USERS_TEAMS_ROLES,
+              return_pk=False,
+              user_id=u_id,
+              team_id=team_user_id_bis,
               role='USER')
 
     user_no_team_pw_hash = auth.hash_password('user_no_team')
