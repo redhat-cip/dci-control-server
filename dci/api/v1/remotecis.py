@@ -15,6 +15,7 @@
 # under the License.
 import flask
 import re
+from datetime import datetime, timedelta
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql, func
@@ -454,11 +455,12 @@ def get_remoteci_configuration(topic_id, remoteci_id, db_conn=None):
 
 
 def kill_existing_jobs(remoteci_id, db_conn=None):
-
     db_conn = db_conn or flask.g.db_conn
+    yesterday = datetime.now() - timedelta(hours=24)
     where_clause = sql.expression.and_(
         models.JOBS.c.remoteci_id == remoteci_id,
-        models.JOBS.c.status.in_(('new', 'pre-run', 'running', 'post-run'))
+        models.JOBS.c.status.in_(('new', 'pre-run', 'running', 'post-run')),
+        models.JOBS.c.created_at < yesterday
     )
     kill_query = models.JOBS.update().where(where_clause).values(
         status='killed')
