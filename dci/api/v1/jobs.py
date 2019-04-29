@@ -64,6 +64,10 @@ _EMBED_MANY = {
 }
 
 
+def get_utc_now():
+    return datetime.datetime.utcnow()
+
+
 @api.route('/jobs', methods=['POST'])
 @decorators.login_required
 def create_jobs(user):
@@ -203,11 +207,11 @@ def schedule_jobs(user):
     """
 
     values = schemas.job_schedule.post(flask.request.json)
-
+    print(get_utc_now().isoformat())
     values.update({
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': get_utc_now().isoformat(),
+        'updated_at': get_utc_now().isoformat(),
         'etag': utils.gen_etag(),
         'status': 'new',
         'remoteci_id': user.id,
@@ -275,8 +279,8 @@ def create_new_update_job_from_an_existing_job(user, job_id):
 
     values = {
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': get_utc_now().isoformat(),
+        'updated_at': get_utc_now().isoformat(),
         'etag': utils.gen_etag(),
         'status': 'new'
     }
@@ -322,8 +326,8 @@ def create_new_upgrade_job_from_an_existing_job(user):
 
     values.update({
         'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'updated_at': datetime.datetime.utcnow().isoformat(),
+        'created_at': get_utc_now().isoformat(),
+        'updated_at': get_utc_now().isoformat(),
         'etag': utils.gen_etag(),
         'status': 'new'
     })
