@@ -358,7 +358,6 @@ class QueryBuilder(object):
         if self._embeds:
             embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select)  # noqa
             embed_list = self._get_embed_list(embed_joins)
-            # embed sort for embeds such like lastjob
             embed_sorts = []
             for embed_elem in embed_list:
                 for param in embed_joins[embed_elem]:

@@ -92,55 +92,6 @@ def test_get_all_remotecis_with_where(user, team_user_id):
     assert db_r_id == pr_id
 
 
-def test_get_all_remotecis_with_last_job(admin, user, team_user_id,
-                                         remoteci_context,
-                                         remoteci_user_id,
-                                         components_user_ids,
-                                         topic_user_id):
-
-    admin.post('/api/v1/topics/%s/teams' % topic_user_id,
-               data={'team_id': team_user_id})
-    remotecis = user.get((
-        '/api/v1/remotecis?embed='
-        'team,'
-        'lastjob,'
-        'lastjob.components,'
-        'currentjob,'
-        'currentjob.components')).data
-
-    assert 'id' not in remotecis['remotecis'][0]['currentjob']
-    assert 'id' not in remotecis['remotecis'][0]['lastjob']
-
-    remoteci_context.post('/api/v1/jobs/schedule',
-                          data={'topic_id': topic_user_id})
-    remotecis = user.get((
-        '/api/v1/remotecis?embed='
-        'team,'
-        'lastjob,'
-        'lastjob.components,'
-        'currentjob,'
-        'currentjob.components')).data
-
-    working_remoteci = remotecis['remotecis'][0]
-    assert 'id' in working_remoteci['currentjob']
-    assert len(working_remoteci['currentjob']['components']) == 3
-    assert 'id' not in working_remoteci['lastjob']
-
-    remoteci_context.post('/api/v1/jobs/schedule',
-                          data={'topic_id': topic_user_id})
-    remotecis = user.get((
-        '/api/v1/remotecis?embed='
-        'team,'
-        'lastjob,'
-        'lastjob.components,'
-        'currentjob,'
-        'currentjob.components')).data
-
-    working_remoteci = remotecis['remotecis'][0]
-    assert 'id' in working_remoteci['currentjob']
-    assert 'id' in working_remoteci['lastjob']
-
-
 def test_where_invalid(admin):
     err = admin.get('/api/v1/remotecis?where=id')
 

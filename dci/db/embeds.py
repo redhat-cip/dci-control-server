@@ -36,13 +36,6 @@ RCONFIGURATION = models.REMOTECIS_RCONFIGURATIONS.alias('rconfiguration')
 
 TESTS_RESULTS = models.TESTS_RESULTS.alias('results')
 JOB = models.JOBS.alias('job')
-LASTJOB = models.JOBS.alias('lastjob')
-LASTJOB_COMPONENTS = models.COMPONENTS.alias('lastjob.components')
-LASTJOB_JOIN_COMPONENTS = models.JOIN_JOBS_COMPONENTS.alias('lastjob.jobcomponents')  # noqa
-
-CURRENTJOB = models.JOBS.alias('currentjob')
-CURRENTJOB_COMPONENTS = models.COMPONENTS.alias('currentjob.components')
-CURRENTJOB_JOIN_COMPONENTS = models.JOIN_JOBS_COMPONENTS.alias('currentjob.jobcomponents')  # noqa
 
 JOBSTATE = models.JOBSTATES.alias('jobstate')
 JOBSTATE_JOBS = models.JOBS.alias('jobstate.job')
@@ -139,45 +132,7 @@ def remotecis(root_select=models.REMOTECIS):
             {'right': TEAM,
              'onclause': and_(TEAM.c.id == root_select.c.team_id,
                               TEAM.c.state != 'archived')}
-        ],
-        'lastjob': [
-            {'right': LASTJOB,
-             'onclause': and_(
-                 LASTJOB.c.state != 'archived',
-                 LASTJOB.c.status.in_([
-                     'success',
-                     'failure',
-                     'killed']),
-                 LASTJOB.c.remoteci_id == root_select.c.id),
-             'isouter': True,
-             'sort': LASTJOB.c.created_at}],
-        'lastjob.components': [
-            {'right': LASTJOB_JOIN_COMPONENTS,
-             'onclause': LASTJOB_JOIN_COMPONENTS.c.job_id == LASTJOB.c.id,  # noqa
-             'isouter': True},
-            {'right': LASTJOB_COMPONENTS,
-             'onclause': and_(LASTJOB_COMPONENTS.c.id == LASTJOB_JOIN_COMPONENTS.c.component_id,  # noqa
-                              LASTJOB_COMPONENTS.c.state != 'archived'),
-             'isouter': True}],
-        'currentjob': [
-            {'right': CURRENTJOB,
-             'onclause': and_(
-                 CURRENTJOB.c.state != 'archived',
-                 CURRENTJOB.c.status.in_([
-                     'new',
-                     'pre-run',
-                     'running']),
-                 CURRENTJOB.c.remoteci_id == root_select.c.id),
-             'isouter': True,
-             'sort': CURRENTJOB.c.created_at}],
-        'currentjob.components': [
-            {'right': CURRENTJOB_JOIN_COMPONENTS,
-             'onclause': CURRENTJOB_JOIN_COMPONENTS.c.job_id == CURRENTJOB.c.id,  # noqa
-             'isouter': True},
-            {'right': CURRENTJOB_COMPONENTS,
-             'onclause': and_(CURRENTJOB_COMPONENTS.c.id == CURRENTJOB_JOIN_COMPONENTS.c.component_id,  # noqa
-                              CURRENTJOB_COMPONENTS.c.state != 'archived'),
-             'isouter': True}]
+        ]
     }
 
 
@@ -346,11 +301,7 @@ EMBED_STRING_TO_OBJECT = {
         'tags': models.TAGS
     },
     'remotecis': {
-        'team': TEAM,
-        'lastjob': LASTJOB,
-        'lastjob.components': LASTJOB_COMPONENTS,
-        'currentjob': CURRENTJOB,
-        'currentjob.components': CURRENTJOB_COMPONENTS},
+        'team': TEAM},
     'components': {
         'files': CFILES,
         'jobs': models.JOBS},

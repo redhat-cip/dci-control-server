@@ -38,11 +38,7 @@ _VALID_EMBED = embeds.remotecis()
 _R_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
     'team': False,
-    'users': True,
-    'lastjob': False,
-    'lastjob.components': True,
-    'currentjob': False,
-    'currentjob.components': True
+    'users': True
 }
 _RCONFIGURATIONS = models.REMOTECIS_RCONFIGURATIONS
 _RCONFIGURATIONS_COLUMNS = v1_utils.get_columns_name_with_objects(
