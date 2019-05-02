@@ -1,0 +1,165 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5c06bf29_b50b7dcf",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-05-02T08:36:39Z",
+      "side": 1,
+      "message": "user is not used right there? or I miss something",
+      "range": {
+        "startLine": 84,
+        "startChar": 23,
+        "endLine": 84,
+        "endChar": 29
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5dc3d5af_faab44bb",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-05-02T08:36:39Z",
+      "side": 1,
+      "message": "SRP no need to pass the user here:\nSimplify by passing teams_ids [] as parameter.\n\nMaybe the format result should also no be there but directly in the controller",
+      "range": {
+        "startLine": 103,
+        "startChar": 4,
+        "endLine": 103,
+        "endChar": 28
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d4d815d3_0124f780",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-05-02T08:36:39Z",
+      "side": 1,
+      "message": "a better name would be get_users_teams",
+      "range": {
+        "startLine": 122,
+        "startChar": 21,
+        "endLine": 122,
+        "endChar": 39
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "20024472_73f75529",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-05-02T08:36:39Z",
+      "side": 1,
+      "message": "remove user.is and use directly user in _get_teams_of_user()",
+      "range": {
+        "startLine": 122,
+        "startChar": 39,
+        "endLine": 122,
+        "endChar": 54
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8584e497_e76e18a5",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-05-02T08:36:39Z",
+      "side": 1,
+      "message": "a better name would be get_users_child_teams",
+      "range": {
+        "startLine": 123,
+        "startChar": 22,
+        "endLine": 123,
+        "endChar": 46
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "02892571_ab1b9561",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-05-02T08:36:39Z",
+      "side": 1,
+      "message": "no need for this else here",
+      "range": {
+        "startLine": 128,
+        "startChar": 4,
+        "endLine": 128,
+        "endChar": 9
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b8a92162_ff6e2385",
+        "filename": "dci/api/v1/teams_users.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 127,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-05-02T08:36:39Z",
+      "side": 1,
+      "message": "This won\u0027t work, anybody within the team of the user, the product owner and the super admin should be able to see the user teams no?\n\nRemember that this endpoint in used in a user details page where you can affect a user to different teams",
+      "range": {
+        "startLine": 126,
+        "startChar": 0,
+        "endLine": 127,
+        "endChar": 36
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
