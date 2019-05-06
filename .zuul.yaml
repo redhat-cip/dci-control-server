@@ -1,0 +1,29 @@
+---
+- project:
+    name: dci-control-server
+    templates:
+      - dci-dev-env-conditional
+    check:
+      jobs:
+        - tox-pep8
+        - tox-py27
+        - tox-py36:
+            nodeset: fedora-latest-runc
+        - dci-client-tox
+        - dci-rpm-build
+        - dci-functional-tests
+    gate:
+      queue: dci
+      jobs:
+        - tox-pep8
+        - tox-py27
+        - tox-py36:
+            nodeset: fedora-latest-runc
+        - dci-client-tox
+        - dci-rpm-build
+        - dci-functional-tests
+        - dci-rpm-publish
+    post:
+      queue: dci
+      jobs:
+        - dci-deploy
