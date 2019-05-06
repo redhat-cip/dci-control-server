@@ -1,0 +1,21 @@
+---
+- project:
+    name: dci-control-server
+    check:
+      jobs:
+        - dci-tox
+        - dci-client-tox
+        - dci-rpm-build
+        - dci-functional-tests
+    gate:
+      queue: dci
+      jobs:
+        - dci-tox
+        - dci-client-tox
+        - dci-rpm-build
+        - dci-functional-tests
+        - dci-rpm-publish
+    post:
+      queue: dci
+      jobs:
+        - dci-deploy
