@@ -663,26 +663,3 @@ def test_purge_failure(user, admin, job_user_id, jobstate_user_id,
     assert len(to_purge_files['files']) == 1
     to_purge_jobs = admin.get('/api/v1/jobs/purge').data
     assert len(to_purge_jobs['jobs']) == 1
-
-
-def test_schedule_a_job_with_dry_run_dont_create_a_job(
-        admin, remoteci_context, topic_user_id):
-    nb_jobs = admin.get("/api/v1/jobs").data["_meta"]["count"]
-    data = {"dry_run": True, "topic_id": topic_user_id}
-    remoteci_context.post("/api/v1/jobs/schedule", data=data)
-    nb_jobs_after = admin.get("/api/v1/jobs").data["_meta"]["count"]
-    assert nb_jobs == nb_jobs_after
-
-
-def test_schedule_a_job_with_dry_run_return_components_ids(
-        remoteci_context, topic_user_id, components_user_ids):
-    data = {"dry_run": True, "topic_id": topic_user_id}
-    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
-    assert components_user_ids == r.data["components_ids"]
-
-
-def test_schedule_a_job_with_dry_run_return_job_none(
-        remoteci_context, topic_user_id, components_user_ids):
-    data = {"dry_run": True, "topic_id": topic_user_id}
-    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
-    assert r.data["job"] is None

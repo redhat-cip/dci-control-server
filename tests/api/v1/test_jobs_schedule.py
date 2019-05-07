@@ -214,3 +214,26 @@ def test_schedule_jobs_multi_topics(remoteci_context, remoteci, topic,
     job_multi = admin.get('/api/v1/jobs?where=topic_id:%s,topic_id_secondary:%s' % (topic['id'], topic_user['id']))  # noqa
     assert job_multi.status_code == 200
     assert job_multi.data['jobs'][0]['id'] == job['id']
+
+
+def test_schedule_a_job_with_dry_run_dont_create_a_job(
+        admin, remoteci_context, topic_user_id):
+    nb_jobs = admin.get("/api/v1/jobs").data["_meta"]["count"]
+    data = {"dry_run": True, "topic_id": topic_user_id}
+    remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    nb_jobs_after = admin.get("/api/v1/jobs").data["_meta"]["count"]
+    assert nb_jobs == nb_jobs_after
+
+
+def test_schedule_a_job_with_dry_run_return_components(
+        remoteci_context, topic_user_id, components_user_ids):
+    data = {"dry_run": True, "topic_id": topic_user_id}
+    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    assert components_user_ids == [c['id'] for c in r.data["components"]]
+
+
+def test_schedule_a_job_with_dry_run_return_job_none(
+        remoteci_context, topic_user_id, components_user_ids):
+    data = {"dry_run": True, "topic_id": topic_user_id}
+    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    assert r.data["job"] is None

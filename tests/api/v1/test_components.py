@@ -519,7 +519,7 @@ def test_get_last_components_by_type(engine, admin, topic):
         ['puddle_osp'],
         topic_id=topic['id'],
         db_conn=engine)
-    assert str(last_components[0]) == components_ids[-1]
+    assert str(last_components[0]['id']) == components_ids[-1]
 
 
 def test_verify_and_get_components_ids(engine, admin, topic, topic_user_id):
