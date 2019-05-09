@@ -86,7 +86,6 @@ INVALID_TEAM = 'not a valid team id'
 INVALID_TEST = 'not a valid test id'
 INVALID_TOPIC = 'not a valid topic id'
 INVALID_REMOTE_CI = 'not a valid remoteci id'
-INVALID_RCONFIGURATION = 'not a valid rconfiguration'
 INVALID_JOB = 'not a valid job id'
 INVALID_JOB_STATE = 'not a valid jobstate id'
 INVALID_OFFSET = 'not a valid offset integer (must be greater than 0)'
@@ -387,9 +386,6 @@ job = {
                                                 None),
     v.Optional('topic_id_secondary', default=None): v.Any(v.All(UUID, msg=INVALID_TOPIC),  # noqa
                                                 None),
-    v.Optional('rconfiguration_id', default=None): v.Any(
-        v.All(UUID, msg=INVALID_RCONFIGURATION), None
-    )
 }
 
 job_put = {
@@ -592,19 +588,6 @@ role_put = {
 }
 
 role = DCISchema(schema_factory(role).post, Schema(role_put))
-
-###############################################################################
-#                                                                             #
-#                       Remoteci Configuration schemas                        #
-#                                                                             #
-###############################################################################
-
-rconfiguration = dict_merge(base, DATA_FIELD, {
-    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
-    v.Optional('component_types', default=None): list
-})
-
-rconfiguration = schema_factory(rconfiguration)
 
 
 ###############################################################################

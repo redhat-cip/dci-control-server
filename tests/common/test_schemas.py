@@ -291,49 +291,12 @@ class TestRemoteCI(utils.SchemaTesting):
         super(TestRemoteCI, self).test_put(self.data, self.data)
 
 
-class TestRemoteciRconfigurations(utils.SchemaTesting):
-    schema = schemas.rconfiguration
-    data = dict([utils.NAME, utils.DATA, utils.TOPIC])
-
-    @staticmethod
-    def generate_invalids_and_errors():
-        invalids = dict([utils.INVALID_NAME, utils.INVALID_DATA,
-                         utils.INVALID_TOPIC])
-        errors = dict([utils.INVALID_NAME_ERROR, utils.INVALID_DATA_ERROR,
-                       utils.INVALID_TOPIC_ERROR])
-        return invalids, errors
-
-    def test_post_missing_data(self):
-        errors = utils.generate_errors('topic_id', 'name')
-        super(TestRemoteciRconfigurations, self).test_post_missing_data(errors)
-
-    def test_post_invalid_data(self):
-        invalids, errors = TestRemoteciRconfigurations.\
-            generate_invalids_and_errors()
-        super(TestRemoteciRconfigurations, self).test_post_invalid_data(
-            invalids, errors)
-
-    def test_post(self):
-        # add default values to voluptuous output
-        data_expected = schemas.dict_merge(
-            self.data,
-            {'data': {}, 'component_types': None}
-        )
-        super(TestRemoteciRconfigurations, self).test_post(self.data,
-                                                           data_expected)
-
-    def test_put_invalid_data(self):
-        pass
-
-    def test_put(self):
-        pass
-
 
 class TestJob(utils.SchemaTesting):
     schema = schemas.job
     data = dict([utils.TEAM, utils.COMPONENTS, utils.PREVIOUS_JOB_ID,
                  utils.UPDATE_PREVIOUS_JOB_ID, utils.STATE, utils.TOPIC,
-                 utils.RCONFIGURATION, utils.TOPIC_SECONDARY])
+                 utils.TOPIC_SECONDARY])
     data_put = dict([('status', 'success'), utils.COMMENT])
 
     @staticmethod
@@ -341,12 +304,10 @@ class TestJob(utils.SchemaTesting):
         invalids = dict([utils.INVALID_TEAM,
                          utils.INVALID_COMPONENTS,
                          utils.INVALID_TOPIC,
-                         utils.INVALID_RCONFIGURATION,
                          utils.INVALID_TOPIC_SECONDARY])
         errors = dict([utils.INVALID_TEAM_ERROR,
                        utils.INVALID_COMPONENTS_ERROR,
                        utils.INVALID_TOPIC_ERROR,
-                       utils.INVALID_RCONFIGURATION_ERROR,
                        utils.INVALID_TOPIC_SECONDARY_ERROR])
         return invalids, errors
 

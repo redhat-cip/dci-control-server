@@ -58,7 +58,6 @@ _EMBED_MANY = {
     'remoteci': False,
     'team': False,
     'results': True,
-    'rconfiguration': False,
     'analytics': True,
     'tags': True
 }
@@ -90,7 +89,6 @@ def create_jobs(user):
         'status': 'new',
         'remoteci_id': user.id,
         'topic_id': topic_id,
-        'rconfiguration_id': values['rconfiguration_id'],
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'
@@ -123,23 +121,21 @@ def _build_job(topic_id, remoteci, components_ids, values,
                update_previous_job_id=None):
 
     # get components of primary topic
-    p_component_types, p_rconfiguration = components.get_component_types(
-        topic_id, remoteci['id'])
+    p_component_types = components.get_component_types_from_topic(topic_id)
     p_schedule_components_ids = components.get_schedule_components_ids(
         topic_id, p_component_types, components_ids)
 
     # get components of secondary topic
     s_schedule_components_ids = []
     if topic_id_secondary:
-        s_component_types, _ = components.get_component_types(
-            topic_id_secondary, remoteci['id'])
+        s_component_types = components.get_component_types_from_topic(
+            topic_id_secondary)
         s_schedule_components_ids = components.get_schedule_components_ids(
             topic_id_secondary, s_component_types, [])
 
     values.update({
         'topic_id': topic_id,
         'topic_id_secondary': topic_id_secondary,
-        'rconfiguration_id': p_rconfiguration['id'] if p_rconfiguration else None,  # noqa
         'team_id': remoteci['team_id'],
         'previous_job_id': previous_job_id,
         'update_previous_job_id': update_previous_job_id
