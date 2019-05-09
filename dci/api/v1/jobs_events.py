@@ -22,6 +22,9 @@ from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
+from dci.common.schemas2 import (
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import models
 
@@ -37,7 +40,7 @@ _JOBS_EVENTS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 def get_jobs_events_from_sequence(user, sequence):
     """Get all the jobs events from a given sequence number."""
 
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()

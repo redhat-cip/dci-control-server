@@ -24,6 +24,9 @@ from dci.db import models
 from dci import decorators
 from dci.api.v1 import api
 from dci.common import schemas
+from dci.common.schemas2 import (
+    check_and_get_args
+)
 from dci.common.schemas2 import check_json_is_valid, tag_schema
 import datetime
 from dci.common import utils
@@ -97,7 +100,7 @@ def create_tags(user):
 @decorators.login_required
 def get_tags(user):
     """Get all tags."""
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)

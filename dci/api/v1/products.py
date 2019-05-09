@@ -27,6 +27,9 @@ from dci.api.v1 import utils as v1_utils
 from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
+from dci.common.schemas2 import (
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import models
 
@@ -97,7 +100,7 @@ def update_product(user, product_id):
 @api.route('/products', methods=['GET'])
 @decorators.login_required
 def get_all_products(user):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
     query.add_extra_condition(_TABLE.c.state != 'archived')

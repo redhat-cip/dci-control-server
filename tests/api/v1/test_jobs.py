@@ -225,7 +225,7 @@ def test_get_all_jobs_with_embed_and_limit(remoteci_context,
     remoteci_context.post('/api/v1/jobs', data=data)
 
     # verify embed with all embedded options
-    query_embed = ('/api/v1/jobs?embed=components&limit=1')
+    query_embed = ('/api/v1/jobs?embed=components&limit=1&offset=0')
     jobs = remoteci_context.get(query_embed).data
 
     assert len(jobs['jobs']) == 1
@@ -291,9 +291,9 @@ def test_where_invalid(admin):
     assert err.status_code == 400
     assert err.data == {
         'status_code': 400,
-        'message': 'Invalid where key: "id"',
+        'message': 'Request malformed',
         'payload': {
-            'error': 'where key must have the following form "key:value"'
+            'errors': ["where: 'id' is not a 'key value csv'"]
         }
     }
 

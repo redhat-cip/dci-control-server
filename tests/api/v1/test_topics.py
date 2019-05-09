@@ -169,7 +169,7 @@ def test_get_all_topics_with_where(admin, product):
         topics[t_name] = r['topic']['id']
 
     for t_name, t_id in topics.items():
-        r = admin.get('/api/v1/topics?where=name:%s&limit=1' % t_name).data
+        r = admin.get('/api/v1/topics?where=name:%s&limit=1&offset=0' % t_name).data  # noqa
         assert r['_meta']['count'] == 1
         assert r['topics'][0]['id'] == t_id
 

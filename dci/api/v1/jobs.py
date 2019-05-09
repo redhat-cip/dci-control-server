@@ -31,6 +31,9 @@ from dci import decorators
 from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
+from dci.common.schemas2 import (
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
@@ -378,7 +381,7 @@ def get_all_jobs(user, topic_id=None):
     pointed by topic_id.
     """
     # get the diverse parameters
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     # build the query thanks to the QueryBuilder class
     query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS)

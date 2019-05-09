@@ -28,6 +28,9 @@ from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
+from dci.common.schemas2 import (
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import models
 
@@ -100,7 +103,7 @@ def create_jobstates(user):
 def get_all_jobstates(user, job_id):
     """Get all jobstates.
     """
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
     job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
     if user.is_not_super_admin() and user.is_not_read_only_user():
         if (job['team_id'] not in user.teams_ids and
