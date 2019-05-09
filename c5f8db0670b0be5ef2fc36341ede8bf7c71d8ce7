@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "9aa1d7a6_7d093391",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 133,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-05-09T15:59:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "618ee3ed_1929e7b5",
+      "range": {
+        "startLine": 133,
+        "startChar": 4,
+        "endLine": 133,
+        "endChar": 41
+      },
+      "revId": "c5f8db0670b0be5ef2fc36341ede8bf7c71d8ce7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "cc283d9c_2dd9bfae",
         "filename": "dci/api/v1/teams_users.py",
         "patchSetId": 4
@@ -48,6 +72,30 @@
     },
     {
       "key": {
+        "uuid": "af91fafb_e0b21d41",
+        "filename": "dci/api/v1/teams_users.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-05-09T15:59:46Z",
+      "side": 1,
+      "message": "Agreed, i added comments to explain why this complexity is needed. btw it\u0027s this kind of things which motivates me to remove the team\u0027s hierarchy.",
+      "parentUuid": "cc283d9c_2dd9bfae",
+      "range": {
+        "startLine": 127,
+        "startChar": 0,
+        "endLine": 131,
+        "endChar": 53
+      },
+      "revId": "c5f8db0670b0be5ef2fc36341ede8bf7c71d8ce7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c4e9f41d_17ac1a4d",
         "filename": "tests/utils.py",
         "patchSetId": 4
@@ -59,6 +107,30 @@
       "writtenOn": "2019-05-09T07:44:06Z",
       "side": 1,
       "message": "global fixture for a single test is not a good idea\n\nAAA for good test\nYou need to create the context closer to the test assertion",
+      "range": {
+        "startLine": 156,
+        "startChar": 4,
+        "endLine": 157,
+        "endChar": 57
+      },
+      "revId": "c5f8db0670b0be5ef2fc36341ede8bf7c71d8ce7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "41a345e7_292d1f66",
+        "filename": "tests/utils.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 157,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-05-09T15:59:46Z",
+      "side": 1,
+      "message": "Actually it\u0027s for both, the single test but also the overall teams tests to ensure it works correctly with a user that have multiple teams.",
+      "parentUuid": "c4e9f41d_17ac1a4d",
       "range": {
         "startLine": 156,
         "startChar": 4,
