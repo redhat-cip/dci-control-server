@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "00b317f4_ad8b9cac",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-05-09T15:59:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5c06bf29_b50b7dcf",
+      "range": {
+        "startLine": 84,
+        "startChar": 23,
+        "endLine": 84,
+        "endChar": 29
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "5dc3d5af_faab44bb",
         "filename": "dci/api/v1/teams.py",
         "patchSetId": 3
@@ -36,6 +60,30 @@
       "writtenOn": "2019-05-02T08:36:39Z",
       "side": 1,
       "message": "SRP no need to pass the user here:\nSimplify by passing teams_ids [] as parameter.\n\nMaybe the format result should also no be there but directly in the controller",
+      "range": {
+        "startLine": 103,
+        "startChar": 4,
+        "endLine": 103,
+        "endChar": 28
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "df50b62d_049ecd84",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 103,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-05-09T15:59:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "5dc3d5af_faab44bb",
       "range": {
         "startLine": 103,
         "startChar": 4,
@@ -94,6 +142,54 @@
     },
     {
       "key": {
+        "uuid": "1608f08c_7f03d9f2",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-05-09T15:59:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "d4d815d3_0124f780",
+      "range": {
+        "startLine": 122,
+        "startChar": 21,
+        "endLine": 122,
+        "endChar": 39
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "88356f2d_1a8bd9e2",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-05-09T15:59:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "20024472_73f75529",
+      "range": {
+        "startLine": 122,
+        "startChar": 39,
+        "endLine": 122,
+        "endChar": 54
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "8584e497_e76e18a5",
         "filename": "dci/api/v1/teams.py",
         "patchSetId": 3
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "d19d98fe_0d1a8149",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-05-09T15:59:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8584e497_e76e18a5",
+      "range": {
+        "startLine": 123,
+        "startChar": 22,
+        "endLine": 123,
+        "endChar": 46
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "02892571_ab1b9561",
         "filename": "dci/api/v1/teams.py",
         "patchSetId": 3
@@ -128,6 +248,30 @@
       "writtenOn": "2019-05-02T08:36:39Z",
       "side": 1,
       "message": "no need for this else here",
+      "range": {
+        "startLine": 128,
+        "startChar": 4,
+        "endLine": 128,
+        "endChar": 9
+      },
+      "revId": "1d684ceb9e1de3f50e7c6647acc33fef750c94c1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "77bd4426_d57cc653",
+        "filename": "dci/api/v1/teams.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 128,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-05-09T15:59:46Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "02892571_ab1b9561",
       "range": {
         "startLine": 128,
         "startChar": 4,
