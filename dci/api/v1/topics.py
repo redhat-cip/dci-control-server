@@ -26,6 +26,9 @@ from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
+from dci.common.schemas2 import (
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
@@ -73,7 +76,7 @@ def create_topics(user):
 @api.route('/topics/<uuid:topic_id>', methods=['GET'])
 @decorators.login_required
 def get_topic_by_id(user, topic_id):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     product = v1_utils.verify_existence_and_get(topic['product_id'],
                                                 models.PRODUCTS)
@@ -90,7 +93,7 @@ def get_topic_by_id(user, topic_id):
 @api.route('/topics', methods=['GET'])
 @decorators.login_required
 def get_all_topics(user):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
     # if the user is an admin then he can get all the topics
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 

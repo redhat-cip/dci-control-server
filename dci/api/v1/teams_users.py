@@ -22,7 +22,9 @@ from dci.api.v1 import users
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
+from dci.common.schemas2 import (
+    check_and_get_args
+)
 from dci.db import models
 
 
@@ -73,7 +75,7 @@ def serialize_users(users):
 @api.route('/teams/<uuid:team_id>/users', methods=['GET'])
 @decorators.login_required
 def get_users_from_team(user, team_id):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
     _JUTR = models.JOIN_USERS_TEAMS_ROLES
     query = v1_utils.QueryBuilder(models.USERS, args,
                                   users._USERS_COLUMNS,
@@ -112,7 +114,7 @@ def serialize_teams(teams):
 @api.route('/users/<uuid:user_id>/teams', methods=['GET'])
 @decorators.login_required
 def get_teams_of_user(user, user_id):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
     _JUTR = models.JOIN_USERS_TEAMS_ROLES
     query = v1_utils.QueryBuilder(models.TEAMS, args,
                                   teams._T_COLUMNS,

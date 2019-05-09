@@ -28,6 +28,9 @@ from dci import dci_config
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
+from dci.common.schemas2 import (
+    check_and_get_args
+)
 from dci.common import signature
 from dci.common import utils
 from dci.db import embeds
@@ -78,7 +81,7 @@ def create_remotecis(user):
 @api.route('/remotecis', methods=['GET'])
 @decorators.login_required
 def get_all_remotecis(user, t_id=None):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     # build the query thanks to the QueryBuilder class
     query = v1_utils.QueryBuilder(_TABLE, args, _R_COLUMNS,
@@ -330,7 +333,7 @@ def create_configuration(user, r_id):
 @api.route('/remotecis/<uuid:r_id>/rconfigurations', methods=['GET'])
 @decorators.login_required
 def get_all_configurations(user, r_id):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
     if not user.is_in_team(remoteci['team_id']):
