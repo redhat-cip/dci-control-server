@@ -227,10 +227,6 @@ JOBS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('comment', sa.Text),
     sa.Column('status', STATUSES, default='new'),
-    sa.Column('rconfiguration_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('rconfigurations.id'),
-              nullable=True),
-    sa.Index('jobs_rconfiguration_id_idx', 'rconfiguration_id'),
     sa.Column('topic_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('topics.id', ondelete='CASCADE'),
               # todo(yassine): nullable=False
@@ -325,36 +321,6 @@ JOBSTATES = sa.Table(
     sa.Index('jobstates_job_id_idx', 'job_id')
 )
 
-JOIN_REMOTECIS_RCONFIGURATIONS = sa.Table(
-    'remotecis_rconfigurations', metadata,
-    sa.Column('remoteci_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('remotecis.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True),
-    sa.Column('rconfiguration_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('rconfigurations.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True)
-)
-
-REMOTECIS_RCONFIGURATIONS = sa.Table(
-    'rconfigurations', metadata,
-    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
-              default=utils.gen_uuid),
-    sa.Column('created_at', sa.DateTime(),
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('updated_at', sa.DateTime(),
-              onupdate=datetime.datetime.utcnow,
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag),
-    sa.Column('state', STATES, default='active'),
-    sa.Column('topic_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('topics.id', ondelete='CASCADE'),
-              nullable=True),
-    sa.Column('name', sa.String(255), nullable=False),
-    sa.Column('component_types', pg.JSON, nullable=True, default=None),
-    sa.Column('data', sa_utils.JSONType),
-    sa.Index('rconfigurations_topic_id_idx', 'topic_id')
-)
 
 FILES = sa.Table(
     'files', metadata,

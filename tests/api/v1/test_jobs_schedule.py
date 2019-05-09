@@ -33,7 +33,6 @@ def test_schedule_jobs(remoteci_context, remoteci, topic):
     assert job['topic_id'] == topic['id']
     assert job['user_agent'] == headers['User-Agent']
     assert job['client_version'] == headers['Client-Version']
-    assert job['rconfiguration_id'] is None
 
 
 def test_schedule_jobs_with_components_ids(user, remoteci_context, topic):
@@ -47,28 +46,6 @@ def test_schedule_jobs_with_components_ids(user, remoteci_context, topic):
         data=data
     )
     assert r.status_code == 201
-
-
-def _create_rconfiguration(admin, remoteci_id, data):
-    url = '/api/v1/remotecis/%s/rconfigurations' % remoteci_id
-    r = admin.post(url, data=data)
-    assert r.status_code == 201
-    return r.data['rconfiguration']
-
-
-def test_schedule_jobs_with_rconfiguration(admin, remoteci_context, topic):
-    remoteci = remoteci_context.get('/api/v1/identity').data['identity']
-    rconfiguration = {'name': 'rc', 'topic_id': topic['id']}
-    _create_rconfiguration(admin, remoteci['id'], rconfiguration)
-    data = {
-        'topic_id': topic['id'],
-    }
-    r = remoteci_context.post(
-        '/api/v1/jobs/schedule',
-        data=data
-    )
-    assert r.status_code == 201
-
 
 def _update_remoteci(admin, id, etag, data):
     url = '/api/v1/remotecis/%s' % id
@@ -162,29 +139,6 @@ def test_schedule_job_with_export_control(admin, remoteci_context,
     assert r.status_code == 201
 
 
-def test_schedule_jobs_round_robin_rconfiguration(admin, remoteci_context,
-                                                  topic):
-
-    remoteci = remoteci_context.get('/api/v1/identity').data['identity']
-    rconfiguration_1 = _create_rconfiguration(
-        admin, remoteci['id'], {'name': 'rc1', 'topic_id': topic['id']}
-    )
-    rconfiguration_2 = _create_rconfiguration(
-        admin, remoteci['id'], {'name': 'rc2', 'topic_id': topic['id']}
-    )
-
-    data = {'topic_id': topic['id']}
-    j1 = remoteci_context.post('/api/v1/jobs/schedule', data=data).data['job']
-
-    data = {'topic_id': topic['id']}
-    j2 = remoteci_context.post('/api/v1/jobs/schedule', data=data).data['job']
-
-    list_round_robin = [rconfiguration_1['id'], rconfiguration_2['id']]
-    assert j1['rconfiguration_id'] in list_round_robin
-    assert j2['rconfiguration_id'] in list_round_robin
-    assert j1['rconfiguration_id'] != j2['rconfiguration_id']
-
-
 def test_schedule_jobs_multi_topics(remoteci_context, remoteci, topic,
                                     topic_user, admin):
     headers = {
@@ -203,7 +157,6 @@ def test_schedule_jobs_multi_topics(remoteci_context, remoteci, topic,
     assert job['topic_id'] == topic['id']
     assert job['user_agent'] == headers['User-Agent']
     assert job['client_version'] == headers['Client-Version']
-    assert job['rconfiguration_id'] is None
 
     job_infos = admin.get('/api/v1/jobs/%s?embed=topic,components,topicsecondary,componentssecondary' % job['id'])  # noqa
     assert job_infos.status_code == 200

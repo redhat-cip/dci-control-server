@@ -470,34 +470,6 @@ def test_get_component_types_from_topic(admin, engine, topic):
     assert expected_component_types == component_types
 
 
-def _create_rconfiguration(admin, remoteci_id, data):
-    url = '/api/v1/remotecis/%s/rconfigurations' % remoteci_id
-    r = admin.post(url, data=data)
-    assert r.status_code == 201
-    return r.data['rconfiguration']
-
-
-def test_get_component_types(engine, admin, remoteci_context, topic):
-    remoteci = remoteci_context.get('/api/v1/identity').data['identity']
-
-    component_types, _ = components.get_component_types(topic['id'],
-                                                        remoteci['id'],
-                                                        db_conn=engine)
-    # use topic's component types
-    expected_component_types = ['puddle_osp']
-    assert expected_component_types == component_types
-
-    # use rconfiguration's component types
-    expected_component_types = ['kikoolol', 'mdr']
-    rconfiguration = {'name': 'rc', 'topic_id': topic['id'],
-                      'component_types': expected_component_types}
-    _create_rconfiguration(admin, remoteci['id'], rconfiguration)
-    component_types, _ = components.get_component_types(topic['id'],
-                                                        remoteci['id'],
-                                                        db_conn=engine)
-    assert expected_component_types == component_types
-
-
 def create_component(admin, topic_id, ct, name):
     data = {'topic_id': topic_id,
             'name': name,
