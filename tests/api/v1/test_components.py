@@ -30,7 +30,6 @@ def test_create_components(admin, topic_id):
         'type': 'gerrit_review',
         'url': 'http://example.com/',
         'topic_id': topic_id,
-        'export_control': True,
         'state': 'active'}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
@@ -186,7 +185,6 @@ def test_get_component_by_id_or_name(admin, topic_id):
     data = {'name': 'pname',
             'type': 'gerrit_review',
             'topic_id': topic_id,
-            'export_control': True
             }
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
@@ -212,8 +210,7 @@ def test_delete_component_by_id(admin, topic_id, user, topic_user_id):
     for context in authorized_contexts:
         data = {'name': 'pname',
                 'type': 'gerrit_review',
-                'topic_id': context['topic'],
-                'export_control': True}
+                'topic_id': context['topic']}
         pc = context['user'].post('/api/v1/components', data=data)
         pc_id = pc.data['component']['id']
         assert pc.status_code == 201
@@ -274,15 +271,14 @@ def test_put_component(admin, user, topic_id):
 
     # Active component
     url = '/api/v1/components/%s' % ct_1['id']
-    data = {'export_control': True}
+    data = {'name': 'cname2'}
     headers = {'If-match': ct_1['etag']}
     admin.put(url, data=data, headers=headers)
 
     ct_2 = admin.get('/api/v1/components/%s' % ct_1['id']).data['component']
 
     assert ct_1['etag'] != ct_2['etag']
-    assert ct_1['export_control']
-    assert ct_2['export_control']
+    assert ct_2['name'] == 'cname2'
 
 
 def test_add_file_to_component(admin, topic_id):
@@ -290,8 +286,7 @@ def test_add_file_to_component(admin, topic_id):
     def create_ct(name):
         data = {'name': name, 'title': 'aaa',
                 'type': 'gerrit_review',
-                'topic_id': topic_id,
-                'export_control': True}
+                'topic_id': topic_id}
         return admin.post(
             '/api/v1/components',
             data=data).data['component']
@@ -330,8 +325,7 @@ def test_add_file_to_component(admin, topic_id):
 def test_download_file_from_component(admin, topic_id):
     data = {'name': "pname1", 'title': 'aaa',
             'type': 'gerrit_review',
-            'topic_id': topic_id,
-            'export_control': True}
+            'topic_id': topic_id}
     ct_1 = admin.post('/api/v1/components', data=data).data['component']
 
     url = '/api/v1/components/%s/files' % ct_1['id']
@@ -348,8 +342,7 @@ def test_download_file_from_component(admin, topic_id):
 def test_delete_file_from_component(admin, topic_id):
     data = {'name': "pname1", 'title': 'aaa',
             'type': 'gerrit_review',
-            'topic_id': topic_id,
-            'export_control': True}
+            'topic_id': topic_id}
     ct_1 = admin.post('/api/v1/components', data=data).data['component']
 
     url = '/api/v1/components/%s/files' % ct_1['id']
@@ -374,7 +367,6 @@ def test_change_component_state(admin, topic_id):
         'type': 'gerrit_review',
         'url': 'http://example.com/',
         'topic_id': topic_id,
-        'export_control': True,
         'state': 'active'}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
@@ -394,7 +386,6 @@ def test_change_component_to_invalid_state(admin, topic_id):
         'type': 'gerrit_review',
         'url': 'http://example.com/',
         'topic_id': topic_id,
-        'export_control': True,
         'state': 'active'}
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
@@ -485,8 +476,7 @@ def test_get_component_types(engine, admin, remoteci_context, topic):
 def create_component(admin, topic_id, ct, name):
     data = {'topic_id': topic_id,
             'name': name,
-            'type': ct,
-            'export_control': True}
+            'type': ct}
     component = admin.post('/api/v1/components',
                            data=data).data
     return str(component['component']['id'])

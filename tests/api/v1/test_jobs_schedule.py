@@ -138,30 +138,6 @@ def test_schedule_jobs_kills_jobs_older_than_one_day(
     assert jobs[-3]['status'] == 'new'
 
 
-def _update_component(admin, component, data):
-    url = '/api/v1/components/%s' % component['id']
-    r = admin.put(url, headers={'If-match': component['etag']}, data=data)
-    assert r.status_code == 200
-    return admin.get(url).data['component']
-
-
-def test_schedule_job_with_export_control(admin, remoteci_context,
-                                          remoteci, topic):
-    components = admin.get('/api/v1/topics/%s/components' % topic['id']).data['components']  # noqa
-    _update_component(admin, components[0], {'export_control': False})
-
-    data = {'topic_id': topic['id']}
-    r = remoteci_context.post('/api/v1/jobs/schedule', data=data)
-    assert r.status_code == 412
-
-    components = admin.get('/api/v1/topics/%s/components' % topic['id']).data['components']  # noqa
-    _update_component(admin, components[0], {'export_control': True})
-
-    data = {'topic_id': topic['id']}
-    r = remoteci_context.post('/api/v1/jobs/schedule', data=data)
-    assert r.status_code == 201
-
-
 def test_schedule_jobs_round_robin_rconfiguration(admin, remoteci_context,
                                                   topic):
 

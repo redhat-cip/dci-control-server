@@ -118,8 +118,9 @@ def update_components(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    if str(component['topic_id']) not in v1_utils.user_topic_ids(user):
-        raise dci_exc.Unauthorized()
+    topic = v1_utils.verify_existence_and_get(component['topic_id'],
+                                              models.TOPICS)
+    export_control.verify_access_to_topic(user, topic)
 
     values = flask.request.json
     check_json_is_valid(update_component_schema, values)
@@ -158,11 +159,6 @@ def get_all_components(user, topic_id):
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
-
-    # Return only the component which have the export_control flag set to true
-    #
-    if user.is_not_super_admin():
-        rows = [row for row in rows if row['export_control']]
 
     return flask.jsonify({'components': rows, '_meta': {'count': nb_rows}})
 
@@ -367,7 +363,6 @@ def get_last_components_by_type(component_types, topic_id, db_conn=None):
     for ct in component_types:
         where_clause = sql.and_(models.COMPONENTS.c.type == ct,
                                 models.COMPONENTS.c.topic_id == topic_id,
-                                models.COMPONENTS.c.export_control == True,
                                 models.COMPONENTS.c.state == 'active')  # noqa
         query = (sql.select([models.COMPONENTS])
                  .where(where_clause)
@@ -400,7 +395,6 @@ def verify_and_get_components_ids(topic_id, components_ids, component_types,
     for c_id in components_ids:
         where_clause = sql.and_(models.COMPONENTS.c.id == c_id,
                                 models.COMPONENTS.c.topic_id == topic_id,
-                                models.COMPONENTS.c.export_control == True,  # noqa
                                 models.COMPONENTS.c.state == 'active')
         query = (sql.select([models.COMPONENTS])
                  .where(where_clause))

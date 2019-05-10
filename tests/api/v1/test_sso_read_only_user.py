@@ -45,8 +45,7 @@ def test_components(m_datetime, admin, user_sso_rh_employee, app, engine,
         pc = admin.post('/api/v1/components',
                         data={'name': 'pname%s' % uuid.uuid4(),
                               'type': 'gerrit_review',
-                              'topic_id': topic_id,
-                              'export_control': True}).data
+                              'topic_id': topic_id}).data
         pc_id = pc['component']['id']
         # get all components of a topic
         cmpts = user_sso.get('/api/v1/topics/%s/components' % topic_id)

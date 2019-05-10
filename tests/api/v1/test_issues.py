@@ -61,7 +61,6 @@ def test_attach_issue_to_component(admin, user, topic_user_id):
             'type': 'gerrit_review',
             'url': 'http://example.com/',
             'topic_id': topic_user_id,
-            'export_control': True,
             'state': 'active'}
         pc = admin.post('/api/v1/components', data=data).data
         component_id = pc['component']['id']
@@ -143,7 +142,6 @@ def test_unattach_issue_from_component(admin, user, topic_user_id):
             'type': 'gerrit_review',
             'url': 'http://example.com/',
             'topic_id': topic_user_id,
-            'export_control': True,
             'state': 'active'}
         pc = admin.post('/api/v1/components', data=data).data
         component_id = pc['component']['id']
