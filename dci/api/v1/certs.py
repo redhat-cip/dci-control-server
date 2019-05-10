@@ -64,7 +64,6 @@ def verify_repo_access(user):
         models.COMPONENTS.c.state == 'active',
         models.JOINS_TOPICS_TEAMS.c.team_id == team_id,
         models.COMPONENTS.c.id == component,
-        models.COMPONENTS.c.export_control,
         models.TOPICS.c.id == topic
     )
     query = (sql.select([models.JOINS_TOPICS_TEAMS.c.topic_id])

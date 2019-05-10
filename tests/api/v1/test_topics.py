@@ -273,7 +273,6 @@ def test_delete_topic_archive_dependencies(admin, product):
         'type': 'gerrit_review',
         'url': 'http://example.com/',
         'topic_id': topic_id,
-        'export_control': True,
         'state': 'active'}
     component = admin.post('/api/v1/components', data=data)
     component_id = component.data['component']['id']
