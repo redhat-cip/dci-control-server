@@ -22,7 +22,6 @@ def test_update_jobs(admin, remoteci_context, job_user_id, topic_user_id):
         'type': 'type_1',
         'url': 'http://example.com/',
         'topic_id': topic_user_id,
-        'export_control': True,
         'state': 'active'}
     c1 = admin.post('/api/v1/components', data=data).data['component']['id']
     data.update({'type': 'type_2', 'name': 'pname1'})
