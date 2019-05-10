@@ -314,8 +314,6 @@ component = dict_merge(base, DATA_FIELD, {
     v.Optional('message', default=None): v.Any(six.text_type, None),
     v.Optional('canonical_project_name', default=None): v.Any(six.text_type,
                                                               None),
-    # True if the component can be exported to non US countries.
-    v.Optional('export_control', default=True): bool,
     v.Optional('url', default=None): v.Any(Url(), None),
     'type': six.text_type,
     'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
@@ -325,7 +323,6 @@ component = dict_merge(base, DATA_FIELD, {
 
 component_put = {
     v.Optional('name'): six.text_type,
-    v.Optional('export_control'): bool,
     v.Optional('data'): dict,
     v.Optional('title'): six.text_type,
     v.Optional('message'): six.text_type,

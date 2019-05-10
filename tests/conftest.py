@@ -204,8 +204,7 @@ def topic(admin, team_user_id, product):
     admin.post('/api/v1/components', data={
         'topic_id': topic['id'],
         'name': 'RH7-RHOS-12.0 2017-11-09.2',
-        'type': 'puddle_osp',
-        'export_control': True
+        'type': 'puddle_osp'
     })
     admin.post('/api/v1/topics/%s/teams' % topic['id'],
                data={'team_id': team_user_id})
@@ -260,8 +259,7 @@ def topic_user(admin, user, team_user_id, product):
         admin.post('/api/v1/components', data={
             'topic_id': t_id,
             'name': 'comp%s' % i,
-            'type': 'type_%s' % i,
-            'export_control': True
+            'type': 'type_%s' % i
         })
 
     return topic['topic']
@@ -341,8 +339,7 @@ def create_components(user, topic_id, component_types):
     for ct in component_types:
         data = {'topic_id': topic_id,
                 'name': 'name-' + str(uuid.uuid4()),
-                'type': ct,
-                'export_control': True}
+                'type': ct}
         cmpt = user.post('/api/v1/components', data=data).data
         component_ids.append(str(cmpt['component']['id']))
     return component_ids

@@ -59,7 +59,6 @@ COMPONENTS = sa.Table(
     sa.Column('title', sa.Text),
     sa.Column('message', sa.Text),
     sa.Column('url', sa.Text),
-    sa.Column('export_control', sa.BOOLEAN, nullable=False, default=False),
     sa.Column('topic_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('topics.id', ondelete='CASCADE'),
               nullable=True),
