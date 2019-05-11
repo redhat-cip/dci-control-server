@@ -315,7 +315,7 @@ component = dict_merge(base, DATA_FIELD, {
     v.Optional('canonical_project_name', default=None): v.Any(six.text_type,
                                                               None),
     # True if the component can be exported to non US countries.
-    v.Optional('export_control', default=False): bool,
+    v.Optional('export_control', default=True): bool,
     v.Optional('url', default=None): v.Any(Url(), None),
     'type': six.text_type,
     'topic_id': v.Any(UUID, msg=INVALID_TOPIC),

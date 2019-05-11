@@ -297,7 +297,7 @@ def test_put_component(admin, user, topic_id):
     ct_2 = admin.get('/api/v1/components/%s' % ct_1['id']).data['component']
 
     assert ct_1['etag'] != ct_2['etag']
-    assert not(ct_1['export_control'])
+    assert ct_1['export_control']
     assert ct_2['export_control']
 
 
