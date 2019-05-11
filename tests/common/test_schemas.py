@@ -218,7 +218,7 @@ class TestComponent(utils.SchemaTesting):
     def generate_optionals():
         return dict([('title', None), ('message', None), ('url', None),
                      ('data', {}), ('canonical_project_name', None),
-                     ('export_control', False),
+                     ('export_control', True),
                      ('state', 'active')])
 
     @staticmethod
