@@ -24,11 +24,16 @@ from dci.api.v1 import utils as v1_utils
 from dci import auth
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
-
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    create_user_schema,
+    update_user_schema,
+    update_current_user_schema,
+    check_and_get_args
+)
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.USERS
@@ -61,7 +66,9 @@ def _verify_existence_and_get_user(user_id):
 @decorators.login_required
 def create_users(user):
     values = v1_utils.common_values_dict()
-    values.update(schemas.user.post(flask.request.json))
+    payload = flask.request.json
+    check_json_is_valid(create_user_schema, payload)
+    values.update(payload)
 
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
@@ -92,7 +99,7 @@ def create_users(user):
 @api.route('/users', methods=['GET'])
 @decorators.login_required
 def get_all_users(user):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
 
     if user.is_not_super_admin():
@@ -133,7 +140,8 @@ def get_current_user(user):
 @decorators.login_required
 def put_current_user(user):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = schemas.current_user.put(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(update_current_user_schema, values)
 
     if user.is_not_read_only_user():
         current_password = values['current_password']
@@ -174,9 +182,9 @@ def put_current_user(user):
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
 @decorators.login_required
 def put_user(user, user_id):
-    # get If-Match header
+    values = flask.request.json
+    check_json_is_valid(update_user_schema, values)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = schemas.user.put(flask.request.json)
 
     # to update a user the caller must be a super admin
     if user.is_not_super_admin():
