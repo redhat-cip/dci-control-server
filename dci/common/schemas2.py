@@ -123,6 +123,9 @@ def check_json_is_valid(schema, json):
         raise DCIException("Request malformed", {"errors": errors, "error": errors[0]})
 
 
+valid_resource_states = ["active", "inactive", "archived"]
+
+
 ###############################################################################
 #                                                                             #
 #                                 Args schema                                 #
@@ -148,3 +151,45 @@ args_schema = {
 def check_and_get_args(raw_args):
     check_json_is_valid(args_schema, raw_args)
     return parse_args(raw_args)
+
+
+###############################################################################
+#                                                                             #
+#                                 User schemas                                #
+#                                                                             #
+###############################################################################
+create_user_properties = {
+    "name": Properties.string,
+    "fullname": Properties.string,
+    "email": Properties.email,
+    "timezone": Properties.string,
+    "password": Properties.string,
+    "team_id": Properties.uuid,
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+}
+create_user_schema = {
+    "type": "object",
+    "properties": create_user_properties,
+    "required": ["name", "fullname", "email"],
+    "additionalProperties": False,
+}
+
+update_user_properties = create_user_properties.copy()
+update_user_properties.update({"state": Properties.enum(valid_resource_states)})
+update_user_schema = {"type": "object", "properties": update_user_properties}
+
+###############################################################################
+#                                                                             #
+#                            Current User schemas                             #
+#                                                                             #
+###############################################################################
+update_current_user_schema = {
+    "type": "object",
+    "properties": {
+        "current_password": Properties.string,
+        "new_password": Properties.string,
+        "fullname": Properties.string,
+        "email": Properties.email,
+        "timezone": Properties.string,
+    },
+}
