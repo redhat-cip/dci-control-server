@@ -30,7 +30,14 @@ from dci.api.v1 import tags
 from dci import decorators
 from dci.common import audits
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    create_job_schema,
+    update_job_schema,
+    upgrade_job_schema,
+    schedule_job_schema,
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
@@ -72,7 +79,9 @@ def get_utc_now():
 @decorators.login_required
 def create_jobs(user):
     values = v1_utils.common_values_dict()
-    values.update(schemas.job.post(flask.request.json))
+    check_json_is_valid(create_job_schema, flask.request.json)
+    values.update(flask.request.json)
+
     components_ids = values.pop('components')
 
     if not user.is_remoteci():
@@ -90,13 +99,15 @@ def create_jobs(user):
         'status': 'new',
         'remoteci_id': user.id,
         'topic_id': topic_id,
-        'rconfiguration_id': values['rconfiguration_id'],
+        'topic_id_secondary': values.get('topic_id_secondary', None),
+        'rconfiguration_id': values.get('rconfiguration_id', None),
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
-        'client_version': flask.request.environ.get(
-            'HTTP_CLIENT_VERSION'
-        ),
+        'client_version': flask.request.environ.get('HTTP_CLIENT_VERSION'),
         'previous_job_id': previous_job_id,
-        'team_id': user.teams_ids[0]
+        'team_id': user.teams_ids[0],
+        'comment': values.get('comment', None),
+        'update_previous_job_id': values.get('update_previous_job_id', None),
+        'state': values.get('state', 'active'),
     })
 
     # create the job and feed the jobs_components table
@@ -205,8 +216,8 @@ def schedule_jobs(user):
     running jobs that were associated with the remoteci. This is because they
     will never be finished.
     """
-
-    values = schemas.job_schedule.post(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(schedule_job_schema, values)
     values.update({
         'id': utils.gen_uuid(),
         'created_at': get_utc_now().isoformat(),
@@ -221,7 +232,7 @@ def schedule_jobs(user):
     })
 
     topic_id = values.pop('topic_id')
-    dry_run = values.pop('dry_run')
+    dry_run = values.pop('dry_run', False)
     if dry_run:
         component_types = components.get_component_types_from_topic(topic_id)
         _components = components.get_last_components_by_type(
@@ -248,7 +259,7 @@ def schedule_jobs(user):
     v1_utils.verify_team_in_topic(user, topic_id)
 
     # check secondary topic
-    topic_id_secondary = values.pop('topic_id_secondary')
+    topic_id_secondary = values.pop('topic_id_secondary', None)
     if topic_id_secondary:
         topic_secondary = v1_utils.verify_existence_and_get(
             topic_id_secondary, models.TOPICS)
@@ -260,7 +271,7 @@ def schedule_jobs(user):
 
     remotecis.kill_existing_jobs(remoteci['id'])
 
-    components_ids = values.pop('components_ids')
+    components_ids = values.pop('components_ids', [])
     values = _build_job(topic_id, remoteci, components_ids, values,
                         topic_id_secondary=topic_id_secondary)
 
@@ -320,7 +331,8 @@ def create_new_update_job_from_an_existing_job(user, job_id):
 def create_new_upgrade_job_from_an_existing_job(user):
     """Create a new job in the 'next topic' of the topic of
     the provided job_id."""
-    values = schemas.job_upgrade.post(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(upgrade_job_schema, values)
 
     values.update({
         'id': utils.gen_uuid(),
@@ -378,7 +390,7 @@ def get_all_jobs(user, topic_id=None):
     pointed by topic_id.
     """
     # get the diverse parameters
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     # build the query thanks to the QueryBuilder class
     query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS)
@@ -442,8 +454,8 @@ def update_job_by_id(user, job_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    # get the diverse parameters
-    values = schemas.job.put(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(update_job_schema, values)
 
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     job = dict(job)
@@ -482,8 +494,8 @@ def update_job_by_id(user, job_id):
 @api.route('/jobs/<uuid:j_id>/files', methods=['POST'])
 @decorators.login_required
 def add_file_to_jobs(user, j_id):
-    values = schemas.job.post(flask.request.json)
-
+    values = flask.request.json
+    check_json_is_valid(create_job_schema, values)
     values.update({'job_id': j_id})
 
     return files.create_files(user, values)

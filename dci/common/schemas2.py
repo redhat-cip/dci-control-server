@@ -157,6 +157,68 @@ update_analytic_schema = {
 
 ###############################################################################
 #                                                                             #
+#                                 Job schema                                  #
+#                                                                             #
+###############################################################################
+create_job_properties = {
+    "remoteci_id": Properties.uuid,
+    "team_id": Properties.uuid,
+    "components": Properties.array,
+    "comment": Properties.string,
+    "previous_job_id": Properties.uuid,
+    "update_previous_job_id": Properties.uuid,
+    "state": Properties.enum(['active', 'inactive', 'archived']),
+    "topic_id": Properties.uuid,
+    "topic_id_secondary": Properties.uuid,
+    "rconfiguration_id": Properties.uuid,
+}
+create_job_schema = {
+    "type": "object",
+    "properties": create_job_properties,
+    "required": ["components"],
+    "additionalProperties": False,
+}
+
+schedule_job_properties = create_job_properties.copy()
+schedule_job_properties.update(
+    {
+        "components_ids": Properties.array,
+        "dry_run": Properties.boolean
+    }
+)
+schedule_job_schema = {
+    "type": "object",
+    "properties": schedule_job_properties,
+    "additionalProperties": False,
+}
+
+update_job_properties = create_job_properties.copy()
+update_job_properties.update({
+    "id": Properties.uuid,
+    "etag": Properties.uuid,
+    "status": Properties.enum([
+        'new', 'pre-run', 'running', 'post-run', 'success',
+        'failure', 'killed', 'error'
+    ])
+}
+)
+update_job_schema = {
+    "type": "object",
+    "properties": update_job_properties,
+    "additionalProperties": False,
+}
+
+upgrade_job_schema = {
+    "type": "object",
+    "properties": {
+        "job_id": Properties.uuid
+    },
+    "required": ["job_id"],
+    "additionalProperties": False,
+}
+
+###############################################################################
+#                                                                             #
 #                                 Tag schema                                  #
 #                                                                             #
 ###############################################################################
