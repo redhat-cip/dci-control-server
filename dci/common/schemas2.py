@@ -174,6 +174,69 @@ update_analytic_schema = {"type": "object", "properties": analytic_properties}
 
 ###############################################################################
 #                                                                             #
+#                                 Job schema                                  #
+#                                                                             #
+###############################################################################
+create_job_properties = {
+    "remoteci_id": Properties.uuid,
+    "team_id": Properties.uuid,
+    "components": Properties.array,
+    "comment": with_default(Properties.string, None),
+    "previous_job_id": with_default(Properties.uuid, None),
+    "update_previous_job_id": with_default(Properties.uuid, None),
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "topic_id": with_default(Properties.uuid, None),
+    "topic_id_secondary": with_default(Properties.uuid, None),
+    "rconfiguration_id": with_default(Properties.uuid, None),
+}
+create_job_schema = {
+    "type": "object",
+    "properties": create_job_properties,
+    "required": ["components"],
+    "additionalProperties": False,
+}
+
+update_job_properties = {
+    "comment": Properties.string,
+    "status": Properties.enum(
+        [
+            "new",
+            "pre-run",
+            "running",
+            "post-run",
+            "success",
+            "failure",
+            "killed",
+            "error",
+        ]
+    ),
+    "state": Properties.enum(valid_resource_states),
+}
+update_job_schema = {"type": "object", "properties": update_job_properties}
+
+
+schedule_job_schema = {
+    "type": "object",
+    "properties": {
+        "remoteci_id": Properties.uuid,
+        "dry_run": with_default(Properties.boolean, False),
+        "topic_id": Properties.uuid,
+        "topic_id_secondary": with_default(Properties.uuid, None),
+        "components_ids": with_default(Properties.array, []),
+    },
+    "required": ["topic_id"],
+    "addiadditionalProperties": False,
+}
+
+upgrade_job_schema = {
+    "type": "object",
+    "properties": {"job_id": Properties.uuid},
+    "required": ["job_id"],
+    "additionalProperties": False,
+}
+
+###############################################################################
+#                                                                             #
 #                                 Tag schema                                  #
 #                                                                             #
 ###############################################################################
