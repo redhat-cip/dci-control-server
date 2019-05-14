@@ -132,6 +132,17 @@ def check_and_get_args(raw_args):
     check_json_is_valid(args_schema, raw_args)
     return parse_args(raw_args)
 
+###############################################################################
+#                                                                             #
+#                                 Tag schema                                  #
+#                                                                             #
+###############################################################################
+tag_schema = {
+    "type": "object",
+    "properties": {"name": Properties.string},
+    "required": ["name"],
+    "additionalProperties": False,
+}
 
 ###############################################################################
 #                                                                             #

@@ -24,6 +24,7 @@ from dci.db import models
 from dci import decorators
 from dci.api.v1 import api
 from dci.common import schemas
+from dci.common.schemas2 import check_json_is_valid, tag_schema
 import datetime
 from dci.common import utils
 from dci.api.v1 import utils as v1_utils
@@ -70,13 +71,12 @@ def add_tag_to_resource(values, join_resource_tags):
 @api.route('/tags', methods=['POST'])
 @decorators.login_required
 def create_tags(user):
-    """Create a tag."""
-
+    check_json_is_valid(tag_schema, flask.request.json)
     values = {
         'id': utils.gen_uuid(),
         'created_at': datetime.datetime.utcnow().isoformat()
     }
-    values.update(schemas.tag.post(flask.request.json))
+    values.update(flask.request.json)
     with flask.g.db_conn.begin():
         where_clause = sql.and_(
             _TABLE.c.name == values['name'])
