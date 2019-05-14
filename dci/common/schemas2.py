@@ -134,6 +134,29 @@ def check_and_get_args(raw_args):
 
 ###############################################################################
 #                                                                             #
+#                              Analytics schema                               #
+#                                                                             #
+###############################################################################
+analytic_properties = {
+    "name": Properties.string,
+    "type": Properties.string,
+    "url": Properties.url,
+    "data": Properties.json
+}
+create_analytic_schema = {
+    "type": "object",
+    "properties": analytic_properties,
+    "required": ["name", "type"],
+    "additionalProperties": False,
+}
+update_analytic_schema = {
+    "type": "object",
+    "properties": analytic_properties,
+    "additionalProperties": False,
+}
+
+###############################################################################
+#                                                                             #
 #                                 Tag schema                                  #
 #                                                                             #
 ###############################################################################
