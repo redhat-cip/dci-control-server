@@ -31,6 +31,11 @@ from dci import decorators
 from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common import schemas
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    create_job_schema,
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
@@ -72,7 +77,9 @@ def get_utc_now():
 @decorators.login_required
 def create_jobs(user):
     values = v1_utils.common_values_dict()
-    values.update(schemas.job.post(flask.request.json))
+    check_json_is_valid(create_job_schema, flask.request.json)
+    values.update(flask.request.json)
+
     components_ids = values.pop('components')
 
     if not user.is_remoteci():
@@ -90,13 +97,15 @@ def create_jobs(user):
         'status': 'new',
         'remoteci_id': user.id,
         'topic_id': topic_id,
-        'rconfiguration_id': values['rconfiguration_id'],
+        'topic_id_secondary': values.get('topic_id_secondary', None),
+        'rconfiguration_id': values.get('rconfiguration_id', None),
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
-        'client_version': flask.request.environ.get(
-            'HTTP_CLIENT_VERSION'
-        ),
+        'client_version': flask.request.environ.get('HTTP_CLIENT_VERSION'),
         'previous_job_id': previous_job_id,
-        'team_id': user.teams_ids[0]
+        'team_id': user.teams_ids[0],
+        'comment': values.get('comment', None),
+        'update_previous_job_id': values.get('update_previous_job_id', None),
+        'state': values.get('state', 'active'),
     })
 
     # create the job and feed the jobs_components table
@@ -378,7 +387,7 @@ def get_all_jobs(user, topic_id=None):
     pointed by topic_id.
     """
     # get the diverse parameters
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     # build the query thanks to the QueryBuilder class
     query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS)

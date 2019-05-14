@@ -67,6 +67,7 @@ def test_create_jobs_bad_previous_job_id(remoteci_context,
 
 def test_create_jobs_empty_comment(remoteci_context, components_user_ids):
     data = {'components': components_user_ids}
+    print(remoteci_context.post('/api/v1/jobs', data=data))
     job = remoteci_context.post('/api/v1/jobs', data=data).data
     assert job['job']['comment'] is None
 
@@ -225,7 +226,7 @@ def test_get_all_jobs_with_embed_and_limit(remoteci_context,
     remoteci_context.post('/api/v1/jobs', data=data)
 
     # verify embed with all embedded options
-    query_embed = ('/api/v1/jobs?embed=components&limit=1')
+    query_embed = ('/api/v1/jobs?embed=components&limit=1&offset=0')
     jobs = remoteci_context.get(query_embed).data
 
     assert len(jobs['jobs']) == 1
@@ -291,9 +292,9 @@ def test_where_invalid(admin):
     assert err.status_code == 400
     assert err.data == {
         'status_code': 400,
-        'message': 'Invalid where key: "id"',
+        'message': 'Request malformed',
         'payload': {
-            'error': 'where key must have the following form "key:value"'
+            'errors': ["where: 'id' is not a 'key value csv'"]
         }
     }
 
