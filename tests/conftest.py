@@ -365,6 +365,7 @@ def job_user_id(remoteci_context, components_user_ids, topic_user_id):
     data = {'components_ids': components_user_ids,
             'topic_id': topic_user_id}
     job = remoteci_context.post('/api/v1/jobs/schedule', data=data).data
+    print(job)
     return job['job']['id']
 
 
