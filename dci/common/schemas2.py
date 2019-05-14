@@ -131,3 +131,54 @@ args_schema = {
 def check_and_get_args(raw_args):
     check_json_is_valid(args_schema, raw_args)
     return parse_args(raw_args)
+
+
+###############################################################################
+#                                                                             #
+#                                 User schemas                                #
+#                                                                             #
+###############################################################################
+create_user_properties = {
+    "name": Properties.string,
+    "password": Properties.string,
+    "fullname": Properties.string,
+    "timezone": Properties.string,
+    "email": Properties.email,
+    "team_id": Properties.uuid,
+    "state": Properties.string
+}
+create_user_schema = {
+    "type": "object",
+    "properties": create_user_properties,
+    "required": ["name", "password", "fullname", "email"],
+    "additionalProperties": False,
+}
+
+update_user_properties = create_user_properties.copy()
+update_user_properties.update(
+    {"id": Properties.uuid, "etag": Properties.uuid}
+)
+update_user_schema = {
+    "type": "object",
+    "properties": update_user_properties,
+    "additionalProperties": False,
+}
+
+###############################################################################
+#                                                                             #
+#                            Current User schemas                             #
+#                                                                             #
+###############################################################################
+update_current_user_schema = {
+    "type": "object",
+    "properties": {
+        "id": Properties.uuid,
+        "etag": Properties.uuid,
+        "current_password": Properties.string,
+        "new_password": Properties.string,
+        "fullname": Properties.string,
+        "timezone": Properties.string,
+        "email": Properties.email,
+    },
+    "additionalProperties": False,
+}
