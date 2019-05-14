@@ -13,9 +13,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-
 from __future__ import unicode_literals
+import pytest
+
+from dci.common.exceptions import DCIException
+from dci.common.schemas2 import check_json_is_valid, tag_schema
 
 
 def test_create_tags(admin):
@@ -51,3 +53,10 @@ def test_delete_tag_by_id(admin):
 
     gt = admin.get('/api/v1/tags')
     assert len(gt.data['tags']) == count
+
+
+def test_post_schema():
+    try:
+        check_json_is_valid(tag_schema, {"name": "tag"})
+    except DCIException:
+        pytest.fail("tag_schema is invalid")
