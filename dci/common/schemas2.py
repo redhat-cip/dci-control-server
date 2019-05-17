@@ -248,6 +248,27 @@ tag_schema = {
 
 ###############################################################################
 #                                                                             #
+#                               Product schema                                #
+#                                                                             #
+###############################################################################
+create_product_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "label": Properties.string,
+    "description": Properties.string,
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+}
+create_product_schema = {
+    "type": "object",
+    "properties": create_product_properties,
+    "required": ["name", "team_id"],
+    "additionalProperties": False,
+}
+
+update_product_schema = {"type": "object", "properties": create_product_properties}
+
+###############################################################################
+#                                                                             #
 #                                 User schemas                                #
 #                                                                             #
 ###############################################################################
