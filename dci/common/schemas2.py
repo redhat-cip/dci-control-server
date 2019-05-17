@@ -271,6 +271,32 @@ update_product_schema = {"type": "object", "properties": update_product_properti
 
 ###############################################################################
 #                                                                             #
+#                                Tests schema                                 #
+#                                                                             #
+###############################################################################
+create_test_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "data": with_default(Properties.json, {}),
+}
+create_test_schema = {
+    "type": "object",
+    "properties": create_test_properties,
+    "required": ["name"],
+    "additionalProperties": False,
+}
+
+update_test_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "state": Properties.enum(valid_resource_states),
+    "data": Properties.json,
+}
+update_test_schema = {"type": "object", "properties": update_test_properties}
+
+###############################################################################
+#                                                                             #
 #                                 User schemas                                #
 #                                                                             #
 ###############################################################################

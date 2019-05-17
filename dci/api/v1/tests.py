@@ -24,7 +24,12 @@ from dci.api.v1 import remotecis
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    create_test_schema,
+    update_test_schema,
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import models
 
@@ -37,8 +42,10 @@ _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 @api.route('/tests', methods=['POST'])
 @decorators.login_required
 def create_tests(user):
-    values = v1_utils.common_values_dict()
-    values.update(schemas.test.post(flask.request.json))
+    values = flask.request.json
+    check_json_is_valid(create_test_schema, values)
+    values.update(v1_utils.common_values_dict())
+
     # todo: remove team_id
     if 'team_id' in values:
         del values['team_id']
@@ -62,7 +69,8 @@ def update_tests(user, t_id):
     v1_utils.verify_existence_and_get(t_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    values = schemas.test.put(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(update_test_schema, values)
     values['etag'] = utils.gen_etag()
 
     where_clause = sql.and_(
@@ -104,7 +112,7 @@ def get_tests_to_issues(topic_id):
 
 def get_all_tests_by_team(user, team_id):
     # todo: remove team_id
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
     query.add_extra_condition(_TABLE.c.state != 'archived')
