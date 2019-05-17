@@ -19,6 +19,7 @@ from dci.common.args import parse_args
 from jsonschema import validators, FormatChecker, Draft4Validator
 from jsonschema.exceptions import ValidationError
 
+VALID_RESOURCE_STATE = ['active', 'inactive', 'archived']
 
 uuid_pattern = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
 url_pattern = "^https?://"
@@ -167,7 +168,7 @@ create_job_properties = {
     "comment": Properties.string,
     "previous_job_id": Properties.uuid,
     "update_previous_job_id": Properties.uuid,
-    "state": Properties.enum(['active', 'inactive', 'archived']),
+    "state": Properties.enum(VALID_RESOURCE_STATE),
     "topic_id": Properties.uuid,
     "topic_id_secondary": Properties.uuid,
     "rconfiguration_id": Properties.uuid,
@@ -226,6 +227,35 @@ tag_schema = {
     "type": "object",
     "properties": {"name": Properties.string},
     "required": ["name"],
+    "additionalProperties": False,
+}
+
+###############################################################################
+#                                                                             #
+#                                Feeder schema                                #
+#                                                                             #
+###############################################################################
+create_feeder_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "state": Properties.enum(VALID_RESOURCE_STATE),
+    "data": Properties.json
+}
+create_feeder_schema = {
+    "type": "object",
+    "properties": create_feeder_properties,
+    "required": ["name", "team_id"],
+    "additionalProperties": False,
+}
+
+update_feeder_properties = create_feeder_properties.copy()
+update_feeder_properties.update({
+    "id": Properties.uuid,
+    "etag": Properties.uuid
+})
+update_feeder_schema = {
+    "type": "object",
+    "properties": update_feeder_properties,
     "additionalProperties": False,
 }
 
