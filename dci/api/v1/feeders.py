@@ -24,7 +24,12 @@ from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    create_feeder_schema,
+    update_feeder_schema,
+    check_and_get_args
+)
 from dci.common import signature
 from dci.common import utils
 from dci.db import embeds
@@ -41,8 +46,9 @@ _EMBED_MANY = {
 @api.route('/feeders', methods=['POST'])
 @decorators.login_required
 def create_feeders(user):
-    values = v1_utils.common_values_dict()
-    values.update(schemas.feeder.post(flask.request.json))
+    values = flask.request.json
+    check_json_is_valid(create_feeder_schema, values)
+    values.update(v1_utils.common_values_dict())
 
     if user.is_not_in_team(values['team_id']):
         raise dci_exc.Unauthorized()
@@ -70,7 +76,7 @@ def create_feeders(user):
 @api.route('/feeders', methods=['GET'])
 @decorators.login_required
 def get_all_feeders(user):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder(_TABLE, args, _F_COLUMNS)
 
@@ -104,7 +110,8 @@ def get_feeder_by_id(user, f_id):
 @decorators.login_required
 def put_feeder(user, f_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = schemas.feeder.put(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(update_feeder_schema, values)
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
 
     if not user.is_in_team(feeder['team_id']):

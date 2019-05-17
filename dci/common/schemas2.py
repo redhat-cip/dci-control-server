@@ -290,3 +290,29 @@ update_current_user_schema = {
         "timezone": Properties.string,
     },
 }
+
+###############################################################################
+#                                                                             #
+#                                Feeder schema                                #
+#                                                                             #
+###############################################################################
+create_feeder_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "data": with_default(Properties.json, {}),
+}
+create_feeder_schema = {
+    "type": "object",
+    "properties": create_feeder_properties,
+    "required": ["name", "team_id"],
+    "additionalProperties": False,
+}
+
+update_feeder_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "state": Properties.enum(valid_resource_states),
+    "data": Properties.json,
+}
+update_feeder_schema = {"type": "object", "properties": update_feeder_properties}
