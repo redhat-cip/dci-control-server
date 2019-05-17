@@ -26,7 +26,12 @@ from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
 from dci.common import audits
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    create_product_schema,
+    update_product_schema,
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import models
 
@@ -42,8 +47,9 @@ _EMBED_MANY = {
 @decorators.login_required
 @audits.log
 def create_product(user):
-    values = v1_utils.common_values_dict()
-    values.update(schemas.product.post(flask.request.json))
+    values = flask.request.json
+    check_json_is_valid(create_product_schema, values)
+    values.update(v1_utils.common_values_dict())
 
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
@@ -69,7 +75,8 @@ def create_product(user):
 def update_product(user, product_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = schemas.product.put(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(update_product_schema, values)
 
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
@@ -97,7 +104,7 @@ def update_product(user, product_id):
 @api.route('/products', methods=['GET'])
 @decorators.login_required
 def get_all_products(user):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
