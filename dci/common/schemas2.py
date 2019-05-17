@@ -261,6 +261,36 @@ update_feeder_schema = {
 
 ###############################################################################
 #                                                                             #
+#                               Product schema                                #
+#                                                                             #
+###############################################################################
+create_product_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "label": Properties.string,
+    "description": Properties.string,
+    "state": Properties.enum(VALID_RESOURCE_STATE),
+}
+create_product_schema = {
+    "type": "object",
+    "properties": create_product_properties,
+    "required": ["name", "team_id"],
+    "additionalProperties": False,
+}
+
+update_product_properties = create_product_properties.copy()
+update_product_properties.update({
+    "id": Properties.uuid,
+    "etag": Properties.uuid
+})
+update_product_schema = {
+    "type": "object",
+    "properties": update_product_properties,
+    "additionalProperties": False,
+}
+
+###############################################################################
+#                                                                             #
 #                                 User schemas                                #
 #                                                                             #
 ###############################################################################
