@@ -27,7 +27,14 @@ from dci.api.v1 import utils as v1_utils
 from dci import dci_config
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    create_remoteci_schema,
+    update_remoteci_schema,
+    rconfiguration_schema,
+    check_and_get_args
+)
+
 from dci.common import signature
 from dci.common import utils
 from dci.db import embeds
@@ -49,8 +56,9 @@ _RCONFIGURATIONS_COLUMNS = v1_utils.get_columns_name_with_objects(
 @api.route('/remotecis', methods=['POST'])
 @decorators.login_required
 def create_remotecis(user):
-    values = v1_utils.common_values_dict()
-    values.update(schemas.remoteci.post(flask.request.json))
+    values = flask.request.json
+    check_json_is_valid(create_remoteci_schema, values)
+    values.update(v1_utils.common_values_dict())
 
     if user.is_not_in_team(values['team_id']):
         raise dci_exc.Unauthorized()
@@ -78,7 +86,7 @@ def create_remotecis(user):
 @api.route('/remotecis', methods=['GET'])
 @decorators.login_required
 def get_all_remotecis(user, t_id=None):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     # build the query thanks to the QueryBuilder class
     query = v1_utils.QueryBuilder(_TABLE, args, _R_COLUMNS,
@@ -114,8 +122,8 @@ def get_remoteci_by_id(user, r_id):
 def put_remoteci(user, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
-    values = schemas.remoteci.put(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(update_remoteci_schema, values)
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
@@ -292,23 +300,22 @@ def put_api_secret(user, r_id):
 @api.route('/remotecis/<uuid:r_id>/rconfigurations', methods=['POST'])
 @decorators.login_required
 def create_configuration(user, r_id):
-    values_configuration = v1_utils.common_values_dict()
-    values_configuration.update(
-        schemas.rconfiguration.post(flask.request.json))
-    values_configuration.update(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(rconfiguration_schema, values)
+    values.update(v1_utils.common_values_dict())
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
     if user.is_not_in_team(remoteci['team_id']):
         raise dci_exc.Unauthorized()
 
-    rconfiguration_id = values_configuration.get('id')
+    rconfiguration_id = values.get('id')
 
     with flask.g.db_conn.begin():
         try:
             # insert configuration
             query = _RCONFIGURATIONS.insert().\
-                values(**values_configuration)
+                values(**values)
             flask.g.db_conn.execute(query)
             # insert join between rconfiguration and remoteci
             values_join = {
@@ -321,8 +328,8 @@ def create_configuration(user, r_id):
             raise dci_exc.DCIException('Integrity Error: %s' % str(ie))
 
     return flask.Response(
-        json.dumps({'rconfiguration': values_configuration}), 201,
-        headers={'ETag': values_configuration['etag']},
+        json.dumps({'rconfiguration': values}), 201,
+        headers={'ETag': values['etag']},
         content_type='application/json'
     )
 
@@ -330,7 +337,7 @@ def create_configuration(user, r_id):
 @api.route('/remotecis/<uuid:r_id>/rconfigurations', methods=['GET'])
 @decorators.login_required
 def get_all_configurations(user, r_id):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
     if not user.is_in_team(remoteci['team_id']):
