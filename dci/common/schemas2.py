@@ -356,3 +356,45 @@ create_feeder_schema = {
 update_feeder_properties = create_feeder_properties.copy()
 update_feeder_properties.update({"state": Properties.enum(valid_resource_states)})
 update_feeder_schema = {"type": "object", "properties": update_feeder_properties}
+
+
+###############################################################################
+#                                                                             #
+#                              Remote CI schema                                #
+#                                                                             #
+###############################################################################
+create_remoteci_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "data": with_default(Properties.json, {}),
+    "public": with_default(Properties.boolean, False),
+}
+create_remoteci_schema = {
+    "type": "object",
+    "properties": create_remoteci_properties,
+    "required": ["name", "team_id"],
+    "additionalProperties": False,
+}
+
+update_remoteci_properties = create_remoteci_properties.copy()
+update_remoteci_properties.update({"state": Properties.enum(valid_resource_states)})
+update_remoteci_schema = {"type": "object", "properties": update_remoteci_properties}
+
+###############################################################################
+#                                                                             #
+#                        Remote CI Configuration schema                       #
+#                                                                             #
+###############################################################################
+rconfiguration_properties = {
+    "name": Properties.string,
+    "topic_id": Properties.uuid,
+    "component_types": with_default(Properties.array, None),
+    "data": with_default(Properties.json, {}),
+}
+rconfiguration_schema = {
+    "type": "object",
+    "properties": rconfiguration_properties,
+    "required": ["name", "topic_id"],
+    "additionalProperties": False,
+}
