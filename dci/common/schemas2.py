@@ -395,3 +395,41 @@ rconfiguration_schema = {
     "required": ["name", "topic_id"],
     "additionalProperties": False,
 }
+
+###############################################################################
+#                                                                             #
+#                                 Component schema                            #
+#                                                                             #
+###############################################################################
+create_component_properties = {
+    "name": Properties.string,
+    "title": with_default(Properties.string, None),
+    "message": with_default(Properties.string, None),
+    "canonical_project_name": with_default(Properties.string, None),
+    "export_control": with_default(Properties.boolean, True),
+    "url": with_default(Properties.url, None),
+    "type": Properties.string,
+    "topic_id": Properties.uuid,
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "data": with_default(Properties.json, {}),
+}
+create_component_schema = {
+    "type": "object",
+    "properties": create_component_properties,
+    "required": ["name", "type", "topic_id"],
+    "additionalProperties": False,
+}
+
+update_component_properties = create_component_properties.copy()
+update_component_properties.update(
+    {
+        "export_control": Properties.boolean,
+        "data": Properties.json,
+        "title": Properties.string,
+        "message": Properties.string,
+        "canonical_project_name": Properties.string,
+        "url": Properties.url,
+        "state": Properties.enum(valid_resource_states),
+    }
+)
+update_component_schema = {"type": "object", "properties": update_component_properties}
