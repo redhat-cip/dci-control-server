@@ -178,13 +178,8 @@ def test_where_invalid(admin, topic_id):
     err = admin.get('/api/v1/topics/%s/components?where=id' % topic_id)
 
     assert err.status_code == 400
-    assert err.data == {
-        'status_code': 400,
-        'message': 'Invalid where key: "id"',
-        'payload': {
-            'error': 'where key must have the following form "key:value"'
-        }
-    }
+    assert err.data['message'] == "Request malformed"
+    assert err.data['payload']['error'] == "where: 'id' is not a 'key value csv'"
 
 
 def test_get_component_by_id_or_name(admin, topic_id):
