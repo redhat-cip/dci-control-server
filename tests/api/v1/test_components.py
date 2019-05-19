@@ -180,9 +180,9 @@ def test_where_invalid(admin, topic_id):
     assert err.status_code == 400
     assert err.data == {
         'status_code': 400,
-        'message': 'Invalid where key: "id"',
+        'message': 'Request malformed',
         'payload': {
-            'error': 'where key must have the following form "key:value"'
+            'errors': ["where: 'id' is not a 'key value csv'"]
         }
     }
 

@@ -32,7 +32,12 @@ from dci.api.v1 import tags
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    create_component_schema,
+    update_component_schema,
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
@@ -89,8 +94,9 @@ def _get_latest_components():
 @api.route('/components', methods=['POST'])
 @decorators.login_required
 def create_components(user):
-    values = v1_utils.common_values_dict()
-    values.update(schemas.component.post(flask.request.json))
+    values = flask.request.json
+    check_json_is_valid(create_component_schema, values)
+    values.update(v1_utils.common_values_dict())
 
     if str(values['topic_id']) not in v1_utils.user_topic_ids(user):
         raise dci_exc.Unauthorized()
@@ -115,7 +121,8 @@ def update_components(user, c_id):
     if str(component['topic_id']) not in v1_utils.user_topic_ids(user):
         raise dci_exc.Unauthorized()
 
-    values = schemas.component.put(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(update_component_schema, values)
     values['etag'] = utils.gen_etag()
 
     where_clause = sql.and_(
@@ -139,7 +146,7 @@ def update_components(user, c_id):
 def get_all_components(user, topic_id):
     """Get all components of a topic."""
 
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder(_TABLE, args, _C_COLUMNS)
 
@@ -216,7 +223,7 @@ def list_components_files(user, c_id):
                                               models.TOPICS)
     export_control.verify_access_to_topic(user, topic)
 
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder(models.COMPONENTFILES, args, _CF_COLUMNS)
     query.add_extra_condition(models.COMPONENTFILES.c.component_id == c_id)
