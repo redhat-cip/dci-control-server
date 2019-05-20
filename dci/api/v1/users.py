@@ -27,7 +27,7 @@ from dci.common import exceptions as dci_exc
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
-from dci.common.schemas2 import (
+from dci.common.schemas import (
     check_json_is_valid,
     create_user_schema,
     update_user_schema,

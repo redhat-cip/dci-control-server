@@ -16,7 +16,7 @@
 import pytest
 
 from dci.common.exceptions import DCIException
-from dci.common.schemas2 import check_json_is_valid, args_schema
+from dci.common.schemas import check_json_is_valid, args_schema
 from dci.common.args import parse_args
 
 

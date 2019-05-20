@@ -1,740 +1,581 @@
-# -*- coding: utf-8 -*-
+# -*- encoding: utf-8 -*-
 #
-# Copyright (C) 2015-2016 Red Hat, Inc
+# Copyright 2018 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
 # a copy of the License at
 #
-# http://www.apache.org/licenses/LICENSE-2.0
+#    http://www.apache.org/licenses/LICENSE-2.0
 #
 # Unless required by applicable law or agreed to in writing, software
 # distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-from __future__ import unicode_literals
 
-import collections
-import itertools
-import pytz
-import re
-import six
-import uuid
-import voluptuous as v
-from six.moves.urllib.parse import urlparse
-
-from dci.common import exceptions
+from dci.common.exceptions import DCIException
+from dci.common.args import parse_args
+from jsonschema import validators, FormatChecker, Draft4Validator
+from jsonschema.exceptions import ValidationError
 
 
-# Url validator is not powerfull enough let unleash its power
-@v.message('expected a URL', cls=v.UrlInvalid)
-def Url(value):
-    try:
-        parsed = urlparse(value)
-        if not parsed.scheme or not parsed.netloc:
-            raise v.UrlInvalid("must have a URL scheme and host")
-        return value
-    except Exception:
-        raise ValueError
+def allow_none(property):
+    result = property.copy()
+    result["type"] = [property["type"], "null"]
+    return result
 
 
-def UUID(value):
-    try:
-        if type(value) == uuid.UUID:
-            return value
-        else:
-            return uuid.UUID(value)
-    except Exception:
-        raise ValueError
+def with_default(property, default):
+    result = property.copy()
+    result["default"] = default
+    if default is None:
+        return allow_none(result)
+    return result
 
 
-# Source of the regexp: http://emailregex.com/
-def Email(value):
-    try:
-        pattern = r"(^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$)"
-        if not re.match(pattern, value):
-            raise Exception
-        return value
-    except Exception:
-        raise ValueError
-
-
-def Timezone(value):
-    try:
-        pytz.timezone(value)
-        return value
-    except Exception:
-        raise ValueError
-
-
-VALID_STATUS_UPDATE = ['new', 'pre-run', 'running', 'post-run',
-                       'success', 'failure', 'killed', 'error']
-
-VALID_RESOURCE_STATE = ['active', 'inactive', 'archived']
-
-INVALID_LIST = 'not a valid list'
-INVALID_UUID = 'not a valid uuid'
-INVALID_JSON = 'not a valid json'
-INVALID_STRING = 'not a valid string'
-INVALID_URL = 'not a valid URL'
-INVALID_EMAIL = 'not a valid email'
-INVALID_TIMEZONE = 'not a valid timezone'
-
-INVALID_PRODUCT = 'not a valid product id'
-INVALID_TEAM = 'not a valid team id'
-INVALID_TEST = 'not a valid test id'
-INVALID_TOPIC = 'not a valid topic id'
-INVALID_REMOTE_CI = 'not a valid remoteci id'
-INVALID_RCONFIGURATION = 'not a valid rconfiguration'
-INVALID_JOB = 'not a valid job id'
-INVALID_JOB_STATE = 'not a valid jobstate id'
-INVALID_OFFSET = 'not a valid offset integer (must be greater than 0)'
-INVALID_LIMIT = 'not a valid limit integer (must be greater than 0)'
-
-INVALID_REQUIRED = 'required key not provided'
-INVALID_OBJECT = 'not a valid object'
-INVALID_STATUS_UPDATE = ('not a valid status update (must be %s)' %
-                         ' or '.join(VALID_STATUS_UPDATE))
-INVALID_RESOURCE_STATE = ('not a valid resource state (must be %s)' %
-                          ' or '.join(VALID_RESOURCE_STATE))
-
-INVALID_TYPE = 'not a valid string'
-
-UUID_FIELD = v.All(six.text_type, msg=INVALID_UUID)
-DATA_FIELD = {v.Optional('data', default={}): dict}
-
-
-def dict_merge(*dict_list):
-    """recursively merges dict's. not just simple a['key'] = b['key'], if
-    both a and bhave a key who's value is a dict then dict_merge is called
-    on both values and the result stored in the returned dictionary.
-    """
-    result = collections.defaultdict(dict)
-    dicts_items = itertools.chain(*[six.iteritems(d or {}) for d in dict_list])
-
-    for key, value in dicts_items:
-        src = result[key]
-        if isinstance(src, dict) and isinstance(value, dict):
-            result[key] = dict_merge(src, value)
-        elif isinstance(src, dict) or isinstance(src, six.text_type):
-            result[key] = value
-        elif hasattr(src, "__iter__") and hasattr(value, "__iter__"):
-            result[key] += value
-        else:
-            result[key] = value
-
-    return dict(result)
-
-
-class Schema(v.Schema):
-    """Override voluptuous schema to return our own error"""
-
-    error_messages = {
-        'expected dict': INVALID_JSON,
-        'expected unicode': INVALID_STRING,
-        'expected str': INVALID_STRING,
-        'expected a URL': INVALID_URL,
-        'expected a valid email': INVALID_EMAIL,
-        'expected a dictionary': INVALID_OBJECT,
-        'expected list': INVALID_LIST,
-        'expected a valid timezone': INVALID_TIMEZONE
+class Properties(object):
+    string = {"type": "string"}
+    uuid = {
+        "type": "string",
+        "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
     }
+    email = {"type": "string", "format": "email"}
+    url = {"type": "string", "format": "uri", "pattern": "^https?://"}
+    json = {"type": "object"}
+    array = {"type": "array"}
+    integer = {"type": "integer"}
+    boolean = {"type": "boolean"}
+    key_value_csv = {"type": "string", "is_key_value_csv": True}
+    positive_integer = {"type": "integer", "minimum": 1}
+    positive_or_null_integer = {"type": "integer", "minimum": 0}
+    string_integer = {"type": "string", "pattern": "^([+-]?[1-9]\d*|0)$"}
+    positive_string_integer = {"type": "string", "pattern": "^[1-9]\d*$"}
+    positive_or_null_string_integer = {"type": "string", "pattern": "^\d+$"}
 
-    def __init__(self, schema, required=False, extra=v.REMOVE_EXTRA):
-        super(Schema, self).__init__(schema, required, extra)
-
-    def __call__(self, data):
-        def format_error(error):
-            msg = error.error_message
-            error.error_message = self.error_messages.get(msg, msg)
-            if error.path:
-                path = six.text_type(error.path.pop())
-                return {path: format_error(error)}
-            else:
-                return error.error_message
-
-        try:
-            return super(Schema, self).__call__(data)
-        except v.MultipleInvalid as exc:
-            errors = format_error(exc.errors.pop())
-            for error in exc.errors:
-                errors = dict_merge(errors, format_error(error))
-            raise exceptions.DCIException('Request malformed',
-                                          {'errors': errors})
+    @staticmethod
+    def enum(accepted_values):
+        return {"type": "string", "enum": accepted_values}
 
 
-DCISchema = collections.namedtuple('DCISchema', ['post', 'put'])
+def _is_key_value_csv(validator, value, instance, schema):
+    for element in instance.split(","):
+        if len(element.split(":")) != 2:
+            yield ValidationError("'%s' is not a 'key value csv'" % instance)
 
 
-def schema_factory(schema):
-    schema_post = {}
+all_validators = dict(Draft4Validator.VALIDATORS)
+all_validators["is_key_value_csv"] = _is_key_value_csv
 
-    for key, value in six.iteritems(schema):
-        if not isinstance(key, v.Marker):
-            key = v.Required(key)
-        schema_post[key] = value
 
-    return DCISchema(Schema(schema_post), Schema(schema))
+def extend_with_default(validator_class):
+    validate_properties = validator_class.VALIDATORS["properties"]
+
+    def set_defaults(validator, properties, instance, schema):
+        for property, subschema in properties.items():
+            if "default" in subschema:
+                instance.setdefault(property, subschema["default"])
+
+        for error in validate_properties(validator, properties, instance, schema):
+            yield error
+
+    return validators.extend(validator_class, {"properties": set_defaults})
+
+
+DCIValidator = extend_with_default(
+    validators.create(Draft4Validator.META_SCHEMA, validators=all_validators)
+)
+
+
+def _get_error_message(error):
+    if error.validator == "pattern":
+        custom_error_messages = {
+            "uuid": "is not a valid 'uuid'",
+            "url": "is not a valid 'url'",
+            "string_integer": "is not an integer",
+            "positive_string_integer": "is not a positive integer",
+            "positive_or_null_string_integer": "is not a positive or null integer",
+        }
+        property_name = error.relative_path[0]
+        value = error.instance
+        msg = custom_error_messages.get(property_name, error.message)
+        return "%s: '%s' %s" % (property_name, value, msg)
+
+    if (
+        error.validator == "type"
+        and error.validator_value in ["string", "array", "integer"]
+    ) or (error.validator in ["minimum", "is_key_value_csv"]):
+        property_name = error.path[-1]
+        return "%s: %s" % (property_name, error.message)
+
+    return error.message
+
+
+def check_json_is_valid(schema, json):
+    v = DCIValidator(schema, format_checker=FormatChecker())
+    errors = []
+    for error in sorted(v.iter_errors(json), key=str):
+        errors.append(_get_error_message(error))
+    if len(errors):
+        raise DCIException("Request malformed", {"errors": errors, "error": errors[0]})
+
+
+valid_resource_states = ["active", "inactive", "archived"]
+
 
 ###############################################################################
 #                                                                             #
-#                                 Args schemas                                #
+#                                 Args schema                                 #
 #                                                                             #
 ###############################################################################
-
-
-split_coerce = v.Coerce(lambda s: [] if isinstance(s, list) else s.split(','))
-args = Schema({
-    v.Optional('limit', default=None): v.Any(v.All(v.Coerce(int), v.Range(0),
-                                                   msg=INVALID_LIMIT), None),
-    v.Optional('offset', default=None): v.Any(v.All(v.Coerce(int), v.Range(0),
-                                                    msg=INVALID_OFFSET), None),
-    v.Optional('sort', default=[]): split_coerce,
-    v.Optional('where', default=[]): split_coerce,
-    v.Optional('embed', default=[]): split_coerce
-}, extra=v.REMOVE_EXTRA)
-
-###############################################################################
-#                                                                             #
-#                                 Base schemas                                #
-#                                                                             #
-###############################################################################
-
-base = {
-    'name': six.text_type,
+args_schema = {
+    "type": "object",
+    "properties": {
+        "limit": with_default(Properties.positive_string_integer, None),
+        "offset": with_default(Properties.positive_or_null_string_integer, None),
+        "sort": Properties.string,
+        "where": Properties.key_value_csv,
+        "embed": Properties.string,
+    },
+    "dependencies": {
+        "limit": {"required": ["offset"]},
+        "offset": {"required": ["limit"]},
+    },
+    "additionalProperties": False,
 }
 
 
-componenttype = schema_factory(base)
+def check_and_get_args(raw_args):
+    check_json_is_valid(args_schema, raw_args)
+    return parse_args(raw_args)
+
 
 ###############################################################################
 #                                                                             #
-#                                 Team schemas                                #
+#                              Analytics schema                               #
 #                                                                             #
 ###############################################################################
+analytic_properties = {
+    "name": Properties.string,
+    "type": Properties.string,
+    "url": with_default(Properties.url, None),
+    "data": Properties.json,
+}
+create_analytic_schema = {
+    "type": "object",
+    "properties": analytic_properties,
+    "required": ["name", "type"],
+    "additionalProperties": False,
+}
+update_analytic_schema = {"type": "object", "properties": analytic_properties}
 
-team = dict_merge(base, {
-    v.Optional('country', default=None): v.Any(six.text_type, None),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-    v.Optional('external', default=True): bool,
-    v.Optional('parent_id', default=None): v.Any(v.All(UUID, msg=INVALID_TEAM),
-                                                 None),
-})
-
-team_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('country'): six.text_type,
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
-    v.Optional('external'): bool,
-    v.Optional('parent_id'): v.Any(UUID, msg=INVALID_TEAM),
+###############################################################################
+#                                                                             #
+#                                 Job schema                                  #
+#                                                                             #
+###############################################################################
+create_job_properties = {
+    "remoteci_id": Properties.uuid,
+    "team_id": Properties.uuid,
+    "components": Properties.array,
+    "comment": with_default(Properties.string, None),
+    "previous_job_id": with_default(Properties.uuid, None),
+    "update_previous_job_id": with_default(Properties.uuid, None),
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "topic_id": with_default(Properties.uuid, None),
+    "topic_id_secondary": with_default(Properties.uuid, None),
+    "rconfiguration_id": with_default(Properties.uuid, None),
+}
+create_job_schema = {
+    "type": "object",
+    "properties": create_job_properties,
+    "required": ["components"],
+    "additionalProperties": False,
 }
 
-team = DCISchema(schema_factory(team).post,
-                 Schema(team_put))
+update_job_properties = {
+    "comment": Properties.string,
+    "status": Properties.enum(
+        [
+            "new",
+            "pre-run",
+            "running",
+            "post-run",
+            "success",
+            "failure",
+            "killed",
+            "error",
+        ]
+    ),
+    "state": Properties.enum(valid_resource_states),
+}
+update_job_schema = {"type": "object", "properties": update_job_properties}
 
-###############################################################################
-#                                                                             #
-#                                 Test schemas                                #
-#                                                                             #
-###############################################################################
 
-test = dict_merge(base, DATA_FIELD, {
-    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-})
-
-test_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('data'): dict,
-    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
+schedule_job_schema = {
+    "type": "object",
+    "properties": {
+        "remoteci_id": Properties.uuid,
+        "dry_run": with_default(Properties.boolean, False),
+        "topic_id": Properties.uuid,
+        "topic_id_secondary": with_default(Properties.uuid, None),
+        "components_ids": with_default(Properties.array, []),
+    },
+    "required": ["topic_id"],
+    "addiadditionalProperties": False,
 }
 
-test = DCISchema(schema_factory(test).post, Schema(test_put))
+upgrade_job_schema = {
+    "type": "object",
+    "properties": {"job_id": Properties.uuid},
+    "required": ["job_id"],
+    "additionalProperties": False,
+}
+
+###############################################################################
+#                                                                             #
+#                                 Tag schema                                  #
+#                                                                             #
+###############################################################################
+tag_schema = {
+    "type": "object",
+    "properties": {"name": Properties.string},
+    "required": ["name"],
+}
+
+###############################################################################
+#                                                                             #
+#                               Product schema                                #
+#                                                                             #
+###############################################################################
+create_product_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "label": with_default(Properties.string, None),
+    "description": with_default(Properties.string, None),
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+}
+create_product_schema = {
+    "type": "object",
+    "properties": create_product_properties,
+    "required": ["name", "team_id"],
+    "additionalProperties": False,
+}
+update_product_properties = {
+    "name": Properties.string,
+    "description": Properties.string,
+    "state": Properties.enum(valid_resource_states),
+    "team_id": Properties.uuid,
+}
+update_product_schema = {"type": "object", "properties": update_product_properties}
+
+###############################################################################
+#                                                                             #
+#                                Tests schema                                 #
+#                                                                             #
+###############################################################################
+create_test_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "data": with_default(Properties.json, {}),
+}
+create_test_schema = {
+    "type": "object",
+    "properties": create_test_properties,
+    "required": ["name"],
+    "additionalProperties": False,
+}
+
+update_test_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "state": Properties.enum(valid_resource_states),
+    "data": Properties.json,
+}
+update_test_schema = {"type": "object", "properties": update_test_properties}
 
 ###############################################################################
 #                                                                             #
 #                                 User schemas                                #
 #                                                                             #
 ###############################################################################
-
-user = dict_merge(base, {
-    v.Optional('password'): six.text_type,
-    'fullname': six.text_type,
-    'email': v.Any(Email, msg=INVALID_EMAIL),
-    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('timezone'): v.Any(Timezone, msg=INVALID_TIMEZONE),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-})
-
-user_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('fullname'): six.text_type,
-    v.Optional('email'): v.Any(Email, msg=INVALID_EMAIL),
-    v.Optional('timezone'): v.Any(Timezone, msg=INVALID_TIMEZONE),
-    v.Optional('password'): six.text_type,
-    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
+create_user_properties = {
+    "name": Properties.string,
+    "fullname": Properties.string,
+    "email": Properties.email,
+    "timezone": Properties.string,
+    "password": Properties.string,
+    "team_id": Properties.uuid,
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+}
+create_user_schema = {
+    "type": "object",
+    "properties": create_user_properties,
+    "required": ["name", "fullname", "email"],
+    "additionalProperties": False,
 }
 
-user = DCISchema(schema_factory(user).post, Schema(user_put))
+update_user_properties = {
+    "name": Properties.string,
+    "fullname": Properties.string,
+    "email": Properties.email,
+    "timezone": Properties.string,
+    "password": Properties.string,
+    "team_id": Properties.uuid,
+    "state": Properties.enum(valid_resource_states),
+}
+update_user_schema = {"type": "object", "properties": update_user_properties}
 
 ###############################################################################
 #                                                                             #
 #                            Current User schemas                             #
 #                                                                             #
 ###############################################################################
-
-current_user_put = {
-    'current_password': six.text_type,
-    v.Optional('new_password'): six.text_type,
-    v.Optional('fullname'): six.text_type,
-    v.Optional('email'): v.Any(Email, msg=INVALID_EMAIL),
-    v.Optional('timezone'): v.Any(Timezone, msg=INVALID_TIMEZONE),
+update_current_user_schema = {
+    "type": "object",
+    "properties": {
+        "current_password": Properties.string,
+        "new_password": Properties.string,
+        "fullname": Properties.string,
+        "email": Properties.email,
+        "timezone": Properties.string,
+    },
 }
 
-current_user = DCISchema(schema_factory({}).post, Schema(current_user_put))
-
-
 ###############################################################################
 #                                                                             #
-#                              Component schemas                              #
+#                                Feeder schema                                #
 #                                                                             #
 ###############################################################################
-
-component = dict_merge(base, DATA_FIELD, {
-    v.Optional('title', default=None): v.Any(six.text_type, None),
-    v.Optional('message', default=None): v.Any(six.text_type, None),
-    v.Optional('canonical_project_name', default=None): v.Any(six.text_type,
-                                                              None),
-    # True if the component can be exported to non US countries.
-    v.Optional('export_control', default=True): bool,
-    v.Optional('url', default=None): v.Any(Url(), None),
-    'type': six.text_type,
-    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-})
-
-component_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('export_control'): bool,
-    v.Optional('data'): dict,
-    v.Optional('title'): six.text_type,
-    v.Optional('message'): six.text_type,
-    v.Optional('canonical_project_name'): six.text_type,
-    v.Optional('url'): v.Any(None, Url()),
-    v.Optional('type'): six.text_type,
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
+create_feeder_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "data": with_default(Properties.json, {}),
+}
+create_feeder_schema = {
+    "type": "object",
+    "properties": create_feeder_properties,
+    "required": ["name", "team_id"],
+    "additionalProperties": False,
 }
 
-component = DCISchema(schema_factory(component).post,
-                      Schema(component_put))
+update_feeder_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "state": Properties.enum(valid_resource_states),
+    "data": Properties.json,
+}
+update_feeder_schema = {"type": "object", "properties": update_feeder_properties}
+
 
 ###############################################################################
 #                                                                             #
-#                             Remote CI schemas                               #
+#                              Remote CI schema                                #
 #                                                                             #
 ###############################################################################
-
-remoteci = dict_merge(base, DATA_FIELD, {
-    'team_id': v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('public', default=False): bool,
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-})
-
-remoteci_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('data'): dict,
-    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('public'): bool,
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
+create_remoteci_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "data": with_default(Properties.json, {}),
+    "public": with_default(Properties.boolean, False),
+}
+create_remoteci_schema = {
+    "type": "object",
+    "properties": create_remoteci_properties,
+    "required": ["name", "team_id"],
+    "additionalProperties": False,
 }
 
-remoteci = DCISchema(schema_factory(remoteci).post, Schema(remoteci_put))
-
+update_remoteci_properties = {
+    "name": Properties.string,
+    "team_id": Properties.uuid,
+    "state": Properties.enum(valid_resource_states),
+    "data": Properties.json,
+    "public": Properties.boolean,
+}
+update_remoteci_schema = {"type": "object", "properties": update_remoteci_properties}
 
 ###############################################################################
 #                                                                             #
-#                                Job schemas                                  #
+#                        Remote CI Configuration schema                       #
 #                                                                             #
 ###############################################################################
-
-job = {
-    v.Optional('remoteci_id'): v.Any(UUID, msg=INVALID_REMOTE_CI),
-    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
-    'components': list,
-    v.Optional('comment', default=None): v.Any(six.text_type, None),
-    v.Optional('previous_job_id', default=None): v.Any(v.All(UUID,
-                                                             msg=INVALID_JOB),
-                                                       None),
-    v.Optional('update_previous_job_id', default=None): v.Any(
-        v.All(UUID, msg=INVALID_JOB), None
-    ),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-    v.Optional('topic_id', default=None): v.Any(v.All(UUID, msg=INVALID_TOPIC),
-                                                None),
-    v.Optional('topic_id_secondary', default=None): v.Any(v.All(UUID, msg=INVALID_TOPIC),  # noqa
-                                                None),
-    v.Optional('rconfiguration_id', default=None): v.Any(
-        v.All(UUID, msg=INVALID_RCONFIGURATION), None
-    )
+rconfiguration_properties = {
+    "name": Properties.string,
+    "topic_id": Properties.uuid,
+    "component_types": with_default(Properties.array, None),
+    "data": with_default(Properties.json, {}),
+}
+rconfiguration_schema = {
+    "type": "object",
+    "properties": rconfiguration_properties,
+    "required": ["name", "topic_id"],
+    "additionalProperties": False,
 }
 
-job_put = {
-    v.Optional('comment'): six.text_type,
-    v.Optional('status'): v.Any(*VALID_STATUS_UPDATE,
-                                msg=INVALID_STATUS_UPDATE),
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
+###############################################################################
+#                                                                             #
+#                                 Component schema                            #
+#                                                                             #
+###############################################################################
+create_component_properties = {
+    "name": Properties.string,
+    "title": with_default(Properties.string, None),
+    "message": with_default(Properties.string, None),
+    "canonical_project_name": with_default(Properties.string, None),
+    "export_control": with_default(Properties.boolean, True),
+    "url": with_default(Properties.url, None),
+    "type": Properties.string,
+    "topic_id": Properties.uuid,
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "data": with_default(Properties.json, {}),
+}
+create_component_schema = {
+    "type": "object",
+    "properties": create_component_properties,
+    "required": ["name", "type", "topic_id"],
+    "additionalProperties": False,
 }
 
-job = DCISchema(schema_factory(job).post, Schema(job_put))
-
-job_schedule = {
-    v.Optional('remoteci_id'): v.Any(UUID, msg=INVALID_REMOTE_CI),
-    v.Optional('dry_run', default=False): bool,
-    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
-    v.Optional('topic_id_secondary', default=None): v.Any(v.All(UUID,
-                                                          msg=INVALID_TOPIC),
-                                                          None),
-    v.Optional('components_ids', default=[]): list
+update_component_properties = {
+    "name": Properties.string,
+    "title": Properties.string,
+    "message": Properties.string,
+    "canonical_project_name": Properties.string,
+    "export_control": Properties.boolean,
+    "url": Properties.url,
+    "type": Properties.string,
+    "topic_id": Properties.uuid,
+    "state": Properties.enum(valid_resource_states),
+    "data": Properties.json,
 }
-
-job_schedule = schema_factory(job_schedule)
-
-
-job_upgrade = {
-    'job_id': v.Any(UUID, msg=INVALID_JOB)
-}
-
-job_upgrade = schema_factory(job_upgrade)
-
-
-job_schedule_template = {
-    v.Optional('remoteci_id'): v.Any(UUID, msg=INVALID_REMOTE_CI),
-    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
-
-}
-
-job_schedule_template = schema_factory(job_schedule_template)
-
-###############################################################################
-#                                                                             #
-#                             Job State schemas                               #
-#                                                                             #
-###############################################################################
-
-jobstate = {
-    'status': six.text_type,
-    'job_id': v.Any(UUID, msg=INVALID_JOB),
-    v.Optional('comment', default=None): v.Any(six.text_type, None),
-}
-
-jobstate = schema_factory(jobstate)
-
-###############################################################################
-#                                                                             #
-#                                File schemas                                 #
-#                                                                             #
-###############################################################################
-
-file = dict_merge(base, {
-    v.Optional('content', default=''): six.text_type,
-    v.Optional('md5', default=None): v.Any(six.text_type, None),
-    v.Optional('mime', default=None): v.Any(six.text_type, None),
-    v.Optional('jobstate_id', default=None): v.Any(
-        v.All(UUID, msg=INVALID_JOB_STATE), None
-    ),
-    v.Optional('job_id', default=None): v.Any(
-        v.All(UUID, msg=INVALID_JOB), None
-    ),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-    v.Optional('test_id', default=None): v.Any(
-        v.All(UUID, msg=INVALID_TEST), None
-    )
-})
-
-file = schema_factory(file)
-
-file_upload_certification = schema_factory({
-    'username': six.text_type,
-    'password': six.text_type,
-    'certification_id': six.text_type,
-})
-
-###############################################################################
-#                                                                             #
-#                                Topic schemas                                #
-#                                                                             #
-###############################################################################
-
-topic = dict_merge(base, DATA_FIELD, {
-    'product_id': v.Any(
-        v.All(UUID, msg=INVALID_PRODUCT), None
-    ),
-    v.Optional('next_topic_id', default=None): v.Any(
-        v.All(UUID, msg=INVALID_TOPIC), None
-    ),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-    v.Optional('component_types', default=[]): list,
-    v.Optional('export_control', default=False): bool,
-})
-
-topic_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('next_topic_id'): v.Any(None, UUID, msg=INVALID_TOPIC),
-    v.Optional('product_id'): v.Any(UUID, msg=INVALID_PRODUCT),
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
-    v.Optional('component_types'): list,
-    v.Optional('data'): dict,
-    v.Optional('export_control'): bool,
-}
-
-topic = DCISchema(schema_factory(topic).post, Schema(topic_put))
-
-###############################################################################
-#                                                                             #
-#                               Audit schemas                                 #
-#                                                                             #
-###############################################################################
-
-audit = {
-    v.Optional('limit', default=10): int
-}
-
-audit = schema_factory(audit)
-
-###############################################################################
-#                                                                             #
-#                                Issues schemas                               #
-#                                                                             #
-###############################################################################
-
-issue = {
-    'url': Url(),
-    v.Optional('topic_id', default=None): v.Any(UUID, msg=INVALID_TOPIC),
-}
-
-issue = schema_factory(issue)
-
-issue_test = {
-    v.Optional('test_id'): v.Any(UUID, msg=INVALID_UUID),
-}
-
-issue_test = schema_factory(issue_test)
-
-###############################################################################
-#                                                                             #
-#                                Metas schemas                                #
-#                                                                             #
-###############################################################################
-
-meta = {
-    'name': six.text_type,
-    v.Optional('value'): six.text_type
-}
-
-meta_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('value'): six.text_type
-}
-
-meta = DCISchema(schema_factory(meta).post, Schema(meta_put))
-
-###############################################################################
-#                                                                             #
-#                                Tags schemas                                 #
-#                                                                             #
-###############################################################################
-
-tag = {
-    'name': six.text_type,
-}
-
-tag_put = {
-}
-
-tag = DCISchema(schema_factory(tag).post, Schema(tag_put))
-###############################################################################
-#                                                                             #
-#                                Roles schemas                                #
-#                                                                             #
-###############################################################################
-
-role = {
-    'name': six.text_type,
-    v.Optional('label', default=None): v.Any(six.text_type, None),
-    v.Optional('description', default=None): v.Any(six.text_type, None),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-}
-
-role_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('description'): six.text_type,
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
-}
-
-role = DCISchema(schema_factory(role).post, Schema(role_put))
-
-###############################################################################
-#                                                                             #
-#                       Remoteci Configuration schemas                        #
-#                                                                             #
-###############################################################################
-
-rconfiguration = dict_merge(base, DATA_FIELD, {
-    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
-    v.Optional('component_types', default=None): list
-})
-
-rconfiguration = schema_factory(rconfiguration)
-
-
-###############################################################################
-#                                                                             #
-#                          Permissions schemas                                #
-#                                                                             #
-###############################################################################
-
-permission = {
-    'name': six.text_type,
-    v.Optional('label', default=None): v.Any(six.text_type, None),
-    v.Optional('description', default=None): v.Any(six.text_type, None),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-}
-
-permission_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('description'): six.text_type,
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
-}
-
-permission = DCISchema(schema_factory(permission).post, Schema(permission_put))
-
-###############################################################################
-#                                                                             #
-#                             Products schemas                                #
-#                                                                             #
-###############################################################################
-
-product = {
-    'name': six.text_type,
-    'team_id': v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('label', default=None): v.Any(six.text_type, None),
-    v.Optional('description', default=None): v.Any(six.text_type, None),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-}
-
-product_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('description'): six.text_type,
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
-    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
-}
-
-product = DCISchema(schema_factory(product).post, Schema(product_put))
-
-###############################################################################
-#                                                                             #
-#                             Feeder schemas                                  #
-#                                                                             #
-###############################################################################
-
-feeder = dict_merge(base, DATA_FIELD, {
-    'team_id': v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-})
-
-feeder_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('data'): dict,
-    v.Optional('team_id'): v.Any(UUID, msg=INVALID_TEAM),
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
-}
-
-feeder = DCISchema(schema_factory(feeder).post, Schema(feeder_put))
-
-###############################################################################
-#                                                                             #
-#                          Fingerprints schemas                               #
-#                                                                             #
-###############################################################################
-
-fingerprint = dict_merge(base, {
-    'fingerprint': dict,
-    'actions': dict,
-    'description': six.text_type,
-    'topic_id': v.Any(UUID, msg=INVALID_TOPIC),
-    v.Optional('state', default='active'): v.Any(*VALID_RESOURCE_STATE,
-                                                 msg=INVALID_RESOURCE_STATE),
-})
-
-fingerprint_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('fingerprint'): dict,
-    v.Optional('actions'): dict,
-    v.Optional('description'): six.text_type,
-    v.Optional('state'): v.Any(*VALID_RESOURCE_STATE,
-                               msg=INVALID_RESOURCE_STATE),
-}
-
-fingerprint = DCISchema(schema_factory(fingerprint).post,
-                        Schema(fingerprint_put))
+update_component_schema = {"type": "object", "properties": update_component_properties}
 
 ###############################################################################
 #                                                                             #
 #                          Counter schemas                                    #
 #                                                                             #
 ###############################################################################
-
-counter_put = {
-    'sequence': int
+counter_properties = {"sequence": Properties.integer}
+counter_schema = {
+    "type": "object",
+    "properties": counter_properties,
+    "required": ["sequence"],
+    "additionalProperties": False,
 }
-
-counter = DCISchema(None, Schema(counter_put))
 
 ###############################################################################
 #                                                                             #
-#                             Analytics schemas                               #
+#                             Job State schemas                               #
 #                                                                             #
 ###############################################################################
-
-analytic = {
-    'name': six.text_type,
-    'type': six.text_type,
-    v.Optional('url', default=None): six.text_type,
-    v.Optional('data'): dict,
+jobstate_properties = {
+    "status": Properties.string,
+    "job_id": Properties.uuid,
+    "comment": with_default(Properties.string, None),
+}
+jobstate_schema = {
+    "type": "object",
+    "properties": jobstate_properties,
+    "required": ["status", "job_id"],
+    "additionalProperties": False,
 }
 
-analytic_put = {
-    v.Optional('name'): six.text_type,
-    v.Optional('type'): six.text_type,
-    v.Optional('url', default=None): six.text_type,
-    v.Optional('data'): dict,
+###############################################################################
+#                                                                             #
+#                                 Topic schema                                #
+#                                                                             #
+###############################################################################
+create_topic_properties = {
+    "name": Properties.string,
+    "data": with_default(Properties.json, {}),
+    "product_id": Properties.uuid,
+    "next_topic_id": with_default(Properties.uuid, None),
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "component_types": with_default(Properties.array, []),
+    "export_control": with_default(Properties.boolean, False),
+}
+create_topic_schema = {
+    "type": "object",
+    "properties": create_topic_properties,
+    "required": ["name", "product_id"],
+    "additionalProperties": False,
 }
 
-analytic = DCISchema(schema_factory(analytic).post,
-                     Schema(analytic_put))
+update_topic_properties = {
+    "name": Properties.string,
+    "data": Properties.json,
+    "product_id": Properties.uuid,
+    "next_topic_id": allow_none(Properties.uuid),
+    "state": Properties.enum(valid_resource_states),
+    "component_types": Properties.array,
+    "export_control": Properties.boolean,
+}
+update_topic_schema = {"type": "object", "properties": update_topic_properties}
+
+###############################################################################
+#                                                                             #
+#                                Issues schemas                               #
+#                                                                             #
+###############################################################################
+issue_properties = {
+    "url": Properties.url,
+    "topic_id": with_default(Properties.uuid, None),
+}
+issue_schema = {
+    "type": "object",
+    "properties": issue_properties,
+    "required": ["url"],
+    "additionalProperties": False,
+}
+
+issue_test_properties = {"test_id": Properties.uuid}
+issue_test_schema = {"type": "object", "properties": issue_test_properties}
+
+###############################################################################
+#                                                                             #
+#                                  Team schema                                #
+#                                                                             #
+###############################################################################
+create_team_properties = {
+    "name": Properties.string,
+    "country": with_default(Properties.string, None),
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "external": with_default(Properties.boolean, False),
+    "parent_id": with_default(Properties.uuid, None),
+}
+create_team_schema = {
+    "type": "object",
+    "properties": create_team_properties,
+    "required": ["name"],
+    "additionalProperties": False,
+}
+
+update_team_properties = {
+    "name": Properties.string,
+    "country": Properties.string,
+    "state": Properties.enum(valid_resource_states),
+    "external": Properties.boolean,
+    "parent_id": Properties.uuid,
+}
+update_team_schema = {"type": "object", "properties": update_team_properties}
+
+###############################################################################
+#                                                                             #
+#                                  File schema                                #
+#                                                                             #
+###############################################################################
+file_upload_certification_properties = {
+    "username": Properties.string,
+    "password": Properties.string,
+    "certification_id": Properties.string,
+}
+file_upload_certification_schema = {
+    "type": "object",
+    "properties": file_upload_certification_properties,
+    "required": ["username", "password", "certification_id"],
+    "additionalProperties": False,
+}

@@ -23,7 +23,7 @@ from dci.common import exceptions as dci_exc
 from dci.db import models
 from dci import decorators
 from dci.api.v1 import api
-from dci.common.schemas2 import (
+from dci.common.schemas import (
     check_json_is_valid,
     tag_schema,
     check_and_get_args

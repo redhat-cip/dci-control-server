@@ -25,7 +25,7 @@ from dci.api.v1 import export_control
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common.schemas2 import (
+from dci.common.schemas import (
     check_json_is_valid,
     create_topic_schema,
     update_topic_schema,
@@ -218,7 +218,7 @@ def get_latest_component_per_topic(user, topic_id):
 @api.route('/topics/<uuid:topic_id>/teams', methods=['POST'])
 @decorators.login_required
 def add_team_to_topic(user, topic_id):
-    # TODO(yassine): use voluptuous schema
+    # TODO(yassine): use json schema
     data_json = flask.request.json
     team_id = data_json.get('team_id')
 
