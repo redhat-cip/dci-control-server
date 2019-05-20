@@ -31,7 +31,11 @@ from dci.api.v1 import utils as v1_utils
 from dci.api.v1 import tests
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    file_upload_certification_schema,
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
@@ -54,16 +58,6 @@ _EMBED_MANY = {
     'job': False,
     'team': False
 }
-
-
-def get_file_info_from_headers(headers):
-    new_headers = {}
-    for key, value in headers.items():
-        key = key.lower().replace('dci-', '').replace('-', '_')
-        if key in ['md5', 'mime', 'jobstate_id',
-                   'job_id', 'name', 'test_id']:
-            new_headers[key] = value
-    return new_headers
 
 
 def get_previous_job_in_topic(job):
@@ -134,12 +128,20 @@ def _process_junit_file(values, junit_content, job):
     flask.g.db_conn.execute(query)
 
 
+def get_file_info_from_headers(headers):
+    new_headers = {}
+    for key, value in headers.items():
+        key = key.lower().replace('dci-', '').replace('-', '_')
+        if key in ['md5', 'mime', 'jobstate_id',
+                   'job_id', 'name', 'test_id']:
+            new_headers[key] = value
+    return new_headers
+
+
 @api.route('/files', methods=['POST'])
 @decorators.login_required
 def create_files(user):
     file_info = get_file_info_from_headers(dict(flask.request.headers))
-    store = dci_config.get_store('files')
-
     values = dict.fromkeys(['md5', 'mime', 'jobstate_id',
                             'job_id', 'name', 'test_id'])
     values.update(file_info)
@@ -165,6 +167,7 @@ def create_files(user):
                                             file_id)
 
     content = files_utils.get_stream_or_content_from_request(flask.request)
+    store = dci_config.get_store('files')
     store.upload(file_path, content)
     s_file = store.head(file_path)
 
@@ -195,7 +198,7 @@ def create_files(user):
 def get_all_files(user, job_id):
     """Get all files.
     """
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
     job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
     if user.is_not_super_admin() and user.is_not_read_only_user():
         if (job['team_id'] not in user.teams_ids and
@@ -303,7 +306,8 @@ def build_certification(username, password, node_id, file_name, file_content):
 @api.route('/files/<uuid:file_id>/certifications', methods=['POST'])
 @decorators.login_required
 def upload_certification(user, file_id):
-    data = schemas.file_upload_certification.post(flask.request.json)
+    data = flask.request.json
+    check_json_is_valid(file_upload_certification_schema, data)
 
     file = get_file_object(file_id)
     file_descriptor = get_file_descriptor(file)
