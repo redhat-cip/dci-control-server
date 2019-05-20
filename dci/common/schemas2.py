@@ -459,12 +459,27 @@ update_component_schema = {"type": "object", "properties": update_component_prop
 #                          Counter schemas                                    #
 #                                                                             #
 ###############################################################################
-counter_properties = {
-    "sequence": Properties.integer,
-}
+counter_properties = {"sequence": Properties.integer}
 counter_schema = {
     "type": "object",
     "properties": counter_properties,
     "required": ["sequence"],
+    "additionalProperties": False,
+}
+
+###############################################################################
+#                                                                             #
+#                             Job State schemas                               #
+#                                                                             #
+###############################################################################
+jobstate_properties = {
+    "status": Properties.string,
+    "job_id": Properties.uuid,
+    "comment": with_default(Properties.string, None),
+}
+jobstate_schema = {
+    "type": "object",
+    "properties": jobstate_properties,
+    "required": ["status", "job_id"],
     "additionalProperties": False,
 }
