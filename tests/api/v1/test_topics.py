@@ -39,8 +39,7 @@ def topic_creation_with_opts(identity, product):
 
 def topic_update(identity, topic_id):
     t = identity.get('/api/v1/topics/' + topic_id).data['topic']
-    data = {'label': 'my comment',
-            'component_types': ['lol1', 'lol2'],
+    data = {'component_types': ['lol1', 'lol2'],
             'data': {'foo': 'bar'}}
     identity.put('/api/v1/topics/' + topic_id, data=data,
                  headers={'If-match': t['etag']})
@@ -169,7 +168,7 @@ def test_get_all_topics_with_where(admin, product):
         topics[t_name] = r['topic']['id']
 
     for t_name, t_id in topics.items():
-        r = admin.get('/api/v1/topics?where=name:%s&limit=1' % t_name).data
+        r = admin.get('/api/v1/topics?where=name:%s&limit=1&offset=0' % t_name).data
         assert r['_meta']['count'] == 1
         assert r['topics'][0]['id'] == t_id
 

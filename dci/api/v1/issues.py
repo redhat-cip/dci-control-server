@@ -24,7 +24,12 @@ from dci.api.v1 import base
 from dci import decorators
 from dci.api.v1 import utils as v1_utils
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    issue_schema,
+    issue_test_schema,
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import models
 from dci.trackers import github
@@ -150,8 +155,8 @@ def unattach_issue(resource_id, issue_id, table):
 
 
 def attach_issue(resource_id, table, user_id):
-    """Attach an issue to a specific job."""
-    data = schemas.issue.post(flask.request.json)
+    data = flask.request.json
+    check_json_is_valid(issue_schema, data)
     issue = _get_or_create_issue(data)
 
     # Second, insert a join record in the JOIN_JOBS_ISSUES or
@@ -182,7 +187,8 @@ def attach_issue(resource_id, table, user_id):
 @api.route('/issues', methods=['POST'])
 @decorators.login_required
 def create_issue(user):
-    data = schemas.issue.post(flask.request.json)
+    data = flask.request.json
+    check_json_is_valid(issue_test_schema, data)
     issue = _get_or_create_issue(data)
     result = json.dumps({'issue': dict(issue)})
     return flask.Response(result, 201,
@@ -193,7 +199,7 @@ def create_issue(user):
 @api.route('/issues', methods=['GET'])
 @decorators.login_required
 def get_all_issues(user):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder(_TABLE, args, _I_COLUMNS)
     query.add_extra_condition(_TABLE.c.state != 'archived')
@@ -236,7 +242,8 @@ def delete_issue_by_id(user, issue_id):
 @api.route('/issues/<uuid:issue_id>/tests', methods=['POST'])
 @decorators.login_required
 def add_test_to_issue(user, issue_id):
-    values = schemas.issue_test.post(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(issue_test_schema, values)
 
     issue_id = v1_utils.verify_existence_and_get(issue_id, _TABLE, get_id=True)
 
