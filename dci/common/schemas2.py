@@ -454,3 +454,17 @@ update_component_properties = {
 }
 update_component_schema = {"type": "object", "properties": update_component_properties}
 
+###############################################################################
+#                                                                             #
+#                          Counter schemas                                    #
+#                                                                             #
+###############################################################################
+counter_properties = {
+    "sequence": Properties.integer,
+}
+counter_schema = {
+    "type": "object",
+    "properties": counter_properties,
+    "required": ["sequence"],
+    "additionalProperties": False,
+}
