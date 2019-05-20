@@ -27,7 +27,11 @@ from dci.api.v1 import notifications
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    jobstate_schema,
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import models
 
@@ -55,7 +59,8 @@ def insert_jobstate(user, values):
 @api.route('/jobstates', methods=['POST'])
 @decorators.login_required
 def create_jobstates(user):
-    values = schemas.jobstate.post(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(jobstate_schema, values)
 
     # if one create a 'failed' jobstates and the current state is either
     # 'run' or 'pre-run' then set the job to 'error' state
@@ -100,7 +105,7 @@ def create_jobstates(user):
 def get_all_jobstates(user, job_id):
     """Get all jobstates.
     """
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
     job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
     if user.is_not_super_admin() and user.is_not_read_only_user():
         if (job['team_id'] not in user.teams_ids and
