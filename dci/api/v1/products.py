@@ -26,7 +26,7 @@ from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
 from dci.common import audits
 from dci.common import exceptions as dci_exc
-from dci.common.schemas2 import (
+from dci.common.schemas import (
     check_json_is_valid,
     create_product_schema,
     update_product_schema,

@@ -22,7 +22,7 @@ import mock
 import pytest
 
 from dci.common.exceptions import DCIException
-from dci.common.schemas2 import (
+from dci.common.schemas import (
     check_json_is_valid,
     create_user_schema,
     update_user_schema,

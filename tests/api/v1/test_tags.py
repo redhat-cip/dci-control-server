@@ -17,7 +17,7 @@ from __future__ import unicode_literals
 import pytest
 
 from dci.common.exceptions import DCIException
-from dci.common.schemas2 import check_json_is_valid, tag_schema
+from dci.common.schemas import check_json_is_valid, tag_schema
 
 
 def test_create_tags(admin):

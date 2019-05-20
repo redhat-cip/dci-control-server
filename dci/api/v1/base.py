@@ -21,7 +21,7 @@ from dci.api.v1 import utils as v1_utils
 from dci.common import exceptions as dci_exc
 from dci.common import signature
 from dci.common import utils
-from dci.common.schemas2 import check_and_get_args
+from dci.common.schemas import check_and_get_args
 
 
 def get_resource_by_id(user, resource, table, embed_many=None,

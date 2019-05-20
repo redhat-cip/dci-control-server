@@ -21,7 +21,7 @@ from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.db import models
-from dci.common.schemas2 import check_and_get_args
+from dci.common.schemas import check_and_get_args
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.LOGS

@@ -24,7 +24,7 @@ from dci.api.v1 import remotecis
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common.schemas2 import (
+from dci.common.schemas import (
     check_json_is_valid,
     create_test_schema,
     update_test_schema,
