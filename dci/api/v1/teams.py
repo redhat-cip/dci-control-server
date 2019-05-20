@@ -26,7 +26,12 @@ from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import audits
 from dci.common import exceptions as dci_exc
-from dci.common import schemas
+from dci.common.schemas2 import (
+    check_json_is_valid,
+    create_team_schema,
+    update_team_schema,
+    check_and_get_args
+)
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
@@ -45,8 +50,9 @@ _EMBED_MANY = {
 @decorators.login_required
 @audits.log
 def create_teams(user):
-    values = v1_utils.common_values_dict()
-    values.update(schemas.team.post(flask.request.json))
+    values = flask.request.json
+    check_json_is_valid(create_team_schema, values)
+    values.update(v1_utils.common_values_dict())
 
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
@@ -70,7 +76,7 @@ def create_teams(user):
 @api.route('/teams', methods=['GET'])
 @decorators.login_required
 def get_all_teams(user):
-    args = schemas.args(flask.request.args.to_dict())
+    args = check_and_get_args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
@@ -121,8 +127,8 @@ def get_tests_by_team(user, team_id):
 def put_team(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
-    values = schemas.team.put(flask.request.json)
+    values = flask.request.json
+    check_json_is_valid(update_team_schema, values)
     if user.is_not_product_owner(t_id):
         raise dci_exc.Unauthorized()
 

@@ -80,13 +80,8 @@ def test_where_invalid(admin):
     err = admin.get('/api/v1/teams?where=id')
 
     assert err.status_code == 400
-    assert err.data == {
-        'status_code': 400,
-        'message': 'Invalid where key: "id"',
-        'payload': {
-            'error': 'where key must have the following form "key:value"'
-        }
-    }
+    assert err.data['message'] == "Request malformed"
+    assert err.data['payload']['error'] == "where: 'id' is not a 'key value csv'"
 
 
 def test_get_all_teams_with_pagination(admin):

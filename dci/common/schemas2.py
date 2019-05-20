@@ -534,3 +534,31 @@ issue_schema = {
 
 issue_test_properties = {"test_id": Properties.uuid}
 issue_test_schema = {"type": "object", "properties": issue_test_properties}
+
+###############################################################################
+#                                                                             #
+#                                  Team schema                                #
+#                                                                             #
+###############################################################################
+create_team_properties = {
+    "name": Properties.string,
+    "country": with_default(Properties.string, None),
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "external": with_default(Properties.boolean, False),
+    "parent_id": with_default(Properties.uuid, None),
+}
+create_team_schema = {
+    "type": "object",
+    "properties": create_team_properties,
+    "required": ["name"],
+    "additionalProperties": False,
+}
+
+update_team_properties = {
+    "name": Properties.string,
+    "country": Properties.string,
+    "state": Properties.enum(valid_resource_states),
+    "external": Properties.boolean,
+    "parent_id": Properties.uuid,
+}
+update_team_schema = {"type": "object", "properties": update_team_properties}
