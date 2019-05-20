@@ -433,3 +433,38 @@ update_component_properties.update(
     }
 )
 update_component_schema = {"type": "object", "properties": update_component_properties}
+
+###############################################################################
+#                                                                             #
+#                                 Topic schema                                #
+#                                                                             #
+###############################################################################
+create_topic_properties = {
+    "name": Properties.string,
+    "data": with_default(Properties.json, {}),
+    "product_id": Properties.uuid,
+    "next_topic_id": with_default(Properties.uuid, None),
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "component_types": with_default(Properties.array, []),
+    "export_control": with_default(Properties.boolean, False),
+}
+create_topic_schema = {
+    "type": "object",
+    "properties": create_topic_properties,
+    "required": ["name", "product_id"],
+    "additionalProperties": False,
+}
+
+update_topic_properties = create_topic_properties.copy()
+update_topic_properties.update(
+    {
+        "name": Properties.string,
+        "next_topic_id": allow_none(Properties.uuid),
+        "product_id": Properties.uuid,
+        "state": Properties.enum(valid_resource_states),
+        "component_types": Properties.array,
+        "data": Properties.json,
+        "export_control": Properties.boolean,
+    }
+)
+update_topic_schema = {"type": "object", "properties": update_topic_properties}
