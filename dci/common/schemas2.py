@@ -483,3 +483,54 @@ jobstate_schema = {
     "required": ["status", "job_id"],
     "additionalProperties": False,
 }
+
+###############################################################################
+#                                                                             #
+#                                 Topic schema                                #
+#                                                                             #
+###############################################################################
+create_topic_properties = {
+    "name": Properties.string,
+    "data": with_default(Properties.json, {}),
+    "product_id": Properties.uuid,
+    "next_topic_id": with_default(Properties.uuid, None),
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "component_types": with_default(Properties.array, []),
+    "export_control": with_default(Properties.boolean, False),
+}
+create_topic_schema = {
+    "type": "object",
+    "properties": create_topic_properties,
+    "required": ["name", "product_id"],
+    "additionalProperties": False,
+}
+
+update_topic_properties = {
+    "name": Properties.string,
+    "data": Properties.json,
+    "product_id": Properties.uuid,
+    "next_topic_id": allow_none(Properties.uuid),
+    "state": Properties.enum(valid_resource_states),
+    "component_types": Properties.array,
+    "export_control": Properties.boolean,
+}
+update_topic_schema = {"type": "object", "properties": update_topic_properties}
+
+###############################################################################
+#                                                                             #
+#                                Issues schemas                               #
+#                                                                             #
+###############################################################################
+issue_properties = {
+    "url": Properties.url,
+    "topic_id": with_default(Properties.uuid, None),
+}
+issue_schema = {
+    "type": "object",
+    "properties": issue_properties,
+    "required": ["url"],
+    "additionalProperties": False,
+}
+
+issue_test_properties = {"test_id": Properties.uuid}
+issue_test_schema = {"type": "object", "properties": issue_test_properties}

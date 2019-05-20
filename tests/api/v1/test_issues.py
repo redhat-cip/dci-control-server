@@ -390,8 +390,7 @@ def test_crd_test_to_issue(admin, user, topic_user_id):
 
     # associate test_id1 to issue pissue_id1
     ptest = user.post('/api/v1/issues/%s/tests' % pissue_id1,
-                      data={'test_id': test_id1,
-                            'topic_id': topic_user_id})
+                      data={'test_id': test_id1})
     assert ptest.status_code == 201
 
     issues_tests = user.get('/api/v1/issues/%s/tests' % pissue_id1)

@@ -246,11 +246,9 @@ def test_get_tests_to_issues(user, topic_user_id, app, engine):
     test = user.post('/api/v1/tests', data={'name': 'pname1'})
     test_id1 = test.data['test']['id']
     user.post('/api/v1/issues/%s/tests' % pissue_id1,
-              data={'test_id': test_id1,
-                    'topic_id': topic_user_id})
+              data={'test_id': test_id1})
     user.post('/api/v1/issues/%s/tests' % pissue_id2,
-              data={'test_id': test_id1,
-                    'topic_id': topic_user_id})
+              data={'test_id': test_id1})
     with app.app_context():
         flask.g.db_conn = engine.connect()
         all_tests_to_issues = tests.get_tests_to_issues(topic_user_id)

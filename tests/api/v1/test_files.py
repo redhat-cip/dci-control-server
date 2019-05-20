@@ -288,11 +288,9 @@ def test_known_issues_in_tests(admin, user, job_user_id, topic_user_id):
     test = user.post('/api/v1/tests', data={'name': 'Testsuite_1:test_3'})
     test_id1 = test.data['test']['id']
     user.post('/api/v1/issues/%s/tests' % pissue_id1,
-              data={'test_id': test_id1,
-                    'topic_id': topic_user_id})
+              data={'test_id': test_id1})
     user.post('/api/v1/issues/%s/tests' % pissue_id2,
-              data={'test_id': test_id1,
-                    'topic_id': topic_user_id})
+              data={'test_id': test_id1})
 
     data = {'job_id': job_user_id, 'status': 'failure'}
     jobstate_1 = admin.post('/api/v1/jobstates', data=data).data['jobstate']
