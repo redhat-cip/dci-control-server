@@ -562,3 +562,20 @@ update_team_properties = {
     "parent_id": Properties.uuid,
 }
 update_team_schema = {"type": "object", "properties": update_team_properties}
+
+###############################################################################
+#                                                                             #
+#                                  File schema                                #
+#                                                                             #
+###############################################################################
+file_upload_certification_properties = {
+    "username": Properties.string,
+    "password": Properties.string,
+    "certification_id": Properties.string,
+}
+file_upload_certification_schema = {
+    "type": "object",
+    "properties": file_upload_certification_properties,
+    "required": ["username", "password", "certification_id"],
+    "additionalProperties": False,
+}
