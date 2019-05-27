@@ -1,4 +1,4 @@
-# Distributed CI control server
+# Distributed CI control serverr
 
 ![](https://img.shields.io/badge/license-Apache2.0-blue.svg?style=flat) ![](https://img.shields.io/badge/python-2.7,3.5-green.svg?style=flat)
 
