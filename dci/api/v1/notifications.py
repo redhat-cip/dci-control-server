@@ -27,7 +27,7 @@ def format_mail_message(mesg):
         regressions = 'The regressions found are: %s' % regressions
 
     return """
-You are receiving this email because of the DCI job {job} for the
+You are receiving this email because of the DCI job {job_id} for the
 topic {topic} on the Remote CI {remoteci}.
 
 The final status of the job is: {status}
@@ -36,14 +36,14 @@ The components used are: {components}
 {regressions}
 
 For more information:
-https://www.distributed-ci.io/jobs/job_id/jobStates""".format(
-        job=mesg['job_id'],
-        topic=mesg['topic_name'],
-        remoteci=mesg['remoteci_name'],
-        status=mesg['status'],
-        components=', '.join(mesg['components']),
-        regressions=regressions,
-        job_id=mesg['job_id'])
+https://www.distributed-ci.io/jobs/{job_id}
+""".format(
+    job_id=mesg['job_id'],
+    topic=mesg['topic_name'],
+    remoteci=mesg['remoteci_name'],
+    status=mesg['status'],
+    components=', '.join(mesg['components']),
+    regressions=regressions)
 
 
 def get_email_info(job, emails):

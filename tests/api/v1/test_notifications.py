@@ -53,8 +53,8 @@ def test_email(user, job_user_id):
 
 def test_format_mail_message():
     expected_message = """
-You are receiving this email because of the DCI job job_id for the
-topic topic on the Remote CI remoteci.
+You are receiving this email because of the DCI job abc123 for the
+topic rhel-7.8 on the Remote CI rhel_labs.
 
 The final status of the job is: failure
 
@@ -62,10 +62,11 @@ The components used are: c_1, c_2
 
 
 For more information:
-https://www.distributed-ci.io/jobs/job_id/jobStates"""
-    mesg = {'job_id': 'job_id',
-            'topic_name': 'topic',
-            'remoteci_name': 'remoteci',
+https://www.distributed-ci.io/jobs/abc123
+"""
+    mesg = {'job_id': 'abc123',
+            'topic_name': 'rhel-7.8',
+            'remoteci_name': 'rhel_labs',
             'status': 'failure',
             'components': ['c_1', 'c_2'],
             'regressions': {}
