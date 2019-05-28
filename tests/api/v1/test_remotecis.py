@@ -447,6 +447,15 @@ def test_success_detach_myself_from_remoteci_in_team(user, user_id,
     assert r.status_code == 204
 
 
+def test_get_subscribed_remotecis(remoteci_user_id, user, user_id):
+    response = user.get("/api/v1/users/%s/remotecis" % user_id)
+    print(response.data)
+    assert response.data["remotecis"] == []
+    user.post("/api/v1/remotecis/%s/users" % remoteci_user_id)
+    response = user.get("/api/v1/users/%s/remotecis" % user_id)
+    assert response.data["remotecis"][0]["id"] == remoteci_user_id
+
+
 def test_success_ensure_put_api_secret_is_not_leaked(user, team_user_id):
     """Test to ensure API secret is not leaked during update."""
 

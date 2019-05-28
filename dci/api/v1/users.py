@@ -240,6 +240,21 @@ def delete_user_by_id(user, user_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
+@api.route("/users/<uuid:user_id>/remotecis", methods=["GET"])
+@decorators.login_required
+def get_subscribed_remotecis(identity, user_id):
+    if identity.is_not_super_admin() and identity.id != str(user_id):
+        raise dci_exc.Unauthorized()
+    remotecis = flask.g.db_conn.execute(
+        sql.select([models.REMOTECIS])
+        .select_from(models.JOIN_USER_REMOTECIS.join(models.REMOTECIS))
+        .where(models.JOIN_USER_REMOTECIS.c.user_id == identity.id)
+    )
+    return flask.Response(
+        json.dumps({"remotecis": remotecis}), 200, content_type="application/json"
+    )
+
+
 @api.route('/users/purge', methods=['GET'])
 @decorators.login_required
 def get_to_purge_archived_users(user):
