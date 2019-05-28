@@ -505,17 +505,6 @@ def test_success_get_topics_embed(admin, topic_id, product_id):
     assert request.data['topic'] == result.data['topics'][0]
 
 
-def test_get_latest_component_per_topic(admin, topic_id):
-    data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
-    admin.post('/api/v1/components', data=data)
-    data = {'name': 'pnamelast', 'type': 'gerrit_review', 'topic_id': topic_id}
-    admin.post('/api/v1/components', data=data)
-
-    component = admin.get('/api/v1/topics/%s/components/latest' % topic_id). \
-        data['component']
-    assert component['name'] == 'pnamelast'
-
-
 def test_add_multiple_topic_and_get(admin, user, product, product2):
     # create a topic from product
     data = {'name': 'tname', 'product_id': product['id'],

@@ -167,21 +167,6 @@ def get_all_components(user, topic_id):
     return flask.jsonify({'components': rows, '_meta': {'count': nb_rows}})
 
 
-@api.route('/components/latest', methods=['GET'])
-@decorators.login_required
-def get_latest_components(user):
-    authorized_topics = v1_utils.user_topic_ids(user)
-
-    latest_components = _get_latest_components()
-    latest_components = [c for c in latest_components
-                         if str(c['topic_id']) in authorized_topics]
-
-    return flask.jsonify({
-        'components': latest_components,
-        '_meta': {'count': len(latest_components)}
-    })
-
-
 @api.route('/components/<uuid:c_id>', methods=['GET'])
 @decorators.login_required
 def get_component_by_id(user, c_id):
