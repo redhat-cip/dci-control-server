@@ -82,12 +82,6 @@ def test_components(m_datetime, admin, user_sso_rh_employee, app, engine,
             d_file = user_sso.get(url)
             assert d_file.status_code == 200
 
-            # get latest component
-            url = '/api/v1/components/latest'
-            components_latest = user_sso.get(url)
-            assert components_latest.status_code == 200
-            assert len(components_latest.data['components']) > 0
-
 
 # FILES
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
