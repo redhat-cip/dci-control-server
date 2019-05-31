@@ -271,6 +271,20 @@ update_product_schema = {"type": "object", "properties": update_product_properti
 
 ###############################################################################
 #                                                                             #
+#                               Product_Team schema                           #
+#                                                                             #
+###############################################################################
+add_team_to_product_schema = {
+    "type": "object",
+    "properties": {
+        "team_id": Properties.uuid,
+    },
+    "required": ["team_id"],
+    "additionalProperties": False,
+}
+
+###############################################################################
+#                                                                             #
 #                                Tests schema                                 #
 #                                                                             #
 ###############################################################################
