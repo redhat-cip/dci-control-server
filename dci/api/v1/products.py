@@ -30,6 +30,7 @@ from dci.common.schemas import (
     check_json_is_valid,
     create_product_schema,
     update_product_schema,
+    add_team_to_product_schema,
     check_and_get_args
 )
 from dci.common import utils
@@ -154,6 +155,78 @@ def delete_product_by_id(user, product_id):
                                   product_id)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/products/<uuid:product_id>/teams', methods=['POST'])
+@decorators.login_required
+def add_team_to_product(user, product_id):
+    values = flask.request.json
+    check_json_is_valid(add_team_to_product_schema, values)
+
+    team_id = values.get('team_id')
+    product = v1_utils.verify_existence_and_get(product_id, _TABLE)
+    team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
+                                                get_id=True)
+    team_product_id = product['team_id']
+
+    if (user.is_not_super_admin() and
+        user.is_not_in_team(team_product_id)):
+        raise dci_exc.Unauthorized()
+
+    values = {'product_id': product['id'],
+              'team_id': team_id}
+    query = models.JOIN_PRODUCTS_TEAMS.insert().values(**values)
+    try:
+        flask.g.db_conn.execute(query)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCICreationConflict(models.JOIN_PRODUCTS_TEAMS.name,
+                                          'product_id', 'team_id')
+
+    result = json.dumps(values)
+    return flask.Response(result, 201, content_type='application/json')
+
+
+@api.route('/products/<uuid:product_id>/teams/<uuid:team_id>', methods=['DELETE'])
+@decorators.login_required
+def delete_team_from_product(user, product_id, team_id):
+    product = v1_utils.verify_existence_and_get(product_id, _TABLE)
+    team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
+                                                get_id=True)
+    team_product_id = product['team_id']
+
+    if user.is_not_super_admin() and user.is_not_in_team(team_product_id):
+        raise dci_exc.Unauthorized()
+
+    JPT = models.JOIN_PRODUCTS_TEAMS
+    where_clause = sql.and_(JPT.c.product_id == product['id'],
+                            JPT.c.team_id == team_id)
+    query = JPT.delete().where(where_clause)
+    result = flask.g.db_conn.execute(query)
+
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Products_teams', team_id)
+
+    return flask.Response(None, 204, content_type='application/json')
+
+
+@api.route('/products/<uuid:product_id>/teams', methods=['GET'])
+@decorators.login_required
+def get_all_teams_from_product(user, product_id):
+    product = v1_utils.verify_existence_and_get(product_id, _TABLE)
+
+    team_product_id = product['team_id']
+
+    if user.is_not_super_admin() and user.is_not_in_team(team_product_id):
+        raise dci_exc.Unauthorized()
+
+    JPT = models.JOIN_PRODUCTS_TEAMS
+    query = (sql.select([models.TEAMS])
+             .select_from(JPT.join(models.TEAMS))
+             .where(JPT.c.product_id == product['id']))
+    rows = flask.g.db_conn.execute(query)
+
+    return flask.jsonify({'teams': rows,
+                          '_meta': {'count': rows.rowcount}})
 
 
 @api.route('/products/purge', methods=['GET'])

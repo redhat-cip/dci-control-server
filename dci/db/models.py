@@ -546,6 +546,16 @@ PRODUCTS = sa.Table(
               sa.ForeignKey('teams.id', ondelete='SET NULL'),
               nullable=False))
 
+JOIN_PRODUCTS_TEAMS = sa.Table(
+    'products_teams', metadata,
+    sa.Column('product_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('products.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('team_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+)
+
 FEEDERS = sa.Table(
     'feeders', metadata,
     sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
