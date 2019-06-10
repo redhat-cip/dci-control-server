@@ -63,17 +63,29 @@ def get_store(container):
 
 
 def sanity_check(conf):
+    db_conn = get_engine(conf).connect()
+    # get the admin team id
     query_team_admin_id = sqlalchemy.sql.select([models.TEAMS]).where(
         models.TEAMS.c.name == 'admin')
-
-    db_conn = get_engine(conf).connect()
     row = db_conn.execute(query_team_admin_id).fetchone()
-    db_conn.close()
 
     if row is None:
         print("Admin team not found. Please init the database"
               " with the 'admin' team and 'admin' user.")
         sys.exit(1)
+    team_admin_id = row.id
 
-    # return the team admin id
-    return row.id
+    # get the internal team id
+    query_team_internal_id = sqlalchemy.sql.select([models.TEAMS]).where(
+        models.TEAMS.c.name == 'internal')
+    row = db_conn.execute(query_team_internal_id).fetchone()
+
+    if row is None:
+        print("Internal team not found. Please init the database"
+              " with the 'internal' team.")
+        sys.exit(1)
+    team_internal_id = row.id
+
+    db_conn.close()
+
+    return team_admin_id, team_internal_id
