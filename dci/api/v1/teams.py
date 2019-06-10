@@ -50,9 +50,22 @@ _EMBED_MANY = {
 @decorators.login_required
 @audits.log
 def create_teams(user):
+    if not getattr(flask.request, 'json'):
+        return flask.Response(
+            json.dumps({'msg': 'no json field'}), 500,
+            content_type='application/json'
+        )
     values = flask.request.json
-    check_json_is_valid(create_team_schema, values)
-    values.update(v1_utils.common_values_dict())
+    if values is None:
+        return flask.Response(
+            json.dumps({'msg': 'json field None'}), 500,
+            content_type='application/json'
+        )
+    try:
+        check_json_is_valid(create_team_schema, values)
+        values.update(v1_utils.common_values_dict())
+    except Exception as e:
+        raise dci_exc.DCIException(str(e))
 
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
@@ -66,6 +79,8 @@ def create_teams(user):
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError:
         raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
+    except Exception:
+        raise dci_exc.DCIException(str(e))
 
     return flask.Response(
         json.dumps({'team': values}), 201,
