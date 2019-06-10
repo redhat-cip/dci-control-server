@@ -41,7 +41,8 @@ def identity_factory(is_user=False, is_product_owner=False,
         'timezone': 'UTC',
         'email': 'user@email.com',
         'etag': '2975580b-1915-41b7-9672-c16ccbcc1234',
-        'is_super_admin': is_super_admin
+        'is_super_admin': is_super_admin,
+        'is_read_only_user': is_read_only_user
     }
 
     if is_super_admin:
@@ -78,8 +79,8 @@ def identity_factory(is_user=False, is_product_owner=False,
         }
     elif is_read_only_user:
         user_info['teams'] = {
-            None: {
-                'team_name': 'read_only_teams',
+            UUID('12347af1-f90f-48dd-8276-fbc4bfa81234'): {
+                'team_name': 'redhat',
                 'parent_id': None,
                 'role': 'READ_ONLY_USER'
             }

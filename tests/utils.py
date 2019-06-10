@@ -153,6 +153,7 @@ def provision(db_conn):
                                 parent_id=team_admin_id)
     team_user_id = db_insert(models.TEAMS, name='user',
                              parent_id=team_product_id)
+    db_insert(models.TEAMS, name='redhat')
 
     # Create users
     user_pw_hash = auth.hash_password('user')
