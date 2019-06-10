@@ -26,7 +26,7 @@ import pytest
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
 def test_sso_auth_verified(m_datetime, admin, app, engine, access_token,
-                           team_admin_id):
+                           team_admin_id, team_redhat_id):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
         fromtimestamp(1518653629).timetuple()
@@ -36,14 +36,46 @@ def test_sso_auth_verified(m_datetime, admin, app, engine, access_token,
     nb_users = len(admin.get('/api/v1/users').data['users'])
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
+        flask.g.team_redhat_id = team_redhat_id
         flask.g.db_conn = engine.connect()
         mech = authm.OpenIDCAuth(sso_headers)
-        mech.authenticate()
+        assert mech.authenticate()
         assert mech.identity.name == 'dci'
         assert mech.identity.sso_username == 'dci'
         assert mech.identity.email == 'dci@distributed-ci.io'
         nb_users_after_sso = len(admin.get('/api/v1/users').data['users'])
         assert (nb_users + 1) == nb_users_after_sso
+
+
+@mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
+def test_sso_auth_verified_rh_employee(m_datetime, admin, app, engine, access_token_rh_employee,  # noqa
+                                       team_admin_id, team_redhat_id):
+    m_utcnow = mock.MagicMock()
+    m_utcnow.utctimetuple.return_value = datetime.datetime. \
+        fromtimestamp(1518653629).timetuple()
+    m_datetime.utcnow.return_value = m_utcnow
+    sso_headers = mock.Mock
+    sso_headers.headers = {'Authorization': 'Bearer %s' % access_token_rh_employee}
+    nb_users = len(admin.get('/api/v1/users').data['users'])
+    with app.app_context():
+        flask.g.team_admin_id = team_admin_id
+        flask.g.team_redhat_id = team_redhat_id
+        flask.g.db_conn = engine.connect()
+        mech = authm.OpenIDCAuth(sso_headers)
+        assert mech.authenticate()
+        assert mech.identity.name == 'dci-rh'
+        assert mech.identity.sso_username == 'dci-rh'
+        assert mech.identity.email == 'dci-rh@redhat.com'
+        nb_users_after_sso = len(admin.get('/api/v1/users').data['users'])
+        assert (nb_users + 1) == nb_users_after_sso
+        # users from redhat team
+        redhat_users = admin.get('/api/v1/teams/%s/users' % team_redhat_id).data['users']  # noqa
+        ro_user_found = False
+        print('t1 %s' % team_redhat_id)
+        for iu in redhat_users:
+            if iu['name'] == 'dci-rh' and iu['email'] == 'dci-rh@redhat.com':
+                ro_user_found = True
+        assert ro_user_found
 
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)

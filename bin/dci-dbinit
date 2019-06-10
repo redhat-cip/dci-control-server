@@ -64,6 +64,8 @@ def init_db(db_conn):
 
     # Create team admin
     team_admin_id = db_insert_with_name(models.TEAMS, name='admin')
+    # Create Red Hat team
+    db_insert_with_name(models.TEAMS, name='Red Hat')
 
     # Create super admin user
     super_admin_id = db_insert_with_name(models.USERS,
@@ -76,6 +78,7 @@ def init_db(db_conn):
     q = models.JOIN_USERS_TEAMS_ROLES.insert().values(user_id=super_admin_id,
                                                       team_id=team_admin_id,
                                                       role='SUPER_ADMIN')
+
     db_conn.execute(q)
 
 
