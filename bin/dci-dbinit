@@ -76,7 +76,11 @@ def init_db(db_conn):
     q = models.JOIN_USERS_TEAMS_ROLES.insert().values(user_id=super_admin_id,
                                                       team_id=team_admin_id,
                                                       role='SUPER_ADMIN')
+
     db_conn.execute(q)
+
+    # Create internal team
+    db_insert_with_name(models.TEAMS, name='internal')
 
 
 def main():

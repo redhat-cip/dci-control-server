@@ -84,10 +84,13 @@ class BaseMechanism(object):
         }
 
         is_super_admin = False
+        is_read_only_user = False
         user_teams = {}
         for user_team in _user_teams:
             if user_team[models.TEAMS.c.id] == flask.g.team_admin_id:
                 is_super_admin = True
+            if user_team[models.TEAMS.c.id] == flask.g.team_internal_id:
+                is_read_only_user = True
             user_teams[user_team[models.TEAMS.c.id]] = {
                 'parent_id': user_team[models.TEAMS.c.parent_id],
                 'id': user_team[models.TEAMS.c.id],
@@ -97,6 +100,7 @@ class BaseMechanism(object):
         all_teams = self._get_all_teams()
         user_info['teams'] = user_teams
         user_info['is_super_admin'] = is_super_admin
+        user_info['is_read_only_user'] = is_read_only_user
 
         return Identity(user_info, all_teams)
 
@@ -296,7 +300,7 @@ class OpenIDCAuth(BaseMechanism):
             flask.g.db_conn.execute(
                 models.JOIN_USERS_TEAMS_ROLES.insert().values(
                     user_id=u_id,
-                    team_id=None,
+                    team_id=flask.g.team_internal_id,
                     role=role)
             )
             identity = self.identity_from_db(models.USERS,
