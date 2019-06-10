@@ -153,6 +153,8 @@ def provision(db_conn):
                                 parent_id=team_admin_id)
     team_user_id = db_insert(models.TEAMS, name='user',
                              parent_id=team_product_id)
+    team_internal_id = db_insert(models.TEAMS, name='internal')
+    print("internallll %s" % team_internal_id)
 
     # Create users
     user_pw_hash = auth.hash_password('user')

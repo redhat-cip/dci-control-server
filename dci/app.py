@@ -31,13 +31,14 @@ zmq_sender = None
 
 
 class DciControlServer(flask.Flask):
-    def __init__(self, conf, team_admin_id):
+    def __init__(self, conf, team_admin_id, team_internal_id):
         super(DciControlServer, self).__init__(__name__)
         self.config.update(conf)
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
         self.sender = self._get_zmq_sender(conf['ZMQ_CONN'])
         self.team_admin_id = team_admin_id
+        self.team_internal_id = team_internal_id
 
     def _get_zmq_sender(self, zmq_conn):
         global zmq_sender
@@ -107,8 +108,8 @@ def configure_logging(conf):
 
 
 def create_app(conf):
-    team_admin_id = dci_config.sanity_check(conf)
-    dci_app = DciControlServer(conf, team_admin_id)
+    team_admin_id, team_internal_id = dci_config.sanity_check(conf)
+    dci_app = DciControlServer(conf, team_admin_id, team_internal_id)
     dci_app.url_map.converters['uuid'] = utils.UUIDConverter
 
     dci_app.logger.disabled = True
@@ -117,6 +118,8 @@ def create_app(conf):
     @dci_app.before_request
     def before_request():
         flask.g.team_admin_id = dci_app.team_admin_id
+        flask.g.team_internal_id = dci_app.team_internal_id
+
         for i in range(5):
             try:
                 flask.g.db_conn = dci_app.engine.connect()

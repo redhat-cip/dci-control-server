@@ -84,10 +84,13 @@ class BaseMechanism(object):
         }
 
         is_super_admin = False
+        is_read_only_user = False
         user_teams = {}
         for user_team in _user_teams:
             if user_team[models.TEAMS.c.id] == flask.g.team_admin_id:
                 is_super_admin = True
+            if user_team[models.TEAMS.c.id] == flask.g.team_internal_id:
+                is_read_only_user = True
             user_teams[user_team[models.TEAMS.c.id]] = {
                 'parent_id': user_team[models.TEAMS.c.parent_id],
                 'id': user_team[models.TEAMS.c.id],
@@ -97,6 +100,7 @@ class BaseMechanism(object):
         all_teams = self._get_all_teams()
         user_info['teams'] = user_teams
         user_info['is_super_admin'] = is_super_admin
+        user_info['is_read_only_user'] = is_read_only_user
 
         return Identity(user_info, all_teams)
 
@@ -257,13 +261,13 @@ class OpenIDCAuth(BaseMechanism):
             raise dci_exc.DCIException('JWT token expired, please refresh.',
                                        status_code=401)
 
-        role = 'USER'
+        team_id = None
         ro_group = dci_config.generate_conf().get('SSO_READ_ONLY_GROUP')
         realm_access = decoded_token['realm_access']
         if 'roles' in realm_access and ro_group in realm_access['roles']:
-            role = 'READ_ONLY_USER'
+            team_id = flask.g.team_internal_id
 
-        user_info = self._get_user_info(decoded_token, role)
+        user_info = self._get_user_info(decoded_token, team_id)
         try:
             self.identity = self._get_or_create_user(user_info)
         except sa_exc.IntegrityError:
@@ -271,13 +275,12 @@ class OpenIDCAuth(BaseMechanism):
         return True
 
     @staticmethod
-    def _get_user_info(token, role):
+    def _get_user_info(token, team_id):
         return {
-            'role': role,
             'name': token.get('username'),
             'fullname': token.get('username'),
             'sso_username': token.get('username'),
-            'team_id': None,
+            'team_id': team_id,
             'email': token.get('email'),
             'timezone': 'UTC',
         }
@@ -290,14 +293,13 @@ class OpenIDCAuth(BaseMechanism):
         )
         identity = self.identity_from_db(models.USERS,
                                          constraint)
-        role = user_info.pop('role')
         if identity is None:
             u_id = flask.g.db_conn.execute(models.USERS.insert().values(user_info)).inserted_primary_key[0]  # noqa
             flask.g.db_conn.execute(
                 models.JOIN_USERS_TEAMS_ROLES.insert().values(
                     user_id=u_id,
-                    team_id=None,
-                    role=role)
+                    team_id=user_info['team_id'],
+                    role='USER')
             )
             identity = self.identity_from_db(models.USERS,
                                              constraint)
