@@ -50,7 +50,17 @@ _EMBED_MANY = {
 @decorators.login_required
 @audits.log
 def create_teams(user):
+    if not getattr(flask.request, 'json'):
+        return flask.Response(
+            json.dumps({'msg': 'no json field'}), 500,
+            content_type='application/json'
+        )
     values = flask.request.json
+    if values is None:
+        return flask.Response(
+            json.dumps({'msg': 'json field None'}), 500,
+            content_type='application/json'
+        )
     check_json_is_valid(create_team_schema, values)
     values.update(v1_utils.common_values_dict())
 
