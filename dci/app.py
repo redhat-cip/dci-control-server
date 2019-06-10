@@ -66,6 +66,12 @@ class DciControlServer(flask.Flask):
         return super(DciControlServer, self).process_response(resp)
 
 
+def handle_regular_exception(exception):
+    response = flask.jsonify(str(exception))
+    response.status_code = 400
+    return response
+
+
 def handle_api_exception(api_exception):
     response = flask.jsonify(api_exception.to_dict())
     response.status_code = api_exception.status_code
@@ -142,11 +148,15 @@ def create_app(conf):
                                    handle_api_exception)
     dci_app.register_error_handler(sa_exc.DBAPIError,
                                    handle_dbapi_exception)
+    dci_app.register_error_handler(Exception,
+                                   handle_regular_exception)
 
     # Registering REST API v1
     dci_app.register_blueprint(api_v1.api, url_prefix='/api/v1')
 
     # Registering custom encoder
     dci_app.json_encoder = utils.JSONEncoder
+
+    dci_app.config['PROPAGATE_EXCEPTIONS'] = True
 
     return dci_app
