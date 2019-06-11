@@ -216,7 +216,8 @@ def add_team_to_topic(user, topic_id):
 
     if (user.is_not_super_admin() and
         user.is_not_in_team(team_product_id) and
-        user.is_not_product_owner(team_id)):
+        user.is_not_product_owner(team_id) and
+        user.is_not_epm()):
         raise dci_exc.Unauthorized()
 
     values = {'topic_id': topic['id'],
@@ -241,7 +242,8 @@ def delete_team_from_topic(user, topic_id, team_id):
     product = v1_utils.verify_existence_and_get(topic['product_id'],
                                                 models.PRODUCTS)
 
-    if user.is_not_super_admin() and user.is_not_in_team(product['team_id']):
+    if (user.is_not_super_admin() and user.is_not_in_team(product['team_id'])
+        and user.is_not_epm()):
         raise dci_exc.Unauthorized()
 
     JTT = models.JOINS_TOPICS_TEAMS
@@ -261,8 +263,9 @@ def delete_team_from_topic(user, topic_id, team_id):
 def get_all_teams_from_topic(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
-    if user.is_not_super_admin() and \
-            not user.product_id == topic['product_id']:
+    if (user.is_not_super_admin()
+        and user.product_id != topic['product_id']
+        and user.is_not_epm()):
         raise dci_exc.Unauthorized()
 
     # Get all teams which belongs to a given topic
