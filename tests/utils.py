@@ -154,7 +154,7 @@ def provision(db_conn):
     team_user_id = db_insert(models.TEAMS, name='user',
                              parent_id=team_product_id)
     db_insert(models.TEAMS, name='Red Hat')
-    db_insert(models.TEAMS, name='EPM')
+    team_epm_id = db_insert(models.TEAMS, name='EPM')
 
     # Create users
     user_pw_hash = auth.hash_password('user')
@@ -201,6 +201,21 @@ def provision(db_conn):
               user_id=u_id,
               team_id=team_product_id,
               role='PRODUCT_OWNER')
+
+    epm_pw_hash = auth.hash_password('epm')
+    u_id = db_insert(models.USERS,
+                     name='epm',
+                     sso_username='epm',
+                     password=epm_pw_hash,
+                     fullname='Partner Engineer',
+                     email='epm@redhat.com',
+                     team_id=team_epm_id)
+
+    db_insert(models.JOIN_USERS_TEAMS_ROLES,
+              return_pk=False,
+              user_id=u_id,
+              team_id=team_epm_id,
+              role='EPM')
 
     admin_pw_hash = auth.hash_password('admin')
     u_id = db_insert(models.USERS,
