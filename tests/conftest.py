@@ -255,6 +255,13 @@ def team_redhat_id(admin):
 
 
 @pytest.fixture
+def team_epm_id(admin):
+    team = admin.get('/api/v1/teams?where=name:EPM')
+    team = admin.get('/api/v1/teams/%s' % team.data['teams'][0]['id']).data
+    return str(team['team']['id'])
+
+
+@pytest.fixture
 def topic_user(admin, user, team_user_id, product):
     data = {'name': 'topic_user_name', 'product_id': product['id'],
             'component_types': ['type_1', 'type_2', 'type_3']}

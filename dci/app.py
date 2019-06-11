@@ -16,29 +16,33 @@
 from dci.api import v1 as api_v1
 from dci.common import exceptions
 from dci.common import utils
+from dci.db import models
+from dci import dci_config
 
 import flask
 import logging
 import logging.handlers
+import sys
 import time
 import zmq
 
+import sqlalchemy
 from sqlalchemy import exc as sa_exc
-
-from dci import dci_config
 
 zmq_sender = None
 
 
 class DciControlServer(flask.Flask):
-    def __init__(self, conf, team_admin_id, team_redhat_id):
+    def __init__(self, conf):
         super(DciControlServer, self).__init__(__name__)
         self.config.update(conf)
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
         self.sender = self._get_zmq_sender(conf['ZMQ_CONN'])
-        self.team_admin_id = team_admin_id
-        self.team_redhat_id = team_redhat_id
+        engine = dci_config.get_engine(self.config)
+        self.team_admin_id = self._get_team_id(engine, 'admin')
+        self.team_redhat_id = self._get_team_id(engine, 'Red Hat')
+        self.team_epm_id = self._get_team_id(engine, 'EPM')
 
     def _get_zmq_sender(self, zmq_conn):
         global zmq_sender
@@ -65,6 +69,19 @@ class DciControlServer(flask.Flask):
                            self.config['X_DOMAINS'])
 
         return super(DciControlServer, self).process_response(resp)
+
+    def _get_team_id(self, engine, name):
+        db_conn = engine.connect()
+        query = sqlalchemy.sql.select([models.TEAMS]).where(
+            models.TEAMS.c.name == name)
+        row = db_conn.execute(query).fetchone()
+        db_conn.close()
+
+        if row is None:
+            print("%s team not found. Please init the database"
+                  " with the '%s' team and 'admin' user." % (name, name))
+            sys.exit(1)
+        return row.id
 
 
 def handle_api_exception(api_exception):
@@ -108,8 +125,7 @@ def configure_logging(conf):
 
 
 def create_app(conf):
-    team_admin_id, team_redhat_id = dci_config.sanity_check(conf)
-    dci_app = DciControlServer(conf, team_admin_id, team_redhat_id)
+    dci_app = DciControlServer(conf)
     dci_app.url_map.converters['uuid'] = utils.UUIDConverter
 
     dci_app.logger.disabled = True
@@ -119,6 +135,7 @@ def create_app(conf):
     def before_request():
         flask.g.team_admin_id = dci_app.team_admin_id
         flask.g.team_redhat_id = dci_app.team_redhat_id
+        flask.g.team_epm_id = dci_app.team_epm_id
 
         for i in range(5):
             try:

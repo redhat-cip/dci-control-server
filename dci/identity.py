@@ -43,6 +43,7 @@ class Identity:
         self.teams_ids = list(self.teams.keys())
         self._is_super_admin = user_info.get('is_super_admin', False)
         self._is_read_only_user = user_info.get('is_read_only_user', False)
+        self._is_epm_user = user_info.get('is_epm_user', False)
         # if the user's team is a product team then it does have some
         # child teams, then get all the child teams
         self.child_teams_ids, self.parent_teams_ids = self._get_child_and_parent_teams_ids(self.teams, all_teams)  # noqa
@@ -81,6 +82,16 @@ class Identity:
         """Ensure the user has not the role PRODUCT_OWNER."""
 
         return not self.is_product_owner(team_id)
+
+    def is_epm(self):
+        """Ensure the user has the role EPM"""
+
+        return self._is_epm_user or self.is_super_admin()
+
+    def is_not_epm(self):
+        """Ensure the user has not the role EPM"""
+
+        return not self.is_epm()
 
     def is_read_only_user(self):
         """Check if the user is a rh employee."""
