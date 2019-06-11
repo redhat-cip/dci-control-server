@@ -185,7 +185,8 @@ def _get_job(user, job_id, embed=None):
     args = {'embed': embed}
     query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS)
 
-    if user.is_not_super_admin() and not user.is_read_only_user():
+    if (user.is_not_super_admin() and user.is_not_read_only_user()
+        and user.is_not_epm()):
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     query.add_extra_condition(_TABLE.c.id == job_id)
@@ -293,7 +294,7 @@ def create_new_update_job_from_an_existing_job(user, job_id):
     original_job = v1_utils.verify_existence_and_get(original_job_id,
                                                      models.JOBS)
 
-    if not user.is_in_team(original_job['team_id']):
+    if user.is_not_in_team(original_job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     # get the remoteci
@@ -340,7 +341,7 @@ def create_new_upgrade_job_from_an_existing_job(user):
     original_job_id = values.pop('job_id')
     original_job = v1_utils.verify_existence_and_get(original_job_id,
                                                      models.JOBS)
-    if not user.is_in_team(original_job['team_id']):
+    if user.is_not_in_team(original_job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     # get the remoteci
@@ -393,7 +394,8 @@ def get_all_jobs(user, topic_id=None):
     # add extra conditions for filtering
 
     # # If not admin nor rh employee then restrict the view to the team
-    if user.is_not_super_admin() and not user.is_read_only_user():
+    if (user.is_not_super_admin() and user.is_not_read_only_user() and
+        user.is_not_epm()):
         query.add_extra_condition(
             sql.or_(
                 _TABLE.c.team_id.in_(user.teams_ids),
@@ -455,7 +457,7 @@ def update_job_by_id(user, job_id):
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     job = dict(job)
 
-    if not user.is_in_team(job['team_id']):
+    if user.is_not_in_team(job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     # Update jobstate if needed
@@ -533,7 +535,8 @@ def get_all_results_from_jobs(user, j_id):
 
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
-    if not user.is_in_team(job['team_id']) and not user.is_read_only_user():
+    if (user.is_not_in_team(job['team_id']) and user.is_not_read_only_user()
+        and user.is_not_epm()):
         raise dci_exc.Unauthorized()
 
     # get testscases from tests_results
@@ -568,7 +571,8 @@ def delete_job_by_id(user, j_id):
 
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
-    if not user.is_in_team(job['team_id']):
+    if ((user.is_not_in_team(job['team_id']) or user.is_read_only_user()) and
+        user.is_not_epm()):
         raise dci_exc.Unauthorized()
 
     with flask.g.db_conn.begin():
@@ -597,7 +601,8 @@ def get_tags_from_job(user, job_id):
     """Retrieve all tags attached to a job."""
 
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
-    if not user.is_in_team(job['team_id']) and not user.is_read_only_user():
+    if (user.is_not_in_team(job['team_id']) and user.is_not_read_only_user()
+        and user.is_not_epm()):
         raise dci_exc.Unauthorized()
 
     JTT = models.JOIN_JOBS_TAGS
@@ -615,7 +620,7 @@ def add_tag_to_job(user, job_id):
     """Add a tag to a job."""
 
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
-    if not user.is_in_team(job['team_id']):
+    if user.is_not_in_team(job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     values = {
@@ -635,7 +640,7 @@ def delete_tag_from_job(user, job_id, tag_id):
 
     _JJT = models.JOIN_JOBS_TAGS
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
-    if not user.is_in_team(job['team_id']):
+    if user.is_not_in_team(job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
     v1_utils.verify_existence_and_get(tag_id, models.TAGS)
 

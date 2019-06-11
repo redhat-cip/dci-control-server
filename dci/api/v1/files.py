@@ -158,7 +158,8 @@ def create_files(user):
         values['job_id'] = jobstate['job_id']
 
     job = v1_utils.verify_existence_and_get(values.get('job_id'), models.JOBS)
-    if user.is_not_in_team(job['team_id']) or user.is_read_only_user():
+    if (user.is_not_in_team(job['team_id']) and user.is_read_only_user()
+        and user.is_not_epm()):
         raise dci_exc.Unauthorized()
 
     file_id = utils.gen_uuid()
@@ -200,7 +201,8 @@ def get_all_files(user, job_id):
     """
     args = check_and_get_args(flask.request.args.to_dict())
     job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
-    if user.is_not_super_admin() and user.is_not_read_only_user():
+    if (user.is_not_super_admin() and user.is_not_read_only_user()
+        and user.is_not_epm()):
         if (job['team_id'] not in user.teams_ids and
             job['team_id'] not in user.child_teams_ids):
             raise dci_exc.Unauthorized()
@@ -243,7 +245,8 @@ def get_file_object(file_id):
 @decorators.login_required
 def get_file_content(user, file_id):
     file = get_file_object(file_id)
-    if not user.is_in_team(file['team_id']) and not user.is_read_only_user():
+    if (user.is_not_in_team(file['team_id']) and user.is_not_read_only_user()
+        and user.is_not_epm()):
         raise dci_exc.Unauthorized()
     file_descriptor = get_file_descriptor(file)
     return flask.send_file(
@@ -258,7 +261,8 @@ def get_file_content(user, file_id):
 @decorators.login_required
 def get_file_testscases(user, file_id):
     file = get_file_object(file_id)
-    if not user.is_in_team(file['team_id']) and not user.is_read_only_user():
+    if (user.is_not_in_team(file['team_id']) and user.is_not_read_only_user()
+        and user.is_not_epm()):
         raise dci_exc.Unauthorized()
     file_descriptor = get_file_descriptor(file)
     jsonunit = tsfm.junit2dict(file_descriptor.read())

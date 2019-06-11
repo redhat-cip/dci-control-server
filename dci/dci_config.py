@@ -93,7 +93,7 @@ def sanity_check(conf):
 
     if row is None:
         print("Epm team not found. Please init the database"
-              " with the 'internal' team.")
+              " with the 'epm' team.")
         sys.exit(1)
     team_epm_id = row.id
 
