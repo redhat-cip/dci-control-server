@@ -62,7 +62,8 @@ def get_all_analytics(user, job_id):
 
     query = v1_utils.QueryBuilder(_TABLE, args, _A_COLUMNS)
     # If not admin nor rh employee then restrict the view to the team
-    if user.is_not_super_admin() and not user.is_read_only_user():
+    if (user.is_not_super_admin() and user.is_not_read_only_user() and
+        user.is_not_epm()):
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     query.add_extra_condition(_TABLE.c.job_id == job_id)

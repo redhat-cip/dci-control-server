@@ -101,7 +101,7 @@ def get_all_users(user):
     args = check_and_get_args(flask.request.args.to_dict())
     query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
 
-    if user.is_not_super_admin():
+    if user.is_not_super_admin() and user.is_not_epm():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
@@ -116,7 +116,7 @@ def get_all_users(user):
 
 
 def user_by_id(user, user_id):
-    if user.id != user_id and user.is_not_super_admin():
+    if user.id != user_id and user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
     user_res = v1_utils.verify_existence_and_get(user_id, _TABLE)
     return base.get_resource_by_id(user, user_res, _TABLE, _EMBED_MANY,
@@ -243,7 +243,8 @@ def delete_user_by_id(user, user_id):
 @api.route("/users/<uuid:user_id>/remotecis", methods=["GET"])
 @decorators.login_required
 def get_subscribed_remotecis(identity, user_id):
-    if identity.is_not_super_admin() and identity.id != str(user_id):
+    if (identity.is_not_super_admin() and identity.id != str(user_id)
+        and identity.is_not_epm()):
         raise dci_exc.Unauthorized()
     remotecis = flask.g.db_conn.execute(
         sql.select([models.REMOTECIS])
