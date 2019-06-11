@@ -39,7 +39,8 @@ def _check(user, topic):
 
 
 def verify_access_to_topic(user, topic):
-    if user.is_not_super_admin() and user.is_not_read_only_user():
+    if (user.is_not_super_admin() and user.is_not_read_only_user()
+        and user.is_not_epm()):
         if not _check(user, topic):
             # If topic has it's export_control set to False then only teams
             # associated to the topic can access to the topic's resources.
