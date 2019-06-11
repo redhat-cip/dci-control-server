@@ -16,29 +16,34 @@
 from dci.api import v1 as api_v1
 from dci.common import exceptions
 from dci.common import utils
+from dci.db import models
+from dci import dci_config
 
 import flask
 import logging
 import logging.handlers
+import sys
 import time
 import zmq
 
+import sqlalchemy
 from sqlalchemy import exc as sa_exc
-
-from dci import dci_config
 
 zmq_sender = None
 
 
 class DciControlServer(flask.Flask):
-    def __init__(self, conf, team_admin_id, team_redhat_id):
+    def __init__(self, conf):
         super(DciControlServer, self).__init__(__name__)
         self.config.update(conf)
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine(conf)
         self.sender = self._get_zmq_sender(conf['ZMQ_CONN'])
-        self.team_admin_id = team_admin_id
-        self.team_redhat_id = team_redhat_id
+        # these three teams are initialized in self._init_constant_teams()
+        self.team_admin_id = None
+        self.team_redhat_id = None
+        self.team_epm_id = None
+        self._init_constant_teams()
 
     def _get_zmq_sender(self, zmq_conn):
         global zmq_sender
@@ -65,6 +70,42 @@ class DciControlServer(flask.Flask):
                            self.config['X_DOMAINS'])
 
         return super(DciControlServer, self).process_response(resp)
+
+    def _init_constant_teams(self):
+        db_conn = dci_config.get_engine(self.config).connect()
+        # get the admin team id
+        query_team_admin_id = sqlalchemy.sql.select([models.TEAMS]).where(
+            models.TEAMS.c.name == 'admin')
+        row = db_conn.execute(query_team_admin_id).fetchone()
+
+        if row is None:
+            print("Admin team not found. Please init the database"
+                  " with the 'admin' team and 'admin' user.")
+            sys.exit(1)
+        self.team_admin_id = row.id
+
+        # get the redhat team id
+        query_team_redhat_id = sqlalchemy.sql.select([models.TEAMS]).where(
+            models.TEAMS.c.name == 'Red Hat')
+        row = db_conn.execute(query_team_redhat_id).fetchone()
+
+        if row is None:
+            print("Red Hat team not found. Please init the database"
+                  " with the 'Red Hat' team.")
+            sys.exit(1)
+        self.team_redhat_id = row.id
+
+        # get the epm team id
+        query_team_epm_id = sqlalchemy.sql.select([models.TEAMS]).where(
+            models.TEAMS.c.name == 'EPM')
+        row = db_conn.execute(query_team_epm_id).fetchone()
+
+        if row is None:
+            print("EPM team not found. Please init the database"
+                  " with the 'EPM' team.")
+            sys.exit(1)
+        self.team_epm_id = row.id
+        db_conn.close()
 
 
 def handle_api_exception(api_exception):
@@ -108,8 +149,7 @@ def configure_logging(conf):
 
 
 def create_app(conf):
-    team_admin_id, team_redhat_id = dci_config.sanity_check(conf)
-    dci_app = DciControlServer(conf, team_admin_id, team_redhat_id)
+    dci_app = DciControlServer(conf)
     dci_app.url_map.converters['uuid'] = utils.UUIDConverter
 
     dci_app.logger.disabled = True
@@ -119,6 +159,7 @@ def create_app(conf):
     def before_request():
         flask.g.team_admin_id = dci_app.team_admin_id
         flask.g.team_redhat_id = dci_app.team_redhat_id
+        flask.g.team_epm_id = dci_app.team_epm_id
 
         for i in range(5):
             try:

@@ -32,7 +32,8 @@ all_teams = [{'id': UUID('eaa68feb-0e23-4dee-9737-7538af531024'),
 
 
 def identity_factory(is_user=False, is_product_owner=False,
-                     is_super_admin=False, is_read_only_user=False):
+                     is_super_admin=False, is_read_only_user=False,
+                     is_epm_user=False):
     user_info = {
         'id': '12368feb-0e23-4dee-9737-7538af531234',
         'password': 'password',
@@ -42,7 +43,8 @@ def identity_factory(is_user=False, is_product_owner=False,
         'email': 'user@email.com',
         'etag': '2975580b-1915-41b7-9672-c16ccbcc1234',
         'is_super_admin': is_super_admin,
-        'is_read_only_user': is_read_only_user
+        'is_read_only_user': is_read_only_user,
+        'is_epm_user': is_epm_user
     }
 
     if is_super_admin:
@@ -83,6 +85,14 @@ def identity_factory(is_user=False, is_product_owner=False,
                 'team_name': 'Red Hat',
                 'parent_id': None,
                 'role': 'READ_ONLY_USER'
+            }
+        }
+    elif is_epm_user:
+        user_info['teams'] = {
+            UUID('12347af1-f90f-1234-8276-fbc4bfa81234'): {
+                'team_name': 'epm',
+                'parent_id': None,
+                'role': 'EPM'
             }
         }
 
@@ -190,3 +200,12 @@ def test_teams_ids():
 def test_teams_ids_sso_user():
     user = identity_factory(is_read_only_user=True)
     assert user.is_read_only_user()
+
+
+def test_is_epm():
+    epm = identity_factory(is_epm_user=True)
+    assert epm.is_epm()
+
+
+def test_is_not_epmn():
+    assert identity_factory(is_epm_user=False).is_not_epm()
