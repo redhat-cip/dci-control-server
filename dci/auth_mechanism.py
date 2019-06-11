@@ -85,12 +85,15 @@ class BaseMechanism(object):
 
         is_super_admin = False
         is_read_only_user = False
+        is_epm_user = False
         user_teams = {}
         for user_team in _user_teams:
             if user_team[models.TEAMS.c.id] == flask.g.team_admin_id:
                 is_super_admin = True
             if user_team[models.TEAMS.c.id] == flask.g.team_internal_id:
                 is_read_only_user = True
+            if user_team[models.TEAMS.c.id] == flask.g.team_epm_id:
+                is_epm_user = True
             user_teams[user_team[models.TEAMS.c.id]] = {
                 'parent_id': user_team[models.TEAMS.c.parent_id],
                 'id': user_team[models.TEAMS.c.id],
@@ -101,6 +104,7 @@ class BaseMechanism(object):
         user_info['teams'] = user_teams
         user_info['is_super_admin'] = is_super_admin
         user_info['is_read_only_user'] = is_read_only_user
+        user_info['is_epm_user'] = is_epm_user
 
         return Identity(user_info, all_teams)
 

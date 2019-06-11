@@ -26,7 +26,7 @@ import pytest
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
 def test_sso_auth_verified(m_datetime, admin, app, engine, access_token,
-                           team_admin_id, team_internal_id):
+                           team_admin_id, team_internal_id, team_epm_id):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
         fromtimestamp(1518653629).timetuple()
@@ -37,6 +37,7 @@ def test_sso_auth_verified(m_datetime, admin, app, engine, access_token,
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
         flask.g.team_internal_id = team_internal_id
+        flask.g.team_epm_id = team_epm_id
         flask.g.db_conn = engine.connect()
         mech = authm.OpenIDCAuth(sso_headers)
         assert mech.authenticate()
@@ -49,7 +50,7 @@ def test_sso_auth_verified(m_datetime, admin, app, engine, access_token,
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
 def test_sso_auth_verified_rh_employee(m_datetime, admin, app, engine, access_token_rh_employee,  # noqa
-                                       team_admin_id, team_internal_id):
+                                       team_admin_id, team_internal_id, team_epm_id):  # noqa
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime. \
         fromtimestamp(1518653629).timetuple()
@@ -60,6 +61,7 @@ def test_sso_auth_verified_rh_employee(m_datetime, admin, app, engine, access_to
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
         flask.g.team_internal_id = team_internal_id
+        flask.g.team_epm_id = team_epm_id
         flask.g.db_conn = engine.connect()
         mech = authm.OpenIDCAuth(sso_headers)
         assert mech.authenticate()
