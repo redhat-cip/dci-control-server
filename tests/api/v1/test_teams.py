@@ -169,12 +169,12 @@ def test_put_teams(admin):
     assert ppt.data['team']['name'] == 'nname'
 
 
-def test_put_team_external_flag(user, admin, product_owner, team_product_id):
+def test_put_team_external_flag(user, admin, epm, team_product_id):
     cteam = admin.post('/api/v1/teams', data={'name': 'pname',
                                               'parent_id': team_product_id})
     cteam_id = cteam.data['team']['id']
 
-    cteam = product_owner.get('/api/v1/teams/%s' % cteam_id)
+    cteam = epm.get('/api/v1/teams/%s' % cteam_id)
     assert cteam.status_code == 200
     cteam_etag = cteam.headers.get('ETag')
 
@@ -183,9 +183,9 @@ def test_put_team_external_flag(user, admin, product_owner, team_product_id):
                          headers={'If-match': cteam_etag})
     assert cteam_put.status_code == 401
 
-    cteam_put = product_owner.put('/api/v1/teams/%s' % cteam_id,
-                                  data={'external': False},
-                                  headers={'If-match': cteam_etag})
+    cteam_put = admin.put('/api/v1/teams/%s' % cteam_id,
+                          data={'external': False},
+                          headers={'If-match': cteam_etag})
     assert cteam_put.status_code == 200
     assert cteam_put.data['team']['external'] is False
 
