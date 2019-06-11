@@ -97,7 +97,7 @@ def get_all_teams(user):
 @decorators.login_required
 def get_team_by_id(user, t_id):
     team = v1_utils.verify_existence_and_get(t_id, _TABLE)
-    if user.is_not_in_team(t_id):
+    if user.is_not_in_team(t_id) and user.is_not_epm():
         raise dci_exc.Unauthorized()
     return base.get_resource_by_id(user, team, _TABLE, _EMBED_MANY)
 
@@ -129,7 +129,7 @@ def put_team(user, t_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = flask.request.json
     check_json_is_valid(update_team_schema, values)
-    if user.is_not_product_owner(t_id):
+    if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)
@@ -160,7 +160,7 @@ def delete_team_by_id(user, t_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     v1_utils.verify_existence_and_get(t_id, _TABLE)
 
-    if user.is_not_product_owner(t_id):
+    if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
     with flask.g.db_conn.begin():
