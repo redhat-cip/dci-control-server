@@ -15,9 +15,7 @@
 # under the License.
 
 import os
-import sys
 
-from dci.db import models
 from dci.stores import filesystem, swift
 
 import flask
@@ -60,32 +58,3 @@ def get_store(container):
         configuration['path'] = conf['STORE_FILE_PATH']
         store_engine = filesystem.FileSystem(configuration)
     return store_engine
-
-
-def sanity_check(conf):
-    db_conn = get_engine(conf).connect()
-    # get the admin team id
-    query_team_admin_id = sqlalchemy.sql.select([models.TEAMS]).where(
-        models.TEAMS.c.name == 'admin')
-    row = db_conn.execute(query_team_admin_id).fetchone()
-
-    if row is None:
-        print("Admin team not found. Please init the database"
-              " with the 'admin' team and 'admin' user.")
-        sys.exit(1)
-    team_admin_id = row.id
-
-    # get the redhat team id
-    query_team_redhat_id = sqlalchemy.sql.select([models.TEAMS]).where(
-        models.TEAMS.c.name == 'Red Hat')
-    row = db_conn.execute(query_team_redhat_id).fetchone()
-
-    if row is None:
-        print("Red Hat team not found. Please init the database"
-              " with the 'Red Hat' team.")
-        sys.exit(1)
-    team_redhat_id = row.id
-
-    db_conn.close()
-
-    return team_admin_id, team_redhat_id
