@@ -443,7 +443,7 @@ def test_success_detach_myself_from_remoteci_in_team(user, user_id,
 
     r = user.delete('/api/v1/remotecis/%s/users/%s' % (remoteci_user_id,
                                                        user_id))
-
+    print(r.data)
     assert r.status_code == 204
 
 

@@ -60,7 +60,7 @@ def create_remotecis(user):
     check_json_is_valid(create_remoteci_schema, values)
     values.update(v1_utils.common_values_dict())
 
-    if user.is_not_in_team(values['team_id']):
+    if user.is_not_in_team(values['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     values.update({
@@ -92,7 +92,8 @@ def get_all_remotecis(user, t_id=None):
     query = v1_utils.QueryBuilder(_TABLE, args, _R_COLUMNS,
                                   ignore_columns=['keys', 'cert_fp'])
 
-    if user.is_not_super_admin() and not user.is_read_only_user():
+    if (user.is_not_super_admin() and user.is_not_read_only_user()
+        and user.is_not_epm()):
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     if t_id is not None:
@@ -111,7 +112,7 @@ def get_all_remotecis(user, t_id=None):
 @decorators.login_required
 def get_remoteci_by_id(user, r_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
-    if user.is_not_in_team(remoteci['team_id']):
+    if user.is_not_in_team(remoteci['team_id']) and user.is_not_epm():
         raise dci_exc.DCINotFound('RemoteCI', remoteci['id'])
     return base.get_resource_by_id(user, remoteci, _TABLE, _EMBED_MANY,
                                    ignore_columns=["keys", "cert_fp"])
@@ -127,7 +128,7 @@ def put_remoteci(user, r_id):
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
-    if not user.is_in_team(remoteci['team_id']):
+    if user.is_not_in_team(remoteci['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     values['etag'] = utils.gen_etag()
@@ -162,7 +163,7 @@ def delete_remoteci_by_id(user, remoteci_id):
 
     remoteci = v1_utils.verify_existence_and_get(remoteci_id, _TABLE)
 
-    if not user.is_in_team(remoteci['team_id']):
+    if user.is_not_in_team(remoteci['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     with flask.g.db_conn.begin():
@@ -202,7 +203,7 @@ def get_remoteci_data(user, r_id):
 def get_remoteci_data_json(user, r_id):
     query = v1_utils.QueryBuilder(_TABLE, {}, _R_COLUMNS)
 
-    if user.is_not_super_admin():
+    if user.is_not_super_admin() and user.is_not_epm():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     query.add_extra_condition(_TABLE.c.id == r_id)
@@ -219,7 +220,7 @@ def get_remoteci_data_json(user, r_id):
 def add_user_to_remoteci(user, r_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
-    if user.is_not_in_team(remoteci['team_id']):
+    if user.is_not_in_team(remoteci['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     query = models.JOIN_USER_REMOTECIS.insert().values({'user_id': user.id,
@@ -252,11 +253,9 @@ def get_all_users_from_remotecis(user, r_id):
 @api.route('/remotecis/<uuid:r_id>/users/<uuid:u_id>', methods=['DELETE'])
 @decorators.login_required
 def delete_user_from_remoteci(user, r_id, u_id):
-    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
+    v1_utils.verify_existence_and_get(r_id, _TABLE)
 
-    if u_id != user.id and \
-       not user.is_in_team(remoteci['team_id']) and \
-       user.is_regular_user():
+    if str(u_id) != user.id and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     JUR = models.JOIN_USER_REMOTECIS
@@ -289,7 +288,7 @@ def put_api_secret(user, r_id):
     utils.check_and_get_etag(flask.request.headers)
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
-    if not user.is_in_team(remoteci['team_id']):
+    if user.is_not_in_team(remoteci['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     return base.refresh_api_secret(user, remoteci, _TABLE)
@@ -306,7 +305,7 @@ def create_configuration(user, r_id):
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 
-    if user.is_not_in_team(remoteci['team_id']):
+    if user.is_not_in_team(remoteci['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     rconfiguration_id = values.get('id')
@@ -340,7 +339,7 @@ def get_all_configurations(user, r_id):
     args = check_and_get_args(flask.request.args.to_dict())
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
-    if not user.is_in_team(remoteci['team_id']):
+    if user.is_not_in_team(remoteci['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     query = sql.select([_RCONFIGURATIONS]). \
@@ -394,7 +393,7 @@ def delete_configuration_by_id(user, r_id, c_id):
     remoteci = v1_utils.verify_existence_and_get(r_id, models.REMOTECIS)
     v1_utils.verify_existence_and_get(c_id, _RCONFIGURATIONS)
 
-    if not user.is_in_team(remoteci['team_id']):
+    if user.is_not_in_team(remoteci['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     with flask.g.db_conn.begin():

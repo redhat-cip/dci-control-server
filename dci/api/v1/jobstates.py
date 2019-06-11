@@ -107,7 +107,8 @@ def get_all_jobstates(user, job_id):
     """
     args = check_and_get_args(flask.request.args.to_dict())
     job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
-    if user.is_not_super_admin() and user.is_not_read_only_user():
+    if (user.is_not_super_admin() and user.is_not_read_only_user()
+        and user.is_not_epm()):
         if (job['team_id'] not in user.teams_ids and
             job['team_id'] not in user.child_teams_ids):
             raise dci_exc.Unauthorized()
@@ -136,7 +137,7 @@ def delete_jobstate_by_id(user, js_id):
     jobstate = v1_utils.verify_existence_and_get(js_id, _TABLE)
     _job = v1_utils.verify_existence_and_get(jobstate['job_id'], models.JOBS)
 
-    if not user.is_in_team(_job['team_id']):
+    if user.is_not_in_team(_job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     where_clause = _TABLE.c.id == js_id
