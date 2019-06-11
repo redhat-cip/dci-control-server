@@ -86,6 +86,17 @@ def sanity_check(conf):
         sys.exit(1)
     team_internal_id = row.id
 
+    # get the epm team id
+    query_team_epm_id = sqlalchemy.sql.select([models.TEAMS]).where(
+        models.TEAMS.c.name == 'epm')
+    row = db_conn.execute(query_team_epm_id).fetchone()
+
+    if row is None:
+        print("Epm team not found. Please init the database"
+              " with the 'internal' team.")
+        sys.exit(1)
+    team_epm_id = row.id
+
     db_conn.close()
 
-    return team_admin_id, team_internal_id
+    return team_admin_id, team_internal_id, team_epm_id
