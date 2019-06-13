@@ -113,7 +113,7 @@ def create_app(conf):
 
     dci_app.logger.disabled = True
     configure_logging(conf)
-
+    raise
     @dci_app.before_request
     def before_request():
         flask.g.team_admin_id = dci_app.team_admin_id
