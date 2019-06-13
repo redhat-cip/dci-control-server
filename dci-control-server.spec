@@ -35,6 +35,7 @@ BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
 BuildRequires:  python2-jsonschema
 BuildRequires:  systemd
+BuildRequires:  zeromq
 %{?systemd_requires}
 Requires:       pyOpenSSL
 Requires:       python-alembic
@@ -54,6 +55,7 @@ Requires:       python-dciauth
 Requires:       python2-swiftclient
 Requires:       python2-jsonschema
 Requires:       pytz
+Requires:       zeromq
 
 %description
 The implementation of the DCI control server API.
