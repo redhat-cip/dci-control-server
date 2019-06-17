@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8497281a_d264ec03",
+        "filename": "dci/alembic/versions/4e45b2030162_move_products_users_to_epm_team.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 63,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-06-17T17:36:10Z",
+      "side": 1,
+      "message": "same as previous patch, maybe you are missing a db_connect.execute() no?",
+      "range": {
+        "startLine": 60,
+        "startChar": 12,
+        "endLine": 63,
+        "endChar": 46
+      },
+      "revId": "fe4492379220e5b05fd5acbd997241b30cdbc8f9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "aa032903_7d7a35f7",
+        "filename": "dci/app.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 112,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-06-17T17:36:10Z",
+      "side": 1,
+      "message": "not a big fan of this method returning 3 values.\n\nname of the method is also bad\n\nMaybe it\u0027s time to rename it correctly and return a dictionary \n\nmaybe we can enhance conf object no? and have something like this after:\n\nDciControlServer(conf)\nconf[\u0027team_admin_id\u0027], etc...",
+      "range": {
+        "startLine": 112,
+        "startChar": 60,
+        "endLine": 112,
+        "endChar": 72
+      },
+      "revId": "fe4492379220e5b05fd5acbd997241b30cdbc8f9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5fd91e37_62975969",
+        "filename": "dci/dci_config.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 84,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-06-17T17:36:10Z",
+      "side": 1,
+      "message": "The name of the company is \u0027Red Hat\u0027 not Redhat",
+      "range": {
+        "startLine": 84,
+        "startChar": 15,
+        "endLine": 84,
+        "endChar": 21
+      },
+      "revId": "fe4492379220e5b05fd5acbd997241b30cdbc8f9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "455e8b5f_2d6c995e",
+        "filename": "dci/dci_config.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 85,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-06-17T17:36:10Z",
+      "side": 1,
+      "message": "Red Hat",
+      "range": {
+        "startLine": 85,
+        "startChar": 26,
+        "endLine": 85,
+        "endChar": 32
+      },
+      "revId": "fe4492379220e5b05fd5acbd997241b30cdbc8f9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baf532ed_da3ae56b",
+        "filename": "dci/identity.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 94,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-06-17T17:36:10Z",
+      "side": 1,
+      "message": "test this in test_identity",
+      "range": {
+        "startLine": 86,
+        "startChar": 0,
+        "endLine": 94,
+        "endChar": 32
+      },
+      "revId": "fe4492379220e5b05fd5acbd997241b30cdbc8f9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
