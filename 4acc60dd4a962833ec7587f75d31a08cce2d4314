@@ -45,6 +45,29 @@
       "revId": "4acc60dd4a962833ec7587f75d31a08cce2d4314",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4394d36a_9b690270",
+        "filename": "dci/dci_config.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-06-17T12:03:03Z",
+      "side": 1,
+      "message": "Red Hat",
+      "range": {
+        "startLine": 80,
+        "startChar": 32,
+        "endLine": 80,
+        "endChar": 38
+      },
+      "revId": "4acc60dd4a962833ec7587f75d31a08cce2d4314",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
