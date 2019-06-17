@@ -48,6 +48,29 @@
     },
     {
       "key": {
+        "uuid": "6d6906a1_5ffd1675",
+        "filename": "dci/alembic/versions/32fdbb3715e7_move_read_only_users_to_redhat_team.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-06-17T16:49:40Z",
+      "side": 1,
+      "message": "This wont work\n\n1/ users should be transformed to an array of dict. Something like:\n\nusers \u003d [dict(user) for user in users]\n\n2/ users is maybe not a good name users_teams_roles maybe better\n\n3/  user_id\u003duser.id there is no id column in _JUTR. You probably want user[\u0027user_id\u0027] or better users_teams_roles[\u0027user_id\u0027]\n\n4/ insert without db_conn.execute() won\u0027t work no?",
+      "range": {
+        "startLine": 53,
+        "startChar": 0,
+        "endLine": 59,
+        "endChar": 42
+      },
+      "revId": "4acc60dd4a962833ec7587f75d31a08cce2d4314",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4394d36a_9b690270",
         "filename": "dci/dci_config.py",
         "patchSetId": 5
