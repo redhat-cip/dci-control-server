@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "7507f46b_74c05376",
+        "filename": "bin/dci-dbinit",
+        "patchSetId": 5
+      },
+      "lineNbr": 68,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-06-17T21:21:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "8afb0770_1618ea1e",
+      "range": {
+        "startLine": 68,
+        "startChar": 44,
+        "endLine": 68,
+        "endChar": 50
+      },
+      "revId": "4acc60dd4a962833ec7587f75d31a08cce2d4314",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c1939e73_212ed627",
         "filename": "dci/alembic/versions/32fdbb3715e7_move_read_only_users_to_redhat_team.py",
         "patchSetId": 5
@@ -36,6 +60,30 @@
       "writtenOn": "2019-06-17T12:01:57Z",
       "side": 1,
       "message": "team name is \u0027Red Hat\u0027",
+      "range": {
+        "startLine": 40,
+        "startChar": 32,
+        "endLine": 40,
+        "endChar": 38
+      },
+      "revId": "4acc60dd4a962833ec7587f75d31a08cce2d4314",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2d187ce1_7a3f0b53",
+        "filename": "dci/alembic/versions/32fdbb3715e7_move_read_only_users_to_redhat_team.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-06-17T21:21:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c1939e73_212ed627",
       "range": {
         "startLine": 40,
         "startChar": 32,
@@ -71,6 +119,30 @@
     },
     {
       "key": {
+        "uuid": "57f19722_28fd033d",
+        "filename": "dci/alembic/versions/32fdbb3715e7_move_read_only_users_to_redhat_team.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-06-17T21:21:43Z",
+      "side": 1,
+      "message": "1/ not really RowProxy objects can either be cast to dict or you can directly access the attributes.\n\n2/ done\n\n3/ done\n\n4/ done, maybe thats why it looked it\u0027s working lol",
+      "parentUuid": "6d6906a1_5ffd1675",
+      "range": {
+        "startLine": 53,
+        "startChar": 0,
+        "endLine": 59,
+        "endChar": 42
+      },
+      "revId": "4acc60dd4a962833ec7587f75d31a08cce2d4314",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4394d36a_9b690270",
         "filename": "dci/dci_config.py",
         "patchSetId": 5
@@ -82,6 +154,30 @@
       "writtenOn": "2019-06-17T12:03:03Z",
       "side": 1,
       "message": "Red Hat",
+      "range": {
+        "startLine": 80,
+        "startChar": 32,
+        "endLine": 80,
+        "endChar": 38
+      },
+      "revId": "4acc60dd4a962833ec7587f75d31a08cce2d4314",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "70912538_704fa957",
+        "filename": "dci/dci_config.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 80,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-06-17T21:21:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4394d36a_9b690270",
       "range": {
         "startLine": 80,
         "startChar": 32,
@@ -117,6 +213,30 @@
     },
     {
       "key": {
+        "uuid": "d9dc8c68_4b819e11",
+        "filename": "tests/conftest.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 252,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-06-17T21:21:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c84c6730_2cea4113",
+      "range": {
+        "startLine": 252,
+        "startChar": 47,
+        "endLine": 252,
+        "endChar": 53
+      },
+      "revId": "4acc60dd4a962833ec7587f75d31a08cce2d4314",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "41462805_7584d115",
         "filename": "tests/test_identity.py",
         "patchSetId": 5
@@ -140,6 +260,30 @@
     },
     {
       "key": {
+        "uuid": "56ec26e8_34baca4e",
+        "filename": "tests/test_identity.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 83,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-06-17T21:21:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "41462805_7584d115",
+      "range": {
+        "startLine": 83,
+        "startChar": 30,
+        "endLine": 83,
+        "endChar": 36
+      },
+      "revId": "4acc60dd4a962833ec7587f75d31a08cce2d4314",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4e608cc9_23d26eca",
         "filename": "tests/utils.py",
         "patchSetId": 5
@@ -151,6 +295,30 @@
       "writtenOn": "2019-06-17T12:04:20Z",
       "side": 1,
       "message": "Red Hat",
+      "range": {
+        "startLine": 156,
+        "startChar": 34,
+        "endLine": 156,
+        "endChar": 40
+      },
+      "revId": "4acc60dd4a962833ec7587f75d31a08cce2d4314",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "5f9a14f1_701698be",
+        "filename": "tests/utils.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-06-17T21:21:43Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4e608cc9_23d26eca",
       "range": {
         "startLine": 156,
         "startChar": 34,
