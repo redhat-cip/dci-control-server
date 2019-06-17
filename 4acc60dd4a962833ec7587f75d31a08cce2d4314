@@ -68,6 +68,29 @@
       "revId": "4acc60dd4a962833ec7587f75d31a08cce2d4314",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "c84c6730_2cea4113",
+        "filename": "tests/conftest.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 252,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-06-17T12:03:44Z",
+      "side": 1,
+      "message": "Red Hat",
+      "range": {
+        "startLine": 252,
+        "startChar": 47,
+        "endLine": 252,
+        "endChar": 53
+      },
+      "revId": "4acc60dd4a962833ec7587f75d31a08cce2d4314",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
