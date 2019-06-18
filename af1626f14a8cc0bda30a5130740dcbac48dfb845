@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2e71b5e0_df8e53f6",
+        "filename": "dci/app.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-06-18T06:20:18Z",
+      "side": 1,
+      "message": "self.team_admin_id \u003d self.create_team(engine, \u0027admin\u0027)\nself.team_redhat_id \u003d self.create_team(engine, \u0027Red Hat\u0027)\nself.team_epm_id \u003d self.create_team(engine, \u0027EPM\u0027)",
+      "range": {
+        "startLine": 43,
+        "startChar": 0,
+        "endLine": 46,
+        "endChar": 35
+      },
+      "revId": "af1626f14a8cc0bda30a5130740dcbac48dfb845",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "8f65704f_e38c3a35",
+        "filename": "dci/app.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 108,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-06-18T06:20:18Z",
+      "side": 1,
+      "message": "def create_team(self, engine, team_name):\n        db_conn \u003d engine.connect()\n        query_team_id \u003d sqlalchemy.sql.select([models.TEAMS]).where(\n            models.TEAMS.c.name \u003d\u003d team_name)\n        row \u003d db_conn.execute(query_team_admin_id).fetchone()\n        db_conn.close()\n        if row is None:\n            print(\"%s team not found. Please init the database with the %s team.\" % (team_name, team_name))\n            return None\n        return row.id",
+      "range": {
+        "startLine": 74,
+        "startChar": 0,
+        "endLine": 108,
+        "endChar": 23
+      },
+      "revId": "af1626f14a8cc0bda30a5130740dcbac48dfb845",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
