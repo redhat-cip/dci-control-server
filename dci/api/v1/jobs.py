@@ -88,6 +88,8 @@ def create_jobs(user):
         raise dci_exc.DCIException('jobs must be created by remoteci')
 
     topic_id = values.get('topic_id')
+    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+    product_id = topic['product_id']
     if topic_id:
         v1_utils.verify_team_in_topic(user, topic_id)
 
@@ -103,7 +105,8 @@ def create_jobs(user):
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get('HTTP_CLIENT_VERSION'),
         'previous_job_id': previous_job_id,
-        'team_id': user.teams_ids[0]
+        'team_id': user.teams_ids[0],
+        'product_id': product_id
     })
 
     # create the job and feed the jobs_components table
@@ -125,7 +128,7 @@ def create_jobs(user):
                           content_type='application/json')
 
 
-def _build_job(topic_id, remoteci, components_ids, values,
+def _build_job(product_id, topic_id, remoteci, components_ids, values,
                topic_id_secondary=None, previous_job_id=None,
                update_previous_job_id=None):
 
@@ -144,6 +147,7 @@ def _build_job(topic_id, remoteci, components_ids, values,
             topic_id_secondary, s_component_types, [])
 
     values.update({
+        'product_id': product_id,
         'topic_id': topic_id,
         'topic_id_secondary': topic_id_secondary,
         'rconfiguration_id': p_rconfiguration['id'] if p_rconfiguration else None,  # noqa
@@ -249,6 +253,7 @@ def schedule_jobs(user):
 
     # check primary topic
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+    product_id = topic['product_id']
     if topic['state'] != 'active':
         msg = 'Topic %s:%s not active.' % (topic_id, topic['name'])
         raise dci_exc.DCIException(msg, status_code=412)
@@ -268,7 +273,7 @@ def schedule_jobs(user):
     remotecis.kill_existing_jobs(remoteci['id'])
 
     components_ids = values.pop('components_ids')
-    values = _build_job(topic_id, remoteci, components_ids, values,
+    values = _build_job(product_id, topic_id, remoteci, components_ids, values,
                         topic_id_secondary=topic_id_secondary)
 
     return flask.Response(json.dumps({'job': values}), 201,
@@ -305,6 +310,8 @@ def create_new_update_job_from_an_existing_job(user, job_id):
 
     # get the associated topic
     topic_id = str(original_job['topic_id'])
+    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+    product_id = topic['product_id']
     v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
 
     values.update({
@@ -314,7 +321,7 @@ def create_new_update_job_from_an_existing_job(user, job_id):
         ),
     })
 
-    values = _build_job(topic_id, remoteci, [], values,
+    values = _build_job(product_id, topic_id, remoteci, [], values,
                         update_previous_job_id=original_job_id)
 
     return flask.Response(json.dumps({'job': values}), 201,
@@ -366,10 +373,12 @@ def create_new_upgrade_job_from_an_existing_job(user):
     if not next_topic_id:
         raise dci_exc.DCIException(
             "topic %s does not contains a next topic" % topic_id)
+    topic = v1_utils.verify_existence_and_get(next_topic_id, models.TOPICS)
+    product_id = topic['product_id']
 
     # instantiate a new job in the next_topic_id
     # todo(yassine): make possible the upgrade to choose specific components
-    values = _build_job(next_topic_id, remoteci, [], values,
+    values = _build_job(product_id, next_topic_id, remoteci, [], values,
                         previous_job_id=original_job_id)
 
     return flask.Response(json.dumps({'job': values}), 201,

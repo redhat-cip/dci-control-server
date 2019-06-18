@@ -240,7 +240,7 @@ def test_build_certification():
 
 def test_get_previous_job_in_topic(app, user, remoteci_context,
                                    components_user_ids, team_user_id,
-                                   engine):
+                                   engine, topic_user_id):
     def get_new_remoteci_context():
         data = {'name': 'rname_new', 'team_id': team_user_id}
         remoteci = user.post('/api/v1/remotecis', data=data).data
@@ -256,10 +256,10 @@ def test_get_previous_job_in_topic(app, user, remoteci_context,
     data = {
         'comment': 'kikoolol',
         'components': components_user_ids,
-        'team_id': team_user_id
+        'team_id': team_user_id,
+        'topic_id': topic_user_id
     }
     prev_job = remoteci_context.post('/api/v1/jobs', data=data).data
-    print(prev_job)
     prev_job_id = prev_job['job']['id']
 
     # adding a job in between from a new remoteci
