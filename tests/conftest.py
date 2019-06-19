@@ -166,6 +166,11 @@ def product_owner(app, db_provisioning):
 
 
 @pytest.fixture
+def epm(app, db_provisioning):
+    return utils.generate_client(app, ('epm', 'epm'))
+
+
+@pytest.fixture
 def product_owner_id(admin):
     team = admin.get('/api/v1/users?where=name:product_owner')
     team = admin.get('/api/v1/users/%s' % team.data['users'][0]['id']).data

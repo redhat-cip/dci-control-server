@@ -36,12 +36,13 @@ def add_user_to_team(user, team_id, user_id):
     # todo: check role in models.ROLES
     role = values.get('role', 'USER')
 
-    if user.is_not_product_owner(team_id):
-        raise dci_exc.Unauthorized()
-
-    if role == 'SUPER_ADMIN' or role == 'READ_ONLY_USER':
-        if user.is_not_super_admin():
+    if (team_id == flask.g.team_admin_id or
+        team_id == flask.g.team_redhat_id or
+        team_id == flask.g.team_epm_id) and user.is_not_super_admin():
             raise dci_exc.Unauthorized()
+
+    if user.is_not_epm():
+        raise dci_exc.Unauthorized()
 
     query = models.JOIN_USERS_TEAMS_ROLES.insert().values(
         user_id=user_id,
@@ -84,7 +85,7 @@ def get_users_from_team(user, team_id):
                                   root_join_condition=sql.and_(_JUTR.c.user_id == models.USERS.c.id,  # noqa
                                                                _JUTR.c.team_id == team_id))  # noqa
 
-    if user.is_not_product_owner(team_id) and user.is_not_in_team(team_id):
+    if user.is_not_epm() and user.is_not_in_team(team_id):
         raise dci_exc.Unauthorized()
 
     query.add_extra_condition(models.USERS.c.state != 'archived')
@@ -122,7 +123,7 @@ def get_teams_of_user(user, user_id):
                                   root_join_condition=sql.and_(_JUTR.c.team_id == models.TEAMS.c.id,  # noqa
                                                                _JUTR.c.user_id == user_id))  # noqa
 
-    if user.is_not_super_admin() and user.id != user_id:
+    if user.is_not_super_admin() and user.id != user_id and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     query.add_extra_condition(models.TEAMS.c.state != 'archived')
@@ -142,7 +143,7 @@ def get_teams_of_user(user, user_id):
 @decorators.login_required
 def remove_user_from_team(user, team_id, user_id):
 
-    if user.is_not_product_owner(team_id):
+    if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     _JUTR = models.JOIN_USERS_TEAMS_ROLES
