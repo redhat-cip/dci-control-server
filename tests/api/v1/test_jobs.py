@@ -355,14 +355,14 @@ def test_get_jobstates_by_job_id(admin, user, job_user_id):
     assert len(jobstates.data['job']['jobstates']) == len(found_jobstate_ids)
 
 
-def test_get_jobstates_by_job_id_by_product_owner(product_owner, admin, job_user_id):  # noqa
+def test_get_jobstates_by_job_id_by_epm(epm, admin, job_user_id):  # noqa
     data = {'status': 'new',
             'job_id': job_user_id}
     jobstate_ids = set([
         admin.post('/api/v1/jobstates', data=data).data['jobstate']['id'],
         admin.post('/api/v1/jobstates', data=data).data['jobstate']['id']])
 
-    jobstates = product_owner.get('/api/v1/jobs/%s/jobstates' % job_user_id)
+    jobstates = epm.get('/api/v1/jobs/%s/jobstates' % job_user_id)
     assert jobstates.status_code == 200
     jobstates = jobstates.data['jobstates']
 
@@ -520,9 +520,8 @@ def test_get_all_jobs_as_user(user, team_user_id, job_user_id):
         assert job['team_id'] == team_user_id
 
 
-def test_get_all_jobs_as_product_owner(product_owner, team_user_id,
-                                       job_user_id):
-    jobs = product_owner.get('/api/v1/jobs')
+def test_get_all_jobs_as_epm(epm, team_user_id, job_user_id):
+    jobs = epm.get('/api/v1/jobs')
     assert jobs.status_code == 200
     assert jobs.data['_meta']['count'] == 1
     for job in jobs.data['jobs']:
@@ -583,9 +582,9 @@ def test_get_files_by_job_id(user, job_user_id, file_job_user_id):
     assert file_from_job.data['_meta']['count'] == 1
 
 
-def test_get_files_by_job_id_as_product_owner(product_owner, job_user_id, file_job_user_id):  # noqa
+def test_get_files_by_job_id_as_epm(epm, job_user_id, file_job_user_id):  # noqa
     # get files from job
-    file_from_job = product_owner.get('/api/v1/jobs/%s/files' % job_user_id)
+    file_from_job = epm.get('/api/v1/jobs/%s/files' % job_user_id)
     assert file_from_job.status_code == 200
     assert file_from_job.data['_meta']['count'] == 1
 

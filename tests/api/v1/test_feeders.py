@@ -17,7 +17,7 @@
 from __future__ import unicode_literals
 
 
-def test_success_create_feeder_authorized_users(admin, product_owner,
+def test_success_create_feeder_authorized_users(admin, epm,
                                                 team_product_id):
     """Test to ensure user with proper permissions can create feeders
 
@@ -33,13 +33,13 @@ def test_success_create_feeder_authorized_users(admin, product_owner,
     }
 
     admin_result = admin.post('/api/v1/feeders', data=feeder_from_admin)
-    po_result = product_owner.post('/api/v1/feeders', data=feeder_from_po)
+    epm_result = epm.post('/api/v1/feeders', data=feeder_from_po)
 
     assert admin_result.status_code == 201
     assert admin_result.data['feeder']['name'] == feeder_from_admin['name']
 
-    assert po_result.status_code == 201
-    assert po_result.data['feeder']['name'] == feeder_from_po['name']
+    assert epm_result.status_code == 201
+    assert epm_result.data['feeder']['name'] == feeder_from_po['name']
 
 
 def test_failure_create_feeder_unauthorized_users(user, team_product_id):
@@ -58,17 +58,16 @@ def test_failure_create_feeder_unauthorized_users(user, team_product_id):
     assert user_result.status_code == 401
 
 
-def test_success_get_feeder_authorized_users(admin, product_owner, feeder):
+def test_success_get_feeder_authorized_users(admin, epm, feeder):
     """Test to ensure user with proper permissions can retrieve feeders."""
 
     admin_result = admin.get('/api/v1/feeders')
-    po_result = product_owner.get('/api/v1/feeders')
-
     assert admin_result.data['_meta']['count'] == 1
     assert admin_result.data['feeders'][0]['name'] == 'random-name-feeder'
 
-    assert po_result.data['_meta']['count'] == 1
-    assert po_result.data['feeders'][0]['name'] == 'random-name-feeder'
+    epm_result = epm.get('/api/v1/feeders')
+    assert epm_result.data['_meta']['count'] == 1
+    assert epm_result.data['feeders'][0]['name'] == 'random-name-feeder'
 
 
 def test_failure_get_feeder_unauthorized_users(user, feeder):
@@ -79,7 +78,7 @@ def test_failure_get_feeder_unauthorized_users(user, feeder):
     assert user_result.data['feeders'] == []
 
 
-def test_success_delete_feeder_authorized_users(admin, product_owner, feeder,
+def test_success_delete_feeder_authorized_users(admin, epm, feeder,
                                                 team_product_id):
     """Test to ensure user with proper permissions can delete feeders."""
 
@@ -87,17 +86,17 @@ def test_success_delete_feeder_authorized_users(admin, product_owner, feeder,
         'name': 'feeder-from-po', 'team_id': team_product_id
     }
 
-    po_result = product_owner.post('/api/v1/feeders', data=feeder_from_po)
-    feeder_from_po_id = po_result.data['feeder']['id']
-    feeder_from_po_etag = po_result.headers.get("ETag")
+    epm_result = epm.post('/api/v1/feeders', data=feeder_from_po)
+    feeder_from_po_id = epm_result.data['feeder']['id']
+    feeder_from_po_etag = epm_result.headers.get("ETag")
 
     admin.delete('/api/v1/feeders/%s' % feeder['id'],
                  headers={'If-match': feeder['etag']})
-    product_owner.delete('/api/v1/feeders/%s' % feeder_from_po_id,
-                         headers={'If-match': feeder_from_po_etag})
+    epm.delete('/api/v1/feeders/%s' % feeder_from_po_id,
+               headers={'If-match': feeder_from_po_etag})
 
     admin_retrieve = admin.get('/api/v1/feeders/%s' % feeder['id'])
-    po_retrieve = product_owner.get('/api/v1/feeders/%s' % feeder_from_po_id)
+    po_retrieve = epm.get('/api/v1/feeders/%s' % feeder_from_po_id)
 
     assert admin_retrieve.status_code == 404
     assert po_retrieve.status_code == 404
@@ -111,7 +110,7 @@ def test_failure_delete_feeder_unauthorized_users(user, feeder):
     assert user_result.status_code == 401
 
 
-def test_success_put_feeder_authorized_users(admin, product_owner, feeder):
+def test_success_put_feeder_authorized_users(admin, epm, feeder):
     """Test to ensure user with proper permissions can update feeders."""
 
     admin.put('/api/v1/feeders/%s' % feeder['id'], data={'name': 'newname'},
@@ -122,13 +121,13 @@ def test_success_put_feeder_authorized_users(admin, product_owner, feeder):
 
     assert admin_result.data['feeder']['name'] == 'newname'
 
-    product_owner.put('/api/v1/feeders/%s' % feeder['id'],
-                      data={'name': 'newname-po'},
-                      headers={'If-match': feeder_etag})
+    epm.put('/api/v1/feeders/%s' % feeder['id'],
+            data={'name': 'newname-po'},
+            headers={'If-match': feeder_etag})
 
-    po_result = product_owner.get('/api/v1/feeders/%s' % feeder['id'])
+    epm_result = epm.get('/api/v1/feeders/%s' % feeder['id'])
 
-    assert po_result.data['feeder']['name'] == 'newname-po'
+    assert epm_result.data['feeder']['name'] == 'newname-po'
 
 
 def test_failure_put_feeder_unauthorized_users(user, feeder):
@@ -140,7 +139,7 @@ def test_failure_put_feeder_unauthorized_users(user, feeder):
     assert user_result.status_code == 401
 
 
-def test_success_refresh_secret_feeder_authorized_users(admin, product_owner,
+def test_success_refresh_secret_feeder_authorized_users(admin, epm,
                                                         feeder):
     """Test to ensure user with proper permissions can update feeders."""
 
@@ -155,13 +154,13 @@ def test_success_refresh_secret_feeder_authorized_users(admin, product_owner,
     assert admin_result.data['feeder']['api_secret'] != original_api_secret
 
     original_api_secret = admin_result.data['feeder']['api_secret']
-    product_owner.put('/api/v1/feeders/%s/api_secret' % feeder['id'],
-                      headers={'If-match': feeder_etag})
+    epm.put('/api/v1/feeders/%s/api_secret' % feeder['id'],
+            headers={'If-match': feeder_etag})
 
-    po_result = product_owner.get('/api/v1/feeders/%s' % feeder['id'])
+    epm_result = epm.get('/api/v1/feeders/%s' % feeder['id'])
 
-    assert po_result.data['feeder']['api_secret']
-    assert po_result.data['feeder']['api_secret'] != original_api_secret
+    assert epm_result.data['feeder']['api_secret']
+    assert epm_result.data['feeder']['api_secret'] != original_api_secret
 
 
 def test_failure_refresh_secret_feeder_unauthorized_users(user, feeder):

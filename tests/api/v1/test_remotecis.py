@@ -409,11 +409,9 @@ def test_success_attach_user_to_remoteci_in_team_as_admin(admin, user, user_id,
     assert r.status_code == 201
 
 
-def test_success_attach_po_to_partner_remoteci(admin, remoteci_user_id,
-                                               product_owner,
-                                               product_owner_id):
+def test_success_attach_po_to_partner_remoteci(admin, remoteci_user_id, epm):
 
-    r = product_owner.post('/api/v1/remotecis/%s/users' % remoteci_user_id)
+    r = epm.post('/api/v1/remotecis/%s/users' % remoteci_user_id)
 
     assert r.status_code == 201
 

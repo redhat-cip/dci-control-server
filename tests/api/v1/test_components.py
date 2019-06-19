@@ -204,11 +204,10 @@ def test_get_component_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_component_by_id(admin, topic_id, product_owner,
-                                topic_id_product):
+def test_delete_component_by_id(admin, topic_id, user, topic_user_id):
 
     authorized_contexts = [{'user': admin, 'topic': topic_id},
-                           {'user': product_owner, 'topic': topic_id_product}]
+                           {'user': user, 'topic': topic_user_id}]
 
     for context in authorized_contexts:
         data = {'name': 'pname',

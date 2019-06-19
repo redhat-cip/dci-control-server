@@ -416,7 +416,7 @@ def test_user_cant_update_him(admin, user):
     ).status_code == 401
 
 
-def test_delete_as_user_product_owner(user, product_owner, admin):
+def test_delete_as_user_epm(user, epm, admin):
     puser = user.get('/api/v1/users?where=name:user')
     puser = user.get('/api/v1/users/%s' % puser.data['users'][0]['id'])
     user_etag = puser.headers.get("ETag")
@@ -425,9 +425,8 @@ def test_delete_as_user_product_owner(user, product_owner, admin):
                               headers={'If-match': user_etag})
     assert user_delete.status_code == 401
 
-    user_delete = product_owner.delete('/api/v1/users/%s'
-                                       % puser.data['user']['id'],
-                                       headers={'If-match': user_etag})
+    user_delete = epm.delete('/api/v1/users/%s' % puser.data['user']['id'],
+                             headers={'If-match': user_etag})
     assert user_delete.status_code == 401
 
     user_delete = admin.delete('/api/v1/users/%s'

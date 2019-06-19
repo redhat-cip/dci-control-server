@@ -187,21 +187,6 @@ def provision(db_conn):
               team_id=None,
               role='USER')
 
-    product_owner_pw_hash = auth.hash_password('product_owner')
-    u_id = db_insert(models.USERS,
-                     name='product_owner',
-                     sso_username='product_owner',
-                     password=product_owner_pw_hash,
-                     fullname='Product Owner',
-                     email='product_ownern@example.org',
-                     team_id=team_product_id)
-
-    db_insert(models.JOIN_USERS_TEAMS_ROLES,
-              return_pk=False,
-              user_id=u_id,
-              team_id=team_product_id,
-              role='PRODUCT_OWNER')
-
     epm_pw_hash = auth.hash_password('epm')
     u_id = db_insert(models.USERS,
                      name='epm',
