@@ -59,18 +59,10 @@ def parse_testscases(root):
     return testscases
 
 
-def parse_testssuites(root):
-    testssuites = []
-    for testsuite in root.findall('testsuite'):
-        testssuites.append(testsuite)
-    if not testssuites:
-        testssuites.append(root)
-    return testssuites
-
-
-def junit2dict(string):
-    if not string:
+def junit2dict(file_descriptor):
+    if not file_descriptor.read(1):
         return {}
+    file_descriptor.seek(0)
     results = {
         'success': 0,
         'errors': 0,
@@ -83,11 +75,8 @@ def junit2dict(string):
         'time': 0,
     }
     try:
-        root = etree.fromstring(string)
-        testssuites = parse_testssuites(root)
-
-        for testsuite in testssuites:
-            testscases = parse_testscases(testsuite)
+        for event, element in etree.iterparse(file_descriptor, tag="testsuite"):
+            testscases = parse_testscases(element)
 
             test_duration = timedelta(seconds=0)
             for testcase in testscases:
