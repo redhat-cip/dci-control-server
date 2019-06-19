@@ -15,6 +15,7 @@
 # under the License.
 
 from uuid import UUID
+from io import BytesIO
 
 import mock
 import six
@@ -109,29 +110,27 @@ JSONUNIT = {
 
 
 def test_junit2dict():
-    result = transformations.junit2dict(JUNIT)
+    result = transformations.junit2dict(BytesIO(JUNIT.encode('utf-8')))
 
     assert result == JSONUNIT
 
 
 def test_junit2dict_with_ansible_run_vyos_integration_tests_xml():
     with open('tests/data/ansible-run-vyos-integration-tests.xml', 'rb') as f:
-        content_file = f.read()
-        result = transformations.junit2dict(content_file)
+        result = transformations.junit2dict(f)
 
     assert result['success'] == 293
     assert result['errors'] == 0
     assert result['failures'] == 0
     assert result['skips'] == 10
     assert result['total'] == 303
-    assert result['time'] == 368717
+    assert result['time'] == 368722
     assert len(result['testscases']) == 303
 
 
 def test_junit2dict_with_ansible_run_ovs_integration_tests_xml():
     with open('tests/data/ansible-run-ovs-integration-tests.xml', 'r') as f:
-        content_file = f.read()
-        result = transformations.junit2dict(content_file)
+        result = transformations.junit2dict(f)
 
     assert result['success'] == 16
     assert result['errors'] == 0
@@ -144,8 +143,7 @@ def test_junit2dict_with_ansible_run_ovs_integration_tests_xml():
 
 def test_junit2dict_with_tempest_xml():
     with open('tests/data/tempest-results.xml', 'r') as f:
-        content_file = f.read()
-        result = transformations.junit2dict(content_file)
+        result = transformations.junit2dict(f)
 
     assert result['success'] == 117
     assert result['errors'] == 0
@@ -158,8 +156,7 @@ def test_junit2dict_with_tempest_xml():
 
 def test_junit2dict_with_rally_xml():
     with open('tests/data/rally-results.xml', 'r') as f:
-        content_file = f.read()
-        result = transformations.junit2dict(content_file)
+        result = transformations.junit2dict(f)
 
     assert result['success'] == 16
     assert result['errors'] == 0
@@ -173,15 +170,9 @@ def test_junit2dict_with_rally_xml():
 def test_junit2dict_invalid():
     # remove the first closing testcase tag, in order to make the json invalid
     invalid_junit = JUNIT.replace('</testcase>', '', 1)
-    result = transformations.junit2dict(invalid_junit)
+    result = transformations.junit2dict(BytesIO(invalid_junit.encode('utf-8')))
 
-    assert 'XMLSyntaxError' in result['error']
-
-
-def test_junit2dict_empty():
-    result = transformations.junit2dict('')
-
-    assert result == {}
+    assert 'ParseError' in result['error']
 
 
 def test_retrieve_junit2dict(admin, job_user_id):
@@ -283,11 +274,24 @@ def test_add_regressions_successfix():
     </testcase>
 </testsuite>
 """
-    old_tests = transformations.junit2dict(old_junit)
-    new_tests = transformations.junit2dict(new_junit)
+    old_tests = transformations.junit2dict(BytesIO(old_junit.encode('utf-8')))
+    new_tests = transformations.junit2dict(BytesIO(new_junit.encode('utf-8')))
     tests = transformations.add_regressions_and_successfix_to_tests(
         old_tests,
         new_tests
     )
     assert tests['successfixes'] == 1
     assert tests['regressions'] == 2
+
+
+def test_junit2dict_with_big_xml():
+    with open('tests/data/run_nxos_integration_tests.xml', 'r') as f:
+        result = transformations.junit2dict(f)
+
+    assert result['success'] == 10311
+    assert result['errors'] == 2
+    assert result['failures'] == 4
+    assert result['skips'] == 1165
+    assert result['total'] == 11482
+    assert result['time'] == 17010679
+    assert len(result['testscases']) == 11482
