@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6b5fb10f_a1616b6b",
+        "filename": "dci/alembic/versions/4e45b2030162_move_products_users_to_epm_team.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 45,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-06-19T13:38:31Z",
+      "side": 1,
+      "message": "sql.and_(_JUTR.c.team_id \u003d\u003d team_id,\n         _JUTR.c.role \u003d\u003d \u0027PRODUCT_OWNER\u0027)",
+      "revId": "4e62e6aa1daf37d4674a7eae7c143d13cbc5c255",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
