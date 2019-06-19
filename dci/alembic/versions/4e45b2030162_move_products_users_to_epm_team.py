@@ -22,8 +22,8 @@ Create Date: 2019-06-11 18:46:40.929808
 """
 
 # revision identifiers, used by Alembic.
-revision = '4e45b2030162'
-down_revision = '32fdbb3715e7'
+revision = "4e45b2030162"
+down_revision = "32fdbb3715e7"
 branch_labels = None
 depends_on = None
 
@@ -35,40 +35,42 @@ from sqlalchemy import exc as sa_exc
 
 def upgrade():
     db_conn = op.get_bind()
-    _JUTR = models.JOIN_USERS_TEAMS_ROLES
-
-    # get the epm team
-    query = sql.select([models.TEAMS]).where(
-        models.TEAMS.c.name == 'EPM'
-    )
+    query = sql.select([models.TEAMS]).where(models.TEAMS.c.name == "EPM")
     team_epm = db_conn.execute(query).fetchone()
     if team_epm is None:
         return
 
     def get_users_ids_of_team(team_id):
-        query = sql.select([_JUTR]).where(
-            _JUTR.c.team_id == team_id)
+        query = sql.select([models.JOIN_USERS_TEAMS_ROLES]).where(
+            models.JOIN_USERS_TEAMS_ROLES.c.team_id == team_id
+        )
         rows = db_conn.execute(query).fetchall()
-        return [str(row.user_id) for row in rows]
+        return [row.user_id for row in rows]
 
-    # get all products
-    query = sql.select([models.PRODUCTS])
+    epms = {}
+    query = sql.select([models.PRODUCTS]).where(models.PRODUCTS.c.state == "active")
     all_products = db_conn.execute(query).fetchall()
-
-    # for each product get the products users and insert them in the epm team
     for product in all_products:
-        users_ids = get_users_ids_of_team(product.team_id)
-        for user_id in users_ids:
-            try:
-                q = _JUTR.insert().values(
-                    team_id=team_epm.id,
-                    user_id=user_id,
-                    role='EPM'
+        for user_id in get_users_ids_of_team(product.team_id):
+            epms[str(user_id)] = {
+                "team_id": team_epm.id,
+                "user_id": user_id,
+                "role": "EPM",
+            }
+    for epm in epms.values():
+        query = sql.select([models.JOIN_USERS_TEAMS_ROLES]).where(
+            sql.and_(
+                models.JOIN_USERS_TEAMS_ROLES.c.team_id == epm["team_id"],
+                models.JOIN_USERS_TEAMS_ROLES.c.user_id == epm["user_id"],
+            )
+        )
+        _epm = db_conn.execute(query).fetchone()
+        if _epm is None:
+            db_conn.execute(
+                models.JOIN_USERS_TEAMS_ROLES.insert().values(
+                    team_id=epm["team_id"], user_id=epm["user_id"], role=epm["role"]
                 )
-                db_conn.execute(q)
-            except sa_exc.IntegrityError:
-                # if the user already exist, just ignore the statement
-                pass
+            )
 
 
 def downgrade():
