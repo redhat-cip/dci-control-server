@@ -405,10 +405,7 @@ def get_all_jobs(user, topic_id=None):
     # # If not admin nor rh employee then restrict the view to the team
     if (user.is_not_super_admin() and user.is_not_read_only_user() and
         user.is_not_epm()):
-        query.add_extra_condition(
-            sql.or_(
-                _TABLE.c.team_id.in_(user.teams_ids),
-                _TABLE.c.team_id.in_(user.child_teams_ids)))
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     # # If topic_id not None, then filter by topic_id
     if topic_id is not None:

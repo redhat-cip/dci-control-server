@@ -31,8 +31,8 @@ all_teams = [{'id': UUID('eaa68feb-0e23-4dee-9737-7538af531024'),
               'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327')}]
 
 
-def identity_factory(is_user=False, is_product_owner=False,
-                     is_super_admin=False, is_read_only_user=False,
+def identity_factory(is_user=False, is_super_admin=False,
+                     is_read_only_user=False,
                      is_epm_user=False):
     user_info = {
         'id': '12368feb-0e23-4dee-9737-7538af531234',
@@ -51,15 +51,6 @@ def identity_factory(is_user=False, is_product_owner=False,
         team_name = 'admin'
         user_info['teams'] = {
             UUID('2975580b-1915-41b7-9672-c16ccbcc6fc1'): {
-                'team_name': team_name,
-                'parent_id': None,
-                'role': 'USER'
-            }
-        }
-    elif is_product_owner:
-        team_name = 'product_owner_team'
-        user_info['teams'] = {
-            UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'): {
                 'team_name': team_name,
                 'parent_id': None,
                 'role': 'USER'
@@ -96,7 +87,7 @@ def identity_factory(is_user=False, is_product_owner=False,
             }
         }
 
-    return Identity(user_info, all_teams)
+    return Identity(user_info)
 
 
 def test_is_super_admin():
@@ -106,17 +97,6 @@ def test_is_super_admin():
 
 def test_is_not_super_admin():
     assert identity_factory(is_user=True).is_not_super_admin()
-
-
-def test_is_product_owner():
-    product_owner = identity_factory(is_product_owner=True)
-    assert product_owner.is_product_owner(
-        '894c7af1-f90f-48dd-8276-fbc4bfa80371')
-
-
-def test_is_not_product_owner():
-    assert identity_factory(is_product_owner=True).is_not_product_owner(
-        'eaa68feb-0e23-4dee-9737-7538af531024')
 
 
 def test_is_feeder():
@@ -131,7 +111,7 @@ def test_is_feeder():
             }
         }
     }
-    user = Identity(user_info, [])
+    user = Identity(user_info)
     assert user.is_feeder(team_id='eaa68feb-0e23-4dee-9737-7538af531024')
 
 
@@ -147,7 +127,7 @@ def test_is_remoteci():
             }
         }
     }
-    user = Identity(user_info, [])
+    user = Identity(user_info)
     assert user.is_remoteci(team_id='eaa68feb-0e23-4dee-9737-7538af531024')
 
 
@@ -170,25 +150,9 @@ def test_super_admin_is_in_all_teams():
         assert super_admin.is_in_team(team_id=str(team['id']))
 
 
-def test_super_admin_is_product_owner_of_all_teams():
+def test_super_admin_is_epm():
     super_admin = identity_factory(is_super_admin=True)
-
-    for team in all_teams:
-        assert super_admin.is_product_owner(team_id=str(team['id']))
-
-
-def test_product_owner_is_in_child_teams():
-    product_owner = identity_factory(is_product_owner=True)
-    assert product_owner.is_in_team(
-        '894c7af1-f90f-48dd-8276-fbc4bfa80371')
-    assert product_owner.is_in_team(
-        '2d89a1ad-0638-4738-940d-166c6a8105ec')
-
-
-def test_parent_teams():
-    user = identity_factory(is_user=True)
-    assert (set([UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327')]) ==
-            user.parent_teams_ids)
+    assert super_admin.is_epm()
 
 
 def test_teams_ids():
