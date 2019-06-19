@@ -161,20 +161,8 @@ def user_no_team(admin):
 
 
 @pytest.fixture
-def product_owner(app, db_provisioning):
-    return utils.generate_client(app, ('product_owner', 'product_owner'))
-
-
-@pytest.fixture
 def epm(app, db_provisioning):
     return utils.generate_client(app, ('epm', 'epm'))
-
-
-@pytest.fixture
-def product_owner_id(admin):
-    team = admin.get('/api/v1/users?where=name:product_owner')
-    team = admin.get('/api/v1/users/%s' % team.data['users'][0]['id']).data
-    return str(team['user']['id'])
 
 
 @pytest.fixture
@@ -184,18 +172,6 @@ def topic_id(admin, team_id, product):
     topic = admin.post('/api/v1/topics', data=data).data
     t_id = topic['topic']['id']
     admin.post('/api/v1/topics/%s/teams' % t_id, data={'team_id': team_id})
-    return str(t_id)
-
-
-@pytest.fixture
-def topic_id_product(product_owner, team_id, product):
-    data = {'name': 'Ansible-2.4', 'product_id': product['id'],
-            'component_types': ['git-commit']}
-    topic = product_owner.post('/api/v1/topics', data=data).data
-    t_id = topic['topic']['id']
-    pp = product_owner.post('/api/v1/topics/%s/teams' % t_id,
-                            data={'team_id': team_id})
-    assert pp.status_code == 201
     return str(t_id)
 
 
@@ -336,15 +312,15 @@ def remoteci_configuration_user_id(user, remoteci_user_id, topic_user_id):
 
 
 @pytest.fixture
-def feeder_id(product_owner, team_product_id):
+def feeder_id(epm, team_product_id):
     data = {'name': 'feeder_osp', 'team_id': team_product_id}
-    feeder = product_owner.post('/api/v1/feeders', data=data).data
+    feeder = epm.post('/api/v1/feeders', data=data).data
     return str(feeder['feeder']['id'])
 
 
 @pytest.fixture
-def feeder_api_secret(product_owner, feeder_id):
-    api_secret = product_owner.get('/api/v1/feeders/%s' % feeder_id).data
+def feeder_api_secret(epm, feeder_id):
+    api_secret = epm.get('/api/v1/feeders/%s' % feeder_id).data
     return api_secret['feeder']['api_secret']
 
 
