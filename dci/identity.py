@@ -44,21 +44,6 @@ class Identity:
         self._is_super_admin = user_info.get('is_super_admin', False)
         self._is_read_only_user = user_info.get('is_read_only_user', False)
         self._is_epm_user = user_info.get('is_epm_user', False)
-        # if the user's team is a product team then it does have some
-        # child teams, then get all the child teams
-        self.child_teams_ids, self.parent_teams_ids = self._get_child_and_parent_teams_ids(self.teams, all_teams)  # noqa
-
-    @staticmethod
-    def _get_child_and_parent_teams_ids(user_teams, all_teams):
-        child_teams = set()
-        parent_teams = set()
-        for u_t, v_t in user_teams.items():
-            if v_t['parent_id']:
-                parent_teams.add(v_t['parent_id'])
-            for a_team in all_teams:
-                if a_team['parent_id'] == u_t:
-                    child_teams.add(a_team['id'])
-        return child_teams, parent_teams
 
     def is_super_admin(self):
         """Ensure the user has the role SUPER_ADMIN."""
@@ -69,19 +54,6 @@ class Identity:
         """Ensure the user has not the role SUPER_ADMIN."""
 
         return not self.is_super_admin()
-
-    def is_product_owner(self, team_id):
-        """Ensure the user is a PRODUCT_OWNER."""
-
-        if self.is_super_admin():
-            return True
-        team_id = uuid.UUID(str(team_id))
-        return team_id in self.child_teams_ids
-
-    def is_not_product_owner(self, team_id):
-        """Ensure the user has not the role PRODUCT_OWNER."""
-
-        return not self.is_product_owner(team_id)
 
     def is_epm(self):
         """Ensure the user has the role EPM"""
@@ -109,7 +81,7 @@ class Identity:
         if self.is_super_admin() or self.is_epm():
             return True
         team_id = uuid.UUID(str(team_id))
-        return team_id in self.teams or team_id in self.child_teams_ids
+        return team_id in self.teams
 
     def is_not_in_team(self, team_id):
         """Test if user is not in team"""
