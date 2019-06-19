@@ -42,6 +42,7 @@ class Identity:
         self.teams = user_info.get('teams', {})
         self.teams_ids = list(self.teams.keys())
         self._is_super_admin = user_info.get('is_super_admin', False)
+        self._is_read_only_user = user_info.get('is_read_only_user', False)
         # if the user's team is a product team then it does have some
         # child teams, then get all the child teams
         self.child_teams_ids, self.parent_teams_ids = self._get_child_and_parent_teams_ids(self.teams, all_teams)  # noqa
@@ -84,9 +85,7 @@ class Identity:
     def is_read_only_user(self):
         """Check if the user is a rh employee."""
 
-        if None in self.teams:
-            return self.teams[None]['role'] == 'READ_ONLY_USER'
-        return False
+        return self._is_read_only_user
 
     def is_not_read_only_user(self):
         """Check if the user is not a read only user."""
