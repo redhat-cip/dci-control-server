@@ -216,7 +216,6 @@ def add_team_to_topic(user, topic_id):
 
     if (user.is_not_super_admin() and
         user.is_not_in_team(team_product_id) and
-        user.is_not_product_owner(team_id) and
         user.is_not_epm()):
         raise dci_exc.Unauthorized()
 

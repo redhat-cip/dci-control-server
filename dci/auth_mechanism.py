@@ -95,34 +95,16 @@ class BaseMechanism(object):
             if user_team[models.TEAMS.c.id] == flask.g.team_epm_id:
                 is_epm_user = True
             user_teams[user_team[models.TEAMS.c.id]] = {
-                'parent_id': user_team[models.TEAMS.c.parent_id],
                 'id': user_team[models.TEAMS.c.id],
                 'role': user_team[models.JOIN_USERS_TEAMS_ROLES.c.role],
                 'name': user_team[models.TEAMS.c.name]}
 
-        all_teams = self._get_all_teams()
         user_info['teams'] = user_teams
         user_info['is_super_admin'] = is_super_admin
         user_info['is_read_only_user'] = is_read_only_user
         user_info['is_epm_user'] = is_epm_user
 
-        return Identity(user_info, all_teams)
-
-    def _get_all_teams(self):
-        query = sql.select([models.TEAMS.c.id, models.TEAMS.c.parent_id])
-        result = flask.g.db_conn.execute(query).fetchall()
-        return [{
-            'id': row[models.TEAMS.c.id],
-            'parent_id': row[models.TEAMS.c.parent_id]
-        } for row in result]
-
-    def _teams_from_db(self, team_id):
-        query = sql.select([models.TEAMS.c.id, models.TEAMS.c.parent_id])
-        result = flask.g.db_conn.execute(query).fetchall()
-        return [{
-            'id': row[models.TEAMS.c.id],
-            'parent_id': row[models.TEAMS.c.parent_id]
-        } for row in result]
+        return Identity(user_info)
 
 
 class BasicAuthMechanism(BaseMechanism):
@@ -210,7 +192,6 @@ class HmacMechanism(BaseMechanism):
         # feeders and remotecis belongs to only one team
         user_teams = {
             _identity_info[models.TEAMS.c.id]: {
-                'parent_id': _identity_info[models.TEAMS.c.parent_id],
                 'team_name': _identity_info[models.TEAMS.c.name]
             }
         }
@@ -232,7 +213,7 @@ class HmacMechanism(BaseMechanism):
             'is_remoteci': is_remoteci,
             'is_feeder': is_feeder
         }
-        return Identity(user_info, [])
+        return Identity(user_info)
 
     def build_identity(self, client_info):
         allowed_types_model = {

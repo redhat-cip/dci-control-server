@@ -130,16 +130,15 @@ def test_success_get_products_embed(admin, product):
     assert 'team' in result.data['product'].keys()
 
 
-def test_success_get_only_po_product(admin, product_owner, product_openstack):
+def test_success_get_only_po_product(admin, epm, product_openstack):
 
     products_admin = admin.get('/api/v1/products').data
     assert len(products_admin['products']) == 3
     products = [p['label'] for p in products_admin['products']]
     assert ['AWSM', 'BEST', product_openstack['label']] == sorted(products)
 
-    products_po = product_owner.get('/api/v1/products').data
-    assert len(products_po['products']) == 2
-    assert products_po['products'][0]['label'] == 'BEST'
+    products_po = epm.get('/api/v1/products').data
+    assert len(products_po['products']) == 3
 
 
 def add_get_delete_team_to_product(caller, product_id, team_user_id):
@@ -167,14 +166,14 @@ def add_get_delete_team_to_product(caller, product_id, team_user_id):
     assert team_user_id not in teams_ids
 
 
-def test_add_get_delete_team_to_product(admin, product_owner, product_id, team_user_id):
+def test_add_get_delete_team_to_product(admin, epm, product_id, team_user_id):
     # as admin
     add_get_delete_team_to_product(admin, product_id, team_user_id)
     # as product owner
-    add_get_delete_team_to_product(product_owner, product_id, team_user_id)
+    add_get_delete_team_to_product(epm, product_id, team_user_id)
 
 
-def test_add_get_delete_team_to_product_as_user(user, product_owner, product_id,
+def test_add_get_delete_team_to_product_as_user(user, epm, product_id,
                                                 team_user_id):
     # create
     product_teams = user.get('/api/v1/products/%s/teams' % product_id)

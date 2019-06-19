@@ -109,8 +109,7 @@ def get_all_jobstates(user, job_id):
     job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
     if (user.is_not_super_admin() and user.is_not_read_only_user()
         and user.is_not_epm()):
-        if (job['team_id'] not in user.teams_ids and
-            job['team_id'] not in user.child_teams_ids):
+        if job['team_id'] not in user.teams_ids:
             raise dci_exc.Unauthorized()
 
     query = v1_utils.QueryBuilder(_TABLE, args, _JS_COLUMNS)
