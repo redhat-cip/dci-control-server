@@ -84,7 +84,7 @@ def _get_previous_jsonunit(job, filename):
         return None
     test_file = get_file_object(res.file_id)
     file_descriptor = get_file_descriptor(test_file)
-    return tsfm.junit2dict(file_descriptor.read())
+    return tsfm.junit2dict(file_descriptor)
 
 
 def _compute_regressions_successfix(jsonunit, previous_jsonunit):
@@ -101,8 +101,8 @@ def _compute_known_tests_cases(jsonunit, job):
     return tsfm.add_known_issues_to_tests(jsonunit, tests_to_issues)
 
 
-def _process_junit_file(values, junit_content, job):
-    jsonunit = tsfm.junit2dict(junit_content)
+def _process_junit_file(values, junit_file, job):
+    jsonunit = tsfm.junit2dict(junit_file)
     previous_jsonunit = _get_previous_jsonunit(job, values['name'])
 
     jsonunit = _compute_regressions_successfix(jsonunit, previous_jsonunit)
@@ -189,8 +189,8 @@ def create_files(user):
         result = json.dumps({'file': values})
 
         if values['mime'] == 'application/junit':
-            junit_content = store.get(file_path)[1].read()
-            _process_junit_file(values, junit_content, job)
+            _, junit_file = store.get(file_path)
+            _process_junit_file(values, junit_file, job)
 
     return flask.Response(result, 201, content_type='application/json')
 
@@ -261,7 +261,7 @@ def get_file_testscases(user, file_id):
     if not user.is_in_team(file['team_id']) and not user.is_read_only_user():
         raise dci_exc.Unauthorized()
     file_descriptor = get_file_descriptor(file)
-    jsonunit = tsfm.junit2dict(file_descriptor.read())
+    jsonunit = tsfm.junit2dict(file_descriptor)
     job = v1_utils.verify_existence_and_get(file['job_id'], models.JOBS)
     previous_jsonunit = _get_previous_jsonunit(job, file['name'])
     jsonunit = _compute_regressions_successfix(jsonunit, previous_jsonunit)
