@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7178a7b1_448e8914",
+        "filename": "dci/api/v1/export_control.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 44,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-06-19T06:59:31Z",
+      "side": 1,
+      "message": "def verify_access_to_topic(user, topic):\n    if (user.is_super_admin() or user.is_read_only_user() or user.is_epm()):\n        return True\n\n    if topic[\u0027export_control\u0027]:\n        product \u003d v1_utils.verify_existence_and_get(topic[\u0027product_id\u0027], models.PRODUCTS)\n        return user_can_access_product(user, product)\n    return user_can_access_topic(user, topic)",
+      "range": {
+        "startLine": 39,
+        "startChar": 0,
+        "endLine": 44,
+        "endChar": 60
+      },
+      "revId": "4a3721c6ebb45de8690cc408a74c203dc7ca2f4c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
