@@ -46,16 +46,16 @@ class BaseMechanism(object):
                 [
                     model_cls,
                     models.TEAMS,
-                    models.JOIN_USERS_TEAMS_ROLES
+                    models.JOIN_USERS_TEAMS
                 ],
                 use_labels=True
             ).select_from(
                 model_cls.join(
-                    models.JOIN_USERS_TEAMS_ROLES,
-                    models.JOIN_USERS_TEAMS_ROLES.c.user_id == model_cls.c.id
+                    models.JOIN_USERS_TEAMS,
+                    models.JOIN_USERS_TEAMS.c.user_id == model_cls.c.id
                 ).outerjoin(
                     models.TEAMS,
-                    (models.JOIN_USERS_TEAMS_ROLES.c.team_id ==
+                    (models.JOIN_USERS_TEAMS.c.team_id ==
                      models.TEAMS.c.id)
                 )
             ).where(
@@ -96,7 +96,6 @@ class BaseMechanism(object):
                 is_epm_user = True
             user_teams[user_team[models.TEAMS.c.id]] = {
                 'id': user_team[models.TEAMS.c.id],
-                'role': user_team[models.JOIN_USERS_TEAMS_ROLES.c.role],
                 'name': user_team[models.TEAMS.c.name]}
 
         user_info['teams'] = user_teams
@@ -278,16 +277,13 @@ class OpenIDCAuth(BaseMechanism):
         )
         identity = self.identity_from_db(models.USERS,
                                          constraint)
-        role = 'USER'
-        if user_info['team_id'] == flask.g.team_redhat_id:
-            role = 'READ_ONLY_USER'
         if identity is None:
             u_id = flask.g.db_conn.execute(models.USERS.insert().values(user_info)).inserted_primary_key[0]  # noqa
             flask.g.db_conn.execute(
-                models.JOIN_USERS_TEAMS_ROLES.insert().values(
+                models.JOIN_USERS_TEAMS.insert().values(
                     user_id=u_id,
-                    team_id=user_info['team_id'],
-                    role=role)
+                    team_id=user_info['team_id']
+                )
             )
             identity = self.identity_from_db(models.USERS,
                                              constraint)
