@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6b1d7a25_4e14663e",
+        "filename": "dci/api/v1/files.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-06-20T08:09:41Z",
+      "side": 1,
+      "message": "Better name +1",
+      "revId": "d7697500060bf49c02ba5bc0a25495514e3f0a79",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d9dfac07_506ab651",
+        "filename": "dci/api/v1/transformations.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-06-20T08:09:41Z",
+      "side": 1,
+      "message": "The code is correct but I must admit that using a descriptor slightly bugs me.\nBut it is properly documented so ack.",
+      "revId": "d7697500060bf49c02ba5bc0a25495514e3f0a79",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "e622c603_889470f2",
+        "filename": "dci/api/v1/transformations.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 58,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-06-20T08:09:41Z",
+      "side": 1,
+      "message": "Good precaution",
+      "revId": "d7697500060bf49c02ba5bc0a25495514e3f0a79",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
