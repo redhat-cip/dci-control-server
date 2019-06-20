@@ -28,7 +28,6 @@ def test_get_identity_admin(admin, team_admin_id):
     assert team_admin_id in identity['teams']
     assert identity['teams'][team_admin_id]['name'] == 'admin'
     assert identity['teams'][team_admin_id]['id'] == team_admin_id
-    assert identity['teams'][team_admin_id]['role'] == 'SUPER_ADMIN'
 
 
 def test_get_identity_unauthorized(unauthorized):
@@ -44,7 +43,6 @@ def test_get_identity_user(user, team_user_id):
     assert identity['name'] == 'user'
     assert identity['teams'][team_user_id]['name'] == 'user'
     assert identity['teams'][team_user_id]['id'] == team_user_id
-    assert identity['teams'][team_user_id]['role'] == 'USER'
 
 
 def get_user(flask_user, name):
