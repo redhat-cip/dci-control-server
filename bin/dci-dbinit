@@ -76,9 +76,8 @@ def init_db(db_conn):
                                          fullname='Admin',
                                          email='admin@example.org')
     # assign super admin to team_admin_id
-    q = models.JOIN_USERS_TEAMS_ROLES.insert().values(user_id=super_admin_id,
-                                                      team_id=team_admin_id,
-                                                      role='SUPER_ADMIN')
+    q = models.JOIN_USERS_TEAMS.insert().values(user_id=super_admin_id,
+                                                team_id=team_admin_id)
 
     db_conn.execute(q)
 
