@@ -21,7 +21,7 @@ def test_success_create_feeder_authorized_users(admin, epm,
                                                 team_product_id):
     """Test to ensure user with proper permissions can create feeders
 
-       Currently only the role SUPER_ADMIN and PRODUCT_OWNER have such
+       Currently only the SUPER_ADMIN and PRODUCT_OWNER have such
        a permission.
     """
 
@@ -45,7 +45,7 @@ def test_success_create_feeder_authorized_users(admin, epm,
 def test_failure_create_feeder_unauthorized_users(user, team_product_id):
     """Test to ensure user w/o proper permissions can't create feeders
 
-       Currently only the role SUPER_ADMIN and PRODUCT_OWNER have such
+       Currently only the SUPER_ADMIN and PRODUCT_OWNER have such
        a permission. So we test with a regular USER.
     """
 
