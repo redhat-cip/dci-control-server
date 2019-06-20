@@ -16,6 +16,7 @@ BuildRequires:  rh-postgresql94
 BuildRequires:  pyOpenSSL
 BuildRequires:  python-alembic
 BuildRequires:  python-flask
+BuildRequires:  python-lxml
 BuildRequires:  python-passlib
 BuildRequires:  python-psycopg2
 BuildRequires:  python-requests
@@ -39,6 +40,7 @@ BuildRequires:  zeromq
 Requires:       pyOpenSSL
 Requires:       python-alembic
 Requires:       python-flask
+Requires:       python-lxml
 Requires:       python-passlib
 Requires:       python-psycopg2
 Requires:       python-requests
