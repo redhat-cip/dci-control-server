@@ -28,7 +28,6 @@ def test_get_identity_admin(admin, team_admin_id):
     assert team_admin_id in identity['teams']
     assert identity['teams'][team_admin_id]['name'] == 'admin'
     assert identity['teams'][team_admin_id]['id'] == team_admin_id
-    assert identity['teams'][team_admin_id]['role'] == 'SUPER_ADMIN'
 
 
 def test_get_identity_unauthorized(unauthorized):
