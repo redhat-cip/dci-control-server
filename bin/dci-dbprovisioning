@@ -48,12 +48,11 @@ def post(endpoint, data, user=(DCI_LOGIN, DCI_PASSWORD,)):
     return requests.post(url, json=data, auth=user)
 
 
-def associate_user_to_team(team_id, user_id, data, user=(DCI_LOGIN, DCI_PASSWORD,)):
+def associate_user_to_team(team_id, user_id, user=(DCI_LOGIN, DCI_PASSWORD,)):
     url = '%s/api/v1/teams/%s/users/%s' % (DCI_CS_URL, team_id, user_id)
     print('-------------')
     print('POST %s' % url)
-    print(json.dumps(data, indent=2))
-    return requests.post(url, json=data, auth=user)
+    return requests.post(url, json={}, auth=user)
 
 
 def delete(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
@@ -92,7 +91,7 @@ def create_teams():
     }
 
 
-def create_user(fullname, team, role):
+def create_user(fullname, team):
     name = fullname.lower().replace(' ', '_')
     r = post('users', {
         'name': name,
@@ -103,7 +102,7 @@ def create_user(fullname, team, role):
     })
     user_id = r.json()['user']['id']
     team_id = team['id']
-    associate_user_to_team(team_id, user_id, data={'role': role})
+    associate_user_to_team(team_id, user_id)
     return r.json()['user']
 
 

@@ -37,7 +37,6 @@ class Identity:
         #                                      'id': <id>,
         #                                      'name': <name>,
         #                                      'etag': <etag>,
-        #                                      'role': <role>},
         #                       '<team-id2>: {...}}
         self.teams = user_info.get('teams', {})
         self.teams_ids = list(self.teams.keys())
@@ -61,12 +60,12 @@ class Identity:
         return child_teams, parent_teams
 
     def is_super_admin(self):
-        """Ensure the user has the role SUPER_ADMIN."""
+        """Ensure the user is SUPER_ADMIN."""
 
         return self._is_super_admin
 
     def is_not_super_admin(self):
-        """Ensure the user has not the role SUPER_ADMIN."""
+        """Ensure the user is not SUPER_ADMIN."""
 
         return not self.is_super_admin()
 
@@ -79,17 +78,17 @@ class Identity:
         return team_id in self.child_teams_ids
 
     def is_not_product_owner(self, team_id):
-        """Ensure the user has not the role PRODUCT_OWNER."""
+        """Ensure the user is not PRODUCT_OWNER."""
 
         return not self.is_product_owner(team_id)
 
     def is_epm(self):
-        """Ensure the user has the role EPM"""
+        """Ensure the user is EPM"""
 
         return self._is_epm_user or self.is_super_admin()
 
     def is_not_epm(self):
-        """Ensure the user has not the role EPM"""
+        """Ensure the user is not EPM"""
 
         return not self.is_epm()
 
@@ -119,20 +118,6 @@ class Identity:
     def is_user(self):
         return self._is_user
 
-    def is_remoteci(self, team_id=None):
-        """Ensure ther resource has the role REMOTECI."""
-        if team_id is None:
-            return self._is_remoteci
-        team_id = uuid.UUID(str(team_id))
-        if team_id not in self.teams_ids:
-            return False
-        return self.teams[team_id]['role'] == 'REMOTECI'
-
-    def is_feeder(self, team_id=None):
-        """Ensure ther resource has the role FEEDER."""
-        if team_id is None:
-            return self._is_feeder
-        team_id = uuid.UUID(str(team_id))
-        if team_id not in self.teams_ids:
-            return False
-        return self.teams[team_id]['role'] == 'FEEDER'
+    def is_remoteci(self):
+        """Ensure ther resource is REMOTECI."""
+        return self._is_remoteci

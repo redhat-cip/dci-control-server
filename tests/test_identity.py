@@ -52,8 +52,7 @@ def identity_factory(is_user=False, is_product_owner=False,
         user_info['teams'] = {
             UUID('2975580b-1915-41b7-9672-c16ccbcc6fc1'): {
                 'team_name': team_name,
-                'parent_id': None,
-                'role': 'USER'
+                'parent_id': None
             }
         }
     elif is_product_owner:
@@ -61,8 +60,7 @@ def identity_factory(is_user=False, is_product_owner=False,
         user_info['teams'] = {
             UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'): {
                 'team_name': team_name,
-                'parent_id': None,
-                'role': 'USER'
+                'parent_id': None
             }
         }
     elif is_user:
@@ -70,29 +68,25 @@ def identity_factory(is_user=False, is_product_owner=False,
         user_info['teams'] = {
             UUID('894c7af1-f90f-48dd-8276-fbc4bfa80371'): {
                 'team_name': team_name,
-                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'),
-                'role': 'USER'
+                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327')
             },
             UUID('2d89a1ad-0638-4738-940d-166c6a8105ec'): {
                 'team_name': team_name,
-                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'),
-                'role': 'USER'
+                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327')
             }
         }
     elif is_read_only_user:
         user_info['teams'] = {
             UUID('12347af1-f90f-48dd-8276-fbc4bfa81234'): {
                 'team_name': 'Red Hat',
-                'parent_id': None,
-                'role': 'READ_ONLY_USER'
+                'parent_id': None
             }
         }
     elif is_epm_user:
         user_info['teams'] = {
             UUID('12347af1-f90f-1234-8276-fbc4bfa81234'): {
                 'team_name': 'epm',
-                'parent_id': None,
-                'role': 'EPM'
+                'parent_id': None
             }
         }
 
@@ -117,38 +111,6 @@ def test_is_product_owner():
 def test_is_not_product_owner():
     assert identity_factory(is_product_owner=True).is_not_product_owner(
         'eaa68feb-0e23-4dee-9737-7538af531024')
-
-
-def test_is_feeder():
-    user_info = {
-        'id': '894c7af1-f90f-48dd-8276-fbc4bfa80371',
-        'api_secret': 'secret',
-        'teams': {
-            UUID('eaa68feb-0e23-4dee-9737-7538af531024'): {
-                'team_name': 'team_name',
-                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'),
-                'role': 'FEEDER'
-            }
-        }
-    }
-    user = Identity(user_info, [])
-    assert user.is_feeder(team_id='eaa68feb-0e23-4dee-9737-7538af531024')
-
-
-def test_is_remoteci():
-    user_info = {
-        'id': '894c7af1-f90f-48dd-8276-fbc4bfa80371',
-        'api_secret': 'secret',
-        'teams': {
-            UUID('eaa68feb-0e23-4dee-9737-7538af531024'): {
-                'team_name': 'team_name',
-                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'),
-                'role': 'REMOTECI'
-            }
-        }
-    }
-    user = Identity(user_info, [])
-    assert user.is_remoteci(team_id='eaa68feb-0e23-4dee-9737-7538af531024')
 
 
 def test_user_is_in_team():
