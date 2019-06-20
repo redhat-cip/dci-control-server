@@ -166,11 +166,10 @@ def provision(db_conn):
                      email='user@example.org',
                      team_id=team_user_id)
 
-    db_insert(models.JOIN_USERS_TEAMS_ROLES,
+    db_insert(models.JOIN_USERS_TEAMS,
               return_pk=False,
               user_id=u_id,
-              team_id=team_user_id,
-              role='USER')
+              team_id=team_user_id)
 
     user_no_team_pw_hash = auth.hash_password('user_no_team')
     u_id = db_insert(models.USERS,
@@ -181,11 +180,10 @@ def provision(db_conn):
                      email='user_no_team@example.org',
                      team_id=None)
 
-    db_insert(models.JOIN_USERS_TEAMS_ROLES,
+    db_insert(models.JOIN_USERS_TEAMS,
               return_pk=False,
               user_id=u_id,
-              team_id=None,
-              role='USER')
+              team_id=None)
 
     epm_pw_hash = auth.hash_password('epm')
     u_id = db_insert(models.USERS,
@@ -196,11 +194,10 @@ def provision(db_conn):
                      email='epm@redhat.com',
                      team_id=team_epm_id)
 
-    db_insert(models.JOIN_USERS_TEAMS_ROLES,
+    db_insert(models.JOIN_USERS_TEAMS,
               return_pk=False,
               user_id=u_id,
-              team_id=team_epm_id,
-              role='EPM')
+              team_id=team_epm_id)
 
     admin_pw_hash = auth.hash_password('admin')
     u_id = db_insert(models.USERS,
@@ -211,11 +208,10 @@ def provision(db_conn):
                      email='admin@example.org',
                      team_id=team_admin_id)
 
-    db_insert(models.JOIN_USERS_TEAMS_ROLES,
+    db_insert(models.JOIN_USERS_TEAMS,
               return_pk=False,
               user_id=u_id,
-              team_id=team_admin_id,
-              role='SUPER_ADMIN')
+              team_id=team_admin_id)
 
     # Create a product
     db_insert(models.PRODUCTS,

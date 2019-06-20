@@ -465,6 +465,17 @@ USERS = sa.Table(
     sa.Column('state', STATES, default='active')
 )
 
+JOIN_USERS_TEAMS = sa.Table(
+    'users_teams', metadata,
+    sa.Column('user_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('users.id', ondelete='CASCADE'),
+              nullable=False),
+    sa.Column('team_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=True),
+    sa.UniqueConstraint('user_id', 'team_id', name='users_teams_key')
+)
+
 JOIN_USERS_TEAMS_ROLES = sa.Table(
     'users_teams_roles', metadata,
     sa.Column('user_id', pg.UUID(as_uuid=True),
