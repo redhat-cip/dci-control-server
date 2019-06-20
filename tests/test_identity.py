@@ -52,8 +52,7 @@ def identity_factory(is_user=False, is_super_admin=False,
         user_info['teams'] = {
             UUID('2975580b-1915-41b7-9672-c16ccbcc6fc1'): {
                 'team_name': team_name,
-                'parent_id': None,
-                'role': 'USER'
+                'parent_id': None
             }
         }
     elif is_user:
@@ -61,29 +60,25 @@ def identity_factory(is_user=False, is_super_admin=False,
         user_info['teams'] = {
             UUID('894c7af1-f90f-48dd-8276-fbc4bfa80371'): {
                 'team_name': team_name,
-                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'),
-                'role': 'USER'
+                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327')
             },
             UUID('2d89a1ad-0638-4738-940d-166c6a8105ec'): {
                 'team_name': team_name,
-                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327'),
-                'role': 'USER'
+                'parent_id': UUID('66e06983-a7e4-43be-b7ae-33ae80bcf327')
             }
         }
     elif is_read_only_user:
         user_info['teams'] = {
             UUID('12347af1-f90f-48dd-8276-fbc4bfa81234'): {
                 'team_name': 'Red Hat',
-                'parent_id': None,
-                'role': 'READ_ONLY_USER'
+                'parent_id': None
             }
         }
     elif is_epm_user:
         user_info['teams'] = {
             UUID('12347af1-f90f-1234-8276-fbc4bfa81234'): {
                 'team_name': 'epm',
-                'parent_id': None,
-                'role': 'EPM'
+                'parent_id': None
             }
         }
 
