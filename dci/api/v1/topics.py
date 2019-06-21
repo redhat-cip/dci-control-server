@@ -100,7 +100,8 @@ def get_all_topics(user):
     # if the user is an admin then he can get all the topics
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
-    if user.is_not_super_admin() and user.is_not_read_only_user():
+    if (user.is_not_super_admin() and user.is_not_read_only_user()
+        and user.is_not_epm()):
         if 'teams' in args['embed']:
             raise dci_exc.DCIException('embed=teams not authorized.',
                                        status_code=401)

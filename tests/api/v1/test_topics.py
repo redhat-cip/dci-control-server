@@ -191,9 +191,12 @@ def test_get_topics_of_user(admin, user, team_user_id, product):
     assert len(topics_user['topics']) == 1
 
 
-def test_get_topics_by_with_embed_authorization(admin, user):
+def test_get_topics_by_with_embed_authorization(admin, user, epm):
     topics_admin = admin.get('/api/v1/topics?embed=teams')
     assert topics_admin.status_code == 200
+
+    topics_epm = admin.get('/api/v1/topics?embed=teams')
+    assert topics_epm.status_code == 200
 
     topics_user = user.get('/api/v1/topics?embed=teams')
     assert topics_user.status_code == 401
