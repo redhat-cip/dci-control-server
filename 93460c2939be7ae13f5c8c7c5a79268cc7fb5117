@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "41900f7a_34edd95a",
+        "filename": "dci/api/v1/export_control.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 56,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-06-21T07:36:39Z",
+      "side": 1,
+      "message": "You probably don\u0027t need _check method, you can inline the code directly",
+      "range": {
+        "startLine": 42,
+        "startChar": 0,
+        "endLine": 56,
+        "endChar": 16
+      },
+      "revId": "93460c2939be7ae13f5c8c7c5a79268cc7fb5117",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
