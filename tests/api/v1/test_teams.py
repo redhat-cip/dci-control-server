@@ -354,3 +354,14 @@ def test_success_update_field_by_field(admin, team_id):
     assert t['name'] == 'pname'
     assert t['state'] == 'inactive'
     assert t['country'] == 'FR'
+
+
+def test_epm_should_be_able_to_create_and_edit_a_team(epm):
+    r = epm.post("/api/v1/teams", data={"name": "t1"})
+    assert r.status_code == 201
+    r = epm.put(
+        "/api/v1/teams/%s" % r.data['team']['id'],
+        data={"name": "t1 updated"},
+        headers={'If-match': r.headers.get("ETag")}
+    )
+    assert r.status_code == 200
