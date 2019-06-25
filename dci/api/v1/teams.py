@@ -54,7 +54,7 @@ def create_teams(user):
     check_json_is_valid(create_team_schema, values)
     values.update(v1_utils.common_values_dict())
 
-    if user.is_not_super_admin():
+    if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     if not values.get('parent_id'):
@@ -129,7 +129,7 @@ def put_team(user, t_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = flask.request.json
     check_json_is_valid(update_team_schema, values)
-    if user.is_not_super_admin():
+    if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     v1_utils.verify_existence_and_get(t_id, _TABLE)

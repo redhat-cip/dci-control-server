@@ -136,7 +136,6 @@ def test_epm_should_be_able_to_delete_user_from_special_team(admin, epm, user_id
     )
     assert r.status_code == 201
 
-
     r = epm.delete(
         "/api/v1/teams/%s/users/%s" % (epm_team["id"], user_id),
         data={"role": "USER"}
