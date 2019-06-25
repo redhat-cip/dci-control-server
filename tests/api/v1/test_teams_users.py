@@ -90,7 +90,7 @@ def test_add_get_users_from_to_team(admin, team_id, user_id):
 
     users = admin.get('/api/v1/teams/%s/users' % team_id)
     assert users.status_code == 200
-    print(users.data)
+
     assert len(users.data['users']) == (current_len + 1)
     for u in users.data['users']:
         assert 'role' in u
@@ -110,6 +110,37 @@ def test_add_user_to_different_teams(admin, user_id, team_id,
     assert users.status_code == 200
     assert (users.data['users'][0]['id'] == user_id or
             users.data['users'][1]['id'] == user_id)
+
+
+def test_epm_should_be_able_to_add_epm_to_epm_team(admin, epm, user_id):
+    epm_team = admin.get("/api/v1/teams?where=name:EPM").data["teams"][0]
+
+    r = epm.post(
+        "/api/v1/teams/%s/users/%s" % (epm_team["id"], user_id),
+        data={"role": "USER"}
+    )
+    assert r.status_code == 201
+
+    users = admin.get("/api/v1/teams/%s/users?sort=created_at" % epm_team["id"]).data[
+        "users"
+    ]
+    assert users[0]["id"] == user_id
+
+
+def test_epm_should_be_able_to_delete_user_from_special_team(admin, epm, user_id):
+    epm_team = admin.get("/api/v1/teams?where=name:EPM").data["teams"][0]
+
+    r = epm.post(
+        "/api/v1/teams/%s/users/%s" % (epm_team["id"], user_id),
+        data={"role": "USER"}
+    )
+    assert r.status_code == 201
+
+    r = epm.delete(
+        "/api/v1/teams/%s/users/%s" % (epm_team["id"], user_id),
+        data={"role": "USER"}
+    )
+    assert r.status_code == 204
 
 
 def test_delete_user_from_team(admin, user_id, team_id):
