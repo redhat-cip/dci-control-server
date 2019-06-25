@@ -90,7 +90,7 @@ def test_add_get_users_from_to_team(admin, team_id, user_id):
 
     users = admin.get('/api/v1/teams/%s/users' % team_id)
     assert users.status_code == 200
-    print(users.data)
+
     assert len(users.data['users']) == (current_len + 1)
     for u in users.data['users']:
         assert 'role' in u
@@ -110,6 +110,56 @@ def test_add_user_to_different_teams(admin, user_id, team_id,
     assert users.status_code == 200
     assert (users.data['users'][0]['id'] == user_id or
             users.data['users'][1]['id'] == user_id)
+
+
+def test_epm_can_add_user_to_team(epm, team_product_id, user_id):
+    r = epm.post(
+        "/api/v1/teams/%s/users/%s" % (team_product_id, user_id),
+        data={"role": "USER"}
+    )
+    assert r.status_code == 201
+    users = epm.get("/api/v1/teams/%s/users?sort=created_at" % team_product_id).data[
+        "users"
+    ]
+    assert users[0]["id"] == user_id
+
+
+def test_epm_can_delete_user_from_epm_team(admin, epm, team_epm_id, user_id):
+    r = admin.post(
+        "/api/v1/teams/%s/users/%s" % (team_epm_id, user_id),
+        data={"role": "USER"}
+    )
+    assert r.status_code == 201
+
+    r = epm.delete(
+        "/api/v1/teams/%s/users/%s" % (team_epm_id, user_id),
+        data={"role": "USER"}
+    )
+    assert r.status_code == 204
+
+
+def test_epm_cant_add_user_to_epm_team(epm, team_epm_id, user_id):
+    r = epm.post(
+        "/api/v1/teams/%s/users/%s" % (team_epm_id, user_id),
+        data={"role": "USER"}
+    )
+    assert r.status_code == 401
+
+
+def test_epm_cant_add_user_to_admin_team(epm, team_admin_id, user_id):
+    r = epm.post(
+        "/api/v1/teams/%s/users/%s" % (team_admin_id, user_id),
+        data={"role": "USER"}
+    )
+    assert r.status_code == 401
+
+
+def test_epm_cant_add_user_to_red_hat_team(epm, team_redhat_id, user_id):
+    r = epm.post(
+        "/api/v1/teams/%s/users/%s" % (team_redhat_id, user_id),
+        data={"role": "USER"}
+    )
+    assert r.status_code == 401
 
 
 def test_delete_user_from_team(admin, user_id, team_id):
