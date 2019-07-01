@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7622aeec_9d0e5253",
+        "filename": "dci/api/v1/teams_users.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 46,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-07-01T12:34:40Z",
+      "side": 1,
+      "message": "You should also check that the user being added to the EPM team belongs to the Red Hat team.",
+      "revId": "bbe0347abc61bd2a0546fffbccd8148a444b0038",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
