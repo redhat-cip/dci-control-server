@@ -16,6 +16,23 @@
       "revId": "bbe0347abc61bd2a0546fffbccd8148a444b0038",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "7c2660bd_147f6d5e",
+        "filename": "tests/api/v1/test_teams_users.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 115,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2019-07-01T12:36:42Z",
+      "side": 1,
+      "message": "Can you add the following test cases:\n\n   EPM should not be able to add user that doesn\u0027t belongs to the Red Hat team.\n\n   EPM should be able to add user that belongs to the Red Hat team.",
+      "revId": "bbe0347abc61bd2a0546fffbccd8148a444b0038",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
