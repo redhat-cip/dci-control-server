@@ -201,8 +201,7 @@ def test_id(admin):
 
 @pytest.fixture
 def team_id(admin, team_product_id):
-    team = admin.post('/api/v1/teams', data={'name': 'pname',
-                                             'parent_id': team_product_id})
+    team = admin.post('/api/v1/teams', data={'name': 'pname'})
     return str(team.data['team']['id'])
 
 

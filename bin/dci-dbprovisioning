@@ -69,8 +69,8 @@ def get_teams():
     return teams
 
 
-def create_team(name, parent_team):
-    r = post('teams', {'name': name, 'parent_id': parent_team['id']})
+def create_team(name):
+    r = post('teams', {'name': name})
     return r.json()['team']
 
 

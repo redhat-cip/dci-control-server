@@ -33,8 +33,7 @@ class Identity:
         self.api_secret = user_info.get('api_secret', '')
         self._is_remoteci = user_info.get('is_remoteci', False)
         self._is_feeder = user_info.get('is_feeder', False)
-        # user_info['teams'] = {'<team-id1>': {'parent_id': <id>,
-        #                                      'id': <id>,
+        # user_info['teams'] = {'<team-id1>': {'id': <id>,
         #                                      'name': <name>,
         #                                      'etag': <etag>,
         #                                      'role': <role>},

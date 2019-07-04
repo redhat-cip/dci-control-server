@@ -53,7 +53,6 @@ def test_serialize_teams():
               "external": True,
               "id": "36f4c548-162a-4b65-bce4-76613398bf5c",
               "name": "RHEL",
-              "parent_id": "4b48ae10-1b9e-42e2-a5d3-113ab365d6c4",
               "state": "active",
               "updated_at": "2019-04-11T08:32:16.619884",
               "users": {
@@ -69,7 +68,6 @@ def test_serialize_teams():
         "external": True,
         "id": "36f4c548-162a-4b65-bce4-76613398bf5c",
         "name": "RHEL",
-        "parent_id": "4b48ae10-1b9e-42e2-a5d3-113ab365d6c4",
         "role": "USER",
         "state": "active",
         "updated_at": "2019-04-11T08:32:16.619884"
