@@ -17,12 +17,11 @@
 from __future__ import unicode_literals
 
 
-def test_success_create_product(admin, team_id):
+def test_success_create_product(admin):
     data = {
         'name': 'OpenStack',
         'label': 'OPENSTACK',
-        'description': 'Red Hat OpenStack Platform',
-        'team_id': team_id
+        'description': 'Red Hat OpenStack Platform'
     }
 
     result = admin.post('/api/v1/products', data=data)
@@ -31,15 +30,13 @@ def test_success_create_product(admin, team_id):
     assert result.data['product']['name'] == data['name']
     assert result.data['product']['label'] == data['label']
     assert result.data['product']['description'] == data['description']
-    assert result.data['product']['team_id'] == data['team_id']
 
 
-def test_fail_create_permission_user(user, team_id):
+def test_fail_create_permission_user(user):
     data = {
         'name': 'OpenStack',
         'label': 'OPENSTACK',
-        'description': 'Red Hat OpenStack Platform',
-        'team_id': team_id
+        'description': 'Red Hat OpenStack Platform'
     }
 
     result = user.post('/api/v1/products', data=data)
@@ -49,7 +46,7 @@ def test_fail_create_permission_user(user, team_id):
 
 def test_fail_ensure_payload_content_is_checked(admin):
     data = {
-        'description': 'name and team_id are missing',
+        'description': 'name is missing',
     }
 
     result = admin.post('/api/v1/products', data=data)
@@ -57,12 +54,11 @@ def test_fail_ensure_payload_content_is_checked(admin):
     assert result.status_code == 400
 
 
-def test_fail_create_product_already_exists(admin, team_id):
+def test_fail_create_product_already_exists(admin):
     data = {
         'name': 'OpenStack',
         'label': 'OPENSTACK',
-        'description': 'Red Hat OpenStack Platform',
-        'team_id': team_id
+        'description': 'Red Hat OpenStack Platform'
     }
 
     result = admin.post('/api/v1/products', data=data)
@@ -124,10 +120,10 @@ def test_fail_delete_product_user(user, product):
 
 
 def test_success_get_products_embed(admin, product):
-    result = admin.get('/api/v1/products/%s/?embed=team' % product['id'])
+    result = admin.get('/api/v1/products/%s?embed=topics' % product['id'])
 
     assert result.status_code == 200
-    assert 'team' in result.data['product'].keys()
+    assert 'topics' in result.data['product'].keys()
 
 
 def test_success_get_only_po_product(admin, epm, product_openstack):

@@ -50,7 +50,7 @@ def create_feeders(user):
     check_json_is_valid(create_feeder_schema, values)
     values.update(v1_utils.common_values_dict())
 
-    if user.is_not_in_team(values['team_id']):
+    if user.is_not_epm() and user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
     values.update({
