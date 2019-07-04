@@ -100,10 +100,15 @@ class Identity:
         return self.teams[team_id]['role'] == 'REMOTECI'
 
     def is_feeder(self, team_id=None):
-        """Ensure ther resource has the role FEEDER."""
+        """Chekc if the user is a feeder."""
         if team_id is None:
             return self._is_feeder
         team_id = uuid.UUID(str(team_id))
         if team_id not in self.teams_ids:
             return False
         return self.teams[team_id]['role'] == 'FEEDER'
+
+    def is_not_feeder(self):
+        """Check if the user is not a feeder."""
+
+        return not self.is_feeder()

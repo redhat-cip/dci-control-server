@@ -402,8 +402,7 @@ def product_openstack(admin, team_id):
     data = {
         'name': 'OpenStack',
         'label': 'OPENSTACK',
-        'description': 'Red Hat OpenStack Platform',
-        'team_id': team_id
+        'description': 'Red Hat OpenStack Platform'
     }
     return admin.post('/api/v1/products', data=data).data['product']
 

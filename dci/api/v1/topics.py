@@ -53,11 +53,7 @@ def create_topics(user):
     check_json_is_valid(create_topic_schema, values)
     values.update(v1_utils.common_values_dict())
 
-    product = v1_utils.verify_existence_and_get(values['product_id'],
-                                                models.PRODUCTS)
-    team_product_id = product['team_id']
-
-    if user.is_not_super_admin() and user.is_not_in_team(team_product_id):
+    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_feeder():  # noqa
         raise dci_exc.Unauthorized()
 
     # todo(yassine): enabled when client updated.
@@ -81,10 +77,8 @@ def create_topics(user):
 def get_topic_by_id(user, topic_id):
     args = check_and_get_args(flask.request.args.to_dict())
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
-    product = v1_utils.verify_existence_and_get(topic['product_id'],
-                                                models.PRODUCTS)
 
-    if user.is_not_super_admin() and user.is_not_in_team(product['team_id']):
+    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_feeder():  # noqa
         if not user.is_read_only_user():
             v1_utils.verify_team_in_topic(user, topic_id)
         if 'teams' in args['embed']:
@@ -125,23 +119,9 @@ def put_topic(user, topic_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = flask.request.json
     check_json_is_valid(update_topic_schema, values)
-    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
-    product = v1_utils.verify_existence_and_get(topic['product_id'],
-                                                models.PRODUCTS)
 
-    if user.is_not_super_admin() and user.is_not_in_team(product['team_id']):
+    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_feeder():  # noqa
         raise dci_exc.Unauthorized()
-
-    n_topic = None
-    if values.get('next_topic_id'):
-        n_topic = v1_utils.verify_existence_and_get(values['next_topic_id'],
-                                                    _TABLE)
-        product = v1_utils.verify_existence_and_get(n_topic['product_id'],
-                                                    models.PRODUCTS)
-
-        if (user.is_not_super_admin() and
-            user.is_not_in_team(product['team_id'])):
-            raise dci_exc.Unauthorized()
 
     values['etag'] = utils.gen_etag()
     where_clause = sql.and_(
@@ -165,10 +145,7 @@ def put_topic(user, topic_id):
 @api.route('/topics/<uuid:topic_id>', methods=['DELETE'])
 @decorators.login_required
 def delete_topic_by_id(user, topic_id):
-    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
-    product = v1_utils.verify_existence_and_get(topic['product_id'],
-                                                models.PRODUCTS)
-    if user.is_not_super_admin() and user.is_not_in_team(product['team_id']):
+    if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
@@ -211,13 +188,7 @@ def add_team_to_topic(user, topic_id):
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
                                                 get_id=True)
 
-    product = v1_utils.verify_existence_and_get(topic['product_id'],
-                                                models.PRODUCTS)
-    team_product_id = product['team_id']
-
-    if (user.is_not_super_admin() and
-        user.is_not_in_team(team_product_id) and
-        user.is_not_epm()):
+    if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     values = {'topic_id': topic['id'],
@@ -239,11 +210,8 @@ def delete_team_from_topic(user, topic_id, team_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
                                                 get_id=True)
-    product = v1_utils.verify_existence_and_get(topic['product_id'],
-                                                models.PRODUCTS)
 
-    if (user.is_not_super_admin() and user.is_not_in_team(product['team_id'])
-        and user.is_not_epm()):
+    if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     JTT = models.JOINS_TOPICS_TEAMS
@@ -263,9 +231,7 @@ def delete_team_from_topic(user, topic_id, team_id):
 def get_all_teams_from_topic(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
 
-    if (user.is_not_super_admin()
-        and user.product_id != topic['product_id']
-        and user.is_not_epm()):
+    if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     # Get all teams which belongs to a given topic

@@ -224,11 +224,6 @@ def feeders(root_select=models.FEEDERS):
 
 def products(root_select=models.PRODUCTS):
     return {
-        'team': [
-            {'right': TEAM,
-             'onclause': and_(TEAM.c.id == root_select.c.team_id,
-                              TEAM.c.state != 'archived')}
-        ],
         'topics': [
             {'right': models.TOPICS,
              'onclause': and_(models.TOPICS.c.product_id == root_select.c.id,
@@ -317,7 +312,6 @@ EMBED_STRING_TO_OBJECT = {
         'job': JOB
     },
     'products': {
-        'team': TEAM,
         'topics': models.TOPICS,
     },
     'teams': {

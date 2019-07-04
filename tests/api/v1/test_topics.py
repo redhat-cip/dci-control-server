@@ -241,14 +241,6 @@ def test_delete_topic_by_id(admin, topic_id):
     assert gct.status_code == 404
 
 
-def test_delete_topic_by_id_as_feeder(feeder_context, topic_id):
-    topic = topic_removal(feeder_context, topic_id)
-    assert topic.status_code == 204
-
-    gct = feeder_context.get('/api/v1/topics/%s' % topic_id)
-    assert gct.status_code == 404
-
-
 def test_delete_topic_by_id_as_user(admin, user, product):
     data = {'name': 'tname', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
