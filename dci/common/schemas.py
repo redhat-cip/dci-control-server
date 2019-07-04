@@ -343,7 +343,7 @@ update_user_schema = {"type": "object", "properties": update_user_properties}
 
 ###############################################################################
 #                                                                             #
-#                            Current User schemas                             #
+#                            Current User/Identity schema                     #
 #                                                                             #
 ###############################################################################
 update_current_user_schema = {

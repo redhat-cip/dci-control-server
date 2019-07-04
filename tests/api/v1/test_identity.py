@@ -16,6 +16,9 @@
 
 from __future__ import unicode_literals
 
+import datetime
+import mock
+
 
 def test_get_identity_admin(admin, team_admin_id):
     response = admin.get('/api/v1/identity')
@@ -42,3 +45,104 @@ def test_get_identity_user(user, team_user_id):
     assert identity['teams'][team_user_id]['name'] == 'user'
     assert identity['teams'][team_user_id]['id'] == team_user_id
     assert identity['teams'][team_user_id]['role'] == 'USER'
+
+
+def get_user(flask_user, name):
+    get = flask_user.get('/api/v1/users?where=name:%s' % name)
+    get2 = flask_user.get('/api/v1/users/%s' % get.data['users'][0]['id'])
+    return get2.data['user'], get2.headers.get("ETag")
+
+
+def test_update_identity_password(admin, user):
+    user_data, user_etag = get_user(admin, 'user')
+
+    assert user.get('/api/v1/identity').status_code == 200
+
+    assert user.put(
+        '/api/v1/identity',
+        data={'current_password': 'user', 'new_password': 'password'},
+        headers={'If-match': user_etag}
+    ).status_code == 200
+
+    assert user.get('/api/v1/identity').status_code == 401
+
+    user_data, user_etag = get_user(admin, 'user')
+
+    assert admin.put(
+        '/api/v1/users/%s' % user_data['id'],
+        data={'password': 'user'},
+        headers={'If-match': user_etag}
+    ).status_code == 200
+
+    assert user.get('/api/v1/identity').status_code == 200
+
+
+def test_update_current_user_current_password_wrong(admin, user):
+    user_data, user_etag = get_user(admin, 'user')
+
+    assert user.get('/api/v1/identity').status_code == 200
+
+    assert user.put(
+        '/api/v1/identity',
+        data={'current_password': 'wrong_password', 'new_password': ''},
+        headers={'If-match': user_etag}
+    ).status_code == 400
+
+    assert user.get('/api/v1/identity').status_code == 200
+
+
+def test_update_current_user_new_password_empty(admin, user):
+    user_data, user_etag = get_user(admin, 'user')
+
+    assert user.get('/api/v1/identity').status_code == 200
+
+    assert user.put(
+        '/api/v1/identity',
+        data={'current_password': 'user', 'new_password': ''},
+        headers={'If-match': user_etag}
+    ).status_code == 200
+
+    assert user.get('/api/v1/identity').status_code == 200
+
+
+def test_update_current_user(admin, user):
+    user_data, user_etag = get_user(admin, 'user')
+
+    assert user.get('/api/v1/identity').status_code == 200
+
+    me = user.put(
+        '/api/v1/identity',
+        data={'current_password': 'user', 'new_password': '',
+              'email': 'new_email@example.org', 'fullname': 'New Name',
+              'timezone': 'Europe/Paris'},
+        headers={'If-match': user_etag}
+    )
+    assert me.status_code == 200
+    assert me.data['user']['email'] == 'new_email@example.org'
+    assert me.data['user']['fullname'] == 'New Name'
+    assert me.data['user']['timezone'] == 'Europe/Paris'
+
+
+@mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
+def test_update_current_user_sso(m_datetime, user_sso_rh_employee, app,
+                                 engine, admin):
+    user_sso = user_sso_rh_employee
+    m_utcnow = mock.MagicMock()
+    m_utcnow.utctimetuple.return_value = datetime.datetime. \
+        fromtimestamp(1518653629).timetuple()
+    m_datetime.utcnow.return_value = m_utcnow
+    with app.app_context():
+        assert user_sso.get('/api/v1/identity').status_code == 200
+        user_data, user_etag = get_user(admin, 'dci-rh')
+
+        me = user_sso.put(
+            '/api/v1/identity',
+            data={'email': 'new_email@example.org',
+                  'fullname': 'New Name',
+                  'timezone': 'Europe/Paris'},
+            headers={'If-match': user_etag}
+        )
+        assert me.status_code == 200
+        assert me.data['user']['email'] == 'new_email@example.org'
+        assert me.data['user']['fullname'] == 'New Name'
+        assert me.data['user']['timezone'] == 'Europe/Paris'

@@ -15,9 +15,20 @@
 # under the License.
 import flask
 from flask import json
+from sqlalchemy import sql
 
 from dci.api.v1 import api
+from dci import auth
+from dci.common import exceptions as dci_exc
+from dci.common.schemas import (
+    check_json_is_valid,
+    update_current_user_schema
+)
+from dci.common import utils
+from dci.db import models
 from dci import decorators
+
+_TABLE = models.USERS
 
 
 # TODO: replace this properly with JSONEncoder
@@ -50,5 +61,48 @@ def get_identity(identity):
             }
         ), 200,
         headers={'ETag': identity.etag},
+        content_type='application/json'
+    )
+
+
+@api.route('/identity', methods=['PUT'])
+@decorators.login_required
+def put_identity(user):
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+    values = flask.request.json
+    check_json_is_valid(update_current_user_schema, values)
+
+    if user.is_not_read_only_user():
+        current_password = values['current_password']
+        encrypted_password = user.password
+        if not auth.check_passwords_equal(current_password,
+                                          encrypted_password):
+            raise dci_exc.DCIException('current_password invalid')
+
+    new_values = {}
+    new_password = values.get('new_password')
+    if new_password:
+        encrypted_password = auth.hash_password(new_password)
+        new_values['password'] = encrypted_password
+
+    etag = utils.gen_etag()
+    new_values.update({'etag': etag,
+                       'fullname': values.get('fullname') or user.fullname,
+                       'email': values.get('email') or user.email,
+                       'timezone': values.get('timezone') or user.timezone})
+
+    query = _TABLE.update().returning(*_TABLE.columns).where(sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        _TABLE.c.id == user.id
+    )).values(new_values)
+
+    result = flask.g.db_conn.execute(query)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('User', user.id)
+    _result = dict(result.fetchone())
+    del _result['password']
+
+    return flask.Response(
+        json.dumps({'user': _result}), 200, headers={'ETag': etag},
         content_type='application/json'
     )
