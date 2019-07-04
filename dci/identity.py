@@ -98,6 +98,11 @@ class Identity:
             return self._is_remoteci
         return False
 
+    def is_not_remoteci(self, team_id=None):
+        """ Check if the user is not a remoteci. """
+
+        return not self.is_remoteci(team_id)
+
     def is_feeder(self, team_id=None):
         """Ensure ther resource is a FEEDER."""
         if team_id is None:
@@ -106,3 +111,8 @@ class Identity:
         if team_id in self.teams_ids:
             return self._is_feeder
         return False
+
+    def is_not_feeder(self, team_id=None):
+        """Check if the user is not a feeder."""
+
+        return not self.is_feeder(team_id)

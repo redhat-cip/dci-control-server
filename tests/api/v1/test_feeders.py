@@ -18,39 +18,39 @@ from __future__ import unicode_literals
 
 
 def test_success_create_feeder_authorized_users(admin, epm,
-                                                team_product_id):
+                                                team_user_id):
     """Test to ensure user with proper permissions can create feeders
 
-       Currently only the SUPER_ADMIN and PRODUCT_OWNER have such
+       Currently only the SUPER_ADMIN and EPM have such
        a permission.
     """
 
     feeder_from_admin = {
-        'name': 'feeder-from-admin', 'team_id': team_product_id
+        'name': 'feeder-from-admin', 'team_id': team_user_id
     }
-    feeder_from_po = {
-        'name': 'feeder-from-po', 'team_id': team_product_id
+    feeder_from_epm = {
+        'name': 'feeder-from-po', 'team_id': team_user_id
     }
 
     admin_result = admin.post('/api/v1/feeders', data=feeder_from_admin)
-    epm_result = epm.post('/api/v1/feeders', data=feeder_from_po)
+    epm_result = epm.post('/api/v1/feeders', data=feeder_from_epm)
 
     assert admin_result.status_code == 201
     assert admin_result.data['feeder']['name'] == feeder_from_admin['name']
 
     assert epm_result.status_code == 201
-    assert epm_result.data['feeder']['name'] == feeder_from_po['name']
+    assert epm_result.data['feeder']['name'] == feeder_from_epm['name']
 
 
-def test_failure_create_feeder_unauthorized_users(user, team_product_id):
+def test_failure_create_feeder_unauthorized_users(user, team_user_id):
     """Test to ensure user w/o proper permissions can't create feeders
 
-       Currently only the SUPER_ADMIN and PRODUCT_OWNER have such
+       Currently only the SUPER_ADMIN and EPM have such
        a permission. So we test with a regular USER.
     """
 
     feeder_from_user = {
-        'name': 'feeder-from-user', 'team_id': team_product_id
+        'name': 'feeder-from-user', 'team_id': team_user_id
     }
 
     user_result = user.post('/api/v1/feeders', data=feeder_from_user)
@@ -70,23 +70,26 @@ def test_success_get_feeder_authorized_users(admin, epm, feeder):
     assert epm_result.data['feeders'][0]['name'] == 'random-name-feeder'
 
 
-def test_failure_get_feeder_unauthorized_users(user, feeder):
-    """Test to ensure user w/o proper permissions can'tretrieve feeders."""
+def test_failure_get_feeder_unauthorized_users(user, feeder, team_user_id):
+    """Test to ensure user w/o proper permissions can't retrieve other
+       feeders."""
 
     user_result = user.get('/api/v1/feeders')
     assert user_result.status_code == 200
-    assert user_result.data['feeders'] == []
+    user_feeders = user_result.data['feeders']
+    for feeder in user_feeders:
+        assert feeder['team_id'] == team_user_id
 
 
 def test_success_delete_feeder_authorized_users(admin, epm, feeder,
-                                                team_product_id):
+                                                team_user_id):
     """Test to ensure user with proper permissions can delete feeders."""
 
-    feeder_from_po = {
-        'name': 'feeder-from-po', 'team_id': team_product_id
+    feeder_from_epm = {
+        'name': 'feeder-from-po', 'team_id': team_user_id
     }
 
-    epm_result = epm.post('/api/v1/feeders', data=feeder_from_po)
+    epm_result = epm.post('/api/v1/feeders', data=feeder_from_epm)
     feeder_from_po_id = epm_result.data['feeder']['id']
     feeder_from_po_etag = epm_result.headers.get("ETag")
 

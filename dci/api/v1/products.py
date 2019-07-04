@@ -24,6 +24,7 @@ from dci import decorators
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
+from dci.api.v1 import teams
 from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
@@ -39,8 +40,7 @@ from dci.db import models
 _TABLE = models.PRODUCTS
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
-    'topics': True,
-    'team': False,
+    'topics': True
 }
 
 
@@ -167,10 +167,8 @@ def add_team_to_product(user, product_id):
     product = v1_utils.verify_existence_and_get(product_id, _TABLE)
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
                                                 get_id=True)
-    team_product_id = product['team_id']
 
-    if (user.is_not_super_admin() and
-        user.is_not_in_team(team_product_id)):
+    if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     values = {'product_id': product['id'],
@@ -192,9 +190,8 @@ def delete_team_from_product(user, product_id, team_id):
     product = v1_utils.verify_existence_and_get(product_id, _TABLE)
     team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
                                                 get_id=True)
-    team_product_id = product['team_id']
 
-    if user.is_not_super_admin() and user.is_not_in_team(team_product_id):
+    if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     JPT = models.JOIN_PRODUCTS_TEAMS
@@ -209,24 +206,37 @@ def delete_team_from_product(user, product_id, team_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
+def serialize_teams(rows):
+    result = []
+    for row in rows:
+        new_row = {}
+        for k, v in row.items():
+            if not k.startswith("products_teams"):
+                new_key = k.split('_')[1]
+                new_row[new_key] = v
+        result.append(new_row)
+    return result
+
+
 @api.route('/products/<uuid:product_id>/teams', methods=['GET'])
 @decorators.login_required
 def get_all_teams_from_product(user, product_id):
     product = v1_utils.verify_existence_and_get(product_id, _TABLE)
 
-    team_product_id = product['team_id']
-
-    if user.is_not_super_admin() and user.is_not_in_team(team_product_id):
+    if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    JPT = models.JOIN_PRODUCTS_TEAMS
-    query = (sql.select([models.TEAMS])
-             .select_from(JPT.join(models.TEAMS))
-             .where(JPT.c.product_id == product['id']))
-    rows = flask.g.db_conn.execute(query)
+    args = check_and_get_args(flask.request.args.to_dict())
+    _JPT = models.JOIN_PRODUCTS_TEAMS
+    query = v1_utils.QueryBuilder(models.TEAMS, args,
+                                  teams._T_COLUMNS,
+                                  root_join_table=_JPT,
+                                  root_join_condition=sql.and_(_JPT.c.product_id == product['id'],  # noqa
+                                                               _JPT.c.team_id == models.TEAMS.c.id))  # noqa
+    rows = query.execute(fetchall=True)
 
-    return flask.jsonify({'teams': rows,
-                          '_meta': {'count': rows.rowcount}})
+    return flask.jsonify({'teams': serialize_teams(rows),
+                          '_meta': {'count': len(rows)}})
 
 
 @api.route('/products/purge', methods=['GET'])

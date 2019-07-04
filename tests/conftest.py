@@ -200,7 +200,7 @@ def test_id(admin):
 
 
 @pytest.fixture
-def team_id(admin, team_product_id):
+def team_id(admin, team_user_id):
     team = admin.post('/api/v1/teams', data={'name': 'pname'})
     return str(team.data['team']['id'])
 
@@ -309,8 +309,8 @@ def remoteci_configuration_user_id(user, remoteci_user_id, topic_user_id):
 
 
 @pytest.fixture
-def feeder_id(epm, team_product_id):
-    data = {'name': 'feeder_osp', 'team_id': team_product_id}
+def feeder_id(epm, team_user_id):
+    data = {'name': 'feeder_osp', 'team_id': team_user_id}
     feeder = epm.post('/api/v1/feeders', data=data).data
     return str(feeder['feeder']['id'])
 
@@ -402,8 +402,7 @@ def product_openstack(admin, team_id):
     data = {
         'name': 'OpenStack',
         'label': 'OPENSTACK',
-        'description': 'Red Hat OpenStack Platform',
-        'team_id': team_id
+        'description': 'Red Hat OpenStack Platform'
     }
     return admin.post('/api/v1/products', data=data).data['product']
 
