@@ -57,9 +57,6 @@ def create_teams(user):
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    if not values.get('parent_id'):
-        values['parent_id'] = flask.g.team_admin_id
-
     query = _TABLE.insert().values(**values)
 
     try:

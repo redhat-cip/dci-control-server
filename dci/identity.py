@@ -33,8 +33,7 @@ class Identity:
         self.api_secret = user_info.get('api_secret', '')
         self._is_remoteci = user_info.get('is_remoteci', False)
         self._is_feeder = user_info.get('is_feeder', False)
-        # user_info['teams'] = {'<team-id1>': {'parent_id': <id>,
-        #                                      'id': <id>,
+        # user_info['teams'] = {'<team-id1>': {'id': <id>,
         #                                      'name': <name>,
         #                                      'etag': <etag>,
         #                       '<team-id2>: {...}}
@@ -90,10 +89,20 @@ class Identity:
     def is_user(self):
         return self._is_user
 
-    def is_remoteci(self):
-        """Ensure ther resource is REMOTECI."""
-        return self._is_remoteci
+    def is_remoteci(self, team_id=None):
+        """Ensure ther resource is a REMOTECI."""
+        if team_id is None:
+            return self._is_remoteci
+        team_id = uuid.UUID(str(team_id))
+        if team_id in self.teams_ids:
+            return self._is_remoteci
+        return False
 
-    def is_feeder(self):
-        """Ensure ther resource is FEEDER."""
-        return self._is_feeder
+    def is_feeder(self, team_id=None):
+        """Ensure ther resource is a FEEDER."""
+        if team_id is None:
+            return self._is_feeder
+        team_id = uuid.UUID(str(team_id))
+        if team_id in self.teams_ids:
+            return self._is_feeder
+        return False
