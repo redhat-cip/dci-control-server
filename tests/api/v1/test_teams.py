@@ -24,15 +24,12 @@ def test_create_teams(admin, team_admin_id):
     pt_id = pt['team']['id']
     gt = admin.get('/api/v1/teams/%s' % pt_id).data
     assert gt['team']['name'] == 'pname'
-    assert gt['team']['parent_id'] == team_admin_id
 
     pt = admin.post('/api/v1/teams',
-                    data={'name': 'pname2',
-                          'parent_id': team_admin_id}).data
+                    data={'name': 'pname2'}).data
     pt_id = pt['team']['id']
     gt = admin.get('/api/v1/teams/%s' % pt_id).data
     assert gt['team']['name'] == 'pname2'
-    assert gt['team']['parent_id'] == team_admin_id
 
 
 def test_create_teams_already_exist(admin):
@@ -170,8 +167,7 @@ def test_put_teams(admin):
 
 
 def test_put_team_external_flag(user, admin, epm, team_product_id):
-    cteam = admin.post('/api/v1/teams', data={'name': 'pname',
-                                              'parent_id': team_product_id})
+    cteam = admin.post('/api/v1/teams', data={'name': 'pname'})
     cteam_id = cteam.data['team']['id']
 
     cteam = epm.get('/api/v1/teams/%s' % cteam_id)
