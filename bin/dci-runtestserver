@@ -24,4 +24,5 @@ if __name__ == '__main__':
 
     dci_app.run(dci_app.config['HOST'],
                 dci_app.config['PORT'],
-                debug=dci_app.config['DEBUG'])
+                debug=dci_app.config['DEBUG'],
+                processes=8)

@@ -14,9 +14,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import concurrent.futures as futures
+import itertools
 import json
 import os
 import time
+from functools import partial
 
 import requests
 from dci import settings
@@ -27,6 +30,12 @@ DCI_LOGIN = os.environ.get('DCI_LOGIN', 'admin')
 DCI_PASSWORD = os.environ.get('DCI_PASSWORD', 'admin')
 DEFAULT_DCI_CS_URL = 'http://{host}:{port}'.format(host=settings.HOST, port=settings.PORT)
 DCI_CS_URL = os.environ.get('DCI_CS_URL', DEFAULT_DCI_CS_URL)
+
+
+def wrap(fun):
+    def wrapper(arglist):
+        return fun(*arglist)
+    return wrapper
 
 
 def get_url(endpoint, subresource=None):
@@ -76,20 +85,25 @@ def create_team(name, parent_team):
 
 def create_teams():
     team_admin = get_teams()['admin']
-    openstack = create_team('OpenStack', team_admin)
-    ansible = create_team('Ansible', team_admin)
-    rhel = create_team('RHEL', team_admin)
-    ocp = create_team('OpenShift', team_admin)
-    return {
-        'OpenStack': openstack,
-        'Dell': create_team('Dell', openstack),
-        'HP': create_team('HP', openstack),
-        'Ansible': ansible,
-        'Cisco': create_team('Cisco', ansible),
-        'RHEL': rhel,
-        'Veritas': create_team('Veritas', rhel),
-        'OpenShift': ocp,
-    }
+    main_teams = ['OpenStack', 'Ansible', 'RHEL', 'OpenShift']
+    osp_teams = ['Dell', 'HP']
+    ansible_teams = ['Cisco']
+    rhel_teams = ['Veritas']
+
+    with futures.ThreadPoolExecutor() as executor:
+        teams = dict(zip(main_teams,
+                    executor.map(partial(create_team, parent_team=team_admin), main_teams)))
+
+    with futures.ThreadPoolExecutor() as executor:
+        teams.update(dict(zip(osp_teams,
+                         executor.map(partial(create_team, parent_team=teams['OpenStack']), osp_teams))))
+    with futures.ThreadPoolExecutor() as executor:
+        teams.update(dict(zip(ansible_teams,
+                         executor.map(partial(create_team, parent_team=teams['Ansible']), ansible_teams))))
+    with futures.ThreadPoolExecutor() as executor:
+        teams.update(dict(zip(rhel_teams,
+                         executor.map(partial(create_team, parent_team=teams['RHEL']), rhel_teams))))
+    return teams
 
 
 def create_user(fullname, team, role):
@@ -108,16 +122,23 @@ def create_user(fullname, team, role):
 
 
 def create_users(teams):
-    return {
-        'ansible_po': create_user('Ansible PO', teams['Ansible'], 'PRODUCT_OWNER'),
-        'openstack_po': create_user('OpenStack PO', teams['OpenStack'], 'PRODUCT_OWNER'),
-        'rhel_po': create_user('RHEL PO', teams['RHEL'], 'PRODUCT_OWNER'),
-        'rhel_user': create_user('user RHEL', teams['RHEL'], 'USER'),
-        'user_cisco': create_user('User Cisco', teams['Cisco'], 'USER'),
-        'user_hp': create_user('User HP', teams['HP'], 'USER'),
-        'user_dell': create_user('User Dell', teams['Dell'], 'USER'),
-        'user_veritas': create_user('User Veritas', teams['Veritas'], 'USER'),
+    tocreate = {
+        'ansible_po': ('Ansible PO', teams['Ansible'], 'PRODUCT_OWNER'),
+        'openstack_po': ('OpenStack PO', teams['OpenStack'], 'PRODUCT_OWNER'),
+        'rhel_po': ('RHEL PO', teams['RHEL'], 'PRODUCT_OWNER'),
+        'rhel_user': ('user RHEL', teams['RHEL'], 'USER'),
+        'user_cisco': ('User Cisco', teams['Cisco'], 'USER'),
+        'user_hp': ('User HP', teams['HP'], 'USER'),
+        'user_dell': ('User Dell', teams['Dell'], 'USER'),
+        'user_veritas': ('User Veritas', teams['Veritas'], 'USER'),
     }
+
+    with futures.ThreadPoolExecutor() as executor:
+        users = dict(zip(tocreate.keys(),
+                         executor.map(wrap(create_user), tocreate.values())
+                         )
+                     )
+    return users
 
 
 def create_product(product, team):
@@ -131,12 +152,19 @@ def create_product(product, team):
 
 
 def create_products(teams):
-    return {
-        'OpenStack': create_product('OpenStack', teams['OpenStack']),
-        'Ansible': create_product('Ansible', teams['Ansible']),
-        'RHEL': create_product('RHEL', teams['RHEL']),
-        'OCP': create_product('OCP', teams['OpenShift']),
+    tocreate = {
+        'OpenStack': ('OpenStack', teams['OpenStack']),
+        'Ansible': ('Ansible', teams['Ansible']),
+        'RHEL': ('RHEL', teams['RHEL']),
+        'OCP': ('OCP', teams['OpenShift']),
     }
+
+    with futures.ThreadPoolExecutor() as executor:
+        products = dict(zip(tocreate.keys(),
+                            executor.map(wrap(create_product), tocreate.values())
+                            )
+                        )
+    return products
 
 
 def create_topic(name, component_types, product, next_topic=None):
@@ -211,10 +239,14 @@ def create_topics(products):
     }
 
 
+def associate_topic_to_team(topic, team):
+    post('topics/%s/teams' % topic['id'], {'team_id': team['id']})
+
+
 def associate_topics_to_teams(topics, teams):
-    for topic, topic_value in topics.items():
-        for team, team_value in teams.items():
-            post('topics/%s/teams' % topic_value['id'], {'team_id': team_value['id']})
+    with futures.ThreadPoolExecutor() as executor:
+        for (topic, team) in itertools.product(topics.values(), teams.values()):
+            executor.submit(associate_topic_to_team, topic, team)
 
 
 def create_component(name, topic):
@@ -228,29 +260,38 @@ def create_component(name, topic):
 
 
 def create_components(topics):
-    components = {}
-    for component in [
-        {'name': 'RH7-RHOS-10.0 2016-10-28.1', 'topic_name': 'OSP10'},
-        {'name': 'RH7-RHOS-10.0 2016-11-12.1', 'topic_name': 'OSP10'},
-        {'name': 'RH7-RHOS-11.0 2016-11-11.1', 'topic_name': 'OSP11'},
-        {'name': 'RH7-RHOS-12.0 2016-11-12.1', 'topic_name': 'OSP12'},
-        {'name': 'Ansible devel', 'topic_name': 'ansible-devel'},
-        {'name': 'Ansible 2.4', 'topic_name': 'ansible-2.4'},
-        {'name': 'RHEL-7.6-20180513.n.0', 'topic_name': 'RHEL-7'},
-        {'name': 'RHEL-8.0-20180503.n.2', 'topic_name': 'RHEL-8'},
-    ]:
-        c = create_component(component['name'], topics[component['topic_name']])
-        components[c['name']] = c
+    tocreate = (
+        ('RH7-RHOS-10.0 2016-10-28.1', topics['OSP10']),
+        ('RH7-RHOS-10.0 2016-11-12.1', topics['OSP10']),
+        ('RH7-RHOS-11.0 2016-11-11.1', topics['OSP11']),
+        ('RH7-RHOS-12.0 2016-11-12.1', topics['OSP12']),
+        ('Ansible devel', topics['ansible-devel']),
+        ('Ansible 2.4', topics['ansible-2.4']),
+        ('RHEL-7.6-20180513.n.0', topics['RHEL-7']),
+        ('RHEL-8.0-20180503.n.2', topics['RHEL-8'])
+    )
+
+    names = map(lambda x: x[0], tocreate)
+
+    with futures.ThreadPoolExecutor() as executor:
+        components = dict(zip(names,
+                              executor.map(wrap(create_component), tocreate)
+                              )
+                          )
     return components
 
 
+def create_remoteci(team):
+    return post('remotecis', {'name': 'Remoteci %s' % team['name'], 'team_id': team['id']}).json()['remoteci']
+
+
 def create_remotecis(teams):
-    remotecis = {}
-    for team, value in teams.items():
-        name = 'Remoteci %s' % team
-        r = post('remotecis', {'name': name, 'team_id': value['id']})
-        remotecis[team] = r.json()['remoteci']
+    with futures.ThreadPoolExecutor() as executor:
+        remotecis = dict(zip(teams.keys(),
+                             executor.map(create_remoteci, teams.values())))
     return remotecis
+
+
 
 
 def create_jobs(topics, remotecis, teams, components):
@@ -295,8 +336,9 @@ def create_job_states(jobs):
         {'job_id': jobs[2]['id'], 'status': 'failure'},
         {'job_id': jobs[3]['id'], 'status': 'success'},
     ]
-    for jobstate in jobstates:
-        post('jobstates', jobstate, ('user_dell', 'user_dell',))
+    with futures.ThreadPoolExecutor() as executor:
+        for jobstate in jobstates:
+            executor.submit(post, 'jobstates', jobstate, ('user_dell', 'user_dell',))
 
 
 def create_file(job_id, file_name, file_path, user, content_type='application/junit'):
@@ -315,12 +357,18 @@ def create_file(job_id, file_name, file_path, user, content_type='application/ju
 
 def create_files(jobs):
     user_dell = ('user_dell', 'user_dell',)
-    create_file(jobs[3]['id'], 'Tempest', 'tests/data/tempest-results.xml', user_dell)
-    create_file(jobs[2]['id'], 'Tempest', 'tests/data/tempest-results.xml', user_dell)
-    create_file(jobs[3]['id'], 'Rally', 'tests/data/rally-results.xml', user_dell)
-    create_file(jobs[2]['id'], 'Rally', 'tests/data/rally-results.regression.xml', user_dell)
-    create_file(jobs[2]['id'], 'certification.xml.gz', 'tests/data/certification.xml.tar.gz', user_dell,
-                'application/x-compressed')
+    with futures.ThreadPoolExecutor() as executor:
+        executor.submit(create_file, jobs[3]['id'], 'Tempest', 'tests/data/tempest-results.xml',
+                        user_dell)
+        executor.submit(create_file, jobs[2]['id'], 'Tempest', 'tests/data/tempest-results.xml',
+                        user_dell)
+        executor.submit(create_file, jobs[3]['id'], 'Rally', 'tests/data/rally-results.xml',
+                        user_dell)
+        executor.submit(create_file, jobs[2]['id'], 'Rally',
+                        'tests/data/rally-results.regression.xml', user_dell)
+        executor.submit(create_file, jobs[2]['id'], 'certification.xml.gz',
+                        'tests/data/certification.xml.tar.gz', user_dell,
+                        'application/x-compressed')
 
 
 def wait_db_ready():
@@ -341,12 +389,16 @@ def main():
     create_users(teams)
     products = create_products(teams)
     topics = create_topics(products)
-    associate_topics_to_teams(topics, teams)
-    components = create_components(topics)
-    remotecis = create_remotecis(teams)
+    with futures.ThreadPoolExecutor() as executor:
+        executor.submit(associate_topics_to_teams, topics, teams)
+        components_future = executor.submit(create_components, topics)
+        remotecis_future = executor.submit(create_remotecis, teams)
+    components = components_future.result()
+    remotecis = remotecis_future.result()
     jobs = create_jobs(topics, remotecis, teams, components)
-    create_job_states(jobs)
-    create_files(jobs)
+    with futures.ThreadPoolExecutor() as executor:
+        executor.submit(create_job_states, jobs)
+        executor.submit(create_files, jobs)
 
 
 if __name__ == '__main__':
