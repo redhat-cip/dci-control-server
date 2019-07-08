@@ -16,10 +16,7 @@
 import base64
 import datetime
 
-try:
-    from xmlrpclib import ServerProxy
-except ImportError:
-    from xmlrpc.client import ServerProxy
+from six.moves.xmlrpc.client import ServerProxy
 
 import flask
 from flask import json
