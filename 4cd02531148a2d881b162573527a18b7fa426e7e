@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "e7157ca1_2b7a4994",
+        "filename": "dci/api/v1/global_status.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-07-08T14:32:24Z",
+      "side": 1,
+      "message": "Please check this carefully.",
+      "revId": "4cd02531148a2d881b162573527a18b7fa426e7e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "2a881d70_80cbd577",
+        "filename": "dci/common/utils.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 66,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-07-08T14:32:24Z",
+      "side": 1,
+      "message": "Please check this carefully.",
+      "revId": "4cd02531148a2d881b162573527a18b7fa426e7e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
