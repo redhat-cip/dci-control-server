@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "a2831705_90e5905f",
+        "filename": "bin/dci-dbprovisioning",
+        "patchSetId": 1
+      },
+      "lineNbr": 97,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-07-08T18:11:31Z",
+      "side": 1,
+      "message": "We can actually reuse the threads pool. Since you\u0027re calling dict, it will be waiting for all results to be available.\n\nAnd, it might even improve slightly more performances ;-)",
+      "revId": "3a42bc049ac7a8df1d6c21dca7f18dae50f60ce2",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
