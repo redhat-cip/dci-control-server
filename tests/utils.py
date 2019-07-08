@@ -14,12 +14,8 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-try:
-    from urlparse import parse_qsl
-    from urlparse import urlparse
-except ImportError:
-    from urllib.parse import parse_qsl
-    from urllib.parse import urlparse
+from six.moves.urllib.parse import parse_qsl
+from six.moves.urllib.parse import urlparse
 import base64
 import collections
 import flask

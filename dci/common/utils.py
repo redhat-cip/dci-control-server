@@ -58,17 +58,17 @@ class JSONEncoder(flask.json.JSONEncoder):
 
 
 def gen_uuid():
-    return str(uuid.uuid4())
+    """ Always return a bytes literal whether under python 2 or 3
+    """
+    generated_uuid = str(uuid.uuid4())
+    if six.PY3:
+        generated_uuid = generated_uuid.encode('utf-8')
+    return generated_uuid
 
 
 def gen_etag():
     """Generate random etag based on MD5."""
-
     my_salt = gen_uuid()
-    if six.PY2:
-        my_salt = my_salt.decode('utf-8')
-    elif six.PY3:
-        my_salt = my_salt.encode('utf-8')
     md5 = hashlib.md5()
     md5.update(my_salt)
     return md5.hexdigest()

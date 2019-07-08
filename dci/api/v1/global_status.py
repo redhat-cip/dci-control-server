@@ -71,7 +71,9 @@ def add_percentage_of_success(global_status):
                 nb_of_success += 1
         success = 0
         if len(component['jobs']):
-            success = int(round(100 * nb_of_success / len(component['jobs'])))
+            # Note(hguemar): round change its behaviour between python 2 and 3
+            # Same for the division operator so use // instead
+            success = int(round((100 * nb_of_success) // len(component['jobs']), 0))
         component['percentageOfSuccess'] = success
     return global_status
 
