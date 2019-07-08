@@ -29,39 +29,16 @@ depends_on = None
 
 
 from alembic import op
-import sqlalchemy as sa
-from sqlalchemy import sql
-from sqlalchemy.dialects import postgresql
-from dci.db import models
 
 
 def upgrade():
-    op.create_table(
-        "users_teams",
-        sa.Column(
-            "user_id",
-            postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("users.id", ondelete="CASCADE"),
-            nullable=False,
-        ),
-        sa.Column(
-            "team_id",
-            postgresql.UUID(as_uuid=True),
-            sa.ForeignKey("teams.id", ondelete="CASCADE"),
-            nullable=True,
-        ),
-        sa.UniqueConstraint("user_id", "team_id", name="users_teams_key"),
-    )
-    db_conn = op.get_bind()
-    users_teams_roles = db_conn.execute(
-        sql.select([models.JOIN_USERS_TEAMS_ROLES])
-    ).fetchall()
-    for user_team in users_teams_roles:
-        db_conn.execute(
-            models.JOIN_USERS_TEAMS.insert().values(
-                user_id=user_team["users_id"], team_id=user_team["team_id"]
-            )
-        )
+
+    op.drop_column('users_teams_roles', 'role')
+    op.drop_constraint(table_name='users_teams_roles',
+                       constraint_name='users_teams_roles_key')
+    op.create_unique_constraint(constraint_name='users_teams_key',
+                                table_name='users_teams_roles',
+                                columns=['user_id', 'team_id'])
 
 
 def downgrade():

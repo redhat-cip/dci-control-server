@@ -81,12 +81,6 @@ def init_db(db_conn):
 
     db_conn.execute(q)
 
-    q = models.JOIN_USERS_TEAMS_ROLES.insert().values(user_id=super_admin_id,
-                                                    team_id=team_admin_id,
-                                                    role='SUPER_ADMIN')
-
-    db_conn.execute(q)
-
 
 def main():
     conf = dci_config.generate_conf()
