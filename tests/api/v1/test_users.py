@@ -42,7 +42,7 @@ def test_create_users(admin, team_id):
     assert gu['user']['timezone'] == 'UTC'
 
 
-def test_create_user_withouta_team_and_role(admin):
+def test_create_user_withouta_team(admin):
     pu = admin.post('/api/v1/users',
                     data={'name': 'pname', 'password': 'ppass',
                           'fullname': 'P Name',
@@ -90,9 +90,9 @@ def test_create_users_already_exist(admin, team_id):
 
 def test_get_teams_of_user(admin, user_id, team_id, team_user_id):
     admin.post('/api/v1/teams/%s/users/%s' % (team_id, user_id),
-               data={'role': 'USER'})
+               data={})
     admin.post('/api/v1/teams/%s/users/%s' % (team_user_id, user_id),
-               data={'role': 'USER'})
+               data={})
 
     uteams = admin.get('/api/v1/users/%s/teams' % user_id)
     assert uteams.status_code == 200
