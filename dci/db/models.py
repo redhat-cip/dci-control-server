@@ -465,7 +465,7 @@ USERS = sa.Table(
     sa.Column('state', STATES, default='active')
 )
 
-JOIN_USERS_TEAMS_ROLES = sa.Table(
+JOIN_USERS_TEAMS = sa.Table(
     'users_teams', metadata,
     sa.Column('user_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('users.id', ondelete='CASCADE'),
@@ -475,7 +475,6 @@ JOIN_USERS_TEAMS_ROLES = sa.Table(
               nullable=True),
     sa.UniqueConstraint('user_id', 'team_id', name='users_teams_key')
 )
-JOIN_USERS_TEAMS = JOIN_USERS_TEAMS_ROLES
 
 JOIN_USER_REMOTECIS = sa.Table(
     'user_remotecis', metadata,
