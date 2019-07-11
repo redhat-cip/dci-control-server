@@ -37,9 +37,6 @@ STATES = sa.Enum(*RESOURCE_STATES, name='states')
 ISSUE_TRACKERS = ['github', 'bugzilla']
 TRACKERS = sa.Enum(*ISSUE_TRACKERS, name='trackers')
 
-ROLES_LABELS = ['SUPER_ADMIN', 'USER', 'ADMIN', 'PRODUCT_OWNER', 'FEEDER',
-                'REMOTECI', 'READ_ONLY_USER']
-
 
 COMPONENTS = sa.Table(
     'components', metadata,

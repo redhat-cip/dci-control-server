@@ -93,3 +93,7 @@ class Identity:
     def is_remoteci(self):
         """Ensure ther resource is REMOTECI."""
         return self._is_remoteci
+
+    def is_feeder(self):
+        """Ensure ther resource is REMOTECI."""
+        return self._is_remoteci
