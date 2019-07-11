@@ -121,7 +121,12 @@ def verify_existence_and_get(id, table, name=None, get_id=False):
 def user_topic_ids(user):
     """Retrieve the list of topics IDs a user has access to."""
 
-    if user.is_super_admin() or user.is_read_only_user() or user.is_epm():
+    if (
+        user.is_super_admin()
+        or user.is_read_only_user()
+        or user.is_epm()
+        or user.is_feeder()
+    ):
         query = sql.select([models.TOPICS])
     else:
         query = (sql.select([models.JOINS_TOPICS_TEAMS.c.topic_id])

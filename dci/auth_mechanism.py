@@ -197,11 +197,9 @@ class HmacMechanism(BaseMechanism):
 
         is_remoteci = False
         if model_cls is models.REMOTECIS:
-            user_teams[_identity_info[models.TEAMS.c.id]]['ROLE'] = 'REMOTECI'
             is_remoteci = True
         is_feeder = False
         if model_cls is models.FEEDERS:
-            user_teams[_identity_info[models.TEAMS.c.id]]['ROLE'] = 'FEEDER'
             is_feeder = True
 
         user_info = {

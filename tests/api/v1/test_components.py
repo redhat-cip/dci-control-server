@@ -624,3 +624,24 @@ def test_purge_failure(admin, components_user_ids, topic_user_id):
         store.get(path1)
         to_purge = admin.get('/api/v1/components/purge').data
         assert len(to_purge['components']) == 1
+
+
+def test_create_component_as_feeder(admin, topic_id, feeder_context):
+    data = {"name": "c1", "type": "snapshot", "topic_id": topic_id, "state": "active"}
+    c = feeder_context.post("/api/v1/components", data=data).data["component"]
+    component = admin.get("/api/v1/components/%s" % c["id"]).data["component"]
+    assert component["name"] == "c1"
+    assert component["state"] == "active"
+
+
+def test_update_component_as_feeder(admin, topic_id, feeder_context):
+    data = {"name": "c1", "type": "snapshot", "topic_id": topic_id, "state": "active"}
+    c = feeder_context.post("/api/v1/components", data=data).data["component"]
+    feeder_context.put(
+        "/api/v1/components/%s" % c["id"],
+        data={"type": "tar"},
+        headers={"If-match": c["etag"]},
+    )
+    component = admin.get("/api/v1/components/%s" % c["id"]).data["component"]
+    assert component["name"] == "c1"
+    assert component["type"] == "tar"
