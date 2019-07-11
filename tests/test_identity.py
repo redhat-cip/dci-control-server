@@ -37,6 +37,7 @@ def identity_factory(
     is_read_only_user=False,
     is_epm_user=False,
     is_remoteci=False,
+    is_feeder=False,
 ):
     user_info = {
         'id': '12368feb-0e23-4dee-9737-7538af531234',
@@ -49,7 +50,8 @@ def identity_factory(
         'is_super_admin': is_super_admin,
         'is_read_only_user': is_read_only_user,
         'is_epm_user': is_epm_user,
-        'is_remoteci': is_remoteci
+        'is_remoteci': is_remoteci,
+        'is_feeder': is_feeder
     }
 
     if is_super_admin:
@@ -101,6 +103,10 @@ def test_is_not_super_admin():
 
 def test_is_remoteci():
     assert identity_factory(is_remoteci=True).is_remoteci()
+
+
+def test_is_feeder():
+    assert identity_factory(is_feeder=True).is_feeder()
 
 
 def test_user_is_in_team():
