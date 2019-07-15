@@ -544,7 +544,7 @@ PRODUCTS = sa.Table(
     sa.Column('state', STATES, default='active'),
     sa.Column('team_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('teams.id', ondelete='SET NULL'),
-              nullable=False))
+              nullable=True))
 
 JOIN_PRODUCTS_TEAMS = sa.Table(
     'products_teams', metadata,
