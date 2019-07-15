@@ -258,7 +258,7 @@ create_product_properties = {
 create_product_schema = {
     "type": "object",
     "properties": create_product_properties,
-    "required": ["name", "team_id"],
+    "required": ["name"],
     "additionalProperties": False,
 }
 update_product_properties = {
