@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "538ababe_939d05ce",
+        "filename": "dci/alembic/versions/2c7bc5614cf8_remove_parent_id.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 40,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-07-16T13:57:20Z",
+      "side": 1,
+      "message": "We have the requested feature where different teams within the same company would like to create a team with the same name.\n\nOpenstack \u003c- Dell\nRHEL \u003c- Dell\n\nWe are loosing this functionality here.\nIt\u0027s not a blocker, just a warning",
+      "range": {
+        "startLine": 37,
+        "startChar": 0,
+        "endLine": 40,
+        "endChar": 33
+      },
+      "revId": "6739be581187c2390c341f4d6c75fa01de8a658f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
