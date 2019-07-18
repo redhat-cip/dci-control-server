@@ -92,33 +92,19 @@ def test_is_not_super_admin():
 
 
 def test_is_feeder():
-    user_info = {
-        'id': '894c7af1-f90f-48dd-8276-fbc4bfa80371',
-        'api_secret': 'secret',
-        'teams': {
-            UUID('eaa68feb-0e23-4dee-9737-7538af531024'): {
-                'team_name': 'team_name',
-            }
-        },
-        'is_feeder': True
-    }
-    user = Identity(user_info)
-    assert user.is_feeder(team_id='eaa68feb-0e23-4dee-9737-7538af531024')
+    assert identity_factory(is_feeder=True).is_feeder()
+
+
+def test_is_not_feeder():
+    assert identity_factory(is_feeder=False).is_not_feeder()
 
 
 def test_is_remoteci():
-    user_info = {
-        'id': '894c7af1-f90f-48dd-8276-fbc4bfa80371',
-        'api_secret': 'secret',
-        'teams': {
-            UUID('eaa68feb-0e23-4dee-9737-7538af531024'): {
-                'team_name': 'team_name',
-            }
-        },
-        'is_remoteci': True
-    }
-    user = Identity(user_info)
-    assert user.is_remoteci(team_id='eaa68feb-0e23-4dee-9737-7538af531024')
+    assert identity_factory(is_remoteci=True).is_remoteci()
+
+
+def test_is_not_remoteci():
+    assert identity_factory(is_remoteci=False).is_not_remoteci()
 
 
 def test_user_is_in_team():

@@ -84,8 +84,8 @@ def create_jobs(user):
 
     components_ids = values.pop('components')
 
-    if not user.is_remoteci():
-        raise dci_exc.DCIException('jobs must be created by remoteci')
+    if user.is_not_remoteci():
+        raise dci_exc.DCIException('Only remoteci can create job')
 
     topic_id = values.get('topic_id')
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
