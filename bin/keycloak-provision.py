@@ -245,9 +245,86 @@ def create_and_associate_redhat_role_to_dci_user(access_token):
                         'error: %s' % (r.status_code, r.content))
 
 
+def create_client_scope(access_token):
+    url = "http://keycloak:8080/auth/admin/realms/dci-test/client-scopes"
+    data = {"attributes": {"display.on.consent.screen": "true",
+                           "include.in.token.scope": "true"},
+            "name": "dci-audience",
+            "protocol": "openid-connect"}
+    r = requests.post(url,
+                      data=json.dumps(data),
+                      headers=get_auth_headers(access_token))
+    if r.status_code in (201, 204, 409):
+        print('Client scope "dci-audience" created successfully')
+    else:
+        raise Exception('Error while creating client scope "dci-audience":\nstatus code %s\n'  # noqa
+                        'error: %s' % (r.status_code, r.content))
+
+
+def get_client_scope_id(access_token):
+    # get the "dci-audience" client scope ID
+    url = "http://keycloak:8080/auth/admin/realms/dci-test/client-scopes"
+    r = requests.get(url, headers=get_auth_headers(access_token))
+    scopes = r.json()
+    for scope in scopes:
+        if scope['name'] == 'dci-audience':
+            return scope['id']
+    raise Exception('"dci-audience" scope not found')
+
+
+def add_dci_audience_mapper_to_client_scope(access_token, scope_id):
+
+    # associate a "dci" audience mapper to the client scope in order
+    # to be present in the access token
+    url = "http://keycloak:8080/auth/admin/realms/dci-test/client-scopes/%s/protocol-mappers/models" % scope_id  # noqa
+    data = {"protocol": "openid-connect",
+            "config": {"id.token.claim": "false",
+                       "access.token.claim": "true",
+                       "included.client.audience": "dci"},
+            "name": "dci",
+            "protocolMapper": "oidc-audience-mapper"}
+    r = requests.post(url,
+                      data=json.dumps(data),
+                      headers=get_auth_headers(access_token))
+    if r.status_code in (201, 204, 409):
+        print('Adding "dci-audience" mapper to client scope successfully')
+    else:
+        raise Exception('Error while adding "dci-audience" mapper to client scope:\nstatus code %s\n'  # noqa
+                        'error: %s' % (r.status_code, r.content))
+
+
+def get_client_id(access_token):
+    url = 'http://keycloak:8080/auth/admin/realms/dci-test/clients'
+    r = requests.get(url, headers=get_auth_headers(access_token))
+    clients = r.json()
+    for client in clients:
+        if client['clientId'] == 'dci':
+            return client['id']
+    raise Exception('client "dci" not found')
+
+
+def associate_client_scope_to_dci_client(access_token, client_id, client_scope_id):  # noqa
+    url = "http://keycloak:8080/auth/admin/realms/dci-test/clients/%s/default-client-scopes/%s" % (client_id, client_scope_id)  # noqa
+    data = {"realm": "dci-test", "client": client_id,
+            "clientScopeId": client_scope_id}
+    r = requests.put(url,
+                     data=json.dumps(data),
+                     headers=get_auth_headers(access_token))
+    if r.status_code in (201, 204, 409):
+        print('Associating "dci-audience" client scope to dci client successfully')
+    else:
+        raise Exception('Error while associating "dci-audience" client scope to dci client:\nstatus code %s\n'  # noqa
+                        'error: %s' % (r.status_code, r.content))
+
+
 if __name__ == '__main__':
     access_token = get_access_token()
     create_realm_dci_test(access_token)
     create_client(access_token)
     create_user_dci(access_token)
     create_and_associate_redhat_role_to_dci_user(access_token)
+    create_client_scope(access_token)
+    client_scope_id = get_client_scope_id(access_token)
+    client_id = get_client_id(access_token)
+    add_dci_audience_mapper_to_client_scope(access_token, client_scope_id)  # noqa
+    associate_client_scope_to_dci_client(access_token, client_id, client_scope_id)  # noqa
