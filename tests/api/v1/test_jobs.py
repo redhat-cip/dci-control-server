@@ -147,7 +147,7 @@ def test_get_all_jobs_with_embed(admin, remoteci_context, team_user_id,
 
     # verify embed with all embedded options
     query_embed = ('/api/v1/jobs?embed='
-                   'team,remoteci,jobstates,issues,rconfiguration')
+                   'team,remoteci,jobstates,issues')
     jobs = admin.get(query_embed).data
 
     for job in jobs['jobs']:
@@ -158,7 +158,6 @@ def test_get_all_jobs_with_embed(admin, remoteci_context, team_user_id,
         assert 'issues' in job
         assert job['remoteci']['id'] == remoteci_user_id
         assert job['remoteci_id'] == job['remoteci']['id']
-        assert job['rconfiguration'] == {}
 
     assert jobs['jobs'][1]['issues'][0]['id'] == issue_1['issue']['id']
     assert jobs['jobs'][0]['issues'][0]['id'] == issue_2['issue']['id']
