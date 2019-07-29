@@ -34,7 +34,6 @@ def test_insert_component_with_no_job():
         'id': 'db37582a-43d9-72d7-afda-1ce481e2081b',
         'team_name': 'team_1',
         'remoteci_name': 'remoteci_1',
-        'rconfiguration_name': None,
         'state': 'succes',
         'created_at': '2018-02-08T15:23:32.316227'
     }]
@@ -81,7 +80,6 @@ def test_format_global_status():
             'status': 'success',
             'component_name': 'component A',
             'component_id': '72d7582a-db37-43d9-afda-1ce481e2081b',
-            'rconfiguration_name': 'configuration 1',
             'id': 'afda582a-db37-72d7-43d9-1ce481e2081b'
         },
         {
@@ -94,7 +92,7 @@ def test_format_global_status():
             'status': 'failure',
             'component_name': 'component B',
             'component_id': '43d9582a-db37-72d7-afda-1ce481e2081b',
-            'rconfiguration_name': None, 'id': '43d9582a-db37-72d7-afda-1ce481e2081b'  # noqa
+            'id': '43d9582a-db37-72d7-afda-1ce481e2081b'
         },
         {
             'team_name': 'team 3',
@@ -106,7 +104,7 @@ def test_format_global_status():
             'status': 'success',
             'component_name': 'component A',
             'component_id': '72d7582a-db37-43d9-afda-1ce481e2081b',
-            'rconfiguration_name': None, 'id': 'db37582a-43d9-72d7-afda-1ce481e2081b'  # noqa
+            'id': 'db37582a-43d9-72d7-afda-1ce481e2081b'
         },
     ]
     global_status = sorted(format_global_status(jobs),
@@ -120,7 +118,6 @@ def test_format_global_status():
     assert component_a['product_name'] == 'product A'
     assert len(component_a['jobs']) == 2
     assert component_a['jobs'][0]['remoteci_name'] == 'remoteci 1'
-    assert component_a['jobs'][0]['rconfiguration_name'] == 'configuration 1'
 
 
 def test_add_percentage_of_success():

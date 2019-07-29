@@ -27,7 +27,6 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import export_control
 from dci.api.v1 import issues
-from dci.api.v1 import remotecis
 from dci.api.v1 import tags
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
@@ -333,27 +332,6 @@ def get_component_types_from_topic(topic_id, db_conn=None):
     topic = db_conn.execute(query).fetchone()
     topic = dict(topic)
     return topic['component_types']
-
-
-def get_component_types(topic_id, remoteci_id, db_conn=None):
-    """Returns either the topic component types or the rconfigration's
-    component types."""
-
-    db_conn = db_conn or flask.g.db_conn
-    rconfiguration = remotecis.get_remoteci_configuration(topic_id,
-                                                          remoteci_id,
-                                                          db_conn=db_conn)
-
-    # if there is no rconfiguration associated to the remoteci or no
-    # component types then use the topic's one.
-    if (rconfiguration is not None and
-            rconfiguration['component_types'] is not None):
-        component_types = rconfiguration['component_types']
-    else:
-        component_types = get_component_types_from_topic(topic_id,
-                                                         db_conn=db_conn)
-
-    return component_types, rconfiguration
 
 
 def get_last_components_by_type(component_types, topic_id, db_conn=None):
