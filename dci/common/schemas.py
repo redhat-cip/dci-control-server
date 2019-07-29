@@ -184,7 +184,6 @@ create_job_properties = {
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "topic_id": with_default(Properties.uuid, None),
     "topic_id_secondary": with_default(Properties.uuid, None),
-    "rconfiguration_id": with_default(Properties.uuid, None),
 }
 create_job_schema = {
     "type": "object",
@@ -410,23 +409,6 @@ update_remoteci_properties = {
 }
 update_remoteci_schema = {"type": "object", "properties": update_remoteci_properties}
 
-###############################################################################
-#                                                                             #
-#                        Remote CI Configuration schema                       #
-#                                                                             #
-###############################################################################
-rconfiguration_properties = {
-    "name": Properties.string,
-    "topic_id": Properties.uuid,
-    "component_types": with_default(Properties.array, None),
-    "data": with_default(Properties.json, {}),
-}
-rconfiguration_schema = {
-    "type": "object",
-    "properties": rconfiguration_properties,
-    "required": ["name", "topic_id"],
-    "additionalProperties": False,
-}
 
 ###############################################################################
 #                                                                             #

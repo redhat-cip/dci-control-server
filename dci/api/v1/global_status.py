@@ -55,7 +55,6 @@ def format_global_status(jobs):
             'id': job['id'],
             'team_name': job['team_name'],
             'remoteci_name': job['remoteci_name'],
-            'rconfiguration_name': job['rconfiguration_name'],
             'status': job['status'],
             'created_at': job['created_at'],
         })
@@ -82,11 +81,10 @@ def get_global_status(user):
     conf = generate_conf()
     engine = get_engine(conf)
     sql = text("""
-SELECT DISTINCT ON (components.id, jobs.remoteci_id, jobs.rconfiguration_id)
+SELECT DISTINCT ON (components.id, jobs.remoteci_id)
     jobs.id,
     jobs.status,
     jobs.created_at,
-    jobs.rconfiguration_id,
     jobs.remoteci_id,
     components.id as component_id,
     components.name as component_name,
@@ -95,13 +93,11 @@ SELECT DISTINCT ON (components.id, jobs.remoteci_id, jobs.rconfiguration_id)
     products.id as product_id,
     products.name as product_name,
     remotecis.name as remoteci_name,
-    rconfigurations.name as rconfiguration_name,
     teams.name as team_name
 FROM jobs
 LEFT JOIN remotecis ON jobs.remoteci_id = remotecis.id
 LEFT JOIN teams ON remotecis.team_id = teams.id
 LEFT JOIN topics ON jobs.topic_id = topics.id
-LEFT JOIN rconfigurations ON jobs.rconfiguration_id = rconfigurations.id
 LEFT JOIN jobs_components ON jobs.id = jobs_components.job_id
 LEFT JOIN components ON components.id = jobs_components.component_id
 LEFT JOIN products ON topics.product_id = products.id
@@ -116,7 +112,6 @@ WHERE
 ORDER BY
     components.id,
     jobs.remoteci_id,
-    jobs.rconfiguration_id,
     jobs.created_at DESC;
 """)  # noqa
 
