@@ -14,18 +14,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
-import base64
 import sys
-
+import json
 import requests
 
 try:
-    from cryptography.hazmat.primitives.asymmetric.rsa import RSAPublicNumbers
-    from cryptography.hazmat.backends import default_backend
+    from jwt.algorithms import RSAAlgorithm
     from cryptography.hazmat.primitives import serialization
 except ImportError:
-    print('Module cryptography not found')
+    print("Module cryptography or pyJWT not found")
     sys.exit(1)
 
 
@@ -36,44 +33,31 @@ The dci control server stores this value in its configuration file with the
 key 'SSO_PUBLIC_KEY'.
 """
 
-
-def get_pem_public_key_from_modulus_exponent(n, e):
-    def _b64decode(data):
-        # padding to have multiple of 4 characters
-        if len(data) % 4:
-            data = data + '=' * (len(data) % 4)
-        data = data.encode('ascii')
-        data = bytes(data)
-        return long(base64.urlsafe_b64decode(data).encode('hex'), 16)
-    modulus = _b64decode(n)
-    exponent = _b64decode(e)
-    numbers = RSAPublicNumbers(exponent, modulus)
-    public_key = numbers.public_key(backend=default_backend())
-    return public_key.public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo)
+def print_latest_public_key(sso_url, realm):
+    url = "%s/auth/realms/%s/.well-known/openid-configuration" % (sso_url, realm)
+    jwks_uri = requests.get(url).json()["jwks_uri"]
+    jwks = requests.get(jwks_uri).json()["keys"]
+    print(
+        RSAAlgorithm.from_jwk(json.dumps(jwks[0])).public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+    )
 
 
-def main(sso_url, realm):
-    url = '%s/auth/realms/%s/.well-known/openid-configuration' % (sso_url,
-                                                                  realm)
-    sso_config = requests.get(url).json()
-    jwks_uri = sso_config['jwks_uri']
-    sso_certs = requests.get(jwks_uri).json()
-    n = sso_certs['keys'][0]['n']
-    e = sso_certs['keys'][0]['e']
-    print(get_pem_public_key_from_modulus_exponent(n, e))
-
-
-if __name__ == '__main__':
-
+if __name__ == "__main__":
     if len(sys.argv) < 3:
         usage = """
 Usage:
 $ %s SSO_URL REALM_NAME\n
 Example:
 $ %s http://localhost:8180 dci-test
-                """ % (sys.argv[0], sys.argv[0])
+$ %s https://sso.redhat.com redhat-external
+                """ % (
+            sys.argv[0],
+            sys.argv[0],
+            sys.argv[0],
+        )
         print(usage)
-    else:
-        main(sys.argv[1], sys.argv[2])
+        sys.exit(1)
+    print_latest_public_key(sys.argv[1], sys.argv[2])
