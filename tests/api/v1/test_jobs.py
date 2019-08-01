@@ -20,9 +20,11 @@ import pytest
 import six
 import uuid
 
+import datetime
 from dci import dci_config
 from dci.common import exceptions as dci_exc
 from dci.common import utils
+import dci.db.models as models
 from dci.stores import files_utils
 from dci.stores.swift import Swift
 from tests.data import JUNIT
@@ -277,6 +279,36 @@ def test_success_update_job_status(admin, job_user_id):
     job = admin.get('/api/v1/jobs/%s' % job_user_id).data['job']
 
     assert job['status'] == 'failure'
+
+
+def test_job_duration(admin, job_user_id, engine):
+    job = admin.get('/api/v1/jobs/%s' % job_user_id)
+    job = job.data['job']
+    assert job['status'] == 'new'
+    # update the job with a created_at 5 seconds in the past
+    with engine.begin() as conn:
+        q = (models.JOBS.update()
+         .where(models.JOBS.c.id == job_user_id)
+         .values(created_at=datetime.datetime.utcnow() - datetime.timedelta(0, 5)))  # noqa
+        conn.execute(q)
+
+    data = {'job_id': job_user_id, 'status': 'running'}
+    js = admin.post('/api/v1/jobstates', data=data)
+    assert js.status_code == 201
+    job = admin.get('/api/v1/jobs/%s' % job_user_id)
+    # check those 5 seconds
+    assert job.data['job']['duration'] == 5
+
+
+def test_first_job_duration(admin, job_user_id, topic, remoteci_context):
+    job = admin.get('/api/v1/jobs/%s' % job_user_id).data['job']
+    assert job['duration'] == 0
+
+    job = remoteci_context.post(
+        '/api/v1/jobs/schedule',
+        data={'topic_id': topic['id']}
+    ).data['job']
+    assert job['duration'] == 0
 
 
 def test_get_all_jobs_with_where(admin, team_user_id, job_user_id):

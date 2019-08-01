@@ -219,6 +219,8 @@ JOBS = sa.Table(
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
+    # duration in seconds
+    sa.Column('duration', sa.Integer, default=0),
     sa.Column('comment', sa.Text),
     sa.Column('status', STATUSES, default='new'),
     sa.Column('topic_id', pg.UUID(as_uuid=True),
