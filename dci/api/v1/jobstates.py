@@ -74,12 +74,14 @@ def create_jobstates(user):
     insert_jobstate(user, values)
 
     # Update job status
+    job_duration = datetime.datetime.utcnow() - job['created_at']
     query_update_job = (models.JOBS.update()
                         .where(
                             sql.and_(
                                 models.JOBS.c.id == job_id,
                                 models.JOBS.c.status != values.get('status')))
-                        .values(status=values.get('status')))
+                        .values(status=values.get('status'),
+                                duration=job_duration.seconds))
     result = flask.g.db_conn.execute(query_update_job)
 
     # send notification in case of final jobstate status

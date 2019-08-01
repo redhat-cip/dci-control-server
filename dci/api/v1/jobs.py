@@ -104,7 +104,8 @@ def create_jobs(user):
         'client_version': flask.request.environ.get('HTTP_CLIENT_VERSION'),
         'previous_job_id': previous_job_id,
         'team_id': user.teams_ids[0],
-        'product_id': product_id
+        'product_id': product_id,
+        'duration': 0
     })
 
     # create the job and feed the jobs_components table
@@ -222,6 +223,7 @@ def schedule_jobs(user):
         'etag': utils.gen_etag(),
         'status': 'new',
         'remoteci_id': user.id,
+        'duration': 0,
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'
