@@ -31,7 +31,21 @@ from alembic import op
 import sqlalchemy as sa
 from sqlalchemy import sql
 from sqlalchemy.dialects import postgresql as pg
+from dci.common import utils
 from dci.db import models
+
+metadata = sa.MetaData()
+
+
+# snapshot the jobs table to not be modified by next migrations
+JOBS = sa.Table(
+    'jobs', metadata,
+    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
+              default=utils.gen_uuid),
+    sa.Column('topic_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              nullable=True)
+)
 
 
 def upgrade():
@@ -44,7 +58,7 @@ def upgrade():
                     ['product_id'])
 
     # get all the jobs
-    query = sql.select([models.JOBS])
+    query = sql.select([JOBS])
     jobs = db_conn.execute(query).fetchall()
 
     def get_product_id(topic_id):
