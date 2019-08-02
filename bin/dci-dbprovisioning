@@ -25,7 +25,8 @@ from dciauth.request import AuthRequest
 
 DCI_LOGIN = os.environ.get('DCI_LOGIN', 'admin')
 DCI_PASSWORD = os.environ.get('DCI_PASSWORD', 'admin')
-DEFAULT_DCI_CS_URL = 'http://{host}:{port}'.format(host=settings.HOST, port=settings.PORT)
+DEFAULT_DCI_CS_URL = 'http://{host}:{port}'.format(
+    host=settings.HOST, port=settings.PORT)
 DCI_CS_URL = os.environ.get('DCI_CS_URL', DEFAULT_DCI_CS_URL)
 
 
@@ -74,19 +75,18 @@ def create_team(name):
 
 
 def create_teams():
-    team_admin = get_teams()['admin']
-    openstack = create_team('OpenStack', team_admin)
-    ansible = create_team('Ansible', team_admin)
-    rhel = create_team('RHEL', team_admin)
-    ocp = create_team('OpenShift', team_admin)
+    openstack = create_team('OpenStack')
+    ansible = create_team('Ansible')
+    rhel = create_team('RHEL')
+    ocp = create_team('OpenShift')
     return {
         'OpenStack': openstack,
-        'Dell': create_team('Dell', openstack),
-        'HP': create_team('HP', openstack),
+        'Dell': create_team('Dell'),
+        'HP': create_team('HP'),
         'Ansible': ansible,
-        'Cisco': create_team('Cisco', ansible),
+        'Cisco': create_team('Cisco'),
         'RHEL': rhel,
-        'Veritas': create_team('Veritas', rhel),
+        'Veritas': create_team('Veritas'),
         'OpenShift': ocp,
     }
 
@@ -108,38 +108,38 @@ def create_user(fullname, team):
 
 def create_users(teams):
     return {
-        'ansible_po': create_user('Ansible PO', teams['Ansible'], 'PRODUCT_OWNER'),
-        'openstack_po': create_user('OpenStack PO', teams['OpenStack'], 'PRODUCT_OWNER'),
-        'rhel_po': create_user('RHEL PO', teams['RHEL'], 'PRODUCT_OWNER'),
-        'rhel_user': create_user('user RHEL', teams['RHEL'], 'USER'),
-        'user_cisco': create_user('User Cisco', teams['Cisco'], 'USER'),
-        'user_hp': create_user('User HP', teams['HP'], 'USER'),
-        'user_dell': create_user('User Dell', teams['Dell'], 'USER'),
-        'user_veritas': create_user('User Veritas', teams['Veritas'], 'USER'),
+        'ansible_po': create_user('Ansible PO', teams['Ansible']),
+        'openstack_po': create_user('OpenStack PO', teams['OpenStack']),
+        'rhel_po': create_user('RHEL PO', teams['RHEL']),
+        'rhel_user': create_user('user RHEL', teams['RHEL']),
+        'user_cisco': create_user('User Cisco', teams['Cisco']),
+        'user_hp': create_user('User HP', teams['HP']),
+        'user_dell': create_user('User Dell', teams['Dell']),
+        'user_veritas': create_user('User Veritas', teams['Veritas']),
     }
 
 
-def create_product(product, team):
+def create_product(product):
     r = post('products', {
         'name': product,
         'label': product.upper(),
-        'description': 'description for %s' % product,
-        'team_id': team['id']
+        'description': 'description for %s' % product
     })
     return r.json()['product']
 
 
 def create_products(teams):
     return {
-        'OpenStack': create_product('OpenStack', teams['OpenStack']),
-        'Ansible': create_product('Ansible', teams['Ansible']),
-        'RHEL': create_product('RHEL', teams['RHEL']),
-        'OCP': create_product('OCP', teams['OpenShift']),
+        'OpenStack': create_product('OpenStack'),
+        'Ansible': create_product('Ansible'),
+        'RHEL': create_product('RHEL'),
+        'OCP': create_product('OCP'),
     }
 
 
 def create_topic(name, component_types, product, next_topic=None):
-    topic = {'name': name, 'component_types': component_types, 'product_id': product['id']}
+    topic = {'name': name, 'component_types': component_types,
+             'product_id': product['id']}
     if next_topic:
         topic['next_topic_id'] = next_topic['id']
     r = post('topics', topic)
@@ -220,9 +220,9 @@ def create_component(name, topic):
     r = post('components', {
         'name': name,
         'type': topic['component_types'][0],
-        'topic_id': topic['id'],
-        'export_control': True
+        'topic_id': topic['id']
     })
+    print(r.json())
     return r.json()['component']
 
 
@@ -281,7 +281,8 @@ def create_jobs(topics, remotecis, teams, components):
     for job in jobs:
         auth_request = AuthRequest(method="POST", endpoint='/api/v1/jobs', payload=job,
                                    headers={'content-type': 'application/json'})
-        headers = Signature(request=auth_request).generate_headers('remoteci', client_id, api_secret)
+        headers = Signature(request=auth_request).generate_headers(
+            'remoteci', client_id, api_secret)
         requests.post('%s/api/v1/jobs' % DCI_CS_URL, headers=headers, json=job)
 
     return get('jobs', ('user_dell', 'user_dell',)).json()['jobs']
@@ -317,7 +318,8 @@ def create_files(jobs):
     create_file(jobs[3]['id'], 'Tempest', 'tests/data/tempest-results.xml', user_dell)
     create_file(jobs[2]['id'], 'Tempest', 'tests/data/tempest-results.xml', user_dell)
     create_file(jobs[3]['id'], 'Rally', 'tests/data/rally-results.xml', user_dell)
-    create_file(jobs[2]['id'], 'Rally', 'tests/data/rally-results.regression.xml', user_dell)
+    create_file(jobs[2]['id'], 'Rally',
+                'tests/data/rally-results.regression.xml', user_dell)
     create_file(jobs[2]['id'], 'certification.xml.gz', 'tests/data/certification.xml.tar.gz', user_dell,
                 'application/x-compressed')
 
