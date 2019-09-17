@@ -20,5 +20,4 @@
 import dci.app
 import dci.dci_config
 
-conf = dci.dci_config.generate_conf()
-application = dci.app.create_app(conf)
+application = dci.app.create_app(dci.dci_config.CONFIG)

@@ -33,13 +33,14 @@ zmq_sender = None
 
 
 class DciControlServer(flask.Flask):
-    def __init__(self, conf):
+    def __init__(self):
         super(DciControlServer, self).__init__(__name__)
-        self.config.update(conf)
+        self.config.update(dci_config.CONFIG)
         self.url_map.strict_slashes = False
-        self.engine = dci_config.get_engine(conf)
+        self.engine = dci_config.get_engine()
+        conf = dci_config.CONFIG
         self.sender = self._get_zmq_sender(conf['ZMQ_CONN'])
-        engine = dci_config.get_engine(self.config)
+        engine = dci_config.get_engine()
         self.team_admin_id = self._get_team_id(engine, 'admin')
         self.team_redhat_id = self._get_team_id(engine, 'Red Hat')
         self.team_epm_id = self._get_team_id(engine, 'EPM')
@@ -97,7 +98,8 @@ def handle_dbapi_exception(dbapi_exception):
     return response
 
 
-def configure_logging(conf):
+def configure_logging():
+    conf = dci_config.CONFIG
     formatter = logging.Formatter(conf['LOG_FORMAT'])
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
@@ -115,11 +117,11 @@ def configure_logging(conf):
     werkzeug_logger.addHandler(console_handler)
 
 
-def create_app(conf):
-    dci_app = DciControlServer(conf)
+def create_app(param=None):
+    dci_app = DciControlServer()
     dci_app.url_map.converters['uuid'] = utils.UUIDConverter
 
-    configure_logging(conf)
+    configure_logging()
 
     @dci_app.before_request
     def before_request():
