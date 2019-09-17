@@ -96,6 +96,22 @@ def test_success_get_all_products_admin(admin, product, product_openstack):
     assert ['AWSM', 'BEST', 'OPENSTACK'] == sorted(products)
 
 
+def test_success_get_all_products_user(admin, user, product, product2, team_user_id):
+    result = user.get('/api/v1/products')
+    assert result.status_code == 200
+    products = [r['label'] for r in result.data['products']]
+    assert [] == sorted(products)
+
+    respos = admin.post('/api/v1/products/%s/teams' % product['id'],
+                        data={'team_id': team_user_id})
+    assert respos.status_code == 201
+
+    result = user.get('/api/v1/products')
+    assert result.status_code == 200
+    products = [r['label'] for r in result.data['products']]
+    assert [product['label']] == sorted(products)
+
+
 def test_success_delete_product_admin(admin, product):
     result = admin.get('/api/v1/products')
     current_products = len(result.data['products'])
