@@ -105,6 +105,8 @@ FILES_UPLOAD_FOLDER = os.getenv('FILES_UPLOAD_FOLDER', '/var/lib/dci-control-ser
 SSO_PUBLIC_KEY = os.getenv('SSO_PUBLIC_KEY')
 SSO_CLIENT_ID = os.getenv('SSO_CLIENT_ID', 'dci')
 SSO_READ_ONLY_GROUP = os.getenv('SSO_READ_ONLY_GROUP', 'redhat:employees')
+SSO_URL = os.getenv('SSO_URL', 'https://sso.redhat.com')
+SSO_REALM = os.getenv('SSO_REALM', 'redhat-external')
 
 CA_CERT = '/etc/ssl/repo/ca.crt'
 CA_KEY = '/etc/ssl/repo/ca.key'
