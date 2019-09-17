@@ -19,7 +19,7 @@ from dci import dci_config
 from dci.db import models
 from sqlalchemy import sql
 
-conf = dci_config.generate_conf()
+conf = dci_config.CONFIG
 swift = dci_config.get_store('components')
 engine = dci_config.get_engine(conf).connect()
 

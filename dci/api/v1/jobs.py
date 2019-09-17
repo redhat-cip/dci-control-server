@@ -50,7 +50,7 @@ from dci.api.v1 import remotecis
 from dci import dci_config
 
 
-_FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
+_FILES_FOLDER = dci_config.CONFIG['FILES_UPLOAD_FOLDER']
 _TABLE = models.JOBS
 _VALID_EMBED = embeds.jobs()
 # associate column names with the corresponding SA Column object

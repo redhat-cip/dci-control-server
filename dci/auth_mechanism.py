@@ -20,6 +20,7 @@ from sqlalchemy import sql
 from dci import auth
 from dci import dci_config
 from dci.common import exceptions as dci_exc
+from dci.common import utils
 from dciauth.request import AuthRequest
 from dciauth.signature import Signature
 from dci.db import models
@@ -226,25 +227,48 @@ class HmacMechanism(BaseMechanism):
 
 class OpenIDCAuth(BaseMechanism):
 
+    def _decode_with_last_public_key(self, token):
+        """Decode the token in case the SSO server did a rotation key."""
+        conf = dci_config.CONFIG
+        try:
+            latest_public_key = utils.get_latest_public_key()
+        except Exception as e:
+            raise dci_exc.DCIException('Unable to get last SSO public key: %s' % str(e),  # noqa
+                                        status_code=401)
+        # SSO server didn't update its public key
+        if dci_config['SSO_PUBLIC_KEY'] == latest_public_key:
+            raise dci_exc.DCIException('Invalid JWT token.', status_code=401)  # noqa
+        try:
+            decoded_token = auth.decode_jwt(token,
+                                            latest_public_key,
+                                            conf['SSO_CLIENT_ID'])
+            conf['SSO_PUBLIC_KEY'] = latest_public_key
+            return decoded_token
+        except (jwt_exc.DecodeError, TypeError):
+            raise dci_exc.DCIException('Invalid JWT token.', status_code=401)  # noqa
+        except jwt_exc.ExpiredSignatureError:
+            raise dci_exc.DCIException('JWT token expired, please refresh.',  # noqa
+                                        status_code=401)
+
     def authenticate(self):
         auth_header = self.request.headers.get('Authorization').split(' ')
         if len(auth_header) != 2:
             return False
         bearer, token = auth_header
 
-        conf = dci_config.generate_conf()
+        conf = dci_config.CONFIG
         try:
             decoded_token = auth.decode_jwt(token,
                                             conf['SSO_PUBLIC_KEY'],
                                             conf['SSO_CLIENT_ID'])
-        except jwt_exc.DecodeError:
-            raise dci_exc.DCIException('Invalid JWT token.', status_code=401)
+        except (jwt_exc.DecodeError, ValueError):
+            decoded_token = self._decode_with_last_public_key(token)
         except jwt_exc.ExpiredSignatureError:
             raise dci_exc.DCIException('JWT token expired, please refresh.',
                                        status_code=401)
 
         team_id = None
-        ro_group = dci_config.generate_conf().get('SSO_READ_ONLY_GROUP')
+        ro_group = conf['SSO_READ_ONLY_GROUP']
         realm_access = decoded_token['realm_access']
         if 'roles' in realm_access and ro_group in realm_access['roles']:
             team_id = flask.g.team_redhat_id
