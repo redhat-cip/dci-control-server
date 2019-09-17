@@ -25,7 +25,11 @@ from dciauth.signature import Signature
 from dci.db import models
 from dci.identity import Identity
 
+import json
 from jwt import exceptions as jwt_exc
+from jwt.algorithms import RSAAlgorithm
+import requests
+from cryptography.hazmat.primitives import serialization
 
 
 class BaseMechanism(object):
@@ -226,6 +230,15 @@ class HmacMechanism(BaseMechanism):
 
 class OpenIDCAuth(BaseMechanism):
 
+    def _get_latest_public_key(self, sso_url, realm):
+        url = "%s/auth/realms/%s/.well-known/openid-configuration" % (sso_url, realm)
+        jwks_uri = requests.get(url).json()["jwks_uri"]
+        jwks = requests.get(jwks_uri).json()["keys"]
+        return RSAAlgorithm.from_jwk(json.dumps(jwks[0])).public_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PublicFormat.SubjectPublicKeyInfo,
+        )
+
     def authenticate(self):
         auth_header = self.request.headers.get('Authorization').split(' ')
         if len(auth_header) != 2:
@@ -235,10 +248,28 @@ class OpenIDCAuth(BaseMechanism):
         conf = dci_config.generate_conf()
         try:
             decoded_token = auth.decode_jwt(token,
-                                            conf['SSO_PUBLIC_KEY'],
+                                            flask.g.SSO_PUBLIC_KEY,
                                             conf['SSO_CLIENT_ID'])
         except jwt_exc.DecodeError:
-            raise dci_exc.DCIException('Invalid JWT token.', status_code=401)
+            # maybe the SSO public key has changed, if so lets try to use the
+            # latest one
+            try:
+                latest_public_key = self._get_latest_public_key(
+                    'https://sso.redhat.com',
+                    'redhat-external')
+            except Exception as e:
+                raise dci_exc.DCIException('Unable to get last SSO public key: %s' % str(e),  # noqa
+                                           status_code=401)
+            try:
+                decoded_token = auth.decode_jwt(token,
+                                                latest_public_key,
+                                                conf['SSO_CLIENT_ID'])
+                flask.g.SSO_PUBLIC_KEY = latest_public_key
+            except jwt_exc.DecodeError:
+                raise dci_exc.DCIException('Invalid JWT token.', status_code=401)  # noqa
+            except jwt_exc.ExpiredSignatureError:
+                raise dci_exc.DCIException('JWT token expired, please refresh.',  # noqa
+                                           status_code=401)
         except jwt_exc.ExpiredSignatureError:
             raise dci_exc.DCIException('JWT token expired, please refresh.',
                                        status_code=401)

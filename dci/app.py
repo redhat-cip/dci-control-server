@@ -130,6 +130,7 @@ def create_app(conf):
 
     dci_app.logger.disabled = True
     configure_logging(conf)
+    flask.g.SSO_PUBLIC_KEY = conf['SSO_PUBLIC_KEY']
 
     @dci_app.before_request
     def before_request():
