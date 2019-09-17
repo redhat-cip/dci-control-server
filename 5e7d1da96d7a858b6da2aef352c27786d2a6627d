@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2f274e58_ed3029f2",
+        "filename": "dci/api/v1/products.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 122,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-09-17T13:03:45Z",
+      "side": 1,
+      "message": "duplicate line 125?",
+      "range": {
+        "startLine": 122,
+        "startChar": 3,
+        "endLine": 122,
+        "endChar": 39
+      },
+      "revId": "5e7d1da96d7a858b6da2aef352c27786d2a6627d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
