@@ -14,15 +14,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
+from cryptography.hazmat.primitives import serialization
 import datetime
 import hashlib
 import uuid
 import flask
+import json
+from jwt.algorithms import RSAAlgorithm
+import requests
 import six
 from sqlalchemy.engine import result
 from werkzeug.routing import BaseConverter, ValidationError
 
 from dci.common import exceptions
+from dci import dci_config
 
 
 def read(file_path, chunk_size=None, mode='rb'):
@@ -80,3 +85,15 @@ def check_and_get_etag(headers):
         raise exceptions.DCIException("'If-match' header must be provided",
                                       status_code=412)
     return if_match_etag
+
+
+def get_latest_public_key():
+    sso_url = dci_config.CONFIG.get('SSO_URL')
+    realm = dci_config.CONFIG.get('SSO_REALM')
+    url = "%s/auth/realms/%s/.well-known/openid-configuration" % (sso_url, realm)
+    jwks_uri = requests.get(url).json()["jwks_uri"]
+    jwks = requests.get(jwks_uri).json()["keys"]
+    return RSAAlgorithm.from_jwk(json.dumps(jwks[0])).public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
