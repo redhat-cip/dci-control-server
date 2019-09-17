@@ -49,7 +49,7 @@ from sqlalchemy import exc as sa_exc
 LOG = logging.getLogger(__name__)
 _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
-_FILES_FOLDER = dci_config.generate_conf()['FILES_UPLOAD_FOLDER']
+_FILES_FOLDER = dci_config.CONFIG['FILES_UPLOAD_FOLDER']
 _VALID_EMBED = embeds.files()
 _FILES_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
@@ -318,7 +318,7 @@ def upload_certification(user, file_id):
 
     username = data['username']
     password = data['password']
-    conf = dci_config.generate_conf()
+    conf = dci_config.CONFIG
     proxy = ServerProxy(conf['CERTIFICATION_URL'])
     certification_details = proxy.Cert.getOpenStack_4_7({
         'username': username,
