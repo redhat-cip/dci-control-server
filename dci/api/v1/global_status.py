@@ -20,7 +20,7 @@ from sqlalchemy import text
 from dci.api.v1 import api
 from dci.api.v1 import components as v1_components
 from dci import decorators
-from dci.dci_config import generate_conf, get_engine
+from dci.dci_config import get_engine
 
 
 def insert_component_with_no_job(components, latest_components):
@@ -78,8 +78,7 @@ def add_percentage_of_success(global_status):
 @api.route('/global_status', methods=['GET'])
 @decorators.login_required
 def get_global_status(user):
-    conf = generate_conf()
-    engine = get_engine(conf)
+    engine = get_engine()
     sql = text("""
 SELECT DISTINCT ON (components.id, jobs.remoteci_id)
     jobs.id,

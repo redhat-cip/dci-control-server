@@ -103,7 +103,7 @@ def db_provisioning(empty_db, engine):
 
 @pytest.fixture
 def app(db_provisioning, engine, fs_clean):
-    app = dci.app.create_app(utils.conf)
+    app = dci.app.create_app()
     app.testing = True
     app.engine = engine
     return app

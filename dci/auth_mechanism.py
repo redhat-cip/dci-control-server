@@ -13,10 +13,12 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+
 import flask
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
+from dci.api.v1 import sso
 from dci import auth
 from dci import dci_config
 from dci.common import exceptions as dci_exc
@@ -232,19 +234,19 @@ class OpenIDCAuth(BaseMechanism):
             return False
         bearer, token = auth_header
 
-        conf = dci_config.generate_conf()
+        conf = dci_config.CONFIG
         try:
             decoded_token = auth.decode_jwt(token,
                                             conf['SSO_PUBLIC_KEY'],
                                             conf['SSO_CLIENT_ID'])
-        except jwt_exc.DecodeError:
-            raise dci_exc.DCIException('Invalid JWT token.', status_code=401)
+        except (jwt_exc.DecodeError, ValueError):
+            decoded_token = sso.decode_token_with_latest_public_key(token)
         except jwt_exc.ExpiredSignatureError:
             raise dci_exc.DCIException('JWT token expired, please refresh.',
                                        status_code=401)
 
         team_id = None
-        ro_group = dci_config.generate_conf().get('SSO_READ_ONLY_GROUP')
+        ro_group = conf['SSO_READ_ONLY_GROUP']
         realm_access = decoded_token['realm_access']
         if 'roles' in realm_access and ro_group in realm_access['roles']:
             team_id = flask.g.team_redhat_id
