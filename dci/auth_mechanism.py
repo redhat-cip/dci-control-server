@@ -232,19 +232,35 @@ class OpenIDCAuth(BaseMechanism):
             return False
         bearer, token = auth_header
 
-        conf = dci_config.generate_conf()
+        conf = dci_config.CONFIG
         try:
             decoded_token = auth.decode_jwt(token,
                                             conf['SSO_PUBLIC_KEY'],
                                             conf['SSO_CLIENT_ID'])
         except jwt_exc.DecodeError:
-            raise dci_exc.DCIException('Invalid JWT token.', status_code=401)
+            # maybe the SSO public key has changed, if so lets try to use the
+            # latest one
+            try:
+                latest_public_key = self._get_latest_public_key()
+            except Exception as e:
+                raise dci_exc.DCIException('Unable to get last SSO public key: %s' % str(e),  # noqa
+                                           status_code=401)
+            try:
+                decoded_token = auth.decode_jwt(token,
+                                                latest_public_key,
+                                                conf['SSO_CLIENT_ID'])
+                conf['SSO_PUBLIC_KEY'] = latest_public_key
+            except jwt_exc.DecodeError:
+                raise dci_exc.DCIException('Invalid JWT token.', status_code=401)  # noqa
+            except jwt_exc.ExpiredSignatureError:
+                raise dci_exc.DCIException('JWT token expired, please refresh.',  # noqa
+                                           status_code=401)
         except jwt_exc.ExpiredSignatureError:
             raise dci_exc.DCIException('JWT token expired, please refresh.',
                                        status_code=401)
 
         team_id = None
-        ro_group = dci_config.generate_conf().get('SSO_READ_ONLY_GROUP')
+        ro_group = conf['SSO_READ_ONLY_GROUP']
         realm_access = decoded_token['realm_access']
         if 'roles' in realm_access and ro_group in realm_access['roles']:
             team_id = flask.g.team_redhat_id

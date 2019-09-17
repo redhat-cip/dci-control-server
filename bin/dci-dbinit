@@ -83,7 +83,7 @@ def init_db(db_conn):
 
 
 def main():
-    conf = dci_config.generate_conf()
+    conf = dci_config.CONFIG
     db_uri = conf['SQLALCHEMY_DATABASE_URI']
 
     if not sa_funcs.database_exists(db_uri):

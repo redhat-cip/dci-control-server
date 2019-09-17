@@ -38,7 +38,7 @@ import os
 import subprocess
 
 # convenient alias
-conf = config.generate_conf()
+conf = config.CONFIG
 
 
 def restore_db(engine):

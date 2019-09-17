@@ -21,40 +21,36 @@ from dci.stores import filesystem, swift
 import flask
 import sqlalchemy
 
-
-def generate_conf():
-    conf = flask.Config('')
-    conf.from_object('dci.settings')
-    conf.from_object(os.environ.get('DCI_SETTINGS_MODULE'))
-    return conf
+CONFIG = flask.Config('')
+CONFIG.from_object('dci.settings')
+CONFIG.from_object(os.environ.get('DCI_SETTINGS_MODULE'))
 
 
-def get_engine(conf):
+def get_engine():
     sa_engine = sqlalchemy.create_engine(
-        conf['SQLALCHEMY_DATABASE_URI'],
-        pool_size=conf['SQLALCHEMY_POOL_SIZE'],
-        max_overflow=conf['SQLALCHEMY_MAX_OVERFLOW'],
+        CONFIG['SQLALCHEMY_DATABASE_URI'],
+        pool_size=CONFIG['SQLALCHEMY_POOL_SIZE'],
+        max_overflow=CONFIG['SQLALCHEMY_MAX_OVERFLOW'],
         encoding='utf8',
-        convert_unicode=conf['SQLALCHEMY_NATIVE_UNICODE'],
-        echo=conf['SQLALCHEMY_ECHO'])
+        convert_unicode=CONFIG['SQLALCHEMY_NATIVE_UNICODE'],
+        echo=CONFIG['SQLALCHEMY_ECHO'])
     return sa_engine
 
 
 def get_store(container):
-    conf = generate_conf()
     configuration = {}
     if container == 'files':
-        configuration['container'] = conf['STORE_FILES_CONTAINER']
+        configuration['container'] = CONFIG['STORE_FILES_CONTAINER']
     elif container == 'components':
-        configuration['container'] = conf['STORE_COMPONENTS_CONTAINER']
-    if conf['STORE_ENGINE'] == conf['SWIFT_STORE']:
-        configuration['os_username'] = conf['STORE_USERNAME']
-        configuration['os_password'] = conf['STORE_PASSWORD']
-        configuration['os_tenant_name'] = conf['STORE_TENANT_NAME']
-        configuration['os_auth_url'] = conf['STORE_AUTH_URL']
-        configuration['os_region_name'] = conf['STORE_REGION']
+        configuration['container'] = CONFIG['STORE_COMPONENTS_CONTAINER']
+    if CONFIG['STORE_ENGINE'] == CONFIG['SWIFT_STORE']:
+        configuration['os_username'] = CONFIG['STORE_USERNAME']
+        configuration['os_password'] = CONFIG['STORE_PASSWORD']
+        configuration['os_tenant_name'] = CONFIG['STORE_TENANT_NAME']
+        configuration['os_auth_url'] = CONFIG['STORE_AUTH_URL']
+        configuration['os_region_name'] = CONFIG['STORE_REGION']
         store_engine = swift.Swift(configuration)
     else:
-        configuration['path'] = conf['STORE_FILE_PATH']
+        configuration['path'] = CONFIG['STORE_FILE_PATH']
         store_engine = filesystem.FileSystem(configuration)
     return store_engine
