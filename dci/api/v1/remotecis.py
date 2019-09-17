@@ -306,8 +306,8 @@ def kill_existing_jobs(remoteci_id, db_conn=None):
 @api.route('/remotecis/<uuid:r_id>/keys', methods=['PUT'])
 @decorators.login_required
 def update_remoteci_keys(user, r_id):
-    _CAKEY = dci_config.generate_conf()['CA_KEY']
-    _CACERT = dci_config.generate_conf()['CA_CERT']
+    _CAKEY = dci_config.CONFIG['CA_KEY']
+    _CACERT = dci_config.CONFIG['CA_CERT']
 
     etag = utils.check_and_get_etag(flask.request.headers)
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)

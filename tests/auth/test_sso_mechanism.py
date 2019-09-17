@@ -18,6 +18,7 @@ import datetime
 
 import dci.auth_mechanism as authm
 from dci.common import exceptions as dci_exc
+from dci import dci_config
 
 import flask
 import mock
@@ -46,6 +47,26 @@ def test_sso_auth_verified(m_datetime, admin, app, engine, access_token,
         assert mech.identity.email == 'dci@distributed-ci.io'
         nb_users_after_sso = len(admin.get('/api/v1/users').data['users'])
         assert (nb_users + 1) == nb_users_after_sso
+
+
+@mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
+@mock.patch('dci.auth_mechanism.utils.get_latest_public_key')
+def test_sso_auth_verified_public_key_rotation(m_get_last_pubkey, m_datetime,
+                                               user_sso, app, engine,
+                                               team_admin_id):
+    sso_public_key = dci_config.CONFIG['SSO_PUBLIC_KEY']
+    dci_config.CONFIG['SSO_PUBLIC_KEY'] = '= non valid sso public key here ='
+    m_utcnow = mock.MagicMock()
+    m_utcnow.utctimetuple.return_value = datetime.datetime. \
+        fromtimestamp(1518653629).timetuple()
+    m_datetime.utcnow.return_value = m_utcnow
+    m_get_last_pubkey.return_value = sso_public_key
+    with app.app_context():
+        flask.g.team_admin_id = team_admin_id
+        flask.g.db_conn = engine.connect()
+        teams = user_sso.get('/api/v1/users/me')
+        assert teams.status_code == 200
+    assert dci_config.CONFIG['SSO_PUBLIC_KEY'] == sso_public_key
 
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)

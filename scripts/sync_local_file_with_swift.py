@@ -8,7 +8,7 @@ from dci.db import models
 from sqlalchemy import sql
 
 
-conf = dci_config.generate_conf()
+conf = dci_config.CONFIG
 swift = dci_config.get_store('files')
 engine = dci_config.get_engine(conf).connect()
 
