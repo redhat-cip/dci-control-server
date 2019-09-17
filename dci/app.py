@@ -99,36 +99,26 @@ def handle_dbapi_exception(dbapi_exception):
 
 def configure_logging(conf):
     formatter = logging.Formatter(conf['LOG_FORMAT'])
-    file_handler = logging.handlers.TimedRotatingFileHandler(
-        filename=conf['LOG_FILE'],
-        backupCount=31,
-        when="D"
-    )
-    file_handler.setFormatter(formatter)
     console_handler = logging.StreamHandler()
     console_handler.setFormatter(formatter)
 
     debug = conf['DEBUG']
-    default_handler = console_handler if debug else file_handler
 
     dci_logger_level = "DEBUG" if debug else "INFO"
     dci_logger = logging.getLogger('dci')
     dci_logger.setLevel(dci_logger_level)
-    dci_logger.addHandler(default_handler)
+    dci_logger.addHandler(console_handler)
 
-    module_logger_level = "INFO" if debug else "WARNING"
-    modules_loggers = [logging.getLogger('sqlalchemy'),
-                       logging.getLogger('werkzeug')]
-    for logger in modules_loggers:
-        logger.setLevel(module_logger_level)
-        logger.addHandler(default_handler)
+    werkzeug_logger_level = "INFO" if debug else "ERROR"
+    werkzeug_logger = logging.getLogger('werkzeug')
+    werkzeug_logger.setLevel(werkzeug_logger_level)
+    werkzeug_logger.addHandler(console_handler)
 
 
 def create_app(conf):
     dci_app = DciControlServer(conf)
     dci_app.url_map.converters['uuid'] = utils.UUIDConverter
 
-    dci_app.logger.disabled = True
     configure_logging(conf)
 
     @dci_app.before_request
