@@ -112,7 +112,14 @@ def get_all_products(user):
 
     if (user.is_not_super_admin() and user.is_not_read_only_user()
         and user.is_not_epm()):
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
+        _JPT = models.JOIN_PRODUCTS_TEAMS
+
+        query = v1_utils.QueryBuilder(models.PRODUCTS, args,
+                                      _T_COLUMNS,
+                                      root_join_table=_JPT,
+                                      root_join_condition=sql.and_(_JPT.c.product_id == _TABLE.c.id,  # noqa
+                                                                   _JPT.c.team_id.in_(user.teams_ids)))  # noqa
+    rows = query.execute(fetchall=True)
 
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
