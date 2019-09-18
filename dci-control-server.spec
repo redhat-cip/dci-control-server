@@ -1,5 +1,5 @@
 Name:           dci-control-server
-Version:        0.3.0
+Version:        0.3.1
 Release:        2.VERS%{?dist}
 Summary:        DCI control server
 License:        ASL 2.0
@@ -11,8 +11,8 @@ Conflicts:      dci-common < %{version}
 Obsoletes:      dci-common
 Obsoletes:      dci-api < 0.2.2.2
 BuildRequires:  net-tools
-BuildRequires:  rh-postgresql94-postgresql-devel
-BuildRequires:  rh-postgresql94
+BuildRequires:  rh-postgresql96-postgresql-devel
+BuildRequires:  rh-postgresql96
 BuildRequires:  pyOpenSSL
 BuildRequires:  python-alembic
 BuildRequires:  python-flask
@@ -94,6 +94,9 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %exclude %{python2_sitelib}/dci/settings.py?
 
 %changelog
+* Wed Sep 18 2019 Guillaume Vincent <gvincent@redhat.com> 0.3.1-1
+- Use rh-postgresql96
+
 * Mon May 20 2019 Guillaume Vincent <gvincent@redhat.com> 0.3.0-1
 - Use python-jsonschema instead of python-voluptuous
 
