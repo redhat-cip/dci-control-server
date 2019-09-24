@@ -35,11 +35,18 @@ class Swift(stores.Store):
         self.os_options = dict()
         self.os_options['region_name'] = conf.get('os_region_name',
                                                   os.getenv('OS_REGION_NAME'))
+        if 'v2.0' in self.os_auth_url:
+            self.os_auth_version = '2'
+        elif 'v3' in self.os_auth_url:
+            self.os_auth_version = '3'
+            self.os_options['user_domain_name'] = 'default'
+            self.os_options['project_domain_name'] = 'default'
+            self.os_options['project_name'] = self.os_tenant_name
         self.container = conf.get('container')
         self.connection = self.get_connection()
 
     def get_connection(self):
-        return swiftclient.client.Connection(auth_version='2',
+        return swiftclient.client.Connection(auth_version=self.os_auth_version,
                                              user=self.os_username,
                                              key=self.os_password,
                                              tenant_name=self.os_tenant_name,

@@ -61,8 +61,8 @@ STORE_USERNAME = os.getenv('STORE_USERNAME', 'dci')
 STORE_PASSWORD = os.getenv('STORE_PASSWORD', 'dci')
 STORE_TENANT_NAME = os.getenv('STORE_TENANT_NAME', 'dci')
 STORE_HOST = os.getenv('STORE_HOST', 'swift')
-STORE_PORT = int(os.getenv('STORE_PORT', '5000'))
-DEFAULT_STORE_AUTH_URL = 'http://{store_host}:{store_port}/v2.0'.format(
+STORE_PORT = int(os.getenv('STORE_PORT', '5001'))
+DEFAULT_STORE_AUTH_URL = 'http://{store_host}:{store_port}/v3'.format(
     store_host=STORE_HOST,
     store_port=STORE_PORT
 )
