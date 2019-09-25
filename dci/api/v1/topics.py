@@ -90,22 +90,37 @@ def get_topic_by_id(user, topic_id):
 @api.route('/topics', methods=['GET'])
 @decorators.login_required
 def get_all_topics(user):
+    def _get_user_product_ids():
+        _JPT = models.JOIN_PRODUCTS_TEAMS
+        query = v1_utils.QueryBuilder(models.PRODUCTS, {}, {},
+                                    root_join_table=_JPT,
+                                    root_join_condition=sql.and_(_JPT.c.product_id == models.PRODUCTS.c.id,  # noqa
+                                                                 _JPT.c.team_id.in_(user.teams_ids)))  # noqa
+        user_products = query.execute(fetchall=True)
+        return [up['products_id'] for up in user_products]
+
     args = check_and_get_args(flask.request.args.to_dict())
     # if the user is an admin then he can get all the topics
-    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
+    q_get_topics = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
     if (user.is_not_super_admin() and user.is_not_read_only_user()
         and user.is_not_epm()):
         if 'teams' in args['embed']:
             raise dci_exc.DCIException('embed=teams not authorized.',
                                        status_code=401)
-        query.add_extra_condition(_TABLE.c.id.in_(v1_utils.user_topic_ids(user)))  # noqa
+        # if regular user, retrieve the topics associated to the user's team
+        # get only topics with export_control==True or with explicit association
+        # between the user's teams and the topic
+        product_ids = _get_user_product_ids()
+        q_get_topics.add_extra_condition(_TABLE.c.product_id.in_(product_ids))
+        q_get_topics.add_extra_condition(sql.or_(_TABLE.c.export_control == True,  # noqa
+                                                 _TABLE.c.id.in_(v1_utils.user_topic_ids(user))))  # noqa
 
-    query.add_extra_condition(_TABLE.c.state != 'archived')
+    q_get_topics.add_extra_condition(_TABLE.c.state != 'archived')
 
     # get the number of rows for the '_meta' section
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
+    nb_rows = q_get_topics.get_number_of_rows()
+    rows = q_get_topics.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
                                   _EMBED_MANY)
 
