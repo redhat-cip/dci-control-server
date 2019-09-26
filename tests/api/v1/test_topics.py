@@ -134,48 +134,51 @@ def test_get_all_topics_by_admin(admin, product):
     assert db_all_cs_ids == created_topics_ids
 
 
-def test_get_all_topics_by_user(admin, user, team_user_id, product):
+def test_get_all_topics_by_user_and_remoteci(admin, user, remoteci_context,
+                                             team_user_id, product):
     pat = admin.post('/api/v1/products/%s/teams' % product['id'],
                      data={'team_id': team_user_id})
     assert pat.status_code == 201
 
-    # create a topic with export_control==False
-    my_topic = admin.post('/api/v1/topics',
-                          data={'name': 'newtopic',
-                                'product_id': product['id'],
-                                'export_control': False,
-                                'component_types': ['type1', 'type2']})
-    assert my_topic.status_code == 201
-    my_topic_id = my_topic.data['topic']['id']
-    my_topic_etag = my_topic.data['topic']['etag']
+    def test(caller, topic_name):
+        # create a topic with export_control==False
+        my_topic = admin.post('/api/v1/topics',
+                              data={'name': topic_name,
+                                    'product_id': product['id'],
+                                    'export_control': False,
+                                    'component_types': ['type1', 'type2']})
+        assert my_topic.status_code == 201
+        my_topic_id = my_topic.data['topic']['id']
+        my_topic_etag = my_topic.data['topic']['etag']
+        # user should not find it
+        my_topic = caller.get('/api/v1/topics?where=name:%s' % topic_name)
+        assert len(my_topic.data['topics']) == 0
 
-    # user should not find it
-    my_topic = user.get('/api/v1/topics?where=name:newtopic')
-    assert len(my_topic.data['topics']) == 0
+        # associate the user's team to the topic
+        pt = admin.post('/api/v1/topics/%s/teams' % my_topic_id,
+                        data={'team_id': team_user_id})
 
-    # associate the user's team to the topic
-    pt = admin.post('/api/v1/topics/%s/teams' % my_topic_id,
-                    data={'team_id': team_user_id})
+        # user should see the topic now
+        my_topic = caller.get('/api/v1/topics?where=name:%s' % topic_name)
+        assert my_topic.data['topics'][0]['name'] == topic_name
 
-    # user should see the topic now
-    my_topic = user.get('/api/v1/topics?where=name:newtopic')
-    assert my_topic.data['topics'][0]['name'] == 'newtopic'
+        # remove user'team from topic
+        pt = admin.delete('/api/v1/topics/%s/teams/%s' % (my_topic_id, team_user_id))  # noqa
 
-    # remove user'team from topic
-    pt = admin.delete('/api/v1/topics/%s/teams/%s' % (my_topic_id, team_user_id))  # noqa
+        # user should not find it
+        my_topic = caller.get('/api/v1/topics?where=name:%s' % topic_name)
+        assert len(my_topic.data['topics']) == 0
 
-    # user should not find it
-    my_topic = user.get('/api/v1/topics?where=name:newtopic')
-    assert len(my_topic.data['topics']) == 0
+        # update export_control to True
+        admin.put('/api/v1/topics/%s' % my_topic_id,
+                  headers={'If-match': my_topic_etag},
+                  data={'export_control': True})
 
-    # update export_control to True
-    admin.put('/api/v1/topics/%s' % my_topic_id,
-              headers={'If-match': my_topic_etag},
-              data={'export_control': True})
-
-    # user should see the topic now
-    my_topic = user.get('/api/v1/topics?where=name:newtopic')
-    assert my_topic.data['topics'][0]['name'] == 'newtopic'
+        # user should see the topic now
+        my_topic = caller.get('/api/v1/topics?where=name:%s' % topic_name)
+        assert my_topic.data['topics'][0]['name'] == topic_name
+    test(user, 'my_new_topic_1')
+    test(remoteci_context, 'my_new_topic_2')
 
 
 def test_get_all_topics_with_pagination(admin, product):
