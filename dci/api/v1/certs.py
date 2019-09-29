@@ -18,6 +18,7 @@ import os.path
 from sqlalchemy import sql
 
 from dci.api.v1 import api
+from dci.api.v1 import permissions
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.db import models
@@ -38,43 +39,42 @@ def verify_repo_access(user):
     url = headers.get('X-Original-URI')
 
     if verify != "SUCCESS":
-        return flask.Response(None, 403)
+        return flask.Response('wrong SSLVerify header: %s' % verify, 403)
 
     if len(splitpath(url)) < 3:
-        return flask.Response(None, 403)
+        return flask.Response('requested url is invalid: %s' % url, 403)
 
-    product, topic, component = splitpath(url)[:3]
+    product_id, topic_id, component_id = splitpath(url)[:3]
 
     REMOTECIS = models.REMOTECIS
     query = (sql.select([REMOTECIS]).where(REMOTECIS.c.cert_fp == fp))
     remoteci = flask.g.db_conn.execute(query)
 
     if remoteci.rowcount != 1:
-        return flask.Response(None, 403)
+        return flask.Response('remoteci fingerprint not found: %s' % fp, 403)  # noqa
 
-    v1_utils.verify_existence_and_get(product, models.PRODUCTS)
-    v1_utils.verify_existence_and_get(topic, models.TOPICS)
-    v1_utils.verify_existence_and_get(component, models.COMPONENTS)
+    product = v1_utils.verify_existence_and_get(product_id, models.PRODUCTS)
+    if product['state'] != 'active':
+        return flask.Response('product %s/%s is not active' % (product['name'], product['id']), 403)  # noqa
+    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+    if topic['state'] != 'active':
+        return flask.Response('topic %s/%s is not active' % (topic['name'], topic['id']), 403)  # noqa
+    component = v1_utils.verify_existence_and_get(component_id, models.COMPONENTS)  # noqa
+    if component['state'] != 'active':
+        return flask.Response('component %s/%s is not active' % (component['name'], component['id']), 403)  # noqa
 
     team_id = remoteci.fetchone()['team_id']
+    team = v1_utils.verify_existence_and_get(team_id, models.TEAMS)
+    if team['state'] != 'active':
+        return flask.Response('team %s/%s is not active' % (team['name'], team['id']), 403)  # noqa
 
-    where_clause = sql.and_(
-        models.TOPICS.c.state == 'active',
-        models.TEAMS.c.state == 'active',
-        models.COMPONENTS.c.state == 'active',
-        models.JOINS_TOPICS_TEAMS.c.team_id == team_id,
-        models.COMPONENTS.c.id == component,
-        models.TOPICS.c.id == topic
-    )
-    query = (sql.select([models.JOINS_TOPICS_TEAMS.c.topic_id])
-             .select_from(models.JOINS_TOPICS_TEAMS
-                          .join(models.TOPICS).join(models.TEAMS)
-                          .join(models.COMPONENTS))
-             .where(where_clause))
+    if not permissions.is_team_associated_to_product(team_id, product_id):
+        return flask.Response('team %s is not associated to the product %s' % (team['name'], product['name']), 403)  # noqa
 
-    result = flask.g.db_conn.execute(query)
+    if topic['export_control'] is True:
+        return flask.Response('export_control true', 200)
 
-    if result.rowcount != 1:
-        return flask.Response(None, 403)
+    if not permissions.is_team_associated_to_topic(team_id, topic_id):
+        return flask.Response('team %s is not associated to the topic %s' % (team['name'], topic['name']), 403)  # noqa
 
-    return flask.Response(None, 200)
+    return flask.Response('final 200', 200)
