@@ -22,46 +22,47 @@ import flask
 from sqlalchemy import sql
 
 
-def user_can_access_topic(user, topic_id):
-    """Verify that the user's team is associated to the topic."""
-    if str(topic_id) not in v1_utils.user_topic_ids(user):
-        raise dci_exc.Unauthorized()
+def is_teams_associated_to_product(team_ids, product_id):
+    q_get_product_team = sql.select([models.JOIN_PRODUCTS_TEAMS]).where(
+        models.JOIN_PRODUCTS_TEAMS.c.team_id.in_(team_ids)
+    )
+    result = flask.g.db_conn.execute(q_get_product_team)
+    return result.rowcount > 0
 
 
-def user_has_access_product(user, product_id):
-    """Verify that the user's team is associated to the given product."""
-
-    query = sql.select([models.JOIN_PRODUCTS_TEAMS]).where(
-        sql.and_(models.JOIN_PRODUCTS_TEAMS.c.product_id == product_id,
-                 models.JOIN_PRODUCTS_TEAMS.c.team_id.in_(user.teams_ids)))
-    res = flask.g.db_conn.execute(query).fetchone()
-    if not res:
-        raise dci_exc.Unauthorized()
+def is_teams_associated_to_topic(team_ids, topic_id):
+    q_get_topic__team = sql.select([models.JOINS_TOPICS_TEAMS]).where(
+        models.JOINS_TOPICS_TEAMS.c.team_id.in_(team_ids)
+    )
+    result = flask.g.db_conn.execute(q_get_topic__team)
+    return result.rowcount > 0
 
 
-def _check(user, topic):
+def has_access_to_topic(user, topic):
     """If the topic has it's export_control set to True then all the teams
-    associated to the product can access to the topic's resources.
+    associated to the product can access to the topic's resources. If the
+    export control is False check if user's teams associated to the topic.
 
     :param user:
     :param topic:
-    :return: True if check is ok, False otherwise
+    :return: True if has_access_to_topic, False otherwise
     """
-    # if export_control then check the team is associated to the product
-    if topic['export_control']:
-        product = v1_utils.verify_existence_and_get(topic['product_id'],
-                                                    models.PRODUCTS)
-        user_has_access_product(user, product['id'])
-        return True
-    return False
+    if topic["export_control"] is True:
+        product = v1_utils.verify_existence_and_get(
+            topic["product_id"], models.PRODUCTS
+        )
+        return is_teams_associated_to_product(user.teams_ids, product["id"])
+    return is_teams_associated_to_topic(user.teams_ids, topic["id"])
 
 
 def verify_access_to_topic(user, topic):
     """Verify that the user can access to a topic, raise an unauthorized
        exception if not."""
-    if user.is_super_admin() or user.is_read_only_user() or user.is_epm():
-        return
-    if not _check(user, topic):
-        # If topic has it's export_control set to False then only teams
-        # associated to the topic can access to the topic's resources.
-        v1_utils.verify_team_in_topic(user, topic['id'])
+    if (
+        user.is_not_super_admin()
+        and user.is_not_read_only_user()
+        and user.is_not_epm()
+        and user.is_not_feeder()
+        and not has_access_to_topic(user, topic)
+    ):
+        raise dci_exc.Unauthorized()

@@ -140,30 +140,6 @@ def user_topic_ids(user):
     return [str(row[0]) for row in rows]
 
 
-def verify_team_in_topic(user, topic_id):
-    """Verify that the user's team does belongs to the given topic. If
-    the user is an admin or read only user then it belongs to all topics.
-    """
-    if user.is_super_admin() or user.is_read_only_user() or user.is_epm():
-        return
-    if str(topic_id) not in user_topic_ids(user):
-        raise dci_exc.Unauthorized()
-
-
-def verify_team_in_product(user, product_id):
-    """Verify that the user's team is associated to the given product. If
-    the user is an admin, read only user or epm then it belongs to all topics.
-    """
-    if user.is_super_admin() or user.is_read_only_user() or user.is_epm():
-        return
-    query = sql.select([models.JOIN_PRODUCTS_TEAMS]).where(
-        sql.and_(models.JOIN_PRODUCTS_TEAMS.c.product_id == product_id,
-                 models.JOIN_PRODUCTS_TEAMS.c.team_id.in_(user.teams_ids)))
-    res = flask.g.db_conn.execute(query).fetchone()
-    if not res:
-        raise dci_exc.Unauthorized()
-
-
 def get_columns_name_with_objects(table, table_prefix=False):
     if table_prefix:
         columns = {

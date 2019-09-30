@@ -43,6 +43,7 @@ from dci.db import embeds
 from dci.db import models
 
 from dci.api.v1 import files
+from dci.api.v1 import export_control
 from dci.api.v1 import issues
 from dci.api.v1 import jobstates
 from dci.api.v1 import remotecis
@@ -88,10 +89,7 @@ def create_jobs(user):
 
     topic_id = values.get('topic_id')
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
-    product_id = topic['product_id']
-    if topic_id:
-        v1_utils.verify_team_in_topic(user, topic_id)
-
+    export_control.verify_access_to_topic(user, topic)
     previous_job_id = values.get('previous_job_id')
     if previous_job_id:
         v1_utils.verify_existence_and_get(previous_job_id, _TABLE)
@@ -104,7 +102,7 @@ def create_jobs(user):
         'client_version': flask.request.environ.get('HTTP_CLIENT_VERSION'),
         'previous_job_id': previous_job_id,
         'team_id': user.teams_ids[0],
-        'product_id': product_id,
+        'product_id': topic['product_id'],
         'duration': 0
     })
 
@@ -255,7 +253,7 @@ def schedule_jobs(user):
     if topic['state'] != 'active':
         msg = 'Topic %s:%s not active.' % (topic_id, topic['name'])
         raise dci_exc.DCIException(msg, status_code=412)
-    v1_utils.verify_team_in_topic(user, topic_id)
+    export_control.verify_access_to_topic(user, topic)
 
     # check secondary topic
     topic_id_secondary = values.pop('topic_id_secondary')
@@ -266,7 +264,7 @@ def schedule_jobs(user):
             msg = 'Topic %s:%s not active.' % (topic_id_secondary,
                                                topic['name'])
             raise dci_exc.DCIException(msg, status_code=412)
-        v1_utils.verify_team_in_topic(user, topic_id_secondary)
+        export_control.verify_access_to_topic(user, topic_secondary)
 
     remotecis.kill_existing_jobs(remoteci['id'])
 

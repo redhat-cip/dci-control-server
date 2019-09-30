@@ -584,3 +584,15 @@ def test_add_multiple_topic_and_get(admin, user, product, product2):
     add_data = res.data
     assert add_data['topic_id'] == pt2_id
     assert add_data['team_id'] == team_id
+
+
+def test_get_topic_by_id_export_control_true(
+    admin, user, team_user_id, RHELProduct, RHEL80Topic
+):
+    request = admin.post(
+        "/api/v1/products/%s/teams" % RHELProduct["id"], data={"team_id": team_user_id}
+    )
+    assert request.status_code == 201
+    request = user.get("/api/v1/topics/%s" % RHEL80Topic["id"])
+    assert request.status_code == 200
+    assert request.data["topic"]["id"] == RHEL80Topic["id"]

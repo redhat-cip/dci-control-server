@@ -80,7 +80,7 @@ def get_topic_by_id(user, topic_id):
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_feeder():  # noqa
         if not user.is_read_only_user():
-            v1_utils.verify_team_in_topic(user, topic_id)
+            export_control.verify_access_to_topic(user, topic)
         if 'teams' in args['embed']:
             raise dci_exc.Unauthorized()
 
