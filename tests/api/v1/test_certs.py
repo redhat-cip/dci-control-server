@@ -13,57 +13,7 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-import pytest
-
 from OpenSSL.crypto import load_certificate, FILETYPE_PEM
-
-
-@pytest.fixture
-def RHELProduct(admin):
-    data = {"name": "RHEL", "label": "RHEL", "description": "Red Hat Entreprise Linux"}
-    return admin.post("/api/v1/products", data=data).data["product"]
-
-
-@pytest.fixture
-def RHEL80Topic(admin, RHELProduct):
-    data = {
-        "name": "RHEL-8.0",
-        "product_id": RHELProduct["id"],
-        "component_types": ["Compose"],
-        "export_control": True,
-    }
-    return admin.post("/api/v1/topics", data=data).data["topic"]
-
-
-@pytest.fixture
-def RHEL80Component(admin, RHEL80Topic):
-    data = {
-        "topic_id": RHEL80Topic["id"],
-        "name": "RHEL-8.0.0-20190926.n.0",
-        "type": "Compose",
-    }
-    return admin.post("/api/v1/components", data=data).data["component"]
-
-
-@pytest.fixture
-def RHEL81Topic(admin, RHELProduct):
-    data = {
-        "name": "RHEL-8.1",
-        "product_id": RHELProduct["id"],
-        "component_types": ["Compose"],
-        "export_control": False,
-    }
-    return admin.post("/api/v1/topics", data=data).data["topic"]
-
-
-@pytest.fixture
-def RHEL81Component(admin, RHEL81Topic):
-    data = {
-        "topic_id": RHEL81Topic["id"],
-        "name": "RHEL-8.1.0-20190926.n.0",
-        "type": "Compose",
-    }
-    return admin.post("/api/v1/components", data=data).data["component"]
 
 
 def get_certificate_headers(remoteci_context, remoteci, product, topic, component):
