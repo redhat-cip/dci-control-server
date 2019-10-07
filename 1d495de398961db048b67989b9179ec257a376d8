@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "fd9485be_4ffda09a",
+        "filename": "dci/dci_config.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-10-07T10:10:00Z",
+      "side": 1,
+      "message": "Wait, there\u0027s a parameter missing here!\nSee line 59 https://softwarefactory-project.io/r/#/c/16256/9/dci/api/v1/trends.py",
+      "revId": "1d495de398961db048b67989b9179ec257a376d8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
