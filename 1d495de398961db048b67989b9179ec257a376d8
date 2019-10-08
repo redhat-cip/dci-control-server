@@ -2,6 +2,23 @@
   "comments": [
     {
       "key": {
+        "uuid": "10b78b6f_a79b1a31",
+        "filename": "dci/api/v1/trends.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 59,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2019-10-08T08:05:11Z",
+      "side": 1,
+      "message": "as Haikel said, you don\u0027t need CONFIG here IIUC",
+      "revId": "1d495de398961db048b67989b9179ec257a376d8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4dec8f9f_1b4c8780",
         "filename": "dci/auth_mechanism.py",
         "patchSetId": 9
