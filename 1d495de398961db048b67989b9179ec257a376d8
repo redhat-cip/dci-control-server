@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "4dec8f9f_1b4c8780",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 237,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2019-10-08T08:02:17Z",
+      "side": 1,
+      "message": "Here you\u0027re fetching the key from Keycloak for each and every request.\n\nInstead I\u0027d prefer the following approach:\n\n- try to validate with the current key we have\n- if validation fails:\n  - get the key from Keycloak\n  - update the key in conf if needed \u0026 revalidate\n  - fail if keys are the same.\n\nThis way we save a roundtrip to the Keycloak server most of the time.",
+      "range": {
+        "startLine": 233,
+        "startChar": 0,
+        "endLine": 237,
+        "endChar": 56
+      },
+      "revId": "1d495de398961db048b67989b9179ec257a376d8",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "fd9485be_4ffda09a",
         "filename": "dci/dci_config.py",
         "patchSetId": 9
