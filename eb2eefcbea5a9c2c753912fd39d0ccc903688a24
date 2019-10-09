@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f65a6129_3a77c3c4",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 234,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-10-09T13:10:19Z",
+      "side": 1,
+      "message": ":(",
+      "range": {
+        "startLine": 234,
+        "startChar": 32,
+        "endLine": 234,
+        "endChar": 61
+      },
+      "revId": "eb2eefcbea5a9c2c753912fd39d0ccc903688a24",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f29041f4_9e3966d4",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 11
+      },
+      "lineNbr": 251,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-10-09T13:10:19Z",
+      "side": 1,
+      "message": "could you try to move this in a sso.py file or another name?\n\n_decode_with_last_public_key and get_latest_public_key are good function to put in this file",
+      "range": {
+        "startLine": 230,
+        "startChar": 4,
+        "endLine": 251,
+        "endChar": 56
+      },
+      "revId": "eb2eefcbea5a9c2c753912fd39d0ccc903688a24",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
