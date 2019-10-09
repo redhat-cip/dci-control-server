@@ -22,6 +22,8 @@ from dci import dci_config
 from dci.common import exceptions as dci_exc
 from dciauth.request import AuthRequest
 from dciauth.signature import Signature
+from dciauth.v2.headers import parse_headers
+from dciauth.v2.signature import is_valid
 from dci.db import models
 from dci.identity import Identity
 
@@ -222,6 +224,27 @@ class HmacMechanism(BaseMechanism):
             return None
         constraint = identity_model.c.id == client_info['client_id']
         return self.identity_from_db(identity_model, constraint)
+
+
+class Hmac2Mechanism(HmacMechanism):
+    def authenticate(self):
+        headers = parse_headers(self.request.headers)
+        self.identity = self.build_identity(headers)
+        if self.identity is None:
+            raise dci_exc.DCIException("identity does not exists.", status_code=401)
+        valid, error_message = is_valid(
+            {
+                "method": self.request.method,
+                "endpoint": self.request.path,
+                "payload": self.request.get_json(silent=True),
+                "params": self.request.args.to_dict(flat=True),
+            },
+            {"secret_key": self.identity.api_secret},
+            headers,
+        )
+        if not valid:
+            raise dci_exc.DCIException("Authentication failed: %s" % error_message)
+        return True
 
 
 class OpenIDCAuth(BaseMechanism):

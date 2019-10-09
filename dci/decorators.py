@@ -46,6 +46,8 @@ def _get_auth_class_from_headers(headers):
         return am.OpenIDCAuth
     elif auth_type == 'DCI-HMAC-SHA256':
         return am.HmacMechanism
+    elif auth_type in ['DCI2-HMAC-SHA256', 'AWS4-HMAC-SHA256']:
+        return am.Hmac2Mechanism
     elif auth_type == 'Basic':
         return am.BasicAuthMechanism
 
