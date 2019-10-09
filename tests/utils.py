@@ -31,8 +31,7 @@ import dci.auth as auth
 import dci.db.models as models
 import dci.dci_config as config
 from dci.common import utils
-from dciauth.request import AuthRequest
-from dciauth.signature import Signature
+from dciauth.v2.headers import generate_headers
 
 import os
 import subprocess
@@ -103,18 +102,17 @@ def generate_token_based_client(app, resource):
             payload = kwargs.get('data')
             url = urlparse(args[0])
             params = dict(parse_qsl(url.query))
-            auth_request = AuthRequest(
-                method=kwargs.get('method'),
-                endpoint=url.path,
-                payload=payload,
-                headers=headers,
-                params=params
-            )
-            signature = Signature(request=auth_request)
-            kwargs['headers'] = signature.generate_headers(
-                client_id=resource['id'],
-                client_type=resource['type'],
-                secret=resource['api_secret']
+            kwargs['headers'] = generate_headers(
+                {
+                    "method": kwargs.get('method'),
+                    "endpoint": url.path,
+                    "params": params,
+                    "payload": payload,
+                },
+                {
+                    "access_key": "%s/%s"%(resource['type'],resource['id']),
+                    "secret_key": resource['api_secret']
+                },
             )
             if payload:
                 json = flask.json.dumps(payload, cls=utils.JSONEncoder)
