@@ -152,7 +152,8 @@ def create_topics(products):
     rhel = products['RHEL']
     ocp = products['OCP']
 
-    osp15 = create_topic('OSP15', ['puddle'], openstack)
+    osp16 = create_topic('OSP16', ['puddle'], openstack)
+    osp15 = create_topic('OSP15', ['puddle'], openstack, osp16)
     osp14 = create_topic('OSP14', ['puddle'], openstack, osp15)
     osp13 = create_topic('OSP13', ['puddle'], openstack, osp14)
     osp12 = create_topic('OSP12', ['puddle'], openstack, osp13)
@@ -173,9 +174,11 @@ def create_topics(products):
 
     rhel8 = create_topic('RHEL-8', ['Compose'], rhel)
     rhel7 = create_topic('RHEL-7', ['Compose'], rhel, rhel8)
-    rhel81 = create_topic('RHEL-8.1', ['Compose'], rhel)
+    rhel82 = create_topic('RHEL-8.2', ['Compose'], rhel)
+    rhel81 = create_topic('RHEL-8.1', ['Compose'], rhel, rhel82)
     rhel80 = create_topic('RHEL-8.0', ['Compose'], rhel, rhel81)
-    rhel77 = create_topic('RHEL-7.7', ['Compose'], rhel, rhel8)
+    rhel78 = create_topic('RHEL-7.8', ['Compose'], rhel, rhel8)
+    rhel77 = create_topic('RHEL-7.7', ['Compose'], rhel, rhel78)
     rhel76 = create_topic('RHEL-7.6', ['Compose'], rhel, rhel77)
 
     ocp40 = create_topic('OCP-4.0', ['puddle_ocp'], ocp)
@@ -183,6 +186,7 @@ def create_topics(products):
     ocp310 = create_topic('OCP-3.10', ['puddle_ocp'], ocp, ocp311)
 
     return {
+        'OSP16': osp16,
         'OSP15': osp15,
         'OSP14': osp14,
         'OSP13': osp13,
@@ -202,8 +206,10 @@ def create_topics(products):
         'RHEL-7': rhel7,
         'RHEL-7.6': rhel76,
         'RHEL-7.7': rhel77,
+        'RHEL-7.8': rhel78,
         'RHEL-8.0': rhel80,
         'RHEL-8.1': rhel81,
+        'RHEL-8.2': rhel82,
         'OCP-4.0': ocp40,
         'OCP-3.11': ocp311,
         'OCP-3.10': ocp310,
