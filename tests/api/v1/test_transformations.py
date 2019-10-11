@@ -147,11 +147,13 @@ def test_junit2dict_with_tempest_xml():
 
     assert result['success'] == 117
     assert result['errors'] == 0
-    assert result['failures'] == 0
+    assert result['failures'] == 1
     assert result['skips'] == 13
-    assert result['total'] == 130
-    assert result['time'] == 1308365
-    assert len(result['testscases']) == 130
+    assert result['total'] == 131
+    assert result['time'] == 1318612
+    assert len(result['testscases']) == 131
+    assert result['testscases'][126]['value'] == "Ironic is not enabled."
+    assert 'Traceback (most recent call last):' in result['testscases'][130]['value']
 
 
 def test_junit2dict_with_rally_xml():
@@ -245,12 +247,12 @@ def test_create_file_fill_tests_results_table(engine, admin, job_user_id):
     assert len(tests_results) == 1
     assert UUID(str(test_result['id']), version=4)
     assert test_result['name'] == 'tempest-results.xml'
-    assert test_result['total'] == 130
+    assert test_result['total'] == 131
     assert test_result['skips'] == 13
-    assert test_result['failures'] == 0
+    assert test_result['failures'] == 1
     assert test_result['errors'] == 0
     assert test_result['success'] == 117
-    assert test_result['time'] == 1308365
+    assert test_result['time'] == 1318612
 
 
 def test_add_regressions_successfix():
@@ -288,10 +290,10 @@ def test_junit2dict_with_big_xml():
     with open('tests/data/run_nxos_integration_tests.xml', 'r') as f:
         result = transformations.junit2dict(f)
 
-    assert result['success'] == 10311
+    assert result['success'] == 10306
     assert result['errors'] == 2
     assert result['failures'] == 4
-    assert result['skips'] == 1165
+    assert result['skips'] == 1170
     assert result['total'] == 11482
     assert result['time'] == 17010679
     assert len(result['testscases']) == 11482

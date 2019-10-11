@@ -66,10 +66,8 @@ def junit2dict(file_descriptor):
     }
     try:
         test_duration = timedelta(seconds=0)
-        for event, element in ElementTree.iterparse(
-            file_descriptor, events=("start", "end")
-        ):
-            if event == "start" and element.tag == "testcase":
+        for event, element in ElementTree.iterparse(file_descriptor):
+            if element.tag == "testcase":
                 testcase = parse_element(element)
                 results["total"] += 1
                 test_duration += timedelta(seconds=float(testcase["time"]))
@@ -80,7 +78,6 @@ def junit2dict(file_descriptor):
                 if testcase["action"] == "failure":
                     results["failures"] += 1
                 results["testscases"].append(testcase)
-            else:
                 element.clear()
         results["success"] = (
             results["total"]
