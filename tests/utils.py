@@ -31,8 +31,7 @@ import dci.auth as auth
 import dci.db.models as models
 import dci.dci_config as config
 from dci.common import utils
-from dciauth.request import AuthRequest
-from dciauth.signature import Signature
+from dciauth.v2.headers import generate_headers
 
 import os
 import subprocess
@@ -93,34 +92,34 @@ def generate_client(app, credentials=None, access_token=None):
 
 
 def generate_token_based_client(app, resource):
-    attrs = ['status_code', 'data', 'headers']
-    Response = collections.namedtuple('Response', attrs)
-    headers = {'Content-Type': 'application/json'}
+    attrs = ["status_code", "data", "headers"]
+    Response = collections.namedtuple("Response", attrs)
 
     def client_open_decorator(func):
         def wrapper(*args, **kwargs):
-            headers.update(kwargs.get('headers', {}))
-            payload = kwargs.get('data')
+            payload = kwargs.get("data")
             url = urlparse(args[0])
             params = dict(parse_qsl(url.query))
-            auth_request = AuthRequest(
-                method=kwargs.get('method'),
-                endpoint=url.path,
-                payload=payload,
-                headers=headers,
-                params=params
-            )
-            signature = Signature(request=auth_request)
-            kwargs['headers'] = signature.generate_headers(
-                client_id=resource['id'],
-                client_type=resource['type'],
-                secret=resource['api_secret']
-            )
+            headers = kwargs.get("headers", {})
+            headers.update(generate_headers(
+                {
+                    "method": kwargs.get("method"),
+                    "endpoint": url.path,
+                    "params": params,
+                    "payload": payload,
+                    "host": "localhost",
+                },
+                {
+                    "access_key": "%s/%s" % (resource["type"], resource["id"]),
+                    "secret_key": resource["api_secret"],
+                },
+            ))
+            kwargs["headers"] = headers
             if payload:
                 json = flask.json.dumps(payload, cls=utils.JSONEncoder)
-                kwargs['data'] = json
+                kwargs["data"] = json
             response = func(*args, **kwargs)
-            data = flask.json.loads(response.data or '{}')
+            data = flask.json.loads(response.data or "{}")
             return Response(response.status_code, data, response.headers)
 
         return wrapper

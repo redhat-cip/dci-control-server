@@ -9,7 +9,7 @@ pytz==2016.10  # pytz
 pyjwt==1.5.3  # python-jwt
 flask==0.10.1  # python-flask
 passlib==1.6.5  # python-passlib
-dciauth==2.0.2  # python2-dciauth
+dciauth==2.1.2  # python2-dciauth
 SQLAlchemy-Utils==0.31.3  # python-sqlalchemy-utils
 pyzmq==14.3.1  # python-zmq
 python-keystoneclient==3.17.0  # python2-keystoneclient
