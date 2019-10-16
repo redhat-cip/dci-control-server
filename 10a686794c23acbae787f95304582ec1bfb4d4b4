@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b5a6e82e_cf42ac7f",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 229,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2019-10-16T08:31:17Z",
+      "side": 1,
+      "message": "nitpick, conceptually there should a base class for HMAC-based authentication but this works fine.",
+      "revId": "10a686794c23acbae787f95304582ec1bfb4d4b4",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
