@@ -16,11 +16,9 @@
 # under the License.
 
 from dci import app
-from dci import dci_config
 
 if __name__ == '__main__':
-    conf = dci_config.generate_conf()
-    dci_app = app.create_app(conf)
+    dci_app = app.create_app()
 
     dci_app.run(dci_app.config['HOST'],
                 dci_app.config['PORT'],
