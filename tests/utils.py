@@ -97,7 +97,9 @@ def generate_token_based_client(app, resource):
 
     def client_open_decorator(func):
         def wrapper(*args, **kwargs):
-            payload = kwargs.get("data")
+            data = kwargs.get("data")
+            if data:
+                data = flask.json.dumps(data, cls=utils.JSONEncoder)
             url = urlparse(args[0])
             params = dict(parse_qsl(url.query))
             headers = kwargs.get("headers", {})
@@ -106,7 +108,7 @@ def generate_token_based_client(app, resource):
                     "method": kwargs.get("method"),
                     "endpoint": url.path,
                     "params": params,
-                    "payload": payload,
+                    "data": data,
                     "host": "localhost",
                 },
                 {
@@ -115,9 +117,8 @@ def generate_token_based_client(app, resource):
                 },
             ))
             kwargs["headers"] = headers
-            if payload:
-                json = flask.json.dumps(payload, cls=utils.JSONEncoder)
-                kwargs["data"] = json
+            if data:
+                kwargs["data"] = data
             response = func(*args, **kwargs)
             data = flask.json.loads(response.data or "{}")
             return Response(response.status_code, data, response.headers)
