@@ -238,7 +238,7 @@ class Hmac2Mechanism(HmacMechanism):
             {
                 "method": self.request.method,
                 "endpoint": self.request.path,
-                "payload": self.request.get_json(silent=True),
+                "data": self.request.data.decode("utf-8"),
                 "params": self.request.args.to_dict(flat=True),
             },
             {"secret_key": self.identity.api_secret},
