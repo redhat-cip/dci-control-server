@@ -27,7 +27,7 @@ metadata = sa.MetaData()
 JOB_STATUSES = ['new', 'pre-run', 'running', 'post-run',
                 'success', 'failure', 'killed', 'error']
 STATUSES = sa.Enum(*JOB_STATUSES, name='statuses')
-FINAL_STATUSES = ['success', 'failure', 'error']
+FINAL_STATUSES = ['success', 'failure', 'error', 'download']
 FINAL_FAILURE_STATUSES = ['failure', 'error']
 FINAL_STATUSES_ENUM = sa.Enum(*FINAL_STATUSES, name='final_statuses')
 
