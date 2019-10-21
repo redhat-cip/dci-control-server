@@ -106,7 +106,7 @@ def generate_token_based_client(app, resource):
                     "method": kwargs.get("method"),
                     "endpoint": url.path,
                     "params": params,
-                    "payload": payload,
+                    "data": payload or "",
                     "host": "localhost",
                 },
                 {
