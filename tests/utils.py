@@ -98,26 +98,28 @@ def generate_token_based_client(app, resource):
     def client_open_decorator(func):
         def wrapper(*args, **kwargs):
             payload = kwargs.get("data")
+            data = flask.json.dumps(payload, cls=utils.JSONEncoder) if payload else ""
             url = urlparse(args[0])
             params = dict(parse_qsl(url.query))
-            headers = kwargs.get("headers", {})
-            headers.update(generate_headers(
-                {
-                    "method": kwargs.get("method"),
-                    "endpoint": url.path,
-                    "params": params,
-                    "payload": payload,
-                    "host": "localhost",
-                },
-                {
-                    "access_key": "%s/%s" % (resource["type"], resource["id"]),
-                    "secret_key": resource["api_secret"],
-                },
-            ))
+            headers = kwargs.get("headers", {"Content-Type": "application/json"})
+            headers.update(
+                generate_headers(
+                    {
+                        "method": kwargs.get("method"),
+                        "endpoint": url.path,
+                        "params": params,
+                        "data": data,
+                        "host": "localhost",
+                    },
+                    {
+                        "access_key": "%s/%s" % (resource["type"], resource["id"]),
+                        "secret_key": resource["api_secret"],
+                    },
+                )
+            )
             kwargs["headers"] = headers
-            if payload:
-                json = flask.json.dumps(payload, cls=utils.JSONEncoder)
-                kwargs["data"] = json
+            if data:
+                kwargs["data"] = data
             response = func(*args, **kwargs)
             data = flask.json.loads(response.data or "{}")
             return Response(response.status_code, data, response.headers)
