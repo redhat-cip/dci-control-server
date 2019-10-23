@@ -253,7 +253,8 @@ def get_all_teams_from_topic(user, topic_id):
     JTT = models.JOINS_TOPICS_TEAMS
     query = (sql.select([models.TEAMS])
              .select_from(JTT.join(models.TEAMS))
-             .where(JTT.c.topic_id == topic['id']))
+             .where(JTT.c.topic_id == topic['id'])
+             .where(models.TEAMS.c.state != 'archived'))
     rows = flask.g.db_conn.execute(query)
 
     return flask.jsonify({'teams': rows,

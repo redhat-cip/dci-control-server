@@ -183,8 +183,8 @@ def add_team_to_product(user, product_id):
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(models.JOIN_PRODUCTS_TEAMS.name,
-                                          'product_id', 'team_id')
+        raise dci_exc.DCIException('team %s already associated to product %s' % (team_id, product['id']),  # noqa
+                                   status_code=409)
 
     result = json.dumps(values)
     return flask.Response(result, 201, content_type='application/json')
@@ -239,6 +239,7 @@ def get_all_teams_from_product(user, product_id):
                                   root_join_table=_JPT,
                                   root_join_condition=sql.and_(_JPT.c.product_id == product['id'],  # noqa
                                                                _JPT.c.team_id == models.TEAMS.c.id))  # noqa
+    query.add_extra_condition(models.TEAMS.c.state != 'archived')
     rows = query.execute(fetchall=True)
 
     return flask.jsonify({'teams': serialize_teams(rows),

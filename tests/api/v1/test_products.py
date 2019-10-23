@@ -200,3 +200,33 @@ def test_add_get_delete_team_to_product_as_user(user, epm, product_id,
     delete_team = user.delete('/api/v1/products/%s/teams/%s' %
                               (product_id, team_user_id))
     assert delete_team.status_code == 401
+
+
+def test_add_team_to_product_twice(epm, product_id, team_user_id):
+    res = epm.post('/api/v1/products/%s/teams' % product_id,
+                   data={'team_id': team_user_id})
+    assert res.status_code == 201
+
+    res = epm.post('/api/v1/products/%s/teams' % product_id,
+                   data={'team_id': team_user_id})
+    assert res.status_code == 409
+
+
+def test_nrt_delete_team_and_get_product_permissions(admin, epm, product_id, team_user_id):  # noqa
+    team_user = epm.get('/api/v1/teams/%s' % team_user_id)
+    team_user_etag = team_user.data['team']['etag']
+    res = epm.post('/api/v1/products/%s/teams' % product_id,
+                   data={'team_id': team_user_id})
+    assert res.status_code == 201
+    res = epm.get('/api/v1/products/%s/teams' % product_id)
+    assert res.status_code == 200
+    teams_ids = {t['id'] for t in res.data['teams']}
+    assert team_user_id in teams_ids
+    res = admin.delete('/api/v1/teams/%s' % team_user_id,
+                       headers={'If-match': team_user_etag})
+    assert res.status_code == 204
+
+    res = epm.get('/api/v1/products/%s/teams' % product_id)
+    assert res.status_code == 200
+    teams_ids = {t['id'] for t in res.data['teams']}
+    assert team_user_id not in teams_ids

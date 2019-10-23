@@ -596,3 +596,24 @@ def test_get_topic_by_id_export_control_true(
     request = user.get("/api/v1/topics/%s" % RHEL80Topic["id"])
     assert request.status_code == 200
     assert request.data["topic"]["id"] == RHEL80Topic["id"]
+
+
+def test_nrt_delete_team_and_get_topic_permissions(admin, epm, topic_user_id, team_user_id):  # noqa
+    team_user = epm.get('/api/v1/teams/%s' % team_user_id)
+    team_user_etag = team_user.data['team']['etag']
+    res = epm.post('/api/v1/topics/%s/teams' % topic_user_id,
+                   data={'team_id': team_user_id})
+    # 409 already exists
+    assert res.status_code in (201, 409)
+    res = epm.get('/api/v1/topics/%s/teams' % topic_user_id)
+    assert res.status_code == 200
+    teams_ids = {t['id'] for t in res.data['teams']}
+    assert team_user_id in teams_ids
+    res = admin.delete('/api/v1/teams/%s' % team_user_id,
+                       headers={'If-match': team_user_etag})
+    assert res.status_code == 204
+
+    res = epm.get('/api/v1/topics/%s/teams' % topic_user_id)
+    assert res.status_code == 200
+    teams_ids = {t['id'] for t in res.data['teams']}
+    assert team_user_id not in teams_ids
