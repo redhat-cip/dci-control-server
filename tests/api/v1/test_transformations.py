@@ -297,3 +297,35 @@ def test_junit2dict_with_big_xml():
     assert result['total'] == 11482
     assert result['time'] == 17010679
     assert len(result['testscases']) == 11482
+
+
+def test_insert_big_int_in_test_result_time(engine, admin, job_user_id):
+    with open('tests/data/very-long-test.xml', 'r') as f:
+        content_file = f.read()
+    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+        mockito = mock.MagicMock()
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': 'stream',
+            'content-length': 7
+        }
+        mockito.head.return_value = head_result
+        mockito.get.return_value = [True, six.StringIO(content_file)]
+        mock_swift.return_value = mockito
+
+        headers = {
+            'DCI-JOB-ID': job_user_id,
+            'DCI-NAME': 'very-long-test.xml',
+            'DCI-MIME': 'application/junit',
+            'Content-Disposition': 'attachment; filename=very-long-test.xml',
+            'Content-Type': 'application/junit'
+        }
+        admin.post('/api/v1/files', headers=headers, data=content_file)
+
+    query = sql.select([models.TESTS_RESULTS])
+    tests_results = engine.execute(query).fetchall()
+    test_result = dict(tests_results[0])
+
+    assert len(tests_results) == 1
+    assert test_result['name'] == 'very-long-test.xml'
+    assert test_result['time'] == 6221791985
