@@ -274,7 +274,7 @@ TESTS_RESULTS = sa.Table(
     sa.Column('regressions', sa.Integer, default=0),
     sa.Column('successfixes', sa.Integer, default=0),
     sa.Column('errors', sa.Integer),
-    sa.Column('time', sa.Integer),
+    sa.Column('time', sa.BigInteger),
     sa.Column('job_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('jobs.id', ondelete='CASCADE'),
               nullable=False),
