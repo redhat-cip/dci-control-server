@@ -88,7 +88,7 @@ def get_key_and_cert_signed(pkey_path, cert_path, digest="sha256"):
     return key, cert
 
 
-def verify_existence_and_get(id, table, name=None, get_id=False):
+def verify_existence_and_get(id, table, name=None, get_id=False, _raise=True):
     """Verify the existence of a resource in the database and then
     return it if it exists, according to the condition, or raise an
     exception.
@@ -110,7 +110,7 @@ def verify_existence_and_get(id, table, name=None, get_id=False):
     query = sql.select([table]).where(where_clause)
     result = flask.g.db_conn.execute(query).fetchone()
 
-    if result is None:
+    if result is None and _raise:
         raise dci_exc.DCIException('Resource "%s" not found.' % id,
                                    status_code=404)
     if get_id:
