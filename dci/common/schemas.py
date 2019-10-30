@@ -570,3 +570,20 @@ file_upload_certification_schema = {
     "required": ["username", "password", "certification_id"],
     "additionalProperties": False,
 }
+
+###############################################################################
+#                                                                             #
+#                                  Performance schema                         #
+#                                                                             #
+###############################################################################
+performance_properties = {
+    "base_job_id": Properties.string,
+    "jobs": Properties.array,
+    "test_filename": Properties.string,
+}
+performance_schema = {
+    "type": "object",
+    "properties": performance_properties,
+    "required": ["base_job_id", "jobs", "test_filename"],
+    "additionalProperties": False,
+}
