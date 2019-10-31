@@ -1,0 +1,1385 @@
+{
+	"info": {
+		"_postman_id": "a37e6bed-8c92-4132-89a4-74ab1acef732",
+		"name": "DCI Server API",
+		"description": "Subset of DCI server API calls related to HMAC authentication, identity, create job and upload test results.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Check if the request is authenticated",
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "accessKey",
+							"value": "{{DCI_CLIENT_ID}}",
+							"type": "string"
+						},
+						{
+							"key": "secretKey",
+							"value": "{{DCI_API_SECRET}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "api",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.distributed-ci.io/api/v1/identity",
+					"protocol": "https",
+					"host": [
+						"api",
+						"distributed-ci",
+						"io"
+					],
+					"path": [
+						"api",
+						"v1",
+						"identity"
+					]
+				},
+				"description": "Check if the request is authenticated. Returns 200 = success, or 401 = failure."
+			},
+			"response": [
+				{
+					"name": "Check if the request is authenticated",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.distributed-ci.io/api/v1/identity",
+							"protocol": "https",
+							"host": [
+								"api",
+								"distributed-ci",
+								"io"
+							],
+							"path": [
+								"api",
+								"v1",
+								"identity"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Tue, 29 Oct 2019 13:26:43 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "Apache"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "ETag",
+							"value": "None"
+						},
+						{
+							"key": "Content-Length",
+							"value": "216"
+						},
+						{
+							"key": "Access-Control-Expose-Headers",
+							"value": "Authorization, Content-Type, If-Match, ETag, X-Requested-With"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"identity\": {\n        \"email\": null,\n        \"etag\": null,\n        \"fullname\": null,\n        \"id\": \"6cee7286-5d99-4a96-9949-200977f4be07\",\n        \"name\": null,\n        \"teams\": {\n            \"713ecb86-0157-4445-ad90-c7aa7d0306a0\": {\n                \"team_name\": \"Red Hat\"\n            }\n        },\n        \"timezone\": null\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Get all topics",
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "secretKey",
+							"value": "{{DCI_API_SECRET}}",
+							"type": "string"
+						},
+						{
+							"key": "accessKey",
+							"value": "{{DCI_CLIENT_ID}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "api",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.distributed-ci.io/api/v1/topics",
+					"protocol": "https",
+					"host": [
+						"api",
+						"distributed-ci",
+						"io"
+					],
+					"path": [
+						"api",
+						"v1",
+						"topics"
+					]
+				},
+				"description": "Get all topics"
+			},
+			"response": []
+		},
+		{
+			"name": "Get a topic id by topic name",
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "secretKey",
+							"value": "{{DCI_API_SECRET}}",
+							"type": "string"
+						},
+						{
+							"key": "accessKey",
+							"value": "{{DCI_CLIENT_ID}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "api",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.distributed-ci.io/api/v1/topics?where=name:RHEL-8.2",
+					"protocol": "https",
+					"host": [
+						"api",
+						"distributed-ci",
+						"io"
+					],
+					"path": [
+						"api",
+						"v1",
+						"topics"
+					],
+					"query": [
+						{
+							"key": "where",
+							"value": "name:RHEL-8.2"
+						}
+					]
+				},
+				"description": "Get topic id by topic name:\n\n\tGET /api/v1/topics?where=name:<topic_name>\n    response.data.topic\n    {\n      id: <topic_id>\n    }\n    \nid: \\<topic_id\\> in response body should be saved for later use in requests: Get components for a topic and Create a new job"
+			},
+			"response": [
+				{
+					"name": "Get a topic id by topic name",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.distributed-ci.io/api/v1/topics?where=name:RHEL-8.2",
+							"protocol": "https",
+							"host": [
+								"api",
+								"distributed-ci",
+								"io"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics"
+							],
+							"query": [
+								{
+									"key": "where",
+									"value": "name:RHEL-8.2"
+								}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Tue, 29 Oct 2019 13:46:13 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "Apache"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "Content-Length",
+							"value": "385"
+						},
+						{
+							"key": "Access-Control-Expose-Headers",
+							"value": "Authorization, Content-Type, If-Match, ETag, X-Requested-With"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"_meta\": {\n        \"count\": 1\n    },\n    \"topics\": [\n        {\n            \"component_types\": [\n                \"Compose\",\n                \"hwcert\"\n            ],\n            \"created_at\": \"2019-10-10T06:14:55.269457\",\n            \"data\": {},\n            \"etag\": \"6d279adf27286020ef95eec7349f317c\",\n            \"export_control\": false,\n            \"id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"name\": \"RHEL-8.2\",\n            \"next_topic_id\": null,\n            \"product_id\": \"b3d8d6f3-8223-4553-bf08-9b2cecb869f2\",\n            \"state\": \"active\",\n            \"updated_at\": \"2019-10-10T06:15:07.565374\"\n        }\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "Get components for a topic",
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "accessKey",
+							"value": "{{DCI_CLIENT_ID}}",
+							"type": "string"
+						},
+						{
+							"key": "secretKey",
+							"value": "{{DCI_API_SECRET}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "api",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.distributed-ci.io/api/v1/topics/c4171062-e2b4-4b60-9a5f-3e2fb32b4f68/components",
+					"protocol": "https",
+					"host": [
+						"api",
+						"distributed-ci",
+						"io"
+					],
+					"path": [
+						"api",
+						"v1",
+						"topics",
+						"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68",
+						"components"
+					]
+				},
+				"description": "GET /api/v1/topics/\\<topic_id\\>/components <br>\n\nwhere topic_id is obtained from Get topic id by name request.\n\n\tresponse.data.components\n    [\n        {\n            id: <component_id_1>\n        },\n        {\n            id: <component_id_2>\n        },\n    ]"
+			},
+			"response": [
+				{
+					"name": "Get components for a topic",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://api.distributed-ci.io/api/v1/topics/c4171062-e2b4-4b60-9a5f-3e2fb32b4f68/components",
+							"protocol": "https",
+							"host": [
+								"api",
+								"distributed-ci",
+								"io"
+							],
+							"path": [
+								"api",
+								"v1",
+								"topics",
+								"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68",
+								"components"
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Tue, 29 Oct 2019 13:47:04 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "Apache"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "Content-Length",
+							"value": "10151"
+						},
+						{
+							"key": "Access-Control-Expose-Headers",
+							"value": "Authorization, Content-Type, If-Match, ETag, X-Requested-With"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"_meta\": {\n        \"count\": 21\n    },\n    \"components\": [\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191029.n.0\",\n            \"created_at\": \"2019-10-29T05:45:00.790012\",\n            \"data\": {},\n            \"etag\": \"729416351fa3e5ee5d72bfa0a336d55d\",\n            \"id\": \"4e7a2754-9871-41ad-9444-665219fd0745\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191029.n.0\",\n            \"state\": \"active\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-29T07:08:46.539578\",\n            \"url\": \"http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191029.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"hwcert-1572272875\",\n            \"created_at\": \"2019-10-28T14:45:00.572710\",\n            \"data\": {\n                \"path\": \"/packages/devel/RHEL8\",\n                \"repo_name\": \"rhcert-dev-el8\",\n                \"version\": \"hwcert-server.khw2.lab.eng.bos.redhat.com\"\n            },\n            \"etag\": \"d1992b9538ad3d01288b6ecd7f91928c\",\n            \"id\": \"8c8f22fd-611a-4284-9cde-057c8d2599b7\",\n            \"message\": null,\n            \"name\": \"hwcert-1572272875\",\n            \"state\": \"active\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"hwcert\",\n            \"updated_at\": \"2019-10-28T14:45:44.252868\",\n            \"url\": \"http://hwcert-server.khw2.lab.eng.bos.redhat.com/packages/devel/RHEL8\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191028.n.0\",\n            \"created_at\": \"2019-10-28T05:45:00.063471\",\n            \"data\": {},\n            \"etag\": \"04276278c6a6def258010a4e950c92d4\",\n            \"id\": \"a3587df1-83f0-418c-8a97-094df763006d\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191028.n.0\",\n            \"state\": \"active\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-28T07:06:18.939543\",\n            \"url\": \"http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191028.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191027.n.0\",\n            \"created_at\": \"2019-10-27T05:44:59.913636\",\n            \"data\": {},\n            \"etag\": \"9a66c947bfc5ac88329688b92cd7a186\",\n            \"id\": \"9242b2c6-4c6b-4547-8688-ed8a77330cc0\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191027.n.0\",\n            \"state\": \"active\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-27T07:13:04.559639\",\n            \"url\": \"http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191027.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191026.n.0\",\n            \"created_at\": \"2019-10-26T05:44:59.542342\",\n            \"data\": {},\n            \"etag\": \"9b3e12c39a027dec726d9be90e4b0fda\",\n            \"id\": \"530c727c-22f0-486a-98a8-868b21c42d13\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191026.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-29T07:08:48.150986\",\n            \"url\": \"http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191026.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191025.n.0\",\n            \"created_at\": \"2019-10-25T05:45:00.658373\",\n            \"data\": {},\n            \"etag\": \"87cb1dd32f4e56ded9d1bd93813e0fc4\",\n            \"id\": \"c5f4993c-aefe-40bc-a628-d51febccb773\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191025.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-28T07:06:20.549124\",\n            \"url\": \"http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191025.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191024.n.0\",\n            \"created_at\": \"2019-10-24T05:45:00.782202\",\n            \"data\": {},\n            \"etag\": \"a0c4eca33c6d41dab50776fcf0611cc5\",\n            \"id\": \"2a49a0a8-00b9-4371-a5db-d583bb0ed15f\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191024.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-27T07:13:06.103070\",\n            \"url\": \"http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191024.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191023.n.0\",\n            \"created_at\": \"2019-10-23T05:45:00.678130\",\n            \"data\": {},\n            \"etag\": \"52f89893ce5d032dd474fb8a7c980712\",\n            \"id\": \"7bc26660-4c97-4d26-b49d-d50cf679eafe\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191023.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-26T07:19:47.411630\",\n            \"url\": \"http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191023.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191020.n.0\",\n            \"created_at\": \"2019-10-20T05:45:03.360759\",\n            \"data\": {},\n            \"etag\": \"5118fd93077ea6e0d6bdf25320ddc65b\",\n            \"id\": \"84ecb329-f231-4972-9494-5948144dec71\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191020.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-25T10:45:34.311504\",\n            \"url\": \"http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191020.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191019.n.0\",\n            \"created_at\": \"2019-10-19T05:45:04.174979\",\n            \"data\": {},\n            \"etag\": \"4b4c289d87baa843b2680689e092d346\",\n            \"id\": \"32899380-cfb6-475a-b4d4-e45bb738cdfa\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191019.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-24T07:45:34.844061\",\n            \"url\": \"http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191019.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191018.n.0\",\n            \"created_at\": \"2019-10-18T05:45:02.635412\",\n            \"data\": {},\n            \"etag\": \"739f8e7139c8128745a1c9800215ef98\",\n            \"id\": \"4350e2e1-4585-4942-8878-cc750200c49a\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191018.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-23T07:48:01.992040\",\n            \"url\": \"http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191018.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191017.n.0\",\n            \"created_at\": \"2019-10-17T05:45:01.568151\",\n            \"data\": {},\n            \"etag\": \"00b383701224073412932be778d3b0bb\",\n            \"id\": \"d4bcd2e2-98df-4962-b224-8d50eedaba1b\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191017.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-20T06:49:57.044502\",\n            \"url\": \"http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191017.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191016.n.1\",\n            \"created_at\": \"2019-10-16T10:37:40.716304\",\n            \"data\": {},\n            \"etag\": \"d340f37ca3721c648b3d36a72e2bccee\",\n            \"id\": \"6879fcf9-0cfb-4f77-ae65-efbb15159444\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191016.n.1\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-19T07:01:45.007725\",\n            \"url\": \"http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191016.n.1\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191015.n.0\",\n            \"created_at\": \"2019-10-15T15:57:20.179262\",\n            \"data\": {},\n            \"etag\": \"a0789ad548c2767da316ae185a99144c\",\n            \"id\": \"bc27527c-be6e-4b88-9cfa-36aa7ce4e5f2\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191015.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-18T06:40:25.511975\",\n            \"url\": \"http://download-ipv4.eng.brq.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191015.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191015.n.0\",\n            \"created_at\": \"2019-10-15T15:46:50.728332\",\n            \"data\": {},\n            \"etag\": \"45faf85ab78cd20833c4d3a735d07c23\",\n            \"id\": \"4fd48be3-201a-43a8-8176-2b4120d36ca6\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191015.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-15T15:46:51.120384\",\n            \"url\": \"http://download-ipv4.eng.brq.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191015.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191014.n.0\",\n            \"created_at\": \"2019-10-14T06:45:01.468603\",\n            \"data\": {},\n            \"etag\": \"8c93b40958aa4d4b6df64d81b68e1c6d\",\n            \"id\": \"6639b1a6-0c40-4c5d-bf6b-69d184786835\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191014.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-14T06:45:06.875346\",\n            \"url\": \"http://download.devel.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191014.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191013.n.1\",\n            \"created_at\": \"2019-10-13T22:45:01.880706\",\n            \"data\": {},\n            \"etag\": \"34d10d6ad18e4f8b8527634bdddf194b\",\n            \"id\": \"e8c97da5-8bcc-4fa1-8e5c-e00d83c3ec7f\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191013.n.1\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-17T06:46:07.405326\",\n            \"url\": \"http://download.devel.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191013.n.1\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191012.n.0\",\n            \"created_at\": \"2019-10-12T06:45:01.612178\",\n            \"data\": {},\n            \"etag\": \"125fc34c1db8b3853ed5f682e641f82c\",\n            \"id\": \"c6369d6e-59a1-4918-a675-538057a64d9c\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191012.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-16T16:14:20.752940\",\n            \"url\": \"http://download.devel.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191012.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191011.n.0\",\n            \"created_at\": \"2019-10-11T05:45:02.010072\",\n            \"data\": {},\n            \"etag\": \"99b4303809e72f04b0a2302d7ea41d23\",\n            \"id\": \"ae46044d-3dd6-4063-a8c7-23ba59c9cdbb\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191011.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-15T16:34:13.488275\",\n            \"url\": \"http://download.devel.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191011.n.0\"\n        },\n        {\n            \"canonical_project_name\": \"hwcert-1570452873\",\n            \"created_at\": \"2019-10-11T01:44:42.185743\",\n            \"data\": {\n                \"path\": \"/packages/devel/RHEL8\",\n                \"repo_name\": \"rhcert-dev-el8\",\n                \"version\": \"hwcert-server.khw2.lab.eng.bos.redhat.com\"\n            },\n            \"etag\": \"a23d59480b84f677e05aaea8cd1ffcd2\",\n            \"id\": \"2a2664c7-f39d-4ffe-b8b9-b20a14732fba\",\n            \"message\": null,\n            \"name\": \"hwcert-1570452873\",\n            \"state\": \"active\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"hwcert\",\n            \"updated_at\": \"2019-10-11T01:45:18.688287\",\n            \"url\": \"http://hwcert-server.khw2.lab.eng.bos.redhat.com/packages/devel/RHEL8\"\n        },\n        {\n            \"canonical_project_name\": \"RHEL-8.2.0-20191010.n.0\",\n            \"created_at\": \"2019-10-10T11:25:57.950385\",\n            \"data\": {},\n            \"etag\": \"d7c0197cfb275a9b8ab69a1ea9c94551\",\n            \"id\": \"e9a7b3ea-6d79-44da-9622-dbfbf92ff93c\",\n            \"message\": null,\n            \"name\": \"RHEL-8.2.0-20191010.n.0\",\n            \"state\": \"inactive\",\n            \"title\": null,\n            \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n            \"type\": \"Compose\",\n            \"updated_at\": \"2019-10-13T23:35:49.460281\",\n            \"url\": \"http://download.devel.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.2.0-20191010.n.0\"\n        }\n    ]\n}"
+				}
+			]
+		},
+		{
+			"name": "Get all jobs",
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "secretKey",
+							"value": "{{DCI_API_SECRET}}",
+							"type": "string"
+						},
+						{
+							"key": "accessKey",
+							"value": "{{DCI_CLIENT_ID}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "api",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://api.distributed-ci.io/api/v1/jobs",
+					"protocol": "https",
+					"host": [
+						"api",
+						"distributed-ci",
+						"io"
+					],
+					"path": [
+						"api",
+						"v1",
+						"jobs"
+					]
+				},
+				"description": "Get all jobs"
+			},
+			"response": []
+		},
+		{
+			"name": "Create a new job",
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "secretKey",
+							"value": "{{DCI_API_SECRET}}",
+							"type": "string"
+						},
+						{
+							"key": "accessKey",
+							"value": "{{DCI_CLIENT_ID}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "api",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n \"components\": [\"d4bcd2e2-98df-4962-b224-8d50eedaba1b\"],\n \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.distributed-ci.io/api/v1/jobs",
+					"protocol": "https",
+					"host": [
+						"api",
+						"distributed-ci",
+						"io"
+					],
+					"path": [
+						"api",
+						"v1",
+						"jobs"
+					]
+				},
+				"description": "Create a new job:\n\n\tPOST /api/v1/jobs/\n    {\n        components: [component_id],\n        topic_id: topic_id\n    }\n    response.data.job\n    {\n        id: <job_id>\n    }\n    \nCurrent implementation also allows\n\t\n\tPOST /api/v1/jobs/schedule\n    {\n        topic_id: topic_id\n    }\nand will automatically associate the latest components of each component type that compose this topic, ie. latest Compose and latest hwcert for RHEL-8.2."
+			},
+			"response": [
+				{
+					"name": "Create a new job",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \"components\": [\"d4bcd2e2-98df-4962-b224-8d50eedaba1b\"],\n \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.distributed-ci.io/api/v1/jobs",
+							"protocol": "https",
+							"host": [
+								"api",
+								"distributed-ci",
+								"io"
+							],
+							"path": [
+								"api",
+								"v1",
+								"jobs"
+							]
+						}
+					},
+					"status": "CREATED",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Mon, 28 Oct 2019 00:11:35 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "Apache"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "ETag",
+							"value": "325a2aba9b3ef362dc2e5e93671d76d5"
+						},
+						{
+							"key": "Content-Length",
+							"value": "615"
+						},
+						{
+							"key": "Access-Control-Expose-Headers",
+							"value": "Authorization, Content-Type, If-Match, ETag, X-Requested-With"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"job\": {\n        \"client_version\": null,\n        \"comment\": null,\n        \"created_at\": \"2019-10-28T00:11:35.988480\",\n        \"duration\": 0,\n        \"etag\": \"325a2aba9b3ef362dc2e5e93671d76d5\",\n        \"id\": \"bf878d0c-3119-4194-913b-1da1cf3a19fa\",\n        \"previous_job_id\": null,\n        \"product_id\": \"b3d8d6f3-8223-4553-bf08-9b2cecb869f2\",\n        \"remoteci_id\": \"6cee7286-5d99-4a96-9949-200977f4be07\",\n        \"state\": \"active\",\n        \"status\": \"new\",\n        \"team_id\": \"713ecb86-0157-4445-ad90-c7aa7d0306a0\",\n        \"topic_id\": \"c4171062-e2b4-4b60-9a5f-3e2fb32b4f68\",\n        \"topic_id_secondary\": null,\n        \"update_previous_job_id\": null,\n        \"updated_at\": \"2019-10-28T00:11:35.988480\",\n        \"user_agent\": \"PostmanRuntime/7.18.0\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Change  a job state to pre-run",
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "secretKey",
+							"value": "{{DCI_API_SECRET}}",
+							"type": "string"
+						},
+						{
+							"key": "accessKey",
+							"value": "{{DCI_CLIENT_ID}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "api",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n \"job_id\": \"bf878d0c-3119-4194-913b-1da1cf3a19fa\",\n \"status\": \"pre-run\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.distributed-ci.io/api/v1/jobstates",
+					"protocol": "https",
+					"host": [
+						"api",
+						"distributed-ci",
+						"io"
+					],
+					"path": [
+						"api",
+						"v1",
+						"jobstates"
+					]
+				},
+				"description": "A job can have different states: ['new', 'pre-run', 'running', 'post-run', 'success', 'failure', 'killed', 'error']. <br>\nWhen a job is created its state is 'new'. \nAt the end of a partner remote CI run job_state should be changed to success or failure for the created job."
+			},
+			"response": [
+				{
+					"name": "Change  a job state to pre-run",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \"job_id\": \"bf878d0c-3119-4194-913b-1da1cf3a19fa\",\n \"status\": \"pre-run\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.distributed-ci.io/api/v1/jobstates",
+							"protocol": "https",
+							"host": [
+								"api",
+								"distributed-ci",
+								"io"
+							],
+							"path": [
+								"api",
+								"v1",
+								"jobstates"
+							]
+						}
+					},
+					"status": "CREATED",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Mon, 28 Oct 2019 00:12:38 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "Apache"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "Content-Length",
+							"value": "192"
+						},
+						{
+							"key": "Access-Control-Expose-Headers",
+							"value": "Authorization, Content-Type, If-Match, ETag, X-Requested-With"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"jobstate\": {\n        \"comment\": null,\n        \"created_at\": \"2019-10-28T00:12:38.505403\",\n        \"id\": \"011522e8-da95-49a1-a357-c9696f9c7519\",\n        \"job_id\": \"bf878d0c-3119-4194-913b-1da1cf3a19fa\",\n        \"status\": \"pre-run\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Change  a job state to running",
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "secretKey",
+							"value": "{{DCI_API_SECRET}}",
+							"type": "string"
+						},
+						{
+							"key": "accessKey",
+							"value": "{{DCI_CLIENT_ID}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "api",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n \"job_id\": \"bf878d0c-3119-4194-913b-1da1cf3a19fa\",\n \"status\": \"running\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.distributed-ci.io/api/v1/jobstates",
+					"protocol": "https",
+					"host": [
+						"api",
+						"distributed-ci",
+						"io"
+					],
+					"path": [
+						"api",
+						"v1",
+						"jobstates"
+					]
+				}
+			},
+			"response": [
+				{
+					"name": "Change  a job state to running",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \"job_id\": \"9943ce77-4012-4ab3-a91a-c3387acc777c\",\n \"status\": \"running\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.distributed-ci.io/api/v1/jobstates",
+							"protocol": "https",
+							"host": [
+								"api",
+								"distributed-ci",
+								"io"
+							],
+							"path": [
+								"api",
+								"v1",
+								"jobstates"
+							]
+						}
+					},
+					"status": "CREATED",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Thu, 24 Oct 2019 15:41:46 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "Apache"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "Content-Length",
+							"value": "192"
+						},
+						{
+							"key": "Access-Control-Expose-Headers",
+							"value": "Authorization, Content-Type, If-Match, ETag, X-Requested-With"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"jobstate\": {\n        \"comment\": null,\n        \"created_at\": \"2019-10-24T15:41:46.341813\",\n        \"id\": \"c078619b-8712-4e68-b5ab-54e90c03295c\",\n        \"job_id\": \"9943ce77-4012-4ab3-a91a-c3387acc777c\",\n        \"status\": \"running\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Change  a job state to success",
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "secretKey",
+							"value": "{{DCI_API_SECRET}}",
+							"type": "string"
+						},
+						{
+							"key": "accessKey",
+							"value": "{{DCI_CLIENT_ID}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "api",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n \"job_id\": \"bf878d0c-3119-4194-913b-1da1cf3a19fa\",\n \"status\": \"success\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.distributed-ci.io/api/v1/jobstates",
+					"protocol": "https",
+					"host": [
+						"api",
+						"distributed-ci",
+						"io"
+					],
+					"path": [
+						"api",
+						"v1",
+						"jobstates"
+					]
+				},
+				"description": "When a job is created it has a state 'new'. A job can have different states: ['new', 'pre-run', 'running', 'post-run', 'success', 'failure', 'killed', 'error']. At the end of a partner remote CI run job_state should be changed to success or failure for the created job.\n    POST /api/v1/jobstates\n Request body:\n   {\n        'job_id': <job_id>, \n        'status': 'success'\n    }"
+			},
+			"response": [
+				{
+					"name": "Change  a job state to success",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \"job_id\": \"9943ce77-4012-4ab3-a91a-c3387acc777c\",\n \"status\": \"success\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.distributed-ci.io/api/v1/jobstates",
+							"protocol": "https",
+							"host": [
+								"api",
+								"distributed-ci",
+								"io"
+							],
+							"path": [
+								"api",
+								"v1",
+								"jobstates"
+							]
+						}
+					},
+					"status": "CREATED",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Thu, 24 Oct 2019 15:42:50 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "Apache"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "Content-Length",
+							"value": "192"
+						},
+						{
+							"key": "Access-Control-Expose-Headers",
+							"value": "Authorization, Content-Type, If-Match, ETag, X-Requested-With"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"jobstate\": {\n        \"comment\": null,\n        \"created_at\": \"2019-10-24T15:42:50.932397\",\n        \"id\": \"1135f979-35ed-4921-b310-e18076782dae\",\n        \"job_id\": \"9943ce77-4012-4ab3-a91a-c3387acc777c\",\n        \"status\": \"success\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Change  a job state to failure",
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "secretKey",
+							"value": "{{DCI_API_SECRET}}",
+							"type": "string"
+						},
+						{
+							"key": "accessKey",
+							"value": "{{DCI_CLIENT_ID}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "api",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n \"job_id\": \"bf878d0c-3119-4194-913b-1da1cf3a19fa\",\n \"status\": \"failure\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.distributed-ci.io/api/v1/jobstates",
+					"protocol": "https",
+					"host": [
+						"api",
+						"distributed-ci",
+						"io"
+					],
+					"path": [
+						"api",
+						"v1",
+						"jobstates"
+					]
+				},
+				"description": "A job can have different states: ['new', 'pre-run', 'running', 'post-run', 'success', 'failure', 'killed', 'error']. <br>\nWhen a job is created its state is 'new'. \nAt the end of a partner remote CI run job_state should be changed to success or failure for the created job.\n\n\tPOST /api/v1/jobstates\n\tRequest body:\n\t{\n        'job_id': <job_id>, \n        'status': 'failure'\n\t}"
+			},
+			"response": [
+				{
+					"name": "Change  a job state to failure",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \"job_id\": \"9943ce77-4012-4ab3-a91a-c3387acc777c\",\n \"status\": \"failure\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.distributed-ci.io/api/v1/jobstates",
+							"protocol": "https",
+							"host": [
+								"api",
+								"distributed-ci",
+								"io"
+							],
+							"path": [
+								"api",
+								"v1",
+								"jobstates"
+							]
+						}
+					},
+					"status": "CREATED",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Thu, 24 Oct 2019 15:43:36 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "Apache"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "Content-Length",
+							"value": "192"
+						},
+						{
+							"key": "Access-Control-Expose-Headers",
+							"value": "Authorization, Content-Type, If-Match, ETag, X-Requested-With"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"jobstate\": {\n        \"comment\": null,\n        \"created_at\": \"2019-10-24T15:43:36.102530\",\n        \"id\": \"c3cb7013-4e2e-409a-99c4-d9d793adff9a\",\n        \"job_id\": \"9943ce77-4012-4ab3-a91a-c3387acc777c\",\n        \"status\": \"failure\"\n    }\n}"
+				}
+			]
+		},
+		{
+			"name": "Upload test results",
+			"request": {
+				"auth": {
+					"type": "awsv4",
+					"awsv4": [
+						{
+							"key": "secretKey",
+							"value": "{{DCI_API_SECRET}}",
+							"type": "string"
+						},
+						{
+							"key": "accessKey",
+							"value": "{{DCI_CLIENT_ID}}",
+							"type": "string"
+						},
+						{
+							"key": "region",
+							"value": "us-east-1",
+							"type": "string"
+						},
+						{
+							"key": "service",
+							"value": "api",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"type": "text",
+						"value": "application/json",
+						"warning": "This is a duplicate header and will be overridden by the Content-Type header generated by Postman.",
+						"disabled": true
+					},
+					{
+						"key": "DCI-JOBSTATE-ID",
+						"type": "text",
+						"value": "f1fd6f46-5a3c-4aad-bfcb-4d06152effd0",
+						"disabled": true
+					},
+					{
+						"key": "DCI-NAME",
+						"type": "text",
+						"value": "test-result.log"
+					},
+					{
+						"key": "DCI-MIME",
+						"type": "text",
+						"value": "application/junit"
+					},
+					{
+						"key": "DCI-JOB-ID",
+						"type": "text",
+						"value": "bf878d0c-3119-4194-913b-1da1cf3a19fa"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n \"job_id\": \"bf878d0c-3119-4194-913b-1da1cf3a19fa\",\n \"status\": \"failure\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://api.distributed-ci.io/api/v1/files",
+					"protocol": "https",
+					"host": [
+						"api",
+						"distributed-ci",
+						"io"
+					],
+					"path": [
+						"api",
+						"v1",
+						"files"
+					]
+				},
+				"description": "Upload test results:\n\n\tPOST /api/v1/files\n    headers = {\n        'DCI-JOB-ID': <job_id>,\n        'DCI-NAME': <file_name>,\n        'DCI-MIME': 'application/junit',\n    }\n    data = <file_content>\n    response.data.file\n    {\n        id: <file_id>\n    }"
+			},
+			"response": [
+				{
+					"name": "Upload test results",
+					"originalRequest": {
+						"method": "POST",
+						"header": [
+							{
+								"warning": "This is a duplicate header and will be overridden by the Content-Type header generated by Postman.",
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"value": "application/json",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "DCI-JOBSTATE-ID",
+								"value": "f1fd6f46-5a3c-4aad-bfcb-4d06152effd0",
+								"type": "text",
+								"disabled": true
+							},
+							{
+								"key": "DCI-NAME",
+								"value": "test-result.log",
+								"type": "text"
+							},
+							{
+								"key": "DCI-MIME",
+								"value": "application/junit",
+								"type": "text"
+							},
+							{
+								"key": "DCI-JOB-ID",
+								"value": "bf878d0c-3119-4194-913b-1da1cf3a19fa",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n \"job_id\": \"bf878d0c-3119-4194-913b-1da1cf3a19fa\",\n \"status\": \"failure\"\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://api.distributed-ci.io/api/v1/files",
+							"protocol": "https",
+							"host": [
+								"api",
+								"distributed-ci",
+								"io"
+							],
+							"path": [
+								"api",
+								"v1",
+								"files"
+							]
+						}
+					},
+					"status": "CREATED",
+					"code": 201,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{
+							"key": "Date",
+							"value": "Tue, 29 Oct 2019 15:34:48 GMT"
+						},
+						{
+							"key": "Server",
+							"value": "Apache"
+						},
+						{
+							"key": "Strict-Transport-Security",
+							"value": "max-age=15768000"
+						},
+						{
+							"key": "Content-Length",
+							"value": "429"
+						},
+						{
+							"key": "Access-Control-Expose-Headers",
+							"value": "Authorization, Content-Type, If-Match, ETag, X-Requested-With"
+						},
+						{
+							"key": "Access-Control-Allow-Origin",
+							"value": "*"
+						},
+						{
+							"key": "Keep-Alive",
+							"value": "timeout=5, max=100"
+						},
+						{
+							"key": "Connection",
+							"value": "Keep-Alive"
+						},
+						{
+							"key": "Content-Type",
+							"value": "application/json"
+						}
+					],
+					"cookie": [],
+					"body": "{\n    \"file\": {\n        \"created_at\": \"2019-10-29T15:34:48.962810\",\n        \"etag\": \"0a7200c0e3223ffcb78ace010e5ea10e\",\n        \"id\": \"deba6adf-aba1-4db3-800a-aa491bde7394\",\n        \"job_id\": \"bf878d0c-3119-4194-913b-1da1cf3a19fa\",\n        \"jobstate_id\": null,\n        \"md5\": null,\n        \"mime\": \"application/junit\",\n        \"name\": \"test-result.log\",\n        \"size\": \"75\",\n        \"state\": \"active\",\n        \"team_id\": \"713ecb86-0157-4445-ad90-c7aa7d0306a0\",\n        \"test_id\": null,\n        \"updated_at\": \"2019-10-29T15:34:48.962824\"\n    }\n}"
+				}
+			]
+		}
+	],
+	"protocolProfileBehavior": {}
+}
