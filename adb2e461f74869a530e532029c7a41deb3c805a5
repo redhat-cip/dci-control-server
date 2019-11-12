@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "83ffda71_d25228d7",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 582,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-11-12T16:14:17Z",
+      "side": 1,
+      "message": "can be remove no?",
+      "range": {
+        "startLine": 582,
+        "startChar": 4,
+        "endLine": 582,
+        "endChar": 39
+      },
+      "revId": "adb2e461f74869a530e532029c7a41deb3c805a5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "677faf8d_351e16ef",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 6
+      },
+      "lineNbr": 587,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2019-11-12T16:14:17Z",
+      "side": 1,
+      "message": "same",
+      "range": {
+        "startLine": 587,
+        "startChar": 40,
+        "endLine": 587,
+        "endChar": 55
+      },
+      "revId": "adb2e461f74869a530e532029c7a41deb3c805a5",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
