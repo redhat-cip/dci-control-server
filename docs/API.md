@@ -50,22 +50,6 @@ Status: Check if the request is authenticated | Code: 200
 
 
 
-***Response Headers:***
-
-| Key | Value |
-| --- | ------|
-| Date | Tue, 29 Oct 2019 13:26:43 GMT |
-| Server | Apache |
-| Strict-Transport-Security | max-age=15768000 |
-| ETag | None |
-| Content-Length | 216 |
-| Access-Control-Expose-Headers | Authorization, Content-Type, If-Match, ETag, X-Requested-With |
-| Access-Control-Allow-Origin | * |
-| Keep-Alive | timeout=5, max=100 |
-| Connection | Keep-Alive |
-| Content-Type | application/json |
-
-
 
 ```js
 {
@@ -141,23 +125,6 @@ URL: https://api.distributed-ci.io/api/v1/topics
 Status: Get a topic id by topic name | Code: 200
 
 
-
-***Response Headers:***
-
-| Key | Value |
-| --- | ------|
-| Date | Tue, 29 Oct 2019 13:46:13 GMT |
-| Server | Apache |
-| Strict-Transport-Security | max-age=15768000 |
-| Content-Length | 385 |
-| Access-Control-Expose-Headers | Authorization, Content-Type, If-Match, ETag, X-Requested-With |
-| Access-Control-Allow-Origin | * |
-| Keep-Alive | timeout=5, max=100 |
-| Connection | Keep-Alive |
-| Content-Type | application/json |
-
-
-
 ```js
 {
     "_meta": {
@@ -218,22 +185,6 @@ URL: https://api.distributed-ci.io/api/v1/topics/c4171062-e2b4-4b60-9a5f-3e2fb32
 
 
 Status: Get components for a topic | Code: 200
-
-
-
-***Response Headers:***
-
-| Key | Value |
-| --- | ------|
-| Date | Tue, 29 Oct 2019 13:47:04 GMT |
-| Server | Apache |
-| Strict-Transport-Security | max-age=15768000 |
-| Content-Length | 10151 |
-| Access-Control-Expose-Headers | Authorization, Content-Type, If-Match, ETag, X-Requested-With |
-| Access-Control-Allow-Origin | * |
-| Keep-Alive | timeout=5, max=100 |
-| Connection | Keep-Alive |
-| Content-Type | application/json |
 
 
 
@@ -418,22 +369,6 @@ Status: Create a new job | Code: 201
 
 
 
-***Response Headers:***
-
-| Key | Value |
-| --- | ------|
-| Date | Mon, 28 Oct 2019 00:11:35 GMT |
-| Server | Apache |
-| Strict-Transport-Security | max-age=15768000 |
-| ETag | 325a2aba9b3ef362dc2e5e93671d76d5 |
-| Content-Length | 615 |
-| Access-Control-Expose-Headers | Authorization, Content-Type, If-Match, ETag, X-Requested-With |
-| Access-Control-Allow-Origin | * |
-| Keep-Alive | timeout=5, max=100 |
-| Connection | Keep-Alive |
-| Content-Type | application/json |
-
-
 
 ```js
 {
@@ -504,21 +439,6 @@ Status: Change  a job state to pre-run | Code: 201
 
 
 
-***Response Headers:***
-
-| Key | Value |
-| --- | ------|
-| Date | Mon, 28 Oct 2019 00:12:38 GMT |
-| Server | Apache |
-| Strict-Transport-Security | max-age=15768000 |
-| Content-Length | 192 |
-| Access-Control-Expose-Headers | Authorization, Content-Type, If-Match, ETag, X-Requested-With |
-| Access-Control-Allow-Origin | * |
-| Keep-Alive | timeout=5, max=100 |
-| Connection | Keep-Alive |
-| Content-Type | application/json |
-
-
 
 ```js
 {
@@ -570,22 +490,6 @@ URL: https://api.distributed-ci.io/api/v1/jobstates
 
 
 Status: Change  a job state to running | Code: 201
-
-
-
-***Response Headers:***
-
-| Key | Value |
-| --- | ------|
-| Date | Thu, 24 Oct 2019 15:41:46 GMT |
-| Server | Apache |
-| Strict-Transport-Security | max-age=15768000 |
-| Content-Length | 192 |
-| Access-Control-Expose-Headers | Authorization, Content-Type, If-Match, ETag, X-Requested-With |
-| Access-Control-Allow-Origin | * |
-| Keep-Alive | timeout=5, max=100 |
-| Connection | Keep-Alive |
-| Content-Type | application/json |
 
 
 
@@ -650,22 +554,6 @@ Status: Change  a job state to success | Code: 201
 
 
 
-***Response Headers:***
-
-| Key | Value |
-| --- | ------|
-| Date | Thu, 24 Oct 2019 15:42:50 GMT |
-| Server | Apache |
-| Strict-Transport-Security | max-age=15768000 |
-| Content-Length | 192 |
-| Access-Control-Expose-Headers | Authorization, Content-Type, If-Match, ETag, X-Requested-With |
-| Access-Control-Allow-Origin | * |
-| Keep-Alive | timeout=5, max=100 |
-| Connection | Keep-Alive |
-| Content-Type | application/json |
-
-
-
 ```js
 {
     "jobstate": {
@@ -727,23 +615,6 @@ URL: https://api.distributed-ci.io/api/v1/jobstates
 
 
 Status: Change  a job state to failure | Code: 201
-
-
-
-***Response Headers:***
-
-| Key | Value |
-| --- | ------|
-| Date | Thu, 24 Oct 2019 15:43:36 GMT |
-| Server | Apache |
-| Strict-Transport-Security | max-age=15768000 |
-| Content-Length | 192 |
-| Access-Control-Expose-Headers | Authorization, Content-Type, If-Match, ETag, X-Requested-With |
-| Access-Control-Allow-Origin | * |
-| Keep-Alive | timeout=5, max=100 |
-| Connection | Keep-Alive |
-| Content-Type | application/json |
-
 
 
 ```js
@@ -815,22 +686,6 @@ Status: Upload test results | Code: 201
 
 
 
-***Response Headers:***
-
-| Key | Value |
-| --- | ------|
-| Date | Tue, 29 Oct 2019 15:34:48 GMT |
-| Server | Apache |
-| Strict-Transport-Security | max-age=15768000 |
-| Content-Length | 429 |
-| Access-Control-Expose-Headers | Authorization, Content-Type, If-Match, ETag, X-Requested-With |
-| Access-Control-Allow-Origin | * |
-| Keep-Alive | timeout=5, max=100 |
-| Connection | Keep-Alive |
-| Content-Type | application/json |
-
-
-
 ```js
 {
     "file": {
@@ -850,9 +705,3 @@ Status: Upload test results | Code: 201
     }
 }
 ```
-
-
-
----
-[Back to top](#dci-server-api-documentation)
-> Made with &#9829; by [thedevsaddam](https://github.com/thedevsaddam) | Generated at: 2019-10-31 10:32:11 by [docgen](https://github.com/thedevsaddam/docgen)
