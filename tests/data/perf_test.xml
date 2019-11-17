@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf8'?>
+<testsuites>
+  <testsuite name="" id="R:173" hostname="lu0547.wdf.lol.corp" tests="6" skipped="0" failures="0" errors="0">
+    <testcase classname="/distribution/check-install" name="main">
+      <system-out>system-out</system-out>
+    </testcase>
+    <testcase classname="/distribution/check-install" name="ci" time="133.9">
+      <system-out>system-out</system-out>
+    </testcase>
+    <testcase classname="/distribution/check-install" name="Sysinfo">
+      <system-out>system-out</system-out>
+    </testcase>
+    <testcase classname="/distribution/reservesys" name="rs">
+      <system-out>system-out</system-out>
+    </testcase>
+    <testcase classname="/distribution/reservesys" name="rs2" time="270">
+      <system-out>system-out</system-out>
+    </testcase>
+    <testcase classname="/distribution/reservesys" name="exit_code" time="2400">
+      <system-out></system-out>
+    </testcase>
+  </testsuite>
+</testsuites>

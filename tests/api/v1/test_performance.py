@@ -16,6 +16,8 @@
 
 from __future__ import unicode_literals
 
+from dci.api.v1 import performance
+
 from tests import data as tests_data
 import tests.utils as t_utils
 
@@ -89,3 +91,24 @@ def test_compare_performance(user, remoteci_context, team_user_id, topic, topic_
                 for tc in t['testscases']:
                     k = '%s/%s' % (tc['classname'], tc['name'])
                     assert expected[k] == tc['delta']
+
+
+def test_get_performance_tests():
+    baseline_test = open('tests/data/perf_test_baseline.xml', 'r')
+    test = open('tests/data/perf_test.xml', 'r')
+
+    perf_res = performance.get_performance_tests({'fd': baseline_test,
+                                                  'job_id': 'baseline'},
+                                                 [{'fd': test,
+                                                   'job_id': 'test'}])
+    baseline, test = perf_res[0], perf_res[1]
+    if perf_res[1]['job_id'] == 'baseline':
+        baseline, test = perf_res[1], perf_res[0]
+
+    for tc in baseline['testscases']:
+        assert tc['delta'] == 0.0
+    assert len(baseline['testscases']) == 3
+
+    expected = {'ci': 930.0, 'rs2': 900.0, 'exit_code': -90.0}
+    for tc in test['testscases']:
+        assert expected[tc['name']] == tc['delta']
