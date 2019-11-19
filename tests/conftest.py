@@ -132,6 +132,11 @@ def user(app, db_provisioning):
 
 
 @pytest.fixture
+def user2(app, db_provisioning):
+    return utils.generate_client(app, ('user2', 'user2'))
+
+
+@pytest.fixture
 def user_sso(app, db_provisioning, access_token):
     client = utils.generate_client(app, access_token=access_token)
     # first call, it create the user in the database
@@ -278,6 +283,12 @@ def remoteci_user_api_secret(user, remoteci_user_id):
 
 
 @pytest.fixture
+def remoteci_api_secret(admin, remoteci_id):
+    api_secret = admin.get('/api/v1/remotecis/%s' % remoteci_id).data
+    return api_secret['remoteci']['api_secret']
+
+
+@pytest.fixture
 def remoteci_user_id(user, admin, team_user_id, topic_user_id):
     data = {'name': 'rname', 'team_id': team_user_id}
     remoteci = user.post('/api/v1/remotecis', data=data).data
@@ -289,6 +300,13 @@ def remoteci_user_id(user, admin, team_user_id, topic_user_id):
 def remoteci(admin, team_id):
     data = {'name': 'remoteci', 'team_id': team_id}
     return admin.post('/api/v1/remotecis', data=data).data['remoteci']
+
+
+@pytest.fixture
+def remoteci_context2(app, remoteci_id, remoteci_api_secret):
+    remoteci = {'id': remoteci_id, 'api_secret': remoteci_api_secret,
+                'type': 'remoteci'}
+    return utils.generate_token_based_client(app, remoteci)
 
 
 @pytest.fixture
