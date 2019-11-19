@@ -379,7 +379,7 @@ def verify_and_get_components_ids(topic_id, components_ids, component_types,
         cmpt = db_conn.execute(query).fetchone()
 
         if cmpt is None:
-            msg = 'Component id %s not found or not exported' % c_id
+            msg = 'Component id %s not found' % c_id
             raise dci_exc.DCIException(msg, status_code=412)
         cmpt = dict(cmpt)
 

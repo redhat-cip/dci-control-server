@@ -18,6 +18,7 @@ import flask
 
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
+from dci.api.v1 import export_control
 from dci.api.v1 import files
 from dci.api.v1 import transformations
 from dci.common.schemas import (
@@ -76,15 +77,27 @@ def get_performance_tests(baseline_tests, tests):
     base_dict_testscases = base_dict['testscases']
     base_dict = _keytify_test_cases(base_dict['testscases'])
     test = _add_delta_to_tests(base_dict, base_dict_testscases)
-    res.append({"job_id": baseline_tests['job_id'],
-                "testscases": test})
+    res.append({'job_id': baseline_tests['job_id'],
+                'topic': baseline_tests['topic'],
+                'testscases': test})
 
     for t in tests:
         test = transformations.junit2dict(t['fd'])
         test = _add_delta_to_tests(base_dict, test['testscases'])
-        res.append({"job_id": t['job_id'],
-                    "testscases": test})
+        res.append({'job_id': t['job_id'],
+                    'topic': t['topic'],
+                    'testscases': test})
     return res
+
+
+def _get_topic_of_job(job_id):
+    query = sql.select([models.TOPICS]). \
+        select_from(
+            models.JOBS.join(
+                models.TOPICS,
+                models.JOBS.c.topic_id == models.TOPICS.c.id)). \
+        where(models.JOBS.c.id == job_id)
+    return flask.g.db_conn.execute(query).fetchone()
 
 
 def _get_test_files(base_job_id, jobs_ids, test_filename):
@@ -105,9 +118,13 @@ def _get_test_files(base_job_id, jobs_ids, test_filename):
             continue
         file = _get_file(j_id)
         if file is None:
-            logger.error("file %s from job %s not found" % (test_filename, j_id))  # noqa
+            LOG.error("file %s from job %s not found" % (test_filename, j_id))  # noqa
             continue
-        res.append({'file': file, 'job_id': j_id})
+        topic = _get_topic_of_job(j_id)
+        if topic is None:
+            LOG.error("topic of job %s not found" % j_id)
+            continue
+        res.append({'file': file, 'job_id': j_id, 'topic': topic['name']})
     if len(res) > 1:
         return res[0], res[1:]
     return None, None
@@ -128,7 +145,7 @@ def _get_test_files_with_fds(baseline_tests_file, tests_files):
     res = []
     for tf in [baseline_tests_file] + tests_files:
         fd = files.get_file_descriptor(tf['file'])
-        res.append({"fd": fd, "job_id": tf["job_id"]})
+        res.append({"fd": fd, "job_id": tf["job_id"], "topic": tf["topic"]})
     if len(res) > 1:
         return res[0], res[1:]
     else:
@@ -142,6 +159,11 @@ def compare_performance(user):
     check_json_is_valid(performance_schema, values)
     base_job_id = values["base_job_id"]
     jobs_ids = values["jobs"]
+    for job_id in [base_job_id] + jobs_ids:
+        v1_utils.verify_existence_and_get(job_id, models.JOBS)
+        topic = _get_topic_of_job(job_id)
+        export_control.verify_access_to_topic(user, topic)
+
     tests_filenames = _get_tests_filenames(base_job_id)
     res = []
     for tf in tests_filenames:

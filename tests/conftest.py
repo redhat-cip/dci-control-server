@@ -132,6 +132,11 @@ def user(app, db_provisioning):
 
 
 @pytest.fixture
+def user2(app, db_provisioning):
+    return utils.generate_client(app, ('user2', 'user2'))
+
+
+@pytest.fixture
 def user_sso(app, db_provisioning, access_token):
     client = utils.generate_client(app, access_token=access_token)
     # first call, it create the user in the database
