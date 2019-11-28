@@ -32,6 +32,21 @@ def test_get_emails(user, remoteci_user_id, app, engine):
         assert emails == ['user@example.org']
 
 
+def test_get_emails_remoteci_deleted(user, remoteci_user_id, app, engine):
+
+    r = user.post('/api/v1/remotecis/%s/users' % remoteci_user_id)
+    assert r.status_code == 201
+    r = user.get('/api/v1/remotecis/%s' % remoteci_user_id)
+    r = user.delete('/api/v1/remotecis/%s' % remoteci_user_id,
+                    headers={'If-match': r.data['remoteci']['etag']})
+    assert r.status_code == 204
+
+    with app.app_context():
+        flask.g.db_conn = engine.connect()
+        emails = notifications.get_emails(remoteci_user_id)
+        assert emails == []
+
+
 def test_email(user, job_user_id):
     # set job to error status
     data = {'job_id': job_user_id, 'status': 'error'}

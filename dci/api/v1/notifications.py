@@ -90,8 +90,13 @@ def get_emails(remoteci_id):
     _USER_REMOTECIS = models.JOIN_USER_REMOTECIS
 
     query = (sql.select([models.USERS.c.email]).
-             select_from(models.USERS.join(_USER_REMOTECIS)).
-             where(_USER_REMOTECIS.c.remoteci_id == remoteci_id))
+             select_from(models.USERS.
+                         join(_USER_REMOTECIS).
+                         join(models.REMOTECIS)).
+             where(_USER_REMOTECIS.c.remoteci_id == remoteci_id).
+             where(_USER_REMOTECIS.c.remoteci_id == models.REMOTECIS.c.id).
+             where(models.REMOTECIS.c.state != 'archived'))
+
     emails = flask.g.db_conn.execute(query).fetchall()
 
     return [email['email'] for email in emails]
