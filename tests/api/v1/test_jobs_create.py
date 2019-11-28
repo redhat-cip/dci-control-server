@@ -17,7 +17,7 @@ import datetime
 from mock import patch
 
 
-def test_schedule_jobs(remoteci_context, remoteci, topic):
+def test_create_jobs(remoteci_context, remoteci, topic):
     headers = {
         'User-Agent': 'python-dciclient',
         'Client-Version': 'python-dciclient_0.1.0'
@@ -35,7 +35,7 @@ def test_schedule_jobs(remoteci_context, remoteci, topic):
     assert job['client_version'] == headers['Client-Version']
 
 
-def test_schedule_jobs_with_components_ids(user, remoteci_context, topic):
+def test_create_jobs_with_components_ids(user, remoteci_context, topic):
     components = user.get('/api/v1/topics/%s/components' % topic['id']).data['components']  # noqa
     data = {
         'topic_id': topic['id'],
@@ -55,8 +55,8 @@ def _update_remoteci(admin, id, etag, data):
     return admin.get(url).data['remoteci']
 
 
-def test_schedule_jobs_on_remoteci_inactive(admin, remoteci_context,
-                                            remoteci_user_id, topic):
+def test_create_jobs_on_remoteci_inactive(admin, remoteci_context,
+                                          remoteci_user_id, topic):
     remoteci = remoteci_context.get('/api/v1/identity').data['identity']
     remoteci['etag'] = admin.get(
         '/api/v1/remotecis/%s' % remoteci['id']).data['remoteci']['etag']
@@ -105,8 +105,8 @@ def _update_topic(admin, topic, data):
     return admin.get(url).data['topic']
 
 
-def test_schedule_jobs_on_topic_inactive(admin, remoteci_context, topic,
-                                         team_user_id):
+def test_create_jobs_on_topic_inactive(admin, remoteci_context, topic,
+                                       team_user_id):
 
     admin.post('/api/v1/topics/%s/teams' % topic['id'],
                data={'team_id': team_user_id})
@@ -121,7 +121,7 @@ def test_schedule_jobs_on_topic_inactive(admin, remoteci_context, topic,
     assert r.status_code == 201
 
 
-def test_schedule_jobs_kills_jobs_older_than_one_day(
+def test_create_jobs_kills_jobs_older_than_one_day(
         admin, remoteci_context, topic):
     data = {'topic_id': topic['id']}
     fixed_now = datetime.datetime(2019, 1, 12, 13, 42, 20, 111136)
@@ -140,8 +140,8 @@ def test_schedule_jobs_kills_jobs_older_than_one_day(
     assert jobs[-3]['status'] == 'new'
 
 
-def test_schedule_jobs_multi_topics(remoteci_context, remoteci, topic,
-                                    topic_user, admin):
+def test_create_jobs_multi_topics(remoteci_context, remoteci, topic,
+                                  topic_user, admin):
     headers = {
         'User-Agent': 'python-dciclient',
         'Client-Version': 'python-dciclient_0.1.0'

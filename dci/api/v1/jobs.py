@@ -32,10 +32,9 @@ from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     check_json_is_valid,
-    create_job_schema,
     update_job_schema,
     upgrade_job_schema,
-    schedule_job_schema,
+    create_job_schema,
     check_and_get_args
 )
 from dci.common import utils
@@ -73,56 +72,6 @@ _EMBED_MANY = {
 
 def get_utc_now():
     return datetime.datetime.utcnow()
-
-
-@api.route('/jobs', methods=['POST'])
-@decorators.login_required
-def create_jobs(user):
-    values = flask.request.json
-    check_json_is_valid(create_job_schema, values)
-    values.update(v1_utils.common_values_dict())
-
-    components_ids = values.pop('components')
-
-    if user.is_not_remoteci():
-        raise dci_exc.DCIException('Only remoteci can create job')
-
-    topic_id = values.get('topic_id')
-    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
-    export_control.verify_access_to_topic(user, topic)
-    previous_job_id = values.get('previous_job_id')
-    if previous_job_id:
-        v1_utils.verify_existence_and_get(previous_job_id, _TABLE)
-
-    values.update({
-        'status': 'new',
-        'remoteci_id': user.id,
-        'topic_id': topic_id,
-        'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
-        'client_version': flask.request.environ.get('HTTP_CLIENT_VERSION'),
-        'previous_job_id': previous_job_id,
-        'team_id': user.teams_ids[0],
-        'product_id': topic['product_id'],
-        'duration': 0
-    })
-
-    # create the job and feed the jobs_components table
-    with flask.g.db_conn.begin():
-        query = _TABLE.insert().values(**values)
-        flask.g.db_conn.execute(query)
-
-        jobs_components_to_insert = []
-        for cmpt_id in components_ids:
-            v1_utils.verify_existence_and_get(cmpt_id, models.COMPONENTS)
-            jobs_components_to_insert.append({'job_id': values['id'],
-                                              'component_id': cmpt_id})
-        if jobs_components_to_insert:
-            flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
-                                    jobs_components_to_insert)
-
-    return flask.Response(json.dumps({'job': values}), 201,
-                          headers={'ETag': values['etag']},
-                          content_type='application/json')
 
 
 def _build_job(product_id, topic_id, remoteci, components_ids, values,
@@ -201,9 +150,10 @@ def _get_job(user, job_id, embed=None):
     return job, nb_rows
 
 
+@api.route('/jobs', methods=['POST'])
 @api.route('/jobs/schedule', methods=['POST'])
 @decorators.login_required
-def schedule_jobs(user):
+def create_jobs(user):
     """Dispatch jobs to remotecis.
 
     The remoteci can use this method to request a new job.
@@ -213,7 +163,14 @@ def schedule_jobs(user):
     will never be finished.
     """
     values = flask.request.json
-    check_json_is_valid(schedule_job_schema, values)
+    check_json_is_valid(create_job_schema, values)
+
+    components_ids = values.pop('components', None)
+
+    previous_job_id = values.get('previous_job_id')
+    if previous_job_id:
+        v1_utils.verify_existence_and_get(previous_job_id, _TABLE)
+
     values.update({
         'id': utils.gen_uuid(),
         'created_at': get_utc_now().isoformat(),
@@ -222,6 +179,8 @@ def schedule_jobs(user):
         'status': 'new',
         'remoteci_id': user.id,
         'duration': 0,
+        'previous_job_id': previous_job_id,
+        'team_id': user.teams_ids[0],
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
         'client_version': flask.request.environ.get(
             'HTTP_CLIENT_VERSION'
@@ -270,6 +229,7 @@ def schedule_jobs(user):
 
     components_ids = values.pop('components_ids')
     values = _build_job(product_id, topic_id, remoteci, components_ids, values,
+                        previous_job_id=previous_job_id,
                         topic_id_secondary=topic_id_secondary)
 
     return flask.Response(json.dumps({'job': values}), 201,
