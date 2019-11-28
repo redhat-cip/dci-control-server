@@ -76,8 +76,9 @@ def test_create_jobs_empty_comment(remoteci_context, components_user_ids,
             'topic_id': topic_user_id}
     job = remoteci_context.post('/api/v1/jobs', data=data).data
     assert job['job']['comment'] is None
-
+    
     job = remoteci_context.get('/api/v1/jobs/%s' % job['job']['id']).data
+
     assert job['job']['comment'] is None
 
 
