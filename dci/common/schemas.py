@@ -577,12 +577,12 @@ file_upload_certification_schema = {
 #                                                                             #
 ###############################################################################
 performance_properties = {
-    "base_job_id": Properties.string,
+    "base_jobs_ids": Properties.array,
     "jobs": Properties.array,
 }
 performance_schema = {
     "type": "object",
     "properties": performance_properties,
-    "required": ["base_job_id", "jobs"],
+    "required": ["base_jobs_ids", "jobs"],
     "additionalProperties": False,
 }

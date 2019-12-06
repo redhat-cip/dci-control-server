@@ -67,27 +67,32 @@ def _keytify_test_cases(test_cases):
     return res
 
 
-def get_performance_tests(baseline_tests, tests):
+def get_performance_tests(baseline_test, tests):
 
     res = []
-    # baseline_tests is processed first because file descriptor
-    # is fully read (junit2dict) once
-    base_dict = transformations.junit2dict(baseline_tests['fd'])
-    base_dict_testscases = base_dict['testscases']
-    base_dict = _keytify_test_cases(base_dict['testscases'])
-    test = _add_delta_to_tests(base_dict, base_dict_testscases)
-    res.append({"job_id": baseline_tests['job_id'],
-                "testscases": test})
+    baseline_keytified_test_cases = _keytify_test_cases(baseline_test['testscases'])  # noqa
 
     for t in tests:
         test = transformations.junit2dict(t['fd'])
-        test = _add_delta_to_tests(base_dict, test['testscases'])
-        res.append({"job_id": t['job_id'],
-                    "testscases": test})
+        test = _add_delta_to_tests(baseline_keytified_test_cases,
+                                   test['testscases'])
+        res.append({'job_id': t['job_id'],
+                    'testscases': test})
     return res
 
 
-def _get_test_files(base_job_id, jobs_ids, test_filename):
+def _get_tests_filenames(job_id):
+    query = sql.select([models.FILES.c.name]). \
+        where(models.FILES.c.job_id == job_id). \
+        where(models.FILES.c.mime == 'application/junit')
+    res = flask.g.db_conn.execute(query).fetchall()
+    if res is None:
+        return []
+    else:
+        return [r[0] for r in res]
+
+
+def _get_jobs_tests_with_fds(jobs_ids, test_filename):
     """"for each job get the associated file corresponding to the
     provided filename"""
 
@@ -98,7 +103,7 @@ def _get_test_files(base_job_id, jobs_ids, test_filename):
         return flask.g.db_conn.execute(query).fetchone()
 
     res = []
-    for j_id in [base_job_id] + jobs_ids:
+    for j_id in jobs_ids:
         j = v1_utils.verify_existence_and_get(j_id, models.JOBS, _raise=False)
         if j is None:
             LOG.error("job %s not found" % j_id)
@@ -107,32 +112,37 @@ def _get_test_files(base_job_id, jobs_ids, test_filename):
         if file is None:
             logger.error("file %s from job %s not found" % (test_filename, j_id))  # noqa
             continue
-        res.append({'file': file, 'job_id': j_id})
-    if len(res) > 1:
-        return res[0], res[1:]
-    return None, None
+        fd = files.get_file_descriptor(file)
+        res.append({'fd': fd, 'job_id': j_id})
+    return res
 
 
-def _get_tests_filenames(base_job_id):
-    query = sql.select([models.FILES.c.name]). \
-        where(models.FILES.c.job_id == base_job_id). \
-        where(models.FILES.c.mime == 'application/junit')
-    res = flask.g.db_conn.execute(query).fetchall()
-    if res is None:
-        return []
-    else:
-        return [r[0] for r in res]
+def _get_base_mean_job(base_job_ids, test_file):
+    _nb_jobs = float(len(base_job_ids))
+    base_jobs_tests_with_fd = _get_jobs_tests_with_fds(base_job_ids, test_file)
 
+    # tmp dict will keytify and sum up all the tests cases
+    tmp = {}
+    for bjt in base_jobs_tests_with_fd:
+        testsuite = transformations.junit2dict(bjt['fd'])
+        for tc in testsuite['testscases']:
+            _key = "%s/%s" % (tc.get('classname'), tc.get('name'))
+            if tc.get('time') is None or float(tc.get('time')) == 0.0:
+                continue
+            if _key in tmp:
+                tmp[_key] += float(tc.get('time'))
+            else:
+                tmp[_key] = float(tc.get('time'))
 
-def _get_test_files_with_fds(baseline_tests_file, tests_files):
-    res = []
-    for tf in [baseline_tests_file] + tests_files:
-        fd = files.get_file_descriptor(tf['file'])
-        res.append({"fd": fd, "job_id": tf["job_id"]})
-    if len(res) > 1:
-        return res[0], res[1:]
-    else:
-        return res[0], None
+    testscases = []
+    for k, v in tmp.items():
+        classname, name = k.split('/')
+        testcase = {'classname': classname,
+                    'name': name,
+                    'time': v / _nb_jobs}  # compute the mean
+        testscases.append(testcase)
+
+    return {'testscases': testscases}
 
 
 @api.route('/performance', methods=['POST'])
@@ -140,14 +150,14 @@ def _get_test_files_with_fds(baseline_tests_file, tests_files):
 def compare_performance(user):
     values = flask.request.json
     check_json_is_valid(performance_schema, values)
-    base_job_id = values["base_job_id"]
+    base_jobs_ids = values["base_jobs_ids"]
     jobs_ids = values["jobs"]
-    tests_filenames = _get_tests_filenames(base_job_id)
+    tests_filenames = _get_tests_filenames(base_jobs_ids[0])
     res = []
     for tf in tests_filenames:
-        baseline_tests, tests = _get_test_files(base_job_id, jobs_ids, tf)  # noqa
-        baseline_tests_file_with_fd, tests_files_with_fds = _get_test_files_with_fds(baseline_tests, tests)  # noqa
-        perf_res = get_performance_tests(baseline_tests_file_with_fd,
-                                         tests_files_with_fds)
+        base_mean_job = _get_base_mean_job(base_jobs_ids, tf)
+        jobs_tests_with_fd = _get_jobs_tests_with_fds(jobs_ids, tf)
+        perf_res = get_performance_tests(base_mean_job, jobs_tests_with_fd)
         res.append({tf: perf_res})
+
     return flask.jsonify({"performance": res}), 200

@@ -39,18 +39,39 @@ jobtest_one = """
     <testcase
             classname="Testsuite_1"
             name="test_1"
-            time="30">
+            time="15">
             <failure type="Exception">Traceback</failure>
     </testcase>
     <testcase
             classname="Testsuite_1"
             name="test_2"
-            time="40">
+            time="50">
     </testcase>
     <testcase
             classname="Testsuite_1"
             name="test_3[id-2fc6822e-b5a8-42ed-967b-11d86e881ce3,smoke]"
-            time="40">
+            time="35">
+    </testcase>
+</testsuite>
+"""
+
+jobtest_one_bis = """
+<testsuite errors="0" failures="0" name="Kikoolol1" tests="3" time="127.0">
+    <testcase
+            classname="Testsuite_1"
+            name="test_1"
+            time="45">
+            <failure type="Exception">Traceback</failure>
+    </testcase>
+    <testcase
+            classname="Testsuite_1"
+            name="test_2"
+            time="30">
+    </testcase>
+    <testcase
+            classname="Testsuite_1"
+            name="test_3[id-2fc6822e-b5a8-42ed-967b-11d86e881ce3,smoke]"
+            time="45">
     </testcase>
 </testsuite>
 """

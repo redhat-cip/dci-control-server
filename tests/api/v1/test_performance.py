@@ -17,6 +17,7 @@
 from __future__ import unicode_literals
 
 from dci.api.v1 import performance
+from dci.api.v1 import transformations
 
 from tests import data as tests_data
 import tests.utils as t_utils
@@ -27,54 +28,46 @@ FileDesc = collections.namedtuple('FileDesc', ['name', 'content'])
 
 
 def test_compare_performance(user, remoteci_context, team_user_id, topic, topic_user_id):  # noqa
-    # create the baseline job
-    job_baseline = remoteci_context.post(
-        '/api/v1/jobs/schedule',
-        data={'topic_id': topic['id']}
-    )
-    job_baseline = job_baseline.data['job']
-    data = {'job_id': job_baseline['id'], 'status': 'success'}
-    js_baseline = remoteci_context.post(
-        '/api/v1/jobstates',
-        data=data).data['jobstate']
-    f_1 = t_utils.post_file(user, js_baseline['id'],
-                            FileDesc('PBO_Results',
-                                     tests_data.jobtest_one),
-                            mime='application/junit')
-    assert f_1 is not None
 
-    f_11 = t_utils.post_file(user, js_baseline['id'],
-                             FileDesc('Tempest',
-                                      tests_data.jobtest_one),
-                             mime='application/junit')
-    assert f_11 is not None
+    def _create_job(pbo_result, tempest_result):
 
-    # create the second job
-    job2 = remoteci_context.post(
-        '/api/v1/jobs/schedule',
-        data={'topic_id': topic['id']}
-    )
-    job2 = job2.data['job']
-    data = {'job_id': job2['id'], 'status': 'success'}
-    js_job2 = remoteci_context.post(
-        '/api/v1/jobstates',
-        data=data).data['jobstate']
-    f_2 = t_utils.post_file(user, js_job2['id'],
-                            FileDesc('PBO_Results',
-                                     tests_data.jobtest_two),
-                            mime='application/junit')
-    assert f_2 is not None
+        # create the baseline job
+        _job = remoteci_context.post(
+            '/api/v1/jobs/schedule',
+            data={'topic_id': topic['id']}
+        )
+        _job = _job.data['job']
+        data = {'job_id': _job['id'], 'status': 'success'}
+        js_baseline = remoteci_context.post(
+            '/api/v1/jobstates',
+            data=data).data['jobstate']
+        f_1 = t_utils.post_file(user, js_baseline['id'],
+                                FileDesc('PBO_Results',
+                                         pbo_result),
+                                mime='application/junit')
+        assert f_1 is not None
 
-    f_22 = t_utils.post_file(user, js_job2['id'],
-                             FileDesc('Tempest',
-                                      tests_data.jobtest_two),
-                             mime='application/junit')
-    assert f_22 is not None
+        f_11 = t_utils.post_file(user, js_baseline['id'],
+                                 FileDesc('Tempest',
+                                          tempest_result),
+                                 mime='application/junit')
+        assert f_11 is not None
+        return _job
+
+    job_baseline_1 = _create_job(tests_data.jobtest_one,
+                                 tests_data.jobtest_one)
+
+    job_baseline_2 = _create_job(tests_data.jobtest_one_bis,
+                                 tests_data.jobtest_one_bis)
+
+    job_3 = _create_job(tests_data.jobtest_two,
+                        tests_data.jobtest_two)
 
     res = user.post('/api/v1/performance',
                     headers={'Content-Type': 'application/json'},
-                    data={'base_job_id': job_baseline['id'],
-                          'jobs': [job2['id']]})
+                    data={'base_jobs_ids': [job_baseline_1['id'],
+                                            job_baseline_2['id']],
+                          'jobs': [job_3['id']]})
 
     expected = {'Testsuite_1/test_1': 20.,
                 'Testsuite_1/test_2': -25.,
@@ -84,31 +77,20 @@ def test_compare_performance(user, remoteci_context, team_user_id, topic, topic_
     for tests in perf:
         filename = list(tests.keys())[0]
         for t in tests[filename]:
-            if t['job_id'] == job_baseline['id']:
-                for tc in t['testscases']:
-                    assert tc['delta'] == 0.
-            else:
-                for tc in t['testscases']:
-                    k = '%s/%s' % (tc['classname'], tc['name'])
-                    assert expected[k] == tc['delta']
+            for tc in t['testscases']:
+                k = '%s/%s' % (tc['classname'], tc['name'])
+                assert expected[k] == tc['delta']
 
 
 def test_get_performance_tests():
     baseline_test = open('tests/data/perf_test_baseline.xml', 'r')
+    baseline_test = transformations.junit2dict(baseline_test)
     test = open('tests/data/perf_test.xml', 'r')
 
-    perf_res = performance.get_performance_tests({'fd': baseline_test,
-                                                  'job_id': 'baseline'},
+    perf_res = performance.get_performance_tests(baseline_test,
                                                  [{'fd': test,
                                                    'job_id': 'test'}])
-    baseline, test = perf_res[0], perf_res[1]
-    if perf_res[1]['job_id'] == 'baseline':
-        baseline, test = perf_res[1], perf_res[0]
-
-    for tc in baseline['testscases']:
-        assert tc['delta'] == 0.0
-    assert len(baseline['testscases']) == 3
 
     expected = {'ci': 930.0, 'rs2': 900.0, 'exit_code': -90.0}
-    for tc in test['testscases']:
+    for tc in perf_res[0]['testscases']:
         assert expected[tc['name']] == tc['delta']
