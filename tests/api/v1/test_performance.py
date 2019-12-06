@@ -27,7 +27,7 @@ import collections
 FileDesc = collections.namedtuple('FileDesc', ['name', 'content'])
 
 
-def test_compare_performance(user, remoteci_context, team_user_id, topic, topic_user_id):  # noqa
+def test_compare_performance(user, remoteci_context, team_user_id, topic):
 
     def _create_job(pbo_result, tempest_result):
 
@@ -77,6 +77,7 @@ def test_compare_performance(user, remoteci_context, team_user_id, topic, topic_
     for tests in perf:
         filename = list(tests.keys())[0]
         for t in tests[filename]:
+            assert t['topic'] == 'OSP12'
             for tc in t['testscases']:
                 k = '%s/%s' % (tc['classname'], tc['name'])
                 assert expected[k] == tc['delta']
@@ -85,12 +86,56 @@ def test_compare_performance(user, remoteci_context, team_user_id, topic, topic_
 def test_get_performance_tests():
     baseline_test = open('tests/data/perf_test_baseline.xml', 'r')
     baseline_test = transformations.junit2dict(baseline_test)
+    baseline_test['topic'] = 'topic1'
     test = open('tests/data/perf_test.xml', 'r')
 
     perf_res = performance.get_performance_tests(baseline_test,
                                                  [{'fd': test,
-                                                   'job_id': 'test'}])
+                                                   'job_id': 'test',
+                                                   'topic': 'topic2'}])
 
     expected = {'ci': 930.0, 'rs2': 900.0, 'exit_code': -90.0}
     for tc in perf_res[0]['testscases']:
         assert expected[tc['name']] == tc['delta']
+
+
+def test_compare_performance_permission(user2, remoteci_context, team_user_id, topic):  # noqa
+    # create the baseline job
+    job_baseline = remoteci_context.post(
+        '/api/v1/jobs/schedule',
+        data={'topic_id': topic['id']}
+    )
+    job_baseline = job_baseline.data['job']
+
+    # create the second job
+    job2 = remoteci_context.post(
+        '/api/v1/jobs/schedule',
+        data={'topic_id': topic['id']}
+    )
+    job2 = job2.data['job']
+
+    res = user2.post('/api/v1/performance',
+                     headers={'Content-Type': 'application/json'},
+                     data={'base_jobs_ids': [job_baseline['id']],
+                           'jobs': [job2['id']]})
+    assert res.status_code == 401
+
+
+def test_compare_performance_job_not_found(user, remoteci_context, topic):
+    res = user.post('/api/v1/performance',
+                    headers={'Content-Type': 'application/json'},
+                    data={'base_jobs_ids': ['69c5067b-f3ef-417a-a254-e7027dbe2ea8'],  # noqa
+                          'jobs': ['69c5067b-f3ef-417a-a254-e7027dbe2ea8']})
+    assert res.status_code == 404
+
+    job_baseline = remoteci_context.post(
+        '/api/v1/jobs/schedule',
+        data={'topic_id': topic['id']}
+    )
+    job_baseline_id = job_baseline.data['job']['id']
+
+    res = user.post('/api/v1/performance',
+                    headers={'Content-Type': 'application/json'},
+                    data={'base_jobs_ids': [job_baseline_id],
+                          'jobs': ['69c5067b-f3ef-417a-a254-e7027dbe2ea8']})
+    assert res.status_code == 404
