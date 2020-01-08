@@ -46,7 +46,7 @@ import logging
 from sqlalchemy import sql
 from sqlalchemy import exc as sa_exc
 
-LOG = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 _TABLE = models.FILES
 # associate column names with the corresponding SA Column object
 _FILES_FOLDER = dci_config.CONFIG['FILES_UPLOAD_FOLDER']
@@ -364,14 +364,14 @@ def purge_archived_files(user):
                                                     file['id'])
             store.delete(file_path)
             tx.commit()
-            LOG.debug('file %s removed' % file_path)
+            logger.debug('file %s removed' % file_path)
         except dci_exc.StoreExceptions as e:
             if e.status_code == 404:
-                LOG.warn('file %s not found in store' % file_path)
+                logger.warn('file %s not found in store' % file_path)
             else:
                 raise e
         except sa_exc.DBAPIError as e:
-            LOG.error('Error while removing file %s, message: %s'
+            logger.error('Error while removing file %s, message: %s'
                       % (file_path, str(e)))
             tx.rollback()
             raise dci_exc.DCIException(str(e))
