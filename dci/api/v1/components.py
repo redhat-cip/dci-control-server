@@ -57,7 +57,7 @@ _EMBED_MANY = {
     'jobs': True
 }
 
-LOG = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _get_latest_components():
@@ -505,13 +505,13 @@ def purge_archived_components(user):
                 tx.commit()
             except dci_exc.StoreExceptions as e:
                 if e.status_code == 404:
-                    LOG.warn('file %s not found in store' % file_path)
+                    logger.warn('file %s not found in store' % file_path)
                 else:
                     raise e
             except Exception as e:
                 tx.rollback()
-                LOG.error('Error while removing component file %s, message: %s'
-                          % (file_path, str(e)))
+                logger.error('Error while removing component file %s, message: %s'
+                             % (file_path, str(e)))
                 raise dci_exc.DCIException(str(e))
         flask.g.db_conn.execute(_TABLE.delete().
                                 where(_TABLE.c.id == cmpt['id']))

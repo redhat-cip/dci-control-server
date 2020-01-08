@@ -21,13 +21,15 @@ from dci import dci_config
 
 import flask
 import logging
-import logging.handlers
 import sys
 import time
+import traceback
 import zmq
 
 import sqlalchemy
 from sqlalchemy import exc as sa_exc
+
+logger = logging.getLogger(__name__)
 
 zmq_sender = None
 
@@ -85,44 +87,49 @@ class DciControlServer(flask.Flask):
         return row.id
 
 
-def handle_api_exception(api_exception):
-    response = flask.jsonify(api_exception.to_dict())
-    response.status_code = api_exception.status_code
-    return response
-
-
-def handle_dbapi_exception(dbapi_exception):
-    dci_exception = exceptions.DCIException(str(dbapi_exception)).to_dict()
-    response = flask.jsonify(dci_exception)
-    response.status_code = 400
-    return response
-
-
-def configure_logging():
+def configure_root_logger():
     conf = dci_config.CONFIG
-    formatter = logging.Formatter(conf['LOG_FORMAT'])
+    logging.basicConfig(level=conf['LOG_LEVEL'])
+
     console_handler = logging.StreamHandler()
+    formatter = logging.Formatter(conf['LOG_FORMAT'])
     console_handler.setFormatter(formatter)
+    console_handler.setLevel(conf['LOG_LEVEL'])
 
-    debug = conf['DEBUG']
+    root_logger = logging.getLogger()
+    # remove all handlers before adding the console handler
+    del root_logger.handlers[:]
+    root_logger.addHandler(console_handler)
 
-    dci_logger_level = "DEBUG" if debug else "INFO"
-    dci_logger = logging.getLogger('dci')
-    dci_logger.setLevel(dci_logger_level)
-    dci_logger.addHandler(console_handler)
 
-    werkzeug_logger_level = "INFO" if debug else "ERROR"
+def werkzeug_logger_to_error():
     werkzeug_logger = logging.getLogger('werkzeug')
-    werkzeug_logger.setLevel(werkzeug_logger_level)
-    werkzeug_logger.addHandler(console_handler)
+    werkzeug_logger.setLevel("ERROR")
 
 
-# todo(yassine): remove the param used by client's CI.
 def create_app(param=None):
     dci_app = DciControlServer()
     dci_app.url_map.converters['uuid'] = utils.UUIDConverter
 
-    configure_logging()
+    werkzeug_logger_to_error()
+    configure_root_logger()
+
+    logger.info('dci control server startup')
+
+    def handle_api_exception(api_exception):
+        response = flask.jsonify(api_exception.to_dict())
+        response.status_code = api_exception.status_code
+        logger.info(api_exception.message)
+        logger.info(traceback.format_exc())
+        return response
+
+    def handle_dbapi_exception(dbapi_exception):
+        db_exception = exceptions.DCIException(str(dbapi_exception)).to_dict()
+        response = flask.jsonify(db_exception)
+        response.status_code = 400
+        logger.info(db_exception.message)
+        logger.info(traceback.format_exc())
+        return response
 
     @dci_app.before_request
     def before_request():
