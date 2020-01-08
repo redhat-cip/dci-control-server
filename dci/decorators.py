@@ -15,12 +15,15 @@
 # under the License.
 
 import json
+import logging
 from functools import wraps
 
 import flask
 
 import dci.auth_mechanism as am
 from dci.common import exceptions as dci_exc
+
+LOG = logging.getLogger(__name__)
 
 
 def reject():
@@ -32,6 +35,7 @@ def reject():
                                'message': auth_message})
 
     headers = {'WWW-Authenticate': 'Basic realm="Login required"'}
+    LOG.info(auth_message)
     return flask.Response(auth_message, 401, headers=headers,
                           content_type='application/json')
 
