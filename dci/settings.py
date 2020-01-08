@@ -83,8 +83,9 @@ DEFAULT_ZMQ_CONN = 'tcp://{zmq_host}:{zmq_port}'.format(
 ZMQ_CONN = os.getenv('ZMQ_CONN', DEFAULT_ZMQ_CONN)
 
 # Logging related parameters
-LOG_FORMAT = '[%(asctime)s] %(name)-12s %(levelname)-8s %(message)s'
-LOG_FILE = '/tmp/dci.log'
+LOG_LEVEL = 'INFO'
+LOG_FORMAT = '[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s'
+
 
 LAST_UPDATED = 'updated_at'
 DATE_CREATED = 'created_at'
