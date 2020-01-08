@@ -14,14 +14,18 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
+import logging
 import os.path
 from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import export_control
 from dci.api.v1 import utils as v1_utils
+from dci.common import exceptions as dci_exc
 from dci import decorators
 from dci.db import models
+
+LOG = logging.getLogger()
 
 
 def splitpath(path):
@@ -39,10 +43,12 @@ def verify_repo_access(user):
     url = headers.get("X-Original-URI")
 
     if verify != "SUCCESS":
-        return flask.Response("wrong SSLVerify header: %s" % verify, 403)
+        raise dci_exc.DCIException(
+            message="wrong SSLVerify header: %s" % verify, status_code=403)
 
     if len(splitpath(url)) < 3:
-        return flask.Response("requested url is invalid: %s" % url, 403)
+        raise dci_exc.DCIException(
+            message="requested url is invalid: %s" % url, status_code=403)
 
     product_id, topic_id, component_id = splitpath(url)[:3]
 
@@ -51,57 +57,59 @@ def verify_repo_access(user):
     remoteci = flask.g.db_conn.execute(query)
 
     if remoteci.rowcount != 1:
-        return flask.Response("remoteci fingerprint not found: %s" % fp, 403)
+        raise dci_exc.DCIException(
+            message="remoteci fingerprint not found: %s" % fp, status_code=403)
 
     product = v1_utils.verify_existence_and_get(product_id, models.PRODUCTS)
     if product["state"] != "active":
-        return flask.Response(
-            "product %s/%s is not active" % (product["name"], product["id"]), 403
-        )
+        raise dci_exc.DCIException(
+            message="product %s/%s is not active" % (product["name"], product["id"]),  # noqa
+            status_code=403)
+
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
     if topic["state"] != "active":
-        return flask.Response(
-            "topic %s/%s is not active" % (topic["name"], topic["id"]), 403
-        )
+        raise dci_exc.DCIException(
+            message="topic %s/%s is not active" % (topic["name"], topic["id"]),
+            status_code=403)
+
     if str(topic["product_id"]) != str(product_id):
-        return flask.Response(
-            "topic %s/%s does not belongs to product %s/%s"
+        raise dci_exc.DCIException(
+            message="topic %s/%s does not belongs to product %s/%s"
             % (topic["name"], topic["id"], product["name"], product["id"]),
-            403,
-        )
+            status_code=403)
     component = v1_utils.verify_existence_and_get(component_id, models.COMPONENTS)
+
     if component["state"] != "active":
-        return flask.Response(
-            "component %s/%s is not active" % (component["name"], component["id"]), 403
-        )
+        raise dci_exc.DCIException(
+            message="component %s/%s is not active" % (component["name"], component["id"]),  # noqa
+            status_code=403)
+
     if str(component["topic_id"]) != str(topic_id):
-        return flask.Response(
-            "component %s/%s does not belongs to topic %s/%s"
+        raise dci_exc.DCIException(
+            message="component %s/%s does not belongs to topic %s/%s"
             % (component["name"], component["id"], topic["name"], topic["id"]),
-            403,
-        )
+            status_code=403)
 
     team_id = remoteci.fetchone()["team_id"]
     team = v1_utils.verify_existence_and_get(team_id, models.TEAMS)
     if team["state"] != "active":
-        return flask.Response(
-            "team %s/%s is not active" % (team["name"], team["id"]), 403
-        )
+        raise dci_exc.DCIException(
+            message="team %s/%s is not active" % (team["name"], team["id"]),
+            status_code=403)
+
     team_ids = [team_id]
     if not export_control.is_teams_associated_to_product(team_ids, product_id):
-        return flask.Response(
-            "team %s is not associated to the product %s"
+        raise dci_exc.DCIException(
+            message="team %s is not associated to the product %s"
             % (team["name"], product["name"]),
-            403,
-        )
+            status_code=403)
 
     if topic["export_control"] is True:
         return flask.Response(None, 200)
 
     if not export_control.is_teams_associated_to_topic(team_ids, topic_id):
-        return flask.Response(
-            "team %s is not associated to the topic %s" % (team["name"], topic["name"]),
-            403,
-        )
+        raise dci_exc.DCIException(
+            message="team %s is not associated to the topic %s" % (team["name"], topic["name"]),  # noqa
+            status_code=403)
 
     return flask.Response(None, 200)

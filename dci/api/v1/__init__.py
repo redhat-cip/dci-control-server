@@ -17,12 +17,16 @@
 import flask
 from flask import json
 
+import logging
+
+LOG = logging.getLogger(__name__)
 
 api = flask.Blueprint('api_v1', __name__)
 
 
 @api.route('/', strict_slashes=False)
 def index():
+    LOG.info('control server is ok...')
     return flask.Response(json.dumps({'_status': 'OK',
                                       'message': 'Distributed CI.'}),
                           status=200,

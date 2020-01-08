@@ -21,13 +21,14 @@ from dci import dci_config
 
 import flask
 import logging
-import logging.handlers
 import sys
 import time
 import zmq
 
 import sqlalchemy
 from sqlalchemy import exc as sa_exc
+
+LOG = logging.getLogger(__name__)
 
 zmq_sender = None
 
@@ -85,44 +86,39 @@ class DciControlServer(flask.Flask):
         return row.id
 
 
-def handle_api_exception(api_exception):
-    response = flask.jsonify(api_exception.to_dict())
-    response.status_code = api_exception.status_code
-    return response
-
-
-def handle_dbapi_exception(dbapi_exception):
-    dci_exception = exceptions.DCIException(str(dbapi_exception)).to_dict()
-    response = flask.jsonify(dci_exception)
-    response.status_code = 400
-    return response
-
-
 def configure_logging():
     conf = dci_config.CONFIG
-    formatter = logging.Formatter(conf['LOG_FORMAT'])
+    logging.basicConfig(level=conf['LOG_LEVEL'])
+
     console_handler = logging.StreamHandler()
+    formatter = logging.Formatter(conf['LOG_FORMAT'])
     console_handler.setFormatter(formatter)
+    console_handler.setLevel(conf['LOG_LEVEL'])
 
-    debug = conf['DEBUG']
-
-    dci_logger_level = "DEBUG" if debug else "INFO"
-    dci_logger = logging.getLogger('dci')
-    dci_logger.setLevel(dci_logger_level)
-    dci_logger.addHandler(console_handler)
-
-    werkzeug_logger_level = "INFO" if debug else "ERROR"
-    werkzeug_logger = logging.getLogger('werkzeug')
-    werkzeug_logger.setLevel(werkzeug_logger_level)
-    werkzeug_logger.addHandler(console_handler)
+    root_logger = logging.getLogger()
+    root_logger.addHandler(console_handler)
 
 
-# todo(yassine): remove the param used by client's CI.
 def create_app(param=None):
     dci_app = DciControlServer()
     dci_app.url_map.converters['uuid'] = utils.UUIDConverter
 
     configure_logging()
+
+    LOG.info('dci control server startup')
+
+    def handle_api_exception(api_exception):
+        response = flask.jsonify(api_exception.to_dict())
+        response.status_code = api_exception.status_code
+        dci_app.logger.info(api_exception.message)
+        return response
+
+    def handle_dbapi_exception(dbapi_exception):
+        dci_exception = exceptions.DCIException(str(dbapi_exception)).to_dict()
+        response = flask.jsonify(dci_exception)
+        response.status_code = 400
+        dci_app.logger.info(dci_exception.message)
+        return response
 
     @dci_app.before_request
     def before_request():
@@ -157,6 +153,7 @@ def create_app(param=None):
                                    handle_dbapi_exception)
 
     # Registering REST API v1
+    api_v1.api.app = dci_app
     dci_app.register_blueprint(api_v1.api, url_prefix='/api/v1')
 
     # Registering custom encoder
