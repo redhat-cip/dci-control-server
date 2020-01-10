@@ -109,6 +109,22 @@ class BaseMechanism(object):
 
         return Identity(user_info)
 
+    def check_team_is_active(self, team_id):
+        q_get_team = (
+            sql.select(
+                [
+                    models.TEAMS,
+                ],
+                use_labels=True
+            ).where(models.TEAMS.c.id == team_id)
+        )
+        team = flask.g.db_conn.execute(q_get_team).fetchone()
+        if team is None:
+            raise dci_exc.DCIException('team %s not found' % team_id, status_code=412)  # noqa
+        print(team)
+        if team[models.TEAMS.c.state] != 'active':
+            raise dci_exc.DCIException('team %s not active' % team[models.TEAMS.c.name], status_code=412)  # noqa
+
 
 class BasicAuthMechanism(BaseMechanism):
 
@@ -165,6 +181,8 @@ class HmacMechanism(BaseMechanism):
         if hmac_signature.is_expired():
             raise dci_exc.DCIException(
                 'Authentication failed: signature expired', status_code=401)
+        if len(self.identity.teams_ids) > 0:
+            self.check_team_is_active(self.identity.teams_ids[0])
         return True
 
     def identity_from_db(self, model_cls, model_constraint):
@@ -246,6 +264,8 @@ class Hmac2Mechanism(HmacMechanism):
         )
         if not valid:
             raise dci_exc.DCIException("Authentication failed: %s" % error_message)
+        if len(self.identity.teams_ids) > 0:
+            self.check_team_is_active(self.identity.teams_ids[0])
         return True
 
 

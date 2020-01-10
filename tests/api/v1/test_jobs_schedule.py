@@ -74,6 +74,30 @@ def test_schedule_jobs_on_remoteci_inactive(admin, remoteci_context,
     assert r.status_code == 201
 
 
+def test_schedule_jobs_on_remoteci_team_inactive(admin, remoteci_context,
+                                                 remoteci_user_id, topic,
+                                                 team_user_id):
+    team_etag = admin.get(
+        '/api/v1/teams/%s' % team_user_id).data['team']['etag']
+    r = admin.put('/api/v1/teams/%s' % team_user_id,
+                  headers={'If-match': team_etag}, data={'state': 'inactive'})
+    assert r.status_code == 200
+
+    data = {'topic_id': topic['id']}
+    r = remoteci_context.post('/api/v1/jobs/schedule', data=data)
+    assert r.status_code == 412
+
+    team_etag = admin.get(
+        '/api/v1/teams/%s' % team_user_id).data['team']['etag']
+    r = admin.put('/api/v1/teams/%s' % team_user_id,
+                  headers={'If-match': team_etag}, data={'state': 'active'})
+    assert r.status_code == 200
+
+    data = {'topic_id': topic['id']}
+    r = remoteci_context.post('/api/v1/jobs/schedule', data=data)
+    assert r.status_code == 201
+
+
 def _update_topic(admin, topic, data):
     url = '/api/v1/topics/%s' % topic['id']
     r = admin.put(url, headers={'If-match': topic['etag']}, data=data)
