@@ -109,6 +109,11 @@ class BaseMechanism(object):
 
         return Identity(user_info)
 
+    def check_team_is_active(self, team_id):
+        if self.identity.teams[team_id]['state'] != 'active':
+            name = self.identity.teams[team_id]['team_name']
+            raise dci_exc.DCIException('team %s not active' % name, status_code=412)  # noqa
+
 
 class BasicAuthMechanism(BaseMechanism):
 
@@ -165,6 +170,8 @@ class HmacMechanism(BaseMechanism):
         if hmac_signature.is_expired():
             raise dci_exc.DCIException(
                 'Authentication failed: signature expired', status_code=401)
+        if len(self.identity.teams_ids) > 0:
+            self.check_team_is_active(self.identity.teams_ids[0])
         return True
 
     def identity_from_db(self, model_cls, model_constraint):
@@ -195,7 +202,8 @@ class HmacMechanism(BaseMechanism):
         # feeders and remotecis belongs to only one team
         user_teams = {
             _identity_info[models.TEAMS.c.id]: {
-                'team_name': _identity_info[models.TEAMS.c.name]
+                'team_name': _identity_info[models.TEAMS.c.name],
+                'state': _identity_info[models.TEAMS.c.state]
             }
         }
 
@@ -246,6 +254,8 @@ class Hmac2Mechanism(HmacMechanism):
         )
         if not valid:
             raise dci_exc.DCIException("Authentication failed: %s" % error_message)
+        if len(self.identity.teams_ids) > 0:
+            self.check_team_is_active(self.identity.teams_ids[0])
         return True
 
 
