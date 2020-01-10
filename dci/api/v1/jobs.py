@@ -247,6 +247,13 @@ def schedule_jobs(user):
         message = 'RemoteCI "%s" is disabled.' % remoteci['id']
         raise dci_exc.DCIException(message, status_code=412)
 
+    # check remoteci's team
+    remoteci_team = v1_utils.verify_existence_and_get(remoteci['team_id'],
+                                                      models.TEAMS)
+    if remoteci_team['state'] != 'active':
+        message = 'RemoteCI team "%s" is disabled.' % remoteci['team_id']
+        raise dci_exc.DCIException(message, status_code=412)
+
     # check primary topic
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
     product_id = topic['product_id']
