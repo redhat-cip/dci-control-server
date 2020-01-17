@@ -30,7 +30,7 @@ from dci import decorators
 import logging
 from sqlalchemy import sql
 
-LOG = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def _add_delta_to_tests(base_tests, testscases):
@@ -101,7 +101,7 @@ def _get_test_files(base_job_id, jobs_ids, test_filename):
     for j_id in [base_job_id] + jobs_ids:
         j = v1_utils.verify_existence_and_get(j_id, models.JOBS, _raise=False)
         if j is None:
-            LOG.error("job %s not found" % j_id)
+            logger.error("job %s not found" % j_id)
             continue
         file = _get_file(j_id)
         if file is None:
