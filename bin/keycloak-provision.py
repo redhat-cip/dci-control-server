@@ -16,7 +16,13 @@
 # under the License.
 
 import json
+import os
 import requests
+
+KEYCLOAK_HOST = os.environ.get('KEYCLOAK_HOST', 'keycloak')
+KEYCLOAK_PORT = os.environ.get('KEYCLOAK_PORT', '8080')
+KEYCLOAK_BASE_URL = "http://{}:{}".format(KEYCLOAK_HOST, KEYCLOAK_PORT)
+
 
 client_data = {
     "clientId": "dci",
@@ -165,7 +171,7 @@ def get_access_token():
             'grant_type': 'password'}
     while True:
         try:
-            url = 'http://keycloak:8080/auth/realms/master/protocol/openid-connect/token'  # noqa
+            url = KEYCLOAK_BASE_URL + '/auth/realms/master/protocol/openid-connect/token'  # noqa
             r = requests.post(url,
                               data=data)
             if r.status_code == 200:
@@ -178,7 +184,7 @@ def get_access_token():
 def create_realm_dci_test(access_token):
     realm_data = {'realm': 'dci-test',
                   'enabled': True}
-    r = requests.post('http://keycloak:8080/auth/admin/realms',
+    r = requests.post(KEYCLOAK_BASE_URL + '/auth/admin/realms',
                       data=json.dumps(realm_data),
                       headers=get_auth_headers(access_token))
     if r.status_code in (201, 409):
@@ -192,7 +198,7 @@ def create_realm_dci_test(access_token):
 
 def create_client(access_token):
     """Create the dci client in the master realm."""
-    url = 'http://keycloak:8080/auth/admin/realms/dci-test/clients'
+    url = KEYCLOAK_BASE_URL + '/auth/admin/realms/dci-test/clients'
     r = requests.post(url,
                       data=json.dumps(client_data),
                       headers=get_auth_headers(access_token))
@@ -214,7 +220,7 @@ def create_user_dci(access_token):
                  'emailVerified': True,
                  'credentials': [{'type': 'password',
                                   'value': 'dci'}]}
-    r = requests.post('http://keycloak:8080/auth/admin/realms/dci-test/users',
+    r = requests.post(KEYCLOAK_BASE_URL + '/auth/admin/realms/dci-test/users',
                       data=json.dumps(user_data),
                       headers=get_auth_headers(access_token))
     if r.status_code in (201, 409):
@@ -225,16 +231,16 @@ def create_user_dci(access_token):
 
 
 def create_and_associate_redhat_role_to_dci_user(access_token):
-    url = 'http://keycloak:8080/auth/admin/realms/dci-test/users/'
+    url = KEYCLOAK_BASE_URL + '/auth/admin/realms/dci-test/users/'
     user = requests.get(url, headers=get_auth_headers(access_token)).json()[0]
-    url = 'http://keycloak:8080/auth/admin/realms/dci-test/roles/'
+    url = KEYCLOAK_BASE_URL + '/auth/admin/realms/dci-test/roles/'
     requests.post(url,
                   data=json.dumps({"name": "redhat:employees"}),
                   headers=get_auth_headers(access_token))
-    url = 'http://keycloak:8080/auth/admin/realms/dci-test/roles/redhat:employees'  # noqa
+    url = KEYCLOAK_BASE_URL + '/auth/admin/realms/dci-test/roles/redhat:employees'  # noqa
     r = requests.get(url, headers=get_auth_headers(access_token))
     redhat_employees = r.json()
-    url = 'http://keycloak:8080/auth/admin/realms/dci-test/users/%s/role-mappings/realm' % user['id']  # noqa
+    url = KEYCLOAK_BASE_URL + '/auth/admin/realms/dci-test/users/%s/role-mappings/realm' % user['id']  # noqa
     r = requests.post(url,
                       data=json.dumps([redhat_employees]),
                       headers=get_auth_headers(access_token))
@@ -246,7 +252,7 @@ def create_and_associate_redhat_role_to_dci_user(access_token):
 
 
 def create_client_scope(access_token):
-    url = "http://keycloak:8080/auth/admin/realms/dci-test/client-scopes"
+    url = KEYCLOAK_BASE_URL + '/auth/admin/realms/dci-test/client-scopes'
     data = {"attributes": {"display.on.consent.screen": "true",
                            "include.in.token.scope": "true"},
             "name": "dci-audience",
@@ -263,7 +269,7 @@ def create_client_scope(access_token):
 
 def get_client_scope_id(access_token):
     # get the "dci-audience" client scope ID
-    url = "http://keycloak:8080/auth/admin/realms/dci-test/client-scopes"
+    url = KEYCLOAK_BASE_URL + '/auth/admin/realms/dci-test/client-scopes'
     r = requests.get(url, headers=get_auth_headers(access_token))
     scopes = r.json()
     for scope in scopes:
@@ -276,7 +282,7 @@ def add_dci_audience_mapper_to_client_scope(access_token, scope_id):
 
     # associate a "dci" audience mapper to the client scope in order
     # to be present in the access token
-    url = "http://keycloak:8080/auth/admin/realms/dci-test/client-scopes/%s/protocol-mappers/models" % scope_id  # noqa
+    url = "%s/auth/admin/realms/dci-test/client-scopes/%s/protocol-mappers/models" % (KEYCLOAK_BASE_URL, scope_id)  # noqa
     data = {"protocol": "openid-connect",
             "config": {"id.token.claim": "false",
                        "access.token.claim": "true",
@@ -294,7 +300,7 @@ def add_dci_audience_mapper_to_client_scope(access_token, scope_id):
 
 
 def get_client_id(access_token):
-    url = 'http://keycloak:8080/auth/admin/realms/dci-test/clients'
+    url = KEYCLOAK_BASE_URL + '/auth/admin/realms/dci-test/clients'
     r = requests.get(url, headers=get_auth_headers(access_token))
     clients = r.json()
     for client in clients:
@@ -304,7 +310,7 @@ def get_client_id(access_token):
 
 
 def associate_client_scope_to_dci_client(access_token, client_id, client_scope_id):  # noqa
-    url = "http://keycloak:8080/auth/admin/realms/dci-test/clients/%s/default-client-scopes/%s" % (client_id, client_scope_id)  # noqa
+    url = '%s/auth/admin/realms/dci-test/clients/%s/default-client-scopes/%s' % (KEYCLOAK_BASE_URL, client_id, client_scope_id)  # noqa
     data = {"realm": "dci-test", "client": client_id,
             "clientScopeId": client_scope_id}
     r = requests.put(url,
