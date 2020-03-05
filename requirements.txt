@@ -4,7 +4,7 @@ cryptography  # ignore: use latest version of cryptography to avoid building it 
 alembic==0.8.3  # ignore: use the epel version instead of the centos version
 six==1.9.0  # python-six
 SQLAlchemy==0.9.8  # python-sqlalchemy
-requests==2.6.0  # python-requests
+requests==2.20.0  # python-requests
 pytz==2016.10  # pytz
 pyjwt==1.5.3  # python-jwt
 flask==0.10.1  # python-flask
