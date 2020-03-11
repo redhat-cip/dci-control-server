@@ -24,24 +24,48 @@ import swiftclient
 class Swift(stores.Store):
 
     def __init__(self, conf):
-        self.os_username = conf.get('os_username',
-                                    os.getenv('OS_USERNAME'))
-        self.os_password = conf.get('os_password',
-                                    os.getenv('OS_PASSWORD'))
-        self.os_tenant_name = conf.get('os_tenant_name',
-                                       os.getenv('OS_TENANT_NAME'))
-        self.os_auth_url = conf.get('os_auth_url',
-                                    os.getenv('OS_AUTH_URL'))
+        self.os_username = conf.get('os_username', os.getenv('OS_USERNAME'))
+        self.os_password = conf.get('os_password', os.getenv('OS_PASSWORD'))
+        self.os_tenant_name = conf.get('os_tenant_name', os.getenv('OS_TENANT_NAME'))
+        self.os_auth_url = conf.get('os_auth_url', os.getenv('OS_AUTH_URL'))
         self.os_options = dict()
-        self.os_options['region_name'] = conf.get('os_region_name',
-                                                  os.getenv('OS_REGION_NAME'))
-        if 'v2.0' in self.os_auth_url:
-            self.os_auth_version = '2'
-        elif 'v3' in self.os_auth_url:
-            self.os_auth_version = '3'
-            self.os_options['user_domain_name'] = 'default'
-            self.os_options['project_domain_name'] = 'default'
+        self.os_options['region_name'] = conf.get(
+            'os_region_name', os.getenv('OS_REGION_NAME')
+        )
+        self.os_auth_version = conf.get(
+            "os_identity_api_version", os.getenv("OS_IDENTITY_API_VERSION")
+        )
+
+        if not self.os_auth_version:
+            if 'v2.0' in self.os_auth_url:
+                self.os_auth_version = '2'
+            elif 'v3' in self.os_auth_url:
+                self.os_auth_version = '3'
+
+        if self.os_auth_version == '3':
+            self.os_options["user_domain_id"] = conf.get(
+                "os_user_domain_id", os.getenv("OS_USER_DOMAIN_ID")
+            )
+            self.os_options["user_domain_name"] = conf.get(
+                "os_user_domain_name", os.getenv("OS_USER_DOMAIN_NAME", "Default")
+            )
+            self.os_options['project_domain_id'] = conf.get(
+                "os_project_domain_id", os.getenv("OS_PROJECT_DOMAIN_ID")
+            )
+            self.os_options['project_domain_name'] = conf.get(
+                "os_project_domain_name", os.getenv("OS_PROJECT_DOMAIN_NAME", "Default")
+            )
             self.os_options['project_name'] = self.os_tenant_name
+
+            for opt in (
+                "user_domain_id",
+                "project_domain_id",
+                "user_domain_name",
+                "project_domain_name",
+            ):
+                if not self.os_options[opt]:
+                    del(self.os_options[opt])
+
         self.container = conf.get('container')
         self.connection = self.get_connection()
 
