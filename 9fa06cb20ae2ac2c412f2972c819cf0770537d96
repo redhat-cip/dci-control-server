@@ -22,6 +22,30 @@
       "revId": "9fa06cb20ae2ac2c412f2972c819cf0770537d96",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4a991c8d_5e3cbb67",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 37,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2020-03-12T17:07:00Z",
+      "side": 1,
+      "message": "Good point, I hesitated on this one.",
+      "parentUuid": "41850324_a295bf3f",
+      "range": {
+        "startLine": 37,
+        "startChar": 4,
+        "endLine": 37,
+        "endChar": 23
+      },
+      "revId": "9fa06cb20ae2ac2c412f2972c819cf0770537d96",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
