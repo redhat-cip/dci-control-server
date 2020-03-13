@@ -22,13 +22,20 @@ from datetime import timedelta
 logger = logging.getLogger(__name__)
 
 
+def parse_time(string_value):
+    try:
+        return float(string_value)
+    except:
+        return 0.0
+
+
 def parse_testcase(root):
     return {
         "name": root.attrib.get("name", ""),
         "classname": root.attrib.get("classname", ""),
         "regression": False,
         "successfix": False,
-        "time": float(root.attrib.get("time", 0)),
+        "time": parse_time(root.attrib.get("time", "0")),
     }
 
 
@@ -70,12 +77,14 @@ def junit2dict(file_descriptor):
             if element.tag == "testcase":
                 testcase = parse_element(element)
                 results["total"] += 1
-                test_duration += timedelta(seconds=float(testcase["time"]))
-                if testcase["action"] == "skipped":
+                time = parse_time(testcase.get("time", "0"))
+                test_duration += timedelta(seconds=time)
+                action = testcase["action"]
+                if action == "skipped":
                     results["skips"] += 1
-                if testcase["action"] == "error":
+                if action == "error":
                     results["errors"] += 1
-                if testcase["action"] == "failure":
+                if action == "failure":
                     results["failures"] += 1
                 results["testscases"].append(testcase)
                 element.clear()

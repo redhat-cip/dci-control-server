@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<testsuites>
+  <testsuite id="1" name="" tests="3" errors="1" skipped="0" failures="0">
+    <testcase classname="LTP" name="LTP" status="Aborted" timestamp="" time="">
+      <system-out><![CDATA[
+  Logs:
+  recipes/1/tasks/1/logs/harness.log
+recipes/1/tasks/1/logs/taskout.log
+recipes/1/tasks/1/logs/sched.run.log
+]]></system-out>
+    </testcase>
+    <testcase classname="LTP" name="Setup">
+      <system-out><![CDATA[
+  Logs:
+  recipes/1/tasks/1/results/1584053404/logs/resultoutputfile.log
+]]></system-out>
+    </testcase>
+    <testcase classname="LTP" name="sched">
+      <error type="Aborted" message=""><![CDATA[
+  Logs:
+  recipes/1/tasks/1/results/1584053405/logs/dmesg.log
+recipes/1/tasks/1/results/1584053405/logs/resultoutputfile.log
+]]></error>
+    </testcase>
+  </testsuite>
+</testsuites>
