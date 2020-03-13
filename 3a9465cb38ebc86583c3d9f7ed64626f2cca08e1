@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "d073dda6_7b404ce5",
+        "filename": "tests/api/v1/test_transformations.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 175,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-03-13T12:38:35Z",
+      "side": 1,
+      "message": "hihi",
+      "revId": "3a9465cb38ebc86583c3d9f7ed64626f2cca08e1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
