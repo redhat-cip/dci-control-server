@@ -169,6 +169,19 @@ def test_junit2dict_with_rally_xml():
     assert len(result['testscases']) == 16
 
 
+def test_junit2dict_with_cki_xml():
+    with open('tests/data/cki-results.xml', 'r') as f:
+        result = transformations.junit2dict(f)
+    print(result)
+    assert result['success'] == 2
+    assert result['errors'] == 1
+    assert result['failures'] == 0
+    assert result['skips'] == 0
+    assert result['total'] == 3
+    assert result['time'] == 0
+    assert len(result['testscases']) == 3
+
+
 def test_junit2dict_invalid():
     # remove the first closing testcase tag, in order to make the json invalid
     invalid_junit = JUNIT.replace('</testcase>', '', 1)
