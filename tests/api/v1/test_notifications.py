@@ -19,6 +19,7 @@ from __future__ import unicode_literals
 from dci.api.v1 import notifications
 
 import flask
+import mock
 
 
 def test_get_emails(user, remoteci_user_id, app, engine):
@@ -47,7 +48,8 @@ def test_get_emails_remoteci_deleted(user, remoteci_user_id, app, engine):
         assert emails == []
 
 
-def test_email(user, job_user_id):
+@mock.patch("dci.api.v1.notifications.dispatcher")
+def test_email(mocked_disp, user, job_user_id):
     # set job to error status
     data = {'job_id': job_user_id, 'status': 'error'}
     user.post('/api/v1/jobstates', data=data)
