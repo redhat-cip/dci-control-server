@@ -46,6 +46,24 @@ https://www.distributed-ci.io/jobs/{job_id}
         regressions=regressions)
 
 
+def build_job_finished_event(job):
+    components = [
+        {"id": str(c["id"]), "name": c["name"], "type": c["type"], "url": c["url"]}
+        for c in job["components"]
+    ]
+    results = [{"name": r["name"]} for r in job["results"]]
+    return {
+        "event": "job_finished",
+        "type": "job_finished",
+        "job": {
+            "id": str(job["id"]),
+            "status": job["status"],
+            "components": components,
+            "results": results,
+        }
+    }
+
+
 def get_email_info(job, emails):
 
     components_names = [c['name'] for c in job['components']]
@@ -103,7 +121,6 @@ def get_emails(remoteci_id):
 
 
 def dispatcher(job):
-
     events = []
     emails = get_emails(job['remoteci_id'])
     if emails:
@@ -114,6 +131,10 @@ def dispatcher(job):
     dlrn_event = dlrn(job)
     if dlrn_event:
         events.append(dlrn_event)
+
+    job_finised = build_job_finished_event(job)
+    if job_finised:
+        events.append(job_finised)
 
     if events:
         flask.g.sender.send_json(events)
