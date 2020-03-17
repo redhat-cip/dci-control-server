@@ -51,8 +51,10 @@ def test_create_files_jobstate_id_and_job_id_missing(admin):
     assert file.status_code == 400
 
 
-def test_upload_tests_with_regressions_successfix(admin, remoteci_context,
-                                                  remoteci, topic):
+@mock.patch("dci.api.v1.notifications.dispatcher")
+def test_upload_tests_with_regressions_successfix(
+    mocked_disp, admin, remoteci_context, remoteci, topic
+):
     headers = {
         'User-Agent': 'python-dciclient',
         'Client-Version': 'python-dciclient_0.1.0'
@@ -277,7 +279,8 @@ def test_get_previous_job_in_topic(app, user, remoteci_context,
         assert prev_job_id == test_prev_job_id
 
 
-def test_known_issues_in_tests(admin, user, job_user_id, topic_user_id):
+@mock.patch("dci.api.v1.notifications.dispatcher")
+def test_known_issues_in_tests(mocked_disp, admin, user, job_user_id, topic_user_id):
 
     pissue = user.post('/api/v1/issues', data={'url': 'http://bugzilla/42',
                                                'topic_id': topic_user_id})
