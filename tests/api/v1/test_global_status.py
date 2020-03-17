@@ -13,12 +13,15 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import mock
+
 from dci.api.v1.global_status import add_percentage_of_success
 from dci.api.v1.global_status import format_global_status
 from dci.api.v1.global_status import insert_component_with_no_job
 
 
-def test_global_status(admin, user, job_user_id):
+@mock.patch("dci.api.v1.notifications.dispatcher")
+def test_global_status(mocked_disp, admin, user, job_user_id):
     user.post('/api/v1/jobstates',
               data={'job_id': job_user_id, 'status': 'success'})
     global_status = admin.get('/api/v1/global_status').data['globalStatus']
