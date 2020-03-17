@@ -20,12 +20,13 @@ from dci.api.v1 import performance
 
 from tests import data as tests_data
 import tests.utils as t_utils
-
 import collections
+import mock
 
 FileDesc = collections.namedtuple('FileDesc', ['name', 'content'])
 
 
+@mock.patch("dci.api.v1.notifications.dispatcher")
 def test_compare_performance(user, remoteci_context, team_user_id, topic, topic_user_id):  # noqa
     # create the baseline job
     job_baseline = remoteci_context.post(
