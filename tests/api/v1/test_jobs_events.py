@@ -17,12 +17,10 @@
 import mock
 
 
-def test_jobs_events_create(admin, user, job_user_id, reset_job_event):
-
+@mock.patch("dci.api.v1.notifications.dispatcher")
+def test_jobs_events_create(mocked_disp, admin, user, job_user_id, reset_job_event):
     data = {'job_id': job_user_id, 'status': 'success', 'comment': 'kikoolol'}
-
-    with mock.patch('dci.api.v1.notifications'):
-        user.post('/api/v1/jobstates', data=data).data
+    user.post('/api/v1/jobstates', data=data).data
     j_events = admin.get('/api/v1/jobs_events/0?sort=id')
     job_event = j_events.data['jobs_events'][0]
     assert job_event['job_id'] == job_user_id
@@ -30,14 +28,12 @@ def test_jobs_events_create(admin, user, job_user_id, reset_job_event):
     assert j_events.status_code == 200
 
 
-def test_jobs_events_delete_from_sequence_number(admin, user,
-                                                 job_user_id,
-                                                 reset_job_event):
-
+@mock.patch("dci.api.v1.notifications.dispatcher")
+def test_jobs_events_delete_from_sequence_number(
+    mocked_disp, admin, user, job_user_id, reset_job_event
+):
     data = {'job_id': job_user_id, 'status': 'success', 'comment': 'kikoolol'}
-
-    with mock.patch('dci.api.v1.notifications'):
-        user.post('/api/v1/jobstates', data=data).data
+    user.post('/api/v1/jobstates', data=data).data
     j_events = admin.get('/api/v1/jobs_events/0?sort=id').data
     assert len(j_events['jobs_events']) == 1
 
