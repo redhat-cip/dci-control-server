@@ -16,6 +16,7 @@
 # under the License.
 
 from dci.api.v1 import notifications
+from dci.worker.umb import send_event_on_umb
 
 import json
 import os
@@ -129,6 +130,8 @@ def loop(msg):
                 send_mail(event)
             elif event['event'] == 'dlrn_publish':
                 dlrn_publish(event)
+            elif event['event'] == 'job_finished':
+                send_event_on_umb(event)
     except:
         pass
 

@@ -67,7 +67,8 @@ def create_jobstates(user):
     job_id = values.get('job_id')
     job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
     job = dict(job)
-    if values.get('status') in ['failure', 'error']:
+    status = values.get('status')
+    if status in ['failure', 'error']:
         if job['status'] in ['new', 'pre-run']:
             values['status'] = 'error'
 
@@ -79,13 +80,13 @@ def create_jobstates(user):
                         .where(
                             sql.and_(
                                 models.JOBS.c.id == job_id,
-                                models.JOBS.c.status != values.get('status')))
-                        .values(status=values.get('status'),
+                                models.JOBS.c.status != status))
+                        .values(status=status,
                                 duration=job_duration.seconds))
     result = flask.g.db_conn.execute(query_update_job)
 
     # send notification in case of final jobstate status
-    if result.rowcount and values.get('status') in models.FINAL_STATUSES:
+    if result.rowcount and status in models.FINAL_STATUSES:
         embeds = ['components', 'topic', 'remoteci', 'results']
         embeds_many = {'components': True, 'topic': False, 'remoteci': False,
                        'results': True}
@@ -94,11 +95,12 @@ def create_jobstates(user):
                                       embed_many=embeds_many, embeds=embeds,
                                       jsonify=False)
         job = dict(job)
-        jobs_events.create_event(job['id'],
-                                 values['status'],
-                                 job['topic_id'])
-        if values.get('status') in models.FINAL_FAILURE_STATUSES:
-            notifications.dispatcher(job)
+        jobs_events.create_event(
+            job['id'],
+            values['status'],
+            job['topic_id']
+        )
+        notifications.dispatcher(job)
 
     result = json.dumps({'jobstate': values})
     return flask.Response(result, 201, content_type='application/json')
