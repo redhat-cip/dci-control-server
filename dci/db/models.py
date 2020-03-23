@@ -254,7 +254,8 @@ JOBS = sa.Table(
               sa.ForeignKey('jobs.id'),
               nullable=True, default=None),
     sa.Index('jobs_update_previous_job_id_idx', 'update_previous_job_id'),
-    sa.Column('state', STATES, default='active')
+    sa.Column('state', STATES, default='active'),
+    sa.Column('tag', pg.ARRAY(sa.Text), default=[])
 )
 
 TESTS_RESULTS = sa.Table(
