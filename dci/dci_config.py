@@ -55,11 +55,11 @@ def get_store(container):
         configuration['os_tenant_name'] = CONFIG['STORE_TENANT_NAME']
         configuration['os_auth_url'] = CONFIG['STORE_AUTH_URL']
         configuration['os_region_name'] = CONFIG['STORE_REGION']
-        configuration['os_identity_api_version'] = CONFIG['OS_IDENTITY_API_VERSION']
-        configuration['os_user_domain_name'] = CONFIG['OS_USER_DOMAIN_NAME']
-        configuration['os_user_domain_id'] = CONFIG['OS_USER_DOMAIN_ID']
-        configuration['os_project_domain_id'] = CONFIG['OS_PROJECT_DOMAIN_ID']
-        configuration['os_project_domain_name'] = CONFIG['OS_PROJECT_DOMAIN_NAME']
+        configuration['os_identity_api_version'] = CONFIG.get('STORE_IDENTITY_API_VERSION')
+        configuration['os_user_domain_name'] = CONFIG.get('STORE_USER_DOMAIN_NAME')
+        configuration['os_user_domain_id'] = CONFIG.get('STORE_USER_DOMAIN_ID')
+        configuration['os_project_domain_id'] = CONFIG.get('STORE_PROJECT_DOMAIN_ID')
+        configuration['os_project_domain_name'] = CONFIG.get('STORE_PROJECT_DOMAIN_NAME')
         store_engine = swift.Swift(configuration)
     else:
         configuration['path'] = CONFIG['STORE_FILE_PATH']
