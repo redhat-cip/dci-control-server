@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Red Hat, Inc
+# Copyright (C) 2020 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,27 +13,27 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""add duration to jobs
+"""Add tags array to jobs
 
-Revision ID: 49363052bd7d
-Revises: 5ad9b5342acf
-Create Date: 2019-07-31 15:44:52.724198
+Revision ID: 45e44e338043
+Revises: 49363052bd7d
+Create Date: 2020-03-19 16:01:17.853976
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '49363052bd7d'
-down_revision = '5ad9b5342acf'
+revision = '45e44e338043'
+down_revision = '49363052bd7d'
 branch_labels = None
 depends_on = None
 
 from alembic import op
 import sqlalchemy as sa
+from sqlalchemy.dialects import postgresql as pg
 
 
 def upgrade():
-    op.add_column('jobs',
-                  sa.Column('duration', sa.Integer, default=0))
+    op.add_column('jobs', sa.Column('tag', pg.ARRAY(sa.Text), default=[]))
 
 
 def downgrade():
