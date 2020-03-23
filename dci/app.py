@@ -127,8 +127,7 @@ def create_app(param=None):
         db_exception = exceptions.DCIException(str(dbapi_exception)).to_dict()
         response = flask.jsonify(db_exception)
         response.status_code = 400
-        logger.info(db_exception.message)
-        logger.info(traceback.format_exc())
+        logger.exception(dbapi_exception)
         return response
 
     @dci_app.before_request
