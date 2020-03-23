@@ -263,33 +263,45 @@ def create_jobs(topics, remotecis, teams, components):
         {
             'team_id': teams['Dell']['id'],
             'topic_id': topics['OSP10']['id'],
-            'components': [components['RH7-RHOS-10.0 2016-10-28.1']['id']]
+            'components': [components['RH7-RHOS-10.0 2016-10-28.1']['id']],
+            'tag': ['FV1', 'debug']
         },
         {
             'team_id': teams['Dell']['id'],
             'topic_id': topics['OSP10']['id'],
-            'components': [components['RH7-RHOS-10.0 2016-11-12.1']['id']]
+            'components': [components['RH7-RHOS-10.0 2016-11-12.1']['id']],
+            'tag': ['FV2', 'kernelv4']
         },
         {
             'team_id': teams['Dell']['id'],
             'topic_id': topics['OSP11']['id'],
-            'components': [components['RH7-RHOS-11.0 2016-11-11.1']['id']]
+            'components': [components['RH7-RHOS-11.0 2016-11-11.1']['id']],
+            'tag': ['FV3', 'PPC']
         },
         {
             'team_id': teams['Dell']['id'],
             'topic_id': topics['OSP12']['id'],
-            'components': [components['RH7-RHOS-12.0 2016-11-12.1']['id']]
+            'components': [components['RH7-RHOS-12.0 2016-11-12.1']['id']],
+            'tag': ['FV4', 'debug']
         },
     ]
 
     client_id = remotecis['Dell']['id']
     api_secret = remotecis['Dell']['api_secret']
     for job in jobs:
-        auth_request = AuthRequest(method="POST", endpoint='/api/v1/jobs', payload=job,
+        auth_request = AuthRequest(method="POST", endpoint='/api/v1/jobs',
+                                   payload=job,
                                    headers={'content-type': 'application/json'})
         headers = Signature(request=auth_request).generate_headers(
             'remoteci', client_id, api_secret)
-        requests.post('%s/api/v1/jobs' % DCI_CS_URL, headers=headers, json=job)
+        r = requests.post('%s/api/v1/jobs' % DCI_CS_URL,
+                          headers=headers,
+                          json=job)
+
+        job_id = r.json()['job']['id']
+        for t in job['tag']:
+            post('jobs/%s/tags' % job_id,
+                 data={'name': t})
 
     return get('jobs', ('user_dell', 'user_dell',)).json()['jobs']
 

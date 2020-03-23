@@ -20,6 +20,8 @@ def test_create_tag(admin, user, job_user_id):
     tag = user.post('/api/v1/jobs/%s/tags' % job_user_id,
                     data={'name': 'kikoo'})
     assert tag.status_code == 201
+    job = user.get('/api/v1/jobs/%s' % job_user_id).data
+    assert job['job']['tag'] == ['kikoo']
 
 
 def test_implicit_creation_of_tag(admin, user, job_user_id):
@@ -47,6 +49,9 @@ def test_get_all_tags(admin, user, job_user_id):
     all_tags_embeds = {t['name'] for t in all_tags_embeds['job']['tags']}
     assert all_tags_embeds == {'kikoo', 'kikoo2'}
 
+    job = user.get('/api/v1/jobs/%s' % job_user_id).data
+    assert set(job['job']['tag']) == {'kikoo', 'kikoo2'}
+
 
 def test_delete_tag(admin, user, job_user_id):
     tag = admin.post('/api/v1/tags', data={'name': 'kikoo'})
@@ -54,6 +59,9 @@ def test_delete_tag(admin, user, job_user_id):
 
     user.post('/api/v1/jobs/%s/tags' % job_user_id,
               data={'name': 'kikoo'})
+
+    job = user.get('/api/v1/jobs/%s' % job_user_id).data
+    assert set(job['job']['tag']) == {'kikoo'}
 
     all_tags = user.get('/api/v1/jobs/%s/tags' % job_user_id).data
     assert len(all_tags['tags']) == 1
@@ -64,3 +72,5 @@ def test_delete_tag(admin, user, job_user_id):
 
     all_tags = user.get('/api/v1/jobs/%s/tags' % job_user_id).data
     assert len(all_tags['tags']) == 0
+    job = user.get('/api/v1/jobs/%s' % job_user_id).data
+    assert job['job']['tag'] == []

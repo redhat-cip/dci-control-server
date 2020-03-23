@@ -29,35 +29,11 @@ depends_on = None
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy import sql
-
-from dci.db import models
 
 
 def upgrade():
-    db_conn = op.get_bind()
     op.add_column('jobs',
                   sa.Column('duration', sa.Integer, default=0))
-
-    # get all the jobs
-    query = sql.select([models.JOBS])
-    jobs = db_conn.execute(query).fetchall()
-    for job in jobs:
-        # get the last jobstate of the current job
-        query = (sql.select([models.JOBSTATES]).
-                 where(models.JOBSTATES.c.job_id == job.id).
-                 order_by(sql.desc(models.JOBSTATES.c.created_at)))
-        js = db_conn.execute(query).fetchone()
-        # then calculate the job duration
-        job_duration_seconds = 0
-        if js is not None:
-            job_duration = js.created_at - job.created_at
-            job_duration_seconds = job_duration.seconds
-
-        query = models.JOBS.update().where(
-            models.JOBS.c.id == job.id).values(
-                duration=job_duration_seconds)
-        db_conn.execute(query)
 
 
 def downgrade():
