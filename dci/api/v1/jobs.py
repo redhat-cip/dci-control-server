@@ -629,7 +629,19 @@ def add_tag_to_job(user, job_id):
         'job_id': job_id
     }
 
-    job_tagged = tags.add_tag_to_resource(values, models.JOIN_JOBS_TAGS)
+    with flask.g.db_conn.begin():
+        job_tagged = tags.add_tag_to_resource(values, models.JOIN_JOBS_TAGS)
+        # update the job tag field
+        job_values = {}
+        job_values['etag'] = utils.gen_etag()
+        tag_name = flask.request.json.get('name')
+        tag_name = [tag_name] if tag_name else []
+        job_values['tag'] = job['tag'] + tag_name
+        query = _TABLE.update().where(_TABLE.c.id == job_id).values(**job_values)
+
+        result = flask.g.db_conn.execute(query)
+        if not result.rowcount:
+            raise dci_exc.DCIConflict('Job', job_id)
 
     return flask.Response(json.dumps(job_tagged), 201,
                           content_type='application/json')
@@ -644,15 +656,26 @@ def delete_tag_from_job(user, job_id, tag_id):
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     if user.is_not_in_team(job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
-    v1_utils.verify_existence_and_get(tag_id, models.TAGS)
+    tag = v1_utils.verify_existence_and_get(tag_id, models.TAGS)
+    tag_name = tag['name']
 
-    query = _JJT.delete().where(sql.and_(_JJT.c.tag_id == tag_id,
-                                         _JJT.c.job_id == job_id))
+    with flask.g.db_conn.begin():
+        query = _JJT.delete().where(sql.and_(_JJT.c.tag_id == tag_id,
+                                             _JJT.c.job_id == job_id))
+        try:
+            flask.g.db_conn.execute(query)
+        except sa_exc.IntegrityError:
+            raise dci_exc.DCICreationConflict('tag', 'tag_id')
+            # update the job tag field
+        job_values = {}
+        job_values['etag'] = utils.gen_etag()
+        tag_name = [tag_name] if tag_name else []
+        job_values['tag'] = list(set(job['tag']) - set(tag_name))
+        query = _TABLE.update().where(_TABLE.c.id == job_id).values(**job_values)
 
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict('tag', 'tag_id')
+        result = flask.g.db_conn.execute(query)
+        if not result.rowcount:
+            raise dci_exc.DCIConflict('Job', job_id)
 
     return flask.Response(None, 204, content_type='application/json')
 
