@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "abd589b2_5c8d13fb",
+        "filename": "dci/alembic/versions/49363052bd7d_add_duration_to_jobs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-03-24T11:52:27Z",
+      "side": 0,
+      "message": "why remove all this ???",
+      "range": {
+        "startLine": 33,
+        "startChar": 0,
+        "endLine": 60,
+        "endChar": 30
+      },
+      "revId": "d0fce79370f396a515dbe82fd9766014b39391ac",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}

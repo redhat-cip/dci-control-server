@@ -1,0 +1,234 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "c36923ad_c193ddae",
+        "filename": "dci/alembic/versions/45e44e338043_add_tags_array_to_jobs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-03-24T11:52:27Z",
+      "side": 1,
+      "message": "don\u0027t you want to copy the existing tags into the array ?",
+      "range": {
+        "startLine": 35,
+        "startChar": 4,
+        "endLine": 35,
+        "endChar": 11
+      },
+      "revId": "ca72037836dca22f9415acf02c2ae0ea9e0616b0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ff86cfa6_bcc16e23",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 639,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-03-24T11:52:27Z",
+      "side": 1,
+      "message": "tags (with an \"s\") ?",
+      "range": {
+        "startLine": 639,
+        "startChar": 20,
+        "endLine": 639,
+        "endChar": 35
+      },
+      "revId": "ca72037836dca22f9415acf02c2ae0ea9e0616b0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "34dbb703_d0b6b52d",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 673,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-03-24T11:52:27Z",
+      "side": 1,
+      "message": "tags (with an \"s\") ?",
+      "range": {
+        "startLine": 673,
+        "startChar": 37,
+        "endLine": 673,
+        "endChar": 40
+      },
+      "revId": "ca72037836dca22f9415acf02c2ae0ea9e0616b0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "75cfa52d_60815486",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 673,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-03-24T11:52:27Z",
+      "side": 1,
+      "message": "tags (with an \"s\") ?",
+      "range": {
+        "startLine": 673,
+        "startChar": 20,
+        "endLine": 673,
+        "endChar": 23
+      },
+      "revId": "ca72037836dca22f9415acf02c2ae0ea9e0616b0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f20f9711_548749ea",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 187,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-03-24T11:52:27Z",
+      "side": 1,
+      "message": "tags (with an \"s\") ?",
+      "range": {
+        "startLine": 187,
+        "startChar": 5,
+        "endLine": 187,
+        "endChar": 8
+      },
+      "revId": "ca72037836dca22f9415acf02c2ae0ea9e0616b0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "fa9fa178_54aa6150",
+        "filename": "dci/db/models.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 258,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-03-24T11:52:27Z",
+      "side": 1,
+      "message": "tags (with an \"s\") ?",
+      "range": {
+        "startLine": 258,
+        "startChar": 15,
+        "endLine": 258,
+        "endChar": 18
+      },
+      "revId": "ca72037836dca22f9415acf02c2ae0ea9e0616b0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "79bee97c_5ae55a81",
+        "filename": "tests/api/v1/test_jobs_tags.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 24,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-03-24T11:52:27Z",
+      "side": 1,
+      "message": "tags (with an \"s\") ?",
+      "range": {
+        "startLine": 24,
+        "startChar": 23,
+        "endLine": 24,
+        "endChar": 26
+      },
+      "revId": "ca72037836dca22f9415acf02c2ae0ea9e0616b0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "30aef04f_327e9ba2",
+        "filename": "tests/api/v1/test_jobs_tags.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 53,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-03-24T11:52:27Z",
+      "side": 1,
+      "message": "tags (with an \"s\") ?",
+      "range": {
+        "startLine": 53,
+        "startChar": 27,
+        "endLine": 53,
+        "endChar": 30
+      },
+      "revId": "ca72037836dca22f9415acf02c2ae0ea9e0616b0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ecdfa61d_cdceafcf",
+        "filename": "tests/api/v1/test_jobs_tags.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 64,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-03-24T11:52:27Z",
+      "side": 1,
+      "message": "tags (with an \"s\") ?",
+      "range": {
+        "startLine": 64,
+        "startChar": 27,
+        "endLine": 64,
+        "endChar": 30
+      },
+      "revId": "ca72037836dca22f9415acf02c2ae0ea9e0616b0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f4707ed8_63edc1e4",
+        "filename": "tests/api/v1/test_jobs_tags.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 76,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-03-24T11:52:27Z",
+      "side": 1,
+      "message": "tags (with an \"s\") ?",
+      "range": {
+        "startLine": 76,
+        "startChar": 23,
+        "endLine": 76,
+        "endChar": 26
+      },
+      "revId": "ca72037836dca22f9415acf02c2ae0ea9e0616b0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
