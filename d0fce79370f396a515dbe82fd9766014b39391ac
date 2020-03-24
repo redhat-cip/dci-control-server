@@ -22,6 +22,30 @@
       "revId": "d0fce79370f396a515dbe82fd9766014b39391ac",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "daaac870_871edac9",
+        "filename": "dci/alembic/versions/49363052bd7d_add_duration_to_jobs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 60,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-03-24T12:28:09Z",
+      "side": 0,
+      "message": "for two reasons\n\n1. the query is failing because i added a new column models.JOBS.c.tag in models.py which does not exist yet in the migration models\n\n2. the data migration scripts are for production database and executed once. So i prefered to simply remove this useless codebase\n\nbtw i will also remove all the migrations script as we did before",
+      "parentUuid": "abd589b2_5c8d13fb",
+      "range": {
+        "startLine": 33,
+        "startChar": 0,
+        "endLine": 60,
+        "endChar": 30
+      },
+      "revId": "d0fce79370f396a515dbe82fd9766014b39391ac",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }

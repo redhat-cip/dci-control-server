@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "fba85f71_a5b68be7",
+        "filename": "dci/alembic/versions/45e44e338043_add_tags_array_to_jobs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 35,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-03-24T12:28:09Z",
+      "side": 1,
+      "message": "yes i will upload a new patchset for this addition",
+      "parentUuid": "c36923ad_c193ddae",
+      "range": {
+        "startLine": 35,
+        "startChar": 4,
+        "endLine": 35,
+        "endChar": 11
+      },
+      "revId": "ca72037836dca22f9415acf02c2ae0ea9e0616b0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ff86cfa6_bcc16e23",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 1
@@ -128,6 +152,30 @@
       "writtenOn": "2020-03-24T11:52:27Z",
       "side": 1,
       "message": "tags (with an \"s\") ?",
+      "range": {
+        "startLine": 258,
+        "startChar": 15,
+        "endLine": 258,
+        "endChar": 18
+      },
+      "revId": "ca72037836dca22f9415acf02c2ae0ea9e0616b0",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1f31d6fb_70642056",
+        "filename": "dci/db/models.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 258,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-03-24T12:28:09Z",
+      "side": 1,
+      "message": "we cannot name it \"tags\" yet because we are still using the TAGS table. with an embed tags query we already have the \"tags\" key which would be in conflict. Thus i named it \"tag\", when we will remove the models.TAGS table i will rename the column to \"tags\"",
+      "parentUuid": "fa9fa178_54aa6150",
       "range": {
         "startLine": 258,
         "startChar": 15,
