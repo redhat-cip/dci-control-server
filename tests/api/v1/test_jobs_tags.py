@@ -74,3 +74,41 @@ def test_delete_tag(admin, user, job_user_id):
     assert len(all_tags['tags']) == 0
     job = user.get('/api/v1/jobs/%s' % job_user_id).data
     assert job['job']['tag'] == []
+
+
+def test_filter_job_by_tag(user, remoteci_context, components_user_ids,
+                           topic_user_id):
+
+    data = {
+        'comment': 'kikoolol',
+        'components': components_user_ids,
+        'topic_id': topic_user_id
+    }
+    # create job 1
+    job = remoteci_context.post('/api/v1/jobs', data=data)
+    job_id_1 = job.data['job']['id']
+    remoteci_context.post('/api/v1/jobs/%s/tags' % job_id_1,
+                          data={'name': 'tag_1'})
+    remoteci_context.post('/api/v1/jobs/%s/tags' % job_id_1,
+                          data={'name': 'debug'})
+
+    # create job 2
+    job = remoteci_context.post('/api/v1/jobs', data=data)
+    job_id_2 = job.data['job']['id']
+    remoteci_context.post('/api/v1/jobs/%s/tags' % job_id_2,
+                          data={'name': 'tag_2'})
+    remoteci_context.post('/api/v1/jobs/%s/tags' % job_id_2,
+                          data={'name': 'debug'})
+
+    res = user.get('/api/v1/jobs?where=tag:debug,tag:tag_1')
+    assert len(res.data['jobs']) == 1
+
+    res = user.get('/api/v1/jobs?where=tag:tag_1')
+    assert len(res.data['jobs']) == 1
+    assert 'tag_1' in res.data['jobs'][0]['tag']
+    assert 'tag_2' not in res.data['jobs'][0]['tag']
+
+    res = user.get('/api/v1/jobs?where=tag:debug')
+    assert len(res.data['jobs']) == 2
+    assert 'debug' in res.data['jobs'][0]['tag']
+    assert 'debug' in res.data['jobs'][1]['tag']
