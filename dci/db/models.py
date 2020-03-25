@@ -64,7 +64,8 @@ COMPONENTS = sa.Table(
              unique=True,
              postgresql_where=sa.sql.text("components.state = 'active'")),
     sa.Index('components_topic_id_idx', 'topic_id'),
-    sa.Column('state', STATES, default='active')
+    sa.Column('state', STATES, default='active'),
+    sa.Column('tags', pg.ARRAY(sa.Text), default=[])
 )
 
 TAGS = sa.Table(
