@@ -211,6 +211,7 @@ def where_query(where, table, columns):
             raise dci_exc.DCIException(err_msg % name, payload=payload)
         return getattr(table.c, name)
 
+    array_columns_to_list = {}
     for where_elem in where:
         try:
             name, value = where_elem.split(':', 1)
@@ -224,14 +225,22 @@ def where_query(where, table, columns):
         # if it's an Integer column, then try to cast the value
         try:
             if str(m_column.type) == "UUID" and uuid.UUID(value):
-                pass
+                where_conds.append(m_column == value)
             elif m_column.type.python_type == int:
-                value = int(value)
+                where_conds.append(m_column == int(value))
+            elif m_column.type.python_type == list:
+                if m_column not in array_columns_to_list:
+                    array_columns_to_list[m_column] = [value]
+                else:
+                    array_columns_to_list[m_column] += [value]
+            else:
+                where_conds.append(m_column == value)
         except ValueError:
             payload = {name: '%s is not a %s' % (name, m_column.type)}
             raise dci_exc.DCIException(err_msg % name, payload=payload)
 
-        where_conds.append(m_column == value)
+    for col, values in array_columns_to_list.items():
+        where_conds.append(col.contains(values))
     return where_conds
 
 
