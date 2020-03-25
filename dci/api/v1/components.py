@@ -27,7 +27,6 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import export_control
 from dci.api.v1 import issues
-from dci.api.v1 import tags
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
@@ -435,35 +434,46 @@ def retrieve_tags_from_component(user, c_id):
 
 @api.route('/components/<uuid:c_id>/tags', methods=['POST'])
 @decorators.login_required
-def add_tag_for_component(user, c_id):
+def add_tag_to_component(user, c_id):
     """Add a tag on a specific component."""
 
-    v1_utils.verify_existence_and_get(c_id, _TABLE)
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
 
-    values = {
-        'component_id': c_id
-    }
+    cmpt_values = {}
+    cmpt_values['etag'] = utils.gen_etag()
+    tag_name = flask.request.json.get('name')
+    if tag_name and tag_name not in component['tags']:
+        tag_name = [tag_name]
+        cmpt_values['tags'] = component['tags'] + tag_name
+        query = _TABLE.update().\
+            where(_TABLE.c.id == c_id).\
+            values(**cmpt_values)
 
-    component_tagged = tags.add_tag_to_resource(values,
-                                                models.JOIN_COMPONENTS_TAGS)
+        result = flask.g.db_conn.execute(query)
+        if not result.rowcount:
+            raise dci_exc.DCIConflict('Job', c_id)
 
-    return flask.Response(json.dumps(component_tagged), 201,
-                          content_type='application/json')
+    return flask.Response(None, 201, content_type='application/json')
 
 
-@api.route('/components/<uuid:c_id>/tags/<uuid:tag_id>', methods=['DELETE'])
+@api.route('/components/<uuid:c_id>/tags', methods=['DELETE'])
 @decorators.login_required
-def delete_tag_for_component(user, c_id, tag_id):
-    """Delete a tag on a specific component."""
-    # Todo : check c_id and tag_id exist in db
+def delete_tag_from_component(user, c_id):
+    """Delete a tag from a specific component."""
 
-    query = _TABLE_TAGS.delete().where(_TABLE_TAGS.c.tag_id == tag_id and
-                                       _TABLE_TAGS.c.component_id == c_id)
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    cmpt_values = {}
+    cmpt_values['etag'] = utils.gen_etag()
+    tag_name = flask.request.json.get('name')
+    tag_name = [tag_name] if tag_name else []
+    cmpt_values['tags'] = list(set(component['tags']) - set(tag_name))
+    query = _TABLE.update().\
+        where(_TABLE.c.id == c_id).\
+        values(**cmpt_values)
 
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE_TAGS.c.tag_id, 'tag_id')
+    result = flask.g.db_conn.execute(query)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('component', c_id)
 
     return flask.Response(None, 204, content_type='application/json')
 

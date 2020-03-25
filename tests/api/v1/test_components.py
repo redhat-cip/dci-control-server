@@ -501,35 +501,66 @@ def test_verify_and_get_components_ids(engine, admin, topic, topic_user_id):
 
 def test_add_tags_components(admin, components_ids):
     pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
-                    data={'name': 'my_tag'})
+                    data={'name': 'my_tag_1'})
     assert pt.status_code == 201
 
-
-def test_get_tags_components(admin, components_ids):
-    gt = admin.get('/api/v1/components/%s/tags' % (components_ids[0]))
-    count = gt.data['_meta']['count']
-
-    for i in range(3):
-        admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
-                   data={'name': 'name_%s' % i})
-    gt = admin.get('/api/v1/components/%s/tags' % (components_ids[0]))
-    assert gt.status_code == 200
-    assert len(gt.data['tags']) == count + 3
-
-
-def test_delete_tags_components(admin, components_ids):
     pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
-                    data={'name': 'my_tag'})
-    tag_id = pt.data['tag']['id']
+                    data={'name': 'my_tag_1'})
     assert pt.status_code == 201
-    pt = admin.delete('/api/v1/components/%s/tags/%s' % (components_ids[0],
-                                                         tag_id))
-    assert pt.status_code == 204
 
-    gt = admin.get('/api/v1/components/%s/tags' % (components_ids[0]))
+    pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
+                    data={'name': 'my_tag_2'})
+    assert pt.status_code == 201
+
+    gt = admin.get('/api/v1/components/%s' % components_ids[0])
     assert gt.status_code == 200
-    count = gt.data['_meta']['count']
-    assert count == 0
+    assert 'my_tag_1' in gt.data['component']['tags']
+    assert 'my_tag_2' in gt.data['component']['tags']
+    assert len(gt.data['component']['tags']) == 2
+
+
+def test_delete_tags_from_components(admin, components_ids):
+    pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
+                    data={'name': 'my_tag_1'})
+    assert pt.status_code == 201
+
+    pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
+                    data={'name': 'my_tag_2'})
+    assert pt.status_code == 201
+
+    dt = admin.delete('/api/v1/components/%s/tags' % (components_ids[0]),
+                      data={'name': 'my_tag_2'})
+    assert dt.status_code == 204
+
+    gt = admin.get('/api/v1/components/%s' % components_ids[0])
+    assert gt.status_code == 200
+    assert 'my_tag_1' in gt.data['component']['tags']
+    assert 'my_tag_2' not in gt.data['component']['tags']
+
+
+def test_filter_component_by_tag(admin, remoteci_context, components_user_ids,
+                                 topic_user_id):
+    admin.post('/api/v1/components/%s/tags' % components_user_ids[0],
+               data={'name': 'tag_1'})
+    admin.post('/api/v1/components/%s/tags' % components_user_ids[0],
+               data={'name': 'common'})
+
+    admin.post('/api/v1/components/%s/tags' % components_user_ids[1],
+               data={'name': 'tag_2'})
+    admin.post('/api/v1/components/%s/tags' % components_user_ids[1],
+               data={'name': 'common'})
+
+    res = admin.get('/api/v1/topics/%s/components?where=tags:common,tags:tag_1' %  # noqa
+                    topic_user_id)
+    assert len(res.data['components']) == 1
+    assert 'tag_1' in res.data['components'][0]['tags']
+    assert 'tag_2' not in res.data['components'][0]['tags']
+
+    res = admin.get('/api/v1/topics/%s/components?where=tags:common' %  # noqa
+                    topic_user_id)
+    assert len(res.data['components']) == 2
+    assert 'common' in res.data['components'][0]['tags']
+    assert 'common' in res.data['components'][1]['tags']
 
 
 def test_purge(admin, components_user_ids, topic_user_id):
