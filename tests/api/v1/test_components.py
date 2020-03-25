@@ -101,6 +101,20 @@ def test_create_components_with_same_name_and_different_type(admin, topic_id):
     assert pstatus_code == 201
 
 
+def test_create_component_with_tags(admin, topic_id):
+    data = {'name': 'pname',
+            'type': 'first_type',
+            'topic_id': topic_id,
+            'tags': ['tag1', 'tag2']}
+    cmpt = admin.post('/api/v1/components', data=data)
+    assert cmpt.status_code == 201
+
+    cmpt = admin.get('/api/v1/components/%s' % cmpt.data['component']['id'])
+    assert cmpt.status_code == 200
+
+    assert cmpt.data['component']['tags'] == ['tag1', 'tag2']
+
+
 def test_get_all_components(admin, topic_id):
     created_c_ids = []
     for i in range(5):
@@ -279,6 +293,23 @@ def test_put_component(admin, user, topic_id):
 
     assert ct_1['etag'] != ct_2['etag']
     assert ct_2['name'] == 'cname2'
+
+
+def test_update_component_with_tags(admin, topic_id):
+    data = {'name': 'pname',
+            'type': 'first_type',
+            'topic_id': topic_id,
+            'tags': ['tag1', 'tag2']}
+    cmpt = admin.post('/api/v1/components', data=data)
+    assert cmpt.status_code == 201
+
+    etag = cmpt.data['component']['etag']
+    data = {'tags': ['hihi', 'haha']}
+    admin.put('/api/v1/components/%s' % cmpt.data['component']['id'],
+              data=data, headers={'If-match': etag})
+
+    cmpt = admin.get('/api/v1/components/%s' % cmpt.data['component']['id'])
+    assert cmpt.data['component']['tags'] == ['hihi', 'haha']
 
 
 def test_add_file_to_component(admin, topic_id):
@@ -501,35 +532,64 @@ def test_verify_and_get_components_ids(engine, admin, topic, topic_user_id):
 
 def test_add_tags_components(admin, components_ids):
     pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
-                    data={'name': 'my_tag'})
+                    data={'name': 'my_tag_1'})
     assert pt.status_code == 201
 
-
-def test_get_tags_components(admin, components_ids):
-    gt = admin.get('/api/v1/components/%s/tags' % (components_ids[0]))
-    count = gt.data['_meta']['count']
-
-    for i in range(3):
-        admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
-                   data={'name': 'name_%s' % i})
-    gt = admin.get('/api/v1/components/%s/tags' % (components_ids[0]))
-    assert gt.status_code == 200
-    assert len(gt.data['tags']) == count + 3
-
-
-def test_delete_tags_components(admin, components_ids):
     pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
-                    data={'name': 'my_tag'})
-    tag_id = pt.data['tag']['id']
+                    data={'name': 'my_tag_1'})
     assert pt.status_code == 201
-    pt = admin.delete('/api/v1/components/%s/tags/%s' % (components_ids[0],
-                                                         tag_id))
-    assert pt.status_code == 204
 
-    gt = admin.get('/api/v1/components/%s/tags' % (components_ids[0]))
+    pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
+                    data={'name': 'my_tag_2'})
+    assert pt.status_code == 201
+
+    gt = admin.get('/api/v1/components/%s' % components_ids[0])
     assert gt.status_code == 200
-    count = gt.data['_meta']['count']
-    assert count == 0
+    assert gt.data['component']['tags'] == ['my_tag_1', 'my_tag_2']
+
+
+def test_delete_tags_from_components(admin, components_ids):
+    pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
+                    data={'name': 'my_tag_1'})
+    assert pt.status_code == 201
+
+    pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
+                    data={'name': 'my_tag_2'})
+    assert pt.status_code == 201
+
+    dt = admin.delete('/api/v1/components/%s/tags' % (components_ids[0]),
+                      data={'name': 'my_tag_2'})
+    assert dt.status_code == 204
+
+    gt = admin.get('/api/v1/components/%s' % components_ids[0])
+    assert gt.status_code == 200
+    assert 'my_tag_1' in gt.data['component']['tags']
+    assert 'my_tag_2' not in gt.data['component']['tags']
+
+
+def test_filter_component_by_tag(admin, remoteci_context, components_user_ids,
+                                 topic_user_id):
+    admin.post('/api/v1/components/%s/tags' % components_user_ids[0],
+               data={'name': 'tag_1'})
+    admin.post('/api/v1/components/%s/tags' % components_user_ids[0],
+               data={'name': 'common'})
+
+    admin.post('/api/v1/components/%s/tags' % components_user_ids[1],
+               data={'name': 'tag_2'})
+    admin.post('/api/v1/components/%s/tags' % components_user_ids[1],
+               data={'name': 'common'})
+
+    res = admin.get('/api/v1/topics/%s/components?where=tags:common,tags:tag_1' %  # noqa
+                    topic_user_id)
+    assert len(res.data['components']) == 1
+    assert 'tag_1' in res.data['components'][0]['tags']
+    assert 'tag_2' not in res.data['components'][0]['tags']
+
+    res = admin.get('/api/v1/topics/%s/components?where=tags:common' %  # noqa
+                    topic_user_id)
+    assert len(res.data['components']) == 2
+    assert 'common' in res.data['components'][0]['tags']
+    assert 'common' in res.data['components'][1]['tags']
 
 
 def test_purge(admin, components_user_ids, topic_user_id):
