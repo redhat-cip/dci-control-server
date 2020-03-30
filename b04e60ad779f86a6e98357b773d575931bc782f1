@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "1aa35051_a6ee5491",
+        "filename": "dci/app.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-03-30T23:12:25Z",
+      "side": 1,
+      "message": "What about logger.error() or logger.exception() instead ?\n\nIt would make it easier to locate these in the logs (if they have any value, if they don\u0027t have any value, just don\u0027t log).\n\nYou\u0027d have the traceback fror free using logger.exception() (provided that you modify a little bit the .to_dict() part.",
+      "range": {
+        "startLine": 130,
+        "startChar": 0,
+        "endLine": 131,
+        "endChar": 43
+      },
+      "revId": "b04e60ad779f86a6e98357b773d575931bc782f1",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    }
+  ]
+}
