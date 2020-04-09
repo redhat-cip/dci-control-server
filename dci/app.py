@@ -119,8 +119,7 @@ def create_app(param=None):
     def handle_api_exception(api_exception):
         response = flask.jsonify(api_exception.to_dict())
         response.status_code = api_exception.status_code
-        logger.info(api_exception.message)
-        logger.info(traceback.format_exc())
+        logger.exception(api_exception)
         return response
 
     def handle_dbapi_exception(dbapi_exception):
