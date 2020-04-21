@@ -11,7 +11,7 @@ COPY requirements.txt /opt/dci-control-server/
 RUN yum -y install epel-release && \
     yum -y install gcc git zeromq-devel \
     python python2-devel python2-pip python2-setuptools \
-    python34 python34-devel python34-pip python34-setuptools && \
+    python36 python36-devel python36-pip python34-setuptools && \
     yum clean all && \
     pip install --no-cache-dir -U pip && \
     pip install --no-cache-dir -U tox && \
