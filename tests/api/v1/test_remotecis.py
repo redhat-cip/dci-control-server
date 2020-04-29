@@ -452,6 +452,39 @@ def test_get_subscribed_remotecis(remoteci_user_id, user, user_id):
     assert response.data["remotecis"][0]["id"] == remoteci_user_id
 
 
+def test_unsubscribed_remotecis(remoteci_user_id, user, user_id):
+    response = user.get("/api/v1/users/%s/remotecis" % user_id)
+    assert response.data["remotecis"] == []
+    user.post("/api/v1/remotecis/%s/users" % remoteci_user_id)
+    response = user.get("/api/v1/users/%s/remotecis" % user_id)
+    assert response.data["remotecis"][0]["id"] == remoteci_user_id
+    response = user.delete(
+        "/api/v1/remotecis/%s/users/%s" % (remoteci_user_id, user_id)
+    )
+    assert response.status_code == 204
+    response = user.get("/api/v1/users/%s/remotecis" % user_id)
+    assert response.data["remotecis"] == []
+
+
+def test_unsubscribed_remotecis_even_if_remoteci_doesnt_exists(
+    user, user_id, team_user_id
+):
+    remoteci_data = {"name": "to delete", "team_id": team_user_id}
+    response = user.post("/api/v1/remotecis", data=remoteci_data)
+    remoteci = response.data["remoteci"]
+    user.post("/api/v1/remotecis/%s/users" % remoteci["id"])
+    response = user.get("/api/v1/users/%s/remotecis" % user_id)
+    assert response.data["remotecis"][0]["id"] == remoteci["id"]
+    response = user.delete(
+        "/api/v1/remotecis/%s" % remoteci["id"], headers={"If-match": remoteci["etag"]},
+    )
+    assert response.status_code == 204
+    response = user.delete("/api/v1/remotecis/%s/users/%s" % (remoteci["id"], user_id))
+    assert response.status_code == 204
+    response = user.get("/api/v1/users/%s/remotecis" % user_id)
+    assert response.data["remotecis"] == []
+
+
 def test_success_ensure_put_api_secret_is_not_leaked(user, team_user_id):
     """Test to ensure API secret is not leaked during update."""
 
