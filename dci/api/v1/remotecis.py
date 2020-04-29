@@ -249,8 +249,6 @@ def get_all_users_from_remotecis(user, r_id):
 @api.route('/remotecis/<uuid:r_id>/users/<uuid:u_id>', methods=['DELETE'])
 @decorators.login_required
 def delete_user_from_remoteci(user, r_id, u_id):
-    v1_utils.verify_existence_and_get(r_id, _TABLE)
-
     if str(u_id) != user.id and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
