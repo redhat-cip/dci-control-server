@@ -166,7 +166,7 @@ def _build_job(product_id, topic_id, remoteci, components_ids, values,
                 models.JOIN_JOBS_COMPONENTS.insert(), job_components
             )
         if len(s_schedule_components_ids) > 0:
-                # Adds the components to the jobs using join_jobs_components
+            # Adds the components to the jobs using join_jobs_components
             job_components = [
                 {'job_id': values['id'], 'component_id': sci}
                 for sci in s_schedule_components_ids
