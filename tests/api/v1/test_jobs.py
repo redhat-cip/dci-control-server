@@ -173,26 +173,26 @@ def test_get_all_jobs_with_embed(admin, remoteci_context, team_user_id,
         assert cur_set == set(components_user_ids)
 
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
-            mockito = mock.MagicMock()
-            head_result = {
-                'etag': utils.gen_etag(),
-                'content-type': "stream",
-                'content-length': 7
-            }
+        mockito = mock.MagicMock()
+        head_result = {
+            'etag': utils.gen_etag(),
+            'content-type': "stream",
+            'content-length': 7
+        }
 
-            def get(a):
-                return True, six.StringIO(JUNIT),
+        def get(a):
+            return True, six.StringIO(JUNIT),
 
-            mockito.head.return_value = head_result
-            mockito.get = get
-            mock_swift.return_value = mockito
-            query = ('/api/v1/jobs')
-            jobs = admin.get(query).data
-            for job in jobs['jobs']:
-                headers = {'DCI-JOB-ID': job['id'],
-                           'DCI-NAME': 'name1',
-                           'DCI-MIME': 'application/junit'}
-                admin.post('/api/v1/files', headers=headers, data=JUNIT)
+        mockito.head.return_value = head_result
+        mockito.get = get
+        mock_swift.return_value = mockito
+        query = ('/api/v1/jobs')
+        jobs = admin.get(query).data
+        for job in jobs['jobs']:
+            headers = {'DCI-JOB-ID': job['id'],
+                       'DCI-NAME': 'name1',
+                       'DCI-MIME': 'application/junit'}
+            admin.post('/api/v1/files', headers=headers, data=JUNIT)
     jobs = admin.get('/api/v1/jobs?embed=results').data
     assert jobs['_meta']['count'] == 2
     assert len(jobs['jobs']) == 2

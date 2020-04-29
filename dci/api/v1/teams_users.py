@@ -34,7 +34,7 @@ def add_user_to_team(user, team_id, user_id):
     if (team_id == flask.g.team_admin_id or
         team_id == flask.g.team_redhat_id or
         team_id == flask.g.team_epm_id) and user.is_not_super_admin():
-            raise dci_exc.Unauthorized()
+        raise dci_exc.Unauthorized()
 
     if user.is_not_epm():
         raise dci_exc.Unauthorized()
