@@ -107,9 +107,9 @@ def verify_repo_access(user):
     if topic["export_control"] is True:
         return flask.Response(None, 200)
 
-    if not export_control.is_teams_associated_to_topic(team_ids, topic_id):
+    if not export_control.is_teams_exportable(team_ids):
         raise dci_exc.DCIException(
-            message="team %s is not associated to the topic %s" % (team["name"], topic["name"]),  # noqa
+            message="team %s/%s is not exportable" % (team["name"], team['id']),
             status_code=403)
 
     return flask.Response(None, 200)

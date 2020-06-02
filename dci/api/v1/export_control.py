@@ -31,15 +31,6 @@ def is_teams_associated_to_product(team_ids, product_id):
     return result.rowcount > 0
 
 
-def is_teams_associated_to_topic(team_ids, topic_id):
-    q_get_topic__team = sql.select([models.JOINS_TOPICS_TEAMS]).where(
-        sql.and_(models.JOINS_TOPICS_TEAMS.c.team_id.in_(team_ids),
-                 models.JOINS_TOPICS_TEAMS.c.topic_id == topic_id)
-    )
-    result = flask.g.db_conn.execute(q_get_topic__team)
-    return result.rowcount > 0
-
-
 def is_teams_exportable(team_ids):
     q_get_teams__exportable = sql.select([models.TEAMS]).where(
         models.TEAMS.c.id.in_(team_ids)

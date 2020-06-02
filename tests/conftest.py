@@ -531,7 +531,7 @@ def cakeys():
 
 
 @pytest.fixture
-def RHELProduct(admin):
+def RHELProduct(admin, team_id):
     data = {"name": "RHEL", "label": "RHEL", "description": "Red Hat Entreprise Linux"}
     return admin.post("/api/v1/products", data=data).data["product"]
 
