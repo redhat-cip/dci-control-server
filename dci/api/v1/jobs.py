@@ -255,6 +255,15 @@ def schedule_jobs(user):
         raise dci_exc.DCIException(msg, status_code=412)
     export_control.verify_access_to_topic(user, topic)
 
+    # if topic is virtual then schedule on a real topic
+    if topic['virtual'] is True:
+        if topic['real_topic_id'] is None:
+            _msg = 'Virtual topic %s/%s is not associated to a real topic' % (topic['name'], topic['id'])  # noqa
+            raise dci_exc.DCIException(_msg, status_code=412)
+        topic = v1_utils.verify_existence_and_get(topic['real_topic_id'], models.TOPICS)
+        export_control.verify_access_to_topic(user, topic)
+        topic_id = topic['id']
+
     # check secondary topic
     topic_id_secondary = values.pop('topic_id_secondary')
     if topic_id_secondary:
