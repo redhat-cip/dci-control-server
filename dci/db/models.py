@@ -133,6 +133,10 @@ TOPICS = sa.Table(
               server_default='false'),
     sa.Column('state', STATES, default='active'),
     sa.Column('data', sa_utils.JSONType, default={}),
+    sa.Column('virtual', sa.BOOLEAN, default=False, server_default='false'),
+    sa.Column('virtual_topic_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('topics.id'),
+              nullable=True),
     sa.Index('topics_product_id_idx', 'product_id'),
     sa.Index('topics_next_topic_id_idx', 'next_topic_id')
 )

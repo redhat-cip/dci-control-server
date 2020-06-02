@@ -36,8 +36,22 @@ def is_teams_associated_to_topic(team_ids, topic_id):
         sql.and_(models.JOINS_TOPICS_TEAMS.c.team_id.in_(team_ids),
                  models.JOINS_TOPICS_TEAMS.c.topic_id == topic_id)
     )
-    result = flask.g.db_conn.execute(q_get_topic__team)
-    return result.rowcount > 0
+    result_real_topic = flask.g.db_conn.execute(q_get_topic__team)
+    nb_real_topic = result_real_topic.rowcount
+    if nb_real_topic > 0:
+        return True
+
+    nb_virtual_topic = 0
+    real_topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+    if real_topic['virtual_topic_id'] is not None:
+        virtual_topic_id = real_topic['virtual_topic_id']
+        q_get_topic__team = sql.select([models.JOINS_TOPICS_TEAMS]).where(
+            sql.and_(models.JOINS_TOPICS_TEAMS.c.team_id.in_(team_ids),
+                     models.JOINS_TOPICS_TEAMS.c.topic_id == virtual_topic_id))
+        result_virtual_topic = flask.g.db_conn.execute(q_get_topic__team)
+        nb_virtual_topic = result_virtual_topic.rowcount
+
+    return nb_virtual_topic > 0
 
 
 def has_access_to_topic(user, topic):

@@ -27,6 +27,7 @@ from dci.api.v1 import components
 from dci.api.v1 import utils as v1_utils
 from dci.api.v1 import jobs_events
 from dci.api.v1 import tags
+from dci.api.v1 import topics
 from dci import decorators
 from dci.common import audits
 from dci.common import exceptions as dci_exc
@@ -201,6 +202,14 @@ def _get_job(user, job_id, embed=None):
     return job, nb_rows
 
 
+def get_latest_real_topic(virtual_topic_id):
+    query = v1_utils.QueryBuilder(models.TOPICS, {'sort': ['-created_at']}, topics._T_COLUMNS)  # noqa
+    query.add_extra_condition(models.TOPICS.c.virtual_topic_id == virtual_topic_id)
+    query.add_extra_condition(models.TOPICS.c.virtual == False)  # noqa
+    real_topic = query.execute(fetchone=True)
+    return dict(real_topic)
+
+
 @api.route('/jobs/schedule', methods=['POST'])
 @decorators.login_required
 def schedule_jobs(user):
@@ -254,6 +263,12 @@ def schedule_jobs(user):
         msg = 'Topic %s:%s not active.' % (topic_id, topic['name'])
         raise dci_exc.DCIException(msg, status_code=412)
     export_control.verify_access_to_topic(user, topic)
+
+    # if topic is virtual then schedule on a real topic
+    if topic['virtual'] is True:
+        topic = get_latest_real_topic(topic['id'])
+        topic = v1_utils.verify_existence_and_get(topic['topics_id'], models.TOPICS)
+        topic_id = topic['id']
 
     # check secondary topic
     topic_id_secondary = values.pop('topic_id_secondary')

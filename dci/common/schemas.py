@@ -489,6 +489,8 @@ create_topic_properties = {
     "data": with_default(Properties.json, {}),
     "product_id": Properties.uuid,
     "next_topic_id": with_default(Properties.uuid, None),
+    "virtual": with_default(Properties.boolean, False),
+    "virtual_topic_id": with_default(Properties.uuid, None),
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "component_types": with_default(Properties.array, []),
     "export_control": with_default(Properties.boolean, False),
