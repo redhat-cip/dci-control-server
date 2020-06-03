@@ -213,9 +213,11 @@ def team_product_id(admin):
 
 
 @pytest.fixture
-def team_user_id(admin):
+def team_user_id(admin, product_id):
     team = admin.get('/api/v1/teams?where=name:user')
     team = admin.get('/api/v1/teams/%s' % team.data['teams'][0]['id']).data
+    admin.post('/api/v1/products/%s/teams' % (product_id),
+               data={'team_id': str(team['team']['id'])})
     return str(team['team']['id'])
 
 
@@ -243,7 +245,8 @@ def team_epm_id(admin):
 @pytest.fixture
 def topic_user(admin, user, team_user_id, product):
     data = {'name': 'topic_user_name', 'product_id': product['id'],
-            'component_types': ['type_1', 'type_2', 'type_3']}
+            'component_types': ['type_1', 'type_2', 'type_3'],
+            'export_control': True}
     topic = admin.post('/api/v1/topics', data=data).data
     t_id = topic['topic']['id']
     admin.post('/api/v1/topics/%s/teams' % t_id,

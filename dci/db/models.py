@@ -179,8 +179,8 @@ TEAMS = sa.Table(
     sa.Column('country', sa.String(255), nullable=True),
     sa.Column('state', STATES, default='active'),
     sa.Column('external', sa.BOOLEAN, default=True),
+    sa.Column('exportable', sa.BOOLEAN, default=True),
     sa.UniqueConstraint('name', name='teams_name_key')
-
 )
 
 

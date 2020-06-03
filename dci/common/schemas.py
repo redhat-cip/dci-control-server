@@ -539,7 +539,8 @@ create_team_properties = {
     "name": Properties.string,
     "country": with_default(Properties.string, None),
     "state": with_default(Properties.enum(valid_resource_states), "active"),
-    "external": with_default(Properties.boolean, False)
+    "external": with_default(Properties.boolean, False),
+    "exportable": with_default(Properties.boolean, True)
 }
 create_team_schema = {
     "type": "object",

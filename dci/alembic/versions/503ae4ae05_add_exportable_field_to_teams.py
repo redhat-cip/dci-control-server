@@ -1,5 +1,5 @@
 #
-# Copyright (C) 2019 Red Hat, Inc
+# Copyright (C) 2020 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -13,35 +13,28 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-"""add join products teams
+"""Add exportable field to teams
 
-Revision ID: 236e3b2c2a3d
-Revises: 3eccf653cd30
-Create Date: 2019-05-31 19:12:57.166953
+Revision ID: 503ae4ae05
+Revises: 45e44e338043
+Create Date: 2020-06-04 20:55:12.704269
 
 """
 
 # revision identifiers, used by Alembic.
-revision = '236e3b2c2a3d'
-down_revision = '3eccf653cd30'
+revision = '503ae4ae05'
+down_revision = '45e44e338043'
 branch_labels = None
 depends_on = None
 
 from alembic import op
 import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql as pg
 
 
 def upgrade():
-    op.create_table(
-        'products_teams',
-        sa.Column('product_id', pg.UUID(as_uuid=True),
-                  sa.ForeignKey('products.id', ondelete='CASCADE'),
-                  nullable=False, primary_key=True),
-        sa.Column('team_id', pg.UUID(as_uuid=True),
-                  sa.ForeignKey('teams.id', ondelete='CASCADE'),
-                  nullable=False, primary_key=True),
-    )
+    op.add_column(
+        'teams',
+        sa.Column('exportable', sa.BOOLEAN, default=True, server_default='true'))
 
 
 def downgrade():

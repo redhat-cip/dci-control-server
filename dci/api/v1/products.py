@@ -171,20 +171,19 @@ def add_team_to_product(user, product_id):
 
     team_id = values.get('team_id')
     product = v1_utils.verify_existence_and_get(product_id, _TABLE)
-    team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
-                                                get_id=True)
+    team = v1_utils.verify_existence_and_get(team_id, models.TEAMS)
 
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     values = {'product_id': product['id'],
-              'team_id': team_id}
+              'team_id': team['id']}
     query = models.JOIN_PRODUCTS_TEAMS.insert().values(**values)
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(models.JOIN_PRODUCTS_TEAMS.name,
-                                          'product_id', 'team_id')
+        raise dci_exc.DCIException('team %s/%s already associated to product %s/%s' %
+                                   (team['name'], team['id'], product['name'], product['id']))  # noqa
 
     result = json.dumps(values)
     return flask.Response(result, 201, content_type='application/json')

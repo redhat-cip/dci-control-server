@@ -136,10 +136,6 @@ def test_get_all_topics_by_admin(admin, product):
 
 def test_get_all_topics_by_user_and_remoteci(admin, user, remoteci_context,
                                              team_user_id, product):
-    pat = admin.post('/api/v1/products/%s/teams' % product['id'],
-                     data={'team_id': team_user_id})
-    assert pat.status_code == 201
-
     def test(caller, topic_name):
         # create a topic with export_control==False
         my_topic = admin.post('/api/v1/topics',
@@ -221,9 +217,6 @@ def test_get_all_topics_with_where(admin, product):
 
 
 def test_get_topics_of_user(admin, user, team_user_id, product):
-    pat = admin.post('/api/v1/products/%s/teams' % product['id'],
-                     data={'team_id': team_user_id})
-    assert pat.status_code == 201
     data = {'name': 'test_name', 'product_id': product['id'],
             'component_types': ['type1', 'type2']}
     topic = admin.post('/api/v1/topics', data=data).data['topic']
