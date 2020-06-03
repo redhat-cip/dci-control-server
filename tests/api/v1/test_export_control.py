@@ -27,6 +27,10 @@ SWIFT = 'dci.stores.swift.Swift'
 
 def test_topics_export_control_true(user, epm, team_user_id, topic_user_id):
     topic = epm.get('/api/v1/topics/%s' % topic_user_id).data['topic']
+    epm.delete('/api/v1/topics/%s/teams/%s' % (topic_user_id, team_user_id))
+    epm.delete('/api/v1/products/%s/teams/%s' % (topic['product_id'], team_user_id))
+    assert user.get('/api/v1/topics/%s/components' % topic_user_id).status_code == 401  # noqa
+
     res = epm.post('/api/v1/products/%s/teams' % topic['product_id'],
                    data={'team_id': team_user_id})
     assert res.status_code == 201
@@ -41,14 +45,73 @@ def test_topics_export_control_true(user, epm, team_user_id, topic_user_id):
     assert user.get('/api/v1/topics/%s/components' % topic_user_id).status_code == 200  # noqa
 
 
-def test_topics_export_control_false(user, admin, team_user_id, topic_user_id):
-    topic = admin.get('/api/v1/topics/%s' % topic_user_id).data['topic']
-
+def test_topics_export_control_false(user, epm, team_user_id, topic_user_id):
+    topic = epm.get('/api/v1/topics/%s' % topic_user_id).data['topic']
     assert topic['export_control'] is False
-    assert user.get('/api/v1/topics/%s/components' % topic_user_id).status_code == 200  # noqa
+    epm.delete('/api/v1/topics/%s/teams/%s' % (topic_user_id, team_user_id))
+    epm.delete('/api/v1/products/%s/teams/%s' % (topic['product_id'], team_user_id))
 
-    # team_user_id is no associated to the product nor to the topic
-    admin.delete('/api/v1/topics/%s/teams/%s' % (topic_user_id, team_user_id))
+    # team_user_id is not associated to the product nor to the topic
+    assert user.get('/api/v1/topics/%s/components' % topic_user_id).status_code == 401  # noqa
+
+    # team_user_id is associated to the product but not to the topic
+    epm.post('/api/v1/products/%s/teams' % topic['product_id'], data={'team_id': team_user_id})  # noqa
+    epm.delete('/api/v1/topics/%s/teams/%s' % (topic_user_id, team_user_id))
+    assert user.get('/api/v1/topics/%s/components' % topic_user_id).status_code == 401  # noqa
+
+
+def test_nrt_product_export_control_true(admin, user, epm, team_user_id, topic_user_id):
+    """ this nrt test highlight the case when a team is associated to a random
+    product then it can access every topics with export_control=true regardless
+    of the product association
+    """
+    topic = epm.get('/api/v1/topics/%s' % topic_user_id).data['topic']
+    epm.put('/api/v1/topics/%s' % topic_user_id,
+            data={'export_control': True},
+            headers={'If-match': topic['etag']})
+
+    # create aside project and assign the team_user_id to it
+    data = {
+        'name': 'name',
+        'label': 'LABEL',
+        'description': 'description'
+    }
+    result = admin.post('/api/v1/products', data=data)
+    res = epm.post('/api/v1/products/%s/teams' % result.data['product']['id'],
+                   data={'team_id': team_user_id})
+    assert res.status_code == 201
+
+    epm.delete('/api/v1/topics/%s/teams/%s' % (topic_user_id, team_user_id))
+    epm.delete('/api/v1/products/%s/teams/%s' % (topic['product_id'], team_user_id))
+
+    # team_user_id is not associated to the product nor to the topic
+    assert user.get('/api/v1/topics/%s/components' % topic_user_id).status_code == 401  # noqa
+
+
+def test_nrt_topic_export_control_false(admin, user, epm, team_user_id, topic_user_id):
+    """ this nrt test highlight the case when a team is associated to a random
+    topic of a product then it can access every topics with regardless of the
+    topic association
+    """
+    topic = epm.get('/api/v1/topics/%s' % topic_user_id).data['topic']
+    assert topic['export_control'] is False
+
+    epm.delete('/api/v1/topics/%s/teams/%s' % (topic_user_id, team_user_id))
+
+    # team_user_id is not associated to the product nor to the topic
+    assert user.get('/api/v1/topics/%s/components' % topic_user_id).status_code == 401  # noqa
+
+    # associate team_user_id to another topic
+    data = {'name': 'tname', 'product_id': topic['product_id'],
+            'component_types': ['type1', 'type2']}
+    pt = epm.post('/api/v1/topics', data=data).data
+    another_topic = pt['topic']
+    assert another_topic['export_control'] is False
+    res = epm.post('/api/v1/topics/%s/teams/' % another_topic['id'],
+                   data={'team_id': team_user_id})
+    assert res.status_code == 201
+
+    # team_user_id is not associated to the product nor to the topic
     assert user.get('/api/v1/topics/%s/components' % topic_user_id).status_code == 401  # noqa
 
 
