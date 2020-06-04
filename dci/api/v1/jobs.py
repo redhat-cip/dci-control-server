@@ -636,7 +636,7 @@ def add_tag_to_job(user, job_id):
         job_values['etag'] = utils.gen_etag()
         tag_name = flask.request.json.get('name')
         tag_name = [tag_name] if tag_name else []
-        job_values['tag'] = job['tag'] + tag_name
+        job_values['tags'] = job['tags'] + tag_name
         query = _TABLE.update().where(_TABLE.c.id == job_id).values(**job_values)
 
         result = flask.g.db_conn.execute(query)
