@@ -255,7 +255,7 @@ JOBS = sa.Table(
               nullable=True, default=None),
     sa.Index('jobs_update_previous_job_id_idx', 'update_previous_job_id'),
     sa.Column('state', STATES, default='active'),
-    sa.Column('tag', pg.ARRAY(sa.Text), default=[])
+    sa.Column('tags', pg.ARRAY(sa.Text), default=[])
 )
 
 TESTS_RESULTS = sa.Table(
