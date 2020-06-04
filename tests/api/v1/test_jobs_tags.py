@@ -15,24 +15,15 @@
 # under the License.
 
 
-def test_create_tag(admin, user, job_user_id):
-    admin.post('/api/v1/tags', data={'name': 'kikoo'})
+def test_add_tag_to_job(admin, user, job_user_id):
     tag = user.post('/api/v1/jobs/%s/tags' % job_user_id,
                     data={'name': 'kikoo'})
     assert tag.status_code == 201
     job = user.get('/api/v1/jobs/%s' % job_user_id).data
-    assert job['job']['tag'] == ['kikoo']
-
-
-def test_implicit_creation_of_tag(admin, user, job_user_id):
-    tag = user.post('/api/v1/jobs/%s/tags' % job_user_id,
-                    data={'name': 'kikooo'})
-    assert tag.status_code == 201
+    assert job['job']['tags'] == ['kikoo']
 
 
 def test_get_all_tags(admin, user, job_user_id):
-    admin.post('/api/v1/tags', data={'name': 'kikoo'})
-    admin.post('/api/v1/tags', data={'name': 'kikoo2'})
 
     user.post('/api/v1/jobs/%s/tags' % job_user_id,
               data={'name': 'kikoo'})
@@ -40,40 +31,31 @@ def test_get_all_tags(admin, user, job_user_id):
               data={'name': 'kikoo2'})
 
     all_tags = user.get('/api/v1/jobs/%s/tags' % job_user_id).data
+    print(all_tags)
     assert len(all_tags['tags']) == 2
-    all_tags = {t['name'] for t in all_tags['tags']}
-    assert all_tags == {'kikoo', 'kikoo2'}
-
-    all_tags_embeds = user.get('/api/v1/jobs/%s?embed=tags' % job_user_id).data   # noqa
-    assert len(all_tags_embeds['job']['tags']) == 2
-    all_tags_embeds = {t['name'] for t in all_tags_embeds['job']['tags']}
-    assert all_tags_embeds == {'kikoo', 'kikoo2'}
+    assert set(all_tags['tags']) == {'kikoo', 'kikoo2'}
 
     job = user.get('/api/v1/jobs/%s' % job_user_id).data
-    assert set(job['job']['tag']) == {'kikoo', 'kikoo2'}
+    assert set(job['job']['tags']) == {'kikoo', 'kikoo2'}
 
 
 def test_delete_tag(admin, user, job_user_id):
-    tag = admin.post('/api/v1/tags', data={'name': 'kikoo'})
-    tag_id = tag.data['tag']['id']
-
     user.post('/api/v1/jobs/%s/tags' % job_user_id,
               data={'name': 'kikoo'})
 
     job = user.get('/api/v1/jobs/%s' % job_user_id).data
-    assert set(job['job']['tag']) == {'kikoo'}
+    assert set(job['job']['tags']) == {'kikoo'}
 
     all_tags = user.get('/api/v1/jobs/%s/tags' % job_user_id).data
     assert len(all_tags['tags']) == 1
 
-    tag_deleted = user.delete('/api/v1/jobs/%s/tags/%s' % (job_user_id,
-                                                           tag_id))
-    assert tag_deleted.status_code == 204
+    assert user.delete('/api/v1/jobs/%s/tags' % job_user_id,
+                       data={'name': 'kikoo'}).status_code == 204
 
     all_tags = user.get('/api/v1/jobs/%s/tags' % job_user_id).data
     assert len(all_tags['tags']) == 0
     job = user.get('/api/v1/jobs/%s' % job_user_id).data
-    assert job['job']['tag'] == []
+    assert job['job']['tags'] == []
 
 
 def test_filter_job_by_tag(user, remoteci_context, components_user_ids,
@@ -100,15 +82,15 @@ def test_filter_job_by_tag(user, remoteci_context, components_user_ids,
     remoteci_context.post('/api/v1/jobs/%s/tags' % job_id_2,
                           data={'name': 'debug'})
 
-    res = user.get('/api/v1/jobs?where=tag:debug,tag:tag_1')
+    res = user.get('/api/v1/jobs?where=tags:debug,tags:tag_1')
     assert len(res.data['jobs']) == 1
 
-    res = user.get('/api/v1/jobs?where=tag:tag_1')
+    res = user.get('/api/v1/jobs?where=tags:tag_1')
     assert len(res.data['jobs']) == 1
-    assert 'tag_1' in res.data['jobs'][0]['tag']
-    assert 'tag_2' not in res.data['jobs'][0]['tag']
+    assert 'tag_1' in res.data['jobs'][0]['tags']
+    assert 'tag_2' not in res.data['jobs'][0]['tags']
 
-    res = user.get('/api/v1/jobs?where=tag:debug')
+    res = user.get('/api/v1/jobs?where=tags:debug')
     assert len(res.data['jobs']) == 2
-    assert 'debug' in res.data['jobs'][0]['tag']
-    assert 'debug' in res.data['jobs'][1]['tag']
+    assert 'debug' in res.data['jobs'][0]['tags']
+    assert 'debug' in res.data['jobs'][1]['tags']
