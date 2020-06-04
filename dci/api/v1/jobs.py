@@ -18,7 +18,6 @@ import datetime
 
 import flask
 from flask import json
-from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
 from dci.api.v1 import api
@@ -26,7 +25,6 @@ from dci.api.v1 import base
 from dci.api.v1 import components
 from dci.api.v1 import utils as v1_utils
 from dci.api.v1 import jobs_events
-from dci.api.v1 import tags
 from dci import decorators
 from dci.common import audits
 from dci.common import exceptions as dci_exc
@@ -597,6 +595,7 @@ def delete_job_by_id(user, j_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
+# TODO: remove this endpoint
 @api.route('/jobs/<uuid:job_id>/tags', methods=['GET'])
 @decorators.login_required
 def get_tags_from_job(user, job_id):
@@ -607,15 +606,10 @@ def get_tags_from_job(user, job_id):
         and user.is_not_epm()):
         raise dci_exc.Unauthorized()
 
-    JTT = models.JOIN_JOBS_TAGS
-    query = (sql.select([models.TAGS])
-             .select_from(JTT.join(models.TAGS))
-             .where(JTT.c.job_id == job_id))
-    rows = flask.g.db_conn.execute(query)
-
-    return flask.jsonify({'tags': rows, '_meta': {'count': rows.rowcount}})
+    return flask.jsonify({'tags': job['tags'], '_meta': {'count': len(job['tags'])}})
 
 
+# TODO: once dci-ansible will not use this endpoint, it will be removed
 @api.route('/jobs/<uuid:job_id>/tags', methods=['POST'])
 @decorators.login_required
 def add_tag_to_job(user, job_id):
@@ -625,57 +619,44 @@ def add_tag_to_job(user, job_id):
     if user.is_not_in_team(job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    values = {
-        'job_id': job_id
-    }
-
     with flask.g.db_conn.begin():
-        job_tagged = tags.add_tag_to_resource(values, models.JOIN_JOBS_TAGS)
         # update the job tag field
         job_values = {}
         job_values['etag'] = utils.gen_etag()
         tag_name = flask.request.json.get('name')
-        tag_name = [tag_name] if tag_name else []
-        job_values['tag'] = job['tag'] + tag_name
-        query = _TABLE.update().where(_TABLE.c.id == job_id).values(**job_values)
+        if tag_name and tag_name not in job['tags']:
+            job_values['tags'] = job['tags'] + [tag_name]
+            query = _TABLE.update().\
+                where(_TABLE.c.id == job_id).values(**job_values)
 
-        result = flask.g.db_conn.execute(query)
-        if not result.rowcount:
-            raise dci_exc.DCIConflict('Job', job_id)
+            result = flask.g.db_conn.execute(query)
+            if not result.rowcount:
+                raise dci_exc.DCIConflict('Job', job_id)
 
-    return flask.Response(json.dumps(job_tagged), 201,
+    return flask.Response(json.dumps(job), 201,
                           content_type='application/json')
 
 
-@api.route('/jobs/<uuid:job_id>/tags/<uuid:tag_id>', methods=['DELETE'])
+@api.route('/jobs/<uuid:job_id>/tags', methods=['DELETE'])
 @decorators.login_required
-def delete_tag_from_job(user, job_id, tag_id):
+def delete_tag_from_job(user, job_id):
     """Delete a tag from a job."""
 
-    _JJT = models.JOIN_JOBS_TAGS
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     if user.is_not_in_team(job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
-    tag = v1_utils.verify_existence_and_get(tag_id, models.TAGS)
-    tag_name = tag['name']
+    tag_name = flask.request.json.get('name')
 
     with flask.g.db_conn.begin():
-        query = _JJT.delete().where(sql.and_(_JJT.c.tag_id == tag_id,
-                                             _JJT.c.job_id == job_id))
-        try:
-            flask.g.db_conn.execute(query)
-        except sa_exc.IntegrityError:
-            raise dci_exc.DCICreationConflict('tag', 'tag_id')
-            # update the job tag field
         job_values = {}
         job_values['etag'] = utils.gen_etag()
-        tag_name = [tag_name] if tag_name else []
-        job_values['tag'] = list(set(job['tag']) - set(tag_name))
-        query = _TABLE.update().where(_TABLE.c.id == job_id).values(**job_values)
+        if tag_name and tag_name in job['tags']:
+            job_values['tags'] = list(set(job['tags']) - set([tag_name]))
+            query = _TABLE.update().where(_TABLE.c.id == job_id).values(**job_values)
 
-        result = flask.g.db_conn.execute(query)
-        if not result.rowcount:
-            raise dci_exc.DCIConflict('Job', job_id)
+            result = flask.g.db_conn.execute(query)
+            if not result.rowcount:
+                raise dci_exc.DCIConflict('Job', job_id)
 
     return flask.Response(None, 204, content_type='application/json')
 

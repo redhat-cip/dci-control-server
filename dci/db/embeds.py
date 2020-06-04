@@ -109,13 +109,6 @@ def jobs(root_select=models.JOBS):
         'analytics': [
             {'right': models.ANALYTICS,
              'onclause': models.ANALYTICS.c.job_id == root_select.c.id,
-             'isouter': True}],
-        'tags': [
-            {'right': models.JOIN_JOBS_TAGS,
-             'onclause': models.JOIN_JOBS_TAGS.c.job_id == root_select.c.id,
-             'isouter': True},
-            {'right': models.TAGS,
-             'onclause': models.TAGS.c.id == models.JOIN_JOBS_TAGS.c.tag_id,  # noqa
              'isouter': True}]
     }
 
