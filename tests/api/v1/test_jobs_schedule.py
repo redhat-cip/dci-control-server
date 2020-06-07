@@ -140,36 +140,6 @@ def test_schedule_jobs_kills_jobs_older_than_one_day(
     assert jobs[-3]['status'] == 'new'
 
 
-def test_schedule_jobs_multi_topics(remoteci_context, remoteci, topic,
-                                    topic_user, admin):
-    headers = {
-        'User-Agent': 'python-dciclient',
-        'Client-Version': 'python-dciclient_0.1.0'
-    }
-    data = {'topic_id': topic['id'],
-            'topic_id_secondary': topic_user['id']}
-    r = remoteci_context.post(
-        '/api/v1/jobs/schedule',
-        headers=headers,
-        data=data
-    )
-    assert r.status_code == 201
-    job = r.data['job']
-    assert job['topic_id'] == topic['id']
-    assert job['user_agent'] == headers['User-Agent']
-    assert job['client_version'] == headers['Client-Version']
-
-    job_infos = admin.get('/api/v1/jobs/%s?embed=topic,components,topicsecondary,componentssecondary' % job['id'])  # noqa
-    assert job_infos.status_code == 200
-    job_infos = job_infos.data['job']
-    assert job_infos['topicsecondary']['id'] == topic_user['id']
-    assert len(job_infos['componentssecondary']) == 3
-
-    job_multi = admin.get('/api/v1/jobs?where=topic_id:%s,topic_id_secondary:%s' % (topic['id'], topic_user['id']))  # noqa
-    assert job_multi.status_code == 200
-    assert job_multi.data['jobs'][0]['id'] == job['id']
-
-
 def test_schedule_a_job_with_dry_run_dont_create_a_job(
         admin, remoteci_context, topic_user_id):
     nb_jobs = admin.get("/api/v1/jobs").data["_meta"]["count"]

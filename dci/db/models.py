@@ -227,9 +227,6 @@ JOBS = sa.Table(
               sa.ForeignKey('topics.id', ondelete='CASCADE'),
               # todo(yassine): nullable=False
               nullable=True),
-    sa.Column('topic_id_secondary', pg.UUID(as_uuid=True),
-              sa.ForeignKey('topics.id', ondelete='CASCADE'),
-              nullable=True),
     sa.Index('jobs_topic_id_idx', 'topic_id'),
     sa.Column('remoteci_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('remotecis.id', ondelete='CASCADE'),
