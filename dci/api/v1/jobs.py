@@ -59,8 +59,6 @@ _EMBED_MANY = {
     'files': True,
     'topic': False,
     'components': True,
-    'topicsecondary': False,
-    'componentssecondary': True,
     'issues': True,
     'jobstates': True,
     'remoteci': False,
@@ -126,26 +124,16 @@ def create_jobs(user):
 
 
 def _build_job(product_id, topic_id, remoteci, components_ids, values,
-               topic_id_secondary=None, previous_job_id=None,
-               update_previous_job_id=None):
+               previous_job_id=None, update_previous_job_id=None):
 
-    # get components of primary topic
+    # get components of topic
     p_component_types = components.get_component_types_from_topic(topic_id)
     p_schedule_components_ids = components.get_schedule_components_ids(
         topic_id, p_component_types, components_ids)
 
-    # get components of secondary topic
-    s_schedule_components_ids = []
-    if topic_id_secondary:
-        s_component_types = components.get_component_types_from_topic(
-            topic_id_secondary)
-        s_schedule_components_ids = components.get_schedule_components_ids(
-            topic_id_secondary, s_component_types, [])
-
     values.update({
         'product_id': product_id,
         'topic_id': topic_id,
-        'topic_id_secondary': topic_id_secondary,
         'team_id': remoteci['team_id'],
         'previous_job_id': previous_job_id,
         'update_previous_job_id': update_previous_job_id
@@ -160,16 +148,6 @@ def _build_job(product_id, topic_id, remoteci, components_ids, values,
             job_components = [
                 {'job_id': values['id'], 'component_id': sci}
                 for sci in p_schedule_components_ids
-            ]
-
-            flask.g.db_conn.execute(
-                models.JOIN_JOBS_COMPONENTS.insert(), job_components
-            )
-        if len(s_schedule_components_ids) > 0:
-            # Adds the components to the jobs using join_jobs_components
-            job_components = [
-                {'job_id': values['id'], 'component_id': sci}
-                for sci in s_schedule_components_ids
             ]
 
             flask.g.db_conn.execute(
@@ -264,22 +242,10 @@ def schedule_jobs(user):
         export_control.verify_access_to_topic(user, topic)
         topic_id = topic['id']
 
-    # check secondary topic
-    topic_id_secondary = values.pop('topic_id_secondary')
-    if topic_id_secondary:
-        topic_secondary = v1_utils.verify_existence_and_get(
-            topic_id_secondary, models.TOPICS)
-        if topic_secondary['state'] != 'active':
-            msg = 'Topic %s:%s not active.' % (topic_id_secondary,
-                                               topic['name'])
-            raise dci_exc.DCIException(msg, status_code=412)
-        export_control.verify_access_to_topic(user, topic_secondary)
-
     remotecis.kill_existing_jobs(remoteci['id'])
 
     components_ids = values.pop('components_ids')
-    values = _build_job(product_id, topic_id, remoteci, components_ids, values,
-                        topic_id_secondary=topic_id_secondary)
+    values = _build_job(product_id, topic_id, remoteci, components_ids, values)
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': values['etag']},
