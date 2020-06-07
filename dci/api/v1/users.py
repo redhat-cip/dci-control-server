@@ -102,7 +102,7 @@ def get_all_users(user):
     query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
 
     if user.is_not_super_admin() and user.is_not_epm():
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
+        raise dci_exc.Unauthorized()
 
     query.add_extra_condition(_TABLE.c.state != 'archived')
 

@@ -319,7 +319,6 @@ create_user_properties = {
     "email": Properties.email,
     "timezone": Properties.string,
     "password": Properties.string,
-    "team_id": Properties.uuid,
     "state": with_default(Properties.enum(valid_resource_states), "active"),
 }
 create_user_schema = {

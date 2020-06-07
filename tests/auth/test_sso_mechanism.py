@@ -134,7 +134,7 @@ def test_sso_auth_get_users(m_datetime, user_sso, app, engine, team_admin_id):
         flask.g.team_admin_id = team_admin_id
         flask.g.db_conn = engine.connect()
         gusers = user_sso.get('/api/v1/users')
-        assert gusers.status_code == 200
+        assert gusers.status_code == 401
 
 
 @mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
