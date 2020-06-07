@@ -218,9 +218,7 @@ def test_delete_team_archive_dependencies(admin, remoteci_context, product,
     user = admin.post('/api/v1/users',
                       data={'name': 'pname', 'password': 'ppass',
                             'fullname': 'P Name',
-                            'email': 'pname@example.org',
-                            'team_id': team_user_id})
-    user_id = user.data['user']['id']
+                            'email': 'pname@example.org'})
     assert user.status_code == 201
 
     remoteci = admin.post('/api/v1/remotecis',
@@ -256,9 +254,6 @@ def test_delete_team_archive_dependencies(admin, remoteci_context, product,
     deleted_team = admin.delete('/api/v1/teams/%s' % team_user_id,
                                 headers={'If-match': team_user_etag})
     assert deleted_team.status_code == 204
-
-    deleted_user = admin.get('/api/v1/users/%s' % user_id)
-    assert deleted_user.status_code == 404
 
     deleted_remoteci = admin.get('/api/v1/remotecis/%s' % remoteci_id)
     assert deleted_remoteci.status_code == 404

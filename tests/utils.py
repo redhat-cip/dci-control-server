@@ -163,8 +163,7 @@ def provision(db_conn):
                      sso_username='user',
                      password=user_pw_hash,
                      fullname='User',
-                     email='user@example.org',
-                     team_id=team_user_id)
+                     email='user@example.org')
 
     db_insert(models.JOIN_USERS_TEAMS,
               return_pk=False,
@@ -177,8 +176,7 @@ def provision(db_conn):
                      sso_username='user_no_team',
                      password=user_no_team_pw_hash,
                      fullname='User No Team',
-                     email='user_no_team@example.org',
-                     team_id=None)
+                     email='user_no_team@example.org')
 
     db_insert(models.JOIN_USERS_TEAMS,
               return_pk=False,
@@ -192,8 +190,7 @@ def provision(db_conn):
         sso_username='rh_employee',
         password=rh_employee_pw_hash,
         fullname='Employee at Red Hat',
-        email='rh_employee@redhat.com',
-        team_id=team_redhat_id
+        email='rh_employee@redhat.com'
     )
     db_insert(
         models.JOIN_USERS_TEAMS,
@@ -208,8 +205,7 @@ def provision(db_conn):
                      sso_username='epm',
                      password=epm_pw_hash,
                      fullname='Partner Engineer',
-                     email='epm@redhat.com',
-                     team_id=team_epm_id)
+                     email='epm@redhat.com')
 
     db_insert(models.JOIN_USERS_TEAMS,
               return_pk=False,
@@ -222,8 +218,7 @@ def provision(db_conn):
                      sso_username='admin',
                      password=admin_pw_hash,
                      fullname='Admin',
-                     email='admin@example.org',
-                     team_id=team_admin_id)
+                     email='admin@example.org')
 
     db_insert(models.JOIN_USERS_TEAMS,
               return_pk=False,

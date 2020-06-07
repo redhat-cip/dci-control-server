@@ -284,25 +284,24 @@ class OpenIDCAuth(BaseMechanism):
         if 'roles' in realm_access and ro_group in realm_access['roles']:
             team_id = flask.g.team_redhat_id
 
-        user_info = self._get_user_info(decoded_token, team_id)
+        user_info = self._get_user_info(decoded_token)
         try:
-            self.identity = self._get_or_create_user(user_info)
+            self.identity = self._get_or_create_user(user_info, team_id)
         except sa_exc.IntegrityError:
             raise dci_exc.DCICreationConflict(models.USERS.name, 'username')
         return True
 
     @staticmethod
-    def _get_user_info(token, team_id):
+    def _get_user_info(token):
         return {
             'name': token.get('username'),
             'fullname': token.get('username'),
             'sso_username': token.get('username'),
-            'team_id': team_id,
             'email': token.get('email'),
             'timezone': 'UTC',
         }
 
-    def _get_or_create_user(self, user_info):
+    def _get_or_create_user(self, user_info, team_id=None):
         constraint = sql.or_(
             models.USERS.c.sso_username == user_info['sso_username'],
             models.USERS.c.email == user_info['sso_username'],
@@ -311,11 +310,11 @@ class OpenIDCAuth(BaseMechanism):
         identity = self.identity_from_db(models.USERS,
                                          constraint)
         if identity is None:
-            u_id = flask.g.db_conn.execute(models.USERS.insert().values(user_info)).inserted_primary_key[0]  # noqa
+            u_id = flask.g.db_conn.execute(models.USERS.insert().values(**user_info)).inserted_primary_key[0]  # noqa
             flask.g.db_conn.execute(
                 models.JOIN_USERS_TEAMS.insert().values(
                     user_id=u_id,
-                    team_id=user_info['team_id']
+                    team_id=team_id
                 )
             )
             identity = self.identity_from_db(models.USERS,
