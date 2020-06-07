@@ -183,7 +183,6 @@ create_job_properties = {
     "update_previous_job_id": with_default(Properties.uuid, None),
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "topic_id": with_default(Properties.uuid, None),
-    "topic_id_secondary": with_default(Properties.uuid, None),
     "tags": with_default(Properties.array, [])
 }
 create_job_schema = {
@@ -219,7 +218,6 @@ schedule_job_schema = {
         "remoteci_id": Properties.uuid,
         "dry_run": with_default(Properties.boolean, False),
         "topic_id": Properties.uuid,
-        "topic_id_secondary": with_default(Properties.uuid, None),
         "components_ids": with_default(Properties.array, []),
     },
     "required": ["topic_id"],
