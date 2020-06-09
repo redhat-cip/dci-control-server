@@ -1,0 +1,55 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "126ceb12_8eb6f44e",
+        "filename": "dci/worker/umb.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 606
+      },
+      "writtenOn": "2020-06-09T17:53:55Z",
+      "side": 1,
+      "message": "would be nice to get these values out of a config file no?",
+      "revId": "ef28bc1bfd4da15dcd9baf08078c3b18c768b10a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d530c30f_1a9c9ecf",
+        "filename": "dci/worker/umb.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 606
+      },
+      "writtenOn": "2020-06-09T17:53:55Z",
+      "side": 1,
+      "message": "all of this feels like it should be in a config file.",
+      "revId": "ef28bc1bfd4da15dcd9baf08078c3b18c768b10a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "6251a56b_66fafdda",
+        "filename": "dci/worker/umb.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 606
+      },
+      "writtenOn": "2020-06-09T17:53:55Z",
+      "side": 1,
+      "message": "What is this architecture here?  What about SAP?",
+      "revId": "ef28bc1bfd4da15dcd9baf08078c3b18c768b10a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
