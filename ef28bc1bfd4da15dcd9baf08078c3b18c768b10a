@@ -19,6 +19,24 @@
     },
     {
       "key": {
+        "uuid": "94d0e9ee_379f6b32",
+        "filename": "dci/worker/umb.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 20,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-06-10T11:04:16Z",
+      "side": 1,
+      "message": "Hum, I don\u0027t understand, do you need to change the url where you are going to visualize the log?\n\nOr do you speak about the target umb link ?",
+      "parentUuid": "126ceb12_8eb6f44e",
+      "revId": "ef28bc1bfd4da15dcd9baf08078c3b18c768b10a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "d530c30f_1a9c9ecf",
         "filename": "dci/worker/umb.py",
         "patchSetId": 9
@@ -36,6 +54,24 @@
     },
     {
       "key": {
+        "uuid": "679afd1f_bb3bcfd3",
+        "filename": "dci/worker/umb.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 31,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-06-10T11:04:16Z",
+      "side": 1,
+      "message": "Do you need to change this value ? This is the contact info required in an UMB event. I don\u0027t think we need to configure this differently regarding the environment no?",
+      "parentUuid": "d530c30f_1a9c9ecf",
+      "revId": "ef28bc1bfd4da15dcd9baf08078c3b18c768b10a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "6251a56b_66fafdda",
         "filename": "dci/worker/umb.py",
         "patchSetId": 9
@@ -47,6 +83,24 @@
       "writtenOn": "2020-06-09T17:53:55Z",
       "side": 1,
       "message": "What is this architecture here?  What about SAP?",
+      "revId": "ef28bc1bfd4da15dcd9baf08078c3b18c768b10a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "1828f110_852655f5",
+        "filename": "dci/worker/umb.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-06-10T11:04:16Z",
+      "side": 1,
+      "message": "Yes we don\u0027t have a way to get the architecture from the job right now. I don\u0027t know how we are going to handle this. Should we look at the tag associated with the job?",
+      "parentUuid": "6251a56b_66fafdda",
       "revId": "ef28bc1bfd4da15dcd9baf08078c3b18c768b10a",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
