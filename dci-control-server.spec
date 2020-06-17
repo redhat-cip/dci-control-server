@@ -117,7 +117,6 @@ The implementation of the DCI control server API.
 
 %prep -a
 %autosetup -n %{name}-%{version}
-sed -i "s/==/>=/g" requirements.txt
 
 %build
 %if 0%{?with_python2}
