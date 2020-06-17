@@ -4,10 +4,6 @@
 %else
 %global with_python3 1
 %global python_sitelib %{python3_sitelib}
-# we pin requirements wich are not met by packages in repo
-# so we either need to disable the generator or fix the versions
-# in requirements.txt
-%{?python_disable_dependency_generator}
 %endif
 
 Name:           dci-control-server
@@ -121,6 +117,7 @@ The implementation of the DCI control server API.
 
 %prep -a
 %autosetup -n %{name}-%{version}
+sed -i "s/==/>=/g" requirements.txt
 
 %build
 %if 0%{?with_python2}
