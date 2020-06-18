@@ -46,6 +46,30 @@
       "revId": "d093ca57bca62cce7fc8f06c9af090b066e3dcf9",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "cab1f158_f6d23971",
+        "filename": "dci/api/v1/users.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 105,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-06-18T11:34:18Z",
+      "side": 1,
+      "message": "ack make sense!",
+      "parentUuid": "e7e1ffcb_7cb065cc",
+      "range": {
+        "startLine": 105,
+        "startChar": 0,
+        "endLine": 105,
+        "endChar": 36
+      },
+      "revId": "d093ca57bca62cce7fc8f06c9af090b066e3dcf9",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
