@@ -18,8 +18,11 @@ from dci import stores
 from dci.common import exceptions
 from dci.stores import files_utils
 
+import logging
 import os
 import errno
+
+logger = logging.getLogger(__name__)
 
 
 class FileSystem(stores.Store):
@@ -31,12 +34,14 @@ class FileSystem(stores.Store):
         self._root_directory = os.path.join(self.path, self.container)
 
     def delete(self, filename):
+        file_path = os.path.join(self._root_directory, filename)
         try:
-            os.remove(os.path.join(self._root_directory, filename))
+            os.remove(file_path)
         except OSError as e:
             status_code = 400
             if e.errno == errno.ENOENT:
-                status_code = 404
+                logger.warn('file %s not found in local filesystem' % file_path)
+                return
             raise exceptions.StoreExceptions('Error while deleting file '
                                              '%s: %s' % (filename, str(e)),
                                              status_code=status_code)
