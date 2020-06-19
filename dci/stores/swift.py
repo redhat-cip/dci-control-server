@@ -82,6 +82,9 @@ class Swift(stores.Store):
             self.connection.delete_object(self.container, filename,
                                           headers={'X-Delete-After': 1})
         except swiftclient.exceptions.ClientException as e:
+            if e.http_status == 404:
+                # it's a 404 error, we can ignore it
+                return
             raise exceptions.StoreExceptions('Error while deleting file '
                                              '%s: %s' % (filename, str(e)),
                                              status_code=e.http_status)

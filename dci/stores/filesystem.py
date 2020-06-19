@@ -36,7 +36,8 @@ class FileSystem(stores.Store):
         except OSError as e:
             status_code = 400
             if e.errno == errno.ENOENT:
-                status_code = 404
+                # it's a 404 error, we can ignore it
+                return
             raise exceptions.StoreExceptions('Error while deleting file '
                                              '%s: %s' % (filename, str(e)),
                                              status_code=status_code)
