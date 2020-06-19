@@ -362,14 +362,15 @@ def purge_archived_files(user):
             file_path = files_utils.build_file_path(file['team_id'],
                                                     file['job_id'],
                                                     file['id'])
-            store.delete(file_path)
+            try:
+                store.delete(file_path)
+            except dci_exc.StoreExceptions as e:
+                if e.status_code == 404:
+                    logger.warn('file %s not found in store' % file_path)
+                else:
+                    raise e
             tx.commit()
             logger.debug('file %s removed' % file_path)
-        except dci_exc.StoreExceptions as e:
-            if e.status_code == 404:
-                logger.warn('file %s not found in store' % file_path)
-            else:
-                raise e
         except sa_exc.DBAPIError as e:
             logger.error('Error while removing file %s, message: %s'
                          % (file_path, str(e)))

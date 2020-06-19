@@ -501,13 +501,14 @@ def purge_archived_components(user):
                 q_delete_cfile = models.COMPONENT_FILES.delete().\
                     where(models.COMPONENT_FILES.c.id == cmpt_file['id'])
                 flask.g.db_conn.execute(q_delete_cfile)
-                store.delete(file_path)
+                try:
+                    store.delete(file_path)
+                except dci_exc.StoreExceptions as e:
+                    if e.status_code == 404:
+                        logger.warn('file %s not found in store' % file_path)
+                    else:
+                        raise e
                 tx.commit()
-            except dci_exc.StoreExceptions as e:
-                if e.status_code == 404:
-                    logger.warn('file %s not found in store' % file_path)
-                else:
-                    raise e
             except Exception as e:
                 tx.rollback()
                 logger.error('Error while removing component file %s, message: %s'
