@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "87b9adac_312a31c7",
+        "filename": "dci/api/v1/notifications.py",
+        "patchSetId": 12
+      },
+      "lineNbr": 137,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-06-22T09:14:14Z",
+      "side": 1,
+      "message": "nitpick: job_finised or job_finished ?",
+      "range": {
+        "startLine": 135,
+        "startChar": 0,
+        "endLine": 137,
+        "endChar": 34
+      },
+      "revId": "e2074b1c5d8dafe9bc9e0439df799cc7b39e86c7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
