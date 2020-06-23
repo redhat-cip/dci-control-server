@@ -40,6 +40,7 @@ BuildRequires:  python-werkzeug
 BuildRequires:  python-zmq
 BuildRequires:  python-jwt
 BuildRequires:  python-dciauth
+BuildRequires:  dci-umb
 BuildRequires:  python2-pytest
 BuildRequires:  python2-rpm-macros
 BuildRequires:  python2-swiftclient
@@ -86,6 +87,7 @@ Requires:       python-werkzeug
 Requires:       python-zmq
 Requires:       python-jwt
 Requires:       python-dciauth
+Requires:       dci-umb
 Requires:       python2-swiftclient
 Requires:       python2-jsonschema
 Requires:       pytz
