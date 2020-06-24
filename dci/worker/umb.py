@@ -1,4 +1,5 @@
 import datetime
+import json
 import os
 import logging
 
@@ -21,7 +22,7 @@ def build_umb_messages(event, now=datetime.datetime.utcnow()):
             messages.append(
                 {
                     "target": target,
-                    "body": {
+                    "body": json.dumps({
                         "contact": {
                             "name": "DCI CI",
                             "team": "DCI",
@@ -49,7 +50,7 @@ def build_umb_messages(event, now=datetime.datetime.utcnow()):
                         "system": [],
                         "generated_at": "%sZ" % now.isoformat(),
                         "version": "0.1.0",
-                    },
+                    }),
                 }
             )
     return messages
