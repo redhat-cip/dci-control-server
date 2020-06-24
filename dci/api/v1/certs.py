@@ -22,7 +22,6 @@ from dci.api.v1 import api
 from dci.api.v1 import export_control
 from dci.api.v1 import utils as v1_utils
 from dci.common import exceptions as dci_exc
-from dci import decorators
 from dci.db import models
 
 logger = logging.getLogger()
@@ -35,8 +34,7 @@ def splitpath(path):
 
 
 @api.route("/certs/verify", methods=["GET"])
-@decorators.login_required
-def verify_repo_access(user):
+def verify_repo_access():
     headers = flask.request.headers
     verify = headers.get("SSLVerify")
     fp = headers.get("SSLFingerprint")
