@@ -29,7 +29,7 @@ def test_build_umb_messages():
     }
     messages = build_umb_messages(event, now)
     target = messages[0]["target"]
-    assert target == "/topic/VirtualTopic.eng.dci.job.complete"
+    assert target == "topic://VirtualTopic.eng.dci.job.complete"
     message = messages[0]["body"]
     # fedora-ci productmd-compose.test.complete.yaml schema
     # contact

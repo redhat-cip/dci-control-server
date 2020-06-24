@@ -16,7 +16,7 @@ def build_umb_messages(event, now=datetime.datetime.utcnow()):
         for result in job["results"]:
             test_name = result["name"]
             job_url = "https://www.distributed-ci.io/jobs/%s/jobStates" % job["id"]
-            target = "/topic/VirtualTopic.eng.dci.job.complete"
+            target = "topic://VirtualTopic.eng.dci.job.complete"
             messages.append(
                 {
                     "target": target,
