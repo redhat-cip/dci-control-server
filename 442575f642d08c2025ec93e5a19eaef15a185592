@@ -2,6 +2,52 @@
   "comments": [
     {
       "key": {
+        "uuid": "4cd78fda_a0218703",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 625,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-06-24T11:34:18Z",
+      "side": 1,
+      "message": "maybe we want to avoid the tag \u003d \"\" no ?\n\nif tag_name and tag_name not in job[\u0027tags\u0027]:",
+      "range": {
+        "startLine": 625,
+        "startChar": 8,
+        "endLine": 625,
+        "endChar": 64
+      },
+      "revId": "442575f642d08c2025ec93e5a19eaef15a185592",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "96c02bd7_3791aa69",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 652,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-06-24T11:34:18Z",
+      "side": 1,
+      "message": "same ^",
+      "range": {
+        "startLine": 652,
+        "startChar": 8,
+        "endLine": 652,
+        "endChar": 60
+      },
+      "revId": "442575f642d08c2025ec93e5a19eaef15a185592",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4df440c5_caead5a3",
         "filename": "tests/api/v1/test_jobs_tags.py",
         "patchSetId": 7
