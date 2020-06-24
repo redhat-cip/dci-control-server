@@ -113,8 +113,3 @@ CA_CERT = '/etc/ssl/repo/ca.crt'
 CA_KEY = '/etc/ssl/repo/ca.key'
 
 CERTIFICATION_URL = 'https://access.stage.redhat.com/hydra/rest/cwe/xmlrpc/v2'
-
-UMB_KEY_FILE_PATH = os.getenv("UMB_KEY_FILE_PATH", "/etc/pki/tls/private/umb.key")
-UMB_CRT_FILE_PATH = os.getenv("UMB_CRT_FILE_PATH", "/etc/pki/tls/certs/umb.crt")
-UMB_CA_FILE_PATH = os.getenv("UMB_CA_FILE_PATH", "/etc/pki/tls/certs/RH-IT-Root-CA.crt")
-UMB_BROKERS = os.environ.get("UMB_BROKERS", "amqps://umb.api.redhat.com:5671").split()
