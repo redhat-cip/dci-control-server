@@ -2,6 +2,52 @@
   "comments": [
     {
       "key": {
+        "uuid": "a493a8e1_7f245391",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 608,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-06-24T11:35:49Z",
+      "side": 1,
+      "message": "can you put a todo here ?\n\nthis endpoint could be removed",
+      "range": {
+        "startLine": 598,
+        "startChar": 0,
+        "endLine": 608,
+        "endChar": 85
+      },
+      "revId": "442575f642d08c2025ec93e5a19eaef15a185592",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "81796c29_c991131e",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 620,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-06-24T11:35:49Z",
+      "side": 1,
+      "message": "todo: to be removed",
+      "range": {
+        "startLine": 610,
+        "startChar": 0,
+        "endLine": 620,
+        "endChar": 33
+      },
+      "revId": "442575f642d08c2025ec93e5a19eaef15a185592",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "4cd78fda_a0218703",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 7
