@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "25ad4ae2_c5083b98",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 608,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-06-24T12:10:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "a493a8e1_7f245391",
+      "range": {
+        "startLine": 598,
+        "startChar": 0,
+        "endLine": 608,
+        "endChar": 85
+      },
+      "revId": "442575f642d08c2025ec93e5a19eaef15a185592",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "81796c29_c991131e",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 7
@@ -71,6 +95,30 @@
     },
     {
       "key": {
+        "uuid": "c862db96_a96e7760",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 625,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-06-24T12:10:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4cd78fda_a0218703",
+      "range": {
+        "startLine": 625,
+        "startChar": 8,
+        "endLine": 625,
+        "endChar": 64
+      },
+      "revId": "442575f642d08c2025ec93e5a19eaef15a185592",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "96c02bd7_3791aa69",
         "filename": "dci/api/v1/jobs.py",
         "patchSetId": 7
@@ -82,6 +130,30 @@
       "writtenOn": "2020-06-24T11:34:18Z",
       "side": 1,
       "message": "same ^",
+      "range": {
+        "startLine": 652,
+        "startChar": 8,
+        "endLine": 652,
+        "endChar": 60
+      },
+      "revId": "442575f642d08c2025ec93e5a19eaef15a185592",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "4c77cd92_c3a2b651",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 652,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-06-24T12:10:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "96c02bd7_3791aa69",
       "range": {
         "startLine": 652,
         "startChar": 8,
@@ -117,6 +189,30 @@
     },
     {
       "key": {
+        "uuid": "46d8072c_e1e409f4",
+        "filename": "tests/api/v1/test_jobs_tags.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 34,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-06-24T12:10:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "4df440c5_caead5a3",
+      "range": {
+        "startLine": 34,
+        "startChar": 18,
+        "endLine": 34,
+        "endChar": 19
+      },
+      "revId": "442575f642d08c2025ec93e5a19eaef15a185592",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "984e72d3_2390b222",
         "filename": "tests/api/v1/test_jobs_tags.py",
         "patchSetId": 7
@@ -128,6 +224,30 @@
       "writtenOn": "2020-06-24T11:31:43Z",
       "side": 1,
       "message": "assert all_tags[\u0027tags\u0027] \u003d\u003d [\u0027kikoo\u0027, \u0027kikoo2\u0027]",
+      "range": {
+        "startLine": 36,
+        "startChar": 11,
+        "endLine": 36,
+        "endChar": 55
+      },
+      "revId": "442575f642d08c2025ec93e5a19eaef15a185592",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "9ef521bc_a665447c",
+        "filename": "tests/api/v1/test_jobs_tags.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 36,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-06-24T12:10:29Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "984e72d3_2390b222",
       "range": {
         "startLine": 36,
         "startChar": 11,
