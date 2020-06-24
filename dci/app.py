@@ -41,10 +41,10 @@ class DciControlServer(flask.Flask):
         self.engine = dci_config.get_engine()
         conf = dci_config.CONFIG
         self.sender = self._get_zmq_sender(conf['ZMQ_CONN'])
-        engine = dci_config.get_engine()
-        self.team_admin_id = self._get_team_id(engine, 'admin')
-        self.team_redhat_id = self._get_team_id(engine, 'Red Hat')
-        self.team_epm_id = self._get_team_id(engine, 'EPM')
+        with self.engine.connect() as db_conn:
+            self.team_admin_id = self._get_team_id(db_conn, 'admin')
+            self.team_redhat_id = self._get_team_id(db_conn, 'Red Hat')
+            self.team_epm_id = self._get_team_id(db_conn, 'EPM')
 
     def _get_zmq_sender(self, zmq_conn):
         global zmq_sender
@@ -72,12 +72,10 @@ class DciControlServer(flask.Flask):
 
         return super(DciControlServer, self).process_response(resp)
 
-    def _get_team_id(self, engine, name):
-        db_conn = engine.connect()
+    def _get_team_id(self, db_conn, name):
         query = sqlalchemy.sql.select([models.TEAMS]).where(
             models.TEAMS.c.name == name)
         row = db_conn.execute(query).fetchone()
-        db_conn.close()
 
         if row is None:
             print("%s team not found. Please init the database"
@@ -138,7 +136,7 @@ def create_app(param=None):
             try:
                 flask.g.db_conn = dci_app.engine.connect()
                 break
-            except:
+            except Exception:
                 logging.warning('failed to connect to the database, '
                                 'will retry in 1 second...')
                 time.sleep(1)
@@ -150,7 +148,7 @@ def create_app(param=None):
     def teardown_request(_):
         try:
             flask.g.db_conn.close()
-        except:
+        except Exception:
             logging.warning('disconnected from the database..')
             pass
 
