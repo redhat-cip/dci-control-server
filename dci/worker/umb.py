@@ -1,13 +1,14 @@
 import datetime
+import os
 import logging
 
 from dci_umb.sender import send
-from dci.dci_config import CONFIG as config
 
 logger = logging.getLogger(__name__)
 
 
 def build_umb_messages(event, now=datetime.datetime.utcnow()):
+    logger.debug(event)
     messages = []
     job = event["job"]
     for component in job["components"]:
@@ -16,7 +17,7 @@ def build_umb_messages(event, now=datetime.datetime.utcnow()):
         for result in job["results"]:
             test_name = result["name"]
             job_url = "https://www.distributed-ci.io/jobs/%s/jobStates" % job["id"]
-            target = "/topic/VirtualTopic.eng.dci.job.complete"
+            target = "topic://VirtualTopic.eng.dci.job.complete"
             messages.append(
                 {
                     "target": target,
@@ -56,14 +57,18 @@ def build_umb_messages(event, now=datetime.datetime.utcnow()):
 
 def send_event_on_umb(event):
     messages = build_umb_messages(event)
+    key_file = os.getenv("UMB_KEY_FILE_PATH", "/etc/pki/tls/private/umb.key")
+    crt_file = os.getenv("UMB_CRT_FILE_PATH", "/etc/pki/tls/certs/umb.crt")
+    ca_file = os.getenv("UMB_CA_FILE_PATH", "/etc/pki/tls/certs/RH-IT-Root-CA.crt")
+    brokers = os.environ.get("UMB_BROKERS", "amqps://umb.api.redhat.com:5671").split()
     for message in messages:
         try:
             send(
                 {
-                    "key_file": config["UMB_KEY_FILE_PATH"],
-                    "crt_file": config["UMB_CRT_FILE_PATH"],
-                    "ca_file": config["UMB_CA_FILE_PATH"],
-                    "brokers": config["UMB_BROKERS"],
+                    "key_file": key_file,
+                    "crt_file": crt_file,
+                    "ca_file": ca_file,
+                    "brokers": brokers,
                     "target": message["target"],
                     "message": message["body"],
                 }
