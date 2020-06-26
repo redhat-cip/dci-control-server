@@ -22,6 +22,30 @@
       "revId": "a0744b7e09bdb4fa2b8ad7b70de3c58b4355ba1e",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "780f0176_0000f8d0",
+        "filename": "tests/api/v1/test_jobs_tags.py",
+        "patchSetId": 9
+      },
+      "lineNbr": 55,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-06-26T10:24:57Z",
+      "side": 1,
+      "message": "woups",
+      "parentUuid": "57d39b7b_f2b3825f",
+      "range": {
+        "startLine": 55,
+        "startChar": 15,
+        "endLine": 55,
+        "endChar": 37
+      },
+      "revId": "a0744b7e09bdb4fa2b8ad7b70de3c58b4355ba1e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
