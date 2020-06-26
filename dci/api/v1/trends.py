@@ -20,7 +20,6 @@ from sqlalchemy import text
 
 from dci.api.v1 import api
 from dci import decorators
-from dci.dci_config import get_engine
 
 
 def get_timestamp_of_the_day(datetime_object):
@@ -56,7 +55,6 @@ def get_trends_from_jobs(jobs):
 @api.route('/trends/topics', methods=['GET'])
 @decorators.login_required
 def get_trends_of_topics(user):
-    engine = get_engine()
     sql = text("""
 SELECT jobs.id,
     jobs.status,
@@ -71,5 +69,5 @@ WHERE
 ORDER BY jobs.created_at DESC;
     """)  # noqa
 
-    jobs = engine.execute(sql)
+    jobs = flask.g.db_conn.execute(sql)
     return flask.jsonify({'topics': get_trends_from_jobs(jobs)})
