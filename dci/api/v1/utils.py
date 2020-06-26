@@ -26,7 +26,7 @@ from dci.db import models
 from dci.db import embeds
 
 
-def createKeyPair(type=crypto.TYPE_RSA, bits=1024):
+def createKeyPair(type=crypto.TYPE_RSA, bits=2048):
     """
     Create a public/private key pair.
     Arguments: type - Key type, must be one of TYPE_RSA and TYPE_DSA
