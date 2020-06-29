@@ -22,6 +22,30 @@
       "revId": "4b41e84517eba6e005b8080bae6a5d55f381e71c",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "920cc5d6_578848a2",
+        "filename": "bin/keycloak-provision.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 189,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2020-06-29T12:57:06Z",
+      "side": 1,
+      "message": "ack with that change.",
+      "parentUuid": "3dd824c5_8f713dfb",
+      "range": {
+        "startLine": 176,
+        "startChar": 0,
+        "endLine": 189,
+        "endChar": 25
+      },
+      "revId": "4b41e84517eba6e005b8080bae6a5d55f381e71c",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
