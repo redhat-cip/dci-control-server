@@ -14,10 +14,11 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
 import json
 import os
 import requests
+import sys
+import time
 
 KEYCLOAK_HOST = os.environ.get('KEYCLOAK_HOST', 'keycloak')
 KEYCLOAK_PORT = os.environ.get('KEYCLOAK_PORT', '8080')
@@ -165,20 +166,25 @@ def get_auth_headers(access_token):
 
 
 def get_access_token():
-    data = {'client_id': 'admin-cli',
-            'username': 'admin',
-            'password': 'admin',
-            'grant_type': 'password'}
-    while True:
+    data = {
+        'client_id': 'admin-cli',
+        'username': 'admin',
+        'password': 'admin',
+        'grant_type': 'password'
+    }
+    count = 0
+    while count < 5:
         try:
             url = KEYCLOAK_BASE_URL + '/auth/realms/master/protocol/openid-connect/token'  # noqa
-            r = requests.post(url,
-                              data=data)
+            r = requests.post(url, data=data)
             if r.status_code == 200:
                 print('Keycloak access token get successfully.')
                 return r.json()['access_token']
         except Exception:
-            pass
+            count += 1
+        time.sleep(5)
+    print("Can't create a Keycloak access token, exiting...")
+    sys.exit(1)
 
 
 def create_realm_dci_test(access_token):
