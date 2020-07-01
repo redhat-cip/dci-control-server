@@ -1,0 +1,162 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+#
+# Copyright (C) Red Hat, Inc
+#
+# Licensed under the Apache License, Version 2.0 (the "License"); you may
+# not use this file except in compliance with the License. You may obtain
+# a copy of the License at
+#
+# http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+# WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+# License for the specific language governing permissions and limitations
+# under the License.
+
+import json
+import os
+import time
+
+import requests
+
+
+DCI_LOGIN = os.environ.get('DCI_LOGIN', 'admin')
+DCI_PASSWORD = os.environ.get('DCI_PASSWORD', 'admin')
+DCI_CS_URL = os.environ.get('DCI_CS_URL', 'http://127.0.0.1:5000')
+
+
+def get_url(endpoint, subresource=None):
+    return '%s/api/v1/%s' % (DCI_CS_URL, endpoint)
+
+
+def get(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
+    url = get_url(endpoint)
+    print('-------------')
+    print('GET %s' % url)
+    return requests.get(url, auth=user)
+
+
+def post(endpoint, data, user=(DCI_LOGIN, DCI_PASSWORD,)):
+    url = get_url(endpoint)
+    print('-------------')
+    print('POST %s' % url)
+    print(json.dumps(data, indent=2))
+    return requests.post(url, json=data, auth=user)
+
+
+def associate_user_to_team(team_id, user_id, user=(DCI_LOGIN, DCI_PASSWORD,)):
+    url = '%s/api/v1/teams/%s/users/%s' % (DCI_CS_URL, team_id, user_id)
+    print('-------------')
+    print('POST %s' % url)
+    return requests.post(url, json={}, auth=user)
+
+
+def delete(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
+    url = get_url(endpoint)
+    print('DELETE %s' % url)
+    return requests.delete(url, auth=user)
+
+
+def get_teams():
+    teams = {}
+    for team in get('teams').json()['teams']:
+        teams[team['name']] = team
+    return teams
+
+
+def create_team(name):
+    r = post('teams', {'name': name})
+    return r.json()['team']
+
+
+def create_product(product):
+    r = post('products', {
+        'name': product,
+        'label': product.upper(),
+        'description': 'description for %s' % product
+    })
+    return r.json()['product']
+
+
+def create_topic(name, component_types, product, next_topic=None):
+    topic = {'name': name, 'component_types': component_types,
+             'product_id': product['id']}
+    if next_topic:
+        topic['next_topic_id'] = next_topic['id']
+    r = post('topics', topic)
+    return r.json()['topic']
+
+
+def associate_topic_to_team(topic_id, team_id):
+    post('topics/%s/teams' % topic_id, {'team_id': team_id})
+
+
+def associate_product_to_team(product_id, team_id):
+    post('products/%s/teams' % product_id, {'team_id': team_id})
+
+
+def create_component(name, type, topic_id):
+    r = post('components', {
+        'name': name,
+        'type': type,
+        'topic_id': topic_id
+    })
+    print(r.json())
+
+
+def create_remoteci(name, team_id):
+    r = post('remotecis', {'name': name, 'team_id': team_id})
+    return r.json()['remoteci']
+
+
+def wait_db_ready():
+    while True:
+        try:
+            r = get('identity')
+            if r.status_code == 200:
+                break
+        except requests.exceptions.ConnectionError:
+            continue
+        finally:
+            time.sleep(1)
+
+def generate_remoteci_rc_files():
+    remotecis = get('remotecis').json()['remotecis']
+    print(remotecis)
+    for remoteci in remotecis:
+        with open('./%s.sh' % remoteci['name'], 'w') as f:
+            f.write("""DCI_CLIENT_ID='remoteci/{remoteci_id}'
+DCI_API_SECRET='{api_secret}'
+DCI_CS_URL='http://127.0.0.1:5000/'
+export DCI_CLIENT_ID
+export DCI_API_SECRET
+export DCI_CS_URL
+""".format(remoteci_id=remoteci['id'], api_secret=remoteci['api_secret']))
+
+
+def main():
+    wait_db_ready()
+    
+    ocp = create_product('OCP')
+    ocp44 = create_topic('OCP-4.4', ['metadata'], ocp)
+    create_component('4.4.0-0.nightly-12345', 'metadata', ocp44['id'])
+
+    telco_ci = create_team('telco-ci')
+    telco_pipeline = create_remoteci('telco-pipeline', telco_ci['id'])
+
+    associate_product_to_team(ocp['id'], telco_ci['id'])
+    associate_topic_to_team(ocp44['id'], telco_ci['id'])
+
+    telco_ci_partner = create_team('telco-ci-partner')
+    telco_rh_cnf = create_remoteci('telco-rh-cnf', telco_ci_partner['id'])
+
+    associate_product_to_team(ocp['id'], telco_ci_partner['id'])
+    associate_topic_to_team(ocp44['id'], telco_ci_partner['id'])
+    
+    generate_remoteci_rc_files()
+
+
+if __name__ == '__main__':
+    main()
