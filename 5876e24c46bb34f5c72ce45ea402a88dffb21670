@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "f92b95e6_0434fb77",
+        "filename": "bin/dci-telcoprovisioning",
+        "patchSetId": 1
+      },
+      "lineNbr": 27,
+      "author": {
+        "id": 20
+      },
+      "writtenOn": "2020-07-01T13:56:44Z",
+      "side": 1,
+      "message": "there is a missing \u0027",
+      "revId": "5876e24c46bb34f5c72ce45ea402a88dffb21670",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
