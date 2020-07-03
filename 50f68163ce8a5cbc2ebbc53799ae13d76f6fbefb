@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "75122ea5_ef6185ca",
+        "filename": "bin/keycloak-provision.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 185,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-07-03T10:06:58Z",
+      "side": 1,
+      "message": "a print message would be usefull here imo",
+      "revId": "50f68163ce8a5cbc2ebbc53799ae13d76f6fbefb",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
