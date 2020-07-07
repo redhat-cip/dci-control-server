@@ -77,7 +77,7 @@ def get_all_teams(user):
 
     query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
-    if user.is_not_super_admin() and user.is_not_epm():
+    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
         query.add_extra_condition(_TABLE.c.id.in_(user.teams_ids))
 
     query.add_extra_condition(_TABLE.c.state != 'archived')

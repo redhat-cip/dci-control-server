@@ -94,7 +94,6 @@ def test_sso_auth_verified_rh_employee(m_datetime, admin, app, engine, access_to
         # users from redhat team
         redhat_users = admin.get('/api/v1/teams/%s/users' % team_redhat_id).data['users']  # noqa
         ro_user_found = False
-        print('t1 %s' % team_redhat_id)
         for iu in redhat_users:
             if iu['name'] == 'dci-rh' and iu['email'] == 'dci-rh@redhat.com':
                 ro_user_found = True
