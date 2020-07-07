@@ -361,3 +361,13 @@ def test_epm_should_be_able_to_create_and_edit_a_team(epm):
         headers={'If-match': r.headers.get("ETag")}
     )
     assert r.status_code == 200
+
+
+def test_get_all_teams_allowed_for_rh_employee(epm, rh_employee):
+    print(rh_employee.get("/api/v1/teams").data)
+    nb_teams = rh_employee.get("/api/v1/teams").data["_meta"]["count"]
+    r = epm.post("/api/v1/teams", data={"name": "rh employee can see me"})
+    assert r.status_code == 201
+    teams = rh_employee.get("/api/v1/teams?sort=-created_at").data["teams"]
+    assert teams[0]["name"] == "rh employee can see me"
+    assert len(teams) == nb_teams + 1
