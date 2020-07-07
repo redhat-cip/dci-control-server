@@ -145,14 +145,6 @@ def user_sso(app, db_provisioning, access_token):
 
 
 @pytest.fixture
-def user_sso_rh_employee(app, db_provisioning, access_token_rh_employee):
-    client = utils.generate_client(app, access_token=access_token_rh_employee)
-    # first call, it create the user in the database
-    client.get('/api/v1/users/me')
-    return client
-
-
-@pytest.fixture
 def user_id(admin):
     user = admin.get('/api/v1/users?where=name:user')
     user = admin.get('/api/v1/users/%s' % user.data['users'][0]['id']).data

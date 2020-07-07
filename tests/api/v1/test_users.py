@@ -15,10 +15,8 @@
 # under the License.
 
 from __future__ import unicode_literals
-import datetime
 import uuid
 
-import mock
 import pytest
 
 from dci.common.exceptions import DCIException
@@ -544,29 +542,22 @@ def test_update_current_user(admin, user):
     assert me.data['user']['timezone'] == 'Europe/Paris'
 
 
-@mock.patch('jwt.api_jwt.datetime', spec=datetime.datetime)
-def test_update_current_user_sso(m_datetime, user_sso_rh_employee, app,
-                                 engine, admin):
-    user_sso = user_sso_rh_employee
-    m_utcnow = mock.MagicMock()
-    m_utcnow.utctimetuple.return_value = datetime.datetime. \
-        fromtimestamp(1518653629).timetuple()
-    m_datetime.utcnow.return_value = m_utcnow
-    with app.app_context():
-        assert user_sso.get('/api/v1/users/me').status_code == 200
-        user_data, user_etag = get_user(admin, 'dci-rh')
-
-        me = user_sso.put(
-            '/api/v1/users/me',
-            data={'email': 'new_email@example.org',
-                  'fullname': 'New Name',
-                  'timezone': 'Europe/Paris'},
-            headers={'If-match': user_etag}
-        )
-        assert me.status_code == 200
-        assert me.data['user']['email'] == 'new_email@example.org'
-        assert me.data['user']['fullname'] == 'New Name'
-        assert me.data['user']['timezone'] == 'Europe/Paris'
+def test_update_current_user_sso(rh_employee, app, admin):
+    assert rh_employee.get('/api/v1/users/me').status_code == 200
+    user_data, user_etag = get_user(admin, 'rh_employee')
+    me = rh_employee.put(
+        '/api/v1/users/me',
+        data={
+            'email': 'new_email@example.org',
+            'fullname': 'New Name',
+            'timezone': 'Europe/Paris'
+        },
+        headers={'If-match': user_etag}
+    )
+    assert me.status_code == 200
+    assert me.data['user']['email'] == 'new_email@example.org'
+    assert me.data['user']['fullname'] == 'New Name'
+    assert me.data['user']['timezone'] == 'Europe/Paris'
 
 
 def test_get_embed_remotecis(user, remoteci_user_id, user_id):
