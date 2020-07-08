@@ -19,6 +19,7 @@ from dci.api.v1 import notifications
 from dci.worker.umb import send_event_on_umb
 
 import json
+import logging
 import os
 import smtplib
 import requests
@@ -28,6 +29,9 @@ import zmq
 from email.MIMEText import MIMEText
 from zmq.eventloop import ioloop, zmqstream
 
+
+logging.getLogger().basicConfig(level="DEBUG")
+logger = logging.getLogger(__name__)
 
 ioloop.install()
 
@@ -126,14 +130,19 @@ def loop(msg):
     try:
         events = json.loads(msg[0])
         for event in events:
-            if event['event'] == 'notification':
-                send_mail(event)
-            elif event['event'] == 'dlrn_publish':
-                dlrn_publish(event)
-            elif event['event'] == 'job_finished':
-                send_event_on_umb(event)
-    except:
-        pass
+            try:
+                if event['event'] == 'notification':
+                    send_mail(event)
+                elif event['event'] == 'dlrn_publish':
+                    dlrn_publish(event)
+                elif event['event'] == 'job_finished':
+                    send_event_on_umb(event)
+            except Exception:
+                logger.exception(
+                    msg="An error has occurred while processing an event: %s" % event
+                )
+    except Exception:
+        logger.exception(msg="An error has occurred processing events.")
 
 
 stream.on_recv(loop)
