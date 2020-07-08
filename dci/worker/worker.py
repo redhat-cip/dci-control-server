@@ -30,7 +30,7 @@ from email.MIMEText import MIMEText
 from zmq.eventloop import ioloop, zmqstream
 
 
-logging.getLogger().basicConfig(level="DEBUG")
+logging.basicConfig(level="DEBUG")
 logger = logging.getLogger(__name__)
 
 ioloop.install()
