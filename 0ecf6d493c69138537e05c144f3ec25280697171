@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6bde1c8f_d02b56f1",
+        "filename": "dci/db/models.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-07-09T15:33:51Z",
+      "side": 0,
+      "message": "We\u0027re using this constraint to prevent dci-feeder-api to upload the same component twice.\n\nIf we were to drop this constraint, it should be replaced by some other mechanism.",
+      "range": {
+        "startLine": 62,
+        "startChar": 0,
+        "endLine": 65,
+        "endChar": 74
+      },
+      "revId": "0ecf6d493c69138537e05c144f3ec25280697171",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
