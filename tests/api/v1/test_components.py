@@ -45,7 +45,7 @@ def test_create_components_already_exist(admin, topic_id):
 
     data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
     pstatus_code = admin.post('/api/v1/components', data=data).status_code
-    assert pstatus_code == 409
+    assert pstatus_code == 201
 
 
 def test_create_components_with_same_name_on_different_topics(admin, topic_id,
@@ -71,7 +71,7 @@ def test_create_components_with_same_name_on_same_topics(admin, topic_id):
 
     data = {'name': 'pname', 'type': 'gerrit_review', 'topic_id': topic_id}
     pstatus_code = admin.post('/api/v1/components', data=data).status_code
-    assert pstatus_code == 409
+    assert pstatus_code == 201
 
 
 def test_recreate_components_with_same_name_on_same_topics(admin, topic_id):

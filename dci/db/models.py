@@ -59,10 +59,6 @@ COMPONENTS = sa.Table(
     sa.Column('topic_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('topics.id', ondelete='CASCADE'),
               nullable=True),
-    sa.Index('active_components_name_topic_id_key',
-             'name', 'topic_id', 'type',
-             unique=True,
-             postgresql_where=sa.sql.text("components.state = 'active'")),
     sa.Index('components_topic_id_idx', 'topic_id'),
     sa.Column('state', STATES, default='active')
 )
