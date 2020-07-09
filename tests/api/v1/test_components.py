@@ -26,7 +26,8 @@ from dci.common import exceptions as dci_exc
 
 def test_create_components(admin, topic_id):
     data = {
-        'name': 'pname',
+        'name': 'pname-0.1',
+        'kind': 'pname',
         'type': 'gerrit_review',
         'url': 'http://example.com/',
         'topic_id': topic_id,
@@ -34,8 +35,9 @@ def test_create_components(admin, topic_id):
     pc = admin.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
     gc = admin.get('/api/v1/components/%s' % pc_id).data
-    assert gc['component']['name'] == 'pname'
+    assert gc['component']['name'] == 'pname-0.1'
     assert gc['component']['state'] == 'active'
+    assert gc['component']['kind'] == 'pname'
 
 
 def test_create_components_already_exist(admin, topic_id):

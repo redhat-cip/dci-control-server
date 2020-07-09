@@ -51,6 +51,7 @@ COMPONENTS = sa.Table(
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), nullable=False),
     sa.Column('type', sa.String(255), nullable=False),
+    sa.Column('kind', sa.String(255)),
     sa.Column('canonical_project_name', sa.String),
     sa.Column('data', sa_utils.JSONType),
     sa.Column('title', sa.Text),
