@@ -17,7 +17,7 @@ import datetime
 from mock import patch
 
 
-def test_schedule_jobs(remoteci_context, remoteci, topic):
+def test_schedule_jobs(remoteci_context, topic):
     headers = {
         'User-Agent': 'python-dciclient',
         'Client-Version': 'python-dciclient_0.1.0'
@@ -55,8 +55,7 @@ def _update_remoteci(admin, id, etag, data):
     return admin.get(url).data['remoteci']
 
 
-def test_schedule_jobs_on_remoteci_inactive(admin, remoteci_context,
-                                            remoteci_user_id, topic):
+def test_schedule_jobs_on_remoteci_inactive(admin, remoteci_context, topic):
     remoteci = remoteci_context.get('/api/v1/identity').data['identity']
     remoteci['etag'] = admin.get(
         '/api/v1/remotecis/%s' % remoteci['id']).data['remoteci']['etag']
@@ -74,8 +73,7 @@ def test_schedule_jobs_on_remoteci_inactive(admin, remoteci_context,
     assert r.status_code == 201
 
 
-def test_schedule_jobs_on_remoteci_team_inactive(admin, remoteci_context,
-                                                 remoteci_user_id, topic,
+def test_schedule_jobs_on_remoteci_team_inactive(admin, remoteci_context, topic,
                                                  team_user_id):
     team_etag = admin.get(
         '/api/v1/teams/%s' % team_user_id).data['team']['etag']
