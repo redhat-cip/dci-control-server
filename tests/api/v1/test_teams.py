@@ -166,7 +166,7 @@ def test_put_teams(admin):
     assert ppt.data['team']['name'] == 'nname'
 
 
-def test_put_team_external_flag(user, admin, epm, team_product_id):
+def test_put_team_external_flag(user, admin, epm):
     cteam = admin.post('/api/v1/teams', data={'name': 'pname'})
     cteam_id = cteam.data['team']['id']
 

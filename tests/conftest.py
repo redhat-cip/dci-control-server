@@ -211,49 +211,43 @@ def team_product_id(admin):
 
 @pytest.fixture
 def team_user_id(admin):
-    team = admin.get('/api/v1/teams?where=name:user')
-    team = admin.get('/api/v1/teams/%s' % team.data['teams'][0]['id']).data
-    return str(team['team']['id'])
+    team = admin.get('/api/v1/teams?where=name:user').data['teams'][0]
+    return str(team['id'])
 
 
 @pytest.fixture
 def team_admin_id(admin):
-    team = admin.get('/api/v1/teams?where=name:admin')
-    team = admin.get('/api/v1/teams/%s' % team.data['teams'][0]['id']).data
-    return str(team['team']['id'])
+    team = admin.get('/api/v1/teams?where=name:admin').data['teams'][0]
+    return str(team['id'])
 
 
 @pytest.fixture
 def team_redhat_id(admin):
-    team = admin.get('/api/v1/teams?where=name:Red Hat')
-    team = admin.get('/api/v1/teams/%s' % team.data['teams'][0]['id']).data
-    return str(team['team']['id'])
+    team = admin.get('/api/v1/teams?where=name:Red Hat').data['teams'][0]
+    return str(team['id'])
 
 
 @pytest.fixture
 def team_epm_id(admin):
-    team = admin.get('/api/v1/teams?where=name:EPM')
-    team = admin.get('/api/v1/teams/%s' % team.data['teams'][0]['id']).data
-    return str(team['team']['id'])
+    team = admin.get('/api/v1/teams?where=name:EPM').data['teams'][0]
+    return str(team['id'])
 
 
 @pytest.fixture
 def topic_user(admin, user, team_user_id, product):
-    data = {'name': 'topic_user_name', 'product_id': product['id'],
-            'component_types': ['type_1', 'type_2', 'type_3']}
-    topic = admin.post('/api/v1/topics', data=data).data
-    t_id = topic['topic']['id']
-    admin.post('/api/v1/topics/%s/teams' % t_id,
-               data={'team_id': team_user_id})
-
+    data = {
+        "name": "topic_user_name",
+        "product_id": product["id"],
+        "component_types": ["type_1", "type_2", "type_3"],
+    }
+    topic = admin.post("/api/v1/topics", data=data).data["topic"]
+    admin.post('/api/v1/topics/%s/teams' % topic['id'], data={'team_id': team_user_id})
     for i in range(1, 4):
-        admin.post('/api/v1/components', data={
-            'topic_id': t_id,
-            'name': 'comp%s' % i,
-            'type': 'type_%s' % i
-        })
-
-    return topic['topic']
+        admin.post(
+            "/api/v1/components",
+            data={"topic_id": topic["id"], "name": "comp%s" % i, "type": "type_%s" % i},
+        )
+    return topic
 
 
 @pytest.fixture
@@ -276,7 +270,7 @@ def remoteci_user_api_secret(user, remoteci_user_id):
 
 @pytest.fixture
 def remoteci_user_id(user, admin, team_user_id, topic_user_id):
-    data = {'name': 'rname', 'team_id': team_user_id}
+    data = {'name': 'user remoteci', 'team_id': team_user_id}
     remoteci = user.post('/api/v1/remotecis', data=data).data
 
     return str(remoteci['remoteci']['id'])
@@ -293,6 +287,21 @@ def remoteci_context(app, remoteci_user_id, remoteci_user_api_secret):
     remoteci = {'id': remoteci_user_id, 'api_secret': remoteci_user_api_secret,
                 'type': 'remoteci'}
     return utils.generate_token_based_client(app, remoteci)
+
+
+@pytest.fixture
+def admin_remoteci_context(app, admin, team_admin_id):
+    admin_remoteci = admin.post(
+        "/api/v1/remotecis", data={"name": "admin remoteci", "team_id": team_admin_id}
+    ).data["remoteci"]
+    return utils.generate_token_based_client(
+        app,
+        {
+            "id": admin_remoteci["id"],
+            "api_secret": admin_remoteci["api_secret"],
+            "type": "remoteci",
+        },
+    )
 
 
 @pytest.fixture
@@ -349,11 +358,27 @@ def components_user_ids(admin, topic_user_id):
 
 
 @pytest.fixture
-def job_user_id(remoteci_context, components_user_ids, topic_user_id):
+def job_admin(
+    admin, admin_remoteci_context, components_user_ids, topic_user_id, team_admin_id
+):
+    admin.post(
+        "/api/v1/topics/%s/teams" % topic_user_id, data={"team_id": team_admin_id}
+    )
+    data = {"components_ids": components_user_ids, "topic_id": topic_user_id}
+    return admin_remoteci_context.post("/api/v1/jobs/schedule", data=data).data["job"]
+
+
+@pytest.fixture
+def job_user(remoteci_context, components_user_ids, topic_user_id):
     data = {'components_ids': components_user_ids,
             'topic_id': topic_user_id}
     job = remoteci_context.post('/api/v1/jobs/schedule', data=data).data
-    return job['job']['id']
+    return job['job']
+
+
+@pytest.fixture
+def job_user_id(job_user):
+    return job_user['id']
 
 
 @pytest.fixture
