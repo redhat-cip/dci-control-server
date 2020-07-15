@@ -48,6 +48,7 @@ import dci.api.v1.global_status  # noqa
 import dci.api.v1.performance  # noqa
 import dci.api.v1.products  # noqa
 import dci.api.v1.remotecis  # noqa
+import dci.api.v1.stats  # noqa
 import dci.api.v1.tags  # noqa
 import dci.api.v1.teams  # noqa
 import dci.api.v1.teams_users  # noqa
