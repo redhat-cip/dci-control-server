@@ -53,7 +53,7 @@ def test_create_files_jobstate_id_and_job_id_missing(admin):
 
 @mock.patch("dci.api.v1.notifications.dispatcher")
 def test_upload_tests_with_regressions_successfix(
-    mocked_disp, admin, remoteci_context, remoteci, topic
+    mocked_disp, admin, remoteci_context, topic
 ):
     headers = {
         'User-Agent': 'python-dciclient',
@@ -61,7 +61,7 @@ def test_upload_tests_with_regressions_successfix(
     }
 
     # 1. schedule two jobs and create their jobstate
-    data = {'topic_id': topic['id'], 'remoteci_id': remoteci['id']}
+    data = {'topic_id': topic['id']}
     job_1 = remoteci_context.post('/api/v1/jobs/schedule',
                                   headers=headers,
                                   data=data).data['job']
