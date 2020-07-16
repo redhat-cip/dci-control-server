@@ -176,8 +176,7 @@ def attach_issue(resource_id, table, user_id):
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(join_table.name,
-                                          '%s, issue_id' % key)
+        raise dci_exc.DCICreationConflict(join_table.name, '%s, issue_id' % key)
 
     result = json.dumps({'issue': dict(issue)})
     return flask.Response(result, 201, content_type='application/json')

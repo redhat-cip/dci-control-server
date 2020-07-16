@@ -224,8 +224,7 @@ def add_user_to_remoteci(user, r_id):
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name,
-                                          'remoteci_id, user_id')
+        raise dci_exc.DCICreationConflict(_TABLE.name, 'remoteci_id, user_id')
     result = json.dumps({'user_id': user.id, 'remoteci_id': r_id})
     return flask.Response(result, 201, content_type='application/json')
 
