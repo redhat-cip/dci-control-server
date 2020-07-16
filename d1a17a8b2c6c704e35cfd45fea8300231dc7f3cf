@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "b0a95550_062b2b20",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 313,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-07-16T12:16:34Z",
+      "side": 1,
+      "message": "strange one no?",
+      "range": {
+        "startLine": 313,
+        "startChar": 72,
+        "endLine": 313,
+        "endChar": 83
+      },
+      "revId": "d1a17a8b2c6c704e35cfd45fea8300231dc7f3cf",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
