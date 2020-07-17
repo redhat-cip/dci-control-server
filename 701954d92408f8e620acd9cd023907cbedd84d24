@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "de0c529c_85a16248",
+        "filename": "dci/alembic/versions/1d9624cbf1e_add_tags_to_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-07-17T10:50:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "9e82a8bd_89e6d763",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 20
+      },
+      "revId": "701954d92408f8e620acd9cd023907cbedd84d24",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "c1385846_ef3555d1",
         "filename": "tests/api/v1/test_components.py",
         "patchSetId": 7
@@ -36,6 +60,30 @@
       "writtenOn": "2020-07-17T08:43:14Z",
       "side": 1,
       "message": "assert  gt.data[\u0027component\u0027][\u0027tags\u0027] \u003d\u003d [\u0027my_tag_1\u0027, \u0027my_tag_2\u0027] is doing those 3 assertions at the same time",
+      "range": {
+        "startLine": 517,
+        "startChar": 0,
+        "endLine": 519,
+        "endChar": 49
+      },
+      "revId": "701954d92408f8e620acd9cd023907cbedd84d24",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "015362f2_a572b552",
+        "filename": "tests/api/v1/test_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 519,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-07-17T10:50:42Z",
+      "side": 1,
+      "message": "Done",
+      "parentUuid": "c1385846_ef3555d1",
       "range": {
         "startLine": 517,
         "startChar": 0,
