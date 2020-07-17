@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9e82a8bd_89e6d763",
+        "filename": "dci/alembic/versions/1d9624cbf1e_add_tags_to_components.py",
+        "patchSetId": 7
+      },
+      "lineNbr": 19,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-07-17T08:31:37Z",
+      "side": 1,
+      "message": "remove user teamid already revises 1f29092c3fe\n\nshould revise bad424e096",
+      "range": {
+        "startLine": 18,
+        "startChar": 0,
+        "endLine": 19,
+        "endChar": 20
+      },
+      "revId": "701954d92408f8e620acd9cd023907cbedd84d24",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
