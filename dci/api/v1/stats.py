@@ -23,14 +23,16 @@ from dci import decorators
 
 def _add_percentage_of_success(stats):
     for topic in stats:
-        nb_of_success = 0
+        nb_of_successful_jobs = 0
         for job in topic["jobs"]:
             if job["status"] == "success":
-                nb_of_success += 1
-        success = 0
-        if len(topic["jobs"]):
-            success = int(round(100 * nb_of_success / len(topic["jobs"])))
-        topic["percentageOfSuccess"] = success
+                nb_of_successful_jobs += 1
+        nb_of_jobs = len(topic["jobs"])
+        topic["percentageOfSuccess"] = (
+            round(100 * nb_of_successful_jobs / nb_of_jobs) if nb_of_jobs else 0
+        )
+        topic["nbOfSuccessfulJobs"] = nb_of_successful_jobs
+        topic["nbOfJobs"] = nb_of_jobs
     return stats
 
 
@@ -74,7 +76,7 @@ def _build_team_query(user):
 def get_stats(user):
     sql = text(
         """
-SELECT DISTINCT ON (topics.id , jobs.remoteci_id)
+SELECT DISTINCT ON (topics.name, jobs.remoteci_id)
     jobs.id,
     jobs.status,
     jobs.created_at,
@@ -96,9 +98,8 @@ WHERE
     topics.state = 'active' AND
     {team_query}
 ORDER BY
-    topics.id,
-    jobs.remoteci_id,
-    jobs.created_at DESC;
+    topics.name,
+    jobs.remoteci_id;
 """.format(
             team_query=_build_team_query(user)
         )

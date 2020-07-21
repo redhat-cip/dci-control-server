@@ -26,6 +26,8 @@ def test_get_stats(n, admin, job_admin, user, job_user, topic_user_id, product):
         {
             "product": {"id": product["id"], "name": product["name"]},
             "percentageOfSuccess": 50,
+            "nbOfSuccessfulJobs": 1,
+            "nbOfJobs": 2,
             "jobs": [
                 {
                     "id": job_user["id"],
@@ -49,6 +51,8 @@ def test_get_stats(n, admin, job_admin, user, job_user, topic_user_id, product):
         {
             "product": {"id": product["id"], "name": product["name"]},
             "percentageOfSuccess": 100,
+            "nbOfSuccessfulJobs": 1,
+            "nbOfJobs": 1,
             "jobs": [
                 {
                     "id": job_user["id"],
