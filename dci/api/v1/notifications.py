@@ -122,11 +122,12 @@ def get_emails(remoteci_id):
 
 def dispatcher(job):
     events = []
-    emails = get_emails(job['remoteci_id'])
-    if emails:
-        email_event = get_email_info(job, emails)
-        if email_event:
-            events.append(email_event)
+    if job['status'] != 'success':
+        emails = get_emails(job['remoteci_id'])
+        if emails:
+            email_event = get_email_info(job, emails)
+            if email_event:
+                events.append(email_event)
 
     dlrn_event = dlrn(job)
     if dlrn_event:
