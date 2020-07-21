@@ -424,6 +424,7 @@ create_component_properties = {
     "topic_id": Properties.uuid,
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "data": with_default(Properties.json, {}),
+    "tags": with_default(Properties.array, [])
 }
 create_component_schema = {
     "type": "object",
@@ -443,6 +444,7 @@ update_component_properties = {
     "topic_id": Properties.uuid,
     "state": Properties.enum(valid_resource_states),
     "data": Properties.json,
+    "tags": with_default(Properties.array, [])
 }
 update_component_schema = {"type": "object", "properties": update_component_properties}
 
