@@ -49,23 +49,34 @@ def test_get_emails_remoteci_deleted(user, remoteci_user_id, app, engine):
 
 
 @mock.patch("dci.api.v1.notifications.dispatcher")
-def test_email(mocked_disp, user, job_user_id):
+def test_get_email_event_on_job_error(mocked_disp, user, job_user_id):
     # set job to error status
     data = {'job_id': job_user_id, 'status': 'error'}
     user.post('/api/v1/jobstates', data=data)
     job = user.get('/api/v1/jobs/%s?embed=components,topic,remoteci,results' % job_user_id)  # noqa
     job = job.data['job']
-    email_info = notifications.get_email_info(job, ['user@exameple.org'])
-    assert email_info['event'] == 'notification'
-    assert email_info['emails'] == ['user@exameple.org']
-    assert email_info['job_id'] == job_user_id
-    assert email_info['status'] == 'error'
-    assert email_info['topic_id'] == job['topic_id']
-    assert email_info['topic_name'] == job['topic']['name']
-    assert email_info['remoteci_id'] == job['remoteci_id']
-    assert email_info['remoteci_name'] == job['remoteci']['name']
-    assert len(email_info['components']) == 3
-    assert email_info['regressions'] == {}
+    email_event = notifications.get_email_event(job, ['user@exameple.org'])
+    assert email_event['event'] == 'notification'
+    assert email_event['emails'] == ['user@exameple.org']
+    assert email_event['job_id'] == job_user_id
+    assert email_event['status'] == 'error'
+    assert email_event['topic_id'] == job['topic_id']
+    assert email_event['topic_name'] == job['topic']['name']
+    assert email_event['remoteci_id'] == job['remoteci_id']
+    assert email_event['remoteci_name'] == job['remoteci']['name']
+    assert len(email_event['components']) == 3
+    assert email_event['regressions'] == {}
+
+
+@mock.patch("dci.api.v1.notifications.dispatcher")
+def test_get_email_event_on_job_success(mocked_disp, user, job_user_id):
+    # set job to error status
+    data = {'job_id': job_user_id, 'status': 'error'}
+    user.post('/api/v1/jobstates', data=data)
+    job = user.get('/api/v1/jobs/%s?embed=components,topic,remoteci,results' % job_user_id)  # noqa
+    job = job.data['job']
+    email_event = notifications.get_email_event(job, ['user@exameple.org'])
+    assert email_event is None
 
 
 def test_format_mail_message():

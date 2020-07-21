@@ -55,7 +55,13 @@ def build_job_finished_event(job):
     }
 
 
-def get_email_info(job, emails):
+def get_email_event(job, emails):
+
+    if job['status'] == 'success':
+        return None
+
+    if not emails:
+        return None
 
     components_names = [c['name'] for c in job['components']]
     regressions = {res['name']: res['regressions']
@@ -118,10 +124,9 @@ def send_events(events):
 def dispatcher(job):
     events = []
     emails = get_emails(job['remoteci_id'])
-    if emails:
-        email_event = get_email_info(job, emails)
-        if email_event:
-            events.append(email_event)
+    email_event = get_email_event(job, emails)
+    if email_event:
+        events.append(email_event)
 
     dlrn_event = dlrn(job)
     if dlrn_event:
