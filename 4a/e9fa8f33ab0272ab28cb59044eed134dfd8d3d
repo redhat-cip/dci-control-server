@@ -1,0 +1,8 @@
+Code-Review+2: Guillaume Vincent <gvincent@redhat.com>
+Workflow+1: Haïkel Guémar <hguemar@fedoraproject.org>
+Verified+2: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-by: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-at: Mon, 27 Jul 2020 09:59:10 +0000
+Reviewed-on: https://softwarefactory-project.io/r/17111
+Project: dci-control-server
+Branch: refs/heads/master
