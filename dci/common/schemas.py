@@ -179,21 +179,19 @@ create_job_properties = {
     "team_id": Properties.uuid,
     "components": Properties.array,
     "comment": with_default(Properties.string, None),
-    "components_ids": with_default(Properties.array, []),
-    "dry_run": with_default(Properties.boolean, False),
     "previous_job_id": with_default(Properties.uuid, None),
     "update_previous_job_id": with_default(Properties.uuid, None),
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "topic_id": with_default(Properties.uuid, None),
     "tags": with_default(Properties.array, [])
 }
-
 create_job_schema = {
     "type": "object",
     "properties": create_job_properties,
-    "required": ["topic_id"],
+    "required": ["components"],
     "additionalProperties": False,
 }
+
 update_job_properties = {
     "comment": Properties.string,
     "status": Properties.enum(
@@ -212,6 +210,19 @@ update_job_properties = {
     "tags": Properties.array
 }
 update_job_schema = {"type": "object", "properties": update_job_properties}
+
+
+schedule_job_schema = {
+    "type": "object",
+    "properties": {
+        "remoteci_id": Properties.uuid,
+        "dry_run": with_default(Properties.boolean, False),
+        "topic_id": Properties.uuid,
+        "components_ids": with_default(Properties.array, []),
+    },
+    "required": ["topic_id"],
+    "addiadditionalProperties": False,
+}
 
 upgrade_job_schema = {
     "type": "object",
