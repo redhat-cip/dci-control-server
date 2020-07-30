@@ -151,9 +151,3 @@ def test_topics(rh_employee, app, topic_user_id):
     assert gtopic.status_code == 200
     gtopics = rh_employee.get('/api/v1/topics')
     assert gtopics.status_code == 200
-
-
-# GLOBAL STATUS
-def test_global_status(rh_employee, app):
-    global_status = rh_employee.get('/api/v1/global_status')
-    assert global_status.status_code == 200
