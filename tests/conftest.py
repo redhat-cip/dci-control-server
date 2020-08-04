@@ -132,6 +132,11 @@ def user(app, db_provisioning):
 
 
 @pytest.fixture
+def user2(app, db_provisioning):
+    return utils.generate_client(app, ('user2', 'user2'))
+
+
+@pytest.fixture
 def rh_employee(app, db_provisioning):
     return utils.generate_client(app, ('rh_employee', 'rh_employee'))
 

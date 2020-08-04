@@ -152,6 +152,7 @@ def provision(db_conn):
     # Create teams
     team_admin_id = db_insert(models.TEAMS, name='admin')
     team_user_id = db_insert(models.TEAMS, name='user')
+    team_user_id2 = db_insert(models.TEAMS, name='user2')
     db_insert(models.TEAMS, name='product')
     team_redhat_id = db_insert(models.TEAMS, name='Red Hat')
     team_epm_id = db_insert(models.TEAMS, name='EPM')
@@ -169,6 +170,19 @@ def provision(db_conn):
               return_pk=False,
               user_id=u_id,
               team_id=team_user_id)
+
+    user_pw_hash2 = auth.hash_password('user2')
+    u_id2 = db_insert(models.USERS,
+                      name='user2',
+                      sso_username='user2',
+                      password=user_pw_hash2,
+                      fullname='User2',
+                      email='user2@example.org')
+
+    db_insert(models.JOIN_USERS_TEAMS,
+              return_pk=False,
+              user_id=u_id2,
+              team_id=team_user_id2)
 
     user_no_team_pw_hash = auth.hash_password('user_no_team')
     u_id = db_insert(models.USERS,

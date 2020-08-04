@@ -57,6 +57,41 @@ def test_create_jobs(remoteci_context, components_user_ids, job_user_id,
     assert job.data['job']['team_id'] == team_user_id
 
 
+def test_create_jobs_with_team_components(user, remoteci_context, components_user_ids, job_user_id,  # noqa
+                                          team_user_id, topic_user_id):
+
+    data = {'name': 'pname',
+            'type': 'mytest',
+            'tags': ['tag1', 'common']}
+    team_component = user.post('/api/v1/teams/%s/components' % team_user_id, data=data).data  # noqa
+    team_component = team_component['component']
+
+    components_user_ids.append(team_component['id'])
+    data = {
+        'comment': 'kikoolol',
+        'components': components_user_ids,
+        'topic_id': topic_user_id
+    }
+    job = remoteci_context.post('/api/v1/jobs', data=data)
+    job_id = job.data['job']['id']
+
+    assert job.status_code == 201
+    assert job.data['job']['comment'] == 'kikoolol'
+
+    job = remoteci_context.get('/api/v1/jobs/%s' % job_id)
+    assert job.status_code == 200
+    assert job.data['job']['team_id'] == team_user_id
+
+    job_components = remoteci_context.get('/api/v1/jobs/%s/components' % job_id).data
+    job_components_ids = [cmpt['id'] for cmpt in job_components['components']]
+    assert set(job_components_ids) == set(components_user_ids)
+
+    # get job with components embedded
+    job = remoteci_context.get('/api/v1/jobs/%s?embed=components' % job_id).data
+    job_components_ids = [cmpt['id'] for cmpt in job['job']['components']]
+    assert set(job_components_ids) == set(components_user_ids)
+
+
 def test_create_jobs_bad_previous_job_id(remoteci_context,
                                          components_user_ids,
                                          topic_user_id):
