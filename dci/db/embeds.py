@@ -70,7 +70,6 @@ def jobs(root_select=models.JOBS):
              'isouter': True},
             {'right': models.COMPONENTS,
              'onclause': and_(models.COMPONENTS.c.id == models.JOIN_JOBS_COMPONENTS.c.component_id,  # noqa
-                              models.COMPONENTS.c.topic_id == root_select.c.topic_id,  # noqa
                               models.COMPONENTS.c.state != 'archived'),
              'isouter': True}],
         'team': [

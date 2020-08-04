@@ -51,6 +51,7 @@ import dci.api.v1.remotecis  # noqa
 import dci.api.v1.stats  # noqa
 import dci.api.v1.tags  # noqa
 import dci.api.v1.teams  # noqa
+import dci.api.v1.teams_components  # noqa
 import dci.api.v1.teams_users  # noqa
 import dci.api.v1.tests  # noqa
 import dci.api.v1.topics  # noqa

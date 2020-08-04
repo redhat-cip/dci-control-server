@@ -450,6 +450,42 @@ update_component_schema = {"type": "object", "properties": update_component_prop
 
 ###############################################################################
 #                                                                             #
+#                                 Team Component schema                       #
+#                                                                             #
+###############################################################################
+create_team_component_properties = {
+    "name": Properties.string,
+    "title": with_default(Properties.string, None),
+    "message": with_default(Properties.string, None),
+    "canonical_project_name": with_default(Properties.string, None),
+    "url": with_default(Properties.url, None),
+    "type": Properties.string,
+    "state": with_default(Properties.enum(valid_resource_states), "active"),
+    "data": with_default(Properties.json, {}),
+    "tags": with_default(Properties.array, [])
+}
+create_team_component_schema = {
+    "type": "object",
+    "properties": create_component_properties,
+    "required": ["name", "type"],
+    "additionalProperties": False,
+}
+
+update_team_component_properties = {
+    "name": Properties.string,
+    "title": Properties.string,
+    "message": Properties.string,
+    "canonical_project_name": Properties.string,
+    "url": Properties.url,
+    "type": Properties.string,
+    "state": Properties.enum(valid_resource_states),
+    "data": Properties.json,
+    "tags": with_default(Properties.array, [])
+}
+update_team_component_schema = {"type": "object", "properties": update_component_properties}  # noqa
+
+###############################################################################
+#                                                                             #
 #                          Counter schemas                                    #
 #                                                                             #
 ###############################################################################

@@ -64,6 +64,9 @@ COMPONENTS = sa.Table(
              unique=True,
              postgresql_where=sa.sql.text("components.state = 'active'")),
     sa.Index('components_topic_id_idx', 'topic_id'),
+    sa.Column('team_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=True),
     sa.Column('state', STATES, default='active'),
     sa.Column('tags', pg.ARRAY(sa.Text), default=[])
 )
