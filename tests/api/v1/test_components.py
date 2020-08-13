@@ -216,27 +216,23 @@ def test_get_component_not_found(admin):
     assert result.status_code == 404
 
 
-def test_delete_component_by_id(admin, topic_id, user, topic_user_id):
+def test_delete_component_by_id(admin, feeder_context, topic_user_id):
 
-    authorized_contexts = [{'user': admin, 'topic': topic_id},
-                           {'user': user, 'topic': topic_user_id}]
+    data = {'name': 'pname',
+            'type': 'gerrit_review',
+            'topic_id': topic_user_id}
+    pc = feeder_context.post('/api/v1/components', data=data)
+    pc_id = pc.data['component']['id']
+    assert pc.status_code == 201
 
-    for context in authorized_contexts:
-        data = {'name': 'pname',
-                'type': 'gerrit_review',
-                'topic_id': context['topic']}
-        pc = context['user'].post('/api/v1/components', data=data)
-        pc_id = pc.data['component']['id']
-        assert pc.status_code == 201
+    created_ct = admin.get('/api/v1/components/%s' % pc_id)
+    assert created_ct.status_code == 200
 
-        created_ct = context['user'].get('/api/v1/components/%s' % pc_id)
-        assert created_ct.status_code == 200
+    deleted_ct = admin.delete('/api/v1/components/%s' % pc_id)
+    assert deleted_ct.status_code == 204
 
-        deleted_ct = context['user'].delete('/api/v1/components/%s' % pc_id)
-        assert deleted_ct.status_code == 204
-
-        gct = context['user'].get('/api/v1/components/%s' % pc_id)
-        assert gct.status_code == 404
+    gct = admin.get('/api/v1/components/%s' % pc_id)
+    assert gct.status_code == 404
 
 
 def test_get_all_components_with_sort(admin, topic_id):
@@ -677,3 +673,14 @@ def test_update_component_as_feeder(admin, topic_id, feeder_context):
     component = admin.get("/api/v1/components/%s" % c["id"]).data["component"]
     assert component["name"] == "c1"
     assert component["type"] == "tar"
+
+
+def test_create_component_not_allowed_for_user_and_remoteci(user, remoteci_context, topic_user_id):
+    data = {"name": "c1",
+            "type": "snapshot",
+            "topic_id": topic_user_id,
+            "state": "active"}
+    c = user.post("/api/v1/components", data=data)
+    assert c.status_code == 401
+    c = remoteci_context.post("/api/v1/components", data=data)
+    assert c.status_code == 401
