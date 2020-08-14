@@ -422,6 +422,7 @@ create_component_properties = {
     "url": with_default(Properties.url, None),
     "type": Properties.string,
     "topic_id": Properties.uuid,
+    "team_id": Properties.uuid,
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "data": with_default(Properties.json, {}),
     "tags": with_default(Properties.array, [])

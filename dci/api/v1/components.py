@@ -59,6 +59,26 @@ _EMBED_MANY = {
 logger = logging.getLogger(__name__)
 
 
+def _verify_component_and_topic_access(user, component):
+    component_team_id = component['team_id']
+    if component_team_id is not None:
+        if user.is_not_in_team(component_team_id):
+            dci_exc.Unauthorized()
+    else:
+        topic = v1_utils.verify_existence_and_get(component['topic_id'],
+                                                  models.TOPICS)
+        export_control.verify_access_to_topic(user, topic)
+
+
+def _verify_component_access_and_role(user, component):
+    component_team_id = component['team_id']
+    if component_team_id is not None:
+        if user.is_not_in_team(component_team_id):
+            dci_exc.Unauthorized()
+    elif user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():  # noqa
+            raise dci_exc.Unauthorized()
+
+
 @api.route('/components', methods=['POST'])
 @decorators.login_required
 def create_components(user):
@@ -66,8 +86,12 @@ def create_components(user):
     check_json_is_valid(create_component_schema, values)
     values.update(v1_utils.common_values_dict())
 
-    if user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
-        raise dci_exc.Unauthorized()
+    if "team_id" in values:
+        if user.is_not_in_team(values['team_id']):
+            raise dci_exc.Unauthorized()
+    else:
+        if user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
+            raise dci_exc.Unauthorized()
 
     query = _TABLE.insert().values(**values)
 
@@ -86,9 +110,7 @@ def update_components(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    topic = v1_utils.verify_existence_and_get(component['topic_id'],
-                                              models.TOPICS)
-    export_control.verify_access_to_topic(user, topic)
+    _verify_component_and_topic_access(user, component)
 
     values = flask.request.json
     check_json_is_valid(update_component_schema, values)
@@ -113,7 +135,8 @@ def update_components(user, c_id):
 
 
 def get_all_components(user, topic_id):
-    """Get all components of a topic."""
+    """Get all components of a topic that are accessible by
+    the user."""
 
     args = check_and_get_args(flask.request.args.to_dict())
 
@@ -122,6 +145,14 @@ def get_all_components(user, topic_id):
     query.add_extra_condition(sql.and_(
         _TABLE.c.topic_id == topic_id,
         _TABLE.c.state != 'archived'))
+
+    if (user.is_not_super_admin() and user.is_not_feeder() and
+        user.is_not_epm()):
+        query.add_extra_condition(
+            sql.or_(
+                _TABLE.c.team_id.in_(user.teams_ids),
+                _TABLE.c.team_id == None)  # noqa
+        )
 
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
@@ -135,10 +166,8 @@ def get_all_components(user, topic_id):
 @decorators.login_required
 def get_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    topic = v1_utils.verify_existence_and_get(component['topic_id'],
-                                              models.TOPICS)
+    _verify_component_and_topic_access(user, component)
 
-    export_control.verify_access_to_topic(user, topic)
     return base.get_resource_by_id(user, component, _TABLE, _EMBED_MANY)
 
 
@@ -146,9 +175,7 @@ def get_component_by_id(user, c_id):
 @decorators.login_required
 def delete_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-
-    if str(component['topic_id']) not in v1_utils.user_topic_ids(user):
-        raise dci_exc.Unauthorized()
+    _verify_component_access_and_role(user, component)
 
     values = {'state': 'archived'}
     where_clause = sql.and_(
@@ -168,10 +195,7 @@ def delete_component_by_id(user, c_id):
 @decorators.login_required
 def list_components_files(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    topic = v1_utils.verify_existence_and_get(component['topic_id'],
-                                              models.TOPICS)
-    export_control.verify_access_to_topic(user, topic)
-
+    _verify_component_and_topic_access(user, component)
     args = check_and_get_args(flask.request.args.to_dict())
 
     query = v1_utils.QueryBuilder(models.COMPONENTFILES, args, _CF_COLUMNS)
@@ -190,9 +214,7 @@ def list_components_files(user, c_id):
 @decorators.login_required
 def get_component_file(user, c_id, f_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    topic = v1_utils.verify_existence_and_get(component['topic_id'],
-                                              models.TOPICS)
-    export_control.verify_access_to_topic(user, topic)
+    _verify_component_and_topic_access(user, component)
 
     COMPONENT_FILES = models.COMPONENT_FILES
     where_clause = sql.and_(COMPONENT_FILES.c.id == f_id,
@@ -215,9 +237,7 @@ def get_component_file(user, c_id, f_id):
 def download_component_file(user, c_id, f_id):
     store = dci_config.get_store('components')
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    topic = v1_utils.verify_existence_and_get(component['topic_id'],
-                                              models.TOPICS)
-    export_control.verify_access_to_topic(user, topic)
+    _verify_component_and_topic_access(user, component)
 
     component_file = v1_utils.verify_existence_and_get(
         f_id, models.COMPONENT_FILES)
@@ -236,6 +256,8 @@ def upload_component_file(user, c_id):
     COMPONENT_FILES = models.COMPONENT_FILES
 
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    _verify_component_access_and_role(user, component)
+
     if str(component['topic_id']) not in v1_utils.user_topic_ids(user):
         raise dci_exc.Unauthorized()
 
@@ -273,8 +295,8 @@ def upload_component_file(user, c_id):
 def delete_component_file(user, c_id, f_id):
     COMPONENT_FILES = models.COMPONENT_FILES
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    if str(component['topic_id']) not in v1_utils.user_topic_ids(user):
-        raise dci_exc.Unauthorized()
+    _verify_component_access_and_role(user, component)
+
     v1_utils.verify_existence_and_get(f_id, COMPONENT_FILES)
 
     where_clause = COMPONENT_FILES.c.id == f_id
@@ -393,6 +415,12 @@ def unattach_issue_from_component(user, c_id, i_id):
 @decorators.login_required
 def retrieve_tags_from_component(user, c_id):
     """Retrieve all tags attached to a component."""
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    component_team_id = component['team_id']
+    if component_team_id is not None:
+        if user.is_not_in_team(component_team_id):
+            dci_exc.Unauthorized()
+
     JCT = models.JOIN_COMPONENTS_TAGS
     query = (sql.select([models.TAGS])
              .select_from(JCT.join(models.TAGS))
@@ -408,6 +436,7 @@ def add_tag_to_component(user, c_id):
     """Add a tag on a specific component."""
 
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    _verify_component_and_topic_access(user, component)
 
     cmpt_values = {}
     cmpt_values['etag'] = utils.gen_etag()
@@ -432,6 +461,7 @@ def delete_tag_from_component(user, c_id):
     """Delete a tag from a specific component."""
 
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    _verify_component_and_topic_access(user, component)
     cmpt_values = {}
     cmpt_values['etag'] = utils.gen_etag()
     tag_name = flask.request.json.get('name')
