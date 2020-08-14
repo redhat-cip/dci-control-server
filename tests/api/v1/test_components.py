@@ -684,3 +684,144 @@ def test_create_component_not_allowed_for_user_and_remoteci(user, remoteci_conte
     assert c.status_code == 401
     c = remoteci_context.post("/api/v1/components", data=data)
     assert c.status_code == 401
+
+
+# ######### tests teams components
+
+def test_create_teams_components(user, team_user_id):
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'team_id': team_user_id,
+        'state': 'active'}
+    pc = user.post('/api/v1/components', data=data).data
+    pc_id = pc['component']['id']
+
+    gc = user.get('/api/v1/components/%s' % pc_id).data
+    assert gc['component']['name'] == 'pname'
+    assert gc['component']['state'] == 'active'
+
+
+def test_get_all_teams_components(user, team_user_id):
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'team_id': team_user_id,
+        'state': 'active'}
+    pc = user.post('/api/v1/components', data=data).data
+    pc_id = pc['component']['id']
+    cmpts = user.get('/api/v1/teams/%s/components' % team_user_id).data
+    assert cmpts['components'][0]['id'] == pc_id
+
+
+def test_update_teams_components(user, team_user_id):
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'team_id': team_user_id,
+        'state': 'active'}
+    pc = user.post('/api/v1/components', data=data).data
+    pc_id = pc['component']['id']
+    etag = pc['component']['etag']
+    user.put('/api/v1/components/%s' % pc_id,
+             data={'name': 'pname2'},
+             headers={'If-match': etag})
+    gc = user.get('/api/v1/components/%s' % pc_id).data
+    assert gc['component']['name'] == 'pname2'
+
+
+def test_delete_teams_components(user, team_user_id):
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'team_id': team_user_id,
+        'state': 'active'}
+    pc = user.post('/api/v1/components', data=data).data
+    pc_id = pc['component']['id']
+
+    gc = user.get('/api/v1/components/%s' % pc_id)
+    assert gc.status_code == 200
+
+    gc = user.delete('/api/v1/components/%s' % pc_id)
+    assert gc.status_code == 204
+
+    gc = user.get('/api/v1/components/%s' % pc_id)
+    assert gc.status_code == 404
+
+
+def test_add_and_delete_tags_teams_components(user, team_user_id):
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'team_id': team_user_id,
+        'state': 'active'}
+    pc = user.post('/api/v1/components', data=data).data
+    pc_id = pc['component']['id']
+
+    pt = user.post('/api/v1/components/%s/tags' % pc_id,
+                   data={'name': 'my_tag_1'})
+    assert pt.status_code == 201
+
+    pt = user.post('/api/v1/components/%s/tags' % pc_id,
+                   data={'name': 'my_tag_1'})
+    assert pt.status_code == 201
+
+    pt = user.post('/api/v1/components/%s/tags' % pc_id,
+                   data={'name': 'my_tag_2'})
+    assert pt.status_code == 201
+
+    gt = user.get('/api/v1/components/%s' % pc_id)
+    assert gt.status_code == 200
+    assert gt.data['component']['tags'] == ['my_tag_1', 'my_tag_2']
+
+    dt = user.delete('/api/v1/components/%s/tags' % pc_id,
+                     data={'name': 'my_tag_2'})
+    assert dt.status_code == 204
+
+    gt = user.get('/api/v1/components/%s' % pc_id)
+    assert gt.status_code == 200
+    assert gt.data['component']['tags'] == ['my_tag_1']
+
+
+def test_filter_teams_components_by_tag(user, team_user_id):
+
+    data = {'name': 'pname',
+            'type': 'mytest',
+            'team_id': team_user_id,
+            'tags': ['tag1', 'common']}
+    user.post('/api/v1/components', data=data).data
+
+    data = {'name': 'pname',
+            'type': 'mylib',
+            'team_id': team_user_id,
+            'tags': ['tag2', 'common']
+            }
+    user.post('/api/v1/components', data=data).data
+
+    res = user.get('/api/v1/teams/%s/components?where=tags:tag1' %
+                   team_user_id)
+    assert len(res.data['components']) == 1
+    assert 'tag1' in res.data['components'][0]['tags']
+    assert 'tag2' not in res.data['components'][0]['tags']
+
+    res = user.get('/api/v1/teams/%s/components?where=tags:common' %
+                   team_user_id)
+    assert len(res.data['components']) == 2
+    assert 'common' in res.data['components'][0]['tags']
+    assert 'common' in res.data['components'][1]['tags']
+
+
+def test_teams_components_isolation(user, user2, team_user_id):
+    data = {'name': 'pname',
+            'type': 'mytest',
+            'team_id': team_user_id}
+    user.post('/api/v1/components', data=data)
+    components = user.get('/api/v1/teams/%s/components' % team_user_id).data
+    assert len(components['components']) > 0
+    components = user2.get('/api/v1/teams/%s/components' % team_user_id)
+    assert components.status_code == 401

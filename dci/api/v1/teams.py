@@ -20,6 +20,7 @@ from sqlalchemy import sql
 
 from dci.api.v1 import api
 from dci.api.v1 import base
+from dci.api.v1 import components
 from dci.api.v1 import remotecis
 from dci.api.v1 import tests
 from dci.api.v1 import utils as v1_utils
@@ -191,3 +192,12 @@ def get_to_purge_archived_teams(user):
 @decorators.login_required
 def purge_archived_teams(user):
     return base.purge_archived_resources(user, _TABLE)
+
+
+@api.route('/teams/<uuid:team_id>/components', methods=['GET'])
+@decorators.login_required
+def get_team_components(user, team_id):
+    if (user.is_not_super_admin() and user.is_not_feeder() and
+        user.is_not_epm() and user.is_not_in_team(team_id)):
+            raise dci_exc.Unauthorized()
+    return components.get_all_components(user, team_id=team_id)
