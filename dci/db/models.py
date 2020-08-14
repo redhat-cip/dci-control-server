@@ -59,11 +59,16 @@ COMPONENTS = sa.Table(
     sa.Column('topic_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('topics.id', ondelete='CASCADE'),
               nullable=True),
-    sa.Index('active_components_name_topic_id_key',
+    sa.Column('team_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=True),
+    sa.Index('active_components_name_topic_id_team_id_null_key',
              'name', 'topic_id', 'type',
              unique=True,
-             postgresql_where=sa.sql.text("components.state = 'active'")),
+             postgresql_where=sa.sql.text("components.state = 'active' AND components.team_id is NULL")),
+    sa.UniqueConstraint('name', 'topic_id', 'type', 'team_id', constraint_name='name_topic_id_type_team_id_unique'),
     sa.Index('components_topic_id_idx', 'topic_id'),
+
     sa.Column('state', STATES, default='active'),
     sa.Column('tags', pg.ARRAY(sa.Text), default=[])
 )
