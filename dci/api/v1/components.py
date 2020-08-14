@@ -66,8 +66,12 @@ def create_components(user):
     check_json_is_valid(create_component_schema, values)
     values.update(v1_utils.common_values_dict())
 
-    if user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
-        raise dci_exc.Unauthorized()
+    if "team_id" in values:
+        if user.is_not_in_team(values['team_id']):
+            raise dci_exc.Unauthorized()
+    else:
+        if user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
+            raise dci_exc.Unauthorized()
 
     query = _TABLE.insert().values(**values)
 
@@ -86,9 +90,14 @@ def update_components(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    topic = v1_utils.verify_existence_and_get(component['topic_id'],
-                                              models.TOPICS)
-    export_control.verify_access_to_topic(user, topic)
+    component_team_id = component['team_id']
+    if component_team_id is not None:
+        if user.is_not_in_team(component_team_id):
+            dci_exc.Unauthorized()
+    else:
+        topic = v1_utils.verify_existence_and_get(component['topic_id'],
+                                                  models.TOPICS)
+        export_control.verify_access_to_topic(user, topic)
 
     values = flask.request.json
     check_json_is_valid(update_component_schema, values)
@@ -112,8 +121,9 @@ def update_components(user, c_id):
     )
 
 
-def get_all_components(user, topic_id):
-    """Get all components of a topic."""
+def get_all_components(user, topic_id, team_id=None):
+    """Get all components of a topic, and also the components
+    that belongs to a team."""
 
     args = check_and_get_args(flask.request.args.to_dict())
 
@@ -121,6 +131,7 @@ def get_all_components(user, topic_id):
 
     query.add_extra_condition(sql.and_(
         _TABLE.c.topic_id == topic_id,
+        _TABLE.c.team_id == team_id,
         _TABLE.c.state != 'archived'))
 
     nb_rows = query.get_number_of_rows()
@@ -135,10 +146,15 @@ def get_all_components(user, topic_id):
 @decorators.login_required
 def get_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    topic = v1_utils.verify_existence_and_get(component['topic_id'],
-                                              models.TOPICS)
+    component_team_id = component['team_id']
+    if component_team_id is not None:
+        if user.is_not_in_team(component_team_id):
+            dci_exc.Unauthorized()
+    else:
+        topic = v1_utils.verify_existence_and_get(component['topic_id'],
+                                                  models.TOPICS)
+        export_control.verify_access_to_topic(user, topic)
 
-    export_control.verify_access_to_topic(user, topic)
     return base.get_resource_by_id(user, component, _TABLE, _EMBED_MANY)
 
 
@@ -146,8 +162,11 @@ def get_component_by_id(user, c_id):
 @decorators.login_required
 def delete_component_by_id(user, c_id):
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-
-    if str(component['topic_id']) not in v1_utils.user_topic_ids(user):
+    component_team_id = component['team_id']
+    if component_team_id is not None:
+        if user.is_not_in_team(component_team_id):
+            dci_exc.Unauthorized()
+    elif str(component['topic_id']) not in v1_utils.user_topic_ids(user):
         raise dci_exc.Unauthorized()
 
     values = {'state': 'archived'}
@@ -393,6 +412,12 @@ def unattach_issue_from_component(user, c_id, i_id):
 @decorators.login_required
 def retrieve_tags_from_component(user, c_id):
     """Retrieve all tags attached to a component."""
+    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    component_team_id = component['team_id']
+    if component_team_id is not None:
+        if user.is_not_in_team(component_team_id):
+            dci_exc.Unauthorized()
+
     JCT = models.JOIN_COMPONENTS_TAGS
     query = (sql.select([models.TAGS])
              .select_from(JCT.join(models.TAGS))
@@ -408,6 +433,10 @@ def add_tag_to_component(user, c_id):
     """Add a tag on a specific component."""
 
     component = v1_utils.verify_existence_and_get(c_id, _TABLE)
+    component_team_id = component['team_id']
+    if component_team_id is not None:
+        if user.is_not_in_team(component_team_id):
+            dci_exc.Unauthorized()
 
     cmpt_values = {}
     cmpt_values['etag'] = utils.gen_etag()

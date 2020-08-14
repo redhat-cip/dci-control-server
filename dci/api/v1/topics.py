@@ -182,13 +182,24 @@ def delete_topic_by_id(user, topic_id):
     return flask.Response(None, 204, content_type='application/json')
 
 
-# component GET
+# GET components
 @api.route('/topics/<uuid:topic_id>/components', methods=['GET'])
 @decorators.login_required
-def get_all_components(user, topic_id):
+def get_topics_components(user, topic_id):
     topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
     export_control.verify_access_to_topic(user, topic)
-    return components.get_all_components(user, topic_id=topic['id'])
+    return components.get_all_components(user, topic_id=topic_id)
+
+
+@api.route('/topics/<uuid:topic_id>/<uuid:team_id>/components', methods=['GET'])
+@decorators.login_required
+def get_topics_teams_components(user, topic_id, team_id):
+    v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    v1_utils.verify_existence_and_get(team_id, models.TEAMS)
+    if (user.is_not_super_admin() and user.is_not_feeder() and
+        user.is_not_epm() and user.is_not_in_team(team_id)):
+            raise dci_exc.Unauthorized()
+    return components.get_all_components(user, topic_id=topic_id, team_id=team_id)
 
 
 # teams set apis
