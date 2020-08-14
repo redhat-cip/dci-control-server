@@ -132,6 +132,11 @@ def user(app, db_provisioning):
 
 
 @pytest.fixture
+def user2(app, db_provisioning):
+    return utils.generate_client(app, ('user2', 'user2'))
+
+
+@pytest.fixture
 def rh_employee(app, db_provisioning):
     return utils.generate_client(app, ('rh_employee', 'rh_employee'))
 
@@ -216,6 +221,12 @@ def team_user_id(admin):
 
 
 @pytest.fixture
+def team_user_id2(admin):
+    team = admin.get('/api/v1/teams?where=name:user2').data['teams'][0]
+    return str(team['id'])
+
+
+@pytest.fixture
 def team_admin_id(admin):
     team = admin.get('/api/v1/teams?where=name:admin').data['teams'][0]
     return str(team['id'])
@@ -234,7 +245,7 @@ def team_epm_id(admin):
 
 
 @pytest.fixture
-def topic_user(admin, user, team_user_id, product):
+def topic_user(admin, user, team_user_id, team_user_id2, product):
     data = {
         "name": "topic_user_name",
         "product_id": product["id"],
@@ -242,6 +253,7 @@ def topic_user(admin, user, team_user_id, product):
     }
     topic = admin.post("/api/v1/topics", data=data).data["topic"]
     admin.post('/api/v1/topics/%s/teams' % topic['id'], data={'team_id': team_user_id})
+    admin.post('/api/v1/topics/%s/teams' % topic['id'], data={'team_id': team_user_id2})
     for i in range(1, 4):
         admin.post(
             "/api/v1/components",
