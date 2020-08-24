@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9843287d_cab989c4",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-08-24T11:09:11Z",
+      "side": 1,
+      "message": "With this statement you\u0027ll only get the components that belong to this specific team. Not \"all components of a topic, and also the components that belongs to a team\" as you state in the description.\n\nTo get what you describe you need to change this to\n\n   sql.or_(_TABLE.c.team_id \u003d\u003d team_id, _TABLE.c.team_id.is_( None))",
+      "range": {
+        "startLine": 134,
+        "startChar": 0,
+        "endLine": 134,
+        "endChar": 36
+      },
+      "revId": "c91365e5d58791b6f4d163cd2bce828ec06c72b7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
