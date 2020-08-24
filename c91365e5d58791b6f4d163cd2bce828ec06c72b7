@@ -25,6 +25,30 @@
     },
     {
       "key": {
+        "uuid": "80108010_3a5aea98",
+        "filename": "dci/alembic/versions/c5bbe7b63a_add_team_id_to_components.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 42,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-08-24T11:37:37Z",
+      "side": 1,
+      "message": "Actually I had some weird issues when having everything in one specific migration script so i split it up in two.",
+      "parentUuid": "b750679a_f5860342",
+      "range": {
+        "startLine": 41,
+        "startChar": 0,
+        "endLine": 42,
+        "endChar": 42
+      },
+      "revId": "c91365e5d58791b6f4d163cd2bce828ec06c72b7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9843287d_cab989c4",
         "filename": "dci/api/v1/components.py",
         "patchSetId": 2
@@ -36,6 +60,30 @@
       "writtenOn": "2020-08-24T11:09:11Z",
       "side": 1,
       "message": "With this statement you\u0027ll only get the components that belong to this specific team. Not \"all components of a topic, and also the components that belongs to a team\" as you state in the description.\n\nTo get what you describe you need to change this to\n\n   sql.or_(_TABLE.c.team_id \u003d\u003d team_id, _TABLE.c.team_id.is_( None))",
+      "range": {
+        "startLine": 134,
+        "startChar": 0,
+        "endLine": 134,
+        "endChar": 36
+      },
+      "revId": "c91365e5d58791b6f4d163cd2bce828ec06c72b7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "b28068bc_fb39ec90",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-08-24T11:37:37Z",
+      "side": 1,
+      "message": "Depending on the endpoints i want to get either:\n\n- only the \u0027core\u0027 components of a topic with team_id\u003dNone\n- only the \u0027teams\u0027 components of a topic team_id!\u003dNone\n\nbut not all the components regardless of the team_id.\n\nYou can see the tests to have more details.",
+      "parentUuid": "9843287d_cab989c4",
       "range": {
         "startLine": 134,
         "startChar": 0,
