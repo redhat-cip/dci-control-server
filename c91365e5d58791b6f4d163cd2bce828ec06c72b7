@@ -93,6 +93,30 @@
       "revId": "c91365e5d58791b6f4d163cd2bce828ec06c72b7",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "d61c17f4_5a67cba0",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 134,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-08-24T12:51:15Z",
+      "side": 1,
+      "message": "Ok, the comment is misleading then, maybe you can change it to make it clearer because as it is it does not reflect what you just described.",
+      "parentUuid": "b28068bc_fb39ec90",
+      "range": {
+        "startLine": 134,
+        "startChar": 0,
+        "endLine": 134,
+        "endChar": 36
+      },
+      "revId": "c91365e5d58791b6f4d163cd2bce828ec06c72b7",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
