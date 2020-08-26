@@ -74,3 +74,9 @@ class Unauthorized(DCIException):
     def __init__(self):
         msg = "Operation not authorized."
         super(Unauthorized, self).__init__(msg, status_code=401)
+
+
+class Forbidden(DCIException):
+    def __init__(self):
+        msg = "Operation forbidden."
+        super(Forbidden, self).__init__(msg, status_code=403)
