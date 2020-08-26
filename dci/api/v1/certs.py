@@ -16,8 +16,10 @@
 import flask
 import logging
 import os.path
-from sqlalchemy import sql
 
+from sqlalchemy import sql
+from OpenSSL import crypto
+from dci import decorators
 from dci.api.v1 import api
 from dci.api.v1 import export_control
 from dci.api.v1 import utils as v1_utils
@@ -111,3 +113,18 @@ def verify_repo_access():
             status_code=403)
 
     return flask.Response(None, 200)
+
+
+@api.route("/certs/check", methods=["POST"])
+@decorators.login_required
+def verify_remoteci_cert(identity):
+    if identity.is_not_remoteci():
+        raise dci_exc.DCIException("Only remoteci can verify certificate")
+
+    remoteci = v1_utils.verify_existence_and_get(identity.id, models.REMOTECIS)
+    cert = flask.request.json["cert"]
+    c = crypto.load_certificate(crypto.FILETYPE_PEM, cert)
+    cert_fp = c.digest("sha1").decode("utf-8").replace(':', '').lower()
+    if cert_fp == remoteci["cert_fp"]:
+        return flask.Response("", 204, content_type="application/json")
+    raise dci_exc.Forbidden()
