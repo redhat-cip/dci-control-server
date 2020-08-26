@@ -16,6 +16,23 @@
       "revId": "1d7c9c9b337a78682f927f3fa689203e9a852c4a",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "83511e9f_b1d9b3c7",
+        "filename": "dci/api/v1/certs.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 126,
+      "author": {
+        "id": 29
+      },
+      "writtenOn": "2020-08-26T10:35:52Z",
+      "side": 1,
+      "message": "you removed the c.has_expired(). did i miss something ?",
+      "revId": "1d7c9c9b337a78682f927f3fa689203e9a852c4a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
