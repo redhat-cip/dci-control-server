@@ -59,36 +59,6 @@ _EMBED_MANY = {
 logger = logging.getLogger(__name__)
 
 
-def _get_latest_components():
-    __C_COLUMNS = dict(_C_COLUMNS)
-    __C_COLUMNS.update({
-        'topic_id': models.TOPICS.c.id.label('topic_id'),
-        'topic_name': models.TOPICS.c.name.label('topic_name'),
-        'product_id': models.PRODUCTS.c.id.label('product_id'),
-        'product_name': models.PRODUCTS.c.name.label('product_name'),
-    })
-
-    join_condition = sql.join(
-        models.COMPONENTS, models.TOPICS,
-        sql.and_(models.COMPONENTS.c.topic_id == models.TOPICS.c.id,
-                 models.TOPICS.c.state == 'active')
-    ).join(
-        models.PRODUCTS,
-        sql.and_(models.TOPICS.c.product_id == models.PRODUCTS.c.id,
-                 models.PRODUCTS.c.state == 'active')
-    )
-
-    select_clause = list(dict(__C_COLUMNS).values())
-    query = (sql.select(select_clause).select_from(join_condition).
-             distinct(models.TOPICS.c.id, models.COMPONENTS.c.type).
-             where(models.COMPONENTS.c.state == 'active').
-             order_by(models.TOPICS.c.id, models.COMPONENTS.c.type,
-                      models.COMPONENTS.c.created_at.desc()))
-    rows = flask.g.db_conn.execute(query).fetchall()
-
-    return [dict(row) for row in rows]
-
-
 @api.route('/components', methods=['POST'])
 @decorators.login_required
 def create_components(user):
@@ -96,7 +66,7 @@ def create_components(user):
     check_json_is_valid(create_component_schema, values)
     values.update(v1_utils.common_values_dict())
 
-    if str(values['topic_id']) not in v1_utils.user_topic_ids(user):
+    if user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     query = _TABLE.insert().values(**values)
