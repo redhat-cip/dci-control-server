@@ -8,6 +8,98 @@ from dci_umb.sender import send
 logger = logging.getLogger(__name__)
 
 
+def _build_generic_message(job, component, result, now):
+    test_name = result["name"]
+    job_url = "https://www.distributed-ci.io/jobs/%s/jobStates" % job["id"]
+    target = "topic://VirtualTopic.eng.dci.job.complete"
+    return {
+        "target": target,
+        "body": json.dumps(
+            {
+                "contact": {
+                    "name": "DCI CI",
+                    "team": "DCI",
+                    "docs": "https://docs.distributed-ci.io/",
+                    "email": "distributed-ci@redhat.com",
+                    "url": "https://distributed-ci.io/",
+                },
+                "run": {"url": job_url, "log": job_url},
+                "artifact": {
+                    "compose_type": "nightly"
+                    if "nightly" in component["url"]
+                    else "rel-eng",
+                    "id": component["name"],
+                    "type": "productmd-compose",
+                },
+                "pipeline": {"id": job["id"], "name": "job id"},
+                "test": {
+                    "category": "system",
+                    "namespace": "dci",
+                    "type": test_name,
+                    "result": "passed" if job["status"] == "success" else "failed",
+                },
+                "system": [],
+                "generated_at": "%sZ" % now.isoformat(),
+                "version": "0.1.0",
+            }
+        ),
+    }
+
+
+def _build_cki_message(job, component, result, now):
+    test_name = result["name"]
+    job_url = "https://www.distributed-ci.io/jobs/%s/jobStates" % job["id"]
+    target = "topic://VirtualTopic.eng.dci.cki"
+    test_result = "passed" if job["status"] == "success" else "failed"
+    return {
+        "target": target,
+        "body": json.dumps(
+            {
+                # cki
+                "results": [
+                    {
+                        "test_arch": "",
+                        "test_description": "",
+                        "test_log_url": [job_url],
+                        "test_name": test_name,
+                        "test_result": test_result,
+                        "is_debug": False,
+                    },
+                ],
+                "summarized_result": "",
+                "team_email": "distributed-ci@redhat.com",
+                "team_name": "DCI",
+                # generic
+                "contact": {
+                    "name": "DCI CI",
+                    "team": "DCI",
+                    "docs": "https://docs.distributed-ci.io/",
+                    "email": "distributed-ci@redhat.com",
+                    "url": "https://distributed-ci.io/",
+                },
+                "run": {"url": job_url, "log": job_url},
+                "artifact": {
+                    "compose_type": "nightly"
+                    if "nightly" in component["url"]
+                    else "rel-eng",
+                    "id": component["name"],
+                    "type": "productmd-compose",
+                },
+                "pipeline": {"id": job["id"], "name": "job id"},
+                "test": {
+                    "category": "system",
+                    "namespace": "dci",
+                    "type": test_name,
+                    "result": test_result,
+                },
+                "system": [],
+                "generated_at": "%sZ" % now.isoformat(),
+                "version": "0.1.0",
+            }
+        ),
+    }
+
+
 def build_umb_messages(event, now=datetime.datetime.utcnow()):
     logger.debug(event)
     messages = []
@@ -17,42 +109,10 @@ def build_umb_messages(event, now=datetime.datetime.utcnow()):
             continue
         for result in job["results"]:
             test_name = result["name"]
-            job_url = "https://www.distributed-ci.io/jobs/%s/jobStates" % job["id"]
-            target = "topic://VirtualTopic.eng.dci.job.complete"
-            messages.append(
-                {
-                    "target": target,
-                    "body": json.dumps({
-                        "contact": {
-                            "name": "DCI CI",
-                            "team": "DCI",
-                            "docs": "https://docs.distributed-ci.io/",
-                            "email": "distributed-ci@redhat.com",
-                            "url": "https://distributed-ci.io/",
-                        },
-                        "run": {"url": job_url, "log": job_url},
-                        "artifact": {
-                            "compose_type": "nightly"
-                            if "nightly" in component["url"]
-                            else "rel-eng",
-                            "id": component["name"],
-                            "type": "productmd-compose",
-                        },
-                        "pipeline": {"id": job["id"], "name": "job id"},
-                        "test": {
-                            "category": "system",
-                            "namespace": "dci",
-                            "type": test_name,
-                            "result": "passed"
-                            if job["status"] == "success"
-                            else "failed",
-                        },
-                        "system": [],
-                        "generated_at": "%sZ" % now.isoformat(),
-                        "version": "0.1.0",
-                    }),
-                }
-            )
+            if "cki" in test_name.lower():
+                messages.append(_build_cki_message(job, component, result, now))
+            else:
+                messages.append(_build_generic_message(job, component, result, now))
     return messages
 
 
