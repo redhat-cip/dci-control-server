@@ -607,3 +607,17 @@ def RHEL81Component(admin, RHEL81Topic):
         "type": "Compose",
     }
     return admin.post("/api/v1/components", data=data).data["component"]
+
+
+@pytest.fixture
+def cki_test_file(user, job_user):
+    headers = {
+        "DCI-JOB-ID": job_user["id"],
+        "DCI-NAME": "cki-result",
+        "DCI-MIME": "application/junit",
+        "Content-Disposition": "attachment; filename=cki-results.xml",
+        "Content-Type": "application/junit",
+    }
+    data = open("tests/data/cki-results.xml").read()
+    r = user.post("/api/v1/files", headers=headers, data=data)
+    return r.data["file"]
