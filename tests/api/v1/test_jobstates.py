@@ -204,3 +204,51 @@ def test_delete_jobstate_as_user(mocked_disp, user, job_user_id):
 
     # jobstate_delete = user.delete('/api/v1/jobstates/%s' % jobstate_id)
     # assert jobstate_delete.status_code == 401
+
+
+@mock.patch("dci.api.v1.notifications.dispatcher")
+def test_umb_notification_has_testcases(mocked_disp, user, job_user, cki_test_file):
+    data = {"job_id": job_user["id"], "comment": "", "status": "success"}
+    headers = {"Content-Type": "application/json"}
+    user.post("/api/v1/jobstates", headers=headers, data=data)
+    events, _ = mocked_disp.call_args
+    event = events[0]
+    assert event["tags"] == []
+    results = event["results"]
+    assert len(results) == 1
+    assert results[0]["name"] == "cki-result"
+    assert results[0]["testcases"] == [
+        {
+            "classname": "LTP",
+            "message": "",
+            "regression": False,
+            "value": "\n  Logs:\n  recipes/1/tasks/1/logs/harness.log\nrecipes/1/tasks/1/logs/taskout.log\nrecipes/1/tasks/1/logs/sched.run.log\n",
+            "action": "passed",
+            "successfix": False,
+            "name": "LTP",
+            "type": "",
+            "time": 0.0,
+        },
+        {
+            "classname": "LTP",
+            "message": "",
+            "regression": False,
+            "value": "\n  Logs:\n  recipes/1/tasks/1/results/1584053404/logs/resultoutputfile.log\n",
+            "action": "passed",
+            "successfix": False,
+            "name": "Setup",
+            "type": "",
+            "time": 0.0,
+        },
+        {
+            "classname": "LTP",
+            "message": "",
+            "regression": False,
+            "value": "\n  Logs:\n  recipes/1/tasks/1/results/1584053405/logs/dmesg.log\nrecipes/1/tasks/1/results/1584053405/logs/resultoutputfile.log\n",
+            "action": "error",
+            "successfix": False,
+            "name": "sched",
+            "type": "Aborted",
+            "time": 0.0,
+        },
+    ]
