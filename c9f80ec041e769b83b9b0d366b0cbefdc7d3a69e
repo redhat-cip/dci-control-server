@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "128eda02_f4ac6703",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-09-02T12:43:31Z",
+      "side": 1,
+      "message": "Will the components be created by \"simple users\" ?\n\nIf not, should we continue to limit components creation to \"feeder\" role ? Or maybe also allow in this case \"remoteci\" role instead of allowing anyone to create components ?",
+      "range": {
+        "startLine": 94,
+        "startChar": 0,
+        "endLine": 96,
+        "endChar": 34
+      },
+      "revId": "c9f80ec041e769b83b9b0d366b0cbefdc7d3a69e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "ff94c26e_187d2b41",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 159,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-09-02T12:43:31Z",
+      "side": 1,
+      "message": "I feel uneasy to have this duplicated everywhere.\n\nIs there a reason it can\u0027t be moved into a generic \"topic.verify_access_for_user()\" along with \"export_control.verify_access_to_topic()\" ?",
+      "range": {
+        "startLine": 157,
+        "startChar": 0,
+        "endLine": 159,
+        "endChar": 34
+      },
+      "revId": "c9f80ec041e769b83b9b0d366b0cbefdc7d3a69e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
