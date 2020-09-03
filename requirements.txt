@@ -1,4 +1,4 @@
-psycopg2==2.7.7  # ignore: use latest version of psycopg2 to avoid building it during pip install
+psycopg2==2.7.5  # ignore: use latest version of psycopg2 to avoid building it during pip install
 pyopenssl  # ignore: openssl 1.0.2k doesn't exist on pypi
 cryptography  # ignore: use latest version of cryptography to avoid building it during pip install
 alembic==0.8.3  # ignore: use the epel version instead of the centos version
