@@ -49,6 +49,30 @@
     },
     {
       "key": {
+        "uuid": "1067cea4_5d5ecd4e",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 96,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-09-03T12:04:33Z",
+      "side": 1,
+      "message": "For \"partners components\" how will the components be created ?\n\n- Through the UI ? (in this case simple user is fine)\n- Through some scripting ? (in this case this should be restricted to a remoteCI or feeder role, should it ?)\n\nN.B.: I still don\u0027t have the [big picture|design doc|workflow doc] so I\u0027m poking around to try to understand more.",
+      "parentUuid": "2e72b0a7_7ba79a05",
+      "range": {
+        "startLine": 94,
+        "startChar": 0,
+        "endLine": 96,
+        "endChar": 34
+      },
+      "revId": "c9f80ec041e769b83b9b0d366b0cbefdc7d3a69e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "ff94c26e_187d2b41",
         "filename": "dci/api/v1/components.py",
         "patchSetId": 4
