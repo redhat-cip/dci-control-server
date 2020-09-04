@@ -99,7 +99,8 @@ WHERE
     {team_query}
 ORDER BY
     topics.name,
-    jobs.remoteci_id;
+    jobs.remoteci_id,
+    jobs.created_at DESC;
 """.format(
             team_query=_build_team_query(user)
         )
