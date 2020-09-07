@@ -62,9 +62,12 @@ logger = logging.getLogger(__name__)
 @api.route('/components', methods=['POST'])
 @decorators.login_required
 def create_components(user):
-    values = flask.request.json
-    check_json_is_valid(create_component_schema, values)
-    values.update(v1_utils.common_values_dict())
+    values = v1_utils.common_values_dict()
+    user_values = flask.request.json
+    check_json_is_valid(create_component_schema, user_values)
+    values.update(user_values)
+    if 'created_at' in user_values:
+        values['updated_at'] = user_values['created_at']
 
     if "team_id" in values:
         if user.is_not_in_team(values['team_id']):

@@ -15,6 +15,7 @@
 # under the License.
 
 from __future__ import unicode_literals
+from datetime import datetime as dt
 import mock
 import pytest
 import uuid
@@ -143,6 +144,22 @@ def test_create_component_with_tags(admin, topic_id):
     assert cmpt.status_code == 200
 
     assert cmpt.data['component']['tags'] == ['tag1', 'tag2']
+
+
+def test_create_component_with_timestamp(admin, topic_id):
+    created_at = dt.utcnow().isoformat()
+    data = {'name': 'pname',
+            'type': 'first_type',
+            'topic_id': topic_id,
+            'created_at': created_at}
+    cmpt = admin.post('/api/v1/components', data=data)
+    assert cmpt.status_code == 201
+
+    cmpt = admin.get('/api/v1/components/%s' % cmpt.data['component']['id'])
+    assert cmpt.status_code == 200
+
+    assert cmpt.data['component']['created_at'] == created_at
+    assert cmpt.data['component']['updated_at'] == created_at
 
 
 def test_get_all_components(admin, topic_id):
