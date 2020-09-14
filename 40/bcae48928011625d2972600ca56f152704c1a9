@@ -1,0 +1,9 @@
+Workflow+1: Guillaume Vincent <gvincent@redhat.com>
+Code-Review+2: François Charlier <francois.charlier@redhat.com>
+Workflow+1: François Charlier <francois.charlier@redhat.com>
+Verified+2: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-by: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-at: Mon, 14 Sep 2020 17:04:53 +0000
+Reviewed-on: https://softwarefactory-project.io/r/19509
+Project: dci-control-server
+Branch: refs/heads/master
