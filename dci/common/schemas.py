@@ -444,7 +444,7 @@ update_component_properties = {
     "topic_id": Properties.uuid,
     "state": Properties.enum(valid_resource_states),
     "data": Properties.json,
-    "tags": with_default(Properties.array, [])
+    "tags": Properties.array
 }
 update_component_schema = {"type": "object", "properties": update_component_properties}
 

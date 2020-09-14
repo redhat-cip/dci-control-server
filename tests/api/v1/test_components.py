@@ -102,17 +102,27 @@ def test_create_components_with_same_name_and_different_type(admin, topic_id):
 
 
 def test_create_component_with_tags(admin, topic_id):
-    data = {'name': 'pname',
-            'type': 'first_type',
-            'topic_id': topic_id,
-            'tags': ['tag1', 'tag2']}
-    cmpt = admin.post('/api/v1/components', data=data)
-    assert cmpt.status_code == 201
+    data = {
+        "name": "pname",
+        "type": "first_type",
+        "topic_id": topic_id,
+        "tags": ["tag1", "tag2"],
+    }
+    r = admin.post("/api/v1/components", data=data)
+    assert r.status_code == 201
 
-    cmpt = admin.get('/api/v1/components/%s' % cmpt.data['component']['id'])
-    assert cmpt.status_code == 200
+    component = r.data["component"]
+    r = admin.get("/api/v1/components/%s" % component["id"])
+    assert r.status_code == 200
+    assert r.data["component"]["tags"] == ["tag1", "tag2"]
 
-    assert cmpt.data['component']['tags'] == ['tag1', 'tag2']
+    r = admin.put(
+        "/api/v1/components/%s" % component["id"],
+        data={"state": "inactive"},
+        headers={"If-match": component["etag"]},
+    )
+    assert r.status_code == 200
+    assert r.data["component"]["tags"] == ["tag1", "tag2"]
 
 
 def test_get_all_components(admin, topic_id):
