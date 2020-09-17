@@ -22,8 +22,8 @@ Create Date: 2018-01-25 13:08:13.215147
 """
 
 # revision identifiers, used by Alembic.
-revision = 'b0436aece81f'
-down_revision = '19dd8a44afdf'
+revision = "b0436aece81f"
+down_revision = "19dd8a44afdf"
 branch_labels = None
 depends_on = None
 
@@ -33,10 +33,8 @@ from sqlalchemy.dialects import postgresql as pg
 
 
 def upgrade():
-    op.add_column('tests_results',
-                  sa.Column('tests_cases', pg.JSON, default=[]))
-    op.add_column('tests_results',
-                  sa.Column('regressions', sa.Integer, default=0))
+    op.add_column("tests_results", sa.Column("tests_cases", pg.JSON, default=[]))
+    op.add_column("tests_results", sa.Column("regressions", sa.Integer, default=0))
 
 
 def downgrade():

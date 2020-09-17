@@ -31,7 +31,8 @@ def get_certificate_headers(remoteci_context, remoteci, product, topic, componen
 
 
 def test_user_cert_verified_if_user_team_in_RHEL_export_control_true(
-    admin, remoteci_context, remoteci, RHELProduct, RHEL80Topic, RHEL80Component, cakeys):  # noqa
+    admin, remoteci_context, remoteci, RHELProduct, RHEL80Topic, RHEL80Component, cakeys
+):
     certificate_headers = get_certificate_headers(
         remoteci_context, remoteci, RHELProduct, RHEL80Topic, RHEL80Component
     )
@@ -47,7 +48,8 @@ def test_user_cert_verified_if_user_team_in_RHEL_export_control_true(
 
 
 def test_user_cert_verified_if_user_team_in_RHEL_export_control_false(
-    admin, remoteci_context, remoteci, RHELProduct, RHEL81Topic, RHEL81Component, cakeys):  # noqa
+    admin, remoteci_context, remoteci, RHELProduct, RHEL81Topic, RHEL81Component, cakeys
+):
     certificate_headers = get_certificate_headers(
         remoteci_context, remoteci, RHELProduct, RHEL81Topic, RHEL81Component
     )
@@ -60,16 +62,15 @@ def test_user_cert_verified_if_user_team_in_RHEL_export_control_false(
     request = admin.get("/api/v1/certs/verify", headers=certificate_headers)
     assert request.status_code == 403
     admin.post(
-        "/api/v1/topics/%s/teams" % RHEL81Topic['id'],
-        data={"team_id": remoteci["team_id"]}
+        "/api/v1/topics/%s/teams" % RHEL81Topic["id"],
+        data={"team_id": remoteci["team_id"]},
     )
     request = admin.get("/api/v1/certs/verify", headers=certificate_headers)
     assert request.status_code == 200
 
 
 def test_user_cert_verified_if_user_team_in_RHEL81(
-    admin, remoteci_context, remoteci, RHELProduct, RHEL81Topic,
-    RHEL81Component, cakeys
+    admin, remoteci_context, remoteci, RHELProduct, RHEL81Topic, RHEL81Component, cakeys
 ):
     certificate_headers = get_certificate_headers(
         remoteci_context, remoteci, RHELProduct, RHEL81Topic, RHEL81Component
@@ -94,7 +95,10 @@ def test_remoteci_cert_still_valid(remoteci_context, remoteci_user_id):
         "/api/v1/remotecis/%s/keys" % remoteci_user_id,
         headers={"If-match": r.data["remoteci"]["etag"]},
     ).data["keys"]
-    valid = remoteci_context.post("/api/v1/certs/check", data={"cert": keys["cert"]},)
+    valid = remoteci_context.post(
+        "/api/v1/certs/check",
+        data={"cert": keys["cert"]},
+    )
     assert valid.status_code == 204
 
     old_cert = """-----BEGIN CERTIFICATE-----
@@ -123,7 +127,10 @@ U0WSg4zXl7Rh1S/C7qNbQR9mj2FMtTOHoxNSnm2dpBYais7Jps/H+UQ3eiXa8jwm
 2he44lnFUOGm02y8lOpD+ooY/It5OH4FqKUYgwrn9awp9AaxYRSt6e/++gSEyV0C
 P+qMxItk46BMfaEd8MLttHkJ
 -----END CERTIFICATE-----"""
-    valid = remoteci_context.post("/api/v1/certs/check", data={"cert": old_cert},)
+    valid = remoteci_context.post(
+        "/api/v1/certs/check",
+        data={"cert": old_cert},
+    )
     assert valid.status_code == 403
 
 
@@ -133,5 +140,8 @@ def test_user_cant_verify_cert(user, remoteci_user_id):
         "/api/v1/remotecis/%s/keys" % remoteci_user_id,
         headers={"If-match": r.data["remoteci"]["etag"]},
     ).data["keys"]
-    valid = user.post("/api/v1/certs/check", data={"cert": keys["cert"]},)
+    valid = user.post(
+        "/api/v1/certs/check",
+        data={"cert": keys["cert"]},
+    )
     assert valid.status_code == 400

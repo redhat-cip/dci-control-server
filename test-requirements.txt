@@ -4,3 +4,4 @@ dciclient==0.5.1  # python-dciclient
 flake8==2.0  # python-flake8
 tox==1.4.2  # python-tox
 pytest-cov==2.5.1  # python-pytest-cov
+black

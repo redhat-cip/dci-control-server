@@ -22,8 +22,8 @@ Create Date: 2019-07-04 14:37:10.090406
 """
 
 # revision identifiers, used by Alembic.
-revision = '2c7bc5614cf8'
-down_revision = '30f75c6191ff'
+revision = "2c7bc5614cf8"
+down_revision = "30f75c6191ff"
 branch_labels = None
 depends_on = None
 
@@ -31,13 +31,11 @@ from alembic import op
 
 
 def upgrade():
-    op.drop_constraint(constraint_name='teams_name_parent_id_key',
-                       table_name='teams')
-    op.drop_column('teams', 'parent_id')
-    op.create_unique_constraint(name='teams_name_key',
-                                table_name='teams',
-                                columns=['name']
-                                )
+    op.drop_constraint(constraint_name="teams_name_parent_id_key", table_name="teams")
+    op.drop_column("teams", "parent_id")
+    op.create_unique_constraint(
+        name="teams_name_key", table_name="teams", columns=["name"]
+    )
 
 
 def downgrade():

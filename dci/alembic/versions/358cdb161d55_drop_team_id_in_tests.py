@@ -22,8 +22,8 @@ Create Date: 2018-11-06 23:57:49.552606
 """
 
 # revision identifiers, used by Alembic.
-revision = '358cdb161d55'
-down_revision = 'e06d36c55bfe'
+revision = "358cdb161d55"
+down_revision = "e06d36c55bfe"
 branch_labels = None
 depends_on = None
 
@@ -33,19 +33,28 @@ from sqlalchemy.dialects import postgresql as pg
 
 
 def upgrade():
-    op.drop_column('tests', 'team_id')
-    op.drop_column('tests', 'name')
-    op.add_column('tests', sa.Column(
-        'name', sa.Text, nullable=False, unique=True))
-    op.drop_table('remoteci_tests')
-    op.drop_table('topic_tests')
-    op.create_table('issues_tests',
-                    sa.Column('issue_id', pg.UUID(as_uuid=True),
-                              sa.ForeignKey('issues.id', ondelete='CASCADE'),
-                              nullable=False, primary_key=True),
-                    sa.Column('test_id', pg.UUID(as_uuid=True),
-                              sa.ForeignKey('tests.id', ondelete='CASCADE'),
-                              nullable=False, primary_key=True))
+    op.drop_column("tests", "team_id")
+    op.drop_column("tests", "name")
+    op.add_column("tests", sa.Column("name", sa.Text, nullable=False, unique=True))
+    op.drop_table("remoteci_tests")
+    op.drop_table("topic_tests")
+    op.create_table(
+        "issues_tests",
+        sa.Column(
+            "issue_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("issues.id", ondelete="CASCADE"),
+            nullable=False,
+            primary_key=True,
+        ),
+        sa.Column(
+            "test_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("tests.id", ondelete="CASCADE"),
+            nullable=False,
+            primary_key=True,
+        ),
+    )
 
 
 def downgrade():

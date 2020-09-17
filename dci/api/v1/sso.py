@@ -28,8 +28,8 @@ from jwt import exceptions as jwt_exc
 
 
 def get_latest_public_key(self):
-    sso_url = dci_config.CONFIG.get('SSO_URL')
-    realm = dci_config.CONFIG.get('SSO_REALM')
+    sso_url = dci_config.CONFIG.get("SSO_URL")
+    realm = dci_config.CONFIG.get("SSO_REALM")
     url = "%s/auth/realms/%s/.well-known/openid-configuration" % (sso_url, realm)
     jwks_uri = requests.get(url).json()["jwks_uri"]
     jwks = requests.get(jwks_uri).json()["keys"]
@@ -46,19 +46,19 @@ def decode_token_with_latest_public_key(token):
     try:
         latest_public_key = get_latest_public_key()
     except Exception as e:
-        raise dci_exc.DCIException('Unable to get last SSO public key: %s' % str(e),  # noqa
-                                    status_code=401)
+        raise dci_exc.DCIException(
+            "Unable to get last SSO public key: %s" % str(e), status_code=401
+        )
     # SSO server didn't update its public key
-    if conf['SSO_PUBLIC_KEY'] == latest_public_key:
-        raise dci_exc.DCIException('Invalid JWT token.', status_code=401)  # noqa
+    if conf["SSO_PUBLIC_KEY"] == latest_public_key:
+        raise dci_exc.DCIException("Invalid JWT token.", status_code=401)
     try:
-        decoded_token = auth.decode_jwt(token,
-                                        latest_public_key,
-                                        conf['SSO_CLIENT_ID'])
-        conf['SSO_PUBLIC_KEY'] = latest_public_key
+        decoded_token = auth.decode_jwt(token, latest_public_key, conf["SSO_CLIENT_ID"])
+        conf["SSO_PUBLIC_KEY"] = latest_public_key
         return decoded_token
     except (jwt_exc.DecodeError, TypeError):
-        raise dci_exc.DCIException('Invalid JWT token.', status_code=401)  # noqa
+        raise dci_exc.DCIException("Invalid JWT token.", status_code=401)
     except jwt_exc.ExpiredSignatureError:
-        raise dci_exc.DCIException('JWT token expired, please refresh.',  # noqa
-                                    status_code=401)
+        raise dci_exc.DCIException(
+            "JWT token expired, please refresh.", status_code=401
+        )

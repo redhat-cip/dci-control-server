@@ -16,13 +16,13 @@ def test_build_umb_messages():
                     "id": "3b59723c-4033-ba46-8df2-d93fdad1af8b",
                     "name": "hwcert-1584013618",
                     "type": "hwcert",
-                    "url": "http://hwcert-server.khw2.lab.eng.bos.redhat.com/packages/devel/RHEL8",  # noqa
+                    "url": "http://hwcert-server.khw2.lab.eng.bos.redhat.com/packages/devel/RHEL8",
                 },
                 {
                     "id": "b7c82f18-d2ac-ba46-b909-a7bb472f5ba9",
                     "name": "RHEL-8.3.0-20200312.n.0",
                     "type": "Compose",
-                    "url": "http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.3.0-20200312.n.0",  # noqa
+                    "url": "http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.3.0-20200312.n.0",
                 },
             ],
             "results": [{"name": "cki-results"}],
@@ -61,14 +61,14 @@ def test_build_umb_messages():
         "interoperability",
         "static-analysis",
         "system",
-        "validation"
+        "validation",
     ]
     assert message["test"]["result"] in [
         "passed",
         "failed",
         "info",
         "needs_inspection",
-        "not_applicable"
+        "not_applicable",
     ]
     # system
     assert message["system"] == []
@@ -89,8 +89,8 @@ def test_build_umb_messages():
             "url": "https://distributed-ci.io/",
         },
         "run": {
-            "url": "https://www.distributed-ci.io/jobs/81fe1916-8929-4bc3-90b6-021983654663/jobStates",  # noqa
-            "log": "https://www.distributed-ci.io/jobs/81fe1916-8929-4bc3-90b6-021983654663/jobStates",  # noqa
+            "url": "https://www.distributed-ci.io/jobs/81fe1916-8929-4bc3-90b6-021983654663/jobStates",
+            "log": "https://www.distributed-ci.io/jobs/81fe1916-8929-4bc3-90b6-021983654663/jobStates",
         },
         "artifact": {
             "compose_type": "nightly",

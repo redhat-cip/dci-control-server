@@ -26,7 +26,7 @@ from werkzeug.routing import BaseConverter, ValidationError
 from dci.common import exceptions
 
 
-def read(file_path, chunk_size=None, mode='rb'):
+def read(file_path, chunk_size=None, mode="rb"):
     chunk_size = chunk_size or 1024 ** 2  #  1MB
     with open(file_path, mode) as f:
         for chunk in iter(lambda: f.read(chunk_size) or None, None):
@@ -34,7 +34,6 @@ def read(file_path, chunk_size=None, mode='rb'):
 
 
 class UUIDConverter(BaseConverter):
-
     def to_python(self, value):
         try:
             return uuid.UUID(value)
@@ -47,6 +46,7 @@ class UUIDConverter(BaseConverter):
 
 class JSONEncoder(flask.json.JSONEncoder):
     """Default JSON encoder."""
+
     def default(self, o):
         if isinstance(o, datetime.datetime):
             return o.isoformat()
@@ -67,17 +67,18 @@ def gen_etag():
 
     my_salt = gen_uuid()
     if six.PY2:
-        my_salt = my_salt.decode('utf-8')
+        my_salt = my_salt.decode("utf-8")
     elif six.PY3:
-        my_salt = my_salt.encode('utf-8')
+        my_salt = my_salt.encode("utf-8")
     md5 = hashlib.md5()
     md5.update(my_salt)
     return md5.hexdigest()
 
 
 def check_and_get_etag(headers):
-    if_match_etag = headers.get('If-Match')
+    if_match_etag = headers.get("If-Match")
     if not if_match_etag:
-        raise exceptions.DCIException("'If-match' header must be provided",
-                                      status_code=412)
+        raise exceptions.DCIException(
+            "'If-match' header must be provided", status_code=412
+        )
     return if_match_etag

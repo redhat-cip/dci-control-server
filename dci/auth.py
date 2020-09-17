@@ -27,5 +27,10 @@ def check_passwords_equal(password, encrypted_password):
 
 
 def decode_jwt(access_token, pem_public_key, audience):
-    return jwt.decode(access_token, verify=True, key=pem_public_key,
-                      audience=audience, algorithms=['RS256'])
+    return jwt.decode(
+        access_token,
+        verify=True,
+        key=pem_public_key,
+        audience=audience,
+        algorithms=["RS256"],
+    )

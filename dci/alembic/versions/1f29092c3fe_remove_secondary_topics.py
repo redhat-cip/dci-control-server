@@ -22,8 +22,8 @@ Create Date: 2020-06-07 22:44:36.686576
 """
 
 # revision identifiers, used by Alembic.
-revision = '1f29092c3fe'
-down_revision = '1726221a976'
+revision = "1f29092c3fe"
+down_revision = "1726221a976"
 branch_labels = None
 depends_on = None
 
@@ -31,7 +31,7 @@ from alembic import op
 
 
 def upgrade():
-    op.drop_column('jobs', 'topic_id_secondary')
+    op.drop_column("jobs", "topic_id_secondary")
 
 
 def downgrade():

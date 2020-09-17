@@ -23,11 +23,7 @@ from dci.common import exceptions as dci_exc
 from dci.db import models
 from dci import decorators
 from dci.api.v1 import api
-from dci.common.schemas import (
-    check_json_is_valid,
-    tag_schema,
-    check_and_get_args
-)
+from dci.common.schemas import check_json_is_valid, tag_schema, check_and_get_args
 import datetime
 from dci.common import utils
 from dci.api.v1 import utils as v1_utils
@@ -50,55 +46,50 @@ def add_tag_to_resource(values, join_resource_tags):
     payload = flask.request.json
     check_json_is_valid(tag_schema, payload)
     values.update(payload)
-    tag_name = values.pop('name')
+    tag_name = values.pop("name")
 
     try:
-        tag_id = v1_utils.verify_existence_and_get(None,
-                                                   models.TAGS,
-                                                   name=tag_name,
-                                                   get_id=True)
+        tag_id = v1_utils.verify_existence_and_get(
+            None, models.TAGS, name=tag_name, get_id=True
+        )
     except dci_exc.DCIException:
         tag_id = utils.gen_uuid()
-        flask.g.db_conn.execute(models.TAGS.insert().values(
-            id=tag_id,
-            name=tag_name))
-    values['tag_id'] = tag_id
+        flask.g.db_conn.execute(models.TAGS.insert().values(id=tag_id, name=tag_name))
+    values["tag_id"] = tag_id
     query = join_resource_tags.insert().values(values)
 
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict('tag', tag_name)
+        raise dci_exc.DCICreationConflict("tag", tag_name)
 
-    return {'tag': {'id': tag_id, 'name': tag_name}}
+    return {"tag": {"id": tag_id, "name": tag_name}}
 
 
-@api.route('/tags', methods=['POST'])
+@api.route("/tags", methods=["POST"])
 @decorators.login_required
 def create_tags(user):
     check_json_is_valid(tag_schema, flask.request.json)
     values = {
-        'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat()
+        "id": utils.gen_uuid(),
+        "created_at": datetime.datetime.utcnow().isoformat(),
     }
     values.update(flask.request.json)
     with flask.g.db_conn.begin():
-        where_clause = sql.and_(
-            _TABLE.c.name == values['name'])
+        where_clause = sql.and_(_TABLE.c.name == values["name"])
         query = sql.select([_TABLE.c.id]).where(where_clause)
         if flask.g.db_conn.execute(query).fetchone():
-            raise dci_exc.DCIConflict('Tag already exists', values)
+            raise dci_exc.DCIConflict("Tag already exists", values)
 
         # create the label/value row
         query = _TABLE.insert().values(**values)
         flask.g.db_conn.execute(query)
 
-        result = json.dumps({'tag': values})
-        return flask.Response(result, 201,
-                              content_type='application/json')
+        result = json.dumps({"tag": values})
+        return flask.Response(result, 201, content_type="application/json")
 
 
-@api.route('/tags', methods=['GET'])
+@api.route("/tags", methods=["GET"])
 @decorators.login_required
 def get_tags(user):
     """Get all tags."""
@@ -107,10 +98,10 @@ def get_tags(user):
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
     rows = v1_utils.format_result(rows, _TABLE.name)
-    return flask.jsonify({'tags': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({"tags": rows, "_meta": {"count": nb_rows}})
 
 
-@api.route('/tags/<uuid:tag_id>', methods=['DELETE'])
+@api.route("/tags/<uuid:tag_id>", methods=["DELETE"])
 @decorators.login_required
 def delete_tag_by_id(user, tag_id):
     """Delete a tag."""
@@ -118,6 +109,6 @@ def delete_tag_by_id(user, tag_id):
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
-        raise dci_exc.DCIConflict('Tag deletion conflict', tag_id)
+        raise dci_exc.DCIConflict("Tag deletion conflict", tag_id)
 
-    return flask.Response(None, 204, content_type='application/json')
+    return flask.Response(None, 204, content_type="application/json")

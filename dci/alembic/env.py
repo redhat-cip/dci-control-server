@@ -44,9 +44,11 @@ def run_migrations_offline():
 
     """
     app_conf = dci_config.CONFIG
-    url = app_conf['SQLALCHEMY_DATABASE_URI']
+    url = app_conf["SQLALCHEMY_DATABASE_URI"]
     context.configure(
-        url=url, target_metadata=target_metadata, literal_binds=True,
+        url=url,
+        target_metadata=target_metadata,
+        literal_binds=True,
     )
 
     with context.begin_transaction():

@@ -57,7 +57,7 @@ def has_access_to_topic(user, topic):
 
 def verify_access_to_topic(user, topic):
     """Verify that the user can access to a topic, raise an unauthorized
-       exception if not."""
+    exception if not."""
     if (
         user.is_not_super_admin()
         and user.is_not_read_only_user()

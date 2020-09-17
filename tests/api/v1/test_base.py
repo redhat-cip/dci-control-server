@@ -16,20 +16,23 @@
 
 
 def test_purge_resource(admin, product):
-    data = {'name': 'tname', 'product_id': product['id'],
-            'component_types': ['type1', 'type2']}
-    pt = admin.post('/api/v1/topics', data=data)
-    pt_id = pt.data['topic']['id']
+    data = {
+        "name": "tname",
+        "product_id": product["id"],
+        "component_types": ["type1", "type2"],
+    }
+    pt = admin.post("/api/v1/topics", data=data)
+    pt_id = pt.data["topic"]["id"]
     assert pt.status_code == 201
 
-    ppt = admin.delete('/api/v1/topics/%s' % pt_id)
+    ppt = admin.delete("/api/v1/topics/%s" % pt_id)
     assert ppt.status_code == 204
 
-    to_purge = admin.get('/api/v1/topics/purge').data
-    assert len(to_purge['topics']) == 1
+    to_purge = admin.get("/api/v1/topics/purge").data
+    assert len(to_purge["topics"]) == 1
 
-    to_purge = admin.post('/api/v1/topics/purge')
+    to_purge = admin.post("/api/v1/topics/purge")
     assert to_purge.status_code == 204
 
-    to_purge = admin.get('/api/v1/topics/purge').data
-    assert len(to_purge['topics']) == 0
+    to_purge = admin.get("/api/v1/topics/purge").data
+    assert len(to_purge["topics"]) == 0

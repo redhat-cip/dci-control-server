@@ -22,8 +22,8 @@ Create Date: 2020-03-19 16:01:17.853976
 """
 
 # revision identifiers, used by Alembic.
-revision = '45e44e338043'
-down_revision = '49363052bd7d'
+revision = "45e44e338043"
+down_revision = "49363052bd7d"
 branch_labels = None
 depends_on = None
 
@@ -37,7 +37,7 @@ from dci.db import models
 
 def upgrade():
     db_conn = op.get_bind()
-    op.add_column('jobs', sa.Column('tag', pg.ARRAY(sa.Text), default=[]))
+    op.add_column("jobs", sa.Column("tag", pg.ARRAY(sa.Text), default=[]))
 
     # get all the tags
     query = sql.select([models.TAGS])
@@ -57,9 +57,11 @@ def upgrade():
 
     # update each job's tag column with their tags
     for j_t in jobs_tags:
-        query = models.JOBS.update().\
-            where(models.JOBS.c.id == j_t.job_id).\
-            values(tag=jobs_to_tags[str(j_t.job_id)])
+        query = (
+            models.JOBS.update()
+            .where(models.JOBS.c.id == j_t.job_id)
+            .values(tag=jobs_to_tags[str(j_t.job_id)])
+        )
         db_conn.execute(query)
 
 

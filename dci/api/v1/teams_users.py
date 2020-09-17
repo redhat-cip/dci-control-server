@@ -22,87 +22,93 @@ from dci.api.v1 import users
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common.schemas import (
-    check_and_get_args
-)
+from dci.common.schemas import check_and_get_args
 from dci.db import models
 
 
-@api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['POST'])
+@api.route("/teams/<uuid:team_id>/users/<uuid:user_id>", methods=["POST"])
 @decorators.login_required
 def add_user_to_team(user, team_id, user_id):
-    if (team_id == flask.g.team_admin_id or
-        team_id == flask.g.team_redhat_id or
-        team_id == flask.g.team_epm_id) and user.is_not_super_admin():
+    if (
+        team_id == flask.g.team_admin_id
+        or team_id == flask.g.team_redhat_id
+        or team_id == flask.g.team_epm_id
+    ) and user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
     if user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    query = models.JOIN_USERS_TEAMS.insert().values(
-        user_id=user_id,
-        team_id=team_id
-    )
+    query = models.JOIN_USERS_TEAMS.insert().values(user_id=user_id, team_id=team_id)
 
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError as e:
-        raise dci_exc.DCIException('Adding user to team failed: %s' % str(e))
+        raise dci_exc.DCIException("Adding user to team failed: %s" % str(e))
 
-    return flask.Response(None, 201, content_type='application/json')
+    return flask.Response(None, 201, content_type="application/json")
 
 
-@api.route('/teams/<uuid:team_id>/users', methods=['GET'])
+@api.route("/teams/<uuid:team_id>/users", methods=["GET"])
 @decorators.login_required
 def get_users_from_team(user, team_id):
     args = check_and_get_args(flask.request.args.to_dict())
     _JUTR = models.JOIN_USERS_TEAMS
-    query = v1_utils.QueryBuilder(models.USERS, args,
-                                  users._USERS_COLUMNS,
-                                  ['password', 'team_id'],
-                                  root_join_table=_JUTR,
-                                  root_join_condition=sql.and_(_JUTR.c.user_id == models.USERS.c.id,  # noqa
-                                                               _JUTR.c.team_id == team_id))  # noqa
+    query = v1_utils.QueryBuilder(
+        models.USERS,
+        args,
+        users._USERS_COLUMNS,
+        ["password", "team_id"],
+        root_join_table=_JUTR,
+        root_join_condition=sql.and_(
+            _JUTR.c.user_id == models.USERS.c.id, _JUTR.c.team_id == team_id
+        ),
+    )
 
     if user.is_not_epm() and user.is_not_in_team(team_id):
         raise dci_exc.Unauthorized()
 
-    query.add_extra_condition(models.USERS.c.state != 'archived')
+    query.add_extra_condition(models.USERS.c.state != "archived")
 
     rows = query.execute(fetchall=True)
-    team_users = v1_utils.format_result(rows, models.USERS.name, args['embed'],
-                                        users._EMBED_MANY)
+    team_users = v1_utils.format_result(
+        rows, models.USERS.name, args["embed"], users._EMBED_MANY
+    )
 
-    return flask.jsonify({'users': team_users, '_meta': {'count': len(rows)}})
+    return flask.jsonify({"users": team_users, "_meta": {"count": len(rows)}})
 
 
-@api.route('/users/<uuid:user_id>/teams', methods=['GET'])
+@api.route("/users/<uuid:user_id>/teams", methods=["GET"])
 @decorators.login_required
 def get_teams_of_user(user, user_id):
     args = check_and_get_args(flask.request.args.to_dict())
     _JUTR = models.JOIN_USERS_TEAMS
-    query = v1_utils.QueryBuilder(models.TEAMS, args,
-                                  teams._T_COLUMNS,
-                                  root_join_table=_JUTR,
-                                  root_join_condition=sql.and_(_JUTR.c.team_id == models.TEAMS.c.id,  # noqa
-                                                               _JUTR.c.user_id == user_id))  # noqa
+    query = v1_utils.QueryBuilder(
+        models.TEAMS,
+        args,
+        teams._T_COLUMNS,
+        root_join_table=_JUTR,
+        root_join_condition=sql.and_(
+            _JUTR.c.team_id == models.TEAMS.c.id, _JUTR.c.user_id == user_id
+        ),
+    )
 
     if user.is_not_super_admin() and user.id != user_id and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    query.add_extra_condition(models.TEAMS.c.state != 'archived')
+    query.add_extra_condition(models.TEAMS.c.state != "archived")
 
     # get the number of rows for the '_meta' section
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
-    users_teams = v1_utils.format_result(rows, models.TEAMS.name,
-                                         args['embed'],
-                                         teams._EMBED_MANY)
+    users_teams = v1_utils.format_result(
+        rows, models.TEAMS.name, args["embed"], teams._EMBED_MANY
+    )
 
-    return flask.jsonify({'teams': users_teams, '_meta': {'count': nb_rows}})
+    return flask.jsonify({"teams": users_teams, "_meta": {"count": nb_rows}})
 
 
-@api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['DELETE'])
+@api.route("/teams/<uuid:team_id>/users/<uuid:user_id>", methods=["DELETE"])
 @decorators.login_required
 def remove_user_from_team(user, team_id, user_id):
 
@@ -110,8 +116,9 @@ def remove_user_from_team(user, team_id, user_id):
         raise dci_exc.Unauthorized()
 
     _JUTR = models.JOIN_USERS_TEAMS
-    query = _JUTR.delete().where(sql.and_(_JUTR.c.user_id == user_id,
-                                          _JUTR.c.team_id == team_id))
+    query = _JUTR.delete().where(
+        sql.and_(_JUTR.c.user_id == user_id, _JUTR.c.team_id == team_id)
+    )
     flask.g.db_conn.execute(query)
 
-    return flask.Response(None, 204, content_type='application/json')
+    return flask.Response(None, 204, content_type="application/json")

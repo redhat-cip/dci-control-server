@@ -18,25 +18,35 @@
 from __future__ import unicode_literals
 
 
-def test_job_upgrade(admin, job_user_id, remoteci_id, topic_id, topic_user_id,
-                     components_ids, components_user_ids):
-    job_upgraded = admin.post('/api/v1/jobs/upgrade',
-                              data={'job_id': job_user_id})
+def test_job_upgrade(
+    admin,
+    job_user_id,
+    remoteci_id,
+    topic_id,
+    topic_user_id,
+    components_ids,
+    components_user_ids,
+):
+    job_upgraded = admin.post("/api/v1/jobs/upgrade", data={"job_id": job_user_id})
     # the topic 'topic_id' does not contains a 'next_topic_id' field
     assert job_upgraded.status_code == 400
 
     # adds a next topic to 'topic_user_id'
-    topic = admin.get('/api/v1/topics/%s' % topic_user_id)
-    topic_user_etag = topic.data['topic']['etag']
+    topic = admin.get("/api/v1/topics/%s" % topic_user_id)
+    topic_user_etag = topic.data["topic"]["etag"]
 
-    assert admin.put('/api/v1/topics/%s' % topic_user_id,
-                     data={'next_topic_id': topic_id},
-                     headers={'If-match': topic_user_etag}).status_code == 200
+    assert (
+        admin.put(
+            "/api/v1/topics/%s" % topic_user_id,
+            data={"next_topic_id": topic_id},
+            headers={"If-match": topic_user_etag},
+        ).status_code
+        == 200
+    )
 
     # request for the upgrade of the first job
-    job_upgraded = admin.post('/api/v1/jobs/upgrade',
-                              data={'job_id': job_user_id})
+    job_upgraded = admin.post("/api/v1/jobs/upgrade", data={"job_id": job_user_id})
 
     assert job_upgraded.status_code == 201
-    assert job_upgraded.data['job']['previous_job_id'] == job_user_id
+    assert job_upgraded.data["job"]["previous_job_id"] == job_user_id
     # job_upgraded is a job against the next version of topic

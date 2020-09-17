@@ -21,38 +21,36 @@ from dci.common.schemas import check_json_is_valid, tag_schema
 
 
 def test_create_tags(admin):
-    pt = admin.post('/api/v1/tags', data={'name': 'my tag'})
+    pt = admin.post("/api/v1/tags", data={"name": "my tag"})
     assert pt.status_code == 201
-    assert pt.data['tag']['name'] == 'my tag'
+    assert pt.data["tag"]["name"] == "my tag"
 
 
 def test_get_tags(admin):
-    gt = admin.get('/api/v1/tags')
-    count = gt.data['_meta']['count']
+    gt = admin.get("/api/v1/tags")
+    count = gt.data["_meta"]["count"]
     for x in range(3):
-        admin.post('/api/v1/tags', data={'name': 'my tag %s' % x})
+        admin.post("/api/v1/tags", data={"name": "my tag %s" % x})
 
-    gt = admin.get('/api/v1/tags')
+    gt = admin.get("/api/v1/tags")
     assert gt.status_code == 200
-    assert len(gt.data['tags']) == count + 3
+    assert len(gt.data["tags"]) == count + 3
 
 
 def test_delete_tag_by_id(admin):
-    gt = admin.get('/api/v1/tags')
-    count = gt.data['_meta']['count']
+    gt = admin.get("/api/v1/tags")
+    count = gt.data["_meta"]["count"]
 
-    pt = admin.post('/api/v1/tags',
-                    data={'name': 'my tag to delete'})
+    pt = admin.post("/api/v1/tags", data={"name": "my tag to delete"})
     pt_etag = pt.headers.get("ETag")
-    pt_id = pt.data['tag']['id']
+    pt_id = pt.data["tag"]["id"]
     assert pt.status_code == 201
 
-    deleted_t = admin.delete('/api/v1/tags/%s' % pt_id,
-                             headers={'If-match': pt_etag})
+    deleted_t = admin.delete("/api/v1/tags/%s" % pt_id, headers={"If-match": pt_etag})
     assert deleted_t.status_code == 204
 
-    gt = admin.get('/api/v1/tags')
-    assert len(gt.data['tags']) == count
+    gt = admin.get("/api/v1/tags")
+    assert len(gt.data["tags"]) == count
 
 
 def test_post_schema():

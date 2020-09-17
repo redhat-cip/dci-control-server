@@ -23,23 +23,18 @@ from dci import decorators
 
 
 def get_timestamp_of_the_day(datetime_object):
-    midnight = datetime_object.replace(
-        hour=0,
-        minute=0,
-        second=0,
-        microsecond=0
-    )
+    midnight = datetime_object.replace(hour=0, minute=0, second=0, microsecond=0)
     return calendar.timegm(midnight.timetuple())
 
 
 def get_trends_from_jobs(jobs):
     trends = dict()
     for job in jobs:
-        topic_id = str(job['topic_id'])
-        timestamp = get_timestamp_of_the_day(job['created_at'])
+        topic_id = str(job["topic_id"])
+        timestamp = get_timestamp_of_the_day(job["created_at"])
         trend = trends.get(topic_id, {})
-        stats = trend.get(timestamp, {'success': 0, 'failure': 0})
-        stats[job['status']] += 1
+        stats = trend.get(timestamp, {"success": 0, "failure": 0})
+        stats[job["status"]] += 1
         trend[timestamp] = stats
         trends[topic_id] = trend
 
@@ -47,15 +42,16 @@ def get_trends_from_jobs(jobs):
     for topic_id, stats in trends.items():
         result = results.get(topic_id, [])
         for timestamp, stat in stats.items():
-            result.append([int(timestamp), stat['success'], stat['failure']])
+            result.append([int(timestamp), stat["success"], stat["failure"]])
         results[topic_id] = result
     return results
 
 
-@api.route('/trends/topics', methods=['GET'])
+@api.route("/trends/topics", methods=["GET"])
 @decorators.login_required
 def get_trends_of_topics(user):
-    sql = text("""
+    sql = text(
+        """
 SELECT jobs.id,
     jobs.status,
     jobs.created_at,
@@ -67,7 +63,8 @@ WHERE
     (jobs.status = 'failure' OR jobs.status = 'success') AND
     teams.external = true
 ORDER BY jobs.created_at DESC;
-    """)  # noqa
+    """
+    )
 
     jobs = flask.g.db_conn.execute(sql)
-    return flask.jsonify({'topics': get_trends_from_jobs(jobs)})
+    return flask.jsonify({"topics": get_trends_from_jobs(jobs)})

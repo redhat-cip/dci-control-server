@@ -46,41 +46,40 @@ def restore_db(engine):
 
 
 def rm_upload_folder():
-    shutil.rmtree(conf['FILES_UPLOAD_FOLDER'], ignore_errors=True)
+    shutil.rmtree(conf["FILES_UPLOAD_FOLDER"], ignore_errors=True)
 
 
 def generate_client(app, credentials=None, access_token=None):
-    attrs = ['status_code', 'data', 'headers']
-    Response = collections.namedtuple('Response', attrs)
+    attrs = ["status_code", "data", "headers"]
+    Response = collections.namedtuple("Response", attrs)
 
     if credentials:
-        token = (base64.b64encode(('%s:%s' % credentials).encode('utf8'))
-                 .decode('utf8'))
+        token = base64.b64encode(("%s:%s" % credentials).encode("utf8")).decode("utf8")
         headers = {
-            'Authorization': 'Basic ' + token,
-            'Content-Type': 'application/json'
+            "Authorization": "Basic " + token,
+            "Content-Type": "application/json",
         }
     elif access_token:
         headers = {
-            'Authorization': 'Bearer ' + access_token,
-            'Content-Type': 'application/json'
+            "Authorization": "Bearer " + access_token,
+            "Content-Type": "application/json",
         }
 
     def client_open_decorator(func):
         def wrapper(*args, **kwargs):
-            headers.update(kwargs.get('headers', {}))
-            kwargs['headers'] = headers
-            content_type = headers.get('Content-Type')
-            data = kwargs.get('data')
-            if data and content_type == 'application/json':
-                kwargs['data'] = flask.json.dumps(data, cls=utils.JSONEncoder)
+            headers.update(kwargs.get("headers", {}))
+            kwargs["headers"] = headers
+            content_type = headers.get("Content-Type")
+            data = kwargs.get("data")
+            if data and content_type == "application/json":
+                kwargs["data"] = flask.json.dumps(data, cls=utils.JSONEncoder)
             response = func(*args, **kwargs)
 
             data = response.data
-            if response.content_type == 'application/json':
-                data = flask.json.loads(data or '{}')
+            if response.content_type == "application/json":
+                data = flask.json.loads(data or "{}")
             if type(data) == six.binary_type:
-                data = data.decode('utf8')
+                data = data.decode("utf8")
             return Response(response.status_code, data, response.headers)
 
         return wrapper
@@ -132,13 +131,15 @@ def generate_token_based_client(app, resource):
     return client
 
 
-def post_file(client, jobstate_id, file_desc, mime='text/plain'):
-    headers = {'DCI-JOBSTATE-ID': jobstate_id, 'DCI-NAME': file_desc.name,
-               'DCI-MIME': mime, 'Content-Type': 'text/plain'}
-    res = client.post('/api/v1/files',
-                      headers=headers,
-                      data=file_desc.content)
-    return res.data['file']['id']
+def post_file(client, jobstate_id, file_desc, mime="text/plain"):
+    headers = {
+        "DCI-JOBSTATE-ID": jobstate_id,
+        "DCI-NAME": file_desc.name,
+        "DCI-MIME": mime,
+        "Content-Type": "text/plain",
+    }
+    res = client.post("/api/v1/files", headers=headers, data=file_desc.content)
+    return res.data["file"]["id"]
 
 
 def provision(db_conn):
@@ -150,115 +151,122 @@ def provision(db_conn):
             db_conn.execute(query)
 
     # Create teams
-    team_admin_id = db_insert(models.TEAMS, name='admin')
-    team_user_id = db_insert(models.TEAMS, name='user')
-    team_user_id2 = db_insert(models.TEAMS, name='user2')
-    db_insert(models.TEAMS, name='product')
-    team_redhat_id = db_insert(models.TEAMS, name='Red Hat')
-    team_epm_id = db_insert(models.TEAMS, name='EPM')
+    team_admin_id = db_insert(models.TEAMS, name="admin")
+    team_user_id = db_insert(models.TEAMS, name="user")
+    team_user_id2 = db_insert(models.TEAMS, name="user2")
+    db_insert(models.TEAMS, name="product")
+    team_redhat_id = db_insert(models.TEAMS, name="Red Hat")
+    team_epm_id = db_insert(models.TEAMS, name="EPM")
 
     # Create users
-    user_pw_hash = auth.hash_password('user')
-    u_id = db_insert(models.USERS,
-                     name='user',
-                     sso_username='user',
-                     password=user_pw_hash,
-                     fullname='User',
-                     email='user@example.org')
+    user_pw_hash = auth.hash_password("user")
+    u_id = db_insert(
+        models.USERS,
+        name="user",
+        sso_username="user",
+        password=user_pw_hash,
+        fullname="User",
+        email="user@example.org",
+    )
 
-    db_insert(models.JOIN_USERS_TEAMS,
-              return_pk=False,
-              user_id=u_id,
-              team_id=team_user_id)
+    db_insert(
+        models.JOIN_USERS_TEAMS, return_pk=False, user_id=u_id, team_id=team_user_id
+    )
 
-    user_pw_hash2 = auth.hash_password('user2')
-    u_id2 = db_insert(models.USERS,
-                      name='user2',
-                      sso_username='user2',
-                      password=user_pw_hash2,
-                      fullname='User2',
-                      email='user2@example.org')
+    user_pw_hash2 = auth.hash_password("user2")
+    u_id2 = db_insert(
+        models.USERS,
+        name="user2",
+        sso_username="user2",
+        password=user_pw_hash2,
+        fullname="User2",
+        email="user2@example.org",
+    )
 
-    db_insert(models.JOIN_USERS_TEAMS,
-              return_pk=False,
-              user_id=u_id2,
-              team_id=team_user_id2)
+    db_insert(
+        models.JOIN_USERS_TEAMS, return_pk=False, user_id=u_id2, team_id=team_user_id2
+    )
 
-    user_no_team_pw_hash = auth.hash_password('user_no_team')
-    u_id = db_insert(models.USERS,
-                     name='user_no_team',
-                     sso_username='user_no_team',
-                     password=user_no_team_pw_hash,
-                     fullname='User No Team',
-                     email='user_no_team@example.org')
+    user_no_team_pw_hash = auth.hash_password("user_no_team")
+    u_id = db_insert(
+        models.USERS,
+        name="user_no_team",
+        sso_username="user_no_team",
+        password=user_no_team_pw_hash,
+        fullname="User No Team",
+        email="user_no_team@example.org",
+    )
 
-    db_insert(models.JOIN_USERS_TEAMS,
-              return_pk=False,
-              user_id=u_id,
-              team_id=None)
+    db_insert(models.JOIN_USERS_TEAMS, return_pk=False, user_id=u_id, team_id=None)
 
-    rh_employee_pw_hash = auth.hash_password('rh_employee')
+    rh_employee_pw_hash = auth.hash_password("rh_employee")
     rh_employee = db_insert(
         models.USERS,
-        name='rh_employee',
-        sso_username='rh_employee',
+        name="rh_employee",
+        sso_username="rh_employee",
         password=rh_employee_pw_hash,
-        fullname='Employee at Red Hat',
-        email='rh_employee@redhat.com'
+        fullname="Employee at Red Hat",
+        email="rh_employee@redhat.com",
     )
     db_insert(
         models.JOIN_USERS_TEAMS,
         return_pk=False,
         user_id=rh_employee,
-        team_id=team_redhat_id
+        team_id=team_redhat_id,
     )
 
-    epm_pw_hash = auth.hash_password('epm')
-    u_id = db_insert(models.USERS,
-                     name='epm',
-                     sso_username='epm',
-                     password=epm_pw_hash,
-                     fullname='Partner Engineer',
-                     email='epm@redhat.com')
+    epm_pw_hash = auth.hash_password("epm")
+    u_id = db_insert(
+        models.USERS,
+        name="epm",
+        sso_username="epm",
+        password=epm_pw_hash,
+        fullname="Partner Engineer",
+        email="epm@redhat.com",
+    )
 
-    db_insert(models.JOIN_USERS_TEAMS,
-              return_pk=False,
-              user_id=u_id,
-              team_id=team_epm_id)
+    db_insert(
+        models.JOIN_USERS_TEAMS, return_pk=False, user_id=u_id, team_id=team_epm_id
+    )
 
-    admin_pw_hash = auth.hash_password('admin')
-    u_id = db_insert(models.USERS,
-                     name='admin',
-                     sso_username='admin',
-                     password=admin_pw_hash,
-                     fullname='Admin',
-                     email='admin@example.org')
+    admin_pw_hash = auth.hash_password("admin")
+    u_id = db_insert(
+        models.USERS,
+        name="admin",
+        sso_username="admin",
+        password=admin_pw_hash,
+        fullname="Admin",
+        email="admin@example.org",
+    )
 
-    db_insert(models.JOIN_USERS_TEAMS,
-              return_pk=False,
-              user_id=u_id,
-              team_id=team_admin_id)
-
-    # Create a product
-    db_insert(models.PRODUCTS,
-              name='Awesome product',
-              label='AWSM',
-              description='My Awesome product')
+    db_insert(
+        models.JOIN_USERS_TEAMS, return_pk=False, user_id=u_id, team_id=team_admin_id
+    )
 
     # Create a product
-    db_insert(models.PRODUCTS,
-              name='Best product',
-              label='BEST',
-              description='My best product')
+    db_insert(
+        models.PRODUCTS,
+        name="Awesome product",
+        label="AWSM",
+        description="My Awesome product",
+    )
+
+    # Create a product
+    db_insert(
+        models.PRODUCTS,
+        name="Best product",
+        label="BEST",
+        description="My best product",
+    )
 
 
-SWIFT = 'dci.stores.swift.Swift'
+SWIFT = "dci.stores.swift.Swift"
 
-FileDesc = collections.namedtuple('FileDesc', ['name', 'content'])
+FileDesc = collections.namedtuple("FileDesc", ["name", "content"])
 
 
 def run_bin(bin_name, env):
     env.update(os.environ.copy())
     exec_path = os.path.abspath(__file__)
-    exec_path = os.path.abspath('%s/../../bin/%s' % (exec_path, bin_name))
+    exec_path = os.path.abspath("%s/../../bin/%s" % (exec_path, bin_name))
     return subprocess.Popen(exec_path, shell=True, env=env)

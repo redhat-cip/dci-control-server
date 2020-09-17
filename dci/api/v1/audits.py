@@ -28,13 +28,13 @@ _TABLE = models.LOGS
 _A_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
-@api.route('/audits', methods=['GET'])
+@api.route("/audits", methods=["GET"])
 @decorators.login_required
 def get_logs(user):
     args = check_and_get_args(flask.request.args.to_dict())
 
-    if args['limit'] is None:
-        args['limit'] = 10
+    if args["limit"] is None:
+        args["limit"] = 10
 
     query = v1_utils.QueryBuilder(_TABLE, args, _A_COLUMNS)
 
@@ -43,6 +43,6 @@ def get_logs(user):
 
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'], None)
+    rows = v1_utils.format_result(rows, _TABLE.name, args["embed"], None)
 
-    return flask.jsonify({'audits': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({"audits": rows, "_meta": {"count": nb_rows}})

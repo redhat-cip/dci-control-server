@@ -16,7 +16,6 @@
 
 
 class Tracker(object):
-
     def __init__(self, url):
         self.url = url
         self.status_code = None
@@ -34,21 +33,21 @@ class Tracker(object):
 
     def retrieve_info(self):
         """Retrieve informations for a specific issue in a tracker."""
-        raise Exception('Not Implemented')
+        raise Exception("Not Implemented")
 
     def dump(self):
         """Return the object itself."""
 
         return {
-            'title': self.title,
-            'issue_id': self.issue_id,
-            'reporter': self.reporter,
-            'assignee': self.assignee,
-            'status': self.status,
-            'product': self.product,
-            'component': self.component,
-            'created_at': self.created_at,
-            'updated_at': self.updated_at,
-            'closed_at': self.closed_at,
-            'status_code': self.status_code
+            "title": self.title,
+            "issue_id": self.issue_id,
+            "reporter": self.reporter,
+            "assignee": self.assignee,
+            "status": self.status,
+            "product": self.product,
+            "component": self.component,
+            "created_at": self.created_at,
+            "updated_at": self.updated_at,
+            "closed_at": self.closed_at,
+            "status_code": self.status_code,
         }

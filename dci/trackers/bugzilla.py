@@ -21,11 +21,10 @@ from six.moves.urllib.parse import urlparse
 from xml.etree import ElementTree
 
 
-_URI_BASE = 'show_bug.cgi?ctype=xml&id='
+_URI_BASE = "show_bug.cgi?ctype=xml&id="
 
 
 class Bugzilla(trackers.Tracker):
-
     def __init__(self, url):
         super(Bugzilla, self).__init__(url)
 
@@ -36,17 +35,17 @@ class Bugzilla(trackers.Tracker):
         netloc = urlparse(self.url).netloc
         query = urlparse(self.url).query
 
-        if scheme not in ('http', 'https'):
+        if scheme not in ("http", "https"):
             return
 
-        for item in query.split('&'):
-            if 'id=' in item:
-                ticket_id = item.split('=')[1]
+        for item in query.split("&"):
+            if "id=" in item:
+                ticket_id = item.split("=")[1]
                 break
         else:
             return
 
-        bugzilla_url = '%s://%s/%s%s' % (scheme, netloc, _URI_BASE, ticket_id)
+        bugzilla_url = "%s://%s/%s%s" % (scheme, netloc, _URI_BASE, ticket_id)
 
         result = requests.get(bugzilla_url)
         self.status_code = result.status_code
@@ -64,9 +63,7 @@ class Bugzilla(trackers.Tracker):
             self.created_at = tree.findall("./bug/creation_ts").pop().text
             self.updated_at = tree.findall("./bug/delta_ts").pop().text
             try:
-                self.closed_at = (
-                    tree.findall("./bug/cf_last_closed").pop().text
-                )
+                self.closed_at = tree.findall("./bug/cf_last_closed").pop().text
             except IndexError:
                 # cf_last_closed is present only if the issue has been closed
                 # if not present it raises an IndexError, meaning the issue

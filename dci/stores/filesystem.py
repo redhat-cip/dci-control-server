@@ -26,11 +26,10 @@ logger = logging.getLogger(__name__)
 
 
 class FileSystem(stores.Store):
-
     def __init__(self, conf):
         super(FileSystem, self).__init__(conf)
-        self.path = conf['path']
-        self.container = conf['container']
+        self.path = conf["path"]
+        self.container = conf["container"]
         self._root_directory = os.path.join(self.path, self.container)
 
     def delete(self, filename):
@@ -40,23 +39,25 @@ class FileSystem(stores.Store):
         except OSError as e:
             status_code = 400
             if e.errno == errno.ENOENT:
-                logger.warn('file %s not found in local filesystem' % file_path)
+                logger.warn("file %s not found in local filesystem" % file_path)
                 return
-            raise exceptions.StoreExceptions('Error while deleting file '
-                                             '%s: %s' % (filename, str(e)),
-                                             status_code=status_code)
+            raise exceptions.StoreExceptions(
+                "Error while deleting file " "%s: %s" % (filename, str(e)),
+                status_code=status_code,
+            )
 
     def get(self, filename):
         file_path = os.path.join(self._root_directory, filename)
         try:
-            return ([], open(file_path, 'r'))
+            return ([], open(file_path, "r"))
         except IOError as e:
             status_code = 400
             if e.errno == errno.ENOENT:
                 status_code = 404
-            raise exceptions.StoreExceptions('Error while accessing file '
-                                             '%s: %s' % (filename, str(e)),
-                                             status_code=status_code)
+            raise exceptions.StoreExceptions(
+                "Error while accessing file " "%s: %s" % (filename, str(e)),
+                status_code=status_code,
+            )
 
     def head(self, filename):
         file_path = os.path.join(self._root_directory, filename)
@@ -66,22 +67,25 @@ class FileSystem(stores.Store):
             status_code = 400
             if e.errno == errno.ENOENT:
                 status_code = 404
-            raise exceptions.StoreExceptions('Error while accessing file '
-                                             '%s: %s' % (filename, str(e)),
-                                             status_code=status_code)
+            raise exceptions.StoreExceptions(
+                "Error while accessing file " "%s: %s" % (filename, str(e)),
+                status_code=status_code,
+            )
         md5 = files_utils.md5Checksum(file_path)
-        return {'content-length': file_size, 'etag': md5,
-                'content-type': 'application/octet-stream'}
+        return {
+            "content-length": file_size,
+            "etag": md5,
+            "content-type": "application/octet-stream",
+        }
 
-    def upload(self, filename, iterable, pseudo_folder=None,
-               create_container=True):
+    def upload(self, filename, iterable, pseudo_folder=None, create_container=True):
         file_path = os.path.join(self._root_directory, filename)
         path = os.path.dirname(file_path)
         if not os.path.exists(path):
             os.makedirs(path)
 
-        with open(file_path, 'wb') as f:
-            if hasattr(iterable, 'read'):
+        with open(file_path, "wb") as f:
+            if hasattr(iterable, "read"):
                 while True:
                     data = iterable.read(1024)
                     if not data:

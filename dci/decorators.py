@@ -29,34 +29,36 @@ logger = logging.getLogger(__name__)
 def reject():
     """Sends a 401 reject response that enables basic auth."""
 
-    auth_message = ('Could not verify your access level for that URL.'
-                    'Please login with proper credentials.')
-    auth_message = json.dumps({'_status': 'Unauthorized',
-                               'message': auth_message})
+    auth_message = (
+        "Could not verify your access level for that URL."
+        "Please login with proper credentials."
+    )
+    auth_message = json.dumps({"_status": "Unauthorized", "message": auth_message})
 
-    headers = {'WWW-Authenticate': 'Basic realm="Login required"'}
+    headers = {"WWW-Authenticate": 'Basic realm="Login required"'}
     logger.info(auth_message)
-    return flask.Response(auth_message, 401, headers=headers,
-                          content_type='application/json')
+    return flask.Response(
+        auth_message, 401, headers=headers, content_type="application/json"
+    )
 
 
 def _get_auth_class_from_headers(headers):
-    if 'Authorization' not in headers:
-        raise dci_exc.DCIException('Authorization header missing',
-                                   status_code=401)
+    if "Authorization" not in headers:
+        raise dci_exc.DCIException("Authorization header missing", status_code=401)
 
-    auth_type = headers.get('Authorization').split(' ')[0]
-    if auth_type == 'Bearer':
+    auth_type = headers.get("Authorization").split(" ")[0]
+    if auth_type == "Bearer":
         return am.OpenIDCAuth
-    elif auth_type == 'DCI-HMAC-SHA256':
+    elif auth_type == "DCI-HMAC-SHA256":
         return am.HmacMechanism
-    elif auth_type in ['DCI2-HMAC-SHA256', 'AWS4-HMAC-SHA256']:
+    elif auth_type in ["DCI2-HMAC-SHA256", "AWS4-HMAC-SHA256"]:
         return am.Hmac2Mechanism
-    elif auth_type == 'Basic':
+    elif auth_type == "Basic":
         return am.BasicAuthMechanism
 
-    raise dci_exc.DCIException('Authorization scheme %s unknown' % auth_type,
-                               status_code=401)
+    raise dci_exc.DCIException(
+        "Authorization scheme %s unknown" % auth_type, status_code=401
+    )
 
 
 def login_required(f):

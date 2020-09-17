@@ -20,10 +20,7 @@ from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
 from dci.api.v1 import files
 from dci.api.v1 import transformations
-from dci.common.schemas import (
-    check_json_is_valid,
-    performance_schema
-)
+from dci.common.schemas import check_json_is_valid, performance_schema
 from dci.db import models
 from dci import decorators
 
@@ -37,18 +34,18 @@ def _add_delta_to_tests(base_tests, testscases):
     res = []
     for t in testscases:
         res_test = {}
-        res_test['classname'] = t.get('classname')
-        res_test['name'] = t.get('name')
-        key = "%s/%s" % (t.get('classname'), t.get('name'))
+        res_test["classname"] = t.get("classname")
+        res_test["name"] = t.get("name")
+        key = "%s/%s" % (t.get("classname"), t.get("name"))
         if t.get("time") is None or base_tests.get(key) is None:
             continue
 
         base_time = float(base_tests.get(key))
-        t_time = float(t.get('time'))
+        t_time = float(t.get("time"))
         diff = t_time - base_time
-        percentage = (diff * 100.) / base_time
-        res_test['time'] = t_time
-        res_test['delta'] = percentage
+        percentage = (diff * 100.0) / base_time
+        res_test["time"] = t_time
+        res_test["delta"] = percentage
         res.append(res_test)
     return res
 
@@ -60,10 +57,10 @@ def _keytify_test_cases(test_cases):
     """
     res = {}
     for tc in test_cases:
-        key = "%s/%s" % (tc.get('classname'), tc.get('name'))
-        if tc.get('time') is None or float(tc.get('time')) == 0.0:
+        key = "%s/%s" % (tc.get("classname"), tc.get("name"))
+        if tc.get("time") is None or float(tc.get("time")) == 0.0:
             continue
-        res[key] = float(tc.get('time'))
+        res[key] = float(tc.get("time"))
     return res
 
 
@@ -72,29 +69,29 @@ def get_performance_tests(baseline_tests, tests):
     res = []
     # baseline_tests is processed first because file descriptor
     # is fully read (junit2dict) once
-    base_dict = transformations.junit2dict(baseline_tests['fd'])
-    base_dict_testscases = base_dict['testscases']
-    base_dict = _keytify_test_cases(base_dict['testscases'])
+    base_dict = transformations.junit2dict(baseline_tests["fd"])
+    base_dict_testscases = base_dict["testscases"]
+    base_dict = _keytify_test_cases(base_dict["testscases"])
     test = _add_delta_to_tests(base_dict, base_dict_testscases)
-    res.append({"job_id": baseline_tests['job_id'],
-                "testscases": test})
+    res.append({"job_id": baseline_tests["job_id"], "testscases": test})
 
     for t in tests:
-        test = transformations.junit2dict(t['fd'])
-        test = _add_delta_to_tests(base_dict, test['testscases'])
-        res.append({"job_id": t['job_id'],
-                    "testscases": test})
+        test = transformations.junit2dict(t["fd"])
+        test = _add_delta_to_tests(base_dict, test["testscases"])
+        res.append({"job_id": t["job_id"], "testscases": test})
     return res
 
 
 def _get_test_files(base_job_id, jobs_ids, test_filename):
-    """"for each job get the associated file corresponding to the
+    """ "for each job get the associated file corresponding to the
     provided filename"""
 
     def _get_file(job_id):
-        query = sql.select([models.FILES]). \
-            where(models.FILES.c.job_id == job_id). \
-            where(models.FILES.c.name == test_filename)
+        query = (
+            sql.select([models.FILES])
+            .where(models.FILES.c.job_id == job_id)
+            .where(models.FILES.c.name == test_filename)
+        )
         return flask.g.db_conn.execute(query).fetchone()
 
     res = []
@@ -105,18 +102,20 @@ def _get_test_files(base_job_id, jobs_ids, test_filename):
             continue
         file = _get_file(j_id)
         if file is None:
-            logger.error("file %s from job %s not found" % (test_filename, j_id))  # noqa
+            logger.error("file %s from job %s not found" % (test_filename, j_id))
             continue
-        res.append({'file': file, 'job_id': j_id})
+        res.append({"file": file, "job_id": j_id})
     if len(res) > 1:
         return res[0], res[1:]
     return None, None
 
 
 def _get_tests_filenames(base_job_id):
-    query = sql.select([models.FILES.c.name]). \
-        where(models.FILES.c.job_id == base_job_id). \
-        where(models.FILES.c.mime == 'application/junit')
+    query = (
+        sql.select([models.FILES.c.name])
+        .where(models.FILES.c.job_id == base_job_id)
+        .where(models.FILES.c.mime == "application/junit")
+    )
     res = flask.g.db_conn.execute(query).fetchall()
     if res is None:
         return []
@@ -127,7 +126,7 @@ def _get_tests_filenames(base_job_id):
 def _get_test_files_with_fds(baseline_tests_file, tests_files):
     res = []
     for tf in [baseline_tests_file] + tests_files:
-        fd = files.get_file_descriptor(tf['file'])
+        fd = files.get_file_descriptor(tf["file"])
         res.append({"fd": fd, "job_id": tf["job_id"]})
     if len(res) > 1:
         return res[0], res[1:]
@@ -135,7 +134,7 @@ def _get_test_files_with_fds(baseline_tests_file, tests_files):
         return res[0], None
 
 
-@api.route('/performance', methods=['POST'])
+@api.route("/performance", methods=["POST"])
 @decorators.login_required
 def compare_performance(user):
     values = flask.request.json
@@ -145,9 +144,12 @@ def compare_performance(user):
     tests_filenames = _get_tests_filenames(base_job_id)
     res = []
     for tf in tests_filenames:
-        baseline_tests, tests = _get_test_files(base_job_id, jobs_ids, tf)  # noqa
-        baseline_tests_file_with_fd, tests_files_with_fds = _get_test_files_with_fds(baseline_tests, tests)  # noqa
-        perf_res = get_performance_tests(baseline_tests_file_with_fd,
-                                         tests_files_with_fds)
+        baseline_tests, tests = _get_test_files(base_job_id, jobs_ids, tf)
+        baseline_tests_file_with_fd, tests_files_with_fds = _get_test_files_with_fds(
+            baseline_tests, tests
+        )
+        perf_res = get_performance_tests(
+            baseline_tests_file_with_fd, tests_files_with_fds
+        )
         res.append({tf: perf_res})
     return flask.jsonify({"performance": res}), 200

@@ -16,10 +16,10 @@
 
 
 def test_hmac_mechanism_from_outside(remoteci_context):
-    jobs_request = remoteci_context.get('/api/v1/jobs')
+    jobs_request = remoteci_context.get("/api/v1/jobs")
     assert jobs_request.status_code == 200
 
 
 def test_hmac_mechanism_params(remoteci_context):
-    jobs_request = remoteci_context.get('/api/v1/jobs?embed=components')
+    jobs_request = remoteci_context.get("/api/v1/jobs?embed=components")
     assert jobs_request.status_code == 200

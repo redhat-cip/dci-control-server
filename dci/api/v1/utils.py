@@ -59,7 +59,7 @@ def createCertRequest(pkey, digest="sha256"):
     req.get_subject().C = "FR"
     req.get_subject().ST = "IDF"
     req.get_subject().L = "Paris"
-    req.get_subject().O = "RedHat"  # noqa
+    req.get_subject().O = "RedHat"
     req.get_subject().OU = "DCI"
     req.get_subject().CN = "DCI-remoteCI"
 
@@ -71,10 +71,10 @@ def createCertRequest(pkey, digest="sha256"):
 def get_key_and_cert_signed(pkey_path, cert_path, digest="sha256"):
     key = createKeyPair()
     csr = createCertRequest(key)
-    CAprivatekey = crypto.load_privatekey(crypto.FILETYPE_PEM,
-                                          open(pkey_path, 'rb').read())
-    caCert = crypto.load_certificate(crypto.FILETYPE_PEM,
-                                     open(cert_path, 'rb').read())
+    CAprivatekey = crypto.load_privatekey(
+        crypto.FILETYPE_PEM, open(pkey_path, "rb").read()
+    )
+    caCert = crypto.load_certificate(crypto.FILETYPE_PEM, open(cert_path, "rb").read())
 
     cert = crypto.X509()
     cert.set_serial_number(1000)
@@ -104,15 +104,14 @@ def verify_existence_and_get(id, table, name=None, get_id=False, _raise=True):
     if name:
         where_clause = table.c.name == name
 
-    if 'state' in table.columns:
-        where_clause = sql.and_(table.c.state != 'archived', where_clause)
+    if "state" in table.columns:
+        where_clause = sql.and_(table.c.state != "archived", where_clause)
 
     query = sql.select([table]).where(where_clause)
     result = flask.g.db_conn.execute(query).fetchone()
 
     if result is None and _raise:
-        raise dci_exc.DCIException('Resource "%s" not found.' % id,
-                                   status_code=404)
+        raise dci_exc.DCIException('Resource "%s" not found.' % id, status_code=404)
     if get_id:
         return result.id
     return result
@@ -129,12 +128,19 @@ def user_topic_ids(user):
     ):
         query = sql.select([models.TOPICS])
     else:
-        query = (sql.select([models.JOINS_TOPICS_TEAMS.c.topic_id])
-                 .select_from(
-                     models.JOINS_TOPICS_TEAMS.join(
-                         models.TOPICS, sql.and_(models.JOINS_TOPICS_TEAMS.c.topic_id == models.TOPICS.c.id,  # noqa
-                                                 models.TOPICS.c.state == 'active'))  # noqa
-                  ).where(models.JOINS_TOPICS_TEAMS.c.team_id.in_(user.teams_ids)))  # noqa
+        query = (
+            sql.select([models.JOINS_TOPICS_TEAMS.c.topic_id])
+            .select_from(
+                models.JOINS_TOPICS_TEAMS.join(
+                    models.TOPICS,
+                    sql.and_(
+                        models.JOINS_TOPICS_TEAMS.c.topic_id == models.TOPICS.c.id,
+                        models.TOPICS.c.state == "active",
+                    ),
+                )
+            )
+            .where(models.JOINS_TOPICS_TEAMS.c.team_id.in_(user.teams_ids))
+        )
 
     rows = flask.g.db_conn.execute(query).fetchall()
     return [str(row[0]) for row in rows]
@@ -143,18 +149,19 @@ def user_topic_ids(user):
 def get_columns_name_with_objects(table, table_prefix=False):
     if table_prefix:
         columns = {
-            '%s_%s' % (table.name, column.name): getattr(table.columns, column.name)  # noqa
+            "%s_%s" % (table.name, column.name): getattr(table.columns, column.name)
             for column in table.columns
         }
     else:
         columns = {
-            column.name: getattr(table.columns, column.name)
-            for column in table.columns
+            column.name: getattr(table.columns, column.name) for column in table.columns
         }
     return columns
 
 
-def sort_query(sort, root_valid_columns, embeds_valid_columns={}, default='-created_at'):  # noqa
+def sort_query(
+    sort, root_valid_columns, embeds_valid_columns={}, default="-created_at"
+):
     order_by = []
     if not sort and not root_valid_columns:
         return []
@@ -164,20 +171,20 @@ def sort_query(sort, root_valid_columns, embeds_valid_columns={}, default='-crea
     valid_columns = dict(root_valid_columns)
     if embeds_valid_columns:
         valid_columns.update(embeds_valid_columns)
-        embed_valid_columns_keys = [i.replace('_', '.', 1)
-                                    for i in list(embeds_valid_columns.keys())]
+        embed_valid_columns_keys = [
+            i.replace("_", ".", 1) for i in list(embeds_valid_columns.keys())
+        ]
         valid_columns_keys.extend(embed_valid_columns_keys)
     for sort_elem in sort:
-        sort_order = (sql.desc
-                      if sort_elem.startswith('-') else sql.asc)
-        sort_elem = sort_elem.strip(' -')
+        sort_order = sql.desc if sort_elem.startswith("-") else sql.asc
+        sort_elem = sort_elem.strip(" -")
         if sort_elem not in valid_columns_keys:
             raise dci_exc.DCIException(
                 'Invalid sort key: "%s"' % sort_elem,
-                payload={'Valid sort keys': sorted(set(valid_columns_keys))}
+                payload={"Valid sort keys": sorted(set(valid_columns_keys))},
             )
-        if '.' in sort_elem:
-            sort_elem = sort_elem.replace('.', '_', 1)
+        if "." in sort_elem:
+            sort_elem = sort_elem.replace(".", "_", 1)
         order_by.append(sort_order(valid_columns[sort_elem]))
     return order_by
 
@@ -193,31 +200,29 @@ def where_query(where, table, columns):
     err_msg = 'Invalid where key: "%s"'
 
     def _get_column(table, columns, name):
-        payload = {'error': 'where key must have the following form '
-                            '"key:value"'}
+        payload = {"error": "where key must have the following form " '"key:value"'}
 
-        if '.' in name:
-            subtable_name, name = name.split('.')
+        if "." in name:
+            subtable_name, name = name.split(".")
             table_obj = embeds.EMBED_STRING_TO_OBJECT[table.name]
             try:
                 table = table_obj[subtable_name]
             except KeyError:
-                payload = {'valid_keys': list(table_obj.keys())}
+                payload = {"valid_keys": list(table_obj.keys())}
                 raise dci_exc.DCIException(err_msg % name, payload=payload)
             columns = get_columns_name_with_objects(table)
 
         if name not in columns:
-            payload = {'valid_keys': list(columns.keys())}
+            payload = {"valid_keys": list(columns.keys())}
             raise dci_exc.DCIException(err_msg % name, payload=payload)
         return getattr(table.c, name)
 
     array_columns_to_list = {}
     for where_elem in where:
         try:
-            name, value = where_elem.split(':', 1)
+            name, value = where_elem.split(":", 1)
         except ValueError:
-            payload = {'error': 'where key must have the following form '
-                                '"key:value"'}
+            payload = {"error": "where key must have the following form " '"key:value"'}
             raise dci_exc.DCIException(err_msg % where_elem, payload=payload)
 
         m_column = _get_column(table, columns, name)
@@ -236,7 +241,7 @@ def where_query(where, table, columns):
             else:
                 where_conds.append(m_column == value)
         except ValueError:
-            payload = {name: '%s is not a %s' % (name, m_column.type)}
+            payload = {name: "%s is not a %s" % (name, m_column.type)}
             raise dci_exc.DCIException(err_msg % name, payload=payload)
 
     for col, values in array_columns_to_list.items():
@@ -251,45 +256,58 @@ def add_where_to_query(query, where_list):
 
 
 def request_wants_html():
-    best = (flask.request.accept_mimetypes
-            .best_match(['text/html', 'application/json']))
+    best = flask.request.accept_mimetypes.best_match(["text/html", "application/json"])
 
-    return (best == 'text/html' and
-            flask.request.accept_mimetypes[best] >
-            flask.request.accept_mimetypes['application/json'])
+    return (
+        best == "text/html"
+        and flask.request.accept_mimetypes[best]
+        > flask.request.accept_mimetypes["application/json"]
+    )
 
 
 class QueryBuilder(object):
-
-    def __init__(self, root_table, args={}, strings_to_columns={},
-                 ignore_columns=None, root_join_table=None, root_join_condition=None):  # noqa
+    def __init__(
+        self,
+        root_table,
+        args={},
+        strings_to_columns={},
+        ignore_columns=None,
+        root_join_table=None,
+        root_join_condition=None,
+    ):
         self._root_table = root_table
         self._root_join_table = root_join_table
         self._root_join_condition = root_join_condition
-        self._embeds = args.get('embed', [])
-        self._limit = args.get('limit', None)
-        self._offset = args.get('offset', None)
-        self._sort = self._get_sort_query_with_embeds(args.get('sort', []),
-                                                      root_table.name,
-                                                      strings_to_columns)
-        self._where = where_query(args.get('where', []), self._root_table,
-                                  strings_to_columns)
+        self._embeds = args.get("embed", [])
+        self._limit = args.get("limit", None)
+        self._offset = args.get("offset", None)
+        self._sort = self._get_sort_query_with_embeds(
+            args.get("sort", []), root_table.name, strings_to_columns
+        )
+        self._where = where_query(
+            args.get("where", []), self._root_table, strings_to_columns
+        )
         self._strings_to_columns = strings_to_columns
         self._extras_conditions = []
         self._ignored_columns = ignore_columns or []
 
-    def _get_sort_query_with_embeds(self, args_sort, root_table_name, strings_to_columns):  # noqa
+    def _get_sort_query_with_embeds(
+        self, args_sort, root_table_name, strings_to_columns
+    ):
         # add embeds field for the sorting
         strings_to_columns_with_embeds = {}
         if root_table_name in embeds.EMBED_STRING_TO_OBJECT:
-            for embed_elem in embeds.EMBED_STRING_TO_OBJECT[root_table_name].values():  # noqa
+            for embed_elem in embeds.EMBED_STRING_TO_OBJECT[root_table_name].values():
                 if isinstance(embed_elem, list):
-                    embed_str_to_objects = {'%s_%s' % (c.table.name, c.name): c for c in embed_elem}  # noqa
+                    embed_str_to_objects = {
+                        "%s_%s" % (c.table.name, c.name): c for c in embed_elem
+                    }
                     strings_to_columns_with_embeds.update(embed_str_to_objects)
                 else:
                     strings_to_columns_with_embeds.update(
-                        get_columns_name_with_objects(embed_elem, table_prefix=True))  # noqa
-        return sort_query(args_sort, strings_to_columns, strings_to_columns_with_embeds)  # noqa
+                        get_columns_name_with_objects(embed_elem, table_prefix=True)
+                    )
+        return sort_query(args_sort, strings_to_columns, strings_to_columns_with_embeds)
 
     def add_extra_condition(self, condition):
         self._extras_conditions.append(condition)
@@ -322,11 +340,11 @@ class QueryBuilder(object):
         valid_embed = embed_joins.keys()
         embed_list = []
         for embed_elem in self._embeds:
-            left = embed_elem.split('.')[0]
+            left = embed_elem.split(".")[0]
             if embed_elem not in valid_embed:
                 raise dci_exc.DCIException(
-                    'Invalid embed element %s' % embed_elem,
-                    payload={'Valid elements': valid_embed}
+                    "Invalid embed element %s" % embed_elem,
+                    payload={"Valid elements": valid_embed},
                 )
             if left not in embed_list:
                 embed_list.append(left)
@@ -351,28 +369,34 @@ class QueryBuilder(object):
             root_select = root_subquery
 
         children = root_select
-        if (self._root_join_table is not None) and (self._root_join_condition is not None):  # noqa
-            children = root_select.join(self._root_join_table,
-                                        self._root_join_condition)
+        if (self._root_join_table is not None) and (
+            self._root_join_condition is not None
+        ):
+            children = root_select.join(
+                self._root_join_table, self._root_join_condition
+            )
             select_clause.append(self._root_join_table)
 
-        query = sql.select(select_clause, use_labels=use_labels, from_obj=children)  # noqa
+        query = sql.select(select_clause, use_labels=use_labels, from_obj=children)
         if self._embeds:
-            embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select)  # noqa
+            embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select)
             embed_list = self._get_embed_list(embed_joins)
             embed_sorts = []
             for embed_elem in embed_list:
                 for param in embed_joins[embed_elem]:
-                    children = children.join(param['right'], param['onclause'],
-                                             param.get('isouter', False))
-                    if param.get('sort', None) is not None:
-                        embed_sorts.append(param.get('sort'))
-                select_elem = embeds.EMBED_STRING_TO_OBJECT[self._root_table.name][embed_elem]  # noqa
+                    children = children.join(
+                        param["right"], param["onclause"], param.get("isouter", False)
+                    )
+                    if param.get("sort", None) is not None:
+                        embed_sorts.append(param.get("sort"))
+                select_elem = embeds.EMBED_STRING_TO_OBJECT[self._root_table.name][
+                    embed_elem
+                ]
                 if isinstance(select_elem, list):
                     select_clause.extend(select_elem)
                 else:
                     select_clause.append(select_elem)
-            query = sql.select(select_clause, use_labels=True, from_obj=children)  # noqa
+            query = sql.select(select_clause, use_labels=True, from_obj=children)
 
         if self._embeds:
             for embed_sort in embed_sorts:
@@ -412,6 +436,7 @@ class QueryBuilder(object):
 
     def _get_pg_query(self):
         from sqlalchemy.dialects import postgresql
+
         return str(self.get_query().compile(dialect=postgresql.dialect()))
 
 
@@ -442,14 +467,14 @@ def _format_level_1(rows, root_table_name):
         result_row = {}
         prefixes_to_remove = []
         for field in row:
-            if field.startswith('next_topic'):
-                prefix = 'next_topic'
+            if field.startswith("next_topic"):
+                prefix = "next_topic"
                 suffix = field[11:]
-                if suffix == 'id_1':
-                    suffix = 'id'
+                if suffix == "id_1":
+                    suffix = "id"
             else:
-                prefix, suffix = field.split('_', 1)
-            if suffix == 'id' and row[field] is None:
+                prefix, suffix = field.split("_", 1)
+            if suffix == "id" and row[field] is None:
                 prefixes_to_remove.append(prefix)
             if prefix not in result_row:
                 result_row[prefix] = {suffix: row[field]}
@@ -502,49 +527,51 @@ def _format_level_2(rows, list_embeds, embed_many):
         result = []
         set_ids = set()
         for v in list_of_dicts:
-            if v['id'] in set_ids:
+            if v["id"] in set_ids:
                 continue
-            set_ids.add(v['id'])
+            set_ids.add(v["id"])
             result.append(v)
         return result
 
     row_ids_to_embed_values = {}
     for row in rows:
         # for each row, associate rows's id -> {all embeds values}
-        if row['id'] not in row_ids_to_embed_values:
-            row_ids_to_embed_values[row['id']] = {}
+        if row["id"] not in row_ids_to_embed_values:
+            row_ids_to_embed_values[row["id"]] = {}
         # add embeds values to the current row
         for embd in list_embeds:
             if embd not in row:
                 continue
-            if embd not in row_ids_to_embed_values[row['id']]:
+            if embd not in row_ids_to_embed_values[row["id"]]:
                 # create a list or a dict depending on embed_many
                 if embed_many[embd]:
-                    row_ids_to_embed_values[row['id']][embd] = [row[embd]]
+                    row_ids_to_embed_values[row["id"]][embd] = [row[embd]]
                 else:
-                    row_ids_to_embed_values[row['id']][embd] = row[embd]
+                    row_ids_to_embed_values[row["id"]][embd] = row[embd]
             else:
                 if embed_many[embd]:
-                    row_ids_to_embed_values[row['id']][embd].append(row[embd])
+                    row_ids_to_embed_values[row["id"]][embd].append(row[embd])
         # uniqify each embed list
         for embd in list_embeds:
-            if embd in row_ids_to_embed_values[row['id']]:
-                embed_values = row_ids_to_embed_values[row['id']][embd]
+            if embd in row_ids_to_embed_values[row["id"]]:
+                embed_values = row_ids_to_embed_values[row["id"]][embd]
                 if isinstance(embed_values, list):
-                    row_ids_to_embed_values[row['id']][embd] = _uniqify_list(embed_values)  # noqa
+                    row_ids_to_embed_values[row["id"]][embd] = _uniqify_list(
+                        embed_values
+                    )
             else:
-                row_ids_to_embed_values[row['id']][embd] = {}
+                row_ids_to_embed_values[row["id"]][embd] = {}
                 if embed_many[embd]:
-                    row_ids_to_embed_values[row['id']][embd] = []
+                    row_ids_to_embed_values[row["id"]][embd] = []
 
     # last loop over the initial rows in order to keep the ordering
     result = []
     # if row id in seen set then it means the row has been completely processed
     seen = set()
     for row in rows:
-        if row['id'] in seen:
+        if row["id"] in seen:
             continue
-        seen.add(row['id'])
+        seen.add(row["id"])
         new_row = {}
         # adds level 1 fields
         for field in row:
@@ -552,22 +579,26 @@ def _format_level_2(rows, list_embeds, embed_many):
                 new_row[field] = row[field]
         # adds all level 2 fields
         # list() for py34
-        row_ids_to_embed_values_keys = list(row_ids_to_embed_values[new_row['id']].keys())  # noqa
+        row_ids_to_embed_values_keys = list(
+            row_ids_to_embed_values[new_row["id"]].keys()
+        )
         row_ids_to_embed_values_keys.sort()
         # adds the nested fields if there is somes
         for embd in list_embeds:
             if embd in row_ids_to_embed_values_keys:
-                if '.' in embd:
-                    prefix, suffix = embd.split('.', 1)
-                    new_row[prefix][suffix] = row_ids_to_embed_values[new_row['id']][embd]  # noqa
+                if "." in embd:
+                    prefix, suffix = embd.split(".", 1)
+                    new_row[prefix][suffix] = row_ids_to_embed_values[new_row["id"]][
+                        embd
+                    ]
                 else:
-                    new_row[embd] = row_ids_to_embed_values[new_row['id']][embd]  # noqa
+                    new_row[embd] = row_ids_to_embed_values[new_row["id"]][embd]
             else:
                 new_row_embd_value = {}
                 if embed_many[embd]:
                     new_row_embd_value = []
-                if '.' in embd:
-                    prefix, suffix = embd.split('.', 1)
+                if "." in embd:
+                    prefix, suffix = embd.split(".", 1)
                     new_row[prefix][suffix] = new_row_embd_value
                 else:
                     new_row[embd] = new_row_embd_value
@@ -587,17 +618,17 @@ def format_result(rows, root_table_name, list_embeds=None, embed_many=None):
 def common_values_dict():
     """Build a basic values object used in every create method.
 
-       All our resources contain a same subset of value. Instead of
-       redoing this code everytime, this method ensures it is done only at
-       one place.
+    All our resources contain a same subset of value. Instead of
+    redoing this code everytime, this method ensures it is done only at
+    one place.
     """
     now = datetime.datetime.utcnow().isoformat()
     etag = utils.gen_etag()
     values = {
-        'id': utils.gen_uuid(),
-        'created_at': now,
-        'updated_at': now,
-        'etag': etag
+        "id": utils.gen_uuid(),
+        "created_at": now,
+        "updated_at": now,
+        "etag": etag,
     }
 
     return values

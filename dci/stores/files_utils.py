@@ -32,12 +32,14 @@ def get_stream_or_content_from_request(request):
     """
 
     if request.stream.tell():
-        logger.info('Request stream already consumed. '
-                    'Storing file content using in-memory data.')
+        logger.info(
+            "Request stream already consumed. "
+            "Storing file content using in-memory data."
+        )
         return request.data
 
     else:
-        logger.info('Storing file content using request stream.')
+        logger.info("Storing file content using request stream.")
         return request.stream
 
 
@@ -49,7 +51,7 @@ def build_file_path(root, middle, file_id):
 
 
 def md5Checksum(filePath):
-    with open(filePath, 'rb') as fh:
+    with open(filePath, "rb") as fh:
         m = hashlib.md5()
         while True:
             data = fh.read(8192)

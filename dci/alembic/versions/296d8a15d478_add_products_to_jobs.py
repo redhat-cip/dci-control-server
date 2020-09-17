@@ -22,8 +22,8 @@ Create Date: 2019-06-18 15:58:20.213113
 """
 
 # revision identifiers, used by Alembic.
-revision = '296d8a15d478'
-down_revision = '236e3b2c2a3d'
+revision = "296d8a15d478"
+down_revision = "236e3b2c2a3d"
 branch_labels = None
 depends_on = None
 
@@ -39,31 +39,37 @@ metadata = sa.MetaData()
 
 # snapshot the jobs table to not be modified by next migrations
 JOBS = sa.Table(
-    'jobs', metadata,
-    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
-              default=utils.gen_uuid),
-    sa.Column('topic_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('topics.id', ondelete='CASCADE'),
-              nullable=True)
+    "jobs",
+    metadata,
+    sa.Column("id", pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid),
+    sa.Column(
+        "topic_id",
+        pg.UUID(as_uuid=True),
+        sa.ForeignKey("topics.id", ondelete="CASCADE"),
+        nullable=True,
+    ),
 )
 
 
 def upgrade():
     db_conn = op.get_bind()
-    op.add_column('jobs',
-                  sa.Column('product_id', pg.UUID(as_uuid=True),
-                            sa.ForeignKey('products.id', ondelete='CASCADE'),
-                            nullable=True))
-    op.create_index('jobs_product_id_idx', 'jobs',
-                    ['product_id'])
+    op.add_column(
+        "jobs",
+        sa.Column(
+            "product_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("products.id", ondelete="CASCADE"),
+            nullable=True,
+        ),
+    )
+    op.create_index("jobs_product_id_idx", "jobs", ["product_id"])
 
     # get all the jobs
     query = sql.select([JOBS])
     jobs = db_conn.execute(query).fetchall()
 
     def get_product_id(topic_id):
-        query = sql.select([models.TOPICS]).where(
-            models.TOPICS.c.id == job.topic_id)
+        query = sql.select([models.TOPICS]).where(models.TOPICS.c.id == job.topic_id)
         topic = db_conn.execute(query).fetchone()
         return topic.product_id
 
@@ -73,8 +79,11 @@ def upgrade():
             product_id = get_product_id(job.topic_id)
             cache_topic_id_to_product_id[str(job.topic_id)] = product_id
         product_id = cache_topic_id_to_product_id[str(job.topic_id)]
-        query = models.JOBS.update().where(
-            models.JOBS.c.id == job.id).values(product_id=product_id)
+        query = (
+            models.JOBS.update()
+            .where(models.JOBS.c.id == job.id)
+            .values(product_id=product_id)
+        )
         db_conn.execute(query)
 
 

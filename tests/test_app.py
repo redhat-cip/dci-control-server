@@ -24,24 +24,23 @@ import dci.db.models as models
 
 def test_cors_preflight(admin):
     headers = {
-        'Origin': 'http://foo.example',
-        'Access-Control-Request-Method': 'POST',
+        "Origin": "http://foo.example",
+        "Access-Control-Request-Method": "POST",
     }
-    resp = admin.options('/api/v1', headers=headers)
+    resp = admin.options("/api/v1", headers=headers)
     headers = resp.headers
 
-    allowed_headers = ('Authorization, Content-Type, If-Match, ETag, '
-                       'X-Requested-With')
+    allowed_headers = "Authorization, Content-Type, If-Match, ETag, " "X-Requested-With"
 
     assert resp.status_code == 200
-    assert headers['Access-Control-Allow-Headers'] == allowed_headers
-    assert headers['Access-Control-Allow-Origin'] == '*'
-    assert headers['Access-Control-Allow-Methods'] == 'GET, POST, PUT, DELETE'
+    assert headers["Access-Control-Allow-Headers"] == allowed_headers
+    assert headers["Access-Control-Allow-Origin"] == "*"
+    assert headers["Access-Control-Allow-Methods"] == "GET, POST, PUT, DELETE"
 
 
 def test_cors_headers(admin):
-    resp = admin.get('/api/v1/jobs')
-    assert resp.headers['Access-Control-Allow-Origin'] == '*'
+    resp = admin.get("/api/v1/jobs")
+    assert resp.headers["Access-Control-Allow-Origin"] == "*"
 
 
 def test_db_migration(engine, delete_db):
@@ -50,13 +49,16 @@ def test_db_migration(engine, delete_db):
     script = alembic.script.ScriptDirectory.from_config(config)
 
     env_context = alembic.environment.EnvironmentContext(
-        config, script, destination_rev='head',
-        fn=lambda rev, _: script._upgrade_revs('head', rev)
+        config,
+        script,
+        destination_rev="head",
+        fn=lambda rev, _: script._upgrade_revs("head", rev),
     )
 
     with env_context, engine.connect() as connection:
-        context.configure(connection, target_metadata=models.metadata,
-                          compare_type=True)
+        context.configure(
+            connection, target_metadata=models.metadata, compare_type=True
+        )
 
         with context.begin_transaction():
             context.run_migrations()

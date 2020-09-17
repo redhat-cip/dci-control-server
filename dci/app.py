@@ -40,11 +40,11 @@ class DciControlServer(flask.Flask):
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine()
         conf = dci_config.CONFIG
-        self.sender = self._get_zmq_sender(conf['ZMQ_CONN'])
+        self.sender = self._get_zmq_sender(conf["ZMQ_CONN"])
         with self.engine.connect() as db_conn:
-            self.team_admin_id = self._get_team_id(db_conn, 'admin')
-            self.team_redhat_id = self._get_team_id(db_conn, 'Red Hat')
-            self.team_epm_id = self._get_team_id(db_conn, 'EPM')
+            self.team_admin_id = self._get_team_id(db_conn, "admin")
+            self.team_redhat_id = self._get_team_id(db_conn, "Red Hat")
+            self.team_epm_id = self._get_team_id(db_conn, "EPM")
 
     def _get_zmq_sender(self, zmq_conn):
         global zmq_sender
@@ -55,43 +55,41 @@ class DciControlServer(flask.Flask):
 
     def make_default_options_response(self):
         resp = super(DciControlServer, self).make_default_options_response()
-        methods = ['GET', 'POST', 'PUT', 'DELETE']
+        methods = ["GET", "POST", "PUT", "DELETE"]
         headers = resp.headers
 
-        headers.add_header('Access-Control-Allow-Methods', ', '.join(methods))
-        headers.add_header('Access-Control-Allow-Headers',
-                           self.config['X_HEADERS'])
+        headers.add_header("Access-Control-Allow-Methods", ", ".join(methods))
+        headers.add_header("Access-Control-Allow-Headers", self.config["X_HEADERS"])
         return resp
 
     def process_response(self, resp):
         headers = resp.headers
-        headers.add_header('Access-Control-Expose-Headers',
-                           self.config['X_HEADERS'])
-        headers.add_header('Access-Control-Allow-Origin',
-                           self.config['X_DOMAINS'])
+        headers.add_header("Access-Control-Expose-Headers", self.config["X_HEADERS"])
+        headers.add_header("Access-Control-Allow-Origin", self.config["X_DOMAINS"])
 
         return super(DciControlServer, self).process_response(resp)
 
     def _get_team_id(self, db_conn, name):
-        query = sqlalchemy.sql.select([models.TEAMS]).where(
-            models.TEAMS.c.name == name)
+        query = sqlalchemy.sql.select([models.TEAMS]).where(models.TEAMS.c.name == name)
         row = db_conn.execute(query).fetchone()
 
         if row is None:
-            print("%s team not found. Please init the database"
-                  " with the '%s' team and 'admin' user." % (name, name))
+            print(
+                "%s team not found. Please init the database"
+                " with the '%s' team and 'admin' user." % (name, name)
+            )
             sys.exit(1)
         return row.id
 
 
 def configure_root_logger():
     conf = dci_config.CONFIG
-    logging.basicConfig(level=conf['LOG_LEVEL'])
+    logging.basicConfig(level=conf["LOG_LEVEL"])
 
     console_handler = logging.StreamHandler()
-    formatter = logging.Formatter(conf['LOG_FORMAT'])
+    formatter = logging.Formatter(conf["LOG_FORMAT"])
     console_handler.setFormatter(formatter)
-    console_handler.setLevel(conf['LOG_LEVEL'])
+    console_handler.setLevel(conf["LOG_LEVEL"])
 
     root_logger = logging.getLogger()
     # remove all handlers before adding the console handler
@@ -100,18 +98,18 @@ def configure_root_logger():
 
 
 def werkzeug_logger_to_error():
-    werkzeug_logger = logging.getLogger('werkzeug')
+    werkzeug_logger = logging.getLogger("werkzeug")
     werkzeug_logger.setLevel("ERROR")
 
 
 def create_app(param=None):
     dci_app = DciControlServer()
-    dci_app.url_map.converters['uuid'] = utils.UUIDConverter
+    dci_app.url_map.converters["uuid"] = utils.UUIDConverter
 
     werkzeug_logger_to_error()
     configure_root_logger()
 
-    logger.info('dci control server startup')
+    logger.info("dci control server startup")
 
     def handle_api_exception(api_exception):
         response = flask.jsonify(api_exception.to_dict())
@@ -137,8 +135,9 @@ def create_app(param=None):
                 flask.g.db_conn = dci_app.engine.connect()
                 break
             except Exception:
-                logging.warning('failed to connect to the database, '
-                                'will retry in 1 second...')
+                logging.warning(
+                    "failed to connect to the database, " "will retry in 1 second..."
+                )
                 time.sleep(1)
                 pass
 
@@ -149,17 +148,15 @@ def create_app(param=None):
         try:
             flask.g.db_conn.close()
         except Exception:
-            logging.warning('disconnected from the database..')
+            logging.warning("disconnected from the database..")
             pass
 
     # Registering REST error handler
-    dci_app.register_error_handler(exceptions.DCIException,
-                                   handle_api_exception)
-    dci_app.register_error_handler(sa_exc.DBAPIError,
-                                   handle_dbapi_exception)
+    dci_app.register_error_handler(exceptions.DCIException, handle_api_exception)
+    dci_app.register_error_handler(sa_exc.DBAPIError, handle_dbapi_exception)
 
     # Registering REST API v1
-    dci_app.register_blueprint(api_v1.api, url_prefix='/api/v1')
+    dci_app.register_blueprint(api_v1.api, url_prefix="/api/v1")
 
     # Registering custom encoder
     dci_app.json_encoder = utils.JSONEncoder

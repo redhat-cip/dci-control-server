@@ -28,7 +28,7 @@ from dci.common.schemas import (
     check_json_is_valid,
     create_feeder_schema,
     update_feeder_schema,
-    check_and_get_args
+    check_and_get_args,
 )
 from dci.common import signature
 from dci.common import utils
@@ -39,11 +39,11 @@ _TABLE = models.FEEDERS
 _F_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _VALID_EMBED = embeds.feeders()
 _EMBED_MANY = {
-    'team': False,
+    "team": False,
 }
 
 
-@api.route('/feeders', methods=['POST'])
+@api.route("/feeders", methods=["POST"])
 @decorators.login_required
 def create_feeders(user):
     values = flask.request.json
@@ -53,27 +53,31 @@ def create_feeders(user):
     if user.is_not_epm() and user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
-    values.update({
-        # XXX(fc): this should be populated as a default value from the
-        # model, but we don't return values from the database :(
-        'api_secret': signature.gen_secret(),
-        'data': values.get('data', {}),
-    })
+    values.update(
+        {
+            # XXX(fc): this should be populated as a default value from the
+            # model, but we don't return values from the database :(
+            "api_secret": signature.gen_secret(),
+            "data": values.get("data", {}),
+        }
+    )
 
     query = _TABLE.insert().values(**values)
 
     try:
         flask.g.db_conn.execute(query)
     except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
+        raise dci_exc.DCICreationConflict(_TABLE.name, "name")
 
     return flask.Response(
-        json.dumps({'feeder': values}), 201,
-        headers={'ETag': values['etag']}, content_type='application/json'
+        json.dumps({"feeder": values}),
+        201,
+        headers={"ETag": values["etag"]},
+        content_type="application/json",
     )
 
 
-@api.route('/feeders', methods=['GET'])
+@api.route("/feeders", methods=["GET"])
 @decorators.login_required
 def get_all_feeders(user):
     args = check_and_get_args(flask.request.args.to_dict())
@@ -83,25 +87,24 @@ def get_all_feeders(user):
     if user.is_not_super_admin() and user.is_not_epm():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
-    query.add_extra_condition(_TABLE.c.state != 'archived')
+    query.add_extra_condition(_TABLE.c.state != "archived")
 
     rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
+    rows = v1_utils.format_result(rows, _TABLE.name, args["embed"], _EMBED_MANY)
 
-    return flask.jsonify({'feeders': rows, '_meta': {'count': len(rows)}})
+    return flask.jsonify({"feeders": rows, "_meta": {"count": len(rows)}})
 
 
-@api.route('/feeders/<uuid:f_id>', methods=['GET'])
+@api.route("/feeders/<uuid:f_id>", methods=["GET"])
 @decorators.login_required
 def get_feeder_by_id(user, f_id):
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
-    if not user.is_in_team(feeder['team_id']):
+    if not user.is_in_team(feeder["team_id"]):
         raise dci_exc.Unauthorized()
     return base.get_resource_by_id(user, feeder, _TABLE, _EMBED_MANY)
 
 
-@api.route('/feeders/<uuid:f_id>', methods=['PUT'])
+@api.route("/feeders/<uuid:f_id>", methods=["PUT"])
 @decorators.login_required
 def put_feeder(user, f_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -109,76 +112,75 @@ def put_feeder(user, f_id):
     check_json_is_valid(update_feeder_schema, values)
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
 
-    if not user.is_in_team(feeder['team_id']):
+    if not user.is_in_team(feeder["team_id"]):
         raise dci_exc.Unauthorized()
 
-    values['etag'] = utils.gen_etag()
-    where_clause = sql.and_(_TABLE.c.etag == if_match_etag,
-                            _TABLE.c.state != 'archived',
-                            _TABLE.c.id == f_id)
+    values["etag"] = utils.gen_etag()
+    where_clause = sql.and_(
+        _TABLE.c.etag == if_match_etag,
+        _TABLE.c.state != "archived",
+        _TABLE.c.id == f_id,
+    )
 
-    query = (_TABLE
-             .update()
-             .returning(*_TABLE.columns)
-             .where(where_clause)
-             .values(**values))
+    query = (
+        _TABLE.update().returning(*_TABLE.columns).where(where_clause).values(**values)
+    )
 
     result = flask.g.db_conn.execute(query)
     if not result.rowcount:
-        raise dci_exc.DCIConflict('Feeder', f_id)
+        raise dci_exc.DCIConflict("Feeder", f_id)
 
     _result = dict(result.fetchone())
-    del _result['api_secret']
+    del _result["api_secret"]
 
     return flask.Response(
-        json.dumps({'feeder': _result}), 200,
-        headers={'ETag': values['etag']}, content_type='application/json'
+        json.dumps({"feeder": _result}),
+        200,
+        headers={"ETag": values["etag"]},
+        content_type="application/json",
     )
 
 
-@api.route('/feeders/<uuid:f_id>', methods=['DELETE'])
+@api.route("/feeders/<uuid:f_id>", methods=["DELETE"])
 @decorators.login_required
 def delete_feeder_by_id(user, f_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
 
-    if not user.is_in_team(feeder['team_id']):
+    if not user.is_in_team(feeder["team_id"]):
         raise dci_exc.Unauthorized()
 
     with flask.g.db_conn.begin():
-        values = {'state': 'archived'}
-        where_clause = sql.and_(
-            _TABLE.c.etag == if_match_etag,
-            _TABLE.c.id == f_id
-        )
+        values = {"state": "archived"}
+        where_clause = sql.and_(_TABLE.c.etag == if_match_etag, _TABLE.c.id == f_id)
         query = _TABLE.update().where(where_clause).values(**values)
 
         result = flask.g.db_conn.execute(query)
 
         if not result.rowcount:
-            raise dci_exc.DCIDeleteConflict('Feeder', f_id)
+            raise dci_exc.DCIDeleteConflict("Feeder", f_id)
 
-    return flask.Response(None, 204, content_type='application/json')
+    return flask.Response(None, 204, content_type="application/json")
 
 
-@api.route('/feeders/purge', methods=['GET'])
+@api.route("/feeders/purge", methods=["GET"])
 @decorators.login_required
 def get_to_purge_archived_feeders(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
-@api.route('/feeders/purge', methods=['POST'])
+@api.route("/feeders/purge", methods=["POST"])
 @decorators.login_required
 def purge_archived_feeders(user):
     return base.purge_archived_resources(user, _TABLE)
 
 
-@api.route('/feeders/<uuid:f_id>/api_secret', methods=['PUT'])
+@api.route("/feeders/<uuid:f_id>/api_secret", methods=["PUT"])
 @decorators.login_required
 def put_api_secret_feeder(user, f_id):
     utils.check_and_get_etag(flask.request.headers)
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
-    if not user.is_in_team(feeder['team_id']):
+    if not user.is_in_team(feeder["team_id"]):
         raise dci_exc.Unauthorized()
 
     return base.refresh_api_secret(user, feeder, _TABLE)

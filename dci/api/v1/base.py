@@ -24,26 +24,33 @@ from dci.common import utils
 from dci.common.schemas import check_and_get_args
 
 
-def get_resource_by_id(user, resource, table, embed_many=None,
-                       ignore_columns=None, resource_name=None, embeds=None,
-                       jsonify=True):
+def get_resource_by_id(
+    user,
+    resource,
+    table,
+    embed_many=None,
+    ignore_columns=None,
+    resource_name=None,
+    embeds=None,
+    jsonify=True,
+):
     args = check_and_get_args(flask.request.args.to_dict())
     if embeds is not None:
         # make a copy of the list to avoid side effect
-        args['embed'] = args['embed'] + list(embeds)
+        args["embed"] = args["embed"] + list(embeds)
     resource_name = resource_name or table.name[0:-1]
-    resource_id = resource['id']
+    resource_id = resource["id"]
     columns = v1_utils.get_columns_name_with_objects(table)
 
     query = v1_utils.QueryBuilder(table, args, columns, ignore_columns)
 
-    if 'state' in resource:
-        query.add_extra_condition(table.c.state != 'archived')
+    if "state" in resource:
+        query.add_extra_condition(table.c.state != "archived")
 
     query.add_extra_condition(table.c.id == resource_id)
 
     rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, table.name, args['embed'], embed_many)
+    rows = v1_utils.format_result(rows, table.name, args["embed"], embed_many)
 
     if len(rows) < 1:
         raise dci_exc.DCINotFound(resource_name, resource_id)
@@ -51,8 +58,8 @@ def get_resource_by_id(user, resource, table, embed_many=None,
 
     if jsonify is True:
         res = flask.jsonify({resource_name: resource})
-        if 'etag' in resource:
-            res.headers.add_header('ETag', resource['etag'])
+        if "etag" in resource:
+            res.headers.add_header("ETag", resource["etag"])
         return res
     else:
         return resource
@@ -60,7 +67,7 @@ def get_resource_by_id(user, resource, table, embed_many=None,
 
 def get_archived_resources(table):
     q_archived_files = v1_utils.QueryBuilder(table)
-    q_archived_files.add_extra_condition(table.c.state == 'archived')
+    q_archived_files.add_extra_condition(table.c.state == "archived")
     return q_archived_files.execute(fetchall=True, use_labels=False)
 
 
@@ -72,8 +79,9 @@ def get_to_purge_archived_resources(user, table):
 
     archived_resources = get_archived_resources(table)
 
-    return flask.jsonify({table.name: archived_resources,
-                          '_meta': {'count': len(archived_resources)}})
+    return flask.jsonify(
+        {table.name: archived_resources, "_meta": {"count": len(archived_resources)}}
+    )
 
 
 def purge_archived_resources(user, table):
@@ -82,13 +90,11 @@ def purge_archived_resources(user, table):
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
-    where_clause = sql.and_(
-        table.c.state == 'archived'
-    )
+    where_clause = sql.and_(table.c.state == "archived")
     query = table.delete().where(where_clause)
     flask.g.db_conn.execute(query)
 
-    return flask.Response(None, 204, content_type='application/json')
+    return flask.Response(None, 204, content_type="application/json")
 
 
 def refresh_api_secret(user, resource, table):
@@ -97,22 +103,26 @@ def refresh_api_secret(user, resource, table):
     resource_name = table.name[0:-1]
 
     where_clause = sql.and_(
-        table.c.etag == resource['etag'],
-        table.c.id == resource['id'],
+        table.c.etag == resource["etag"],
+        table.c.id == resource["id"],
     )
 
-    values = {
-        'api_secret': signature.gen_secret(),
-        'etag': utils.gen_etag()
-    }
+    values = {"api_secret": signature.gen_secret(), "etag": utils.gen_etag()}
 
     query = table.update().where(where_clause).values(**values)
     result = flask.g.db_conn.execute(query)
 
     if not result.rowcount:
-        raise dci_exc.DCIConflict(resource_name, resource['id'])
+        raise dci_exc.DCIConflict(resource_name, resource["id"])
 
-    res = flask.jsonify(({'id': resource['id'], 'etag': resource['etag'],
-                          'api_secret': values['api_secret']}))
-    res.headers.add_header('ETag', values['etag'])
+    res = flask.jsonify(
+        (
+            {
+                "id": resource["id"],
+                "etag": resource["etag"],
+                "api_secret": values["api_secret"],
+            }
+        )
+    )
+    res.headers.add_header("ETag", values["etag"])
     return res

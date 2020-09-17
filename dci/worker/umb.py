@@ -22,35 +22,37 @@ def build_umb_messages(event, now=datetime.datetime.utcnow()):
             messages.append(
                 {
                     "target": target,
-                    "body": json.dumps({
-                        "contact": {
-                            "name": "DCI CI",
-                            "team": "DCI",
-                            "docs": "https://docs.distributed-ci.io/",
-                            "email": "distributed-ci@redhat.com",
-                            "url": "https://distributed-ci.io/",
-                        },
-                        "run": {"url": job_url, "log": job_url},
-                        "artifact": {
-                            "compose_type": "nightly"
-                            if "nightly" in component["url"]
-                            else "rel-eng",
-                            "id": component["name"],
-                            "type": "productmd-compose",
-                        },
-                        "pipeline": {"id": job["id"], "name": "job id"},
-                        "test": {
-                            "category": "system",
-                            "namespace": "dci",
-                            "type": test_name,
-                            "result": "passed"
-                            if job["status"] == "success"
-                            else "failed",
-                        },
-                        "system": [],
-                        "generated_at": "%sZ" % now.isoformat(),
-                        "version": "0.1.0",
-                    }),
+                    "body": json.dumps(
+                        {
+                            "contact": {
+                                "name": "DCI CI",
+                                "team": "DCI",
+                                "docs": "https://docs.distributed-ci.io/",
+                                "email": "distributed-ci@redhat.com",
+                                "url": "https://distributed-ci.io/",
+                            },
+                            "run": {"url": job_url, "log": job_url},
+                            "artifact": {
+                                "compose_type": "nightly"
+                                if "nightly" in component["url"]
+                                else "rel-eng",
+                                "id": component["name"],
+                                "type": "productmd-compose",
+                            },
+                            "pipeline": {"id": job["id"], "name": "job id"},
+                            "test": {
+                                "category": "system",
+                                "namespace": "dci",
+                                "type": test_name,
+                                "result": "passed"
+                                if job["status"] == "success"
+                                else "failed",
+                            },
+                            "system": [],
+                            "generated_at": "%sZ" % now.isoformat(),
+                            "version": "0.1.0",
+                        }
+                    ),
                 }
             )
     return messages

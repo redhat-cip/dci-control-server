@@ -1,4 +1,3 @@
-
 # -*- coding: utf-8 -*-
 #
 # Copyright (C) 2015-2017 Red Hat, Inc
@@ -26,9 +25,9 @@ def test_log_action_with_remoteci_id(engine, admin, remoteci_id, team_id):
 
     _g = flask.g
     flask.g = Flask_g_mock()
-    log_action(remoteci_id, 'some_action')
+    log_action(remoteci_id, "some_action")
     flask.g = _g
 
-    gaudits = admin.get('/api/v1/audits')
+    gaudits = admin.get("/api/v1/audits")
     assert gaudits.status_code == 200
-    assert gaudits.data['audits'][0]['user_id'] == remoteci_id
+    assert gaudits.data["audits"][0]["user_id"] == remoteci_id

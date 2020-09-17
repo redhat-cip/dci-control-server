@@ -25,9 +25,9 @@ _TABLE = models.LOGS
 
 def log_action(user_id, action):
     values = {
-        'user_id': user_id,
-        'action': action,
-        'created_at': datetime.datetime.utcnow().isoformat()
+        "user_id": user_id,
+        "action": action,
+        "created_at": datetime.datetime.utcnow().isoformat(),
     }
     flask.g.db_conn.execute(_TABLE.insert().values(**values))
 
@@ -38,4 +38,5 @@ def log(f):
         user = args[0]
         log_action(user.id, f.__name__)
         return f(*args, **kwargs)
+
     return decorated
