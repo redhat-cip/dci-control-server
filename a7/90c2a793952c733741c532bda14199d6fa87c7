@@ -1,0 +1,10 @@
+Code-Review+1: Guillaume Vincent <gvincent@redhat.com>
+Code-Review+1: François Charlier <francois.charlier@redhat.com>
+Code-Review+2: Yassine Lamgarchal <yassine.lamgarchal@redhat.com>
+Workflow+1: Yassine Lamgarchal <yassine.lamgarchal@redhat.com>
+Verified+2: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-by: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-at: Thu, 17 Sep 2020 12:59:31 +0000
+Reviewed-on: https://softwarefactory-project.io/r/19307
+Project: dci-control-server
+Branch: refs/heads/master
