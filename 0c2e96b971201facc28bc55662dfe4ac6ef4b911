@@ -1,0 +1,119 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "13f37493_82e633cc",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 174,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-09-17T08:44:28Z",
+      "side": 1,
+      "message": "this",
+      "range": {
+        "startLine": 169,
+        "startChar": 0,
+        "endLine": 174,
+        "endChar": 40
+      },
+      "revId": "0c2e96b971201facc28bc55662dfe4ac6ef4b911",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "af99b15d_c98dd732",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 260,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-09-17T08:44:28Z",
+      "side": 1,
+      "message": "this",
+      "range": {
+        "startLine": 255,
+        "startChar": 0,
+        "endLine": 260,
+        "endChar": 40
+      },
+      "revId": "0c2e96b971201facc28bc55662dfe4ac6ef4b911",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "bf9eed6b_83fde4df",
+        "filename": "dci/api/v1/components.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 304,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-09-17T08:44:28Z",
+      "side": 1,
+      "message": "and this are duplication no ?\neverytime team_id is not null, we would like to verify the component belong to the user.",
+      "range": {
+        "startLine": 299,
+        "startChar": 0,
+        "endLine": 304,
+        "endChar": 40
+      },
+      "revId": "0c2e96b971201facc28bc55662dfe4ac6ef4b911",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f022d7dc_4a06a8a8",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 61,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-09-17T08:44:28Z",
+      "side": 1,
+      "message": "black formatting is better IMO than using # noqa everywhere",
+      "range": {
+        "startLine": 60,
+        "startChar": 0,
+        "endLine": 61,
+        "endChar": 71
+      },
+      "revId": "0c2e96b971201facc28bc55662dfe4ac6ef4b911",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "413f0df4_c7a1df50",
+        "filename": "tests/api/v1/test_jobs.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 69,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-09-17T08:44:28Z",
+      "side": 1,
+      "message": "team_component \u003d user.post(\u0027/api/v1/components\u0027, data\u003ddata).data[\u0027component\u0027]\n\nis better here",
+      "range": {
+        "startLine": 68,
+        "startChar": 0,
+        "endLine": 69,
+        "endChar": 48
+      },
+      "revId": "0c2e96b971201facc28bc55662dfe4ac6ef4b911",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
