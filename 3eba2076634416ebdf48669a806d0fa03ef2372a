@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7c483057_f1d94af0",
+        "filename": "test-requirements.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-09-18T07:46:20Z",
+      "side": 1,
+      "message": "Black is python3 only, it will break all python2 based jobs using test-requirements.txt.\n\nAlso, why is black here ? Is it used in a tox job ?",
+      "range": {
+        "startLine": 7,
+        "startChar": 0,
+        "endLine": 7,
+        "endChar": 5
+      },
+      "revId": "3eba2076634416ebdf48669a806d0fa03ef2372a",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
