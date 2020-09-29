@@ -48,7 +48,7 @@ COMPONENTS = sa.Table(
               onupdate=datetime.datetime.utcnow,
               default=datetime.datetime.utcnow, nullable=False),
     sa.Column('release_at', sa.DateTime(),
-              default=datetime.datetime.utcnow, nullable=True),
+              default=datetime.datetime.utcnow, nullable=False),
     sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
               onupdate=utils.gen_etag),
     sa.Column('name', sa.String(255), nullable=False),
