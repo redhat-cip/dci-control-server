@@ -23,329 +23,286 @@ from dci import settings
 from dciauth.signature import Signature
 from dciauth.request import AuthRequest
 
-DCI_LOGIN = os.environ.get('DCI_LOGIN', 'admin')
-DCI_PASSWORD = os.environ.get('DCI_PASSWORD', 'admin')
-DEFAULT_DCI_CS_URL = 'http://{host}:{port}'.format(
-    host=settings.HOST, port=settings.PORT)
-DCI_CS_URL = os.environ.get('DCI_CS_URL', DEFAULT_DCI_CS_URL)
+DCI_LOGIN = os.environ.get("DCI_LOGIN", "admin")
+DCI_PASSWORD = os.environ.get("DCI_PASSWORD", "admin")
+DEFAULT_DCI_CS_URL = "http://{host}:{port}".format(
+    host=settings.HOST, port=settings.PORT
+)
+DCI_CS_URL = os.environ.get("DCI_CS_URL", DEFAULT_DCI_CS_URL)
+
+PARTNER = (
+    "partner",
+    "partner",
+)
 
 
 def get_url(endpoint, subresource=None):
-    return '%s/api/v1/%s' % (DCI_CS_URL, endpoint)
+    return "%s/api/v1/%s" % (DCI_CS_URL, endpoint)
 
 
-def get(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
+def get(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,), params={}):
     url = get_url(endpoint)
-    print('-------------')
-    print('GET %s' % url)
-    return requests.get(url, auth=user)
+    print("-------------")
+    print("GET %s" % url)
+    return requests.get(url, auth=user, params=params)
 
 
 def post(endpoint, data, user=(DCI_LOGIN, DCI_PASSWORD,)):
     url = get_url(endpoint)
-    print('-------------')
-    print('POST %s' % url)
+    print("-------------")
+    print("POST %s" % url)
     print(json.dumps(data, indent=2))
     return requests.post(url, json=data, auth=user)
 
 
 def associate_user_to_team(team_id, user_id, user=(DCI_LOGIN, DCI_PASSWORD,)):
-    url = '%s/api/v1/teams/%s/users/%s' % (DCI_CS_URL, team_id, user_id)
-    print('-------------')
-    print('POST %s' % url)
+    url = "%s/api/v1/teams/%s/users/%s" % (DCI_CS_URL, team_id, user_id)
+    print("-------------")
+    print("POST %s" % url)
     return requests.post(url, json={}, auth=user)
 
 
 def delete(endpoint, user=(DCI_LOGIN, DCI_PASSWORD,)):
     url = get_url(endpoint)
-    print('DELETE %s' % url)
+    print("DELETE %s" % url)
     return requests.delete(url, auth=user)
 
 
-def get_teams():
-    teams = {}
-    for team in get('teams').json()['teams']:
-        teams[team['name']] = team
-    return teams
-
-
-def create_team(name):
-    r = post('teams', {'name': name})
-    return r.json()['team']
+def get_or_create_team(name):
+    r = post("teams", {"name": name})
+    if r.status_code == 409:
+        return get("teams", params={"where": "name:" + name}).json()["teams"][0]
+    return r.json()["team"]
 
 
 def create_teams():
-    openstack = create_team('OpenStack')
-    ansible = create_team('Ansible')
-    rhel = create_team('RHEL')
-    ocp = create_team('OpenShift')
     return {
-        'OpenStack': openstack,
-        'Dell': create_team('Dell'),
-        'HP': create_team('HP'),
-        'Ansible': ansible,
-        'Cisco': create_team('Cisco'),
-        'RHEL': rhel,
-        'Veritas': create_team('Veritas'),
-        'OpenShift': ocp,
+        "admin": get_or_create_team("admin"),
+        "Red Hat": get_or_create_team("Red Hat"),
+        "partner": get_or_create_team("partner"),
+        "EPM": get_or_create_team("EPM"),
     }
 
 
-def create_user(fullname, team):
-    name = fullname.lower().replace(' ', '_')
-    r = post('users', {
-        'name': name,
-        'fullname': fullname,
-        'email': '%s@example.org' % name,
-        'team_id': team['id'],
-        'password': name
-    })
-    user_id = r.json()['user']['id']
-    team_id = team['id']
-    associate_user_to_team(team_id, user_id)
-    return r.json()['user']
+def get_or_create_user(fullname, team):
+    name = fullname.lower().replace(" ", "_")
+    r = post(
+        "users",
+        {
+            "name": name,
+            "fullname": fullname,
+            "email": "%s@example.org" % name,
+            "password": name,
+        },
+    )
+    if r.status_code == 409:
+        user = get("users", params={"where": "name:" + name}).json()["users"][0]
+        associate_user_to_team(team["id"], user["id"])
+        return user
+    user = r.json()["user"]
+    associate_user_to_team(team["id"], user["id"])
+    return user
 
 
 def create_users(teams):
     return {
-        'ansible_po': create_user('Ansible PO', teams['Ansible']),
-        'openstack_po': create_user('OpenStack PO', teams['OpenStack']),
-        'rhel_po': create_user('RHEL PO', teams['RHEL']),
-        'rhel_user': create_user('user RHEL', teams['RHEL']),
-        'user_cisco': create_user('User Cisco', teams['Cisco']),
-        'user_hp': create_user('User HP', teams['HP']),
-        'user_dell': create_user('User Dell', teams['Dell']),
-        'user_veritas': create_user('User Veritas', teams['Veritas']),
+        "dci": get_or_create_user("dci", teams["Red Hat"]),
+        "partner": get_or_create_user("partner", teams["partner"]),
+        "epm": get_or_create_user("EPM", teams["EPM"]),
     }
 
 
-def create_product(product):
-    r = post('products', {
-        'name': product,
-        'label': product.upper(),
-        'description': 'description for %s' % product
-    })
-    return r.json()['product']
+def get_or_create_product(product):
+    r = post(
+        "products",
+        {
+            "name": product,
+            "label": product.upper(),
+            "description": "description for %s" % product,
+        },
+    )
+    if r.status_code == 409:
+        return get("products", params={"where": "name:" + product}).json()["products"][
+            0
+        ]
+    return r.json()["product"]
 
 
 def create_products(teams):
     return {
-        'OpenStack': create_product('OpenStack'),
-        'Ansible': create_product('Ansible'),
-        'RHEL': create_product('RHEL'),
-        'OCP': create_product('OCP'),
+        "OpenStack": get_or_create_product("OpenStack"),
+        "RHEL": get_or_create_product("RHEL"),
+        "OCP": get_or_create_product("OCP"),
     }
 
 
-def create_topic(name, component_types, product, next_topic=None):
-    topic = {'name': name, 'component_types': component_types,
-             'product_id': product['id']}
-    if next_topic:
-        topic['next_topic_id'] = next_topic['id']
-    r = post('topics', topic)
-    return r.json()['topic']
+def get_or_create_topic(name, component_types, product, next_topic=None):
+    r = post(
+        "topics",
+        {
+            "name": name,
+            "component_types": component_types,
+            "product_id": product["id"],
+            "export_control": True,
+        },
+    )
+    if r.status_code == 409:
+        return get("topics", params={"where": "name:" + name}).json()["topics"][0]
+    return r.json()["topic"]
 
 
 def create_topics(products):
-    openstack = products['OpenStack']
-    ansible = products['Ansible']
-    rhel = products['RHEL']
-    ocp = products['OCP']
+    openstack = products["OpenStack"]
+    rhel = products["RHEL"]
+    ocp = products["OCP"]
 
-    osp16 = create_topic('OSP16', ['puddle'], openstack)
-    osp15 = create_topic('OSP15', ['puddle'], openstack, osp16)
-    osp14 = create_topic('OSP14', ['puddle'], openstack, osp15)
-    osp13 = create_topic('OSP13', ['puddle'], openstack, osp14)
-    osp12 = create_topic('OSP12', ['puddle'], openstack, osp13)
-    osp11 = create_topic('OSP11', ['puddle'], openstack, osp12)
-    osp10 = create_topic('OSP10', ['puddle'], openstack, osp11)
-    osp9 = create_topic('OSP9', ['puddle'], openstack, osp10)
-    osp8 = create_topic('OSP8', ['puddle'], openstack, osp9)
+    osp16 = get_or_create_topic("OSP16", ["puddle"], openstack)
+    osp13 = get_or_create_topic("OSP13", ["puddle"], openstack)
 
-    rdorocky = create_topic('RDO-Rocky', ['snapshot_rdo'], openstack)
-    rdoqueens = create_topic('RDO-Queens', ['snapshot_rdo'], openstack, rdorocky)
-    rdopike = create_topic('RDO-Pike', ['snapshot_rdo'], openstack, rdoqueens)
-    rdoocata = create_topic('RDO-Ocata', ['snapshot_rdo'], openstack, rdopike)
-    rdonewton = create_topic('RDO-Newton', ['snapshot_rdo'], openstack, rdoocata)
+    rhel8milestone = get_or_create_topic("RHEL-8-milestone", ["Compose"], rhel)
+    rhel8nightly = get_or_create_topic("RHEL-8-nightly", ["Compose"], rhel)
+    rhel82milestone = get_or_create_topic("RHEL-8.2-milestone", ["Compose"], rhel)
 
-    ansible_dev = create_topic('ansible-devel', ['snapshot_ansible'], ansible)
-    ansible_24 = create_topic('ansible-2.4', ['snapshot_ansible'], ansible, ansible_dev)
-    ansible_27 = create_topic('Ansible-2.7', ['snapshot_ansible'], ansible)
-
-    rhel8 = create_topic('RHEL-8', ['Compose'], rhel)
-    rhel7 = create_topic('RHEL-7', ['Compose'], rhel, rhel8)
-    rhel82 = create_topic('RHEL-8.2', ['Compose'], rhel)
-    rhel81 = create_topic('RHEL-8.1', ['Compose'], rhel, rhel82)
-    rhel80 = create_topic('RHEL-8.0', ['Compose'], rhel, rhel81)
-    rhel78 = create_topic('RHEL-7.8', ['Compose'], rhel, rhel8)
-    rhel77 = create_topic('RHEL-7.7', ['Compose'], rhel, rhel78)
-    rhel76 = create_topic('RHEL-7.6', ['Compose'], rhel, rhel77)
-
-    ocp40 = create_topic('OCP-4.0', ['puddle_ocp'], ocp)
-    ocp311 = create_topic('OCP-3.11', ['puddle_ocp'], ocp)
-    ocp310 = create_topic('OCP-3.10', ['puddle_ocp'], ocp, ocp311)
+    ocp43 = get_or_create_topic("OCP-4.3", ["puddle_ocp"], ocp)
+    ocp44 = get_or_create_topic("OCP-4.4", ["puddle_ocp"], ocp)
 
     return {
-        'OSP16': osp16,
-        'OSP15': osp15,
-        'OSP14': osp14,
-        'OSP13': osp13,
-        'OSP12': osp12,
-        'OSP11': osp11,
-        'OSP10': osp10,
-        'OSP9': osp9,
-        'OSP8': osp8,
-        'RDOROCKY': rdorocky,
-        'RDOQUEENS': rdoqueens,
-        'RDOPIKE': rdopike,
-        'RDOOCATA': rdoocata,
-        'RDONEWTON': rdonewton,
-        'ansible-devel': ansible_dev,
-        'ansible-2.4': ansible_24,
-        'RHEL-8': rhel8,
-        'RHEL-7': rhel7,
-        'RHEL-7.6': rhel76,
-        'RHEL-7.7': rhel77,
-        'RHEL-7.8': rhel78,
-        'RHEL-8.0': rhel80,
-        'RHEL-8.1': rhel81,
-        'RHEL-8.2': rhel82,
-        'OCP-4.0': ocp40,
-        'OCP-3.11': ocp311,
-        'OCP-3.10': ocp310,
+        "OSP16": osp16,
+        "OSP13": osp13,
+        "RHEL-8-milestone": rhel8milestone,
+        "RHEL-8-nightly": rhel8nightly,
+        "RHEL-8.2-milestone": rhel82milestone,
+        "OCP-4.3": ocp43,
+        "OCP-4.4": ocp44,
     }
 
 
-def associate_topics_to_teams(topics, teams):
-    for topic, topic_value in topics.items():
+def associate_products_to_teams(products, teams):
+    for product, product_value in products.items():
         for team, team_value in teams.items():
-            post('topics/%s/teams' % topic_value['id'], {'team_id': team_value['id']})
+            post(
+                "products/%s/teams" % product_value["id"], {"team_id": team_value["id"]}
+            )
 
 
-def create_component(name, topic):
-    r = post('components', {
-        'name': name,
-        'type': topic['component_types'][0],
-        'topic_id': topic['id']
-    })
-    print(r.json())
-    return r.json()['component']
+def get_or_create_component(name, topic):
+    r = post(
+        "components",
+        {"name": name, "type": topic["component_types"][0], "topic_id": topic["id"]},
+    )
+    if r.status_code == 409:
+        return get(
+            "topics/%s/components" % topic["id"], params={"where": "name:" + name}
+        ).json()["components"][0]
+    return r.json()["component"]
 
 
-def create_components(topics):
-    components = {}
+def add_components_to_topics(topics):
     for component in [
-        {'name': 'RH7-RHOS-10.0 2016-10-28.1', 'topic_name': 'OSP10'},
-        {'name': 'RH7-RHOS-10.0 2016-11-12.1', 'topic_name': 'OSP10'},
-        {'name': 'RH7-RHOS-11.0 2016-11-11.1', 'topic_name': 'OSP11'},
-        {'name': 'RH7-RHOS-12.0 2016-11-12.1', 'topic_name': 'OSP12'},
-        {'name': 'Ansible devel', 'topic_name': 'ansible-devel'},
-        {'name': 'Ansible 2.4', 'topic_name': 'ansible-2.4'},
-        {'name': 'RHEL-7.6-20180513.n.0', 'topic_name': 'RHEL-7'},
-        {'name': 'RHEL-8.0-20180503.n.2', 'topic_name': 'RHEL-8'},
+        {"name": "RHEL-8.4.0-20201013.n.1", "topic_name": "RHEL-8-nightly"},
+        {"name": "RHEL-8.2.0-20200404.0", "topic_name": "RHEL-8-milestone"},
+        {"name": "RHEL-8.2.0-20200404.0", "topic_name": "RHEL-8.2-milestone"},
     ]:
-        c = create_component(component['name'], topics[component['topic_name']])
-        components[c['name']] = c
-    return components
+        topic_name = component["topic_name"]
+        c = get_or_create_component(component["name"], topics[topic_name])
+        topics[topic_name]["components_ids"] = [c["id"]]
+    return topics
+
+
+def get_or_create_remoteci(name, team):
+    r = post("remotecis", {"name": name, "team_id": team["id"]})
+    if r.status_code == 409:
+        return get("remotecis", params={"where": "name:" + name}).json()["remotecis"][0]
+    return r.json()["remoteci"]
 
 
 def create_remotecis(teams):
     remotecis = {}
-    for team, value in teams.items():
-        name = 'Remoteci %s' % team
-        r = post('remotecis', {'name': name, 'team_id': value['id']})
-        remotecis[team] = r.json()['remoteci']
+    for team_name, team in teams.items():
+        remoteci_name = "Remoteci %s" % team_name
+        remoteci = get_or_create_remoteci(remoteci_name, team)
+        remotecis[team_name] = remoteci
     return remotecis
 
 
-def create_jobs(topics, remotecis, teams, components):
+def create_jobs(topics, remotecis, teams):
     jobs = [
         {
-            'team_id': teams['Dell']['id'],
-            'topic_id': topics['OSP10']['id'],
-            'components': [components['RH7-RHOS-10.0 2016-10-28.1']['id']],
-            'tag': ['FV1', 'debug']
+            "team_id": teams["partner"]["id"],
+            "topic_id": topics["RHEL-8.2-milestone"]["id"],
+            "components": topics["RHEL-8.2-milestone"]["components_ids"],
+            "tags": ["releng", "rhel"],
+            "comment": "releng job comment",
         },
         {
-            'team_id': teams['Dell']['id'],
-            'topic_id': topics['OSP10']['id'],
-            'components': [components['RH7-RHOS-10.0 2016-11-12.1']['id']],
-            'tag': ['FV2', 'kernelv4']
-        },
-        {
-            'team_id': teams['Dell']['id'],
-            'topic_id': topics['OSP11']['id'],
-            'components': [components['RH7-RHOS-11.0 2016-11-11.1']['id']],
-            'tag': ['FV3', 'PPC']
-        },
-        {
-            'team_id': teams['Dell']['id'],
-            'topic_id': topics['OSP12']['id'],
-            'components': [components['RH7-RHOS-12.0 2016-11-12.1']['id']],
-            'tag': ['FV4', 'debug']
+            "team_id": teams["partner"]["id"],
+            "topic_id": topics["RHEL-8-nightly"]["id"],
+            "components": topics["RHEL-8-nightly"]["components_ids"],
+            "tags": ["nightly", "rhel"],
         },
     ]
-
-    client_id = remotecis['Dell']['id']
-    api_secret = remotecis['Dell']['api_secret']
+    client_id = remotecis["partner"]["id"]
+    api_secret = remotecis["partner"]["api_secret"]
     for job in jobs:
-        auth_request = AuthRequest(method="POST", endpoint='/api/v1/jobs',
-                                   payload=job,
-                                   headers={'content-type': 'application/json'})
+        auth_request = AuthRequest(
+            method="POST",
+            endpoint="/api/v1/jobs",
+            payload=job,
+            headers={"content-type": "application/json"},
+        )
         headers = Signature(request=auth_request).generate_headers(
-            'remoteci', client_id, api_secret)
-        r = requests.post('%s/api/v1/jobs' % DCI_CS_URL,
-                          headers=headers,
-                          json=job)
+            "remoteci", client_id, api_secret
+        )
+        r = requests.post("%s/api/v1/jobs" % DCI_CS_URL, headers=headers, json=job)
 
-        job_id = r.json()['job']['id']
-        for t in job['tag']:
-            post('jobs/%s/tags' % job_id,
-                 data={'name': t})
-
-    return get('jobs', ('user_dell', 'user_dell',)).json()['jobs']
+    return get("jobs", PARTNER).json()["jobs"]
 
 
 def create_job_states(jobs):
     jobstates = [
-        {'job_id': jobs[0]['id'], 'status': 'running'},
-        {'job_id': jobs[1]['id'], 'status': 'error'},
-        {'job_id': jobs[2]['id'], 'status': 'failure'},
-        {'job_id': jobs[3]['id'], 'status': 'success'},
+        {"job_id": jobs[0]["id"], "status": "running"},
+        {"job_id": jobs[0]["id"], "status": "success"},
+        {"job_id": jobs[1]["id"], "status": "running"},
+        {"job_id": jobs[1]["id"], "status": "error"},
     ]
     for jobstate in jobstates:
-        post('jobstates', jobstate, ('user_dell', 'user_dell',))
+        post("jobstates", jobstate, PARTNER)
 
 
-def create_file(job_id, file_name, file_path, user, content_type='application/junit'):
+def create_file(job_id, file_name, file_path, user, content_type="application/junit"):
     file_path = os.path.join(file_path)
     data = open(file_path).read()
-    headers = {'DCI-JOB-ID': job_id, 'DCI-NAME': file_name, 'DCI-MIME': content_type,
-               'Content-Disposition': 'attachment; filename=%s' % os.path.basename(file_path),
-               'Content-Type': content_type}
+    headers = {
+        "DCI-JOB-ID": job_id,
+        "DCI-NAME": file_name,
+        "DCI-MIME": content_type,
+        "Content-Disposition": "attachment; filename=%s" % os.path.basename(file_path),
+        "Content-Type": content_type,
+    }
     return requests.post(
-        '%s/api/v1/files' % DCI_CS_URL,
-        data=data,
-        headers=headers,
-        auth=user
+        "%s/api/v1/files" % DCI_CS_URL, data=data, headers=headers, auth=user
     )
 
 
 def create_files(jobs):
-    user_dell = ('user_dell', 'user_dell',)
-    create_file(jobs[3]['id'], 'Tempest', 'tests/data/tempest-results.xml', user_dell)
-    create_file(jobs[2]['id'], 'Tempest', 'tests/data/tempest-results.xml', user_dell)
-    create_file(jobs[3]['id'], 'Rally', 'tests/data/rally-results.xml', user_dell)
-    create_file(jobs[2]['id'], 'Rally',
-                'tests/data/rally-results.regression.xml', user_dell)
-    create_file(jobs[2]['id'], 'certification.xml.gz', 'tests/data/certification.xml.tar.gz', user_dell,
-                'application/x-compressed')
+    create_file(jobs[0]["id"], "Tempest", "tests/data/tempest-results.xml", PARTNER)
+    create_file(jobs[0]["id"], "Rally", "tests/data/rally-results.xml", PARTNER)
+    create_file(
+        jobs[0]["id"], "Rally", "tests/data/rally-results.regression.xml", PARTNER
+    )
+    create_file(
+        jobs[0]["id"],
+        "certification.xml.gz",
+        "tests/data/certification.xml.tar.gz",
+        PARTNER,
+        "application/x-compressed",
+    )
 
 
 def wait_db_ready():
     while True:
         try:
-            r = get('identity')
+            r = get("identity")
             if r.status_code == 200:
                 break
         except requests.exceptions.ConnectionError:
@@ -359,14 +316,14 @@ def main():
     teams = create_teams()
     create_users(teams)
     products = create_products(teams)
+    associate_products_to_teams(products, teams)
     topics = create_topics(products)
-    associate_topics_to_teams(topics, teams)
-    components = create_components(topics)
+    topics = add_components_to_topics(topics)
     remotecis = create_remotecis(teams)
-    jobs = create_jobs(topics, remotecis, teams, components)
+    jobs = create_jobs(topics, remotecis, teams)
     create_job_states(jobs)
     create_files(jobs)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
