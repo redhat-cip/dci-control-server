@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "646e3f7a_f3f7ec23",
+        "filename": "dci/api/v1/jobstates.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 73,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2020-10-20T19:19:15Z",
+      "side": 1,
+      "message": "enumerate is not needed, we don\u0027t use i ?",
+      "revId": "9ceaa3006ed402b54b33fba19e72808c63db70e3",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
