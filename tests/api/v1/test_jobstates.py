@@ -206,18 +206,24 @@ def test_delete_jobstate_as_user(mocked_disp, user, job_user_id):
     # assert jobstate_delete.status_code == 401
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.send_events")
 def test_umb_notification_has_testcases(mocked_disp, user, job_user, cki_test_file):
     data = {"job_id": job_user["id"], "comment": "", "status": "success"}
     headers = {"Content-Type": "application/json"}
     user.post("/api/v1/jobstates", headers=headers, data=data)
-    events, _ = mocked_disp.call_args
+    calls, _ = mocked_disp.call_args
+    events = calls[0]
     event = events[0]
-    assert event["tags"] == []
-    results = event["results"]
-    assert len(results) == 1
-    assert results[0]["name"] == "cki-result"
-    assert results[0]["testcases"] == [
+    assert event["type"] == "job_finished"
+    assert event["event"] == "job_finished"
+    job = event["job"]
+    assert job["tags"] == []
+    assert job["id"] == job_user["id"]
+    assert job["status"] == "success"
+    assert len(job["components"]) == 3
+    assert len(job["results"]) == 1
+    result = job["results"][0]
+    assert result["testcases"] == [
         {
             "classname": "LTP",
             "message": "",

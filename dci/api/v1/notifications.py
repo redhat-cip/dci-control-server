@@ -13,9 +13,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
-
+import json
 import flask
 from dci.db import models
+from dci.common import utils
 from sqlalchemy import sql
 
 
@@ -47,20 +48,10 @@ https://www.distributed-ci.io/jobs/{job_id}
 
 
 def build_job_finished_event(job):
-    components = [
-        {"id": str(c["id"]), "name": c["name"], "type": c["type"], "url": c["url"]}
-        for c in job["components"]
-    ]
-    results = [{"name": r["name"]} for r in job["results"]]
     return {
         "event": "job_finished",
         "type": "job_finished",
-        "job": {
-            "id": str(job["id"]),
-            "status": job["status"],
-            "components": components,
-            "results": results,
-        }
+        "job": json.loads(json.dumps(job, cls=utils.JSONEncoder))
     }
 
 
@@ -120,6 +111,10 @@ def get_emails(remoteci_id):
     return [email['email'] for email in emails]
 
 
+def send_events(events):
+    flask.g.sender.send_json(events)
+
+
 def dispatcher(job):
     events = []
     emails = get_emails(job['remoteci_id'])
@@ -137,4 +132,4 @@ def dispatcher(job):
         events.append(job_finished)
 
     if events:
-        flask.g.sender.send_json(events)
+        send_events(events)
