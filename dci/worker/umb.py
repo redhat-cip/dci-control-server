@@ -58,7 +58,17 @@ def _build_generic_message(job, component, result, now):
     }
 
 
-def _build_cki_message(job, result):
+def _get_kernel_version(component):
+    if "tags" not in component:
+        return None
+    kernel_version = None
+    for tag in component["tags"]:
+        if "kernel:" in tag:
+            kernel_version = tag.replace("kernel:", "")
+    return kernel_version
+
+
+def _build_cki_message(job, component, result):
     job_url = "https://www.distributed-ci.io/jobs/%s/jobStates" % str(job["id"])
     target = "topic://VirtualTopic.eng.dci.cki"
     architecture = _get_architecture(job)
@@ -80,6 +90,14 @@ def _build_cki_message(job, result):
                 "summarized_result": "",
                 "team_email": "distributed-ci@redhat.com",
                 "team_name": "DCI",
+                "kernel_version": _get_kernel_version(component),
+                "artifact": {
+                    "compose_type": "nightly"
+                    if "nightly" in component["url"]
+                    else "rel-eng",
+                    "id": component["name"],
+                    "type": "productmd-compose",
+                },
             }
         ),
     }
@@ -94,7 +112,7 @@ def build_umb_messages(event, now=datetime.datetime.utcnow()):
             continue
         for result in job["results"]:
             if "cki-results" == result["name"].lower():
-                messages.append(_build_cki_message(job, result))
+                messages.append(_build_cki_message(job, component, result))
             messages.append(_build_generic_message(job, component, result, now))
     return messages
 
