@@ -202,7 +202,7 @@ def test_cki_message():
             "components": [
                 {
                     "name": "RHEL-8.2.0-20200404.0",
-                    "tags": [],
+                    "tags": ["kernel:4.18.0-240.3.el8"],
                     "url": "http://download-node-02.eng.bos.redhat.com/rhel-8/rel-eng/RHEL-8/RHEL-8.2.0-20200404.0",  # noqa
                     "type": "Compose",
                     "created_at": datetime.datetime(2020, 10, 20, 7, 56, 17, 93452),
@@ -232,6 +232,12 @@ def test_cki_message():
         u"summarized_result": u"",
         u"team_email": u"distributed-ci@redhat.com",
         u"team_name": u"DCI",
+        u"kernel_version": u"4.18.0-240.3.el8",
+        u"artifact": {
+            u"compose_type": u"rel-eng",
+            u"id": u"RHEL-8.2.0-20200404.0",
+            u"type": u"productmd-compose",
+        },
         "results": [
             {
                 u"test_description": u"LTP",
