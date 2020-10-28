@@ -62,7 +62,7 @@ class Properties(object):
 
 def _is_key_value_csv(validator, value, instance, schema):
     for element in instance.split(","):
-        if len(element.split(":")) != 2:
+        if len(element.split(":", 1)) != 2:
             yield ValidationError("'%s' is not a 'key value csv'" % instance)
 
 
