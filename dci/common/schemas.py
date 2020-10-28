@@ -243,6 +243,13 @@ upgrade_job_schema = {
     "additionalProperties": False,
 }
 
+add_component_schema = {
+    "type": "object",
+    "properties": {"id": Properties.uuid},
+    "required": ["id"],
+    "additionalProperties": False,
+}
+
 ###############################################################################
 #                                                                             #
 #                                 Tag schema                                  #

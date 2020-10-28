@@ -93,6 +93,25 @@ def test_create_jobs_with_team_components(user, remoteci_context, components_use
     assert set(job_components_ids) == set(components_user_ids)
 
 
+def test_add_component_to_job(user, team_user_id, topic_user_id, job_user_id):
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'team_id': team_user_id,
+        'topic_id': topic_user_id,
+        'state': 'active'}
+    pc = user.post('/api/v1/components', data=data).data
+    pc_id = pc['component']['id']
+    user.post('/api/v1/jobs/%s/components' % job_user_id, data={'id': pc_id})
+    cmpts = user.get('/api/v1/jobs/%s/components' % job_user_id).data['components']
+    cmpt_found = False
+    for c in cmpts:
+        if c['id'] == pc_id:
+            cmpt_found = True
+    assert cmpt_found
+
+
 def test_create_jobs_bad_previous_job_id(remoteci_context,
                                          components_user_ids,
                                          topic_user_id):
