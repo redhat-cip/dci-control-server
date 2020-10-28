@@ -86,6 +86,11 @@ def create_components(user):
     check_json_is_valid(create_component_schema, values)
     values.update(v1_utils.common_values_dict())
 
+    job_id = None
+    if "job_id" in values:
+        job_id = values.pop("job_id")
+        v1_utils.verify_existence_and_get(job_id, models.JOBS)
+
     if "team_id" in values:
         if user.is_not_in_team(values['team_id']):
             raise dci_exc.Unauthorized()
@@ -93,12 +98,19 @@ def create_components(user):
         if user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
             raise dci_exc.Unauthorized()
 
-    query = _TABLE.insert().values(**values)
+    with flask.g.db_conn.begin():
 
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
+        query = _TABLE.insert().values(**values)
+        try:
+            flask.g.db_conn.execute(query)
+        except sa_exc.IntegrityError:
+            raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
+
+        if job_id:
+            job_component_to_insert = [{'job_id': job_id,
+                                        'component_id': values['id']}]
+            flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
+                                    job_component_to_insert)
 
     result = json.dumps({'component': values})
     return flask.Response(result, 201, content_type='application/json')
