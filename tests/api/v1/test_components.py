@@ -774,6 +774,25 @@ def test_get_all_teams_components(user, team_user_id, topic_user_id):
     assert cmpts['components'][0]['id'] == pc_id
 
 
+def test_get_jobs_teams_components(user, team_user_id, topic_user_id, job_user_id):
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'team_id': team_user_id,
+        'topic_id': topic_user_id,
+        'job_id': job_user_id,
+        'state': 'active'}
+    pc = user.post('/api/v1/components', data=data).data
+    pc_id = pc['component']['id']
+    cmpts = user.get('/api/v1/jobs/%s/components' % job_user_id).data['components']
+    cmpt_found = False
+    for c in cmpts:
+        if c['id'] == pc_id:
+            cmpt_found = True
+    assert cmpt_found
+
+
 def test_update_teams_components(user, team_user_id, topic_user_id):
     data = {
         'name': 'pname',
