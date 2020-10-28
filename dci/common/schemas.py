@@ -243,6 +243,13 @@ upgrade_job_schema = {
     "additionalProperties": False,
 }
 
+add_component_schema = {
+    "type": "object",
+    "properties": {"id": Properties.uuid},
+    "required": ["id"],
+    "additionalProperties": False,
+}
+
 ###############################################################################
 #                                                                             #
 #                                 Tag schema                                  #
@@ -438,7 +445,8 @@ create_component_properties = {
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "data": with_default(Properties.json, {}),
     "tags": with_default(Properties.array, []),
-    "released_at": Properties.isoformat_date
+    "released_at": Properties.isoformat_date,
+    "job_id": Properties.uuid
 }
 create_component_schema = {
     "type": "object",

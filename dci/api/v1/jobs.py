@@ -34,6 +34,7 @@ from dci.common.schemas import (
     update_job_schema,
     upgrade_job_schema,
     schedule_job_schema,
+    add_component_schema,
     check_and_get_args
 )
 from dci.common import utils
@@ -388,6 +389,20 @@ def get_components_from_job(user, job_id):
     job, nb_rows = _get_job(user, job_id, ['components'])
     return flask.jsonify({'components': job['components'],
                           '_meta': {'count': nb_rows}})
+
+
+@api.route('/jobs/<uuid:job_id>/components', methods=['POST'])
+@decorators.login_required
+def add_component_to_job(user, job_id):
+    values = flask.request.json
+    check_json_is_valid(add_component_schema, values)
+    v1_utils.verify_existence_and_get(job_id, models.JOBS)
+    v1_utils.verify_existence_and_get(values['id'], models.COMPONENTS)
+    job_component_to_insert = [{'job_id': job_id,
+                                'component_id': values['id']}]
+    flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
+                            job_component_to_insert)
+    return flask.Response(None, 201, content_type='application/json')
 
 
 @api.route('/jobs/<uuid:job_id>/jobstates', methods=['GET'])
