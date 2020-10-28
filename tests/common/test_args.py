@@ -64,7 +64,7 @@ def test_args_invalid_limit_equal_to_zero():
 
 def test_args_invalid_where_field():
     with pytest.raises(DCIException):
-        check_json_is_valid(args_schema, {"where": "f1:v1;f2:v2"})
+        check_json_is_valid(args_schema, {"where": "f1:"})
 
 
 def test_parse_args():

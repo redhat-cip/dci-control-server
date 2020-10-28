@@ -69,7 +69,7 @@ def test_filter_job_by_tag(user, remoteci_context, components_user_ids,
     job = remoteci_context.post('/api/v1/jobs', data=data)
     job_id_1 = job.data['job']['id']
     remoteci_context.post('/api/v1/jobs/%s/tags' % job_id_1,
-                          data={'name': 'tag_1'})
+                          data={'name': 'tag_1:v1'})
     remoteci_context.post('/api/v1/jobs/%s/tags' % job_id_1,
                           data={'name': 'debug'})
 
@@ -81,12 +81,12 @@ def test_filter_job_by_tag(user, remoteci_context, components_user_ids,
     remoteci_context.post('/api/v1/jobs/%s/tags' % job_id_2,
                           data={'name': 'debug'})
 
-    res = user.get('/api/v1/jobs?where=tags:debug,tags:tag_1')
+    res = user.get('/api/v1/jobs?where=tags:debug,tags:tag_1:v1')
     assert len(res.data['jobs']) == 1
 
-    res = user.get('/api/v1/jobs?where=tags:tag_1')
+    res = user.get('/api/v1/jobs?where=tags:tag_1:v1')
     assert len(res.data['jobs']) == 1
-    assert 'tag_1' in res.data['jobs'][0]['tags']
+    assert 'tag_1:v1' in res.data['jobs'][0]['tags']
     assert 'tag_2' not in res.data['jobs'][0]['tags']
 
     res = user.get('/api/v1/jobs?where=tags:debug')
