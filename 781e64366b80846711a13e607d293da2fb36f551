@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "0cf452d8_43b0f182",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 405,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2020-10-29T12:42:22Z",
+      "side": 1,
+      "message": "LGTM",
+      "revId": "781e64366b80846711a13e607d293da2fb36f551",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "baac63a2_bceaa51c",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 449,
+      "author": {
+        "id": 166
+      },
+      "writtenOn": "2020-10-29T12:42:22Z",
+      "side": 1,
+      "message": "ACK",
+      "revId": "781e64366b80846711a13e607d293da2fb36f551",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
