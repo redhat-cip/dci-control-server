@@ -19,6 +19,29 @@
     },
     {
       "key": {
+        "uuid": "6be31458_1c555075",
+        "filename": "dci/api/v1/jobs.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 405,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-10-29T16:12:13Z",
+      "side": 1,
+      "message": "dont you need to verify this job belong to the same user team ?",
+      "range": {
+        "startLine": 396,
+        "startChar": 0,
+        "endLine": 405,
+        "endChar": 69
+      },
+      "revId": "781e64366b80846711a13e607d293da2fb36f551",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "baac63a2_bceaa51c",
         "filename": "dci/common/schemas.py",
         "patchSetId": 3
@@ -30,6 +53,29 @@
       "writtenOn": "2020-10-29T12:42:22Z",
       "side": 1,
       "message": "ACK",
+      "revId": "781e64366b80846711a13e607d293da2fb36f551",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "f1ba02b9_ae8c2002",
+        "filename": "dci/common/schemas.py",
+        "patchSetId": 3
+      },
+      "lineNbr": 449,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2020-10-29T16:12:13Z",
+      "side": 1,
+      "message": "I think this one is not needed",
+      "range": {
+        "startLine": 449,
+        "startChar": 4,
+        "endLine": 449,
+        "endChar": 29
+      },
       "revId": "781e64366b80846711a13e607d293da2fb36f551",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
