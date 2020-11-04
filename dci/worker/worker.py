@@ -37,20 +37,20 @@ ioloop.install()
 
 context = zmq.Context()
 receiver = context.socket(zmq.PULL)
-receiver.bind('tcp://0.0.0.0:5557')
+receiver.bind("tcp://0.0.0.0:5557")
 stream = zmqstream.ZMQStream(receiver)
 
 
 def get_email_configuration():
 
     configuration = {
-        'server': os.getenv('DCI_EMAIL_SERVER', 'mail.distributed-ci.io'),
-        'port': os.getenv('DCI_EMAIL_SERVER_PORT', 587),
-        'account': os.getenv('DCI_EMAIL_ACCOUNT'),
-        'password': os.getenv('DCI_EMAIL_PASSWORD'),
+        "server": os.getenv("DCI_EMAIL_SERVER", "mail.distributed-ci.io"),
+        "port": os.getenv("DCI_EMAIL_SERVER_PORT", 587),
+        "account": os.getenv("DCI_EMAIL_ACCOUNT"),
+        "password": os.getenv("DCI_EMAIL_PASSWORD"),
     }
 
-    if not configuration['account'] or not configuration['password']:
+    if not configuration["account"] or not configuration["password"]:
         return None
 
     return configuration
@@ -59,13 +59,16 @@ def get_email_configuration():
 def get_dlrn_configuration():
 
     configuration = {
-        'server': os.getenv('DCI_DLRN_SERVER_URL', 'trunk.rdoproject.org'),
-        'login': os.getenv('DCI_DLRN_LOGIN'),
-        'password': os.getenv('DCI_DLRN_PASSWORD'),
+        "server": os.getenv("DCI_DLRN_SERVER_URL", "trunk.rdoproject.org"),
+        "login": os.getenv("DCI_DLRN_LOGIN"),
+        "password": os.getenv("DCI_DLRN_PASSWORD"),
     }
 
-    if not configuration['login'] or not configuration['password'] or \
-       not configuration['server']:
+    if (
+        not configuration["login"]
+        or not configuration["password"]
+        or not configuration["server"]
+    ):
         raise
 
     return configuration
@@ -74,54 +77,59 @@ def get_dlrn_configuration():
 def dlrn_publish(event):
     dlrn_config = get_dlrn_configuration()
 
-    if event['dlrn']['commit_branch'] == 'master':
-        dlrn_config['endpoint'] = 'api-centos-master-uc'
+    if event["dlrn"]["commit_branch"] == "master":
+        dlrn_config["endpoint"] = "api-centos-master-uc"
     else:
-        dlrn_config['endpoint'] = \
-            'api-centos-%s' % event['dlrn']['commit_branch'].split('/')[1]
+        dlrn_config["endpoint"] = (
+            "api-centos-%s" % event["dlrn"]["commit_branch"].split("/")[1]
+        )
 
     payload = {
-        'job_id': 'DCI-%s' % event['topic_name'],
-        'commit_hash': event['dlrn']['commit_hash'],
-        'distro_hash': event['dlrn']['distro_hash'],
-        'url': (
-            'https://www.distributed-ci.io/jobs/%s/jobStates' % event['job_id']
-        ),
-        'timestamp': int(time.time()),
-        'success': 'true' if event['status'] == 'success' else 'false'
+        "job_id": "DCI-%s" % event["topic_name"],
+        "commit_hash": event["dlrn"]["commit_hash"],
+        "distro_hash": event["dlrn"]["distro_hash"],
+        "url": ("https://www.distributed-ci.io/jobs/%s/jobStates" % event["job_id"]),
+        "timestamp": int(time.time()),
+        "success": "true" if event["status"] == "success" else "false",
     }
 
-    requests.post('https://%s/%s/api/report_result' %
-                  (dlrn_config['server'], dlrn_config['endpoint']),
-                  auth=(dlrn_config['login'], dlrn_config['password']),
-                  data=json.dumps(payload),
-                  headers={'Content-type': 'application/json'})
+    requests.post(
+        "https://%s/%s/api/report_result"
+        % (dlrn_config["server"], dlrn_config["endpoint"]),
+        auth=(dlrn_config["login"], dlrn_config["password"]),
+        data=json.dumps(payload),
+        headers={"Content-type": "application/json"},
+    )
 
 
 def send_mail(mesg):
     email_configuration = get_email_configuration()
     if email_configuration:
-        subject = '[DCI Status][%s][%s][%s]' % (
-            mesg['topic_name'], mesg['remoteci_name'], mesg['status'])
+        subject = "[DCI Status][%s][%s][%s]" % (
+            mesg["topic_name"],
+            mesg["remoteci_name"],
+            mesg["status"],
+        )
         message = notifications.format_mail_message(mesg)
         email = MIMEText(message)
-        email["From"] = 'Distributed-CI Notification <%s>' % \
-            email_configuration['account']
+        email["From"] = (
+            "Distributed-CI Notification <%s>" % email_configuration["account"]
+        )
         email["subject"] = subject
-        email['DCI-remoteci'] = mesg['remoteci_id']
-        email['DCI-topic'] = mesg['topic_id']
+        email["DCI-remoteci"] = mesg["remoteci_id"]
+        email["DCI-topic"] = mesg["topic_id"]
 
-        server = smtplib.SMTP(email_configuration['server'],
-                              email_configuration['port'])
+        server = smtplib.SMTP(
+            email_configuration["server"], email_configuration["port"]
+        )
         server.starttls()
-        server.login(email_configuration['account'],
-                     email_configuration['password'])
-        for contact in mesg['emails']:
+        server.login(email_configuration["account"], email_configuration["password"])
+        for contact in mesg["emails"]:
             # email.message are not classic dict, a new affectation does
             # not overwrite the previous one.
-            del email['To']
-            email['To'] = contact
-            server.sendmail(email['From'], email['To'], email.as_string())
+            del email["To"]
+            email["To"] = contact
+            server.sendmail(email["From"], email["To"], email.as_string())
         server.quit()
 
 
@@ -131,11 +139,11 @@ def loop(msg):
         events = json.loads(msg[0])
         for event in events:
             try:
-                if event['event'] == 'notification':
+                if event["event"] == "notification":
                     send_mail(event)
-                elif event['event'] == 'dlrn_publish':
+                elif event["event"] == "dlrn_publish":
                     dlrn_publish(event)
-                elif event['event'] == 'job_finished':
+                elif event["event"] == "job_finished":
                     send_event_on_umb(event)
             except Exception:
                 logger.exception(
