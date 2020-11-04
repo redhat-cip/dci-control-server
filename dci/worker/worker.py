@@ -137,18 +137,27 @@ def loop(msg):
 
     try:
         events = json.loads(msg[0])
+        logger.info("Worker received %d events." % len(events))
         for event in events:
             try:
+                logger.info("Start processing event type %s" % event['event'])
+                time_start = time.time()
                 if event["event"] == "notification":
                     send_mail(event)
                 elif event["event"] == "dlrn_publish":
                     dlrn_publish(event)
                 elif event["event"] == "job_finished":
                     send_event_on_umb(event)
+                time_end = time.time()
+                logger.info(
+                    "Event %s returned in %.2f seconds"
+                    % (event["event"], time_end - time_start)
+                )
             except Exception:
                 logger.exception(
                     msg="An error has occurred while processing an event: %s" % event
                 )
+        logger.info("Worker processed all received events.")
     except Exception:
         logger.exception(msg="An error has occurred processing events.")
 
