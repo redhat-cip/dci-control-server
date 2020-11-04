@@ -100,11 +100,15 @@ def _build_cki_message(job, component, result):
 
 
 def build_umb_messages(event, now=datetime.datetime.utcnow()):
-    logger.debug(event)
+    logger.debug("Received event to send on UMB: %s" % event)
     messages = []
     job = event["job"]
     for component in job["components"]:
         if component["type"].lower() != "compose":
+            logger.debug(
+                'Ignoring event of type "%s". Only processing events of type "compose".'
+                % component["type"]
+            )
             continue
         for result in job["results"]:
             if "cki-results" == result["name"].lower():
