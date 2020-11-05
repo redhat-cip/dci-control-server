@@ -106,7 +106,6 @@ def get_or_create_user(fullname, team):
 
 def create_users(teams):
     return {
-        "dci": get_or_create_user("dci", teams["Red Hat"]),
         "partner": get_or_create_user("partner", teams["partner"]),
         "epm": get_or_create_user("EPM", teams["EPM"]),
     }
