@@ -103,7 +103,10 @@ def test_add_component_to_job(user, team_user_id, topic_user_id, job_user_id):
         'state': 'active'}
     pc = user.post('/api/v1/components', data=data).data
     pc_id = pc['component']['id']
-    user.post('/api/v1/jobs/%s/components' % job_user_id, data={'id': pc_id})
+    p1 = user.post('/api/v1/jobs/%s/components' % job_user_id, data={'id': pc_id})
+    assert p1.status_code == 201
+    p2 = user.post('/api/v1/jobs/%s/components' % job_user_id, data={'id': pc_id})
+    assert p2.status_code == 409
     cmpts = user.get('/api/v1/jobs/%s/components' % job_user_id).data['components']
     cmpt_found = False
     for c in cmpts:

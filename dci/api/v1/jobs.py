@@ -18,6 +18,7 @@ import datetime
 
 import flask
 from flask import json
+from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 
 from dci.api.v1 import api
@@ -402,8 +403,12 @@ def add_component_to_job(user, job_id):
         raise dci_exc.Unauthorized()
     job_component_to_insert = [{'job_id': job_id,
                                 'component_id': values['id']}]
-    flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
-                            job_component_to_insert)
+    try:
+        flask.g.db_conn.execute(
+            models.JOIN_JOBS_COMPONENTS.insert(),
+            job_component_to_insert)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCIException("Unable to associate component %s to job %s" % (values['id'], job_id), status_code=409)  # noqa
     return flask.Response(None, 201, content_type='application/json')
 
 
