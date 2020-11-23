@@ -360,7 +360,7 @@ def get_all_jobs(user, topic_id=None):
     args = check_and_get_args(flask.request.args.to_dict())
 
     # build the query thanks to the QueryBuilder class
-    query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS)
+    query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS, ignore_columns=['data'])
 
     # add extra conditions for filtering
 

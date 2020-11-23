@@ -42,7 +42,8 @@ def test_create_jobs(remoteci_context, components_user_ids, job_user_id,
         'comment': 'kikoolol',
         'components': components_user_ids,
         'previous_job_id': job_user_id,
-        'topic_id': topic_user_id
+        'topic_id': topic_user_id,
+        'data': {'config': 'config'}
     }
     job = remoteci_context.post('/api/v1/jobs', data=data)
     job_id = job.data['job']['id']
@@ -55,6 +56,7 @@ def test_create_jobs(remoteci_context, components_user_ids, job_user_id,
     assert job.data['job']['comment'] == 'kikoolol'
     assert job.data['job']['previous_job_id'] == job_user_id
     assert job.data['job']['team_id'] == team_user_id
+    assert job.data['job']['data'] == {'config': 'config'}
 
 
 def test_create_jobs_with_team_components(user, remoteci_context, components_user_ids, job_user_id,
@@ -152,6 +154,9 @@ def test_get_all_jobs(user, remoteci_context, topic_user_id,
     db_all_jobs = user.get('/api/v1/jobs?sort=created_at').data
     db_all_jobs = db_all_jobs['jobs']
     db_all_jobs_ids = [db_job['id'] for db_job in db_all_jobs]
+
+    for j in db_all_jobs:
+        assert "data" not in j
 
     assert db_all_jobs_ids == [job_1_id, job_2_id]
 
@@ -396,8 +401,11 @@ def test_get_all_jobs_with_sort(remoteci_context, components_user_ids,
     data = {'components': components_user_ids,
             'topic_id': topic_user_id}
     job_1 = remoteci_context.post('/api/v1/jobs', data=data).data['job']
+    job_1.pop('data')
     job_2 = remoteci_context.post('/api/v1/jobs', data=data).data['job']
+    job_2.pop('data')
     job_3 = remoteci_context.post('/api/v1/jobs', data=data).data['job']
+    job_3.pop('data')
 
     jobs = remoteci_context.get('/api/v1/jobs?sort=created_at').data
     assert jobs['jobs'] == [job_1, job_2, job_3]
