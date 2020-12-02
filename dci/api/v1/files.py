@@ -193,6 +193,15 @@ def create_files(user):
             _, junit_file = store.get(file_path)
             _process_junit_file(values, junit_file, job)
 
+        # Update job status
+        job_duration = datetime.datetime.utcnow() - job['created_at']
+        with open('/tmp/lol', 'w') as f:
+            f.write(str(job_duration))
+        query_update_job = (models.JOBS.update()
+                            .where(models.JOBS.c.id == job['id'])
+                            .values(duration=job_duration.seconds))
+        flask.g.db_conn.execute(query_update_job)
+
     return flask.Response(result, 201, content_type='application/json')
 
 
