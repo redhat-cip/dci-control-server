@@ -710,11 +710,10 @@ def test_get_results_by_job_id(user, job_user_id):
 
 
 def test_purge(user, admin, job_user_id, jobstate_user_id, team_user_id):
-    job = user.get('/api/v1/jobs/%s' % job_user_id).data['job']
-
     # create a file
     file_id1 = t_utils.post_file(user, jobstate_user_id,
                                  FileDesc('kikoolol', 'content'))
+    job = user.get('/api/v1/jobs/%s' % job_user_id).data['job']
 
     djob = admin.delete('/api/v1/jobs/%s' % job_user_id,
                         headers={'If-match': job['etag']})
@@ -739,12 +738,10 @@ def test_purge(user, admin, job_user_id, jobstate_user_id, team_user_id):
 
 def test_purge_failure(user, admin, job_user_id, jobstate_user_id,
                        team_user_id):
-
-    job = user.get('/api/v1/jobs/%s' % job_user_id).data['job']
-
     # create a file
     file_id1 = t_utils.post_file(user, jobstate_user_id,
                                  FileDesc('kikoolol', 'content'))
+    job = user.get('/api/v1/jobs/%s' % job_user_id).data['job']
 
     djob = admin.delete('/api/v1/jobs/%s' % job_user_id,
                         headers={'If-match': job['etag']})

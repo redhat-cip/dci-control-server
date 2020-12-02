@@ -17,6 +17,8 @@
 from __future__ import unicode_literals
 
 import base64
+from datetime import datetime
+from datetime import timedelta
 
 import flask
 import mock
@@ -49,6 +51,31 @@ def test_create_files_jobstate_id_and_job_id_missing(admin):
     file = admin.post('/api/v1/files', headers={'DCI-NAME': 'kikoolol'},
                       data='content')
     assert file.status_code == 400
+
+
+@mock.patch("dci.api.v1.files.datetime")
+@mock.patch("dci.api.v1.jobstates.datetime")
+def test_create_file_update_job_duration(m_datetime_j, m_datetime_f, user, job_user):
+    job_created_at = job_user['created_at']
+    d_j_created_at = datetime.strptime(job_created_at, "%Y-%m-%dT%H:%M:%S.%f")
+
+    # check jobstate creation updating job duration
+    m_datetime_j.datetime.utcnow.return_value = d_j_created_at + timedelta(seconds=5)
+    m_datetime_j.datetime.utcnow.isoformat.return_value = job_created_at
+    data = {'job_id': job_user['id'], 'status': 'running'}
+    jobstate = user.post('/api/v1/jobstates', data=data).data['jobstate']
+    job_user = user.get('/api/v1/jobs/%s' % job_user['id']).data['job']
+    assert job_user['duration'] == 5
+
+    # check file creation updating job duration
+    m_datetime_f.datetime.utcnow.return_value = d_j_created_at + timedelta(seconds=10)
+    m_datetime_f.datetime.utcnow.isoformat.return_value = job_created_at
+    t_utils.post_file(user, jobstate['id'],
+                      FileDesc('Rally',
+                               tests_data.jobtest_one),
+                      mime='ansible/output')
+    job_user = user.get('/api/v1/jobs/%s' % job_user['id']).data['job']
+    assert job_user['duration'] == 10
 
 
 @mock.patch("dci.api.v1.notifications.dispatcher")
