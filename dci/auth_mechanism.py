@@ -242,15 +242,19 @@ class Hmac2Mechanism(HmacMechanism):
         self.identity = self.build_identity(headers)
         if self.identity is None:
             raise dci_exc.DCIException("identity does not exists.", status_code=401)
+        data = self.request.data
+        if self.request.headers['DCI-MIME'] != 'application/octet-stream':
+            data = date.decode("utf-8")
         valid, error_message = is_valid(
             {
                 "method": self.request.method,
                 "endpoint": self.request.path,
-                "data": self.request.data.decode("utf-8"),
+                "data": data,
                 "params": self.request.args.to_dict(flat=True),
             },
             {"secret_key": self.identity.api_secret},
             headers,
+            self.request.headers
         )
         if not valid:
             raise dci_exc.DCIException("Authentication failed: %s" % error_message)
