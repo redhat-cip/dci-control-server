@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "6cf0cbf8_5746b451",
+        "filename": "dci/auth_mechanism.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 247,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2020-12-04T14:32:12Z",
+      "side": 1,
+      "message": "THis should not be needed and we should use plain self.request.data (which is already binary) and not decode it into a string.\n\n(might need changes to python-dciauth)",
+      "range": {
+        "startLine": 245,
+        "startChar": 0,
+        "endLine": 247,
+        "endChar": 39
+      },
+      "revId": "a76360c779cdf034aeec827b6a34f5d3f9fad015",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
