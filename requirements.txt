@@ -3,7 +3,7 @@ pyopenssl  # ignore: openssl 1.0.2k doesn't exist on pypi
 cryptography  # ignore: use latest version of cryptography to avoid building it during pip install
 alembic==0.8.3  # ignore: use the epel version instead of the centos version
 six==1.9.0  # python-six
-SQLAlchemy==0.9.8  # python-sqlalchemy
+SQLAlchemy==1.3.0  # python-sqlalchemy
 requests==2.6.0  # python-requests
 pytz==2016.10  # pytz
 pyjwt==1.5.3  # python-jwt
