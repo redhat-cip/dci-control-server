@@ -195,7 +195,8 @@ create_job_properties = {
     "update_previous_job_id": with_default(Properties.uuid, None),
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "topic_id": with_default(Properties.uuid, None),
-    "tags": with_default(Properties.array, [])
+    "tags": with_default(Properties.array, []),
+    "data": with_default(Properties.json, {})
 }
 create_job_schema = {
     "type": "object",
