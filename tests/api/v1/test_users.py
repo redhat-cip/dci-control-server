@@ -194,12 +194,14 @@ def test_get_all_users_with_sort(admin, team_id):
 
     gusers = admin.get('/api/v1/users?sort=created_at').data
     db_users.extend([user_1, user_2])
-    assert gusers['users'] == db_users
+    assert gusers['users'][0]['id'] == db_users[0]['id']
+    assert gusers['users'][1]['id'] == db_users[1]['id']
 
     # test in reverse order
     db_users.reverse()
     gusers = admin.get('/api/v1/users?sort=-created_at').data
-    assert gusers['users'] == db_users
+    assert gusers['users'][0]['id'] == db_users[0]['id']
+    assert gusers['users'][1]['id'] == db_users[1]['id']
 
 
 def test_get_user_by_id(admin, team_id):
