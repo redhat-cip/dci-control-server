@@ -223,28 +223,6 @@ def topics(root_select=models.TOPICS):
     }
 
 
-def users(root_select=models.USERS):
-    return {
-        'team': [
-            {'right': JOIN_USERS_TEAMS,
-             'onclause': JOIN_USERS_TEAMS.c.user_id == root_select.c.id,
-             'isouter': True},
-            {'right': TEAM,
-             'onclause': and_(TEAM.c.id == JOIN_USERS_TEAMS.c.team_id,
-                              TEAM.c.state != 'archived'),
-             'isouter': True}
-        ],
-        'remotecis': [
-            {'right': models.JOIN_USER_REMOTECIS,
-             'onclause': models.JOIN_USER_REMOTECIS.c.user_id == root_select.c.id,  # noqa
-             'isouter': True},
-            {'right': models.REMOTECIS,
-             'onclause': and_(models.REMOTECIS.c.id == models.JOIN_USER_REMOTECIS.c.remoteci_id,  # noqa
-                              models.REMOTECIS.c.state != 'archived'),
-             'isouter': True}]
-    }
-
-
 # associate the name table to the object table
 # used for select clause
 EMBED_STRING_TO_OBJECT = {
@@ -287,10 +265,6 @@ EMBED_STRING_TO_OBJECT = {
         'teams': models.TEAMS,
         'product': PRODUCT,
         'next_topic': NEXT_TOPIC
-    },
-    'users': {
-        'team': TEAM,
-        'remotecis': models.REMOTECIS
     }
 }
 
@@ -305,6 +279,5 @@ EMBED_JOINS = {
     'jobstates': jobstates,
     'products': products,
     'teams': teams,
-    'topics': topics,
-    'users': users
+    'topics': topics
 }
