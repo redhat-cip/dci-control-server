@@ -16,7 +16,7 @@
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
-from sqlalchemy import sql
+import sqlalchemy.orm as sa_orm
 
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -25,8 +25,9 @@ from dci import auth
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import utils
-from dci.db import embeds
+from dci.db import declarative as d
 from dci.db import models
+from dci.db import models2
 from dci.common.schemas import (
     check_json_is_valid,
     create_user_schema,
@@ -35,31 +36,12 @@ from dci.common.schemas import (
     check_and_get_args
 )
 
-# associate column names with the corresponding SA Column object
 _TABLE = models.USERS
-_VALID_EMBED = embeds.users()
 _USERS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
     'team': True,
     'remotecis': True,
 }
-
-# select without the password column for security reasons
-_SELECT_WITHOUT_PASSWORD = [
-    _TABLE.c[c_name] for c_name in _TABLE.c.keys() if c_name != 'password'
-]
-
-
-def _verify_existence_and_get_user(user_id):
-    where_clause = _TABLE.c.id == user_id
-    query = sql.select(_SELECT_WITHOUT_PASSWORD).where(where_clause)
-    result = flask.g.db_conn.execute(query).fetchone()
-
-    if result is None:
-        raise dci_exc.DCIException('Resource "%s" not found.' % user_id,
-                                   status_code=404)
-
-    return result
 
 
 @api.route('/users', methods=['POST'])
@@ -79,18 +61,16 @@ def create_users(user):
         'sso_username': None
     })
 
-    query = _TABLE.insert().values(**values)
-
     try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
-
-    # remove the password in the result for security reasons
-    del values['password']
+        u = models2.User(**values)
+        u_serialized = u.serialize()
+        flask.g.session.add(u)
+        flask.g.session.commit()
+    except sa_exc.IntegrityError as ie:
+        raise dci_exc.DCIException(message=str(ie), status_code=409)
 
     return flask.Response(
-        json.dumps({'user': values}), 201,
+        json.dumps({'user': u_serialized}), 201,
         headers={'ETag': values['etag']}, content_type='application/json'
     )
 
@@ -99,28 +79,37 @@ def create_users(user):
 @decorators.login_required
 def get_all_users(user):
     args = check_and_get_args(flask.request.args.to_dict())
-    query = v1_utils.QueryBuilder(_TABLE, args, _USERS_COLUMNS, ['password'])
-
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    query.add_extra_condition(_TABLE.c.state != 'archived')
+    q = flask.g.session.query(models2.User).\
+        filter(models2.User.state != 'archived').\
+        options(sa_orm.joinedload('team')).\
+        options(sa_orm.joinedload('remotecis'))
+    q = d.handler_args(q, models2.User, args)
 
-    # get the number of rows for the '_meta' section
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
+    users = q.all()
+    users = list(map(lambda u: u.serialize(ignore_columns=('password', 'remotecis.api_secret')), users))
 
-    return flask.jsonify({'users': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'users': users, '_meta': {'count': len(users)}})
 
 
 def user_by_id(user, user_id):
     if user.id != user_id and user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
-    user_res = v1_utils.verify_existence_and_get(user_id, _TABLE)
-    return base.get_resource_by_id(user, user_res, _TABLE, _EMBED_MANY,
-                                   ignore_columns=['password'])
+    v1_utils.verify_existence_and_get(user_id, _TABLE)
+
+    u = flask.g.session.query(models2.User).\
+        filter(models2.User.state != 'archived').\
+        filter(models2.User.id == user_id).\
+        options(sa_orm.joinedload('team')).\
+        options(sa_orm.joinedload('remotecis')).one()
+    if not u:
+        raise dci_exc.DCIException(message="user not found", status_code=404)
+
+    return flask.Response(
+        json.dumps({'user': u.serialize(ignore_columns=('password',))}), 200, headers={'ETag': u.etag},
+        content_type='application/json')
 
 
 @api.route('/users/<uuid:user_id>', methods=['GET'])
@@ -161,21 +150,20 @@ def put_current_user(user):
                        'email': values.get('email') or user.email,
                        'timezone': values.get('timezone') or user.timezone})
 
-    query = _TABLE.update().returning(*_TABLE.columns).where(sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == user.id
-    )).values(new_values)
+    updated_user = flask.g.session.query(models2.User).\
+        filter(models2.User.id == user.id).\
+        filter(models2.User.etag == if_match_etag).\
+        update(new_values)
+    flask.g.session.commit()
 
-    result = flask.g.db_conn.execute(query)
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('User', user.id)
-    _result = dict(result.fetchone())
-    del _result['password']
+    if not updated_user:
+        raise dci_exc.DCIException(message="update failed, either user not found or etag not matched", status_code=409)
+
+    u = flask.g.session.query(models2.User).filter(models2.User.id == user.id).one()
 
     return flask.Response(
-        json.dumps({'user': _result}), 200, headers={'ETag': etag},
-        content_type='application/json'
-    )
+        json.dumps({'user': u.serialize(ignore_columns=('password',))}), 200, headers={'ETag': etag},
+        content_type='application/json')
 
 
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
@@ -194,22 +182,19 @@ def put_user(user, user_id):
     if 'password' in values:
         values['password'] = auth.hash_password(values.get('password'))
 
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == user_id
-    )
-    query = _TABLE.update().returning(*_TABLE.columns).\
-        where(where_clause).values(**values)
+    updated_user = flask.g.session.query(models2.User).\
+        filter(models2.User.id == user_id).\
+        filter(models2.User.etag == if_match_etag).\
+        update(values)
+    flask.g.session.commit()
 
-    result = flask.g.db_conn.execute(query)
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('User', user_id)
+    if not updated_user:
+        raise dci_exc.DCIException(message="update failed, either user not found or etag not matched", status_code=409)
 
-    _result = dict(result.fetchone())
-    del _result['password']
+    u = flask.g.session.query(models2.User).filter(models2.User.id == user_id).one()
 
     return flask.Response(
-        json.dumps({'user': _result}), 200, headers={'ETag': values['etag']},
+        json.dumps({'user': u.serialize(ignore_columns=('password',))}), 200, headers={'ETag': values['etag']},
         content_type='application/json'
     )
 
@@ -219,23 +204,19 @@ def put_user(user, user_id):
 def delete_user_by_id(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
-    _verify_existence_and_get_user(user_id)
+    v1_utils.verify_existence_and_get(user_id, _TABLE)
 
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
-    values = {'state': 'archived'}
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == user_id
-    )
-    query = _TABLE.update().where(where_clause).values(**values)
+    deleted_user = flask.g.session.query(models2.User).\
+        filter(models2.User.id == user_id).\
+        filter(models2.User.etag == if_match_etag).\
+        update({'state': 'archived'})
+    flask.g.session.commit()
 
-    result = flask.g.db_conn.execute(query)
-
-    if not result.rowcount:
-        raise dci_exc.DCIDeleteConflict('User', user_id)
+    if not deleted_user:
+        raise dci_exc.DCIException(message="delete failed, either user already deleted or etag not matched", status_code=409)
 
     return flask.Response(None, 204, content_type='application/json')
 
@@ -246,13 +227,16 @@ def get_subscribed_remotecis(identity, user_id):
     if (identity.is_not_super_admin() and identity.id != str(user_id)
         and identity.is_not_epm()):
         raise dci_exc.Unauthorized()
-    remotecis = flask.g.db_conn.execute(
-        sql.select([models.REMOTECIS])
-        .select_from(models.JOIN_USER_REMOTECIS.join(models.REMOTECIS))
-        .where(models.JOIN_USER_REMOTECIS.c.user_id == identity.id)
-    )
+
+    q = flask.g.session.query(models2.User).\
+        filter(models2.User.id == user_id).\
+        filter(models2.User.state != 'archived').\
+        options(sa_orm.joinedload('remotecis'))
+    user = q.one()
+    user = user.serialize(ignore_columns=('remotecis.api_secret'))
+
     return flask.Response(
-        json.dumps({"remotecis": remotecis}), 200, content_type="application/json"
+        json.dumps({"remotecis": user.get('remotecis')}), 200, content_type="application/json"
     )
 
 

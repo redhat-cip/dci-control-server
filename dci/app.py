@@ -27,6 +27,7 @@ import zmq
 
 import sqlalchemy
 from sqlalchemy import exc as sa_exc
+from sqlalchemy.orm import sessionmaker
 
 logger = logging.getLogger(__name__)
 
@@ -135,6 +136,7 @@ def create_app(param=None):
         for i in range(5):
             try:
                 flask.g.db_conn = dci_app.engine.connect()
+                flask.g.session = sessionmaker(bind=dci_app.engine)()
                 break
             except Exception:
                 logging.warning('failed to connect to the database, '
