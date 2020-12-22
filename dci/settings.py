@@ -98,7 +98,7 @@ ETAG = 'etag'
 URL_PREFIX = 'api'
 X_DOMAINS = '*'
 X_HEADERS = 'Authorization, Content-Type, If-Match, ETag, X-Requested-With'
-MAX_CONTENT_LENGTH = 20 * 1024 * 1024
+MAX_CONTENT_LENGTH = 128 * 1024 * 1024
 
 FILES_UPLOAD_FOLDER = os.getenv('FILES_UPLOAD_FOLDER', '/var/lib/dci-control-server/files')  # noqa
 
