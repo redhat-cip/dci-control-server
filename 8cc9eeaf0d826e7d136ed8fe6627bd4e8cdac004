@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2e50276d_0a917a65",
+        "filename": "tests/api/v1/test_users.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 197,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-01-15T13:17:48Z",
+      "side": 1,
+      "message": "Why  gusers[\u0027users\u0027] \u003d\u003d db_users is not working anymore ?",
+      "range": {
+        "startLine": 197,
+        "startChar": 10,
+        "endLine": 197,
+        "endChar": 56
+      },
+      "revId": "8cc9eeaf0d826e7d136ed8fe6627bd4e8cdac004",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
