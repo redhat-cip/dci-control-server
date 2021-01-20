@@ -248,18 +248,13 @@ EMBED_STRING_TO_OBJECT = {
     'files': {
         'jobstate': JOBSTATE,
         'jobstate.job': JOBSTATE_JOBS,
-        'job': JOB,
-        'team': TEAM},
+        'job': JOB},
     'jobstates': {
         'files': models.FILES,
         'job': JOB
     },
     'products': {
         'topics': models.TOPICS,
-    },
-    'teams': {
-        'remotecis': models.REMOTECIS,
-        'topics': models.TOPICS
     },
     'topics': {
         'teams': models.TEAMS,

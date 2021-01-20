@@ -155,7 +155,7 @@ def test_get_all_remotecis_embed(admin, team_id):
     remotecis = admin.get('/api/v1/remotecis?embed=team').data
 
     for remoteci in remotecis['remotecis']:
-        assert remoteci['team'] == team
+        assert remoteci['team']['id'] == team['id']
 
 
 def test_get_remoteci_by_id(user, team_user_id):
@@ -180,7 +180,7 @@ def test_get_remoteci_with_embed(user, team_user_id):
 
     # verify embed
     db_remoteci = user.get('/api/v1/remotecis/%s?embed=team' % r_id).data
-    assert db_remoteci['remoteci']['team'] == team
+    assert db_remoteci['remoteci']['team']['id'] == team['id']
 
 
 def test_get_remoteci_not_found(user):

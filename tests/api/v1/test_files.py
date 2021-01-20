@@ -157,19 +157,6 @@ def test_get_file_not_found(user):
     assert result.status_code == 404
 
 
-def test_get_file_with_embed(user, jobstate_user_id, team_user_id):
-    pt = user.get('/api/v1/teams/%s' % team_user_id).data
-    headers = {'DCI-JOBSTATE-ID': jobstate_user_id, 'DCI-NAME': 'kikoolol'}
-    file = user.post('/api/v1/files', headers=headers).data
-
-    file_id = file['file']['id']
-    file['file']['team'] = pt['team']
-
-    # verify embed
-    file_embed = user.get('/api/v1/files/%s?embed=team' % file_id).data
-    assert file == file_embed
-
-
 def test_get_file_with_embed_not_valid(user, jobstate_user_id):
     file_id = t_utils.post_file(user, jobstate_user_id, FileDesc('name', ''))
     file = user.get('/api/v1/files/%s?embed=mdr' % file_id)

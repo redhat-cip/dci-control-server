@@ -81,6 +81,17 @@ class User(dci_declarative.Mixin, Base):
         return super(User, self).serialize(ignore_columns=ignore_columns)
 
 
+JOINS_TOPICS_TEAMS = sa.Table(
+    'topics_teams', Base.metadata,
+    sa.Column('topic_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('topics.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('team_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True)
+)
+
+
 class Team(dci_declarative.Mixin, Base):
     __tablename__ = 'teams'
     __table_args__ = (sa.UniqueConstraint('name', name='teams_name_key'),)
@@ -91,6 +102,23 @@ class Team(dci_declarative.Mixin, Base):
     state = sa.Column(STATES, default='active')
     external = sa.Column(sa.BOOLEAN, default=True)
     users = sa_orm.relationship('User', secondary=USERS_TEAMS, back_populates='team')
+    remotecis = sa_orm.relationship('Remoteci')
+    topics = sa_orm.relationship('Topic', secondary=JOINS_TOPICS_TEAMS, back_populates='teams')
+
+
+class Topic(dci_declarative.Mixin, Base):
+    __tablename__ = 'topics'
+    __table_args__ = (sa.Index('topics_product_id_idx', 'product_id'),
+                      sa.Index('topics_next_topic_id_idx', 'next_topic_id'))
+
+    name = sa.Column('name', sa.String(255), unique=True, nullable=False)
+    component_types = sa.Column('component_types', pg.JSON, default=[])
+    product_id = sa.Column('product_id', pg.UUID(as_uuid=True), sa.ForeignKey('products.id'), nullable=True)
+    next_topic_id = sa.Column('next_topic_id', pg.UUID(as_uuid=True), sa.ForeignKey('topics.id'), nullable=True, default=None)
+    export_control = sa.Column('export_control', sa.BOOLEAN, nullable=False, default=False, server_default='false')
+    state = sa.Column('state', STATES, default='active')
+    data = sa.Column('data', sa_utils.JSONType, default={})
+    teams = sa_orm.relationship('Team', secondary=JOINS_TOPICS_TEAMS, back_populates='topics')
 
 
 class Remoteci(dci_declarative.Mixin, Base):
@@ -106,3 +134,7 @@ class Remoteci(dci_declarative.Mixin, Base):
     cert_fp = sa.Column('cert_fp', sa.String(255))
     state = sa.Column('state', STATES, default='active')
     users = sa_orm.relationship('User', secondary=USER_REMOTECIS, back_populates='remotecis')
+
+
+class Product(dci_declarative.Mixin, Base):
+    __tablename__ = 'products'
