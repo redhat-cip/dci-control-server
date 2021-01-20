@@ -108,8 +108,8 @@ def test_get_all_teams_with_pagination(admin):
 def test_get_all_teams_with_sort(admin):
     # TODO(yassine): Currently there is already 3 teams created in the DB,
     # this will be fixed later.
-    db_teams = admin.get('/api/v1/teams?sort=created_at').data
-    db_teams = db_teams['teams']
+    _db_teams = admin.get('/api/v1/teams?sort=created_at').data
+    db_teams = [dbt['id'] for dbt in _db_teams['teams']]
 
     # create 2 teams ordered by created time
     t_1 = admin.post('/api/v1/teams',
@@ -117,14 +117,16 @@ def test_get_all_teams_with_sort(admin):
     t_2 = admin.post('/api/v1/teams',
                      data={'name': 'pname2'}).data['team']
 
-    gts = admin.get('/api/v1/teams?sort=created_at').data
-    db_teams.extend([t_1, t_2])
-    assert gts['teams'] == db_teams
+    _gts = admin.get('/api/v1/teams?sort=created_at').data
+    db_teams.extend([t_1['id'], t_2['id']])
+    gts = [gt['id'] for gt in _gts['teams']]
+    assert gts == db_teams
 
     # test in reverse order
     db_teams.reverse()
     gts = admin.get('/api/v1/teams?sort=-created_at').data
-    assert gts['teams'] == db_teams
+    gts = [g['id'] for g in gts['teams']]
+    assert gts == db_teams
 
 
 def test_get_all_teams_with_embed(admin, topic_user_id):

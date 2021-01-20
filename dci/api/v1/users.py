@@ -67,7 +67,11 @@ def create_users(user):
         flask.g.session.add(u)
         flask.g.session.commit()
     except sa_exc.IntegrityError as ie:
+        flask.g.session.rollback()
         raise dci_exc.DCIException(message=str(ie), status_code=409)
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e))
 
     return flask.Response(
         json.dumps({'user': u_serialized}), 201,
@@ -157,9 +161,12 @@ def put_current_user(user):
     flask.g.session.commit()
 
     if not updated_user:
+        flask.g.session.rollback()
         raise dci_exc.DCIException(message="update failed, either user not found or etag not matched", status_code=409)
 
     u = flask.g.session.query(models2.User).filter(models2.User.id == user.id).one()
+    if not u:
+        raise dci_exc.DCIException(message="unable to return user", status_code=400)
 
     return flask.Response(
         json.dumps({'user': u.serialize(ignore_columns=('password',))}), 200, headers={'ETag': etag},
@@ -189,9 +196,12 @@ def put_user(user, user_id):
     flask.g.session.commit()
 
     if not updated_user:
+        flask.g.session.rollback()
         raise dci_exc.DCIException(message="update failed, either user not found or etag not matched", status_code=409)
 
     u = flask.g.session.query(models2.User).filter(models2.User.id == user_id).one()
+    if not u:
+        raise dci_exc.DCIException(message="unable to return user", status_code=400)
 
     return flask.Response(
         json.dumps({'user': u.serialize(ignore_columns=('password',))}), 200, headers={'ETag': values['etag']},

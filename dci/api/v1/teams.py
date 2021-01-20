@@ -16,7 +16,7 @@
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
-from sqlalchemy import sql
+import sqlalchemy.orm as sa_orm
 
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -33,8 +33,10 @@ from dci.common.schemas import (
     check_and_get_args
 )
 from dci.common import utils
+from dci.db import declarative as d
 from dci.db import embeds
 from dci.db import models
+from dci.db import models2
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.TEAMS
@@ -57,15 +59,20 @@ def create_teams(user):
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    query = _TABLE.insert().values(**values)
-
     try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
+        t = models2.Team(**values)
+        t_serialized = t.serialize()
+        flask.g.session.add(t)
+        flask.g.session.commit()
+    except sa_exc.IntegrityError as ie:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(ie), status_code=409)
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e))
 
     return flask.Response(
-        json.dumps({'team': values}), 201,
+        json.dumps({'team': t_serialized}), 201,
         headers={'ETag': values['etag']}, content_type='application/json'
     )
 
@@ -75,28 +82,41 @@ def create_teams(user):
 def get_all_teams(user):
     args = check_and_get_args(flask.request.args.to_dict())
 
-    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
+    q = flask.g.session.query(models2.Team)
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
-        query.add_extra_condition(_TABLE.c.id.in_(user.teams_ids))
+        q = q.filter(models2.Team.id.in_(user.teams_ids))
 
-    query.add_extra_condition(_TABLE.c.state != 'archived')
+    q = q.filter(models2.Team.state != 'archived').\
+        filter(models2.Team.state != 'archived').\
+        options(sa_orm.joinedload('topics')).\
+        options(sa_orm.joinedload('remotecis'))
+    q = d.handler_args(q, models2.Team, args)
 
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
+    teams = q.all()
+    teams = list(map(lambda t: t.serialize(), teams))
 
-    return flask.jsonify({'teams': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'teams': teams, '_meta': {'count': len(teams)}})
 
 
 @api.route('/teams/<uuid:t_id>', methods=['GET'])
 @decorators.login_required
 def get_team_by_id(user, t_id):
-    team = v1_utils.verify_existence_and_get(t_id, _TABLE)
+    v1_utils.verify_existence_and_get(t_id, _TABLE)
     if user.is_not_in_team(t_id) and user.is_not_epm():
         raise dci_exc.Unauthorized()
-    return base.get_resource_by_id(user, team, _TABLE, _EMBED_MANY)
+
+    t = flask.g.session.query(models2.Team).\
+        filter(models2.Team.state != 'archived').\
+        filter(models2.Team.id == t_id).\
+        options(sa_orm.joinedload('remotecis')).\
+        options(sa_orm.joinedload('topics')).one()
+    if not t:
+        raise dci_exc.DCIException(message="team not found", status_code=404)
+
+    return flask.Response(
+        json.dumps({'team': t.serialize()}), 200, headers={'ETag': t.etag},
+        content_type='application/json')
 
 
 @api.route('/teams/<uuid:team_id>/remotecis', methods=['GET'])
@@ -132,20 +152,23 @@ def put_team(user, t_id):
     v1_utils.verify_existence_and_get(t_id, _TABLE)
 
     values['etag'] = utils.gen_etag()
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == t_id
-    )
-    query = _TABLE.update().returning(*_TABLE.columns).\
-        where(where_clause).values(**values)
 
-    result = flask.g.db_conn.execute(query)
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('Team', t_id)
+    updated_team = flask.g.session.query(models2.Team).\
+        filter(models2.Team.id == t_id).\
+        filter(models2.Team.etag == if_match_etag).\
+        update(values)
+    flask.g.session.commit()
+
+    if not updated_team:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message="update failed, either team not found or etag not matched", status_code=409)
+
+    t = flask.g.session.query(models2.Team).filter(models2.Team.id == t_id).one()
+    if not t:
+        raise dci_exc.DCIException(message="unable to return team", status_code=400)
 
     return flask.Response(
-        json.dumps({'team': result.fetchone()}), 200,
-        headers={'ETag': values['etag']},
+        json.dumps({'team': t.serialize()}), 200, headers={'ETag': values['etag']},
         content_type='application/json'
     )
 
@@ -160,23 +183,20 @@ def delete_team_by_id(user, t_id):
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
-    with flask.g.db_conn.begin():
-        values = {'state': 'archived'}
-        where_clause = sql.and_(
-            _TABLE.c.etag == if_match_etag,
-            _TABLE.c.id == t_id
-        )
-        query = _TABLE.update().where(where_clause).values(**values)
-        result = flask.g.db_conn.execute(query)
+    deleted_team = flask.g.session.query(models2.Team).\
+        filter(models2.Team.id == t_id).\
+        filter(models2.Team.etag == if_match_etag).\
+        update({'state': 'archived'})
+    flask.g.session.commit()
 
-        if not result.rowcount:
-            raise dci_exc.DCIDeleteConflict('Team', t_id)
+    if not deleted_team:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message="delete failed, either team already deleted or etag not matched", status_code=409)
 
-        for model in [models.FILES, models.REMOTECIS, models.JOBS]:
-            query = model.update().where(model.c.team_id == t_id).values(
-                **values
-            )
-            flask.g.db_conn.execute(query)
+    # will use models2 when FILES and JOBS will be done in models2
+    for model in [models.FILES, models.REMOTECIS, models.JOBS]:
+        query = model.update().where(model.c.team_id == t_id).values(state='archived')
+        flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
 
