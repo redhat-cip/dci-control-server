@@ -68,7 +68,7 @@ COMPONENTS = sa.Table(
              'name', 'topic_id', 'type',
              unique=True,
              postgresql_where=sa.sql.text("components.state = 'active' AND components.team_id is NULL")),
-    sa.UniqueConstraint('name', 'topic_id', 'type', 'team_id', constraint_name='name_topic_id_type_team_id_unique'),
+    sa.UniqueConstraint('name', 'topic_id', 'type', 'team_id', name='name_topic_id_type_team_id_unique'),
     sa.Index('components_topic_id_idx', 'topic_id'),
 
     sa.Column('state', STATES, default='active'),

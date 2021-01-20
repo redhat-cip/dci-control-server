@@ -159,6 +159,9 @@ def test_get_file_not_found(user):
 
 def test_get_file_with_embed(user, jobstate_user_id, team_user_id):
     pt = user.get('/api/v1/teams/%s' % team_user_id).data
+    del pt['team']['remotecis']
+    del pt['team']['topics']
+
     headers = {'DCI-JOBSTATE-ID': jobstate_user_id, 'DCI-NAME': 'kikoolol'}
     file = user.post('/api/v1/files', headers=headers).data
 

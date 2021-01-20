@@ -257,10 +257,6 @@ EMBED_STRING_TO_OBJECT = {
     'products': {
         'topics': models.TOPICS,
     },
-    'teams': {
-        'remotecis': models.REMOTECIS,
-        'topics': models.TOPICS
-    },
     'topics': {
         'teams': models.TEAMS,
         'product': PRODUCT,
