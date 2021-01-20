@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "7611cb3c_ae6e5eed",
+        "filename": "dci/api/v1/notifications.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 123,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-01-20T10:11:21Z",
+      "side": 1,
+      "message": "IMO this should be in get_email_event",
+      "range": {
+        "startLine": 123,
+        "startChar": 4,
+        "endLine": 123,
+        "endChar": 34
+      },
+      "revId": "74feebb1cf3733c2df36f0ec818446d4cb01d36d",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
