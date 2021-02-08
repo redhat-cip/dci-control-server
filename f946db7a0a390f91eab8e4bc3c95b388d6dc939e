@@ -1,0 +1,50 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "9c4e9f5e_a4b93695",
+        "filename": "Dockerfile",
+        "patchSetId": 1
+      },
+      "lineNbr": 11,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2021-02-08T14:39:58Z",
+      "side": 1,
+      "message": "Need to see why we have pip\u003c21.0 here (if it was because of the depsolver: keep \u003c21.0, if it was because of python2: remove \u003c21.0)",
+      "range": {
+        "startLine": 11,
+        "startChar": 35,
+        "endLine": 11,
+        "endChar": 43
+      },
+      "revId": "f946db7a0a390f91eab8e4bc3c95b388d6dc939e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "de732e96_2ab98836",
+        "filename": "dci/settings.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 30,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2021-02-08T14:39:58Z",
+      "side": 1,
+      "message": "Keep 127.0.0.1 here, 192.168.1.19 only makes sense for your setup. In dci-dev-env the db should be available in the same pod (hence 127.0.0.1).",
+      "range": {
+        "startLine": 30,
+        "startChar": 32,
+        "endLine": 30,
+        "endChar": 45
+      },
+      "revId": "f946db7a0a390f91eab8e4bc3c95b388d6dc939e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
