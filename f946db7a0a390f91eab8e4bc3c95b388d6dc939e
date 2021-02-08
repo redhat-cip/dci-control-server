@@ -2,6 +2,29 @@
   "comments": [
     {
       "key": {
+        "uuid": "1567f029_f7cf96a6",
+        "filename": "/COMMIT_MSG",
+        "patchSetId": 1
+      },
+      "lineNbr": 7,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2021-02-08T14:41:19Z",
+      "side": 1,
+      "message": "I don\u0027t understand this title, doesn\u0027t seem to explain what\u0027s the change\u0027s goal.",
+      "range": {
+        "startLine": 7,
+        "startChar": 6,
+        "endLine": 7,
+        "endChar": 28
+      },
+      "revId": "f946db7a0a390f91eab8e4bc3c95b388d6dc939e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    },
+    {
+      "key": {
         "uuid": "9c4e9f5e_a4b93695",
         "filename": "Dockerfile",
         "patchSetId": 1
