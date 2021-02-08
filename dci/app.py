@@ -87,17 +87,19 @@ class DciControlServer(flask.Flask):
 
 def configure_root_logger():
     conf = dci_config.CONFIG
-    logging.basicConfig(level=conf['LOG_LEVEL'])
+    logging.basicConfig(level=conf.get('LOG_LEVEL', logging.INFO))
 
+    dci_log_level = conf.get('DCI_LOG_LEVEL', logging.DEBUG)
     console_handler = logging.StreamHandler()
     formatter = logging.Formatter(conf['LOG_FORMAT'])
     console_handler.setFormatter(formatter)
-    console_handler.setLevel(conf['LOG_LEVEL'])
+    console_handler.setLevel(dci_log_level)
 
     root_logger = logging.getLogger()
     # remove all handlers before adding the console handler
     del root_logger.handlers[:]
     root_logger.addHandler(console_handler)
+    logging.getLogger('dciauth').setLevel(dci_log_level)
 
 
 def werkzeug_logger_to_error():
