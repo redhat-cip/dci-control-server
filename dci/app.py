@@ -98,6 +98,7 @@ def configure_root_logger():
     # remove all handlers before adding the console handler
     del root_logger.handlers[:]
     root_logger.addHandler(console_handler)
+    logging.getLogger('dciauth').setLevel(logging.DEBUG)
 
 
 def werkzeug_logger_to_error():
