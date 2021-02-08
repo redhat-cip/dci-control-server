@@ -1,0 +1,17 @@
+<VirtualHost *:5000>
+    ServerName {{ api_servername|default('_default_') }}
+    ServerAdmin {{ serveradmin|default('distributed-ci@redhat.com') }}
+
+    CustomLog logs/{{ api_servername|default('_default_') }}_access_log combined
+    ErrorLog logs/{{ api_servername|default('_default_') }}_error_log
+    DocumentRoot /opt/dci-control-server/dci/
+
+    WSGIScriptAlias / /opt/dci-control-server/dci/wsgi.py
+    WSGIPassAuthorization On
+
+    <Directory /opt/dci-control-server/dci>
+       AllowOverride None
+       Require all granted
+    </Directory>
+
+</VirtualHost>

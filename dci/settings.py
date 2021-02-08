@@ -27,7 +27,7 @@ JSONIFY_PRETTYPRINT_REGULAR = False
 #
 DB_USER = os.getenv('DB_USER', 'dci')
 DB_PASSWORD = os.getenv('DB_PASSWORD', 'dci')
-DB_HOST = os.getenv('DB_HOST', '127.0.0.1')
+DB_HOST = os.getenv('DB_HOST', '192.168.1.19')
 DB_PORT = int(os.getenv('DB_PORT', '5432'))
 DB_NAME = os.getenv('DB_NAME', 'dci')
 DEFAULT_SQLALCHEMY_DATABASE_URI = 'postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}'.format(  # noqa
