@@ -1,6 +1,6 @@
-FROM centos:7
+FROM registry.access.redhat.com/ubi8/python-36
 
-LABEL name="DCI API" version="0.0.3"
+LABEL name="DCI API" version="0.1.0"
 LABEL maintainer="DCI Team <distributed-ci@redhat.com>"
 
 ENV LANG en_US.UTF-8
@@ -8,12 +8,7 @@ ENV LANG en_US.UTF-8
 WORKDIR /opt/dci-control-server
 COPY requirements.txt /opt/dci-control-server/
 
-RUN yum -y install epel-release && \
-    yum -y install gcc git zeromq-devel \
-    python python2-devel python2-pip python2-setuptools \
-    python36 python36-devel python36-pip python36-setuptools && \
-    yum clean all && \
-    pip install --no-cache-dir -U "pip<21.0" && \
+RUN pip install --no-cache-dir -U "pip<21.0" && \
     pip install --no-cache-dir -U tox && \
     pip install --no-cache-dir -r requirements.txt
 
