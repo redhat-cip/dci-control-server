@@ -68,6 +68,29 @@
       "revId": "f946db7a0a390f91eab8e4bc3c95b388d6dc939e",
       "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
       "unresolved": false
+    },
+    {
+      "key": {
+        "uuid": "126bb197_17d79e0e",
+        "filename": "requirements.txt",
+        "patchSetId": 1
+      },
+      "lineNbr": 13,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-02-09T09:25:38Z",
+      "side": 1,
+      "message": "we could use the latest available version on pypi",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 13,
+        "endChar": 31
+      },
+      "revId": "f946db7a0a390f91eab8e4bc3c95b388d6dc939e",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
     }
   ]
 }
