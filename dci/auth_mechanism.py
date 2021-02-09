@@ -148,7 +148,6 @@ class BasicAuthMechanism(BaseMechanism):
 
 
 class HmacMechanism(BaseMechanism):
-
     def authenticate(self):
         headers = self.request.headers
         auth_request = AuthRequest(
@@ -156,20 +155,23 @@ class HmacMechanism(BaseMechanism):
             endpoint=self.request.path,
             payload=self.request.get_json(silent=True),
             headers=headers,
-            params=self.request.args.to_dict(flat=True)
+            params=self.request.args.to_dict(flat=True),
         )
         hmac_signature = Signature(request=auth_request)
         self.identity = self.build_identity(auth_request.get_client_info())
         if self.identity is None:
-            raise dci_exc.DCIException('identity does not exists.',
-                                       status_code=401)
+            raise dci_exc.DCIException("identity does not exists.", status_code=401)
         secret = self.identity.api_secret
         if not hmac_signature.is_valid(secret):
             raise dci_exc.DCIException(
-                'Authentication failed: signature invalid', status_code=401)
+                "HmacMechanism failed: signature invalid",
+                status_code=401,
+            )
         if hmac_signature.is_expired():
             raise dci_exc.DCIException(
-                'Authentication failed: signature expired', status_code=401)
+                "HmacMechanism failed: signature expired",
+                status_code=401,
+            )
         if len(self.identity.teams_ids) > 0:
             self.check_team_is_active(self.identity.teams_ids[0])
         return True
@@ -253,7 +255,7 @@ class Hmac2Mechanism(HmacMechanism):
             headers,
         )
         if not valid:
-            raise dci_exc.DCIException("Authentication failed: %s" % error_message)
+            raise dci_exc.DCIException("Hmac2Mechanism failed: %s" % error_message)
         if len(self.identity.teams_ids) > 0:
             self.check_team_is_active(self.identity.teams_ids[0])
         return True
