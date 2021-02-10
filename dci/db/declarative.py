@@ -71,7 +71,15 @@ class Mixin(object):
         return _dict
 
 
-def handler_args(query, model_object, args):
+def handle_limitations(query, args):
+    if args.get('limit'):
+        query = query.limit(args.get('limit', 20))
+    if args.get('offset'):
+        query = query.offset(args.get('offset', 0))
+    return query
+
+
+def handle_args(query, model_object, args, limitations=True):
     if args.get('sort'):
         columns = model_object.__mapper__.columns.keys()
         for s in args.get('sort'):
@@ -98,8 +106,9 @@ def handler_args(query, model_object, args):
                 payload = {'error': 'where key must have the following form "key:value"'}
                 raise dci_exc.DCIException('Invalid where key: "%s"' % w, payload=payload)
             query = query.filter(getattr(model_object, name) == value)
-    if args.get('limit'):
-        query = query.limit(args.get('limit', 20))
-    if args.get('offset'):
-        query = query.offset(args.get('offset', 0))
+    if limitations:
+        if args.get('limit'):
+            query = query.limit(args.get('limit', 20))
+        if args.get('offset'):
+            query = query.offset(args.get('offset', 0))
     return query

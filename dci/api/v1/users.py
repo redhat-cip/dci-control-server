@@ -86,12 +86,14 @@ def get_all_users(user):
         filter(models2.User.state != 'archived').\
         options(sa_orm.joinedload('team')).\
         options(sa_orm.joinedload('remotecis'))
-    q = d.handler_args(q, models2.User, args)
+    q = d.handle_args(q, models2.User, args, limitations=False)
 
+    nb_users = q.count()
+    q = d.handle_limitations(q, args)
     users = q.all()
     users = list(map(lambda u: u.serialize(ignore_columns=('password', 'remotecis.api_secret')), users))
 
-    return flask.jsonify({'users': users, '_meta': {'count': len(users)}})
+    return flask.jsonify({'users': users, '_meta': {'count': nb_users}})
 
 
 def user_by_id(user, user_id):
