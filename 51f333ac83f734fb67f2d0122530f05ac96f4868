@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "8c1d70e9_83071f48",
+        "filename": "dci/db/models2.py",
+        "patchSetId": 5
+      },
+      "lineNbr": 104,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-03-02T15:03:05Z",
+      "side": 1,
+      "message": "missing \u0027s\u0027 here no ?\n\nuser.teams",
+      "range": {
+        "startLine": 104,
+        "startChar": 63,
+        "endLine": 104,
+        "endChar": 85
+      },
+      "revId": "51f333ac83f734fb67f2d0122530f05ac96f4868",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": false
+    }
+  ]
+}
