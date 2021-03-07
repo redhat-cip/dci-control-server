@@ -281,11 +281,16 @@ def remoteci_user_api_secret(user, remoteci_user_id):
 
 
 @pytest.fixture
-def remoteci_user_id(user, admin, team_user_id, topic_user_id):
+def remoteci_user(user, admin, team_user_id, topic_user_id):
     data = {'name': 'user remoteci', 'team_id': team_user_id}
     remoteci = user.post('/api/v1/remotecis', data=data).data
 
-    return str(remoteci['remoteci']['id'])
+    return remoteci['remoteci']
+
+
+@pytest.fixture
+def remoteci_user_id(remoteci_user):
+    return str(remoteci_user['id'])
 
 
 @pytest.fixture

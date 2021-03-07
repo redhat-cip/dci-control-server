@@ -89,7 +89,6 @@ def get_all_teams(user):
         q = q.filter(models2.Team.id.in_(user.teams_ids))
 
     q = q.filter(models2.Team.state != 'archived').\
-        filter(models2.Team.state != 'archived').\
         options(sa_orm.joinedload('topics')).\
         options(sa_orm.joinedload('remotecis'))
     q = d.handle_args(q, models2.Team, args)
@@ -109,12 +108,13 @@ def get_team_by_id(user, t_id):
     if user.is_not_in_team(t_id) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    t = flask.g.session.query(models2.Team).\
-        filter(models2.Team.state != 'archived').\
-        filter(models2.Team.id == t_id).\
-        options(sa_orm.joinedload('remotecis')).\
-        options(sa_orm.joinedload('topics')).one()
-    if not t:
+    try:
+        t = flask.g.session.query(models2.Team).\
+            filter(models2.Team.state != 'archived').\
+            filter(models2.Team.id == t_id).\
+            options(sa_orm.joinedload('remotecis')).\
+            options(sa_orm.joinedload('topics')).one()
+    except sa_orm.exc.NoResultFound:
         raise dci_exc.DCIException(message="team not found", status_code=404)
 
     return flask.Response(

@@ -24,17 +24,19 @@ from sqlalchemy import sql
 
 def is_teams_associated_to_product(team_ids, product_id):
     q_get_product_team = sql.select([models.JOIN_PRODUCTS_TEAMS]).where(
-        models.JOIN_PRODUCTS_TEAMS.c.team_id.in_(team_ids)
+        sql.and_(models.JOIN_PRODUCTS_TEAMS.c.team_id.in_(team_ids),
+                 models.JOIN_PRODUCTS_TEAMS.c.product_id == product_id)
     )
     result = flask.g.db_conn.execute(q_get_product_team)
     return result.rowcount > 0
 
 
 def is_teams_associated_to_topic(team_ids, topic_id):
-    q_get_topic__team = sql.select([models.JOINS_TOPICS_TEAMS]).where(
-        models.JOINS_TOPICS_TEAMS.c.team_id.in_(team_ids)
+    q_get_topic_team = sql.select([models.JOINS_TOPICS_TEAMS]).where(
+        sql.and_(models.JOINS_TOPICS_TEAMS.c.team_id.in_(team_ids),
+                 models.JOINS_TOPICS_TEAMS.c.topic_id == topic_id)
     )
-    result = flask.g.db_conn.execute(q_get_topic__team)
+    result = flask.g.db_conn.execute(q_get_topic_team)
     return result.rowcount > 0
 
 

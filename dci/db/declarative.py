@@ -57,6 +57,8 @@ class Mixin(object):
         _attrs = self.__dict__.keys()
 
         for attr in _attrs:
+            if attr in ignore_columns:
+                continue
             attr_obj = getattr(self, attr)
             if isinstance(attr_obj, list):
                 _dict[attr] = []
@@ -68,9 +70,13 @@ class Mixin(object):
                         _dict[attr].append(ao.serialize(ignore_columns=_ignore_columns))
                     else:
                         _dict[attr].append(ao)
-            else:
-                if not attr.startswith('_') and attr not in ignore_columns:
-                    _dict[attr] = self.__dict__[attr]
+            elif isinstance(attr_obj, Mixin):
+                _ignore_columns = []
+                if attr in nested_ignore_columns:
+                    _ignore_columns = nested_ignore_columns[attr]
+                _dict[attr] = attr_obj.serialize(ignore_columns=_ignore_columns)
+            elif not attr.startswith('_'):
+                _dict[attr] = self.__dict__[attr]
         return _dict
 
 
