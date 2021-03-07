@@ -102,7 +102,7 @@ class Team(dci_declarative.Mixin, Base):
     state = sa.Column(STATES, default='active')
     external = sa.Column(sa.BOOLEAN, default=True)
     users = sa_orm.relationship('User', secondary=USERS_TEAMS, back_populates='team')
-    remotecis = sa_orm.relationship('Remoteci')
+    remotecis = sa_orm.relationship('Remoteci', back_populates='team')
     topics = sa_orm.relationship('Topic', secondary=JOINS_TOPICS_TEAMS, back_populates='teams')
 
 
@@ -127,13 +127,14 @@ class Remoteci(dci_declarative.Mixin, Base):
                       sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key'))
 
     name = sa.Column('name', sa.String(255))
-    data = sa.Column('data', sa_utils.JSONType)
+    data = sa.Column('data', sa_utils.JSONType, default={})
     api_secret = sa.Column('api_secret', sa.String(64), default=signature.gen_secret)
     team_id = sa.Column('team_id', pg.UUID(as_uuid=True), sa.ForeignKey('teams.id', ondelete='CASCADE'), nullable=False)
     public = sa.Column('public', sa.BOOLEAN, default=False)
     cert_fp = sa.Column('cert_fp', sa.String(255))
     state = sa.Column('state', STATES, default='active')
     users = sa_orm.relationship('User', secondary=USER_REMOTECIS, back_populates='remotecis')
+    team = sa_orm.relationship('Team', back_populates='remotecis')
 
 
 class Product(dci_declarative.Mixin, Base):
