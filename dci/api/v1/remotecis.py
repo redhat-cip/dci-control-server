@@ -18,6 +18,7 @@ import re
 from datetime import datetime, timedelta
 from flask import json
 from sqlalchemy import exc as sa_exc
+import sqlalchemy.orm as sa_orm
 from sqlalchemy import sql
 from OpenSSL import crypto
 
@@ -36,8 +37,11 @@ from dci.common.schemas import (
 
 from dci.common import signature
 from dci.common import utils
+from dci.db import declarative as d
 from dci.db import embeds
 from dci.db import models
+from dci.db import models2
+
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.REMOTECIS
@@ -55,10 +59,6 @@ def create_remotecis(user):
     values = flask.request.json
     check_json_is_valid(create_remoteci_schema, values)
     values.update(v1_utils.common_values_dict())
-
-    if user.is_not_in_team(values['team_id']) and user.is_not_epm():
-        raise dci_exc.Unauthorized()
-
     values.update({
         'data': values.get('data', {}),
         # XXX(fc): this should be populated as a default value from the
@@ -66,15 +66,23 @@ def create_remotecis(user):
         'api_secret': signature.gen_secret()
     })
 
-    query = _TABLE.insert().values(**values)
+    if user.is_not_in_team(values['team_id']) and user.is_not_epm():
+        raise dci_exc.Unauthorized()
 
     try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
+        r = models2.Remoteci(**values)
+        r_serialized = r.serialize()
+        flask.g.session.add(r)
+        flask.g.session.commit()
+    except sa_exc.IntegrityError as ie:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(ie), status_code=409)
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e))
 
     return flask.Response(
-        json.dumps({'remoteci': values}), 201,
+        json.dumps({'remoteci': r_serialized}), 201,
         headers={'ETag': values['etag']}, content_type='application/json'
     )
 
@@ -84,34 +92,46 @@ def create_remotecis(user):
 def get_all_remotecis(user, t_id=None):
     args = check_and_get_args(flask.request.args.to_dict())
 
-    # build the query thanks to the QueryBuilder class
-    query = v1_utils.QueryBuilder(_TABLE, args, _R_COLUMNS,
-                                  ignore_columns=['keys', 'cert_fp'])
-
-    if (user.is_not_super_admin() and user.is_not_read_only_user()
-        and user.is_not_epm()):
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
+    q = flask.g.session.query(models2.Remoteci)
+    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
+        q = q.filter(models2.Remoteci.team_id.in_(user.teams_ids))
 
     if t_id is not None:
-        query.add_extra_condition(_TABLE.c.team_id == t_id)
+        q = q.filter(models2.Remoteci.team_id == t_id)
 
-    query.add_extra_condition(_TABLE.c.state != 'archived')
+    q = q.filter(models2.Remoteci.state != 'archived').\
+        options(sa_orm.joinedload('team')).\
+        options(sa_orm.joinedload('users'))
 
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
+    q = d.handle_args(q, models2.Remoteci, args)
+    nb_remotecis = q.count()
 
-    return flask.jsonify({'remotecis': rows, '_meta': {'count': len(rows)}})
+    q = d.handle_pagination(q, args)
+    remotecis = q.all()
+    remotecis = list(map(lambda r: r.serialize(ignore_columns=["keys", "cert_fp"]), remotecis))
+
+    return flask.jsonify({'remotecis': remotecis, '_meta': {'count': nb_remotecis}})
 
 
 @api.route('/remotecis/<uuid:r_id>', methods=['GET'])
 @decorators.login_required
 def get_remoteci_by_id(user, r_id):
-    remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
-    if user.is_not_in_team(remoteci['team_id']) and user.is_not_epm():
-        raise dci_exc.DCINotFound('RemoteCI', remoteci['id'])
-    return base.get_resource_by_id(user, remoteci, _TABLE, _EMBED_MANY,
-                                   ignore_columns=["keys", "cert_fp"])
+    v1_utils.verify_existence_and_get(r_id, _TABLE)
+    try:
+        r = flask.g.session.query(models2.Remoteci).\
+            filter(models2.Remoteci.state != 'archived').\
+            filter(models2.Remoteci.id == r_id).\
+            options(sa_orm.joinedload('team')).\
+            options(sa_orm.joinedload('users')).one()
+    except sa_orm.exc.NoResultFound:
+        raise dci_exc.DCIException(message="remoteci not found", status_code=404)
+
+    if user.is_not_in_team(r.team_id) and user.is_not_read_only_user():
+        raise dci_exc.Unauthorized()
+
+    return flask.Response(
+        json.dumps({'remoteci': r.serialize(ignore_columns=["keys", "cert_fp"])}), 200, headers={'ETag': r.etag},
+        content_type='application/json')
 
 
 @api.route('/remotecis/<uuid:r_id>', methods=['PUT'])
@@ -128,25 +148,23 @@ def put_remoteci(user, r_id):
         raise dci_exc.Unauthorized()
 
     values['etag'] = utils.gen_etag()
-    where_clause = sql.and_(_TABLE.c.etag == if_match_etag,
-                            _TABLE.c.state != 'archived',
-                            _TABLE.c.id == r_id)
 
-    query = (_TABLE
-             .update()
-             .returning(*_TABLE.columns)
-             .where(where_clause)
-             .values(**values))
+    updated_remoteci = flask.g.session.query(models2.Remoteci).\
+        filter(models2.Remoteci.id == r_id).\
+        filter(models2.Remoteci.etag == if_match_etag).\
+        update(values)
+    flask.g.session.commit()
 
-    result = flask.g.db_conn.execute(query)
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('RemoteCI', r_id)
+    if not updated_remoteci:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message="update failed, check etag", status_code=409)
 
-    _result = dict(result.fetchone())
-    del _result['api_secret']
+    r = flask.g.session.query(models2.Remoteci).filter(models2.Remoteci.id == r_id).one()
+    if not r:
+        raise dci_exc.DCIException(message="unable to return remoteci", status_code=400)
 
     return flask.Response(
-        json.dumps({'remoteci': _result}), 200,
+        json.dumps({'remoteci': r.serialize(ignore_columns=['api_secret'])}), 200,
         headers={'ETag': values['etag']}, content_type='application/json'
     )
 
@@ -156,29 +174,26 @@ def put_remoteci(user, r_id):
 def delete_remoteci_by_id(user, remoteci_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-
     remoteci = v1_utils.verify_existence_and_get(remoteci_id, _TABLE)
 
     if user.is_not_in_team(remoteci['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    with flask.g.db_conn.begin():
+    deleted_remoteci = flask.g.session.query(models2.Remoteci).\
+        filter(models2.Remoteci.id == remoteci_id).\
+        filter(models2.Remoteci.etag == if_match_etag).\
+        update({'state': 'archived'})
+    flask.g.session.commit()
+
+    if not deleted_remoteci:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message="delete failed, check etag", status_code=409)
+
+    # will use models2 when FILES and JOBS will be done in models2
+    for model in [models.JOBS]:
         values = {'state': 'archived'}
-        where_clause = sql.and_(
-            _TABLE.c.etag == if_match_etag,
-            _TABLE.c.id == remoteci_id
-        )
-        query = _TABLE.update().where(where_clause).values(**values)
-
-        result = flask.g.db_conn.execute(query)
-
-        if not result.rowcount:
-            raise dci_exc.DCIDeleteConflict('RemoteCI', remoteci_id)
-
-        for model in [models.JOBS]:
-            query = model.update().where(model.c.remoteci_id == remoteci_id) \
-                         .values(**values)
-            flask.g.db_conn.execute(query)
+        query = model.update().where(model.c.remoteci_id == remoteci_id).values(**values)
+        flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
 
@@ -229,6 +244,7 @@ def add_user_to_remoteci(user, r_id):
     return flask.Response(result, 201, content_type='application/json')
 
 
+# this is already provided by /remotecis/<uuid:r_id> and will be removed
 @api.route('/remotecis/<uuid:r_id>/users', methods=['GET'])
 @decorators.login_required
 def get_all_users_from_remotecis(user, r_id):

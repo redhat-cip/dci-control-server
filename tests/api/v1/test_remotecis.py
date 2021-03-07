@@ -136,11 +136,13 @@ def test_get_all_remotecis_with_sort(user, team_user_id):
                           'team_id': team_user_id}).data['remoteci']
 
     grs = user.get('/api/v1/remotecis?sort=created_at').data
-    assert grs['remotecis'] == [r_1, r_2]
+    grs_ids = [g['id'] for g in grs['remotecis']]
+    assert grs_ids == [r_1['id'], r_2['id']]
 
     # test in reverse order
     grs = user.get('/api/v1/remotecis?sort=-created_at').data
-    assert grs['remotecis'] == [r_2, r_1]
+    grs_ids = [g['id'] for g in grs['remotecis']]
+    assert grs_ids == [r_2['id'], r_1['id']]
 
 
 def test_get_all_remotecis_embed(admin, team_id):
@@ -326,7 +328,7 @@ def test_get_all_remotecis_as_user(user, team_user_id):
 
 def test_get_remoteci_as_user(user, team_user_id, remoteci_id):
     remoteci = user.get('/api/v1/remotecis/%s' % remoteci_id)
-    assert remoteci.status_code == 404
+    assert remoteci.status_code == 401
 
     remoteci = user.post('/api/v1/remotecis',
                          data={'name': 'rname', 'team_id': team_user_id})
