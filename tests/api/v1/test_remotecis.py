@@ -136,11 +136,13 @@ def test_get_all_remotecis_with_sort(user, team_user_id):
                           'team_id': team_user_id}).data['remoteci']
 
     grs = user.get('/api/v1/remotecis?sort=created_at').data
-    assert grs['remotecis'] == [r_1, r_2]
+    grs_ids = [g['id'] for g in grs['remotecis']]
+    assert grs_ids == [r_1['id'], r_2['id']]
 
     # test in reverse order
     grs = user.get('/api/v1/remotecis?sort=-created_at').data
-    assert grs['remotecis'] == [r_2, r_1]
+    grs_ids = [g['id'] for g in grs['remotecis']]
+    assert grs_ids == [r_2['id'], r_1['id']]
 
 
 def test_get_all_remotecis_embed(admin, team_id):
@@ -250,6 +252,7 @@ def test_put_remotecis(user, team_user_id):
                    data={'name': 'nname', 'public': True, 'data': {'c': 3}},
                    headers={'If-match': pr_etag})
     assert ppr.status_code == 200
+    print(ppr.data)
     assert ppr.data['remoteci']['name'] == 'nname'
     assert ppr.data['remoteci']['public'] is True
     assert set(ppr.data['remoteci']['data']) == set(['c'])
@@ -326,7 +329,7 @@ def test_get_all_remotecis_as_user(user, team_user_id):
 
 def test_get_remoteci_as_user(user, team_user_id, remoteci_id):
     remoteci = user.get('/api/v1/remotecis/%s' % remoteci_id)
-    assert remoteci.status_code == 404
+    assert remoteci.status_code == 401
 
     remoteci = user.post('/api/v1/remotecis',
                          data={'name': 'rname', 'team_id': team_user_id})
@@ -442,6 +445,9 @@ def test_success_detach_myself_from_remoteci_in_team(user, user_id,
     r = user.delete('/api/v1/remotecis/%s/users/%s' % (remoteci_user_id,
                                                        user_id))
     assert r.status_code == 204
+    u = user.get("/api/v1/users/%s" % user_id)
+    for r in u.data["user"]["remotecis"]:
+        assert r["id"] != remoteci_user_id
 
 
 def test_get_subscribed_remotecis(remoteci_user_id, user, user_id):

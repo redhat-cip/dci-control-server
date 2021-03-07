@@ -31,15 +31,15 @@ def get_certificate_headers(remoteci_context, remoteci, product, topic, componen
 
 
 def test_user_cert_verified_if_user_team_in_RHEL_export_control_true(
-    admin, remoteci_context, remoteci, RHELProduct, RHEL80Topic, RHEL80Component, cakeys):  # noqa
+    admin, remoteci_context, remoteci_user, RHELProduct, RHEL80Topic, RHEL80Component, cakeys):  # noqa
     certificate_headers = get_certificate_headers(
-        remoteci_context, remoteci, RHELProduct, RHEL80Topic, RHEL80Component
+        remoteci_context, remoteci_user, RHELProduct, RHEL80Topic, RHEL80Component
     )
     request = admin.get("/api/v1/certs/verify", headers=certificate_headers)
     assert request.status_code == 403
     request = admin.post(
         "/api/v1/products/%s/teams" % RHELProduct["id"],
-        data={"team_id": remoteci["team_id"]},
+        data={"team_id": remoteci_user["team_id"]},
     )
     assert request.status_code == 201
     request = admin.get("/api/v1/certs/verify", headers=certificate_headers)
@@ -47,42 +47,42 @@ def test_user_cert_verified_if_user_team_in_RHEL_export_control_true(
 
 
 def test_user_cert_verified_if_user_team_in_RHEL_export_control_false(
-    admin, remoteci_context, remoteci, RHELProduct, RHEL81Topic, RHEL81Component, cakeys):  # noqa
+    admin, remoteci_context, remoteci_user, RHELProduct, RHEL81Topic, RHEL81Component, cakeys):  # noqa
     certificate_headers = get_certificate_headers(
-        remoteci_context, remoteci, RHELProduct, RHEL81Topic, RHEL81Component
+        remoteci_context, remoteci_user, RHELProduct, RHEL81Topic, RHEL81Component
     )
     request = admin.get("/api/v1/certs/verify", headers=certificate_headers)
     assert request.status_code == 403
     admin.post(
         "/api/v1/products/%s/teams" % RHELProduct["id"],
-        data={"team_id": remoteci["team_id"]},
+        data={"team_id": remoteci_user["team_id"]},
     )
     request = admin.get("/api/v1/certs/verify", headers=certificate_headers)
     assert request.status_code == 403
     admin.post(
         "/api/v1/topics/%s/teams" % RHEL81Topic['id'],
-        data={"team_id": remoteci["team_id"]}
+        data={"team_id": remoteci_user["team_id"]}
     )
     request = admin.get("/api/v1/certs/verify", headers=certificate_headers)
     assert request.status_code == 200
 
 
 def test_user_cert_verified_if_user_team_in_RHEL81(
-    admin, remoteci_context, remoteci, RHELProduct, RHEL81Topic,
+    admin, remoteci_context, remoteci_user, RHELProduct, RHEL81Topic,
     RHEL81Component, cakeys
 ):
     certificate_headers = get_certificate_headers(
-        remoteci_context, remoteci, RHELProduct, RHEL81Topic, RHEL81Component
+        remoteci_context, remoteci_user, RHELProduct, RHEL81Topic, RHEL81Component
     )
     request = admin.get("/api/v1/certs/verify", headers=certificate_headers)
     assert request.status_code == 403
     admin.post(
         "/api/v1/products/%s/teams" % RHELProduct["id"],
-        data={"team_id": remoteci["team_id"]},
+        data={"team_id": remoteci_user["team_id"]},
     )
     admin.post(
         "/api/v1/topics/%s/teams" % RHEL81Topic["id"],
-        data={"team_id": remoteci["team_id"]},
+        data={"team_id": remoteci_user["team_id"]},
     )
     request = admin.get("/api/v1/certs/verify", headers=certificate_headers)
     assert request.status_code == 200
