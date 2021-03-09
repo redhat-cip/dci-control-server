@@ -123,7 +123,14 @@ def _get_error_message(error):
     return error.message
 
 
+def _filter_json_by_schema_properties(properties, json):
+    for k, _ in json.items():
+        if k not in properties:
+            del json[k]
+
+
 def check_json_is_valid(schema, json):
+    _filter_json_by_schema_properties(schema['properties'], json)
     v = DCIValidator(schema, format_checker=FormatChecker())
     errors = []
     for error in sorted(v.iter_errors(json), key=str):
@@ -571,7 +578,7 @@ create_team_schema = {
 
 update_team_properties = {
     "name": Properties.string,
-    "country": Properties.string,
+    "country": with_default(Properties.string, None),
     "state": Properties.enum(valid_resource_states),
     "external": Properties.boolean
 }
