@@ -63,7 +63,7 @@ def create_users(user):
 
     try:
         u = models2.User(**values)
-        u_serialized = u.serialize()
+        u_serialized = u.serialize(ignore_columns=['remotecis'])
         flask.g.session.add(u)
         flask.g.session.commit()
     except sa_exc.IntegrityError as ie:

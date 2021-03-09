@@ -61,7 +61,7 @@ def create_teams(user):
 
     try:
         t = models2.Team(**values)
-        t_serialized = t.serialize()
+        t_serialized = t.serialize(ignore_columns=['users', 'remotecis', 'topics'])
         flask.g.session.add(t)
         flask.g.session.commit()
     except sa_exc.IntegrityError as ie:

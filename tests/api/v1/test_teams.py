@@ -21,6 +21,9 @@ import uuid
 def test_create_teams(admin, team_admin_id):
     pt = admin.post('/api/v1/teams',
                     data={'name': 'pname'}).data
+    assert 'users' not in pt['team']
+    assert 'remtoecis' not in pt['team']
+    assert 'topics' not in pt['team']
     pt_id = pt['team']['id']
     gt = admin.get('/api/v1/teams/%s' % pt_id).data
     assert gt['team']['name'] == 'pname'

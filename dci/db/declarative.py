@@ -57,6 +57,8 @@ class Mixin(object):
         _attrs = self.__dict__.keys()
 
         for attr in _attrs:
+            if attr in ignore_columns:
+                continue
             attr_obj = getattr(self, attr)
             if isinstance(attr_obj, list):
                 _dict[attr] = []
@@ -69,7 +71,7 @@ class Mixin(object):
                     else:
                         _dict[attr].append(ao)
             else:
-                if not attr.startswith('_') and attr not in ignore_columns:
+                if not attr.startswith('_'):
                     _dict[attr] = self.__dict__[attr]
         return _dict
 

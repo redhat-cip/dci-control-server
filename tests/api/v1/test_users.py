@@ -32,9 +32,12 @@ def test_create_users(admin, team_id):
                     data={'name': 'pname', 'password': 'ppass',
                           'fullname': 'P Name', 'email': 'pname@example.org'})
     assert pu.status_code == 201
-    pu = pu.data
-    pu_id = pu['user']['id']
-    gu = admin.get('/api/v1/users/%s' % pu_id).data
+    pu = pu.data['user']
+    assert 'remotecis' not in pu
+    assert 'team' not in pu
+    assert 'teams' not in pu
+
+    gu = admin.get('/api/v1/users/%s' % pu['id']).data
     assert gu['user']['name'] == 'pname'
     assert gu['user']['timezone'] == 'UTC'
 
