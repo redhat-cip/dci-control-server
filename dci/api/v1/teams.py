@@ -148,6 +148,12 @@ def put_team(user, t_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = flask.request.json
     check_json_is_valid(update_team_schema, values)
+    for k in ('topics', 'remotecis'):
+        try:
+            values.pop(k)
+        except KeyError:
+            pass
+
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 

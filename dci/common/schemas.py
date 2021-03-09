@@ -352,8 +352,9 @@ update_user_properties = {
     "email": Properties.email,
     "timezone": Properties.string,
     "password": Properties.string,
-    "team_id": Properties.uuid,
     "state": Properties.enum(valid_resource_states),
+    "team": with_default(Properties.array, []),
+    "remotecis": with_default(Properties.array, [])
 }
 update_user_schema = {"type": "object", "properties": update_user_properties}
 
@@ -571,9 +572,11 @@ create_team_schema = {
 
 update_team_properties = {
     "name": Properties.string,
-    "country": Properties.string,
+    "country": with_default(Properties.string, None),
     "state": Properties.enum(valid_resource_states),
-    "external": Properties.boolean
+    "external": Properties.boolean,
+    "remotecis": with_default(Properties.array, []),
+    "topics": with_default(Properties.array, [])
 }
 update_team_schema = {"type": "object", "properties": update_team_properties}
 

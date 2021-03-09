@@ -136,6 +136,12 @@ def put_current_user(user):
     values = flask.request.json
     check_json_is_valid(update_current_user_schema, values)
 
+    for k in ('team', 'remotecis'):
+        try:
+            values.pop(k)
+        except KeyError:
+            pass
+
     if user.is_not_read_only_user():
         current_password = values['current_password']
         encrypted_password = user.password
@@ -180,6 +186,12 @@ def put_user(user, user_id):
     values = flask.request.json
     check_json_is_valid(update_user_schema, values)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
+
+    for k in ('team', 'remotecis'):
+        try:
+            values.pop(k)
+        except KeyError:
+            pass
 
     # to update a user the caller must be a super admin
     if user.is_not_super_admin():
