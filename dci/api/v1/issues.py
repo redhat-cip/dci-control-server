@@ -187,7 +187,7 @@ def attach_issue(resource_id, table, user_id):
 @decorators.login_required
 def create_issue(user):
     data = flask.request.json
-    check_json_is_valid(issue_test_schema, data)
+    check_json_is_valid(issue_schema, data)
     issue = _get_or_create_issue(data)
     result = json.dumps({'issue': dict(issue)})
     return flask.Response(result, 201,
