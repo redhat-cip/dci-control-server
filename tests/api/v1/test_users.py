@@ -32,9 +32,9 @@ def test_create_users(admin, team_id):
                     data={'name': 'pname', 'password': 'ppass',
                           'fullname': 'P Name', 'email': 'pname@example.org'})
     assert pu.status_code == 201
-    pu = pu.data
-    pu_id = pu['user']['id']
-    gu = admin.get('/api/v1/users/%s' % pu_id).data
+    pu = pu.data['user']
+
+    gu = admin.get('/api/v1/users/%s' % pu['id']).data
     assert gu['user']['name'] == 'pname'
     assert gu['user']['timezone'] == 'UTC'
 
@@ -238,12 +238,13 @@ def test_put_users(admin, team_id):
     gu = admin.get('/api/v1/users/%s' % pu.data['user']['id'])
     assert gu.status_code == 200
     assert gu.data['user']['timezone'] == 'Europe/Paris'
+    gu.data['user']['name'] = 'new_name'
 
     ppu = admin.put('/api/v1/users/%s' % gu.data['user']['id'],
-                    data={'name': 'nname'},
+                    data=gu.data['user'],
                     headers={'If-match': pu_etag})
     assert ppu.status_code == 200
-    assert ppu.data['user']['name'] == 'nname'
+    assert ppu.data['user']['name'] == 'new_name'
 
 
 def test_change_user_state(admin, team_id):
