@@ -47,24 +47,6 @@ def test_check_json_is_valid_required_field():
     assert result.message == "Request malformed"
 
 
-def test_check_json_is_valid_no_additional_properties():
-    schema = {
-        "type": "object",
-        "properties": {"name": Properties.string},
-        "additionalProperties": False,
-    }
-    with pytest.raises(DCIException) as e:
-        check_json_is_valid(schema, {"name": "foo", "age": 32})
-    result = e.value
-    assert result.status_code == 400
-    assert len(result.payload["errors"]) == 1
-    assert (
-        result.payload["errors"][0]
-        == "Additional properties are not allowed ('age' was unexpected)"
-    )
-    assert result.message == "Request malformed"
-
-
 def test_check_json_is_valid_check_string_type():
     schema = {
         "type": "object",

@@ -153,19 +153,21 @@ def test_get_team_not_found(admin):
 
 
 def test_put_teams(admin):
-    pt = admin.post('/api/v1/teams', data={'name': 'pname'})
+    pt = admin.post('/api/v1/teams', data={'name': 'pname', 'country': 'country1'})
     assert pt.status_code == 201
 
     pt_etag = pt.headers.get("ETag")
 
     gt = admin.get('/api/v1/teams/%s' % pt.data['team']['id'])
     assert gt.status_code == 200
+    gt.data['team']['name'] = 'new_name'
 
     ppt = admin.put('/api/v1/teams/%s' % gt.data['team']['id'],
-                    data={'name': 'nname'},
+                    data=gt.data['team'],
                     headers={'If-match': pt_etag})
     assert ppt.status_code == 200
-    assert ppt.data['team']['name'] == 'nname'
+    assert ppt.data['team']['name'] == 'new_name'
+    assert ppt.data['team']['country'] == 'country1'
 
 
 def test_put_team_external_flag(user, admin, epm):
