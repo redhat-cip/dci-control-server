@@ -13,9 +13,9 @@ RUN yum -y install epel-release && \
     python python2-devel python2-pip python2-setuptools \
     python36 python36-devel python36-pip python36-setuptools && \
     yum clean all && \
-    pip install --no-cache-dir -U "pip<21.0" && \
-    pip install --no-cache-dir -U tox && \
-    pip install --no-cache-dir -r requirements.txt
+    pip -vvv install --no-cache-dir -U "pip<21.0" && \
+    pip -vvv install --no-cache-dir -U tox && \
+    pip -vvv install --no-cache-dir -r requirements.txt
 
 COPY tests/data/ca.key tests/data/ca.crt /etc/ssl/repo/
 
