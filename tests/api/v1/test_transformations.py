@@ -310,3 +310,16 @@ def test_junit2dict_with_big_xml():
     assert result['total'] == 11482
     assert result['time'] == 17010679
     assert len(result['testscases']) == 11482
+
+
+def test_junit2dict_nrt_with_testsuites_as_root_node():
+    with open('tests/data/junit_with_properties.xml', 'r') as f:
+        result = transformations.junit2dict(f)
+
+    assert result['success'] == 0
+    assert result['errors'] == 1
+    assert result['failures'] == 0
+    assert result['skips'] == 0
+    assert result['total'] == 1
+    assert result['time'] == 7763
+    assert len(result['testscases']) == 1

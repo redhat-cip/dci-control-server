@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<testsuites>
+    <testsuite errors="1" failures="0" hostname="hostname" name="pytest" skipped="0" tests="1" time="7.763" timestamp="2021-03-18T12:10:30.204363">
+        <testcase classname="testsuites[0].testcases[0]" name="testcase1" time="7.763">
+            <properties>
+                <property name="prop1" value="1" />
+            </properties>
+            <error message="error message"></error>
+        </testcase>
+    </testsuite>
+</testsuites>

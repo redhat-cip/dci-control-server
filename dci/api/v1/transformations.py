@@ -29,33 +29,31 @@ def parse_time(string_value):
         return 0.0
 
 
-def parse_testcase(root):
-    return {
+def parse_element(root):
+    testcase = {
         "name": root.attrib.get("name", ""),
         "classname": root.attrib.get("classname", ""),
         "regression": False,
         "successfix": False,
         "time": parse_time(root.attrib.get("time", "0")),
+        "message": "",
+        "value": "",
+        "action": "passed",
+        "type": "",
     }
-
-
-def parse_action(root):
-    return {
-        "message": root.get("message", ""),
-        "value": root.text,
-        "action": root.tag
-        if root.tag not in ["system-out", "system-err"]
-        else "passed",
-        "type": root.get("type", ""),
-    }
-
-
-def parse_element(root):
-    testcase = {"action": "passed", "message": "", "type": "", "value": ""}
-    testcase.update(parse_testcase(root))
-    if len(root) > 0:
-        action = parse_action(root[0])
-        testcase.update(action)
+    for child in root:
+        tag = child.tag
+        if tag in ["skipped", "error", "failure", "system-out", "system-err"]:
+            action = "passed" if tag in ["system-out", "system-err"] else tag
+            testcase.update(
+                {
+                    "message": child.get("message", ""),
+                    "value": child.text,
+                    "action": action,
+                    "type": child.get("type", ""),
+                }
+            )
+            break
     return testcase
 
 
