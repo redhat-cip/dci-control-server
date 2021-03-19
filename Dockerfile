@@ -10,7 +10,7 @@ COPY dci-control-server.spec /opt/dci-control-server/
 
 RUN set -x; yum -y install epel-release https://packages.distributed-ci.io/dci-release.el7.noarch.rpm && \
     yum -y install rpm-build && \
-    yum -y install $(rpmspec -q --requires dci-control-server.spec|grep -v systemd) && \
+    yum -y install $(rpmspec -q --requires -E '%define rhel 7' dci-control-server.spec|grep -v systemd) && \
     yum clean all
 
 COPY tests/data/ca.key tests/data/ca.crt /etc/ssl/repo/
