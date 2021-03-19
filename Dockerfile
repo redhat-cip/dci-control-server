@@ -6,16 +6,12 @@ LABEL maintainer="DCI Team <distributed-ci@redhat.com>"
 ENV LANG en_US.UTF-8
 
 WORKDIR /opt/dci-control-server
-COPY requirements.txt /opt/dci-control-server/
+COPY dci-control-server.spec /opt/dci-control-server/
 
-RUN yum -y install epel-release && \
-    yum -y install gcc git zeromq-devel \
-    python python2-devel python2-pip python2-setuptools \
-    python36 python36-devel python36-pip python36-setuptools && \
-    yum clean all && \
-    pip -vvv install --no-cache-dir -U "pip<21.0" && \
-    pip -vvv install --no-cache-dir -U tox && \
-    pip -vvv install --no-cache-dir -r requirements.txt
+RUN set -x; yum -y install epel-release https://packages.distributed-ci.io/dci-release.el7.noarch.rpm && \
+    yum -y install rpm-build && \
+    yum -y install $(rpmspec -q --requires dci-control-server.spec|grep -v systemd) && \
+    yum clean all
 
 COPY tests/data/ca.key tests/data/ca.crt /etc/ssl/repo/
 
