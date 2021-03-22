@@ -136,5 +136,21 @@ class Remoteci(dci_declarative.Mixin, Base):
     users = sa_orm.relationship('User', secondary=USER_REMOTECIS, back_populates='remotecis')
 
 
+JOIN_PRODUCTS_TEAMS = sa.Table(
+    'products_teams', Base.metadata,
+    sa.Column('product_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('products.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('team_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('teams.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+)
+
+
 class Product(dci_declarative.Mixin, Base):
     __tablename__ = 'products'
+    name = sa.Column('name', sa.String(255), nullable=False)
+    label = sa.Column('label', sa.String(255), nullable=False, unique=True)
+    description = sa.Column('description', sa.Text)
+    state = sa.Column('state', STATES, default='active')
+    topics = sa_orm.relationship('Topic')
