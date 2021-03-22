@@ -18,6 +18,7 @@ import flask
 from flask import json
 
 from sqlalchemy import exc as sa_exc
+import sqlalchemy.orm as sa_orm
 from sqlalchemy import sql
 
 from dci import decorators
@@ -36,7 +37,9 @@ from dci.common.schemas import (
     check_and_get_args
 )
 from dci.common import utils
+from dci.db import declarative as d
 from dci.db import models
+from dci.db import models2
 
 _TABLE = models.PRODUCTS
 _T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
@@ -59,15 +62,20 @@ def create_product(user):
     if not values['label']:
         values.update({'label': values['name'].upper()})
 
-    query = _TABLE.insert().values(**values)
-
     try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
+        p = models2.Product(**values)
+        p_serialized = p.serialize()
+        flask.g.session.add(p)
+        flask.g.session.commit()
+    except sa_exc.IntegrityError as ie:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(ie), status_code=409)
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e))
 
     return flask.Response(
-        json.dumps({'product': values}), 201,
+        json.dumps({'product': p_serialized}), 201,
         headers={'ETag': values['etag']}, content_type='application/json'
     )
 
@@ -82,57 +90,74 @@ def update_product(user, product_id):
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
-    v1_utils.verify_existence_and_get(product_id, _TABLE)
-
     values['etag'] = utils.gen_etag()
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == product_id
-    )
-    query = _TABLE.update().returning(*_TABLE.columns).\
-        where(where_clause).values(**values)
 
-    result = flask.g.db_conn.execute(query)
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('Product update error', product_id)
+    try:
+        flask.g.session.query(models2.Product).\
+            filter(models2.Product.id == product_id).\
+            filter(models2.Product.etag == if_match_etag).\
+            update(values)
+        flask.g.session.commit()
+    except sa_exc.IntegrityError as ie:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(ie), status_code=409)
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e))
+
+    p = flask.g.session.query(models2.Product).filter(models2.Product.id == product_id).one()
+    if not p:
+        raise dci_exc.DCIException(message="unable to return product", status_code=400)
 
     return flask.Response(
-        json.dumps({'product': result.fetchone()}), 200,
-        headers={'ETag': values['etag']}, content_type='application/json'
-    )
+        json.dumps({'product': p.serialize()}), 200, headers={'ETag': values['etag']},
+        content_type='application/json')
 
 
 @api.route('/products', methods=['GET'])
 @decorators.login_required
 def get_all_products(user):
     args = check_and_get_args(flask.request.args.to_dict())
-    query = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
 
-    query.add_extra_condition(_TABLE.c.state != 'archived')
+    q = flask.g.session.query(models2.Product).\
+        filter(models2.Product.state != 'archived').\
+        options(sa_orm.joinedload('topics'))
+    q = d.handle_args(q, models2.Product, args)
 
     if (user.is_not_super_admin() and user.is_not_read_only_user()
         and user.is_not_epm()):
-        _JPT = models.JOIN_PRODUCTS_TEAMS
+        _JPT = models2.JOIN_PRODUCTS_TEAMS
+        q = q.join(_JPT, sql.and_(_JPT.c.product_id == models2.Product.id,
+                                  _JPT.c.team_id.in_(user.teams_ids)))
 
-        query = v1_utils.QueryBuilder(models.PRODUCTS, args,
-                                      _T_COLUMNS,
-                                      root_join_table=_JPT,
-                                      root_join_condition=sql.and_(_JPT.c.product_id == _TABLE.c.id,  # noqa
-                                                                   _JPT.c.team_id.in_(user.teams_ids)))  # noqa
+    nb_products = q.count()
+    q = d.handle_pagination(q, args)
+    products = q.all()
+    products = list(map(lambda p: p.serialize(), products))
 
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-
-    return flask.jsonify({'products': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'products': products, '_meta': {'count': nb_products}})
 
 
 @api.route('/products/<uuid:product_id>', methods=['GET'])
 @decorators.login_required
 def get_product_by_id(user, product_id):
-    product = v1_utils.verify_existence_and_get(product_id, _TABLE)
-    return base.get_resource_by_id(user, product, _TABLE, _EMBED_MANY)
+    try:
+        q = flask.g.session.query(models2.Product).\
+            filter(models2.Product.state != 'archived').\
+            filter(models2.Product.id == product_id).\
+            options(sa_orm.joinedload('topics'))
+        if (user.is_not_super_admin() and user.is_not_read_only_user()
+           and user.is_not_epm()):
+            _JPT = models2.JOIN_PRODUCTS_TEAMS
+            q = q.join(_JPT, sql.and_(_JPT.c.product_id == models2.Product.id,
+                                      _JPT.c.team_id.in_(user.teams_ids)))
+        p = q.one()
+    except sa_orm.exc.NoResultFound:
+        raise dci_exc.DCIException(message="product not found", status_code=404)
+
+    return flask.Response(
+        json.dumps({'product': p.serialize()}), 200, headers={'ETag': p.etag},
+        content_type='application/json')
 
 
 @api.route('/products/<uuid:product_id>', methods=['DELETE'])
@@ -146,19 +171,15 @@ def delete_product_by_id(user, product_id):
 
     v1_utils.verify_existence_and_get(product_id, _TABLE)
 
-    values = {'state': 'archived'}
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == product_id
-    )
+    deleted_product = flask.g.session.query(models2.Product).\
+        filter(models2.Product.id == product_id).\
+        filter(models2.Product.etag == if_match_etag).\
+        update({'state': 'archived'})
+    flask.g.session.commit()
 
-    query = _TABLE.update().where(where_clause).values(**values)
-
-    result = flask.g.db_conn.execute(query)
-
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('Product deletion error',
-                                  product_id)
+    if not deleted_product:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message="delete failed, check etag", status_code=409)
 
     return flask.Response(None, 204, content_type='application/json')
 
@@ -170,45 +191,64 @@ def add_team_to_product(user, product_id):
     check_json_is_valid(add_team_to_product_schema, values)
 
     team_id = values.get('team_id')
-    product = v1_utils.verify_existence_and_get(product_id, _TABLE)
-    team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
-                                                get_id=True)
 
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    values = {'product_id': product['id'],
-              'team_id': team_id}
-    query = models.JOIN_PRODUCTS_TEAMS.insert().values(**values)
     try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(
-            models.JOIN_PRODUCTS_TEAMS.name, "product_id, team_id"
-        )
+        p = flask.g.session.query(models2.Product).\
+            filter(models2.Product.state != 'archived').\
+            filter(models2.Product.id == product_id).one()
+    except sa_orm.exc.NoResultFound:
+        raise dci_exc.DCIException(message="product not found", status_code=404)
 
-    result = json.dumps(values)
+    try:
+        t = flask.g.session.query(models2.Team).\
+            filter(models2.Team.state != 'archived').\
+            filter(models2.Team.id == team_id).one()
+    except sa_orm.exc.NoResultFound:
+        raise dci_exc.DCIException(message="team not found", status_code=404)
+
+    try:
+        p.teams.append(t)
+        flask.g.session.add(p)
+        flask.g.session.commit()
+    except sa_exc.IntegrityError:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message="conflict when adding team", status_code=409)
+
+    result = json.dumps({'product_id': p.id, 'team_id': t.id})
     return flask.Response(result, 201, content_type='application/json')
 
 
 @api.route('/products/<uuid:product_id>/teams/<uuid:team_id>', methods=['DELETE'])
 @decorators.login_required
 def delete_team_from_product(user, product_id, team_id):
-    product = v1_utils.verify_existence_and_get(product_id, _TABLE)
-    team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
-                                                get_id=True)
 
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    JPT = models.JOIN_PRODUCTS_TEAMS
-    where_clause = sql.and_(JPT.c.product_id == product['id'],
-                            JPT.c.team_id == team_id)
-    query = JPT.delete().where(where_clause)
-    result = flask.g.db_conn.execute(query)
+    try:
+        p = flask.g.session.query(models2.Product).\
+            filter(models2.Product.state != 'archived').\
+            filter(models2.Product.id == product_id).one()
+    except sa_orm.exc.NoResultFound:
+        raise dci_exc.DCIException(message="product not found", status_code=404)
 
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('Products_teams', team_id)
+    try:
+        t = flask.g.session.query(models2.Team).\
+            filter(models2.Team.state != 'archived').\
+            filter(models2.Team.id == team_id).one()
+    except sa_orm.exc.NoResultFound:
+        raise dci_exc.DCIException(message="team not found", status_code=404)
+
+    try:
+        p.teams.remove(t)
+        flask.g.session.add(p)
+        flask.g.session.commit()
+    except sa_exc.IntegrityError:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message="conflict when removing team", status_code=409)
 
     return flask.Response(None, 204, content_type='application/json')
 
@@ -225,6 +265,7 @@ def serialize_teams(rows):
     return result
 
 
+# this is already provided by GET /products/<uuid:product_id> and will be removed
 @api.route('/products/<uuid:product_id>/teams', methods=['GET'])
 @decorators.login_required
 def get_all_teams_from_product(user, product_id):
