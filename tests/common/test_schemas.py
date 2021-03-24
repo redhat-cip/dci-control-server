@@ -18,6 +18,7 @@ import pytest
 from dci.common.exceptions import DCIException
 from dci.common.schemas import (
     check_json_is_valid,
+    clean_json_with_schema,
     Properties,
     with_default,
     allow_none,
@@ -421,3 +422,25 @@ def test_allow_none_values():
         check_json_is_valid(schema, {"foo": None})
     except DCIException:
         pytest.fail("allow None for foo doesn't work")
+
+
+def test_clean_json_with_schema_remove_additional_properties():
+    schema = {
+        "type": "object",
+        "properties": {"name": Properties.string, "password": Properties.string},
+    }
+    values = clean_json_with_schema(schema, {"name": "foo", "team": []})
+    assert values == {"name": "foo"}
+
+
+def test_clean_json_with_schema_also_validate_schema():
+    schema = {
+        "type": "object",
+        "properties": {"name": Properties.string, "fullname": Properties.string},
+        "required": ["fullname"],
+    }
+    with pytest.raises(DCIException) as e:
+        clean_json_with_schema(schema, {"name": "foo", "team": []})
+    errors = e.value.payload["errors"]
+    assert len(errors) == 1
+    assert errors[0] == "'fullname' is a required property"

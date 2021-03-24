@@ -30,6 +30,7 @@ from dci.db import models
 from dci.db import models2
 from dci.common.schemas import (
     check_json_is_valid,
+    clean_json_with_schema,
     create_user_schema,
     update_user_schema,
     update_current_user_schema,
@@ -177,8 +178,7 @@ def put_current_user(user):
 @api.route('/users/<uuid:user_id>', methods=['PUT'])
 @decorators.login_required
 def put_user(user, user_id):
-    values = flask.request.json
-    check_json_is_valid(update_user_schema, values)
+    values = clean_json_with_schema(update_user_schema, flask.request.json)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     # to update a user the caller must be a super admin
