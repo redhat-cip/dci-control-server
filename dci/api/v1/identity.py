@@ -21,7 +21,7 @@ from dci.api.v1 import api
 from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
-    check_json_is_valid,
+    clean_json_with_schema,
     update_current_user_schema
 )
 from dci.common import utils
@@ -69,8 +69,7 @@ def get_identity(identity):
 @decorators.login_required
 def put_identity(user):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = flask.request.json
-    check_json_is_valid(update_current_user_schema, values)
+    values = clean_json_with_schema(update_current_user_schema, flask.request.json)
 
     if user.is_not_read_only_user():
         current_password = values['current_password']

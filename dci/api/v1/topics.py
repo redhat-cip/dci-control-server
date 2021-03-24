@@ -27,6 +27,7 @@ from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     check_json_is_valid,
+    clean_json_with_schema,
     create_topic_schema,
     update_topic_schema,
     check_and_get_args
@@ -132,8 +133,7 @@ def get_all_topics(user):
 def put_topic(user, topic_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = flask.request.json
-    check_json_is_valid(update_topic_schema, values)
+    values = clean_json_with_schema(update_topic_schema, flask.request.json)
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_feeder():  # noqa
         raise dci_exc.Unauthorized()

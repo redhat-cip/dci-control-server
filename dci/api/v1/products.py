@@ -29,6 +29,7 @@ from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     check_json_is_valid,
+    clean_json_with_schema,
     create_product_schema,
     update_product_schema,
     add_team_to_product_schema,
@@ -76,8 +77,7 @@ def create_product(user):
 def update_product(user, product_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = flask.request.json
-    check_json_is_valid(update_product_schema, values)
+    values = clean_json_with_schema(update_product_schema, flask.request.json)
 
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()

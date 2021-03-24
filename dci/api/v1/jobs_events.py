@@ -22,7 +22,7 @@ from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
-    check_json_is_valid,
+    clean_json_with_schema,
     counter_schema,
     check_and_get_args
 )
@@ -126,8 +126,7 @@ def put_current_sequence(user):
 
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = flask.request.json
-    check_json_is_valid(counter_schema, values)
+    values = clean_json_with_schema(counter_schema, flask.request.json)
     etag = utils.gen_etag()
     q_update = models.COUNTER.update().\
         where(sql.and_(models.COUNTER.c.name == 'jobs_events',
