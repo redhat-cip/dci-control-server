@@ -612,3 +612,24 @@ def test_update_user_schema():
         })
     except DCIException:
         pytest.fail("update_user_schema is invalid")
+
+
+def test_get_user_then_update_user_doesnt_raise_error_500(admin, team_id):
+    request = admin.post(
+        "/api/v1/users",
+        data={
+            "name": "user1",
+            "password": "password for user1",
+            "fullname": "Mr Uesr 1",
+            "email": "user1@example.org",
+        },
+    )
+    user = request.data["user"]
+    admin.post("/api/v1/teams/%s/users/%s" % (team_id, user["id"]))
+    user = admin.get("/api/v1/users/%s" % request.data["user"]["id"]).data["user"]
+    user["fullname"] = "Mr User 1"
+    request = admin.put(
+        "/api/v1/users/%s" % user["id"], data=user, headers={"If-match": user["etag"]}
+    )
+    assert request.status_code == 200
+    assert request["user"]["fullname"] == "Mr User 1"
