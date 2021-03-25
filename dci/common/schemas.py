@@ -135,6 +135,11 @@ def check_json_is_valid(schema, json):
 valid_resource_states = ["active", "inactive", "archived"]
 
 
+def clean_json_with_schema(schema, values):
+    check_json_is_valid(schema, values)
+    return {k: values[k] for k in schema["properties"].keys() if k in values}
+
+
 ###############################################################################
 #                                                                             #
 #                                 Args schema                                 #
