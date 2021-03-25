@@ -31,6 +31,7 @@ from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     check_json_is_valid,
+    clean_json_with_schema,
     create_job_schema,
     update_job_schema,
     upgrade_job_schema,
@@ -439,8 +440,7 @@ def update_job_by_id(user, job_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    values = flask.request.json
-    check_json_is_valid(update_job_schema, values)
+    values = clean_json_with_schema(update_job_schema, flask.request.json)
 
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     job = dict(job)

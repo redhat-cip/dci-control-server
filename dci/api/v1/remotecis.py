@@ -29,6 +29,7 @@ from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     check_json_is_valid,
+    clean_json_with_schema,
     create_remoteci_schema,
     update_remoteci_schema,
     check_and_get_args
@@ -119,8 +120,7 @@ def get_remoteci_by_id(user, r_id):
 def put_remoteci(user, r_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = flask.request.json
-    check_json_is_valid(update_remoteci_schema, values)
+    values = clean_json_with_schema(update_remoteci_schema, flask.request.json)
 
     remoteci = v1_utils.verify_existence_and_get(r_id, _TABLE)
 

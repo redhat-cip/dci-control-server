@@ -26,6 +26,7 @@ from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     check_json_is_valid,
+    clean_json_with_schema,
     create_feeder_schema,
     update_feeder_schema,
     check_and_get_args
@@ -105,8 +106,7 @@ def get_feeder_by_id(user, f_id):
 @decorators.login_required
 def put_feeder(user, f_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = flask.request.json
-    check_json_is_valid(update_feeder_schema, values)
+    values = clean_json_with_schema(update_feeder_schema, flask.request.json)
     feeder = v1_utils.verify_existence_and_get(f_id, _TABLE)
 
     if not user.is_in_team(feeder['team_id']):

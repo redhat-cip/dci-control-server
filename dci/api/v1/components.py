@@ -32,6 +32,7 @@ from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     check_json_is_valid,
+    clean_json_with_schema,
     create_component_schema,
     update_component_schema,
     check_and_get_args
@@ -112,8 +113,7 @@ def update_components(user, c_id):
 
     _verify_component_and_topic_access(user, component)
 
-    values = flask.request.json
-    check_json_is_valid(update_component_schema, values)
+    values = clean_json_with_schema(update_component_schema, flask.request.json)
     values['etag'] = utils.gen_etag()
 
     where_clause = sql.and_(

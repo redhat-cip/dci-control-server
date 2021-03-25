@@ -26,6 +26,7 @@ from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     check_json_is_valid,
+    clean_json_with_schema,
     create_test_schema,
     update_test_schema,
     check_and_get_args
@@ -69,8 +70,7 @@ def update_tests(user, t_id):
     v1_utils.verify_existence_and_get(t_id, _TABLE)
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    values = flask.request.json
-    check_json_is_valid(update_test_schema, values)
+    values = clean_json_with_schema(update_test_schema, flask.request.json)
     values['etag'] = utils.gen_etag()
 
     where_clause = sql.and_(

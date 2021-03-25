@@ -26,6 +26,7 @@ from dci.common import utils
 from dci.db import models
 from dci.common.schemas import (
     check_json_is_valid,
+    clean_json_with_schema,
     create_analytic_schema,
     update_analytic_schema,
     check_and_get_args
@@ -95,8 +96,7 @@ def update_analytic(user, job_id, anc_id):
     if not user.is_in_team(job['team_id']):
         raise dci_exc.Unauthorized()
 
-    values = flask.request.json
-    check_json_is_valid(update_analytic_schema, values)
+    values = clean_json_with_schema(update_analytic_schema, flask.request.json)
     values.update({
         'etag': utils.gen_etag()
     })

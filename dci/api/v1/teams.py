@@ -28,6 +28,7 @@ from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     check_json_is_valid,
+    clean_json_with_schema,
     create_team_schema,
     update_team_schema,
     check_and_get_args
@@ -146,8 +147,8 @@ def get_tests_by_team(user, team_id):
 def put_team(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = flask.request.json
-    check_json_is_valid(update_team_schema, values)
+    values = clean_json_with_schema(update_team_schema, flask.request.json)
+
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 

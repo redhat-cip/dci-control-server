@@ -134,8 +134,7 @@ def get_current_user(user):
 @decorators.login_required
 def put_current_user(user):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = flask.request.json
-    check_json_is_valid(update_current_user_schema, values)
+    values = clean_json_with_schema(update_current_user_schema, flask.request.json)
 
     if user.is_not_read_only_user():
         current_password = values['current_password']
