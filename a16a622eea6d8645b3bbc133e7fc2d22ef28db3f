@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "2d3d281e_7a3f63e9",
+        "filename": "requirements.txt",
+        "patchSetId": 3
+      },
+      "lineNbr": 12,
+      "author": {
+        "id": 28
+      },
+      "writtenOn": "2021-04-07T15:18:28Z",
+      "side": 1,
+      "message": "For dciauth, could we use \u003e\u003d2.1.7 instead (require a minimum version rather than a fixed version) since it\u0027s not from the distro but from our own repo ?",
+      "range": {
+        "startLine": 12,
+        "startChar": 0,
+        "endLine": 12,
+        "endChar": 14
+      },
+      "revId": "a16a622eea6d8645b3bbc133e7fc2d22ef28db3f",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    }
+  ]
+}
