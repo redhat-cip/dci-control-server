@@ -1,18 +1,18 @@
-psycopg2==2.7.5  # ignore: use latest version of psycopg2 to avoid building it during pip install
-pyopenssl  # ignore: openssl 1.0.2k doesn't exist on pypi
-cryptography  # ignore: use latest version of cryptography to avoid building it during pip install
-alembic==0.8.3  # ignore: use the epel version instead of the centos version
-six==1.9.0  # python-six
-SQLAlchemy==0.9.8  # python-sqlalchemy
-requests==2.6.0  # python-requests
-pytz==2016.10  # pytz
-pyjwt==1.5.3  # python-jwt
-flask==0.10.1  # python-flask
-passlib==1.6.5  # python-passlib
-dciauth==2.1.7  # python-dciauth
-dci-umb==0.3.0  # python-dciumb
-SQLAlchemy-Utils==0.31.3  # python-sqlalchemy-utils
-pyzmq==14.3.1  # python-zmq
-python-keystoneclient==3.17.0  # python2-keystoneclient
-python-swiftclient==3.6.0  # python2-swiftclient
-jsonschema==2.5.1  # python2-jsonschema
+psycopg2-binary  # ignore: use latest version of psycopg2 to avoid building it during pip install (python-psycopg2-2.5.1-4.el7.x86_64)
+pyopenssl  # ignore: openssl 1.0.2k doesn't exist on pypi (openssl-1.0.2k-21.el7_9.x86_64)
+cryptography  # ignore: use latest version of cryptography to avoid building it during pip install (python2-cryptography-2.1.4-2.el7.x86_64)
+alembic==0.9.7  # python2-alembic-0.9.7-1.el7.noarch
+six==1.11.0  # python2-six-1.11.0-4.el7.noarch
+SQLAlchemy==1.2.7  # python2-sqlalchemy-1.2.7-1.el7.x86_64
+requests==2.19.1  # python2-requests-2.19.1-4.el7.noarch
+pytz==2016.10  # pytz-2016.10-2.el7.noarch
+pyjwt==1.6.1  # python2-jwt-1.6.1-1.el7.noarch
+flask==1.0.2  # python2-flask-1.0.2-1.el7.noarch
+passlib==1.7.1  # python2-passlib-1.7.1-1.el7.noarch
+dciauth  # ignore: package from dci use the latest version
+dci-umb  # ignore: package from dci use the latest version
+SQLAlchemy-Utils==0.31.3  # python-sqlalchemy-utils-0.31.3-2.el7.centos.noarch
+pyzmq==14.3.1  # python2-zmq-14.7.0-11.el7.x86_64
+python-keystoneclient==3.17.0  # python2-keystoneclient-3.17.0-1.el7.noarch
+python-swiftclient==3.6.1  # python2-swiftclient-3.6.1-1.el7.noarch
+jsonschema==2.6.0  # python2-jsonschema-2.6.0-2.el7.noarch

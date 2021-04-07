@@ -93,10 +93,16 @@ def get_topic_by_id(user, topic_id):
 def get_all_topics(user):
     def _get_user_product_ids():
         _JPT = models.JOIN_PRODUCTS_TEAMS
-        query = v1_utils.QueryBuilder(models.PRODUCTS, {}, {},
-                                    root_join_table=_JPT,
-                                    root_join_condition=sql.and_(_JPT.c.product_id == models.PRODUCTS.c.id,  # noqa
-                                                                 _JPT.c.team_id.in_(user.teams_ids)))  # noqa
+        query = v1_utils.QueryBuilder(
+            models.PRODUCTS,
+            {},
+            {},
+            root_join_table=_JPT,
+            root_join_condition=sql.and_(
+                _JPT.c.product_id == models.PRODUCTS.c.id,
+                _JPT.c.team_id.in_(user.teams_ids),
+            ),
+        )
         user_products = query.execute(fetchall=True)
         return [up['products_id'] for up in user_products]
 

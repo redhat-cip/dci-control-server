@@ -345,22 +345,24 @@ def test_success_update_job_status(admin, job_user_id):
 
 
 def test_job_duration(admin, job_user_id, engine):
-    job = admin.get('/api/v1/jobs/%s' % job_user_id)
-    job = job.data['job']
-    assert job['status'] == 'new'
+    job = admin.get("/api/v1/jobs/%s" % job_user_id)
+    job = job.data["job"]
+    assert job["status"] == "new"
     # update the job with a created_at 5 seconds in the past
     with engine.begin() as conn:
-        q = (models.JOBS.update()
-         .where(models.JOBS.c.id == job_user_id)
-         .values(created_at=datetime.datetime.utcnow() - datetime.timedelta(0, 5)))  # noqa
+        q = (
+            models.JOBS.update()
+            .where(models.JOBS.c.id == job_user_id)
+            .values(created_at=datetime.datetime.utcnow() - datetime.timedelta(0, 5))
+        )
         conn.execute(q)
 
-    data = {'job_id': job_user_id, 'status': 'running'}
-    js = admin.post('/api/v1/jobstates', data=data)
+    data = {"job_id": job_user_id, "status": "running"}
+    js = admin.post("/api/v1/jobstates", data=data)
     assert js.status_code == 201
-    job = admin.get('/api/v1/jobs/%s' % job_user_id)
+    job = admin.get("/api/v1/jobs/%s" % job_user_id)
     # check those 5 seconds
-    assert job.data['job']['duration'] == 5
+    assert job.data["job"]["duration"] == 5
 
 
 def test_first_job_duration(admin, job_user_id, topic, remoteci_context):

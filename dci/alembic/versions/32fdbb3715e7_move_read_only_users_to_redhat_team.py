@@ -22,8 +22,8 @@ Create Date: 2019-06-10 03:39:11.655275
 """
 
 # revision identifiers, used by Alembic.
-revision = '32fdbb3715e7'
-down_revision = '3eccf653cd30'
+revision = "32fdbb3715e7"
+down_revision = "3eccf653cd30"
 branch_labels = None
 depends_on = None
 
@@ -37,9 +37,7 @@ def upgrade():
     db_conn = op.get_bind()
 
     # get the Red Hat team
-    query = sql.select([models.TEAMS]).where(
-        models.TEAMS.c.name == 'Red Hat'
-    )
+    query = sql.select([models.TEAMS]).where(models.TEAMS.c.name == "Red Hat")
     team_redhat = db_conn.execute(query).fetchone()
     if team_redhat is None:
         return
@@ -47,18 +45,16 @@ def upgrade():
     # get all the read only users
     _JUTR = models.JOIN_USERS_TEAMS_ROLES
     query = sql.select([_JUTR]).where(
-        sql.and_(
-            _JUTR.c.team_id == None,   # noqa
-            _JUTR.c.role == 'READ_ONLY_USER'
-    ))
+        sql.and_(_JUTR.c.team_id == None, _JUTR.c.role == "READ_ONLY_USER")  # noqa
+    )
     users_teams_roles = db_conn.execute(query).fetchall()
 
     # add the users to the Red Hat team
     for utr in users_teams_roles:
         try:
-            q = _JUTR.insert().values(team_id=team_redhat.id,
-                                      user_id=utr.user_id,
-                                      role='READ_ONLY_USER')
+            q = _JUTR.insert().values(
+                team_id=team_redhat.id, user_id=utr.user_id, role="READ_ONLY_USER"
+            )
             db_conn.execute(q)
         except sa_exc.IntegrityError:
             # if the user already exist, just ignore the statement
