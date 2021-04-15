@@ -297,6 +297,7 @@ JOIN_JOBS_COMPONENTS = sa.Table(
     sa.Column('job_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('jobs.id', ondelete='CASCADE'),
               nullable=False, primary_key=True),
+    sa.Index('jobs_components_job_id_idx', 'job_id'),
     sa.Column('component_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('components.id', ondelete='CASCADE'),
               nullable=False, primary_key=True)
