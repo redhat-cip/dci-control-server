@@ -1,0 +1,21 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "01c36c28_e61fc2d5",
+        "filename": "dci/common/utils.py",
+        "patchSetId": 4
+      },
+      "lineNbr": 91,
+      "author": {
+        "id": 7
+      },
+      "writtenOn": "2021-04-23T11:33:40Z",
+      "side": 1,
+      "message": "You might be interested by https://tenacity.readthedocs.io/ to take care of your retry need.",
+      "revId": "32c921d7383926415a99632115315363879eb248",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    }
+  ]
+}
