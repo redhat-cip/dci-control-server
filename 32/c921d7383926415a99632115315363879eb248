@@ -1,0 +1,10 @@
+Code-Review+2: Prophidys <ced.lecomte@gmail.com>
+Code-Review+2: Guillaume Vincent <gvincent@redhat.com>
+Workflow+1: Guillaume Vincent <gvincent@redhat.com>
+Workflow+1: Prophidys <ced.lecomte@gmail.com>
+Verified+2: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-by: Zuul CI <zuul@softwarefactory-project.io>
+Submitted-at: Fri, 23 Apr 2021 13:03:08 +0000
+Reviewed-on: https://softwarefactory-project.io/r/c/dci-control-server/+/21728
+Project: dci-control-server
+Branch: refs/heads/master
