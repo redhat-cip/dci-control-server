@@ -15,7 +15,7 @@
 # under the License.
 
 from dci import stores
-from dci.common import exceptions
+from dci.common import exceptions, utils
 
 import logging
 import os
@@ -122,4 +122,11 @@ class Swift(stores.Store):
                                                      '%s: %s' % (file_path, str(exc)),  # noqa
                                                      status_code=exc.http_status)  # noqa
 
-        self.connection.put_object(self.container, file_path, iterable)
+        utils.retry(
+            self.connection.put_object,
+            file_path,
+            iterable,
+            tries=3,
+            delay=1,
+            allowed_exceptions=(swiftclient.exceptions.ClientException,),
+        )
