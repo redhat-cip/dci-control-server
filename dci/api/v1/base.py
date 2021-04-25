@@ -35,6 +35,8 @@ def get_resource_by_id(user, resource, table, embed_many=None,
     resource_id = resource['id']
     columns = v1_utils.get_columns_name_with_objects(table)
 
+    # execute the query without embeds
+    embeds = args.pop('embed')
     query = v1_utils.QueryBuilder(table, args, columns, ignore_columns)
 
     if 'state' in resource:
@@ -43,11 +45,25 @@ def get_resource_by_id(user, resource, table, embed_many=None,
     query.add_extra_condition(table.c.id == resource_id)
 
     rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, table.name, args['embed'], embed_many)
+    rows = v1_utils.format_result(rows, table.name, [], embed_many)
 
     if len(rows) < 1:
         raise dci_exc.DCINotFound(resource_name, resource_id)
     resource = rows[0]
+
+    # exectute one query per embed and add the embed part to the final result
+    for embed in embeds:
+        args['embed'] = [embed]
+        query = v1_utils.QueryBuilder(table, args, columns, ignore_columns)
+
+        if 'state' in resource:
+            query.add_extra_condition(table.c.state != 'archived')
+
+        query.add_extra_condition(table.c.id == resource_id)
+
+        rows = query.execute(fetchall=True)
+        rows = v1_utils.format_result(rows, table.name, args['embed'], embed_many)
+        resource[embed] = rows[0][embed]
 
     if jsonify is True:
         res = flask.jsonify({resource_name: resource})
