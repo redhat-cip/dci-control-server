@@ -37,7 +37,7 @@ def get_resource_by_id(user, resource, table, embed_many=None,
 
     # execute the query without embeds
     embeds = args.pop('embed')
-    query = v1_utils.QueryBuilder(table, args, columns, ignore_columns)
+    query = v1_utils.QueryBuilder(table, args, columns, ignore_columns, root_id=resource_id)
 
     if 'state' in resource:
         query.add_extra_condition(table.c.state != 'archived')

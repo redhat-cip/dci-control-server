@@ -262,10 +262,11 @@ def request_wants_html():
 class QueryBuilder(object):
 
     def __init__(self, root_table, args={}, strings_to_columns={},
-                 ignore_columns=None, root_join_table=None, root_join_condition=None):  # noqa
+                 ignore_columns=None, root_join_table=None, root_join_condition=None, root_id=None):  # noqa
         self._root_table = root_table
         self._root_join_table = root_join_table
         self._root_join_condition = root_join_condition
+        self._root_id = root_id
         self._embeds = args.get('embed', [])
         self._limit = args.get('limit', None)
         self._offset = args.get('offset', None)
@@ -358,7 +359,7 @@ class QueryBuilder(object):
 
         query = sql.select(select_clause, use_labels=use_labels, from_obj=children)  # noqa
         if self._embeds:
-            embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select)  # noqa
+            embed_joins = embeds.EMBED_JOINS.get(self._root_table.name)(root_select, self._root_id)  # noqa
             embed_list = self._get_embed_list(embed_joins)
             embed_sorts = []
             for embed_elem in embed_list:

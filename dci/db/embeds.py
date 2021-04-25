@@ -45,16 +45,18 @@ NEXT_TOPIC = models.TOPICS.alias('next_topic')
 JOIN_USERS_TEAMS = models.JOIN_USERS_TEAMS.alias('join_users_teams')  # noqa
 
 
-def jobs(root_select=models.JOBS):
+def jobs(root_select=models.JOBS, root_id=None):
+    if root_id is None:
+        root_id = models.JOBS.c.id
     return {
         'files': [
             {'right': models.FILES,
-             'onclause': and_(models.FILES.c.job_id == root_select.c.id,
+             'onclause': and_(models.FILES.c.job_id == root_id,
                               models.FILES.c.state != 'archived'),
              'isouter': True}],
         'jobstates': [
             {'right': models.JOBSTATES,
-             'onclause': models.JOBSTATES.c.job_id == root_select.c.id,
+             'onclause': models.JOBSTATES.c.job_id == root_id,
              'isouter': True}],
         'topic': [
             {'right': TOPIC,
@@ -66,7 +68,7 @@ def jobs(root_select=models.JOBS):
                               REMOTECI.c.state != 'archived')}],
         'components': [
             {'right': models.JOIN_JOBS_COMPONENTS,
-             'onclause': models.JOIN_JOBS_COMPONENTS.c.job_id == root_select.c.id,  # noqa
+             'onclause': models.JOIN_JOBS_COMPONENTS.c.job_id == root_id,  # noqa
              'isouter': True},
             {'right': models.COMPONENTS,
              'onclause': and_(models.COMPONENTS.c.id == models.JOIN_JOBS_COMPONENTS.c.component_id,  # noqa
@@ -78,18 +80,18 @@ def jobs(root_select=models.JOBS):
                               TEAM.c.state != 'archived')}],
         'results': [
             {'right': TESTS_RESULTS,
-             'onclause': TESTS_RESULTS.c.job_id == root_select.c.id,
+             'onclause': TESTS_RESULTS.c.job_id == root_id,
              'isouter': True}],
         'issues': [
             {'right': models.JOIN_JOBS_ISSUES,
-             'onclause': models.JOIN_JOBS_ISSUES.c.job_id == root_select.c.id,  # noqa
+             'onclause': models.JOIN_JOBS_ISSUES.c.job_id == root_id,  # noqa
              'isouter': True},
             {'right': models.ISSUES,
              'onclause': and_(models.ISSUES.c.id == models.JOIN_JOBS_ISSUES.c.issue_id),  # noqa
              'isouter': True}],
         'analytics': [
             {'right': models.ANALYTICS,
-             'onclause': models.ANALYTICS.c.job_id == root_select.c.id,
+             'onclause': models.ANALYTICS.c.job_id == root_id,
              'isouter': True}]
     }
 
