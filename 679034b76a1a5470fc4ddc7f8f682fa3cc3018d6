@@ -1,0 +1,27 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "720cc427_2eccff2c",
+        "filename": "dci/api/v1/base.py",
+        "patchSetId": 1
+      },
+      "lineNbr": 65,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-04-26T07:16:41Z",
+      "side": 1,
+      "message": "small duplication here with l40-48\nnot a big deal because we are going to remove this part soon",
+      "range": {
+        "startLine": 57,
+        "startChar": 0,
+        "endLine": 65,
+        "endChar": 82
+      },
+      "revId": "679034b76a1a5470fc4ddc7f8f682fa3cc3018d6",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    }
+  ]
+}
