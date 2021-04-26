@@ -1,0 +1,188 @@
+{
+  "comments": [
+    {
+      "key": {
+        "uuid": "5148b5be_b0836e2e",
+        "filename": "dci/db/embeds.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 50,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-04-26T14:49:09Z",
+      "side": 1,
+      "message": "root_select not models.JOBS here no ?",
+      "range": {
+        "startLine": 50,
+        "startChar": 18,
+        "endLine": 50,
+        "endChar": 29
+      },
+      "revId": "96470a37b63c927b317b99f0efe92a4276a49809",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "dd9b5714_891a639c",
+        "filename": "dci/db/embeds.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 99,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-04-26T14:49:09Z",
+      "side": 1,
+      "message": "this one is not used here",
+      "range": {
+        "startLine": 99,
+        "startChar": 42,
+        "endLine": 99,
+        "endChar": 56
+      },
+      "revId": "96470a37b63c927b317b99f0efe92a4276a49809",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "803ccbde_6e94a05c",
+        "filename": "dci/db/embeds.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 111,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-04-26T14:49:09Z",
+      "side": 1,
+      "message": "root_select instead of models.COMPONENTS",
+      "range": {
+        "startLine": 111,
+        "startChar": 18,
+        "endLine": 111,
+        "endChar": 35
+      },
+      "revId": "96470a37b63c927b317b99f0efe92a4276a49809",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "2e81553c_0732721b",
+        "filename": "dci/db/embeds.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 131,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-04-26T14:49:09Z",
+      "side": 1,
+      "message": "not used",
+      "range": {
+        "startLine": 131,
+        "startChar": 35,
+        "endLine": 131,
+        "endChar": 48
+      },
+      "revId": "96470a37b63c927b317b99f0efe92a4276a49809",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "b70a95f3_e9b56ce4",
+        "filename": "dci/db/embeds.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 156,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-04-26T14:49:09Z",
+      "side": 1,
+      "message": "root_select instead of models.JOBSTATES",
+      "range": {
+        "startLine": 156,
+        "startChar": 18,
+        "endLine": 156,
+        "endChar": 34
+      },
+      "revId": "96470a37b63c927b317b99f0efe92a4276a49809",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "275ceea0_5fd51c07",
+        "filename": "dci/db/embeds.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 173,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-04-26T14:49:09Z",
+      "side": 1,
+      "message": "root_select instead of models.TEAMS",
+      "range": {
+        "startLine": 173,
+        "startChar": 18,
+        "endLine": 173,
+        "endChar": 30
+      },
+      "revId": "96470a37b63c927b317b99f0efe92a4276a49809",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "eb972ab3_70e432ba",
+        "filename": "dci/db/embeds.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 203,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-04-26T14:49:09Z",
+      "side": 1,
+      "message": "same",
+      "range": {
+        "startLine": 203,
+        "startChar": 18,
+        "endLine": 203,
+        "endChar": 33
+      },
+      "revId": "96470a37b63c927b317b99f0efe92a4276a49809",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    },
+    {
+      "key": {
+        "uuid": "431f36e2_a3e2ea8f",
+        "filename": "dci/db/embeds.py",
+        "patchSetId": 2
+      },
+      "lineNbr": 215,
+      "author": {
+        "id": 405
+      },
+      "writtenOn": "2021-04-26T14:49:09Z",
+      "side": 1,
+      "message": "same",
+      "range": {
+        "startLine": 215,
+        "startChar": 18,
+        "endLine": 215,
+        "endChar": 31
+      },
+      "revId": "96470a37b63c927b317b99f0efe92a4276a49809",
+      "serverId": "6c1dc8ef-8b94-40e4-bd83-c2359d45ecc0",
+      "unresolved": true
+    }
+  ]
+}
