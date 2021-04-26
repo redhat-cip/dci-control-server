@@ -135,9 +135,18 @@ def test_fail_delete_product_user(user, product):
     assert result.status_code == 401
 
 
-def test_success_get_products_embed(admin, product):
+def test_success_get_products_embed(admin, user, team_user_id, product):
     result = admin.get('/api/v1/products/%s?embed=topics' % product['id'])
 
+    assert result.status_code == 200
+    assert 'topics' in result.data['product'].keys()
+
+    result = user.get('/api/v1/products/%s?embed=topics' % product['id'])
+    assert result.status_code == 404
+    result = admin.post('api/v1/products/%s/teams' % product['id'], data={'team_id': team_user_id})
+    assert result.status_code == 201
+
+    result = user.get('/api/v1/products/%s?embed=topics' % product['id'])
     assert result.status_code == 200
     assert 'topics' in result.data['product'].keys()
 
