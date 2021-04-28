@@ -576,7 +576,7 @@ create_team_schema = {
 
 update_team_properties = {
     "name": Properties.string,
-    "country": Properties.string,
+    "country": allow_none(Properties.string),
     "state": Properties.enum(valid_resource_states),
     "external": Properties.boolean
 }

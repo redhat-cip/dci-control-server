@@ -367,3 +367,18 @@ def test_get_all_teams_allowed_for_rh_employee(epm, rh_employee):
     teams = rh_employee.get("/api/v1/teams?sort=-created_at").data["teams"]
     assert teams[0]["name"] == "rh employee can see me"
     assert len(teams) == nb_teams + 1
+
+
+def test_nrt_update_team_after_get(admin, team_id):
+    team = admin.get("/api/v1/teams/%s" % team_id).data["team"]
+    new_team_name = "new team name"
+    assert team["name"] != new_team_name
+    team["name"] = new_team_name
+    r = admin.put(
+        "/api/v1/teams/%s" % team_id,
+        data=team,
+        headers={"If-match": team["etag"]},
+    )
+    assert r.status_code == 200
+    team = admin.get("/api/v1/teams/%s" % team_id).data["team"]
+    assert team["name"] == "new team name"
