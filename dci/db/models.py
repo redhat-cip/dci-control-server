@@ -230,6 +230,10 @@ JOBS = sa.Table(
     # duration in seconds
     sa.Column('duration', sa.Integer, default=0),
     sa.Column('comment', sa.Text),
+    sa.Column('status_reason', sa.Text),
+    sa.Column('configuration', sa.Text),
+    sa.Column('url', sa.Text),
+    sa.Column('name', sa.Text),
     sa.Column('status', STATUSES, default='new'),
     sa.Column('topic_id', pg.UUID(as_uuid=True),
               sa.ForeignKey('topics.id', ondelete='CASCADE'),
