@@ -45,11 +45,9 @@ SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI',
 # development. Turned off by default
 # --------
 SQLALCHEMY_ECHO = False
-SQLALCHEMY_RECORD_QUERIES = False
-
-SQLALCHEMY_POOL_SIZE = 5
-SQLALCHEMY_MAX_OVERFLOW = 15
 SQLALCHEMY_NATIVE_UNICODE = True
+SQLALCHEMY_POOL_SIZE = 5
+SQLALCHEMY_MAX_OVERFLOW = 25
 
 # Stores configuration, to store files and components
 # STORE

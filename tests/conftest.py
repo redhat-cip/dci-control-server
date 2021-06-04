@@ -15,6 +15,7 @@
 # under the License.
 
 import dci.app
+from dci import dci_config
 from dci.db import models
 import tests.utils as utils
 import tests.sso_tokens as sso_tokens
@@ -22,7 +23,6 @@ import tests.sso_tokens as sso_tokens
 from passlib.apps import custom_app_context as pwd_context
 import contextlib
 import pytest
-import sqlalchemy
 import sqlalchemy_utils.functions
 
 import uuid
@@ -33,7 +33,7 @@ def engine(request):
     utils.rm_upload_folder()
     db_uri = utils.conf['SQLALCHEMY_DATABASE_URI']
 
-    engine = sqlalchemy.create_engine(db_uri)
+    engine = dci_config.get_engine()
 
     if not sqlalchemy_utils.functions.database_exists(db_uri):
         sqlalchemy_utils.functions.create_database(db_uri)
