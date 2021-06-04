@@ -1,4 +1,4 @@
-psycopg2-binary  # ignore: use latest version of psycopg2 to avoid building it during pip install (python-psycopg2-2.5.1-4.el7.x86_64)
+psycopg2  # ignore: use latest version of psycopg2 to avoid building it during pip install (python-psycopg2-2.5.1-4.el7.x86_64)
 pyopenssl  # ignore: openssl 1.0.2k doesn't exist on pypi (openssl-1.0.2k-21.el7_9.x86_64)
 cryptography  # ignore: use latest version of cryptography to avoid building it during pip install (python2-cryptography-2.1.4-2.el7.x86_64)
 alembic==0.9.7  # python2-alembic-0.9.7-1.el7.noarch
