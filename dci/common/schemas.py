@@ -201,7 +201,11 @@ create_job_properties = {
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "topic_id": with_default(Properties.uuid, None),
     "tags": with_default(Properties.array, []),
-    "data": with_default(Properties.json, {})
+    "data": with_default(Properties.json, {}),
+    "status_reason": with_default(Properties.string, None),
+    "configuration": with_default(Properties.string, None),
+    "name": with_default(Properties.string, None),
+    "url": with_default(Properties.url, None),
 }
 create_job_schema = {
     "type": "object",
@@ -225,7 +229,11 @@ update_job_properties = {
         ]
     ),
     "state": Properties.enum(valid_resource_states),
-    "tags": Properties.array
+    "tags": Properties.array,
+    "status_reason": Properties.string,
+    "configuration": Properties.string,
+    "name": Properties.string,
+    "url": Properties.url
 }
 update_job_schema = {"type": "object", "properties": update_job_properties}
 
@@ -237,9 +245,12 @@ schedule_job_schema = {
         "dry_run": with_default(Properties.boolean, False),
         "topic_id": Properties.uuid,
         "components_ids": with_default(Properties.array, []),
+        "configuration": with_default(Properties.string, None),
+        "name": with_default(Properties.string, None),
+        "url": with_default(Properties.url, None),
     },
     "required": ["topic_id"],
-    "addiadditionalProperties": False,
+    "additionalProperties": False,
 }
 
 upgrade_job_schema = {
