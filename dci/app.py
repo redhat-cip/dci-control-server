@@ -150,10 +150,14 @@ def create_app(param=None):
     @dci_app.teardown_request
     def teardown_request(_):
         try:
+            flask.g.session.close()
+        except Exception:
+            logging.warning("There's been an arror while calling session.close() in teardown_request.")
+
+        try:
             flask.g.db_conn.close()
         except Exception:
-            logging.warning('disconnected from the database..')
-            pass
+            logging.warning("There's been an error while calling db_conn.close() in teardown_request.")
 
     # Registering REST error handler
     dci_app.register_error_handler(exceptions.DCIException,
