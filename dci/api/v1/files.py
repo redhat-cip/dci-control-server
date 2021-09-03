@@ -167,9 +167,8 @@ def create_files(user):
                                             values['job_id'],
                                             file_id)
 
-    content = files_utils.get_stream_or_content_from_request(flask.request)
     store = dci_config.get_store('files')
-    store.upload(file_path, content)
+    store.upload(file_path, flask.request.data)
     s_file = store.head(file_path)
 
     etag = utils.gen_etag()

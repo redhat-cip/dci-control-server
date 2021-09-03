@@ -267,8 +267,7 @@ def upload_component_file(user, c_id):
     file_path = files_utils.build_file_path(component['topic_id'],
                                             c_id,
                                             file_id)
-    content = files_utils.get_stream_or_content_from_request(flask.request)
-    store.upload(file_path, content)
+    store.upload(file_path, flask.request.data)
     s_file = store.head(file_path)
 
     values = dict.fromkeys(['md5', 'mime', 'component_id', 'name'])
