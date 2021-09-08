@@ -70,6 +70,17 @@ def test_create_topics_as_user(user, product):
     assert status_code == 401
 
 
+def test_create_topic_lowercase_component_types(admin, product):
+    data = {
+        "name": "tname",
+        "product_id": product["id"],
+        "component_types": ["tYpe1", "Type2"],
+    }
+    topic = admin.post("/api/v1/topics", data=data).data["topic"]
+    topic = admin.get("/api/v1/topics/%s" % topic["id"]).data["topic"]
+    assert topic["component_types"] == ["type1", "type2"]
+
+
 def test_update_topics_as_admin(admin, topic_id):
     topic = topic_update(admin, topic_id).data['topic']
     assert topic['component_types'] == ['lol1', 'lol2']
@@ -80,6 +91,21 @@ def test_update_topic_as_feeder(feeder_context, topic_id):
     topic = topic_update(feeder_context, topic_id).data['topic']
     assert topic['component_types'] == ['lol1', 'lol2']
     assert topic['data']['foo'] == 'bar'
+
+
+def test_update_topic_lowercase_component_types(admin, product):
+    data = {
+        "name": "tname",
+        "product_id": product["id"],
+    }
+    topic = admin.post("/api/v1/topics", data=data).data["topic"]
+    topic = admin.put(
+        "/api/v1/topics/%s" % topic["id"],
+        data={"component_types": ["tYpe1", "Type2"]},
+        headers={"If-match": topic["etag"]},
+    ).data["topic"]
+    topic = admin.get("/api/v1/topics/%s" % topic["id"]).data["topic"]
+    assert topic["component_types"] == ["type1", "type2"]
 
 
 def test_change_topic_state(admin, topic_id):

@@ -61,6 +61,8 @@ def create_topics(user):
     # if values['component_types'] == []:
     #     raise dci_exc.DCIException('component_types should not be void')
 
+    values["component_types"] = [type.lower() for type in values["component_types"]]
+
     query = _TABLE.insert().values(**values)
 
     try:
@@ -145,6 +147,10 @@ def put_topic(user, topic_id):
         raise dci_exc.Unauthorized()
 
     values['etag'] = utils.gen_etag()
+
+    if "component_types" in values:
+        values["component_types"] = [type.lower() for type in values["component_types"]]
+
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,
         _TABLE.c.id == topic_id

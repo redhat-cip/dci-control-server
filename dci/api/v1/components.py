@@ -94,6 +94,7 @@ def create_components(user):
         if user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
             raise dci_exc.Unauthorized()
 
+    values["type"] = values["type"].lower()
     query = _TABLE.insert().values(**values)
 
     try:
@@ -115,6 +116,7 @@ def update_components(user, c_id):
 
     values = clean_json_with_schema(update_component_schema, flask.request.json)
     values['etag'] = utils.gen_etag()
+    values["type"] = values.get("type", component["type"]).lower()
 
     where_clause = sql.and_(
         _TABLE.c.etag == if_match_etag,

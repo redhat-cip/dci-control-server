@@ -39,6 +39,19 @@ def test_create_components(admin, topic_id):
     assert gc['component']['state'] == 'active'
 
 
+def test_create_component_lowercase_type(admin, topic_id):
+    data = {
+        "name": "pname",
+        "type": "GERRIT_REVIEW",
+        "url": "http://example.com/",
+        "topic_id": topic_id,
+        "state": "active",
+    }
+    component = admin.post("/api/v1/components", data=data).data["component"]
+    component = admin.get("/api/v1/components/%s" % component["id"]).data["component"]
+    assert component["type"] == "gerrit_review"
+
+
 def test_create_components_already_exist(admin, topic_user_id):
     data = {'name': 'pname',
             'type': 'gerrit_review',
@@ -362,6 +375,23 @@ def test_update_component_with_tags(admin, topic_id):
 
     cmpt = admin.get('/api/v1/components/%s' % cmpt.data['component']['id'])
     assert cmpt.data['component']['tags'] == ['hihi', 'haha']
+
+
+def test_update_component_lowercase_type(admin, topic_id):
+    data = {
+        "name": "pname",
+        "type": "GERRIT_REVIEW",
+        "url": "http://example.com/",
+        "topic_id": topic_id,
+        "state": "active",
+    }
+    component = admin.post("/api/v1/components", data=data).data["component"]
+    component = admin.put(
+        "/api/v1/components/%s" % component["id"],
+        data={"type": "METADATA"},
+        headers={"If-match": component["etag"]},
+    ).data["component"]
+    assert component["type"] == "metadata"
 
 
 def test_add_file_to_component(admin, topic_id):
