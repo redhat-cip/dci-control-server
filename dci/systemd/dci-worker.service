@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 EnvironmentFile=/etc/dci_worker.sh
 PIDFile=/var/run/dci-worker.pid
-ExecStart=/usr/bin/python /usr/lib/python2.7/site-packages/dci/worker/worker.py
+ExecStart=/usr/bin/python3 /usr/lib/python3.6/site-packages/dci/worker/worker.py
 
 [Install]
 WantedBy=multi-user.target

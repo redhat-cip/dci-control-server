@@ -26,7 +26,11 @@ import requests
 import time
 import zmq
 
-from email.MIMEText import MIMEText
+try:
+    from email.MIMEText import MIMEText
+except ImportError:
+    from email.mime.text import MIMEText
+
 from zmq.eventloop import ioloop, zmqstream
 
 
@@ -140,7 +144,7 @@ def loop(msg):
         logger.info("Worker received %d events." % len(events))
         for event in events:
             try:
-                logger.info("Start processing event type %s" % event['event'])
+                logger.info("Start processing event type %s" % event["event"])
                 time_start = time.time()
                 if event["event"] == "notification":
                     send_mail(event)
