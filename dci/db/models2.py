@@ -157,3 +157,21 @@ class Product(dci_declarative.Mixin, Base):
     state = sa.Column('state', STATES, default='active')
     topics = sa_orm.relationship('Topic')
     teams = sa_orm.relationship('Team', secondary=JOIN_PRODUCTS_TEAMS, back_populates='products')
+
+
+class Feeders(dci_declarative.Mixin, Base):
+    __tablename__ = "feeders"
+    __table_args__ = (
+        sa.Index("feeders_team_id_idx", "team_id"),
+        sa.UniqueConstraint("name", "team_id", name="feeders_name_team_id_key"),
+    )
+    name = sa.Column("name", sa.String(255))
+    data = sa.Column("data", sa_utils.JSONType, default={})
+    api_secret = sa.Column("api_secret", sa.String(64), default=signature.gen_secret)
+    team_id = sa.Column(
+        "team_id",
+        pg.UUID(as_uuid=True),
+        sa.ForeignKey("teams.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    state = sa.Column("state", STATES, default="active")
