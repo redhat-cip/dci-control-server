@@ -17,6 +17,7 @@
 import flask
 
 from sqlalchemy import sql
+from sqlalchemy import orm
 from dci.api.v1 import utils as v1_utils
 from dci.common import exceptions as dci_exc
 from dci.common import signature
@@ -74,6 +75,49 @@ def get_resource_by_id(user, resource, table, embed_many=None,
         return resource
 
 
+def get_resource_orm(table, id, etag=None):
+    try:
+        query = (
+            flask.g.session.query(table)
+            .filter(table.state != "archived")
+            .filter(table.id == id)
+        )
+        if etag:
+            query.filter(table.etag == etag)
+        return query.one()
+    except orm.exc.NoResultFound:
+        resource_name = table.__tablename__[0:-1]
+        raise dci_exc.DCIException(
+            message="%s not found" % resource_name, status_code=404
+        )
+
+
+def update_resource_orm(resource, data):
+    for k, v in data.items():
+        setattr(resource, k, v)
+    setattr(resource, "etag", utils.gen_etag())
+    try:
+        flask.g.session.commit()
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e), status_code=409)
+
+
+def create_resource_orm(table, data):
+    try:
+        resource = table(**data)
+        resource_serialized = resource.serialize()
+        flask.g.session.add(resource)
+        flask.g.session.commit()
+        return resource_serialized
+    except orm.exc.IntegrityError as ie:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(ie), status_code=409)
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e))
+
+
 def get_archived_resources(table):
     q_archived_files = v1_utils.QueryBuilder(table)
     q_archived_files.add_extra_condition(table.c.state == 'archived')
@@ -105,6 +149,32 @@ def purge_archived_resources(user, table):
     flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
+
+
+def get_resources_to_purge_orm(user, table):
+    if user.is_not_super_admin():
+        raise dci_exc.Unauthorized()
+
+    query = flask.g.session.query(table).filter(table.state == "archived")
+    archived_resources = [resource.serialize() for resource in query.all()]
+
+    return flask.jsonify(
+        {table.__tablename__: archived_resources, "_meta": {"count": len(archived_resources)}}
+    )
+
+
+def purge_archived_resources_orm(user, table):
+    if user.is_not_super_admin():
+        raise dci_exc.Unauthorized()
+
+    flask.g.session.query(table).filter(table.state == "archived").delete()
+    try:
+        flask.g.session.commit()
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e), status_code=409)
+
+    return flask.Response(None, 204, content_type="application/json")
 
 
 def refresh_api_secret(user, resource, table):

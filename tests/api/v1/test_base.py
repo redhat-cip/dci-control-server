@@ -16,20 +16,43 @@
 
 
 def test_purge_resource(admin, product):
-    data = {'name': 'tname', 'product_id': product['id'],
-            'component_types': ['type1', 'type2']}
-    pt = admin.post('/api/v1/topics', data=data)
-    pt_id = pt.data['topic']['id']
+    data = {
+        "name": "tname",
+        "product_id": product["id"],
+        "component_types": ["type1", "type2"],
+    }
+    pt = admin.post("/api/v1/topics", data=data)
+    pt_id = pt.data["topic"]["id"]
     assert pt.status_code == 201
 
-    ppt = admin.delete('/api/v1/topics/%s' % pt_id)
+    ppt = admin.delete("/api/v1/topics/%s" % pt_id)
     assert ppt.status_code == 204
 
-    to_purge = admin.get('/api/v1/topics/purge').data
-    assert len(to_purge['topics']) == 1
+    to_purge = admin.get("/api/v1/topics/purge").data
+    assert len(to_purge["topics"]) == 1
 
-    to_purge = admin.post('/api/v1/topics/purge')
+    to_purge = admin.post("/api/v1/topics/purge")
     assert to_purge.status_code == 204
 
-    to_purge = admin.get('/api/v1/topics/purge').data
-    assert len(to_purge['topics']) == 0
+    to_purge = admin.get("/api/v1/topics/purge").data
+    assert len(to_purge["topics"]) == 0
+
+
+def test_purge_resource_ORM(admin, team_admin_id):
+    feeder = admin.post(
+        "/api/v1/feeders", data={"name": "feeder", "team_id": team_admin_id}
+    ).data["feeder"]
+    admin.delete(
+        "/api/v1/feeders/%s" % feeder["id"],
+        headers={"If-match": feeder["etag"]},
+    )
+
+    feeders_to_purge = admin.get("/api/v1/feeders/purge").data["feeders"]
+    assert len(feeders_to_purge) == 1
+    assert feeders_to_purge[0]["id"] == feeder["id"]
+
+    purge = admin.post("/api/v1/feeders/purge")
+    assert purge.status_code == 204
+
+    feeders_to_purge = admin.get("/api/v1/feeders/purge").data["feeders"]
+    assert len(feeders_to_purge) == 0
