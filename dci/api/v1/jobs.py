@@ -63,7 +63,6 @@ _EMBED_MANY = {
     'remoteci': False,
     'team': False,
     'results': True,
-    'analytics': True,
     'tags': True
 }
 
