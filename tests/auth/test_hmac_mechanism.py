@@ -15,11 +15,16 @@
 # under the License.
 
 
-def test_hmac_mechanism_from_outside(remoteci_context):
+def test_hmac_mechanism_api_get_jobs_remoteci(remoteci_context):
     jobs_request = remoteci_context.get('/api/v1/jobs')
     assert jobs_request.status_code == 200
 
 
 def test_hmac_mechanism_params(remoteci_context):
     jobs_request = remoteci_context.get('/api/v1/jobs?embed=components')
+    assert jobs_request.status_code == 200
+
+
+def test_hmac_mechanism_api_get_jobs_feeder(feeder_context):
+    jobs_request = feeder_context.get('/api/v1/jobs')
     assert jobs_request.status_code == 200

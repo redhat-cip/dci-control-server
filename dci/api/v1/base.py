@@ -75,7 +75,7 @@ def get_resource_by_id(user, resource, table, embed_many=None,
         return resource
 
 
-def get_resource_orm(table, id, etag=None):
+def get_resource_orm(table, id, etag=None, options=[]):
     try:
         query = (
             flask.g.session.query(table)
@@ -84,6 +84,8 @@ def get_resource_orm(table, id, etag=None):
         )
         if etag:
             query.filter(table.etag == etag)
+        for option in options:
+            query.options(option)
         return query.one()
     except orm.exc.NoResultFound:
         resource_name = table.__tablename__[0:-1]

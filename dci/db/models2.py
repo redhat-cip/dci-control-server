@@ -114,6 +114,7 @@ class Team(dci_declarative.Mixin, Base):
     external = sa.Column(sa.BOOLEAN, default=True)
     users = sa_orm.relationship('User', secondary=USERS_TEAMS, back_populates='team')
     remotecis = sa_orm.relationship('Remoteci', back_populates='team')
+    feeders = sa_orm.relationship('Feeder', back_populates='team')
     topics = sa_orm.relationship('Topic', secondary=JOINS_TOPICS_TEAMS, back_populates='teams')
     products = sa_orm.relationship('Product', secondary=JOIN_PRODUCTS_TEAMS, back_populates='teams')
 
@@ -175,3 +176,4 @@ class Feeder(dci_declarative.Mixin, Base):
         nullable=False,
     )
     state = sa.Column("state", STATES, default="active")
+    team = sa_orm.relationship("Team", back_populates="feeders")

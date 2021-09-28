@@ -17,8 +17,9 @@
 import flask
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
+from sqlalchemy import orm
 
-from dci.api.v1 import sso
+from dci.api.v1 import base, sso
 from dci import auth
 from dci import dci_config
 from dci.common import exceptions as dci_exc
@@ -27,6 +28,7 @@ from dciauth.signature import Signature
 from dciauth.v2.headers import parse_headers
 from dciauth.v2.signature import is_valid
 from dci.db import models
+from dci.db import models2
 from dci.identity import Identity
 
 from jwt import exceptions as jwt_exc
@@ -176,66 +178,32 @@ class HmacMechanism(BaseMechanism):
             self.check_team_is_active(self.identity.teams_ids[0])
         return True
 
-    def identity_from_db(self, model_cls, model_constraint):
-        q_get_identity = (
-            sql.select(
-                [
-                    model_cls,
-                    models.TEAMS
-                ],
-                use_labels=True
-            ).select_from(
-                model_cls.join(
-                    models.TEAMS,
-                    models.TEAMS.c.id == model_cls.c.team_id
-                )
-            ).where(
-                sql.and_(
-                    model_constraint,
-                    model_cls.c.state != 'archived',
-                )
-            )
-        )
-
-        _identity_info = flask.g.db_conn.execute(q_get_identity).fetchone()
-        if not _identity_info:
-            return None
-
-        # feeders and remotecis belongs to only one team
-        user_teams = {
-            _identity_info[models.TEAMS.c.id]: {
-                'team_name': _identity_info[models.TEAMS.c.name],
-                'state': _identity_info[models.TEAMS.c.state]
-            }
-        }
-
-        is_remoteci = False
-        if model_cls is models.REMOTECIS:
-            is_remoteci = True
-        is_feeder = False
-        if model_cls is models.FEEDERS:
-            is_feeder = True
-
-        user_info = {
-            # UUID to str
-            'id': str(_identity_info[model_cls.c.id]),
-            'teams': user_teams,
-            'api_secret': str(_identity_info[model_cls.c.api_secret]),
-            'is_remoteci': is_remoteci,
-            'is_feeder': is_feeder
-        }
-        return Identity(user_info)
-
     def build_identity(self, client_info):
         allowed_types_model = {
-            'remoteci': models.REMOTECIS,
-            'feeder': models.FEEDERS,
+            "remoteci": models2.Remoteci,
+            "feeder": models2.Feeder,
         }
-        identity_model = allowed_types_model.get(client_info['client_type'])
+        client_type = client_info["client_type"]
+        identity_model = allowed_types_model.get(client_type)
         if identity_model is None:
             return None
-        constraint = identity_model.c.id == client_info['client_id']
-        return self.identity_from_db(identity_model, constraint)
+        identity = base.get_resource_orm(
+            identity_model, client_info["client_id"], options=[orm.joinedload("team")]
+        )
+        return Identity(
+            {
+                "id": str(identity.id),
+                "teams": {
+                    identity.team.id: {
+                        "team_name": identity.team.name,
+                        "state": identity.team.state,
+                    }
+                },
+                "api_secret": str(identity.api_secret),
+                "is_remoteci": client_type == "remoteci",
+                "is_feeder": client_type == "feeder",
+            }
+        )
 
 
 class Hmac2Mechanism(HmacMechanism):
