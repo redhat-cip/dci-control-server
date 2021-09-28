@@ -159,7 +159,7 @@ class Product(dci_declarative.Mixin, Base):
     teams = sa_orm.relationship('Team', secondary=JOIN_PRODUCTS_TEAMS, back_populates='products')
 
 
-class Feeders(dci_declarative.Mixin, Base):
+class Feeder(dci_declarative.Mixin, Base):
     __tablename__ = "feeders"
     __table_args__ = (
         sa.Index("feeders_team_id_idx", "team_id"),

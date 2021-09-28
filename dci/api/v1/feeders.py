@@ -55,7 +55,7 @@ def create_feeders(user):
         }
     )
 
-    feeder = base.create_resource_orm(models2.Feeders, values)
+    feeder = base.create_resource_orm(models2.Feeder, values)
 
     return flask.Response(
         json.dumps({"feeder": feeder}),
@@ -70,15 +70,15 @@ def create_feeders(user):
 def get_all_feeders(user, t_id=None):
     args = check_and_get_args(flask.request.args.to_dict())
 
-    query = flask.g.session.query(models2.Feeders)
+    query = flask.g.session.query(models2.Feeder)
     if user.is_not_super_admin() and user.is_not_epm():
-        query = query.filter(models2.Feeders.team_id.in_(user.teams_ids))
+        query = query.filter(models2.Feeder.team_id.in_(user.teams_ids))
 
-    query = query.filter(models2.Feeders.state != "archived")
+    query = query.filter(models2.Feeder.state != "archived")
 
     nb_feeders = query.count()
 
-    query = declarative.handle_args(query, models2.Feeders, args)
+    query = declarative.handle_args(query, models2.Feeder, args)
 
     feeders = [feeder.serialize() for feeder in query.all()]
 
@@ -88,7 +88,7 @@ def get_all_feeders(user, t_id=None):
 @api.route("/feeders/<uuid:feeder_id>", methods=["GET"])
 @decorators.login_required
 def get_feeder_by_id(user, feeder_id):
-    feeder = base.get_resource_orm(models2.Feeders, feeder_id)
+    feeder = base.get_resource_orm(models2.Feeder, feeder_id)
 
     if user.is_not_in_team(feeder.team_id):
         raise dci_exc.Unauthorized()
@@ -108,14 +108,14 @@ def put_feeder(user, feeder_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = clean_json_with_schema(update_feeder_schema, flask.request.json)
 
-    feeder = base.get_resource_orm(models2.Feeders, feeder_id, if_match_etag)
+    feeder = base.get_resource_orm(models2.Feeder, feeder_id, if_match_etag)
 
     if user.is_not_in_team(feeder.team_id):
         raise dci_exc.Unauthorized()
 
     base.update_resource_orm(feeder, values)
 
-    feeder = base.get_resource_orm(models2.Feeders, feeder_id)
+    feeder = base.get_resource_orm(models2.Feeder, feeder_id)
 
     return flask.Response(
         json.dumps({"feeder": feeder.serialize(ignore_columns=["api_secret"])}),
@@ -129,7 +129,7 @@ def put_feeder(user, feeder_id):
 @decorators.login_required
 def delete_feeder_by_id(user, feeder_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    feeder = base.get_resource_orm(models2.Feeders, feeder_id, if_match_etag)
+    feeder = base.get_resource_orm(models2.Feeder, feeder_id, if_match_etag)
 
     if user.is_not_in_team(feeder.team_id) and user.is_not_epm():
         raise dci_exc.Unauthorized()
@@ -141,27 +141,27 @@ def delete_feeder_by_id(user, feeder_id):
 @api.route("/feeders/purge", methods=["GET"])
 @decorators.login_required
 def get_feeders_to_purge(user):
-    return base.get_resources_to_purge_orm(user, models2.Feeders)
+    return base.get_resources_to_purge_orm(user, models2.Feeder)
 
 
 @api.route("/feeders/purge", methods=["POST"])
 @decorators.login_required
 def purge_archived_feeders(user):
-    return base.purge_archived_resources_orm(user, models2.Feeders)
+    return base.purge_archived_resources_orm(user, models2.Feeder)
 
 
 @api.route("/feeders/<uuid:feeder_id>/api_secret", methods=["PUT"])
 @decorators.login_required
 def put_api_secret_feeder(user, feeder_id):
     utils.check_and_get_etag(flask.request.headers)
-    feeder = base.get_resource_orm(models2.Feeders, feeder_id)
+    feeder = base.get_resource_orm(models2.Feeder, feeder_id)
 
     if not user.is_in_team(feeder.team_id):
         raise dci_exc.Unauthorized()
 
     base.update_resource_orm(feeder, {"api_secret": signature.gen_secret()})
 
-    feeder = base.get_resource_orm(models2.Feeders, feeder_id)
+    feeder = base.get_resource_orm(models2.Feeder, feeder_id)
     return flask.Response(
         json.dumps({"feeder": feeder.serialize()}),
         200,

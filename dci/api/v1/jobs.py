@@ -14,12 +14,11 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import datetime
-
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
+from datetime import datetime, timedelta
 
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -47,7 +46,6 @@ from dci.api.v1 import files
 from dci.api.v1 import export_control
 from dci.api.v1 import issues
 from dci.api.v1 import jobstates
-from dci.api.v1 import remotecis
 from dci import dci_config
 
 
@@ -71,7 +69,7 @@ _EMBED_MANY = {
 
 
 def get_utc_now():
-    return datetime.datetime.utcnow()
+    return datetime.utcnow()
 
 
 @api.route('/jobs', methods=['POST'])
@@ -180,6 +178,18 @@ def _get_job(user, job_id, embed=None):
     return job, nb_rows
 
 
+def kill_existing_jobs(remoteci_id, db_conn=None):
+    db_conn = db_conn or flask.g.db_conn
+    yesterday = datetime.now() - timedelta(hours=24)
+    where_clause = sql.expression.and_(
+        models.JOBS.c.remoteci_id == remoteci_id,
+        models.JOBS.c.status.in_(("new", "pre-run", "running", "post-run")),
+        models.JOBS.c.created_at < yesterday,
+    )
+    kill_query = models.JOBS.update().where(where_clause).values(status="killed")
+    db_conn.execute(kill_query)
+
+
 @api.route('/jobs/schedule', methods=['POST'])
 @decorators.login_required
 def schedule_jobs(user):
@@ -234,7 +244,7 @@ def schedule_jobs(user):
         raise dci_exc.DCIException(msg, status_code=412)
     export_control.verify_access_to_topic(user, topic)
 
-    remotecis.kill_existing_jobs(remoteci['id'])
+    kill_existing_jobs(remoteci['id'])
 
     components_ids = values.pop('components_ids')
     values = _build_job(product_id, topic_id, remoteci, components_ids, values)
