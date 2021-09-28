@@ -13,8 +13,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import datetime
 
 from dci.common import signature
+from dci.common import utils
 from dci.db import declarative as dci_declarative
 
 import sqlalchemy as sa
@@ -177,3 +179,14 @@ class Feeder(dci_declarative.Mixin, Base):
     )
     state = sa.Column("state", STATES, default="active")
     team = sa_orm.relationship("Team", back_populates="feeders")
+
+
+class Log(Base):
+    __tablename__ = "logs"
+    __table_args__ = (sa.Index("logs_user_id_idx", "user_id"),)
+    id = sa.Column(pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid)
+    created_at = sa.Column(
+        sa.DateTime(), default=datetime.datetime.utcnow, nullable=False
+    )
+    user_id = sa.Column("user_id", pg.UUID(as_uuid=True), nullable=False)
+    action = sa.Column(sa.Text, nullable=False)

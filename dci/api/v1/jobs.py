@@ -26,7 +26,6 @@ from dci.api.v1 import components
 from dci.api.v1 import utils as v1_utils
 from dci.api.v1 import jobs_events
 from dci import decorators
-from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     check_json_is_valid,
@@ -442,7 +441,7 @@ def get_job_by_id(user, job_id):
 
 @api.route('/jobs/<uuid:job_id>', methods=['PUT'])
 @decorators.login_required
-@audits.log
+@decorators.log
 def update_job_by_id(user, job_id):
     """Update a job
     """

@@ -168,6 +168,11 @@ def epm(app, db_provisioning):
 
 
 @pytest.fixture
+def epm_id(epm):
+    return epm.get("/api/v1/users/me").data["user"]["id"]
+
+
+@pytest.fixture
 def topic_id(admin, team_id, product):
     data = {'name': 'topic_name', 'product_id': product['id'],
             'component_types': ['type_1', 'type_2', 'type_3']}

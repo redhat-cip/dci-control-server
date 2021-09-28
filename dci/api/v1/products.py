@@ -26,7 +26,6 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
 from dci.api.v1 import teams
-from dci.common import audits
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     check_json_is_valid,
@@ -50,7 +49,7 @@ _EMBED_MANY = {
 
 @api.route('/products', methods=['POST'])
 @decorators.login_required
-@audits.log
+@decorators.log
 def create_product(user):
     values = flask.request.json
     check_json_is_valid(create_product_schema, values)
