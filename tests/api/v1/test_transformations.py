@@ -323,3 +323,16 @@ def test_junit2dict_nrt_with_testsuites_as_root_node():
     assert result['total'] == 1
     assert result['time'] == 7763
     assert len(result['testscases']) == 1
+
+
+def test_nrt_add_regressions_successfix_dont_change_name():
+    old_junit = """<testsuite><testcase name="[dci] brackets in the name" classname="" time="1"></testcase></testsuite>"""
+    old_tests = transformations.junit2dict(BytesIO(old_junit.encode("utf-8")))
+    new_tests = transformations.junit2dict(BytesIO(old_junit.encode("utf-8")))
+    tests = transformations.add_regressions_and_successfix_to_tests(
+        old_tests, new_tests
+    )
+    assert (
+        tests["testscases"][0]["name"]
+        == "[dci] brackets in the name"
+    )

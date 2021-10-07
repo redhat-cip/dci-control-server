@@ -102,21 +102,23 @@ def junit2dict(file_descriptor):
     return results
 
 
+def _concat_classname_and_name(testcase):
+    return "%s:%s" % (testcase["classname"], testcase["name"])
+
+
 def add_regressions_and_successfix_to_tests(testsuite1, testsuite2):
     # dict from testcase's name to each testcase itself for fast access
     testscases1_map = dict()
     for testcase in testsuite1["testscases"]:
-        testcase["name"] = testcase["name"].split("[")[0]
-        testname = "%s:%s" % (testcase["classname"], testcase["name"])
-        testscases1_map[testname] = testcase
+        testkey = _concat_classname_and_name(testcase)
+        testscases1_map[testkey] = testcase
 
     for testcase in testsuite2["testscases"]:
-        testcase["name"] = testcase["name"].split("[")[0]
-        testname = "%s:%s" % (testcase["classname"], testcase["name"])
+        testkey2 = _concat_classname_and_name(testcase)
         # this is a new test then ignore it
-        if testname not in testscases1_map:
+        if testkey2 not in testscases1_map:
             continue
-        prev_testcase = testscases1_map[testname]
+        prev_testcase = testscases1_map[testkey2]
         # if switch from success to failure then its a regression
         if testcase["action"] == "failure":
             if prev_testcase["action"] == "passed" or prev_testcase["regression"]:
