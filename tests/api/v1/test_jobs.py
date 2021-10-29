@@ -122,6 +122,27 @@ def test_add_component_to_job(user, team_user_id, topic_user_id, job_user_id):
     assert cmpt_found
 
 
+def test_add_component_with_no_team_to_job(user, admin, team_user_id, topic_user_id, job_user_id):
+    data = {
+        'name': 'pname',
+        'type': 'gerrit_review',
+        'url': 'http://example.com/',
+        'topic_id': topic_user_id,
+        'state': 'active'}
+    pc = admin.post('/api/v1/components', data=data).data
+    pc_id = pc['component']['id']
+    p1 = user.post('/api/v1/jobs/%s/components' % job_user_id, data={'id': pc_id})
+    assert p1.status_code == 201
+    p2 = user.post('/api/v1/jobs/%s/components' % job_user_id, data={'id': pc_id})
+    assert p2.status_code == 409
+    cmpts = user.get('/api/v1/jobs/%s/components' % job_user_id).data['components']
+    cmpt_found = False
+    for c in cmpts:
+        if c['id'] == pc_id:
+            cmpt_found = True
+    assert cmpt_found
+
+
 def test_create_jobs_bad_previous_job_id(remoteci_context,
                                          components_user_ids,
                                          topic_user_id):

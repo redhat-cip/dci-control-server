@@ -407,8 +407,8 @@ def add_component_to_job(user, job_id):
     values = flask.request.json
     check_json_is_valid(add_component_schema, values)
     v1_utils.verify_existence_and_get(job_id, models.JOBS)
-    job = v1_utils.verify_existence_and_get(values['id'], models.COMPONENTS)
-    if not user.is_in_team(job['team_id']):
+    component = v1_utils.verify_existence_and_get(values['id'], models.COMPONENTS)
+    if component['team_id'] and not user.is_in_team(component['team_id']):
         raise dci_exc.Unauthorized()
     job_component_to_insert = [{'job_id': job_id,
                                 'component_id': values['id']}]
