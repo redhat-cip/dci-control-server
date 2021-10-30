@@ -23,6 +23,7 @@ from dci import dci_config
 from dci.api.v1 import components
 from dci.stores import files_utils
 from dci.common import exceptions as dci_exc
+from sqlalchemy.orm import sessionmaker
 
 
 def test_create_components(admin, topic_id):
@@ -131,7 +132,8 @@ def test_recreate_components_with_same_name_on_same_topics(admin, topic_id):
         assert result.status_code == 201
 
         result = admin.delete('/api/v1/components/%s' %
-                              result.data['component']['id'])
+                              result.data['component']['id'],
+                              headers={'If-match': result.data['component']['etag']})
         assert result.status_code == 204
 
 
@@ -297,7 +299,7 @@ def test_delete_component_by_id(admin, feeder_context, topic_user_id):
     created_ct = admin.get('/api/v1/components/%s' % pc_id)
     assert created_ct.status_code == 200
 
-    deleted_ct = admin.delete('/api/v1/components/%s' % pc_id)
+    deleted_ct = admin.delete('/api/v1/components/%s' % pc_id, headers={'If-match': pc.data['component']['etag']})
     assert deleted_ct.status_code == 204
 
     gct = admin.get('/api/v1/components/%s' % pc_id)
@@ -462,16 +464,16 @@ def test_delete_file_from_component(admin, topic_id):
     data = "lol"
     c_file = admin.post(url, data=data).data['component_file']
     url = '/api/v1/components/%s/files' % ct_1['id']
-    g_file = admin.get(url)
-    assert g_file.data['_meta']['count'] == 1
+    g_files = admin.get(url)
+    assert g_files.data['_meta']['count'] == 1
 
     url = '/api/v1/components/%s/files/%s' % (ct_1['id'], c_file['id'])
-    d_file = admin.delete(url)
+    d_file = admin.delete(url, headers={'If-match': c_file['etag']})
     assert d_file.status_code == 204
 
     url = '/api/v1/components/%s/files' % ct_1['id']
-    g_file = admin.get(url)
-    assert g_file.data['_meta']['count'] == 0
+    g_files = admin.get(url)
+    assert g_files.data['_meta']['count'] == 0
 
 
 def test_change_component_state(admin, topic_id):
@@ -577,8 +579,8 @@ def test_get_last_components_by_type(engine, admin, topic):
     last_components = components.get_last_components_by_type(
         ['puddle_osp'],
         topic_id=topic['id'],
-        db_conn=engine)
-    assert str(last_components[0]['id']) == components_ids[-1]
+        session=sessionmaker(bind=engine)())
+    assert str(last_components[0].id) == components_ids[-1]
 
 
 def test_verify_and_get_components_ids(engine, admin, topic, topic_user_id):
@@ -586,13 +588,13 @@ def test_verify_and_get_components_ids(engine, admin, topic, topic_user_id):
     with pytest.raises(dci_exc.DCIException):
         components.verify_and_get_components_ids(topic['id'], [],
                                                  ['puddle_osp'],
-                                                 db_conn=engine)
+                                                 session=sessionmaker(bind=engine)())
 
     with pytest.raises(dci_exc.DCIException):
         components.verify_and_get_components_ids(topic['id'],
                                                  [str(uuid.uuid4())],
                                                  ['puddle_osp'],
-                                                 db_conn=engine)
+                                                 session=sessionmaker(bind=engine)())
 
     # duplicated component types
     c1 = create_component(admin, topic_user_id, 'type1', 'n1')
@@ -603,12 +605,12 @@ def test_verify_and_get_components_ids(engine, admin, topic, topic_user_id):
             topic_user_id,
             [c1, c2, c3],
             ['type_1', 'type_2', 'type_3'],
-            db_conn=engine)
+            session=sessionmaker(bind=engine)())
 
     cids = components.verify_and_get_components_ids(topic_user_id,
                                                     [c1, c3],
                                                     ['type_1', 'type_2'],
-                                                    db_conn=engine)
+                                                    session=sessionmaker(bind=engine)())
     assert set(cids) == {c1, c3}
 
 
@@ -696,7 +698,8 @@ def test_purge(admin, components_user_ids, topic_user_id):
                                         c_file2.data['component_file']['id'])
     store.get(path2)
 
-    admin.delete('/api/v1/components/%s' % component_id)
+    component = admin.get('/api/v1/components/%s' % component_id).data['component']
+    admin.delete('/api/v1/components/%s' % component_id, headers={"If-match": component["etag"]})
     to_purge = admin.get('/api/v1/components/purge').data
     assert len(to_purge['components']) == 1
     c_purged = admin.post('/api/v1/components/purge')
@@ -722,7 +725,8 @@ def test_purge_failure(admin, components_user_ids, topic_user_id):
     c_files = admin.get('/api/v1/components/%s/files' % component_id)
     assert len(c_files.data['component_files']) == 1
 
-    d_component = admin.delete('/api/v1/components/%s' % component_id)
+    component = admin.get('/api/v1/components/%s' % component_id).data['component']
+    d_component = admin.delete('/api/v1/components/%s' % component_id, headers={"If-match": component["etag"]})
     assert d_component.status_code == 204
     to_purge = admin.get('/api/v1/components/purge').data
     assert len(to_purge['components']) == 1
@@ -836,7 +840,7 @@ def test_delete_teams_components(user, team_user_id, topic_user_id):
     gc = user.get('/api/v1/components/%s' % pc_id)
     assert gc.status_code == 200
 
-    gc = user.delete('/api/v1/components/%s' % pc_id)
+    gc = user.delete('/api/v1/components/%s' % pc_id, headers={'If-match': pc['component']['etag']})
     assert gc.status_code == 204
 
     gc = user.get('/api/v1/components/%s' % pc_id)
@@ -898,7 +902,6 @@ def test_filter_teams_components_by_tag(user, team_user_id, topic_user_id):
 
     res = user.get('/api/v1/topics/%s/components?where=tags:tag1,team_id:%s' %
                    (topic_user_id, team_user_id))
-    print(res.data)
     assert len(res.data['components']) == 1
     assert 'tag1' in res.data['components'][0]['tags']
     assert 'tag2' not in res.data['components'][0]['tags']
@@ -933,6 +936,6 @@ def test_teams_components_isolation(user, user2, topic_user_id, team_user_id, te
     components = user2.get('/api/v1/topics/%s/components?where=team_id:%s' % (topic_user_id, team_user_id))
     assert components.status_code == 200
     assert components.data['components'] == []
-    components = user2.get('/api/v1/topics/%s/components' % topic_user_id)
+    components = user2.get('/api/v1/topics/%s/components?where=team_id:%s' % (topic_user_id, team_user_id2))
     assert components.status_code == 200
     assert components.data['components'][0]['team_id'] == team_user_id2

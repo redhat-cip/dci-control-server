@@ -190,3 +190,108 @@ class Log(Base):
     )
     user_id = sa.Column("user_id", pg.UUID(as_uuid=True), nullable=False)
     action = sa.Column(sa.Text, nullable=False)
+
+
+JOIN_JOBS_COMPONENTS = sa.Table(
+    'jobs_components', Base.metadata,
+    sa.Column('job_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True),
+    sa.Column('component_id', pg.UUID(as_uuid=True),
+              sa.ForeignKey('components.id', ondelete='CASCADE'),
+              nullable=False, primary_key=True)
+)
+
+
+class Componentfile(dci_declarative.Mixin, Base):
+    __tablename__ = "component_files"
+    __table_args__ = (sa.Index('component_files_component_id_idx', 'component_id'),)
+    id = sa.Column(pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow, nullable=False)
+    updated_at = sa.Column(sa.DateTime(), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow, nullable=False)
+    etag = sa.Column(sa.String(40), nullable=False, default=utils.gen_etag, onupdate=utils.gen_etag)
+    name = sa.Column(sa.String(255), nullable=False)
+    mime = sa.Column(sa.String)
+    md5 = sa.Column(sa.String(32))
+    size = sa.Column(sa.BIGINT, nullable=True)
+    component_id = sa.Column(pg.UUID(as_uuid=True),
+                             sa.ForeignKey('components.id', ondelete='CASCADE'),
+                             nullable=True)
+    state = sa.Column(STATES, default='active')
+
+
+class Component(dci_declarative.Mixin, Base):
+    __tablename__ = "components"
+    __table_args__ = (sa.Index('active_components_name_topic_id_team_id_null_key',
+                               'name', 'topic_id', 'type',
+                               unique=True,
+                               postgresql_where=sa.sql.text("components.state = 'active' AND components.team_id is NULL")),
+                      sa.UniqueConstraint('name', 'topic_id', 'type', 'team_id', name='name_topic_id_type_team_id_unique'),
+                      sa.Index('components_topic_id_idx', 'topic_id'))
+
+    id = sa.Column(pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow, nullable=False)
+    updated_at = sa.Column(sa.DateTime(), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow, nullable=False)
+    released_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow, nullable=False)
+    etag = sa.Column(sa.String(40), nullable=False, default=utils.gen_etag, onupdate=utils.gen_etag)
+    name = sa.Column(sa.String(255), nullable=False)
+    type = sa.Column(sa.String(255), nullable=False)
+    canonical_project_name = sa.Column(sa.String)
+    data = sa.Column(sa_utils.JSONType)
+    title = sa.Column(sa.Text)
+    message = sa.Column(sa.Text)
+    url = sa.Column(sa.Text)
+    topic_id = sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey('topics.id', ondelete='CASCADE'), nullable=True)
+    team_id = sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey('teams.id', ondelete='CASCADE'), nullable=True)
+    state = sa.Column(STATES, default='active')
+    tags = sa.Column(pg.ARRAY(sa.Text), default=[])
+    files = sa_orm.relationship('Componentfile')
+    jobs = sa_orm.relationship('Job', secondary=JOIN_JOBS_COMPONENTS, back_populates='components')
+
+
+class Job(dci_declarative.Mixin, Base):
+    __tablename__ = "jobs"
+    __table_args__ = (sa.Index('jobs_topic_id_idx', 'topic_id'),
+                      sa.Index('jobs_remoteci_id_idx', 'remoteci_id'),
+                      sa.Index('jobs_team_id_idx', 'team_id'),
+                      sa.Index('jobs_product_id_idx', 'product_id'),
+                      sa.Index('jobs_previous_job_id_idx', 'previous_job_id'),
+                      sa.Index('jobs_update_previous_job_id_idx', 'update_previous_job_id'),)
+
+    id = sa.Column(pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow, nullable=False)
+    updated_at = sa.Column(sa.DateTime(), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow, nullable=False)
+    etag = sa.Column(sa.String(40), nullable=False, default=utils.gen_etag, onupdate=utils.gen_etag)
+    # duration in seconds
+    duration = sa.Column(sa.Integer, default=0),
+    comment = sa.Column(sa.Text),
+    status_reason = sa.Column(sa.Text),
+    configuration = sa.Column(sa.Text),
+    url = sa.Column(sa.Text),
+    name = sa.Column(sa.Text),
+    status = sa.Column(STATUSES, default='new')
+    topic_id = sa.Column(pg.UUID(as_uuid=True),
+                         sa.ForeignKey('topics.id', ondelete='CASCADE'),
+                         # todo(yassine): nullable=False
+                         nullable=True)
+    remoteci_id = sa.Column(pg.UUID(as_uuid=True),
+                            sa.ForeignKey('remotecis.id', ondelete='CASCADE'),
+                            nullable=False)
+    team_id = sa.Column(pg.UUID(as_uuid=True),
+                        sa.ForeignKey('teams.id', ondelete='CASCADE'),
+                        nullable=False)
+    product_id = sa.Column(pg.UUID(as_uuid=True),
+                           sa.ForeignKey('products.id', ondelete='CASCADE'),
+                           nullable=True)
+    user_agent = sa.Column(sa.String(255))
+    client_version = sa.Column(sa.String(255))
+    previous_job_id = sa.Column(pg.UUID(as_uuid=True),
+                                sa.ForeignKey('jobs.id'),
+                                nullable=True, default=None)
+    update_previous_job_id = sa.Column(pg.UUID(as_uuid=True),
+                                       sa.ForeignKey('jobs.id'),
+                                       nullable=True, default=None)
+    state = sa.Column(STATES, default='active')
+    tags = sa.Column(pg.ARRAY(sa.Text), default=[])
+    data = sa.Column(sa_utils.JSONType, default={})
+    components = sa_orm.relationship('Component', secondary=JOIN_JOBS_COMPONENTS, back_populates='jobs')

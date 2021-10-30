@@ -223,7 +223,7 @@ def schedule_jobs(user):
             topic_id
         )
         return flask.Response(
-            json.dumps({'components': _components, 'job': None}),
+            json.dumps({'components': [c.serialize() for c in _components], 'job': None}),
             201,
             content_type='application/json'
         )

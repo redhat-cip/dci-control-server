@@ -102,28 +102,6 @@ def remotecis(root_select=models.REMOTECIS, root_id=None):
     }
 
 
-def components(root_select=models.COMPONENTS, root_id=None):
-    if root_id is None:
-        root_id = root_select.c.id
-    return {
-        'files': [
-            {'right': CFILES,
-             'onclause': and_(
-                 CFILES.c.component_id == root_id,
-                 CFILES.c.state != 'archived'),
-             'isouter': True
-             }],
-        'jobs': [
-            {'right': models.JOIN_JOBS_COMPONENTS,
-             'onclause': models.JOIN_JOBS_COMPONENTS.c.component_id == root_id,  # noqa
-             'isouter': True},
-            {'right': models.JOBS,
-             'onclause': and_(models.JOBS.c.id == models.JOIN_JOBS_COMPONENTS.c.job_id,  # noqa
-                              models.JOBS.c.state != 'archived'),
-             'isouter': True}]
-    }
-
-
 def files(root_select=models.FILES, root_id=None):
     return {
         'jobstate': [
@@ -247,9 +225,6 @@ EMBED_STRING_TO_OBJECT = {
     },
     'remotecis': {
         'team': TEAM},
-    'components': {
-        'files': CFILES,
-        'jobs': models.JOBS},
     'feeders': {
         'team': TEAM},
     'files': {
@@ -276,7 +251,6 @@ EMBED_STRING_TO_OBJECT = {
 EMBED_JOINS = {
     'jobs': jobs,
     'remotecis': remotecis,
-    'components': components,
     'feeders': feeders,
     'files': files,
     'jobstates': jobstates,

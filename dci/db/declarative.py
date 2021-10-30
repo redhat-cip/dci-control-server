@@ -20,6 +20,7 @@ from dci.common import utils
 
 import sqlalchemy as sa
 from sqlalchemy.dialects import postgresql as pg
+import uuid
 
 
 class Mixin(object):
@@ -114,5 +115,15 @@ def handle_args(query, model_object, args):
             except ValueError:
                 payload = {'error': 'where key must have the following form "key:value"'}
                 raise dci_exc.DCIException('Invalid where key: "%s"' % w, payload=payload)
-            query = query.filter(getattr(model_object, name) == value)
+            m_column = getattr(model_object, name)
+            if str(m_column.type) == "UUID" and uuid.UUID(value):
+                query = query.filter(getattr(model_object, name) == value)
+            elif m_column.type.python_type == list:
+                query = query.filter(getattr(model_object, name).contains([value]))
+            else:
+                query = query.filter(getattr(model_object, name) == value)
+    if args.get('limit'):
+        query = query.limit(args.get('limit'))
+    if args.get('offset'):
+        query = query.offset(args.get('offset'))
     return query
