@@ -17,14 +17,15 @@ import flask
 import logging
 import os.path
 
-from sqlalchemy import sql
+from sqlalchemy import orm
 from OpenSSL import crypto
+
 from dci import decorators
 from dci.api.v1 import api
+from dci.api.v1 import base
 from dci.api.v1 import export_control
-from dci.api.v1 import utils as v1_utils
 from dci.common import exceptions as dci_exc
-from dci.db import models
+from dci.db import models2
 
 logger = logging.getLogger()
 
@@ -52,64 +53,62 @@ def verify_repo_access():
 
     product_id, topic_id, component_id = splitpath(url)[:3]
 
-    REMOTECIS = models.REMOTECIS
-    query = sql.select([REMOTECIS]).where(REMOTECIS.c.cert_fp == fp)
-    remoteci = flask.g.db_conn.execute(query)
+    q_remoteci = flask.g.session.query(models2.Remoteci).filter(models2.Remoteci.cert_fp == fp)
+    try:
+        remoteci = q_remoteci.one()
+    except orm.exc.NoResultFound:
+        raise dci_exc.DCIException(message="remoteci fingerprint not found: %s" % fp, status_code=404)
 
-    if remoteci.rowcount != 1:
+    product = base.get_resource_orm(models2.Product, product_id)
+    if product.state != "active":
         raise dci_exc.DCIException(
-            message="remoteci fingerprint not found: %s" % fp, status_code=403)
-
-    product = v1_utils.verify_existence_and_get(product_id, models.PRODUCTS)
-    if product["state"] != "active":
-        raise dci_exc.DCIException(
-            message="product %s/%s is not active" % (product["name"], product["id"]),  # noqa
+            message="product %s/%s is not active" % (product.name, product.id),  # noqa
             status_code=403)
 
-    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
-    if topic["state"] != "active":
+    topic = base.get_resource_orm(models2.Topic, topic_id)
+    if topic.state != "active":
         raise dci_exc.DCIException(
             message="topic %s/%s is not active" % (topic["name"], topic["id"]),
             status_code=403)
 
-    if str(topic["product_id"]) != str(product_id):
+    if str(topic.product_id) != str(product_id):
         raise dci_exc.DCIException(
             message="topic %s/%s does not belongs to product %s/%s"
-            % (topic["name"], topic["id"], product["name"], product["id"]),
+            % (topic.name, topic.id, product.name, product.id),
             status_code=403)
-    component = v1_utils.verify_existence_and_get(component_id, models.COMPONENTS)
 
-    if component["state"] != "active":
+    component = base.get_resource_orm(models2.Component, component_id)
+    if component.state != "active":
         raise dci_exc.DCIException(
-            message="component %s/%s is not active" % (component["name"], component["id"]),  # noqa
+            message="component %s/%s is not active" % (component.name, component.id),  # noqa
             status_code=403)
 
-    if str(component["topic_id"]) != str(topic_id):
+    if str(component.topic_id) != str(topic_id):
         raise dci_exc.DCIException(
             message="component %s/%s does not belongs to topic %s/%s"
-            % (component["name"], component["id"], topic["name"], topic["id"]),
+            % (component.name, component.id, topic.name, topic.id),
             status_code=403)
 
-    team_id = remoteci.fetchone()["team_id"]
-    team = v1_utils.verify_existence_and_get(team_id, models.TEAMS)
-    if team["state"] != "active":
+    team_id = remoteci.team_id
+    team = base.get_resource_orm(models2.Team, team_id)
+    if team.state != "active":
         raise dci_exc.DCIException(
-            message="team %s/%s is not active" % (team["name"], team["id"]),
+            message="team %s/%s is not active" % (team.name, team.id),
             status_code=403)
 
     team_ids = [team_id]
     if not export_control.is_teams_associated_to_product(team_ids, product_id):
         raise dci_exc.DCIException(
             message="team %s is not associated to the product %s"
-            % (team["name"], product["name"]),
+            % (team.name, product.name),
             status_code=403)
 
-    if topic["export_control"] is True:
+    if topic.export_control is True:
         return flask.Response(None, 200)
 
     if not export_control.is_teams_associated_to_topic(team_ids, topic_id):
         raise dci_exc.DCIException(
-            message="team %s is not associated to the topic %s" % (team["name"], topic["name"]),  # noqa
+            message="team %s is not associated to the topic %s" % (team.name, topic.name),  # noqa
             status_code=403)
 
     return flask.Response(None, 200)
@@ -121,7 +120,7 @@ def verify_remoteci_cert(identity):
     if identity.is_not_remoteci():
         raise dci_exc.DCIException("Only remoteci can verify certificate")
 
-    remoteci = v1_utils.verify_existence_and_get(identity.id, models.REMOTECIS)
+    remoteci = base.get_resource_orm(models2.Remoteci, identity.id)
     cert = flask.request.json["cert"]
     c = crypto.load_certificate(crypto.FILETYPE_PEM, cert)
 
@@ -129,6 +128,6 @@ def verify_remoteci_cert(identity):
         raise dci_exc.DCIException("Certificate is expired")
 
     cert_fp = c.digest("sha1").decode("utf-8").replace(':', '').lower()
-    if cert_fp == remoteci["cert_fp"]:
+    if cert_fp == remoteci.cert_fp:
         return flask.Response("", 204, content_type="application/json")
     raise dci_exc.Forbidden()

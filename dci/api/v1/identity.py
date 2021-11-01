@@ -18,6 +18,7 @@ from flask import json
 from sqlalchemy import sql
 
 from dci.api.v1 import api
+from dci.api.v1 import base
 from dci import auth
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
@@ -25,10 +26,8 @@ from dci.common.schemas import (
     update_current_user_schema
 )
 from dci.common import utils
-from dci.db import models
+from dci.db import models2
 from dci import decorators
-
-_TABLE = models.USERS
 
 
 # TODO: replace this properly with JSONEncoder
@@ -90,18 +89,18 @@ def put_identity(user):
                        'email': values.get('email') or user.email,
                        'timezone': values.get('timezone') or user.timezone})
 
-    query = _TABLE.update().returning(*_TABLE.columns).where(sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == user.id
-    )).values(new_values)
+    try:
+        flask.g.session.query(models2.User).\
+            filter(sql.and_(models2.User.id == user.id, models2.User.etag == if_match_etag)).update(new_values)
+        flask.g.session.commit()
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e), status_code=409)
 
-    result = flask.g.db_conn.execute(query)
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('User', user.id)
-    _result = dict(result.fetchone())
-    del _result['password']
+    user = base.get_resource_orm(models2.User, user.id)
+    user_serialized = user.serialize()
 
     return flask.Response(
-        json.dumps({'user': _result}), 200, headers={'ETag': etag},
+        json.dumps({'user': user_serialized}), 200, headers={'ETag': etag},
         content_type='application/json'
     )

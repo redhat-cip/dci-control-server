@@ -20,6 +20,7 @@ from dci.api.v1 import notifications
 
 import flask
 import mock
+from sqlalchemy.orm import sessionmaker
 
 
 def test_get_emails(user, remoteci_user_id, app, engine):
@@ -29,6 +30,7 @@ def test_get_emails(user, remoteci_user_id, app, engine):
 
     with app.app_context():
         flask.g.db_conn = engine.connect()
+        flask.g.session = sessionmaker(bind=engine)()
         emails = notifications.get_emails(remoteci_user_id)
         assert emails == ['user@example.org']
 
@@ -44,6 +46,7 @@ def test_get_emails_remoteci_deleted(user, remoteci_user_id, app, engine):
 
     with app.app_context():
         flask.g.db_conn = engine.connect()
+        flask.g.session = sessionmaker(bind=engine)()
         emails = notifications.get_emails(remoteci_user_id)
         assert emails == []
 

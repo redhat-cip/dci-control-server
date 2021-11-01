@@ -15,9 +15,11 @@
 # under the License.
 import json
 import flask
-from dci.db import models
+
+from dci.api.v1 import base
+from dci.common import exceptions as dci_exc
 from dci.common import utils
-from sqlalchemy import sql
+from dci.db import models2
 
 
 def format_mail_message(mesg):
@@ -102,19 +104,12 @@ def dlrn(job):
 
 
 def get_emails(remoteci_id):
-    _USER_REMOTECIS = models.JOIN_USER_REMOTECIS
 
-    query = (sql.select([models.USERS.c.email]).
-             select_from(models.USERS.
-                         join(_USER_REMOTECIS).
-                         join(models.REMOTECIS)).
-             where(_USER_REMOTECIS.c.remoteci_id == remoteci_id).
-             where(_USER_REMOTECIS.c.remoteci_id == models.REMOTECIS.c.id).
-             where(models.REMOTECIS.c.state != 'archived'))
-
-    emails = flask.g.db_conn.execute(query).fetchall()
-
-    return [email['email'] for email in emails]
+    try:
+        remoteci = base.get_resource_orm(models2.Remoteci, remoteci_id)
+        return [u.email for u in remoteci.users]
+    except dci_exc.DCIException:
+        return []
 
 
 def send_events(events):
