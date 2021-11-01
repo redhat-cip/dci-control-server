@@ -136,6 +136,7 @@ def create_app(param=None):
 
         for i in range(5):
             try:
+                flask.g.engine = dci_app.engine
                 flask.g.db_conn = dci_app.engine.connect()
                 flask.g.session = sessionmaker(bind=dci_app.engine)()
                 break

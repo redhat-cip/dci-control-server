@@ -47,8 +47,8 @@ def topic_update(identity, topic_id):
     return identity.get('/api/v1/topics/' + topic_id)
 
 
-def topic_removal(identity, topic_id):
-    return identity.delete('/api/v1/topics/%s' % topic_id)
+def topic_removal(identity, topic_id, etag):
+    return identity.delete('/api/v1/topics/%s' % topic_id, headers={'If-match': etag})
 
 
 def test_create_topics(admin, product):
@@ -208,6 +208,9 @@ def test_get_all_topics_by_user_and_remoteci(admin, user, remoteci_context,
 
 
 def test_get_all_topics_with_pagination(admin, product):
+    cs = admin.get('/api/v1/topics').data
+    nb_topics_init = cs['_meta']['count']
+
     # create 20 topic types and check meta data count
     for i in range(20):
         admin.post('/api/v1/topics',
@@ -215,7 +218,7 @@ def test_get_all_topics_with_pagination(admin, product):
                          'product_id': product['id'],
                          'component_types': ['type1', 'type2']})
     cs = admin.get('/api/v1/topics').data
-    assert cs['_meta']['count'] == 20
+    assert cs['_meta']['count'] == nb_topics_init + 20
 
     # verify limit and offset are working well
     for i in range(4):
@@ -263,19 +266,25 @@ def test_get_topics_of_user(admin, user, team_user_id, product):
                          'component_types': ['type1', 'type2'],
                          'data': {}})
     topics_user = user.get('/api/v1/topics').data
-    assert topic == topics_user['topics'][0]
+    assert topic['id'] == topics_user['topics'][0]['id']
     assert len(topics_user['topics']) == 1
 
 
 def test_get_topics_by_with_embed_authorization(admin, user, epm):
     topics_admin = admin.get('/api/v1/topics?embed=teams')
     assert topics_admin.status_code == 200
+    for t in topics_admin.data['topics']:
+        assert t['teams'] != []
 
     topics_epm = admin.get('/api/v1/topics?embed=teams')
     assert topics_epm.status_code == 200
+    for t in topics_epm.data['topics']:
+        assert t['teams'] != []
 
     topics_user = user.get('/api/v1/topics?embed=teams')
-    assert topics_user.status_code == 401
+    assert topics_user.status_code == 200
+    for t in topics_user.data['topics']:
+        assert t['teams'] == []
 
 
 def test_get_topic_by_id(admin, user, team_user_id, product):
@@ -296,12 +305,14 @@ def test_get_topic_by_id(admin, user, team_user_id, product):
     assert created_ct['topic']['id'] == pt_id
 
 
-def test_get_topic_by_id_with_embed_authorization(admin, user, topic_user_id):
+def test_get_topic_by_id_with_embed_teams(admin, user, topic_user_id):
     topics_admin = admin.get('/api/v1/topics/%s?embed=teams' % topic_user_id)
     assert topics_admin.status_code == 200
+    assert len(topics_admin.data['topic']['teams']) > 0
 
     topics_user = user.get('/api/v1/topics/%s?embed=teams' % topic_user_id)
-    assert topics_user.status_code == 401
+    assert topics_user.status_code == 200
+    assert topics_user.data['topic']['teams'] == []
 
 
 def test_get_topic_not_found(admin):
@@ -310,7 +321,9 @@ def test_get_topic_not_found(admin):
 
 
 def test_delete_topic_by_id(admin, topic_id):
-    topic = topic_removal(admin, topic_id)
+    result = admin.get('/api/v1/topics/%s' % topic_id)
+    topic_etag = result.data['topic']['etag']
+    topic = topic_removal(admin, topic_id, topic_etag)
     assert topic.status_code == 204
 
     gct = admin.get('/api/v1/topics/%s' % topic_id)
@@ -327,7 +340,7 @@ def test_delete_topic_by_id_as_user(admin, user, product):
     created_ct = admin.get('/api/v1/topics/%s' % pt_id)
     assert created_ct.status_code == 200
 
-    deleted_ct = user.delete('/api/v1/topics/%s' % pt_id)
+    deleted_ct = user.delete('/api/v1/topics/%s' % pt_id, headers={'If-match': pt.data['topic']['etag']})
     assert deleted_ct.status_code == 401
 
 
@@ -349,7 +362,7 @@ def test_delete_topic_archive_dependencies(admin, product):
     assert component.status_code == 201
 
     url = '/api/v1/topics/%s' % topic_id
-    deleted_topic = admin.delete(url)
+    deleted_topic = admin.delete(url, headers={'If-match': topic.data['topic']['etag']})
     assert deleted_topic.status_code == 204
 
     deleted_component = admin.get('/api/v1/component/%s' % component_id)
@@ -363,7 +376,7 @@ def test_purge_topic(admin, product):
     pt_id = pt.data['topic']['id']
     assert pt.status_code == 201
 
-    ppt = admin.delete('/api/v1/topics/%s' % pt_id)
+    ppt = admin.delete('/api/v1/topics/%s' % pt_id, headers={'If-match': pt.data['topic']['etag']})
     assert ppt.status_code == 204
 
 
@@ -385,7 +398,7 @@ def test_get_all_topics_sorted(admin, product):
 
 
 def test_delete_topic_not_found(admin):
-    result = admin.delete('/api/v1/topics/%s' % uuid.uuid4())
+    result = admin.delete('/api/v1/topics/%s' % uuid.uuid4(), headers={'If-match': uuid.uuid4()})
     assert result.status_code == 404
 
 
@@ -411,6 +424,7 @@ def test_put_topics(admin, topic_id, product):
     assert gt.status_code == 200
     assert gt.data['topic']['name'] == 'nname'
     assert gt.data['topic']['next_topic']['name'] == 'topic_name'
+    assert gt.data['topic']['next_topic']['id'] == topic_id
 
 
 # Tests for topics and teams management
@@ -567,12 +581,12 @@ def test_success_get_topics_embed(admin, topic_id, product_id):
     assert result.status_code == 200
     assert 'product' in result.data['topic'].keys()
 
-    request = admin.post('/api/v1/topics',
-                         data={'name': 'topic_without_product',
-                               'product_id': product_id})
+    admin.post('/api/v1/topics',
+               data={'name': 'topic_without_product',
+                     'product_id': product_id})
 
     result = admin.get('/api/v1/topics')
-    assert request.data['topic'] == result.data['topics'][0]
+    assert result.data['topics'][0]['product']['id']
 
 
 def test_add_multiple_topic_and_get(admin, user, product, product2):

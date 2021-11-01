@@ -57,15 +57,13 @@ _JOBS_C_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBS)
 logger = logging.getLogger(__name__)
 
 
-# (TODO-ORM): topic check to be migrated to orm
 def _verify_component_and_topic_access(user, component):
     component_team_id = component.team_id
     if component_team_id is not None:
         if user.is_not_in_team(component_team_id):
             dci_exc.Unauthorized()
     else:
-        topic = v1_utils.verify_existence_and_get(component.topic_id,
-                                                  models.TOPICS)
+        topic = base.get_resource_orm(models2.Topic, component.topic_id)
         export_control.verify_access_to_topic(user, topic)
 
 

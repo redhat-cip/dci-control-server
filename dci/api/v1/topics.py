@@ -16,6 +16,7 @@
 import flask
 from flask import json
 from sqlalchemy import exc as sa_exc
+import sqlalchemy.orm as sa_orm
 from sqlalchemy import sql
 
 from dci.api.v1 import api
@@ -30,11 +31,14 @@ from dci.common.schemas import (
     clean_json_with_schema,
     create_topic_schema,
     update_topic_schema,
-    check_and_get_args
+    check_and_get_args,
+    add_team_to_topic_schema
 )
 from dci.common import utils
+from dci.db import declarative as d
 from dci.db import embeds
 from dci.db import models
+from dci.db import models2
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.TOPICS
@@ -57,114 +61,95 @@ def create_topics(user):
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_feeder():  # noqa
         raise dci_exc.Unauthorized()
 
-    # todo(yassine): enabled when client updated.
-    # if values['component_types'] == []:
-    #     raise dci_exc.DCIException('component_types should not be void')
-
     values["component_types"] = [type.lower() for type in values["component_types"]]
 
-    query = _TABLE.insert().values(**values)
+    t = base.create_resource_orm(models2.Topic, values)
 
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(_TABLE.name, 'name')
-
-    result = json.dumps({'topic': values})
-    return flask.Response(result, 201, headers={'ETag': values['etag']},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({"topic": t}),
+        201,
+        headers={"ETag": values["etag"]},
+        content_type="application/json",
+    )
 
 
 @api.route('/topics/<uuid:topic_id>', methods=['GET'])
 @decorators.login_required
 def get_topic_by_id(user, topic_id):
-    args = check_and_get_args(flask.request.args.to_dict())
-    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    topic = base.get_resource_orm(
+        models2.Topic,
+        topic_id,
+        options=[sa_orm.joinedload('teams'),
+                 sa_orm.joinedload('product'),
+                 sa_orm.joinedload('next_topic')])
+    topic_serialized = topic.serialize()
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_feeder():  # noqa
         if not user.is_read_only_user():
             export_control.verify_access_to_topic(user, topic)
-        if 'teams' in args['embed']:
-            raise dci_exc.Unauthorized()
+            topic_serialized['teams'] = []
 
-    return base.get_resource_by_id(user, topic, _TABLE, _EMBED_MANY)
+    return flask.Response(
+        json.dumps({"topic": topic_serialized}),
+        200,
+        headers={"ETag": topic.etag},
+        content_type="application/json",
+    )
 
 
 @api.route('/topics', methods=['GET'])
 @decorators.login_required
 def get_all_topics(user):
     def _get_user_product_ids():
-        _JPT = models.JOIN_PRODUCTS_TEAMS
-        query = v1_utils.QueryBuilder(
-            models.PRODUCTS,
-            {},
-            {},
-            root_join_table=_JPT,
-            root_join_condition=sql.and_(
-                _JPT.c.product_id == models.PRODUCTS.c.id,
-                _JPT.c.team_id.in_(user.teams_ids),
-            ),
-        )
-        user_products = query.execute(fetchall=True)
-        return [up['products_id'] for up in user_products]
+        q = flask.g.session.query(models2.Product).\
+            filter(models2.Product.state != 'archived')
+        _JPT = models2.JOIN_PRODUCTS_TEAMS
+        q = q.join(_JPT, sql.and_(_JPT.c.product_id == models2.Product.id,
+                                  _JPT.c.team_id.in_(user.teams_ids)))
+        return [p.id for p in q.all()]
 
     args = check_and_get_args(flask.request.args.to_dict())
-    # if the user is an admin then he can get all the topics
-    q_get_topics = v1_utils.QueryBuilder(_TABLE, args, _T_COLUMNS)
+    q = flask.g.session.query(models2.Topic).\
+        filter(models2.Topic.state != 'archived').\
+        options(sa_orm.joinedload('product')).\
+        options(sa_orm.joinedload('next_topic'))
 
     if (user.is_not_super_admin() and user.is_not_read_only_user()
         and user.is_not_epm()):
-        if 'teams' in args['embed']:
-            raise dci_exc.DCIException('embed=teams not authorized.',
-                                       status_code=401)
-        # if regular user, retrieve the topics associated to the user's team
-        # get only topics with export_control==True or with explicit association
-        # between the user's teams and the topic
         product_ids = _get_user_product_ids()
-        q_get_topics.add_extra_condition(_TABLE.c.product_id.in_(product_ids))
-        q_get_topics.add_extra_condition(sql.or_(_TABLE.c.export_control == True,  # noqa
-                                                 _TABLE.c.id.in_(v1_utils.user_topic_ids(user))))  # noqa
+        q = q.filter(models2.Topic.product_id.in_(product_ids))
+        q = q.filter(sql.or_(models2.Topic.export_control == True,  # noqa
+                             models2.Topic.id.in_(v1_utils.user_topic_ids(user))))
+    else:
+        q = q.options(sa_orm.joinedload('teams'))
 
-    q_get_topics.add_extra_condition(_TABLE.c.state != 'archived')
+    q = d.handle_args(q, models2.Topic, args)
+    nb_topics = q.count()
+    topics = q.all()
+    topics = list(map(lambda t: t.serialize(), topics))
 
-    # get the number of rows for the '_meta' section
-    nb_rows = q_get_topics.get_number_of_rows()
-    rows = q_get_topics.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-
-    return flask.jsonify({'topics': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'topics': topics, '_meta': {'count': nb_topics}})
 
 
 @api.route('/topics/<uuid:topic_id>', methods=['PUT'])
 @decorators.login_required
 def put_topic(user, topic_id):
-    # get If-Match header
-    if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = clean_json_with_schema(update_topic_schema, flask.request.json)
-
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_feeder():  # noqa
         raise dci_exc.Unauthorized()
 
-    values['etag'] = utils.gen_etag()
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+    topic = base.get_resource_orm(models2.Topic, topic_id, if_match_etag)
+    values = clean_json_with_schema(update_topic_schema, flask.request.json)
 
     if "component_types" in values:
         values["component_types"] = [type.lower() for type in values["component_types"]]
 
-    where_clause = sql.and_(
-        _TABLE.c.etag == if_match_etag,
-        _TABLE.c.id == topic_id
-    )
-    query = _TABLE.update().returning(*_TABLE.columns).\
-        where(where_clause).values(**values)
-
-    result = flask.g.db_conn.execute(query)
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('Topic', topic_id)
+    base.update_resource_orm(topic, values)
+    topic = base.get_resource_orm(models2.Topic, topic_id)
 
     return flask.Response(
-        json.dumps({'topic': result.fetchone()}), 200,
-        headers={'ETag': values['etag']},
+        json.dumps({'topic': topic.serialize()}), 200,
+        headers={'ETag': topic.etag},
         content_type='application/json'
     )
 
@@ -175,21 +160,16 @@ def delete_topic_by_id(user, topic_id):
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    topic_id = v1_utils.verify_existence_and_get(topic_id, _TABLE, get_id=True)
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+    topic = base.get_resource_orm(models2.Topic, topic_id, if_match_etag)
 
-    with flask.g.db_conn.begin():
-        values = {'state': 'archived'}
-        where_clause = sql.and_(_TABLE.c.id == topic_id)
-        query = _TABLE.update().where(where_clause).values(**values)
-
-        result = flask.g.db_conn.execute(query)
-
-        if not result.rowcount:
-            raise dci_exc.DCIDeleteConflict('Topic', topic_id)
-
-        query = models.COMPONENTS.update().where(
-            models.COMPONENTS.c.topic_id == topic_id).values(**values)
-        flask.g.db_conn.execute(query)
+    try:
+        topic.state = 'archived'
+        flask.g.session.query(models2.Component).filter(models2.Component.topic_id == topic_id).update({"state": "archived"})
+        flask.g.session.commit()
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e), status_code=409)
 
     return flask.Response(None, 204, content_type='application/json')
 
@@ -198,7 +178,7 @@ def delete_topic_by_id(user, topic_id):
 @api.route('/topics/<uuid:topic_id>/components', methods=['GET'])
 @decorators.login_required
 def get_topics_components(user, topic_id):
-    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    topic = base.get_resource_orm(models2.Topic, topic_id)
     export_control.verify_access_to_topic(user, topic)
     return components.get_all_components(user, topic_id=topic_id)
 
@@ -207,52 +187,49 @@ def get_topics_components(user, topic_id):
 @api.route('/topics/<uuid:topic_id>/teams', methods=['POST'])
 @decorators.login_required
 def add_team_to_topic(user, topic_id):
-    # TODO(yassine): use json schema
-    data_json = flask.request.json
-    team_id = data_json.get('team_id')
-
-    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
-    team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
-                                                get_id=True)
-
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    values = {'topic_id': topic['id'],
-              'team_id': team_id}
-    query = models.JOINS_TOPICS_TEAMS.insert().values(**values)
-    try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError:
-        raise dci_exc.DCICreationConflict(models.JOINS_TOPICS_TEAMS.name,
-                                          'team_id, topic_id')
+    values = flask.request.json
+    check_json_is_valid(add_team_to_topic_schema, values)
+    team_id = values.get('team_id')
 
-    result = json.dumps(values)
+    topic = base.get_resource_orm(models2.Topic, topic_id)
+    team = base.get_resource_orm(models2.Team, team_id)
+
+    try:
+        topic.teams.append(team)
+        flask.g.session.add(topic)
+        flask.g.session.commit()
+    except sa_exc.IntegrityError:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message="conflict when adding team", status_code=409)
+
+    result = json.dumps({'topic_id': topic.id, 'team_id': team.id})
     return flask.Response(result, 201, content_type='application/json')
 
 
 @api.route('/topics/<uuid:topic_id>/teams/<uuid:team_id>', methods=['DELETE'])
 @decorators.login_required
 def delete_team_from_topic(user, topic_id, team_id):
-    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
-    team_id = v1_utils.verify_existence_and_get(team_id, models.TEAMS,
-                                                get_id=True)
-
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    JTT = models.JOINS_TOPICS_TEAMS
-    where_clause = sql.and_(JTT.c.topic_id == topic['id'],
-                            JTT.c.team_id == team_id)
-    query = JTT.delete().where(where_clause)
-    result = flask.g.db_conn.execute(query)
+    topic = base.get_resource_orm(models2.Topic, topic_id)
+    team = base.get_resource_orm(models2.Team, team_id)
 
-    if not result.rowcount:
-        raise dci_exc.DCIConflict('Topics_teams', team_id)
+    try:
+        topic.teams.remove(team)
+        flask.g.session.add(topic)
+        flask.g.session.commit()
+    except sa_exc.IntegrityError:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message="conflict when removing team", status_code=409)
 
     return flask.Response(None, 204, content_type='application/json')
 
 
+# this is already provided by GET /topics/<uuid:topic_id> and will be removed
 @api.route('/topics/<uuid:topic_id>/teams', methods=['GET'])
 @decorators.login_required
 def get_all_teams_from_topic(user, topic_id):

@@ -104,6 +104,8 @@ def handle_args(query, model_object, args):
                 query = query.order_by(getattr(model_object, s).asc())
             else:
                 query = query.order_by(getattr(model_object, s).desc())
+    else:
+        query = query.order_by(getattr(model_object, 'created_at').desc())
     if args.get('where'):
         columns = model_object.__mapper__.columns.keys()
         for w in args.get('where'):

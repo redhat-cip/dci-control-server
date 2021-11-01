@@ -533,6 +533,22 @@ update_topic_properties = {
 }
 update_topic_schema = {"type": "object", "properties": update_topic_properties}
 
+
+###############################################################################
+#                                                                             #
+#                               Topic_Team schema                             #
+#                                                                             #
+###############################################################################
+add_team_to_topic_schema = {
+    "type": "object",
+    "properties": {
+        "team_id": Properties.uuid,
+    },
+    "required": ["team_id"],
+    "additionalProperties": False,
+}
+
+
 ###############################################################################
 #                                                                             #
 #                                Issues schemas                               #

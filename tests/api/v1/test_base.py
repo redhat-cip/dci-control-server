@@ -25,7 +25,7 @@ def test_purge_resource(admin, product):
     pt_id = pt.data["topic"]["id"]
     assert pt.status_code == 201
 
-    ppt = admin.delete("/api/v1/topics/%s" % pt_id)
+    ppt = admin.delete("/api/v1/topics/%s" % pt_id, headers={'If-match': pt.data["topic"]['etag']})
     assert ppt.status_code == 204
 
     to_purge = admin.get("/api/v1/topics/purge").data
