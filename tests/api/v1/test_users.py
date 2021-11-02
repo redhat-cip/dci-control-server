@@ -69,10 +69,11 @@ def test_create_users_already_exist(admin, team_id):
 
 
 def test_get_teams_of_user(admin, user_id, team_id, team_user_id):
-    admin.post('/api/v1/teams/%s/users/%s' % (team_id, user_id),
-               data={})
-    admin.post('/api/v1/teams/%s/users/%s' % (team_user_id, user_id),
-               data={})
+    res = admin.post('/api/v1/teams/%s/users/%s' % (team_id, user_id))
+    assert res.status_code == 201
+
+    res = admin.post('/api/v1/teams/%s/users/%s' % (team_user_id, user_id))
+    assert res.status_code == 201
 
     uteams = admin.get('/api/v1/users/%s/teams' % user_id)
     assert uteams.status_code == 200

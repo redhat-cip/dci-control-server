@@ -48,6 +48,9 @@ def test_delete_user_from_team(admin, user_id, team_id):
                     data={})
     assert pu.status_code == 201
 
+    gu = admin.get('/api/v1/teams/%s/users' % team_id)
+    assert gu.data['users'][0]['id'] == user_id
+
     du = admin.delete('/api/v1/teams/%s/users/%s' % (team_id, user_id))
     assert du.status_code == 204
 

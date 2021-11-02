@@ -14,18 +14,12 @@
 
 import flask
 from sqlalchemy import exc as sa_exc
-from sqlalchemy import sql
 
 from dci.api.v1 import api
-from dci.api.v1 import teams
-from dci.api.v1 import users
-from dci.api.v1 import utils as v1_utils
+from dci.api.v1 import base
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common.schemas import (
-    check_and_get_args
-)
-from dci.db import models
+from dci.db import models2
 
 
 @api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['POST'])
@@ -39,15 +33,16 @@ def add_user_to_team(user, team_id, user_id):
     if user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    query = models.JOIN_USERS_TEAMS.insert().values(
-        user_id=user_id,
-        team_id=team_id
-    )
+    team = base.get_resource_orm(models2.Team, team_id)
+    user = base.get_resource_orm(models2.User, user_id)
 
     try:
-        flask.g.db_conn.execute(query)
-    except sa_exc.IntegrityError as e:
-        raise dci_exc.DCIException('Adding user to team failed: %s' % str(e))
+        team.users.append(user)
+        flask.g.session.add(team)
+        flask.g.session.commit()
+    except sa_exc.IntegrityError:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message="conflict when adding team", status_code=409)
 
     return flask.Response(None, 201, content_type='application/json')
 
@@ -55,51 +50,24 @@ def add_user_to_team(user, team_id, user_id):
 @api.route('/teams/<uuid:team_id>/users', methods=['GET'])
 @decorators.login_required
 def get_users_from_team(user, team_id):
-    args = check_and_get_args(flask.request.args.to_dict())
-    _JUTR = models.JOIN_USERS_TEAMS
-    query = v1_utils.QueryBuilder(models.USERS, args,
-                                  users._USERS_COLUMNS,
-                                  ['password', 'team_id'],
-                                  root_join_table=_JUTR,
-                                  root_join_condition=sql.and_(_JUTR.c.user_id == models.USERS.c.id,  # noqa
-                                                               _JUTR.c.team_id == team_id))  # noqa
-
     if user.is_not_epm() and user.is_not_in_team(team_id):
         raise dci_exc.Unauthorized()
+    team = base.get_resource_orm(models2.Team, team_id)
+    team_users = [u.serialize() for u in team.users]
 
-    query.add_extra_condition(models.USERS.c.state != 'archived')
-
-    rows = query.execute(fetchall=True)
-    team_users = v1_utils.format_result(rows, models.USERS.name, args['embed'],
-                                        users._EMBED_MANY)
-
-    return flask.jsonify({'users': team_users, '_meta': {'count': len(rows)}})
+    return flask.jsonify({'users': team_users, '_meta': {'count': len(team_users)}})
 
 
 @api.route('/users/<uuid:user_id>/teams', methods=['GET'])
 @decorators.login_required
 def get_teams_of_user(user, user_id):
-    args = check_and_get_args(flask.request.args.to_dict())
-    _JUTR = models.JOIN_USERS_TEAMS
-    query = v1_utils.QueryBuilder(models.TEAMS, args,
-                                  teams._T_COLUMNS,
-                                  root_join_table=_JUTR,
-                                  root_join_condition=sql.and_(_JUTR.c.team_id == models.TEAMS.c.id,  # noqa
-                                                               _JUTR.c.user_id == user_id))  # noqa
-
     if user.is_not_super_admin() and user.id != user_id and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    query.add_extra_condition(models.TEAMS.c.state != 'archived')
+    user = base.get_resource_orm(models2.User, user_id)
+    user_teams = [t.serialize() for t in user.team]
 
-    # get the number of rows for the '_meta' section
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
-    users_teams = v1_utils.format_result(rows, models.TEAMS.name,
-                                         args['embed'],
-                                         teams._EMBED_MANY)
-
-    return flask.jsonify({'teams': users_teams, '_meta': {'count': nb_rows}})
+    return flask.jsonify({'teams': user_teams, '_meta': {'count': len(user_teams)}})
 
 
 @api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['DELETE'])
@@ -109,9 +77,15 @@ def remove_user_from_team(user, team_id, user_id):
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    _JUTR = models.JOIN_USERS_TEAMS
-    query = _JUTR.delete().where(sql.and_(_JUTR.c.user_id == user_id,
-                                          _JUTR.c.team_id == team_id))
-    flask.g.db_conn.execute(query)
+    team = base.get_resource_orm(models2.Team, team_id)
+    user = base.get_resource_orm(models2.User, user_id)
+
+    try:
+        team.users.remove(user)
+        flask.g.session.add(team)
+        flask.g.session.commit()
+    except sa_exc.IntegrityError:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message="conflict when user from team", status_code=409)
 
     return flask.Response(None, 204, content_type='application/json')
