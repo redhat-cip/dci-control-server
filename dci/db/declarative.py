@@ -71,42 +71,52 @@ def handle_pagination(query, args):
 
 
 def handle_args(query, model_object, args):
-    if args.get('sort'):
+    if args.get("sort"):
         columns = model_object.__mapper__.columns.keys()
-        for s in args.get('sort'):
+        for s in args.get("sort"):
             asc = True
-            if s.startswith('-'):
+            if s.startswith("-"):
                 s = s[1:]
                 asc = False
             if s not in columns:
-                raise dci_exc.DCIException('Invalid sort key: "%s"' % s,
-                                           payload={'Valid sort keys': sorted(set(columns))})
+                raise dci_exc.DCIException(
+                    'Invalid sort key: "%s"' % s,
+                    payload={"Valid sort keys": sorted(set(columns))},
+                )
             if asc:
                 query = query.order_by(getattr(model_object, s).asc())
             else:
                 query = query.order_by(getattr(model_object, s).desc())
     else:
-        query = query.order_by(getattr(model_object, 'created_at').desc())
-    if args.get('where'):
+        query = query.order_by(getattr(model_object, "created_at").desc())
+    if args.get("where"):
         columns = model_object.__mapper__.columns.keys()
-        for w in args.get('where'):
+        for w in args.get("where"):
             try:
-                name, value = w.split(':', 1)
+                name, value = w.split(":", 1)
                 if name not in columns:
-                    raise dci_exc.DCIException('Invalid where key: "%s"' % w,
-                                               payload={'Valid where keys': sorted(set(columns))})
+                    raise dci_exc.DCIException(
+                        'Invalid where key: "%s"' % w,
+                        payload={"Valid where keys": sorted(set(columns))},
+                    )
             except ValueError:
-                payload = {'error': 'where key must have the following form "key:value"'}
-                raise dci_exc.DCIException('Invalid where key: "%s"' % w, payload=payload)
+                payload = {
+                    "error": 'where key must have the following form "key:value"'
+                }
+                raise dci_exc.DCIException(
+                    'Invalid where key: "%s"' % w, payload=payload
+                )
             m_column = getattr(model_object, name)
             if str(m_column.type) == "UUID" and uuid.UUID(value):
-                query = query.filter(getattr(model_object, name) == value)
+                query = query.filter(m_column == value)
             elif m_column.type.python_type == list:
-                query = query.filter(getattr(model_object, name).contains([value]))
+                query = query.filter(m_column.contains([value]))
+            elif value.endswith("*") and value.count("*") == 1:
+                query = query.filter(m_column.contains(value.replace("*", "")))
             else:
-                query = query.filter(getattr(model_object, name) == value)
-    if args.get('limit'):
-        query = query.limit(args.get('limit'))
-    if args.get('offset'):
-        query = query.offset(args.get('offset'))
+                query = query.filter(m_column == value)
+    if args.get("limit"):
+        query = query.limit(args.get("limit"))
+    if args.get("offset"):
+        query = query.offset(args.get("offset"))
     return query

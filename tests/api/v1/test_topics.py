@@ -636,3 +636,38 @@ def test_get_topic_by_id_export_control_true(
     request = user.get("/api/v1/topics/%s" % RHEL80Topic["id"])
     assert request.status_code == 200
     assert request.data["topic"]["id"] == RHEL80Topic["id"]
+
+
+def test_get_topic_with_rolling_topic_name(admin, product):
+    r1 = admin.post(
+        "/api/v1/topics",
+        data={
+            "name": "RHEL-8.4",
+            "product_id": product["id"],
+            "component_types": ["compose"],
+        },
+    )
+    assert r1.status_code == 201
+    RHEL_84 = r1.data["topic"]
+    r2 = admin.post(
+        "/api/v1/topics",
+        data={
+            "name": "RHEL-8.5",
+            "product_id": product["id"],
+            "component_types": ["compose"],
+        },
+    )
+    assert r2.status_code == 201
+    RHEL_85 = r2.data["topic"]
+    assert admin.get("/api/v1/topics").data["_meta"]["count"] == 2
+
+    latest_rhel_85 = admin.get("/api/v1/topics?where=name:RHEL-8*&limit=1&offset=0")
+    assert latest_rhel_85.status_code == 200
+    assert latest_rhel_85.data["_meta"]["count"] == 1
+    assert latest_rhel_85.data["topics"][0]["id"] == RHEL_85["id"]
+
+    latest_rhel_8 = admin.get("/api/v1/topics?where=name:RHEL-8*")
+    assert latest_rhel_8.status_code == 200
+    assert latest_rhel_8.data["_meta"]["count"] == 2
+    assert latest_rhel_8.data["topics"][0]["id"] == RHEL_85["id"]
+    assert latest_rhel_8.data["topics"][1]["id"] == RHEL_84["id"]
