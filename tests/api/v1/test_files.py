@@ -28,9 +28,11 @@ from dci import dci_config
 from dci.api.v1 import files
 from dci.api.v1.files import get_file_info_from_headers
 from dci.common import exceptions as dci_exc
+from dci.db import models2
 from dci.stores import files_utils
 from tests import data as tests_data
 import tests.utils as t_utils
+from sqlalchemy.orm import sessionmaker
 
 import collections
 
@@ -157,28 +159,6 @@ def test_get_file_not_found(user):
     assert result.status_code == 404
 
 
-def test_get_file_with_embed(user, jobstate_user_id, team_user_id):
-    pt = user.get('/api/v1/teams/%s' % team_user_id).data
-    del pt['team']['remotecis']
-    del pt['team']['topics']
-
-    headers = {'DCI-JOBSTATE-ID': jobstate_user_id, 'DCI-NAME': 'kikoolol'}
-    file = user.post('/api/v1/files', headers=headers).data
-
-    file_id = file['file']['id']
-    file['file']['team'] = pt['team']
-
-    # verify embed
-    file_embed = user.get('/api/v1/files/%s?embed=team' % file_id).data
-    assert file == file_embed
-
-
-def test_get_file_with_embed_not_valid(user, jobstate_user_id):
-    file_id = t_utils.post_file(user, jobstate_user_id, FileDesc('name', ''))
-    file = user.get('/api/v1/files/%s?embed=mdr' % file_id)
-    assert file.status_code == 400
-
-
 def test_delete_file_by_id(user, jobstate_user_id):
     file_id = t_utils.post_file(user, jobstate_user_id, FileDesc('name', ''))
     url = '/api/v1/files/%s' % file_id
@@ -289,7 +269,9 @@ def test_get_previous_job_in_topic(app, user, remoteci_context,
         'comment': 'kikoolol',
         'components': components_user_ids,
         'team_id': team_user_id,
-        'topic_id': topic_user_id
+        'topic_id': topic_user_id,
+        'name': 'ocp-vanilla',
+        'configuration': 'cluster-8-nodes-sriov'
     }
     prev_job = remoteci_context.post('/api/v1/jobs', data=data).data
     prev_job_id = prev_job['job']['id']
@@ -300,12 +282,21 @@ def test_get_previous_job_in_topic(app, user, remoteci_context,
     new_remoteci.post('/api/v1/jobs', data=data)
 
     # job_3 from remoteci_context
-    # prev(job_3) must be job_1 and not job_2
+    data['configuration'] = 'cluster-5-nodes-sriov'
+    data['name'] = 'ocp-vanilla-fredco'
     new_job = remoteci_context.post('/api/v1/jobs', data=data).data
-    new_job = new_job['job']
+    new_job = models2.Job(**new_job['job'])
+
+    # job_4 from remoteci_context
+    # prev(job_4) must be job_1 and not job_2 nor job_3
+    data['configuration'] = 'cluster-8-nodes-sriov'
+    data['name'] = 'ocp-vanilla'
+    new_job = remoteci_context.post('/api/v1/jobs', data=data).data
+    new_job = models2.Job(**new_job['job'])
+
     with app.app_context():
-        flask.g.db_conn = engine.connect()
-        test_prev_job_id = str(files.get_previous_job_in_topic(new_job)['id'])
+        flask.g.session = sessionmaker(bind=engine)()
+        test_prev_job_id = str(files.get_previous_job_in_topic(new_job).id)
         assert prev_job_id == test_prev_job_id
 
 

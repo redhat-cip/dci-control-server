@@ -14,31 +14,12 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import datetime
 from dci.common import exceptions as dci_exc
-from dci.common import utils
 
-import sqlalchemy as sa
-from sqlalchemy.dialects import postgresql as pg
 import uuid
 
 
 class Mixin(object):
-    id = sa.Column(pg.UUID(as_uuid=True),
-                   primary_key=True,
-                   default=utils.gen_uuid)
-    created_at = sa.Column(sa.DateTime(),
-                           default=datetime.datetime.utcnow,
-                           nullable=False)
-    updated_at = sa.Column(sa.DateTime(),
-                           onupdate=datetime.datetime.utcnow,
-                           default=datetime.datetime.utcnow,
-                           nullable=False)
-    etag = sa.Column(sa.String(40),
-                     nullable=False,
-                     default=utils.gen_etag,
-                     onupdate=utils.gen_etag)
-
     def serialize(self, ignore_columns=[]):
         def _get_nested_columns():
             _res = {}

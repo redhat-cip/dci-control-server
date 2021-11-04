@@ -36,6 +36,7 @@ from dci.common.schemas import (
 )
 from dci.common import utils
 from dci.db import models
+from dci.db import models2
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.JOBSTATES
@@ -71,7 +72,7 @@ def serialize_job(user, job):
     )
     results_with_testcases = []
     for result in job["results"]:
-        file = files.get_file_object(result["file_id"])
+        file = base.get_resource_orm(models2.File, result["file_id"])
         file_descriptor = files.get_file_descriptor(file)
         jsonunit = transformations.junit2dict(file_descriptor)
         result_with_testcases = result.copy()

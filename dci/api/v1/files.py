@@ -39,11 +39,14 @@ from dci.common.schemas import (
 from dci.common import utils
 from dci.db import embeds
 from dci.db import models
+from dci.db import models2
+from dci.db import declarative
 from dci import dci_config
 from dci.stores import files_utils
 import logging
 
 from sqlalchemy import sql
+from sqlalchemy import orm
 from sqlalchemy import exc as sa_exc
 
 logger = logging.getLogger(__name__)
@@ -54,35 +57,41 @@ _VALID_EMBED = embeds.files()
 _FILES_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
     'jobstate': False,
-    'jobstate.job': False,
     'job': False,
     'team': False
 }
 
 
 def get_previous_job_in_topic(job):
-    topic_id = job['topic_id']
-    query = sql.select([models.JOBS]). \
-        where(sql.and_(models.JOBS.c.topic_id == topic_id,
-                       models.JOBS.c.created_at < job['created_at'],
-                       models.JOBS.c.id != job['id'],
-                       models.JOBS.c.remoteci_id == job['remoteci_id'],
-                       models.JOBS.c.state != 'archived')). \
-        order_by(sql.desc(models.JOBS.c.created_at))
-    return flask.g.db_conn.execute(query).fetchone()
+    topic_id = job.topic_id
+    query = flask.g.session.query(models2.Job)
+    query = query.filter(sql.and_(
+        models2.Job.topic_id == topic_id,
+        models2.Job.created_at < job.created_at,
+        models2.Job.id != job.id,
+        models2.Job.remoteci_id == job.remoteci_id,
+        models2.Job.state != 'archived'),
+        models2.Job.name == job.name,
+        models2.Job.configuration == job.configuration,
+        models2.Job.url == job.url).order_by(sql.desc(models2.Job.created_at)).limit(1)
+    try:
+        return query.one()
+    except orm.exc.NoResultFound:
+        return None
 
 
 def _get_previous_jsonunit(job, filename):
     prev_job = get_previous_job_in_topic(job)
     if prev_job is None:
         return None
-    query = sql.select([models.TESTS_RESULTS]). \
-        where(sql.and_(models.TESTS_RESULTS.c.job_id == prev_job['id'],
-                       models.TESTS_RESULTS.c.name == filename))
-    res = flask.g.db_conn.execute(query).fetchone()
-    if res is None:
+    query = flask.g.session.query(models2.TestsResults).\
+        filter(sql.and_(models2.TestsResults.job_id == prev_job.id,
+                        models2.TestsResults.name == filename))
+    try:
+        res = query.one()
+    except orm.exc.NoResultFound:
         return None
-    test_file = get_file_object(res.file_id)
+    test_file = base.get_resource_orm(models2.File, res.file_id)
     file_descriptor = get_file_descriptor(test_file)
     return tsfm.junit2dict(file_descriptor)
 
@@ -97,7 +106,7 @@ def _compute_regressions_successfix(jsonunit, previous_jsonunit):
 
 
 def _compute_known_tests_cases(jsonunit, job):
-    tests_to_issues = tests.get_tests_to_issues(job['topic_id'])
+    tests_to_issues = tests.get_tests_to_issues(job.topic_id)
     return tsfm.add_known_issues_to_tests(jsonunit, tests_to_issues)
 
 
@@ -108,24 +117,31 @@ def _process_junit_file(values, junit_file, job):
     jsonunit = _compute_regressions_successfix(jsonunit, previous_jsonunit)
     jsonunit = _compute_known_tests_cases(jsonunit, job)
 
-    query = models.TESTS_RESULTS.insert().values({
-        'id': utils.gen_uuid(),
-        'created_at': values['created_at'],
-        'updated_at': datetime.datetime.utcnow().isoformat(),
-        'file_id': values['id'],
-        'job_id': job['id'],
-        'name': values['name'],
-        'success': jsonunit['success'],
-        'failures': jsonunit['failures'],
-        'errors': jsonunit['errors'],
-        'regressions': jsonunit['regressions'],
-        'successfixes': jsonunit['successfixes'],
-        'skips': jsonunit['skips'],
-        'total': jsonunit['total'],
-        'time': jsonunit['time']
-    })
+    tr = models2.TestsResults()
+    tr.id = utils.gen_uuid()
+    tr.created_at = values['created_at']
+    tr.updated_at = datetime.datetime.utcnow().isoformat()
+    tr.file_id = values['id']
+    tr.job_id = job.id
+    tr.name = values['name']
+    tr.success = jsonunit['success']
+    tr.failures = jsonunit['failures']
+    tr.errors = jsonunit['errors']
+    tr.regressions = jsonunit['regressions']
+    tr.successfixes = jsonunit['successfixes']
+    tr.skips = jsonunit['skips']
+    tr.total = jsonunit['total']
+    tr.time = jsonunit['time']
 
-    flask.g.db_conn.execute(query)
+    try:
+        flask.g.session.add(tr)
+        flask.g.session.commit()
+    except sa_exc.IntegrityError as ie:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(ie), status_code=409)
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e))
 
 
 def get_file_info_from_headers(headers):
@@ -153,17 +169,16 @@ def create_files(user):
         raise dci_exc.DCIException('HTTP header DCI-NAME must be specified')
 
     if values.get('jobstate_id') and values.get('job_id') is None:
-        jobstate = v1_utils.verify_existence_and_get(values.get('jobstate_id'),
-                                                     models.JOBSTATES)
-        values['job_id'] = jobstate['job_id']
+        jobstate = base.get_resource_orm(models2.Jobstate, values.get('jobstate_id'))
+        values['job_id'] = jobstate.job_id
 
-    job = v1_utils.verify_existence_and_get(values.get('job_id'), models.JOBS)
-    if (user.is_not_in_team(job['team_id']) and user.is_read_only_user()
+    job = base.get_resource_orm(models2.Job, values.get('job_id'))
+    if (user.is_not_in_team(job.team_id) and user.is_read_only_user()
         and user.is_not_epm()):
         raise dci_exc.Unauthorized()
 
     file_id = utils.gen_uuid()
-    file_path = files_utils.build_file_path(job['team_id'],
+    file_path = files_utils.build_file_path(job.team_id,
                                             values['job_id'],
                                             file_id)
 
@@ -176,28 +191,23 @@ def create_files(user):
         'id': file_id,
         'created_at': datetime.datetime.utcnow().isoformat(),
         'updated_at': datetime.datetime.utcnow().isoformat(),
-        'team_id': job['team_id'],
+        'team_id': job.team_id,
         'md5': None,
         'size': s_file['content-length'],
         'state': 'active',
         'etag': etag,
     })
 
-    with flask.g.db_conn.begin():
-        q_insert_file = _TABLE.insert().values(**values)
-        flask.g.db_conn.execute(q_insert_file)
-        result = json.dumps({'file': values})
+    new_file = base.create_resource_orm(models2.File, values)
+    result = json.dumps({'file': new_file})
 
-        if values['mime'] == 'application/junit':
-            _, junit_file = store.get(file_path)
-            _process_junit_file(values, junit_file, job)
+    if new_file['mime'] == 'application/junit':
+        _, junit_file = store.get(file_path)
+        _process_junit_file(values, junit_file, job)
 
-        # Update job status
-        job_duration = datetime.datetime.utcnow() - job['created_at']
-        query_update_job = (models.JOBS.update()
-                            .where(models.JOBS.c.id == job['id'])
-                            .values(duration=job_duration.seconds))
-        flask.g.db_conn.execute(query_update_job)
+    # Update job duration if it's jobstate's file
+    job_duration = datetime.datetime.utcnow() - job.created_at
+    base.update_resource_orm(job, {'duration': job_duration.seconds})
 
     return flask.Response(result, 201, content_type='application/json')
 
@@ -206,73 +216,74 @@ def get_all_files(user, job_id):
     """Get all files.
     """
     args = check_and_get_args(flask.request.args.to_dict())
-    job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
+    job = base.get_resource_orm(models2.Job, job_id)
     if (user.is_not_super_admin() and user.is_not_read_only_user()
         and user.is_not_epm()):
-        if job['team_id'] not in user.teams_ids:
+        if job.team_id not in user.teams_ids:
             raise dci_exc.Unauthorized()
 
-    query = v1_utils.QueryBuilder(_TABLE, args, _FILES_COLUMNS)
+    query = flask.g.session.query(models2.File)
+    query = query.filter(sql.and_(
+        models2.File.job_id == job_id,
+        models2.File.state != 'archived'))
 
-    query.add_extra_condition(_TABLE.c.job_id == job_id)
-    query.add_extra_condition(_TABLE.c.state != 'archived')
+    nb_files = query.count()
+    query = declarative.handle_args(query, models2.File, args)
+    files = [f.serialize() for f in query.all()]
 
-    nb_rows = query.get_number_of_rows()
-    rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
-    return json.jsonify({'files': rows, '_meta': {'count': nb_rows}})
+    return json.jsonify({'files': files, '_meta': {'count': nb_files}})
 
 
 @api.route('/files/<uuid:file_id>', methods=['GET'])
 @decorators.login_required
 def get_file_by_id(user, file_id):
-    file = v1_utils.verify_existence_and_get(file_id, _TABLE)
-    return base.get_resource_by_id(user, file, _TABLE, _EMBED_MANY)
+    file = base.get_resource_orm(models2.File, file_id)
+
+    return flask.Response(
+        json.dumps({"file": file.serialize()}),
+        200,
+        content_type="application/json",
+    )
 
 
 def get_file_descriptor(file_object):
     store = dci_config.get_store('files')
-    file_path = files_utils.build_file_path(file_object['team_id'],
-                                            file_object['job_id'],
-                                            file_object['id'])
+    file_path = files_utils.build_file_path(file_object.team_id,
+                                            file_object.job_id,
+                                            file_object.id)
     # Check if file exist on the storage engine
     store.head(file_path)
     _, file_descriptor = store.get(file_path)
     return file_descriptor
 
 
-def get_file_object(file_id):
-    return v1_utils.verify_existence_and_get(file_id, _TABLE)
-
-
 @api.route('/files/<uuid:file_id>/content', methods=['GET'])
 @decorators.login_required
 def get_file_content(user, file_id):
-    file = get_file_object(file_id)
-    if (user.is_not_in_team(file['team_id']) and user.is_not_read_only_user()
+    file = base.get_resource_orm(models2.File, file_id)
+    if (user.is_not_in_team(file.team_id) and user.is_not_read_only_user()
         and user.is_not_epm()):
         raise dci_exc.Unauthorized()
     file_descriptor = get_file_descriptor(file)
     return flask.send_file(
         file_descriptor,
-        mimetype=file['mime'] or 'text/plain',
+        mimetype=file.mime or 'text/plain',
         as_attachment=True,
-        attachment_filename=file['name'].replace(' ', '_')
+        attachment_filename=file.name.replace(' ', '_')
     )
 
 
 @api.route('/files/<uuid:file_id>/testscases', methods=['GET'])
 @decorators.login_required
 def get_file_testscases(user, file_id):
-    file = get_file_object(file_id)
-    if (user.is_not_in_team(file['team_id']) and user.is_not_read_only_user()
+    file = base.get_resource_orm(models2.File, file_id)
+    if (user.is_not_in_team(file.team_id) and user.is_not_read_only_user()
         and user.is_not_epm()):
         raise dci_exc.Unauthorized()
     file_descriptor = get_file_descriptor(file)
     jsonunit = tsfm.junit2dict(file_descriptor)
-    job = v1_utils.verify_existence_and_get(file['job_id'], models.JOBS)
-    previous_jsonunit = _get_previous_jsonunit(job, file['name'])
+    job = base.get_resource_orm(models2.Job, file.job_id)
+    previous_jsonunit = _get_previous_jsonunit(job, file.name)
     jsonunit = _compute_regressions_successfix(jsonunit, previous_jsonunit)
     return flask.Response(json.dumps({
         "testscases": jsonunit["testscases"]
@@ -282,22 +293,13 @@ def get_file_testscases(user, file_id):
 @api.route('/files/<uuid:file_id>', methods=['DELETE'])
 @decorators.login_required
 def delete_file_by_id(user, file_id):
-    file = v1_utils.verify_existence_and_get(file_id, _TABLE)
+    file = base.get_resource_orm(models2.File, file_id)
 
-    if not user.is_in_team(file['team_id']):
+    if not user.is_in_team(file.team_id):
         raise dci_exc.Unauthorized()
 
-    values = {'state': 'archived'}
-    where_clause = _TABLE.c.id == file_id
-
-    with flask.g.db_conn.begin():
-        query = _TABLE.update().where(where_clause).values(**values)
-        result = flask.g.db_conn.execute(query)
-
-        if not result.rowcount:
-            raise dci_exc.DCIDeleteConflict('File', file_id)
-
-        return flask.Response(None, 204, content_type='application/json')
+    base.update_resource_orm(file, {"state": "archived"})
+    return flask.Response(None, 204, content_type='application/json')
 
 
 def build_certification(username, password, node_id, file_name, file_content):
@@ -318,7 +320,7 @@ def upload_certification(user, file_id):
     data = flask.request.json
     check_json_is_valid(file_upload_certification_schema, data)
 
-    file = get_file_object(file_id)
+    file = base.get_resource_orm(models2.File, file_id)
     file_descriptor = get_file_descriptor(file)
     file_content = file_descriptor.read()
 
@@ -335,7 +337,7 @@ def upload_certification(user, file_id):
         username,
         password,
         certification_details['cert_nid'],
-        file['name'],
+        file.name,
         file_content
     )
     proxy.Cert.uploadTestLog(certification)
@@ -345,7 +347,7 @@ def upload_certification(user, file_id):
 @api.route('/files/purge', methods=['GET'])
 @decorators.login_required
 def get_to_purge_archived_files(user):
-    return base.get_to_purge_archived_resources(user, _TABLE)
+    return base.get_resources_to_purge_orm(user, models2.File)
 
 
 @api.route('/files/purge', methods=['POST'])
@@ -353,28 +355,25 @@ def get_to_purge_archived_files(user):
 def purge_archived_files(user):
 
     # get all archived files
-    archived_files = base.get_archived_resources(_TABLE)
-
+    archived_files = base.get_resources_to_purge_orm(user, models2.File).json['files']
     store = dci_config.get_store('files')
 
     # for each file delete it from within a transaction
     # if the SQL deletion or the Store deletion fail then
     # rollback the transaction, otherwise commit.
     for file in archived_files:
-        tx = flask.g.db_conn.begin()
         try:
-            q_delete_file = _TABLE.delete().where(_TABLE.c.id == file['id'])
-            flask.g.db_conn.execute(q_delete_file)
             file_path = files_utils.build_file_path(file['team_id'],
                                                     file['job_id'],
                                                     file['id'])
             store.delete(file_path)
-            tx.commit()
+            flask.g.session.query(models2.File).filter(models2.File.id == file['id']).delete()
+            flask.g.session.commit()
             logger.debug('file %s removed' % file_path)
         except sa_exc.DBAPIError as e:
             logger.error('Error while removing file %s, message: %s'
                          % (file_path, str(e)))
-            tx.rollback()
+            flask.g.session.rollback()
             raise dci_exc.DCIException(str(e))
 
     return flask.Response(None, 204, content_type='application/json')

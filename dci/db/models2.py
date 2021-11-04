@@ -66,6 +66,20 @@ USER_REMOTECIS = sa.Table(
 class User(dci_declarative.Mixin, Base):
     __tablename__ = 'users'
 
+    id = sa.Column(pg.UUID(as_uuid=True),
+                   primary_key=True,
+                   default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(),
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime(),
+                           onupdate=datetime.datetime.utcnow,
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    etag = sa.Column(sa.String(40),
+                     nullable=False,
+                     default=utils.gen_etag,
+                     onupdate=utils.gen_etag)
     name = sa.Column(sa.String(255), nullable=False, unique=True)
     sso_username = sa.Column(sa.String(255), nullable=True, unique=True)
     fullname = sa.Column(sa.String(255), nullable=False)
@@ -109,6 +123,20 @@ class Team(dci_declarative.Mixin, Base):
     __tablename__ = 'teams'
     __table_args__ = (sa.UniqueConstraint('name', name='teams_name_key'),)
 
+    id = sa.Column(pg.UUID(as_uuid=True),
+                   primary_key=True,
+                   default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(),
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime(),
+                           onupdate=datetime.datetime.utcnow,
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    etag = sa.Column(sa.String(40),
+                     nullable=False,
+                     default=utils.gen_etag,
+                     onupdate=utils.gen_etag)
     name = sa.Column(sa.String(255), nullable=False)
     # https://en.wikipedia.org/wiki/ISO_3166-1 Alpha-2 code
     country = sa.Column(sa.String(255), nullable=True)
@@ -126,6 +154,20 @@ class Topic(dci_declarative.Mixin, Base):
     __table_args__ = (sa.Index('topics_product_id_idx', 'product_id'),
                       sa.Index('topics_next_topic_id_idx', 'next_topic_id'))
 
+    id = sa.Column(pg.UUID(as_uuid=True),
+                   primary_key=True,
+                   default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(),
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime(),
+                           onupdate=datetime.datetime.utcnow,
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    etag = sa.Column(sa.String(40),
+                     nullable=False,
+                     default=utils.gen_etag,
+                     onupdate=utils.gen_etag)
     name = sa.Column(sa.String(255), unique=True, nullable=False)
     component_types = sa.Column(pg.JSON, default=[])
     product_id = sa.Column(pg.UUID(as_uuid=True), sa.ForeignKey('products.id'), nullable=True)
@@ -143,6 +185,20 @@ class Remoteci(dci_declarative.Mixin, Base):
     __table_args__ = (sa.Index('remotecis_team_id_idx', 'team_id'),
                       sa.UniqueConstraint('name', 'team_id', name='remotecis_name_team_id_key'))
 
+    id = sa.Column(pg.UUID(as_uuid=True),
+                   primary_key=True,
+                   default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(),
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime(),
+                           onupdate=datetime.datetime.utcnow,
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    etag = sa.Column(sa.String(40),
+                     nullable=False,
+                     default=utils.gen_etag,
+                     onupdate=utils.gen_etag)
     name = sa.Column('name', sa.String(255))
     data = sa.Column('data', sa_utils.JSONType, default={})
     api_secret = sa.Column('api_secret', sa.String(64), default=signature.gen_secret)
@@ -156,6 +212,21 @@ class Remoteci(dci_declarative.Mixin, Base):
 
 class Product(dci_declarative.Mixin, Base):
     __tablename__ = 'products'
+
+    id = sa.Column(pg.UUID(as_uuid=True),
+                   primary_key=True,
+                   default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(),
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime(),
+                           onupdate=datetime.datetime.utcnow,
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    etag = sa.Column(sa.String(40),
+                     nullable=False,
+                     default=utils.gen_etag,
+                     onupdate=utils.gen_etag)
     name = sa.Column('name', sa.String(255), nullable=False)
     label = sa.Column('label', sa.String(255), nullable=False, unique=True)
     description = sa.Column('description', sa.Text)
@@ -170,6 +241,21 @@ class Feeder(dci_declarative.Mixin, Base):
         sa.Index("feeders_team_id_idx", "team_id"),
         sa.UniqueConstraint("name", "team_id", name="feeders_name_team_id_key"),
     )
+
+    id = sa.Column(pg.UUID(as_uuid=True),
+                   primary_key=True,
+                   default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(),
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime(),
+                           onupdate=datetime.datetime.utcnow,
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    etag = sa.Column(sa.String(40),
+                     nullable=False,
+                     default=utils.gen_etag,
+                     onupdate=utils.gen_etag)
     name = sa.Column("name", sa.String(255))
     data = sa.Column("data", sa_utils.JSONType, default={})
     api_secret = sa.Column("api_secret", sa.String(64), default=signature.gen_secret)
@@ -208,10 +294,21 @@ JOIN_JOBS_COMPONENTS = sa.Table(
 class Componentfile(dci_declarative.Mixin, Base):
     __tablename__ = "component_files"
     __table_args__ = (sa.Index('component_files_component_id_idx', 'component_id'),)
-    id = sa.Column(pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid)
-    created_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow, nullable=False)
-    updated_at = sa.Column(sa.DateTime(), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow, nullable=False)
-    etag = sa.Column(sa.String(40), nullable=False, default=utils.gen_etag, onupdate=utils.gen_etag)
+
+    id = sa.Column(pg.UUID(as_uuid=True),
+                   primary_key=True,
+                   default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(),
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime(),
+                           onupdate=datetime.datetime.utcnow,
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    etag = sa.Column(sa.String(40),
+                     nullable=False,
+                     default=utils.gen_etag,
+                     onupdate=utils.gen_etag)
     name = sa.Column(sa.String(255), nullable=False)
     mime = sa.Column(sa.String)
     md5 = sa.Column(sa.String(32))
@@ -231,11 +328,21 @@ class Component(dci_declarative.Mixin, Base):
                       sa.UniqueConstraint('name', 'topic_id', 'type', 'team_id', name='name_topic_id_type_team_id_unique'),
                       sa.Index('components_topic_id_idx', 'topic_id'))
 
-    id = sa.Column(pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid)
-    created_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow, nullable=False)
-    updated_at = sa.Column(sa.DateTime(), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow, nullable=False)
+    id = sa.Column(pg.UUID(as_uuid=True),
+                   primary_key=True,
+                   default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(),
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime(),
+                           onupdate=datetime.datetime.utcnow,
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    etag = sa.Column(sa.String(40),
+                     nullable=False,
+                     default=utils.gen_etag,
+                     onupdate=utils.gen_etag)
     released_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow, nullable=False)
-    etag = sa.Column(sa.String(40), nullable=False, default=utils.gen_etag, onupdate=utils.gen_etag)
     name = sa.Column(sa.String(255), nullable=False)
     type = sa.Column(sa.String(255), nullable=False)
     canonical_project_name = sa.Column(sa.String)
@@ -260,17 +367,27 @@ class Job(dci_declarative.Mixin, Base):
                       sa.Index('jobs_previous_job_id_idx', 'previous_job_id'),
                       sa.Index('jobs_update_previous_job_id_idx', 'update_previous_job_id'),)
 
-    id = sa.Column(pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid)
-    created_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow, nullable=False)
-    updated_at = sa.Column(sa.DateTime(), onupdate=datetime.datetime.utcnow, default=datetime.datetime.utcnow, nullable=False)
-    etag = sa.Column(sa.String(40), nullable=False, default=utils.gen_etag, onupdate=utils.gen_etag)
+    id = sa.Column(pg.UUID(as_uuid=True),
+                   primary_key=True,
+                   default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(),
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime(),
+                           onupdate=datetime.datetime.utcnow,
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    etag = sa.Column(sa.String(40),
+                     nullable=False,
+                     default=utils.gen_etag,
+                     onupdate=utils.gen_etag)
     # duration in seconds
-    duration = sa.Column(sa.Integer, default=0),
-    comment = sa.Column(sa.Text),
-    status_reason = sa.Column(sa.Text),
-    configuration = sa.Column(sa.Text),
-    url = sa.Column(sa.Text),
-    name = sa.Column(sa.Text),
+    duration = sa.Column(sa.Integer, default=0)
+    comment = sa.Column(sa.Text)
+    status_reason = sa.Column(sa.Text)
+    configuration = sa.Column(sa.Text)
+    url = sa.Column(sa.Text)
+    name = sa.Column(sa.Text)
     status = sa.Column(STATUSES, default='new')
     topic_id = sa.Column(pg.UUID(as_uuid=True),
                          sa.ForeignKey('topics.id', ondelete='CASCADE'),
@@ -297,3 +414,109 @@ class Job(dci_declarative.Mixin, Base):
     tags = sa.Column(pg.ARRAY(sa.Text), default=[])
     data = sa.Column(sa_utils.JSONType, default={})
     components = sa_orm.relationship('Component', secondary=JOIN_JOBS_COMPONENTS, back_populates='jobs')
+
+
+class Jobstate(dci_declarative.Mixin, Base):
+    __tablename__ = "jobstates"
+    __table_args__ = (sa.Index('jobstates_job_id_idx', 'job_id'),)
+
+    id = sa.Column(pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(), default=datetime.datetime.utcnow, nullable=False)
+    status = sa.Column(STATUSES, nullable=False)
+    comment = sa.Column(sa.Text)
+    job_id = sa.Column(pg.UUID(as_uuid=True),
+                       sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+                       nullable=False)
+
+
+class Tests(dci_declarative.Mixin, Base):
+    __tablename__ = "tests"
+
+    id = sa.Column(pg.UUID(as_uuid=True),
+                   primary_key=True,
+                   default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(),
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime(),
+                           onupdate=datetime.datetime.utcnow,
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    etag = sa.Column(sa.String(40),
+                     nullable=False,
+                     default=utils.gen_etag,
+                     onupdate=utils.gen_etag)
+    name = sa.Column(sa.Text, nullable=False, unique=True)
+    data = sa.Column(sa_utils.JSONType)
+    state = sa.Column(STATES, default='active')
+
+
+class TestsResults(dci_declarative.Mixin, Base):
+    __tablename__ = 'tests_results'
+    __table_args = (sa.Index('tests_results_job_id_idx', 'job_id'),
+                    sa.Index('tests_results_file_id_idx', 'file_id'))
+
+    id = sa.Column(pg.UUID(as_uuid=True),
+                   primary_key=True,
+                   default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(),
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime(),
+                           onupdate=datetime.datetime.utcnow,
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    name = sa.Column(sa.String(255), nullable=False)
+    total = sa.Column(sa.Integer)
+    success = sa.Column(sa.Integer)
+    skips = sa.Column(sa.Integer)
+    failures = sa.Column(sa.Integer)
+    regressions = sa.Column(sa.Integer, default=0)
+    successfixes = sa.Column(sa.Integer, default=0)
+    errors = sa.Column(sa.Integer)
+    time = sa.Column(sa.Integer)
+    job_id = sa.Column(pg.UUID(as_uuid=True),
+                       sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+                       nullable=False)
+    file_id = sa.Column(pg.UUID(as_uuid=True),
+                        sa.ForeignKey('files.id', ondelete='CASCADE'),
+                        nullable=False)
+
+
+class File(dci_declarative.Mixin, Base):
+    __tablename__ = "files"
+    __table_args__ = (sa.Index('files_jobstate_id_idx', 'jobstate_id'),
+                      sa.Index('files_team_id_idx', 'team_id'),
+                      sa.Index('files_job_id_idx', 'job_id'))
+
+    id = sa.Column(pg.UUID(as_uuid=True),
+                   primary_key=True,
+                   default=utils.gen_uuid)
+    created_at = sa.Column(sa.DateTime(),
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    updated_at = sa.Column(sa.DateTime(),
+                           onupdate=datetime.datetime.utcnow,
+                           default=datetime.datetime.utcnow,
+                           nullable=False)
+    etag = sa.Column(sa.String(40),
+                     nullable=False,
+                     default=utils.gen_etag,
+                     onupdate=utils.gen_etag)
+    name = sa.Column(sa.String(255), nullable=False)
+    mime = sa.Column(sa.String)
+    md5 = sa.Column(sa.String(32))
+    size = sa.Column(sa.BIGINT, nullable=True)
+    state = sa.Column(STATES, default='active')
+    jobstate_id = sa.Column('jobstate_id', pg.UUID(as_uuid=True),
+                            sa.ForeignKey('jobstates.id', ondelete='CASCADE'),
+                            nullable=True)
+    test_id = sa.Column(pg.UUID(as_uuid=True),
+                        sa.ForeignKey('tests.id', ondelete='CASCADE'),
+                        nullable=True, default=None)
+    team_id = sa.Column(pg.UUID(as_uuid=True),
+                        sa.ForeignKey('teams.id', ondelete='CASCADE'),
+                        nullable=False)
+    job_id = sa.Column(pg.UUID(as_uuid=True),
+                       sa.ForeignKey('jobs.id', ondelete='CASCADE'),
+                       nullable=True)

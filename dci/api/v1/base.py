@@ -79,9 +79,14 @@ def get_resource_orm(table, id, etag=None, options=[]):
     try:
         query = (
             flask.g.session.query(table)
-            .filter(table.state != "archived")
             .filter(table.id == id)
         )
+        try:
+            getattr(table, "state")
+            query = query.filter(table.state != "archived")
+        except AttributeError:
+            pass
+
         if etag:
             query = query.filter(table.etag == etag)
         for option in options:

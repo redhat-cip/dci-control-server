@@ -770,6 +770,7 @@ def test_purge(user, admin, job_user_id, jobstate_user_id, team_user_id):
     with pytest.raises(dci_exc.StoreExceptions):
         store.get(path1)
 
+    admin.post('/api/v1/jobs/purge')
     to_purge_jobs = admin.get('/api/v1/jobs/purge').data
     assert len(to_purge_jobs['jobs']) == 0
     to_purge_files = admin.get('/api/v1/files/purge').data
