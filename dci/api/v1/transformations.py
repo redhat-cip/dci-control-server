@@ -40,20 +40,23 @@ def parse_element(root):
         "value": "",
         "action": "passed",
         "type": "",
+        "stdout": None,
+        "stderr": None,
     }
     for child in root:
         tag = child.tag
-        if tag in ["skipped", "error", "failure", "system-out", "system-err"]:
-            action = "passed" if tag in ["system-out", "system-err"] else tag
-            testcase.update(
-                {
-                    "message": child.get("message", ""),
-                    "value": child.text,
-                    "action": action,
-                    "type": child.get("type", ""),
-                }
-            )
-            break
+        if tag not in ["skipped", "error", "failure", "system-out", "system-err"]:
+            continue
+        text = child.text
+        if tag == "system-out":
+            testcase["stdout"] = text
+        elif tag == "system-err":
+            testcase["stderr"] = text
+        else:
+            testcase["action"] = tag
+            testcase["message"] = child.get("message", "")
+            testcase["type"] = child.get("type", "")
+            testcase["value"] = text
     return testcase
 
 

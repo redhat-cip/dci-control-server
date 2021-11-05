@@ -30,82 +30,94 @@ from tests.data import JUNIT
 SWIFT = 'dci.stores.swift.Swift'
 
 JSONUNIT = {
-    'success': 3,
-    'failures': 1,
-    'errors': 1,
-    'skips': 1,
-    'regressions': 0,
-    'successfixes': 0,
-    'total': 6,
-    'time': 9759,
-    'testscases': [
+    "success": 3,
+    "failures": 1,
+    "errors": 1,
+    "skips": 1,
+    "regressions": 0,
+    "successfixes": 0,
+    "total": 6,
+    "time": 9759,
+    "testscases": [
         {
-            'name': 'test_1',
-            'classname': 'classname_1',
-            'time': 0.02311568802,
-            'action': 'skipped',
-            'regression': False,
-            'successfix': False,
-            'message': 'skip message',
-            'type': 'skipped',
-            'value': 'test skipped'
+            "name": "test_1",
+            "classname": "classname_1",
+            "time": 0.02311568802,
+            "action": "skipped",
+            "regression": False,
+            "successfix": False,
+            "message": "skip message",
+            "type": "skipped",
+            "value": "test skipped",
+            "stdout": None,
+            "stderr": None,
         },
         {
-            'name': 'test_2',
-            'classname': 'classname_1',
-            'time': 0.91562318802,
-            'action': 'error',
-            'regression': False,
-            'successfix': False,
-            'message': 'error message',
-            'type': 'error',
-            'value': 'test in error'
+            "name": "test_2",
+            "classname": "classname_1",
+            "time": 0.91562318802,
+            "action": "error",
+            "regression": False,
+            "successfix": False,
+            "message": "error message",
+            "type": "error",
+            "value": "test in error",
+            "stdout": None,
+            "stderr": None,
         },
         {
-            'name': 'test_3',
-            'classname': 'classname_1',
-            'time': 0.18802915623,
-            'action': 'failure',
-            'regression': False,
-            'successfix': False,
-            'message': 'failure message',
-            'type': 'failure',
-            'value': 'test in failure'
+            "name": "test_3",
+            "classname": "classname_1",
+            "time": 0.18802915623,
+            "action": "failure",
+            "regression": False,
+            "successfix": False,
+            "message": "failure message",
+            "type": "failure",
+            "value": "test in failure",
+            "stdout": None,
+            "stderr": None,
         },
         {
-            'name': 'test_4',
-            'classname': 'classname_1',
-            'time': 2.91562318802,
-            'action': 'passed',
-            'regression': False,
-            'successfix': False,
-            'message': '',
-            'type': '',
-            'value': ''
+            "name": "test_4",
+            "classname": "classname_1",
+            "time": 2.91562318802,
+            "action": "passed",
+            "regression": False,
+            "successfix": False,
+            "message": "",
+            "type": "",
+            "value": "",
+            "stdout": None,
+            "stderr": None,
         },
         {
-            'name': 'test_5',
-            'classname': 'classname_1',
-            'time': 3.23423443444,
-            'action': 'passed',
-            'regression': False,
-            'successfix': False,
-            'message': '',
-            'type': '',
-            'value': 'STDOUT'
+            "name": "test_5",
+            "classname": "classname_1",
+            "time": 3.23423443444,
+            "action": "passed",
+            "regression": False,
+            "successfix": False,
+            "message": "",
+            "type": "",
+            "value": "",
+            "stdout": "STDOUT",
+            "stderr": None,
         },
         {
-            'name': 'test_6',
-            'classname': 'classname_1',
-            'time': 2.48294832443,
-            'action': 'passed',
-            'regression': False,
-            'successfix': False,
-            'message': '',
-            'type': '',
-            'value': 'STDERR'
+            "name": "test_6",
+            "classname": "classname_1",
+            "time": 2.48294832443,
+            "action": "passed",
+            "regression": False,
+            "successfix": False,
+            "message": "",
+            "type": "",
+            "value": "",
+            "stdout": None,
+            "stderr": "STDERR",
         },
-    ]
+    ],
 }
 
 
@@ -336,3 +348,37 @@ def test_nrt_add_regressions_successfix_dont_change_name():
         tests["testscases"][0]["name"]
         == "[dci] brackets in the name"
     )
+
+
+def test_nrt_keep_systemout_and_systemerr():
+    junit = """<testsuite><testcase name="keep failure message system-out and system-err" classname="DCI Test Suite" status="failed" time="0.014623253">
+    <failure message="message failure" type="failed">failure content</failure>
+    <system-out>system out content</system-out>
+    <system-err>system err content</system-err>
+</testcase></testsuite>"""
+    result = transformations.junit2dict(BytesIO(junit.encode("utf-8")))
+    assert result == {
+        "success": 0,
+        "failures": 1,
+        "errors": 0,
+        "skips": 0,
+        "regressions": 0,
+        "successfixes": 0,
+        "total": 1,
+        "time": 14,
+        "testscases": [
+            {
+                "name": "keep failure message system-out and system-err",
+                "classname": "DCI Test Suite",
+                "time": 0.014623253,
+                "action": "failure",
+                "regression": False,
+                "successfix": False,
+                "message": "message failure",
+                "type": "failed",
+                "value": "failure content",
+                "stdout": "system out content",
+                "stderr": "system err content",
+            },
+        ],
+    }

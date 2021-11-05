@@ -208,6 +208,7 @@ def test_delete_jobstate_as_user(mocked_disp, user, job_user_id):
 
 @mock.patch("dci.api.v1.notifications.send_events")
 def test_umb_notification_has_testcases(mocked_disp, user, job_user, cki_test_file):
+    assert cki_test_file is not None
     data = {"job_id": job_user["id"], "comment": "", "status": "success"}
     headers = {"Content-Type": "application/json"}
     user.post("/api/v1/jobstates", headers=headers, data=data)
@@ -222,7 +223,7 @@ def test_umb_notification_has_testcases(mocked_disp, user, job_user, cki_test_fi
     assert job["status"] == "success"
     components = job["components"]
     assert len(components) == 3
-    assert components[0]['tags'] == []
+    assert components[0]["tags"] == []
     assert len(job["results"]) == 1
     result = job["results"][0]
     assert result["testcases"] == [
@@ -230,23 +231,27 @@ def test_umb_notification_has_testcases(mocked_disp, user, job_user, cki_test_fi
             "classname": "LTP",
             "message": "",
             "regression": False,
-            "value": "\n  Logs:\n  recipes/1/tasks/1/logs/harness.log\nrecipes/1/tasks/1/logs/taskout.log\nrecipes/1/tasks/1/logs/sched.run.log\n",
+            "value": "",
             "action": "passed",
             "successfix": False,
             "name": "LTP",
             "type": "",
             "time": 0.0,
+            "stdout": "\n  Logs:\n  recipes/1/tasks/1/logs/harness.log\nrecipes/1/tasks/1/logs/taskout.log\nrecipes/1/tasks/1/logs/sched.run.log\n",
+            "stderr": None,
         },
         {
             "classname": "LTP",
             "message": "",
             "regression": False,
-            "value": "\n  Logs:\n  recipes/1/tasks/1/results/1584053404/logs/resultoutputfile.log\n",
+            "value": "",
             "action": "passed",
             "successfix": False,
             "name": "Setup",
             "type": "",
             "time": 0.0,
+            "stdout": "\n  Logs:\n  recipes/1/tasks/1/results/1584053404/logs/resultoutputfile.log\n",
+            "stderr": None,
         },
         {
             "classname": "LTP",
@@ -258,5 +263,7 @@ def test_umb_notification_has_testcases(mocked_disp, user, job_user, cki_test_fi
             "name": "sched",
             "type": "Aborted",
             "time": 0.0,
+            "stdout": None,
+            "stderr": None,
         },
     ]
