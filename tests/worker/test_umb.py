@@ -79,7 +79,6 @@ def test_build_umb_messages():
     assert "generated_at" in message
     # version
     assert "version" in message
-    print(message)
     assert message == {
         u"contact": {
             u"docs": u"https://docs.distributed-ci.io/",

@@ -83,9 +83,9 @@ def get_resource_orm(table, id, etag=None, options=[]):
             .filter(table.id == id)
         )
         if etag:
-            query.filter(table.etag == etag)
+            query = query.filter(table.etag == etag)
         for option in options:
-            query.options(option)
+            query = query.options(option)
         return query.one()
     except orm.exc.NoResultFound:
         resource_name = table.__tablename__[0:-1]
