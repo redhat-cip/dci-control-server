@@ -51,5 +51,4 @@ import dci.api.v1.teams  # noqa
 import dci.api.v1.teams_users  # noqa
 import dci.api.v1.tests  # noqa
 import dci.api.v1.topics  # noqa
-import dci.api.v1.trends  # noqa
 import dci.api.v1.users  # noqa
