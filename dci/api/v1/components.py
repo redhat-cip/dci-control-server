@@ -145,8 +145,8 @@ def get_all_components(user, topic_id):
                 models2.Component.team_id == None)  # noqa
         )
 
-    nb_components = query.count()
     query = declarative.handle_args(query, models2.Component, args)
+    nb_components = query.count()
 
     components = [component.serialize() for component in query.all()]
 

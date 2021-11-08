@@ -246,6 +246,10 @@ def test_get_all_components_with_where(admin, topic_id):
                           'type': 'gerrit_review',
                           'topic_id': topic_id}).data
     pc_id = pc['component']['id']
+    admin.post('/api/v1/components',
+               data={'name': 'pname2',
+                     'type': 'gerrit_review',
+                     'topic_id': topic_id}).data
 
     db_c = admin.get(
         '/api/v1/topics/%s/components?where=id:%s' % (topic_id, pc_id)).data
@@ -256,6 +260,7 @@ def test_get_all_components_with_where(admin, topic_id):
         '/api/v1/topics/%s/components?where=name:pname1' % topic_id).data
     db_c_id = db_c['components'][0]['id']
     assert db_c_id == pc_id
+    assert db_c['_meta']['count'] == 1
 
 
 def test_where_invalid(admin, topic_id):
