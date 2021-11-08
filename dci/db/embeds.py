@@ -221,7 +221,6 @@ EMBED_STRING_TO_OBJECT = {
         'components': models.COMPONENTS,
         'team': TEAM,
         'results': TESTS_RESULTS,
-        'tags': models.TAGS
     },
     'remotecis': {
         'team': TEAM},

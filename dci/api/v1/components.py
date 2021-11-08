@@ -45,13 +45,6 @@ import sqlalchemy.orm as sa_orm
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.COMPONENTS
-_TABLE_TAGS = models.JOIN_COMPONENTS_TAGS
-
-_TABLE_TAGS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE_TAGS)
-_JJC = models.JOIN_JOBS_COMPONENTS
-_C_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_CF_COLUMNS = v1_utils.get_columns_name_with_objects(models.COMPONENTFILES)
-_JOBS_C_COLUMNS = v1_utils.get_columns_name_with_objects(models.JOBS)
 
 logger = logging.getLogger(__name__)
 
@@ -376,63 +369,6 @@ def attach_issue_to_component(user, c_id):
 def unattach_issue_from_component(user, c_id, i_id):
     """Unattach an issue to a component."""
     return issues.unattach_issue(c_id, i_id, _TABLE)
-
-
-# TODO-ORM: already provided by /components/<uuid:c_id>, will be
-# removed along with JOIN_COMPONENTS_TAGS
-@api.route('/components/<uuid:c_id>/tags', methods=['GET'])
-@decorators.login_required
-def retrieve_tags_from_component(user, c_id):
-    """Retrieve all tags attached to a component."""
-    component = v1_utils.verify_existence_and_get(c_id, _TABLE)
-    component_team_id = component['team_id']
-    if component_team_id is not None:
-        if user.is_not_in_team(component_team_id):
-            dci_exc.Unauthorized()
-
-    JCT = models.JOIN_COMPONENTS_TAGS
-    query = (sql.select([models.TAGS])
-             .select_from(JCT.join(models.TAGS))
-             .where(JCT.c.component_id == c_id))
-    rows = flask.g.db_conn.execute(query)
-
-    return flask.jsonify({'tags': rows, '_meta': {'count': rows.rowcount}})
-
-
-@api.route('/components/<uuid:c_id>/tags', methods=['POST'])
-@decorators.login_required
-def add_tag_to_component(user, c_id):
-    """Add a tag on a specific component."""
-
-    component = base.get_resource_orm(models2.Component, c_id)
-    _verify_component_and_topic_access(user, component)
-
-    values = {}
-    values['etag'] = utils.gen_etag()
-    tag_name = flask.request.json.get('name')
-    if tag_name and tag_name not in component.tags:
-        tag_name = [tag_name]
-        values['tags'] = component.tags + tag_name
-        base.update_resource_orm(component, values)
-
-    return flask.Response(None, 201, content_type='application/json')
-
-
-@api.route('/components/<uuid:c_id>/tags', methods=['DELETE'])
-@decorators.login_required
-def delete_tag_from_component(user, c_id):
-    """Delete a tag from a specific component."""
-
-    component = base.get_resource_orm(models2.Component, c_id)
-    _verify_component_and_topic_access(user, component)
-    values = {}
-    values['etag'] = utils.gen_etag()
-    tag_name = flask.request.json.get('name')
-    tag_name = [tag_name] if tag_name else []
-    values['tags'] = list(set(component.tags) - set(tag_name))
-    base.update_resource_orm(component, values)
-
-    return flask.Response(None, 204, content_type='application/json')
 
 
 @api.route('/components/purge', methods=['GET'])

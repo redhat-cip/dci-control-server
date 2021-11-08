@@ -26,6 +26,7 @@ revision = '45e44e338043'
 down_revision = '49363052bd7d'
 branch_labels = None
 depends_on = None
+import datetime
 
 from alembic import op
 import sqlalchemy as sa
@@ -33,6 +34,48 @@ from sqlalchemy.dialects import postgresql as pg
 from sqlalchemy import sql
 
 from dci.db import models
+from dci.common import utils
+
+
+metadata = sa.MetaData()
+
+
+TAGS = sa.Table(
+    "tags",
+    metadata,
+    sa.Column("id", pg.UUID(as_uuid=True), primary_key=True),
+    sa.Column(
+        "created_at", sa.DateTime(), default=datetime.datetime.utcnow, nullable=False
+    ),
+    sa.Column("name", sa.String(40), nullable=False, unique=True),
+    sa.Column(
+        "etag",
+        sa.String(40),
+        nullable=False,
+        default=utils.gen_etag,
+        onupdate=utils.gen_etag,
+    ),
+)
+
+
+JOIN_JOBS_TAGS = sa.Table(
+    "jobs_tags",
+    metadata,
+    sa.Column(
+        "tag_id",
+        pg.UUID(as_uuid=True),
+        sa.ForeignKey("tags.id", ondelete="CASCADE"),
+        nullable=False,
+        primary_key=True,
+    ),
+    sa.Column(
+        "job_id",
+        pg.UUID(as_uuid=True),
+        sa.ForeignKey("jobs.id", ondelete="CASCADE"),
+        nullable=False,
+        primary_key=True,
+    ),
+)
 
 
 def upgrade():
@@ -40,13 +83,13 @@ def upgrade():
     op.add_column('jobs', sa.Column('tag', pg.ARRAY(sa.Text), default=[]))
 
     # get all the tags
-    query = sql.select([models.TAGS])
+    query = sql.select([TAGS])
     all_tags = db_conn.execute(query).fetchall()
     # associate tag id to their name
     all_tags_dict = {str(at.id): at.name for at in all_tags}
 
     # get all the jobs that are associated to tags
-    query = sql.select([models.JOIN_JOBS_TAGS])
+    query = sql.select([JOIN_JOBS_TAGS])
     jobs_tags = db_conn.execute(query).fetchall()
     jobs_to_tags = {}
     for j_t in jobs_tags:

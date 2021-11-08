@@ -619,68 +619,6 @@ def test_verify_and_get_components_ids(engine, admin, topic, topic_user_id):
     assert set(cids) == {c1, c3}
 
 
-def test_add_tags_components(admin, components_ids):
-    pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
-                    data={'name': 'my_tag_1'})
-    assert pt.status_code == 201
-
-    pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
-                    data={'name': 'my_tag_1'})
-    assert pt.status_code == 201
-
-    pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
-                    data={'name': 'my_tag_2'})
-    assert pt.status_code == 201
-
-    gt = admin.get('/api/v1/components/%s' % components_ids[0])
-    assert gt.status_code == 200
-    assert gt.data['component']['tags'] == ['my_tag_1', 'my_tag_2']
-
-
-def test_delete_tags_from_components(admin, components_ids):
-    pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
-                    data={'name': 'my_tag_1'})
-    assert pt.status_code == 201
-
-    pt = admin.post('/api/v1/components/%s/tags' % (components_ids[0]),
-                    data={'name': 'my_tag_2'})
-    assert pt.status_code == 201
-
-    dt = admin.delete('/api/v1/components/%s/tags' % (components_ids[0]),
-                      data={'name': 'my_tag_2'})
-    assert dt.status_code == 204
-
-    gt = admin.get('/api/v1/components/%s' % components_ids[0])
-    assert gt.status_code == 200
-    assert 'my_tag_1' in gt.data['component']['tags']
-    assert 'my_tag_2' not in gt.data['component']['tags']
-
-
-def test_filter_component_by_tag(admin, remoteci_context, components_user_ids,
-                                 topic_user_id):
-    admin.post('/api/v1/components/%s/tags' % components_user_ids[0],
-               data={'name': 'tag_1'})
-    admin.post('/api/v1/components/%s/tags' % components_user_ids[0],
-               data={'name': 'common'})
-
-    admin.post('/api/v1/components/%s/tags' % components_user_ids[1],
-               data={'name': 'tag_2'})
-    admin.post('/api/v1/components/%s/tags' % components_user_ids[1],
-               data={'name': 'common'})
-
-    res = admin.get('/api/v1/topics/%s/components?where=tags:common,tags:tag_1' %  # noqa
-                    topic_user_id)
-    assert len(res.data['components']) == 1
-    assert 'tag_1' in res.data['components'][0]['tags']
-    assert 'tag_2' not in res.data['components'][0]['tags']
-
-    res = admin.get('/api/v1/topics/%s/components?where=tags:common' %  # noqa
-                    topic_user_id)
-    assert len(res.data['components']) == 2
-    assert 'common' in res.data['components'][0]['tags']
-    assert 'common' in res.data['components'][1]['tags']
-
-
 def test_purge(admin, components_user_ids, topic_user_id):
     component_id = components_user_ids[0]
     store = dci_config.get_store('components')
@@ -850,42 +788,6 @@ def test_delete_teams_components(user, team_user_id, topic_user_id):
 
     gc = user.get('/api/v1/components/%s' % pc_id)
     assert gc.status_code == 404
-
-
-def test_add_and_delete_tags_teams_components(user, team_user_id, topic_user_id):
-    data = {
-        'name': 'pname',
-        'type': 'gerrit_review',
-        'url': 'http://example.com/',
-        'team_id': team_user_id,
-        'topic_id': topic_user_id,
-        'state': 'active'}
-    pc = user.post('/api/v1/components', data=data).data
-    pc_id = pc['component']['id']
-
-    pt = user.post('/api/v1/components/%s/tags' % pc_id,
-                   data={'name': 'my_tag_1'})
-    assert pt.status_code == 201
-
-    pt = user.post('/api/v1/components/%s/tags' % pc_id,
-                   data={'name': 'my_tag_1'})
-    assert pt.status_code == 201
-
-    pt = user.post('/api/v1/components/%s/tags' % pc_id,
-                   data={'name': 'my_tag_2'})
-    assert pt.status_code == 201
-
-    gt = user.get('/api/v1/components/%s' % pc_id)
-    assert gt.status_code == 200
-    assert gt.data['component']['tags'] == ['my_tag_1', 'my_tag_2']
-
-    dt = user.delete('/api/v1/components/%s/tags' % pc_id,
-                     data={'name': 'my_tag_2'})
-    assert dt.status_code == 204
-
-    gt = user.get('/api/v1/components/%s' % pc_id)
-    assert gt.status_code == 200
-    assert gt.data['component']['tags'] == ['my_tag_1']
 
 
 def test_filter_teams_components_by_tag(user, team_user_id, topic_user_id):

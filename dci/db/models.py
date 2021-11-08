@@ -75,36 +75,6 @@ COMPONENTS = sa.Table(
     sa.Column('tags', pg.ARRAY(sa.Text), default=[])
 )
 
-TAGS = sa.Table(
-    'tags', metadata,
-    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True),
-    sa.Column('created_at', sa.DateTime(),
-              default=datetime.datetime.utcnow, nullable=False),
-    sa.Column('name', sa.String(40), nullable=False, unique=True),
-    sa.Column('etag', sa.String(40), nullable=False, default=utils.gen_etag,
-              onupdate=utils.gen_etag)
-)
-
-JOIN_COMPONENTS_TAGS = sa.Table(
-    'components_tags', metadata,
-    sa.Column('tag_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('tags.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True),
-    sa.Column('component_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('components.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True)
-)
-
-JOIN_JOBS_TAGS = sa.Table(
-    'jobs_tags', metadata,
-    sa.Column('tag_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('tags.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True),
-    sa.Column('job_id', pg.UUID(as_uuid=True),
-              sa.ForeignKey('jobs.id', ondelete='CASCADE'),
-              nullable=False, primary_key=True)
-)
-
 JOIN_COMPONENTS_ISSUES = sa.Table(
     'components_issues', metadata,
     sa.Column('component_id', pg.UUID(as_uuid=True),
