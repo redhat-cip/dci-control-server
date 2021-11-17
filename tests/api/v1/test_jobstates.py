@@ -132,16 +132,6 @@ def test_get_jobstate_with_embed(user, job_user_id):
 
 
 @mock.patch("dci.api.v1.notifications.dispatcher")
-def test_get_jobstate_with_embed_not_valid(mocked_disp, user, job_user_id):
-    js = user.post('/api/v1/jobstates',
-                   data={'job_id': job_user_id,
-                         'comment': 'kikoolol',
-                         'status': 'running'}).data
-    js = user.get('/api/v1/jobstates/%s?embed=mdr' % js['jobstate']['id'])
-    assert js.status_code == 400
-
-
-@mock.patch("dci.api.v1.notifications.dispatcher")
 def test_delete_jobstate_by_id(mocked_disp, user, job_user_id):
     js = user.post('/api/v1/jobstates',
                    data={'job_id': job_user_id,

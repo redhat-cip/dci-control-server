@@ -529,16 +529,9 @@ def test_get_jobstates_by_job_id_with_embed(admin, job_user_id, jobstate_user_id
                            data='kikoolol').data
         file2_id = pfile['file']['id']
         jobstates = admin.get('/api/v1/jobs/%s/jobstates'
-                              '?embed=files&sort=files.name' % job_user_id)  # noqa
+                              '?embed=files' % job_user_id)  # noqa
         jobstate = jobstates.data['jobstates'][0]
-        assert jobstate['files'][0]['id'] == file1_id
-        assert jobstate['files'][1]['id'] == file2_id
-
-        jobstates = admin.get('/api/v1/jobs/%s/jobstates'
-                              '?embed=files&sort=-files.name' % job_user_id)  # noqa
-        jobstate = jobstates.data['jobstates'][0]
-        assert jobstate['files'][0]['id'] == file2_id
-        assert jobstate['files'][1]['id'] == file1_id
+        assert set((jobstate['files'][0]['id'], jobstate['files'][1]['id'])) == set((file1_id, file2_id))
 
 
 def test_embed_with_subkey_in_where(admin, job_user_id):
