@@ -611,3 +611,22 @@ file_upload_certification_schema = {
     "required": ["username", "password", "certification_id"],
     "additionalProperties": False,
 }
+
+
+###############################################################################
+#                                                                             #
+#                                  Analytics schema                           #
+#                                                                             #
+###############################################################################
+
+analytics_task_duration_cumulated_properties = {
+    "topic_id": Properties.uuid,
+    "remoteci_id": Properties.uuid,
+}
+
+analytics_task_duration_cumulated = {
+    "type": "object",
+    "properties": analytics_task_duration_cumulated_properties,
+    "required": ["topic_id", "remoteci_id"],
+    "additionalProperties": False,
+}

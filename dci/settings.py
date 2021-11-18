@@ -80,6 +80,11 @@ DEFAULT_ZMQ_CONN = 'tcp://{zmq_host}:{zmq_port}'.format(
 )
 ZMQ_CONN = os.getenv('ZMQ_CONN', DEFAULT_ZMQ_CONN)
 
+
+# ElasticSearch
+ELASTICSEARCH_URL = os.getenv('ELASTICSEARCH_URL', 'http://elasticsearch:9200')
+
+
 # Logging related parameters
 LOG_LEVEL = 'INFO'
 LOG_FORMAT = '[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s'
