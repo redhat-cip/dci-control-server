@@ -27,7 +27,7 @@ from dci.common import exceptions as dci_exc
 from jwt import exceptions as jwt_exc
 
 
-def get_latest_public_key(self):
+def get_latest_public_key():
     sso_url = dci_config.CONFIG.get("SSO_URL")
     realm = dci_config.CONFIG.get("SSO_REALM")
     url = "%s/auth/realms/%s/.well-known/openid-configuration" % (sso_url, realm)
