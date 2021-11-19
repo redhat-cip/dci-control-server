@@ -19,7 +19,6 @@ import datetime
 import flask
 from flask import json
 import logging
-from sqlalchemy import orm
 from sqlalchemy import sql
 
 from dci import dci_config
@@ -303,7 +302,7 @@ def get_last_components_by_type(component_types, topic_id, session=None):
             ).order_by(
                 models2.Component.created_at.desc()
             ).first()
-        except orm.exc.NoResultFound:
+        except sa_orm.exc.NoResultFound:
             raise dci_exc.DCIException(
                 message="component of type %s not found or not exported" % ct, status_code=404
             )
@@ -338,7 +337,7 @@ def verify_and_get_components_ids(topic_id, components_ids, component_types,
                          models2.Component.topic_id == topic_id,
                          models2.Component.state == 'active')
             ).one()
-        except orm.exc.NoResultFound:
+        except sa_orm.exc.NoResultFound:
             raise dci_exc.DCIException(
                 message="component id %s not found or not exported" % c_id, status_code=404
             )

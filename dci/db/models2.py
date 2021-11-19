@@ -427,6 +427,7 @@ class Jobstate(dci_declarative.Mixin, Base):
     job_id = sa.Column(pg.UUID(as_uuid=True),
                        sa.ForeignKey('jobs.id', ondelete='CASCADE'),
                        nullable=False)
+    files = sa_orm.relationship('File')
 
 
 class Tests(dci_declarative.Mixin, Base):
