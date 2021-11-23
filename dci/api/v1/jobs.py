@@ -120,8 +120,7 @@ def create_jobs(user):
                           content_type='application/json')
 
 
-def _build_job(product_id, topic_id, remoteci, components_ids, values,
-               previous_job_id=None, update_previous_job_id=None):
+def _build_job(product_id, topic_id, remoteci, components_ids, values):
 
     # get components of topic
     p_component_types = components.get_component_types_from_topic(topic_id)
@@ -131,9 +130,7 @@ def _build_job(product_id, topic_id, remoteci, components_ids, values,
     values.update({
         'product_id': product_id,
         'topic_id': topic_id,
-        'team_id': remoteci['team_id'],
-        'previous_job_id': previous_job_id,
-        'update_previous_job_id': update_previous_job_id
+        'team_id': remoteci['team_id']
     })
 
     with flask.g.db_conn.begin():
@@ -228,6 +225,10 @@ def schedule_jobs(user):
             content_type='application/json'
         )
 
+    previous_job_id = values["previous_job_id"]
+    if previous_job_id:
+        v1_utils.verify_existence_and_get(previous_job_id, models.JOBS)
+
     # check remoteci
     remoteci = v1_utils.verify_existence_and_get(user.id, models.REMOTECIS)
     if remoteci['state'] != 'active':
@@ -257,30 +258,33 @@ def schedule_jobs(user):
 def create_new_update_job_from_an_existing_job(user, job_id):
     """Create a new job in the same topic as the job_id provided and
     associate the latest components of this topic."""
-
+    previous_job_id = job_id
     values = {
         'id': utils.gen_uuid(),
         'created_at': get_utc_now().isoformat(),
         'updated_at': get_utc_now().isoformat(),
         'etag': utils.gen_etag(),
+        'previous_job_id': previous_job_id,
+        'update_previous_job_id': previous_job_id,
         'status': 'new'
     }
 
-    original_job_id = job_id
-    original_job = v1_utils.verify_existence_and_get(original_job_id,
-                                                     models.JOBS)
+    previous_job = v1_utils.verify_existence_and_get(
+        previous_job_id,
+        models.JOBS
+    )
 
-    if user.is_not_in_team(original_job['team_id']) and user.is_not_epm():
+    if user.is_not_in_team(previous_job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     # get the remoteci
-    remoteci_id = str(original_job['remoteci_id'])
+    remoteci_id = str(previous_job['remoteci_id'])
     remoteci = v1_utils.verify_existence_and_get(remoteci_id,
                                                  models.REMOTECIS)
     values.update({'remoteci_id': remoteci_id})
 
     # get the associated topic
-    topic_id = str(original_job['topic_id'])
+    topic_id = str(previous_job['topic_id'])
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
     product_id = topic['product_id']
     v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
@@ -292,8 +296,7 @@ def create_new_update_job_from_an_existing_job(user, job_id):
         ),
     })
 
-    values = _build_job(product_id, topic_id, remoteci, [], values,
-                        update_previous_job_id=original_job_id)
+    values = _build_job(product_id, topic_id, remoteci, [], values)
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': values['etag']},
@@ -307,29 +310,31 @@ def create_new_upgrade_job_from_an_existing_job(user):
     the provided job_id."""
     values = flask.request.json
     check_json_is_valid(upgrade_job_schema, values)
-
+    previous_job_id = values.pop('job_id')
     values.update({
         'id': utils.gen_uuid(),
         'created_at': get_utc_now().isoformat(),
         'updated_at': get_utc_now().isoformat(),
         'etag': utils.gen_etag(),
+        'previous_job_id': previous_job_id,
         'status': 'new'
     })
 
-    original_job_id = values.pop('job_id')
-    original_job = v1_utils.verify_existence_and_get(original_job_id,
-                                                     models.JOBS)
-    if user.is_not_in_team(original_job['team_id']) and user.is_not_epm():
+    previous_job = v1_utils.verify_existence_and_get(
+        previous_job_id,
+        models.JOBS
+    )
+    if user.is_not_in_team(previous_job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     # get the remoteci
-    remoteci_id = str(original_job['remoteci_id'])
+    remoteci_id = str(previous_job['remoteci_id'])
     remoteci = v1_utils.verify_existence_and_get(remoteci_id,
                                                  models.REMOTECIS)
     values.update({'remoteci_id': remoteci_id})
 
     # get the associated topic
-    topic_id = str(original_job['topic_id'])
+    topic_id = str(previous_job['topic_id'])
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
 
     values.update({
@@ -349,8 +354,7 @@ def create_new_upgrade_job_from_an_existing_job(user):
 
     # instantiate a new job in the next_topic_id
     # todo(yassine): make possible the upgrade to choose specific components
-    values = _build_job(product_id, next_topic_id, remoteci, [], values,
-                        previous_job_id=original_job_id)
+    values = _build_job(product_id, next_topic_id, remoteci, [], values)
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': values['etag']},

@@ -48,6 +48,21 @@ def test_schedule_jobs_with_components_ids(user, remoteci_context, topic):
     assert r.status_code == 201
 
 
+def test_schedule_jobs_with_previous_job_id(remoteci_context, topic):
+    r = remoteci_context.post("/api/v1/jobs/schedule", data={"topic_id": topic["id"]})
+    assert r.status_code == 201
+    job1 = r.data["job"]
+    assert job1["topic_id"] == topic["id"]
+    r = remoteci_context.post(
+        "/api/v1/jobs/schedule",
+        data={"topic_id": topic["id"], "previous_job_id": job1["id"]},
+    )
+    assert r.status_code == 201
+    job2 = r.data["job"]
+    assert job2["topic_id"] == topic["id"]
+    assert job2["previous_job_id"] == job1["id"]
+
+
 def _update_remoteci(admin, id, etag, data):
     url = '/api/v1/remotecis/%s' % id
     r = admin.put(url, headers={'If-match': etag}, data=data)

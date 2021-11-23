@@ -227,6 +227,7 @@ schedule_job_schema = {
         "topic_id": Properties.uuid,
         "components_ids": with_default(Properties.array, []),
         "comment": with_default(Properties.string, None),
+        "previous_job_id": with_default(Properties.uuid, None),
         "state": with_default(Properties.enum(valid_resource_states), "active"),
         "tags": with_default(Properties.array, []),
         "data": with_default(Properties.json, {}),
