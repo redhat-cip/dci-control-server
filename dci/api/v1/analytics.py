@@ -48,7 +48,7 @@ def tasks_duration_cumulated(user):
             raise dci_exc.Unauthorized()
     export_control.verify_access_to_topic(user, topic)
 
-    query = "q='topic_id:%s AND remoteci_id:%s'" % (args['topic_id'], args['remoteci_id'])
+    query = "q=topic_id:%s AND remoteci_id:%s" % (args['topic_id'], args['remoteci_id'])
 
     try:
         res = requests.get("%s/tasks_duration_cumulated/_search?%s" % (CONFIG['ELASTICSEARCH_URL'], query))
