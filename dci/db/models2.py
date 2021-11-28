@@ -414,6 +414,12 @@ class Job(dci_declarative.Mixin, Base):
     tags = sa.Column(pg.ARRAY(sa.Text), default=[])
     data = sa.Column(sa_utils.JSONType, default={})
     components = sa_orm.relationship('Component', secondary=JOIN_JOBS_COMPONENTS, back_populates='jobs')
+    results = sa_orm.relationship('TestsResult')
+    remoteci = sa_orm.relationship('Remoteci')
+    topic = sa_orm.relationship('Topic')
+    team = sa_orm.relationship('Team')
+    jobstates = sa_orm.relationship('Jobstate')
+    files = sa_orm.relationship('File', primaryjoin="and_(File.job_id == Job.id, File.jobstate_id == None)")
 
 
 class Jobstate(dci_declarative.Mixin, Base):
@@ -452,7 +458,7 @@ class Tests(dci_declarative.Mixin, Base):
     state = sa.Column(STATES, default='active')
 
 
-class TestsResults(dci_declarative.Mixin, Base):
+class TestsResult(dci_declarative.Mixin, Base):
     __tablename__ = 'tests_results'
     __table_args = (sa.Index('tests_results_job_id_idx', 'job_id'),
                     sa.Index('tests_results_file_id_idx', 'file_id'))

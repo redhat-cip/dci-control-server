@@ -112,8 +112,6 @@ def test_add_component_to_job(user, team_user_id, topic_user_id, job_user_id):
     pc_id = pc['component']['id']
     p1 = user.post('/api/v1/jobs/%s/components' % job_user_id, data={'id': pc_id})
     assert p1.status_code == 201
-    p2 = user.post('/api/v1/jobs/%s/components' % job_user_id, data={'id': pc_id})
-    assert p2.status_code == 409
     cmpts = user.get('/api/v1/jobs/%s/components' % job_user_id).data['components']
     cmpt_found = False
     for c in cmpts:
@@ -133,8 +131,6 @@ def test_add_component_with_no_team_to_job(user, admin, team_user_id, topic_user
     pc_id = pc['component']['id']
     p1 = user.post('/api/v1/jobs/%s/components' % job_user_id, data={'id': pc_id})
     assert p1.status_code == 201
-    p2 = user.post('/api/v1/jobs/%s/components' % job_user_id, data={'id': pc_id})
-    assert p2.status_code == 409
     cmpts = user.get('/api/v1/jobs/%s/components' % job_user_id).data['components']
     cmpt_found = False
     for c in cmpts:
@@ -213,53 +209,33 @@ def test_get_all_jobs_with_pagination(remoteci_context,
     assert jobs.data['jobs'] == []
 
 
-def test_get_all_jobs_with_embed(admin, remoteci_context, team_user_id,
-                                 remoteci_user_id, components_user_ids,
-                                 topic_user_id):
+def test_get_all_jobs_with_subresources(admin, remoteci_context, team_user_id,
+                                        remoteci_user_id, components_user_ids,
+                                        topic_user_id):
     # create 2 jobs and check meta data count
     data = {'components': components_user_ids,
             'topic_id': topic_user_id}
-    job_1 = remoteci_context.post('/api/v1/jobs', data=data)
-    job_2 = remoteci_context.post('/api/v1/jobs', data=data)
+    remoteci_context.post('/api/v1/jobs', data=data)
+    remoteci_context.post('/api/v1/jobs', data=data)
 
-    # Create two ISSUES
-    data = {
-        'url': 'https://github.com/redhat-cip/dci-control-server/issues/1',
-        'topic_id': topic_user_id
-    }
-    issue_1 = admin.post('/api/v1/jobs/%s/issues' % job_1.data['job']['id'],
-                         data=data).data
-    data = {
-        'url': 'https://github.com/redhat-cip/dci-control-server/issues/2',
-        'topic_id': topic_user_id
-    }
-    issue_2 = admin.post('/api/v1/jobs/%s/issues' % job_2.data['job']['id'],
-                         data=data).data
-
-    # verify embed with all embedded options
-    query_embed = ('/api/v1/jobs?embed='
-                   'team,remoteci,jobstates,issues')
-    jobs = admin.get(query_embed).data
+    jobs = admin.get('/api/v1/jobs').data
 
     for job in jobs['jobs']:
         assert 'team' in job
         assert job['team']['id'] == team_user_id
         assert job['team_id'] == job['team']['id']
         assert 'remoteci' in job
-        assert 'issues' in job
         assert job['remoteci']['id'] == remoteci_user_id
         assert job['remoteci_id'] == job['remoteci']['id']
-
-    assert jobs['jobs'][1]['issues'][0]['id'] == issue_1['issue']['id']
-    assert jobs['jobs'][0]['issues'][0]['id'] == issue_2['issue']['id']
-
-    query_embed = ('/api/v1/jobs?embed=components')
-    jobs = admin.get(query_embed).data
-    assert jobs['_meta']['count'] == 2
-    assert len(jobs['jobs']) == 2
-    for job in jobs['jobs']:
+        assert 'team' in job
+        assert 'results' in job
+        assert 'components' in job
+        assert 'files' in job
         cur_set = set(i['id'] for i in job['components'])
         assert cur_set == set(components_user_ids)
+
+    assert jobs['_meta']['count'] == 2
+    assert len(jobs['jobs']) == 2
 
     with mock.patch(SWIFT, spec=Swift) as mock_swift:
         mockito = mock.MagicMock()
@@ -282,7 +258,7 @@ def test_get_all_jobs_with_embed(admin, remoteci_context, team_user_id,
                        'DCI-NAME': 'name1',
                        'DCI-MIME': 'application/junit'}
             admin.post('/api/v1/files', headers=headers, data=JUNIT)
-    jobs = admin.get('/api/v1/jobs?embed=results').data
+    jobs = admin.get('/api/v1/jobs').data
     assert jobs['_meta']['count'] == 2
     assert len(jobs['jobs']) == 2
     for job in jobs['jobs']:
@@ -308,6 +284,7 @@ def test_get_all_jobs_with_duplicated_embed(admin,
     assert len(jobs['jobs'][0]['components']) == 3
     assert 'topic' in jobs['jobs'][0]
     assert 'remoteci' in jobs['jobs'][0]
+    assert 'files' in jobs['jobs'][0]
 
 
 def test_get_all_jobs_with_embed_and_limit(remoteci_context,
@@ -326,11 +303,6 @@ def test_get_all_jobs_with_embed_and_limit(remoteci_context,
 
     assert len(jobs['jobs']) == 1
     assert len(jobs['jobs'][0]['components']) == 3
-
-
-def test_get_all_jobs_with_embed_not_valid(remoteci_context):
-    jds = remoteci_context.get('/api/v1/jobs?embed=mdr')
-    assert jds.status_code == 400
 
 
 def test_update_job(admin, job_user_id):
@@ -391,7 +363,7 @@ def test_job_duration(admin, job_user_id, engine):
     assert js.status_code == 201
     job = admin.get("/api/v1/jobs/%s" % job_user_id)
     # check those 5 seconds
-    assert job.data["job"]["duration"] == 5
+    assert job.data["job"]["duration"] >= 5
 
 
 def test_first_job_duration(admin, job_user_id, topic, remoteci_context):
@@ -439,11 +411,15 @@ def test_get_all_jobs_with_sort(remoteci_context, components_user_ids,
     job_3.pop('data')
 
     jobs = remoteci_context.get('/api/v1/jobs?sort=created_at').data
-    assert jobs['jobs'] == [job_1, job_2, job_3]
+    assert jobs['jobs'][0]['id'] == job_1['id']
+    assert jobs['jobs'][1]['id'] == job_2['id']
+    assert jobs['jobs'][2]['id'] == job_3['id']
 
     # reverse order by created_at
     jobs = remoteci_context.get('/api/v1/jobs?sort=-created_at').data
-    assert jobs['jobs'] == [job_3, job_2, job_1]
+    assert jobs['jobs'][0]['id'] == job_3['id']
+    assert jobs['jobs'][1]['id'] == job_2['id']
+    assert jobs['jobs'][2]['id'] == job_1['id']
 
 
 def test_get_jobs_by_product(user, epm, topic_user_id, product_id, job_user_id):
@@ -464,6 +440,13 @@ def test_get_job_by_id(remoteci_context, components_user_ids, team_user_id,
 
     job = job.data
     assert job['job']['id'] == job_id
+    assert 'results' in job['job']
+    assert 'remoteci' in job['job']
+    assert 'components' in job['job']
+    assert 'topic' in job['job']
+    assert 'team' in job['job']
+    assert 'jobstates' in job['job']
+    assert 'files' in job['job']
 
 
 def test_get_jobstates_by_job_id(admin, user, job_user_id):
@@ -532,27 +515,6 @@ def test_get_jobstates_by_job_id_with_embed(admin, job_user_id, jobstate_user_id
                               '?embed=files' % job_user_id)  # noqa
         jobstate = jobstates.data['jobstates'][0]
         assert set((jobstate['files'][0]['id'], jobstate['files'][1]['id'])) == set((file1_id, file2_id))
-
-
-def test_embed_with_subkey_in_where(admin, job_user_id):
-    jobstates = admin.get('/api/v1/jobs?embed=team&'
-                          'where=team.state:inactive')
-    assert jobstates.data['_meta']['count'] == 0
-    jobstates = admin.get('/api/v1/jobs?embed=team&'
-                          'where=team.state:active')
-    assert jobstates.data['_meta']['count'] > 0
-
-    # ensure we get the valid_keys list of the subtable in the
-    # error message
-    jobstates = admin.get('/api/v1/jobs?embed=team&'
-                          'where=team.invalid_key:active')
-    assert jobstates.status_code == 400
-    valid_subkeys = jobstates.data['payload']['valid_keys']
-    jobstates = admin.get('/api/v1/jobs?embed=team&'
-                          'where=invalid_key.team:active')
-    assert jobstates.status_code == 400
-    valid_keys = jobstates.data['payload']['valid_keys']
-    assert set(valid_keys) != set(valid_subkeys)
 
 
 def test_get_job_not_found(admin):
@@ -668,7 +630,11 @@ def test_delete_job_as_user(user, job_user_id):
 
     job_delete = user.delete('/api/v1/jobs/%s' % job_user_id,
                              headers={'If-match': job_etag})
+
     assert job_delete.status_code == 204
+
+    job = user.get('/api/v1/jobs/%s' % job_user_id)
+    assert job.status_code == 404
 
 
 def test_create_file_for_job_id(user, remoteci_context, components_user_ids,

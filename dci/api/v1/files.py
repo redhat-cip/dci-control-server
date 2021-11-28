@@ -84,9 +84,9 @@ def _get_previous_jsonunit(job, filename):
     prev_job = get_previous_job_in_topic(job)
     if prev_job is None:
         return None
-    query = flask.g.session.query(models2.TestsResults).\
-        filter(sql.and_(models2.TestsResults.job_id == prev_job.id,
-                        models2.TestsResults.name == filename))
+    query = flask.g.session.query(models2.TestsResult).\
+        filter(sql.and_(models2.TestsResult.job_id == prev_job.id,
+                        models2.TestsResult.name == filename))
     try:
         res = query.one()
     except orm.exc.NoResultFound:
@@ -117,7 +117,7 @@ def _process_junit_file(values, junit_file, job):
     jsonunit = _compute_regressions_successfix(jsonunit, previous_jsonunit)
     jsonunit = _compute_known_tests_cases(jsonunit, job)
 
-    tr = models2.TestsResults()
+    tr = models2.TestsResult()
     tr.id = utils.gen_uuid()
     tr.created_at = values['created_at']
     tr.updated_at = datetime.datetime.utcnow().isoformat()
