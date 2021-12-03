@@ -1,11 +1,13 @@
 #!/bin/sh
 
-python bin/dci-wait-for-db
-python bin/dci-dbinit
-python bin/keycloak-provision.py
+python3 bin/dci-wait-for-db
+python3 bin/dci-dbinit
 
-pubkey=$(python bin/dci-get-pem-ks-key.py http://${KEYCLOAK_HOST:-keycloak}:${KEYCLOAK_PORT:-8080} dci-test)
+pubkey=$(python3 bin/dci-get-pem-ks-key.py ${SSO_URL} ${SSO_REALM})
 
 export SSO_PUBLIC_KEY="$pubkey"
-
+echo $SSO_PUBLIC_KEY
 exec "$@"
+
+
+
