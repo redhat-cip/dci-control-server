@@ -283,6 +283,7 @@ create_product_schema = {
 }
 update_product_properties = {
     "name": Properties.string,
+    "label": Properties.string,
     "description": Properties.string,
     "state": Properties.enum(valid_resource_states)
 }

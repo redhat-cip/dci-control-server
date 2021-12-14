@@ -82,35 +82,26 @@ def create_product(user):
 @api.route('/products/<uuid:product_id>', methods=['PUT'])
 @decorators.login_required
 def update_product(user, product_id):
-    # get If-Match header
-    if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    values = clean_json_with_schema(update_product_schema, flask.request.json)
-
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
+    # get If-Match header
+    if_match_etag = utils.check_and_get_etag(flask.request.headers)
+    values = clean_json_with_schema(update_product_schema, flask.request.json)
     values['etag'] = utils.gen_etag()
+    if 'label' in values:
+        values['label'] = values['label'].upper()
 
-    try:
-        flask.g.session.query(models2.Product).\
-            filter(models2.Product.id == product_id).\
-            filter(models2.Product.etag == if_match_etag).\
-            update(values)
-        flask.g.session.commit()
-    except sa_exc.IntegrityError as ie:
-        flask.g.session.rollback()
-        raise dci_exc.DCIException(message=str(ie), status_code=409)
-    except Exception as e:
-        flask.g.session.rollback()
-        raise dci_exc.DCIException(message=str(e))
-
-    p = flask.g.session.query(models2.Product).filter(models2.Product.id == product_id).one()
-    if not p:
-        raise dci_exc.DCIException(message="unable to return product", status_code=400)
+    # get and update resource
+    product = base.get_resource_orm(models2.Product, product_id, if_match_etag)
+    base.update_resource_orm(product, values)
+    product = base.get_resource_orm(models2.Product, product_id)
 
     return flask.Response(
-        json.dumps({'product': p.serialize()}), 200, headers={'ETag': values['etag']},
-        content_type='application/json')
+        json.dumps({'product': product.serialize()}), 200,
+        headers={'ETag': product.etag},
+        content_type='application/json'
+    )
 
 
 @api.route('/products', methods=['GET'])
