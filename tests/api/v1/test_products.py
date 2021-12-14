@@ -73,10 +73,11 @@ def test_success_update_product(admin, product_openstack):
     url = '/api/v1/products/%s' % product_id
     assert product_openstack['name'] == 'OpenStack'
 
-    result = admin.put(url, data={'name': 'New OpenStack'},
+    result = admin.put(url, data={'name': 'New OpenStack', 'label': 'new-label'},
                        headers={'If-match': product_openstack['etag']})
     assert result.status_code == 200
     assert result.data['product']['name'] == 'New OpenStack'
+    assert result.data['product']['label'] == 'NEW-LABEL'
     assert result.data['product']['description'] == \
         'Red Hat OpenStack Platform'
 
