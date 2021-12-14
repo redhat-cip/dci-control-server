@@ -16,9 +16,8 @@
 
 import flask
 from flask import json
-import logging
 from sqlalchemy import exc as sa_exc
-import sqlalchemy.orm as sa_orm
+from sqlalchemy import sql
 from datetime import datetime, timedelta
 
 from dci.api.v1 import api
@@ -39,10 +38,8 @@ from dci.common.schemas import (
     check_and_get_args
 )
 from dci.common import utils
-from dci.db import declarative
 from dci.db import embeds
 from dci.db import models
-from dci.db import models2
 
 from dci.api.v1 import files
 from dci.api.v1 import export_control
@@ -68,8 +65,6 @@ _EMBED_MANY = {
     'tags': True
 }
 
-logger = logging.getLogger(__name__)
-
 
 def get_utc_now():
     return datetime.utcnow()
@@ -88,11 +83,11 @@ def create_jobs(user):
         raise dci_exc.DCIException('Only remoteci can create job')
 
     topic_id = values.get('topic_id')
-    topic = base.get_resource_orm(models2.Topic, topic_id)
+    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
     export_control.verify_access_to_topic(user, topic)
     previous_job_id = values.get('previous_job_id')
     if previous_job_id:
-        base.get_resource_orm(models2.Job, previous_job_id)
+        v1_utils.verify_existence_and_get(previous_job_id, _TABLE)
 
     values.update({
         'status': 'new',
@@ -102,22 +97,23 @@ def create_jobs(user):
         'client_version': flask.request.environ.get('HTTP_CLIENT_VERSION'),
         'previous_job_id': previous_job_id,
         'team_id': user.teams_ids[0],
-        'product_id': topic.product_id,
+        'product_id': topic['product_id'],
         'duration': 0
     })
 
-    base.create_resource_orm(models2.Job, values)
-    j = base.get_resource_orm(models2.Job, values['id'])
-    for cmpt_id in components_ids:
-        c = base.get_resource_orm(models2.Component, cmpt_id)
-        try:
-            j.components.append(c)
-            flask.g.session.add(j)
-            flask.g.session.commit()
-        except sa_exc.IntegrityError as e:
-            logger.error(str(e))
-            flask.g.session.rollback()
-            raise dci_exc.DCIException(message="conflict when adding component %s" % c.name, status_code=409)
+    # create the job and feed the jobs_components table
+    with flask.g.db_conn.begin():
+        query = _TABLE.insert().values(**values)
+        flask.g.db_conn.execute(query)
+
+        jobs_components_to_insert = []
+        for cmpt_id in components_ids:
+            v1_utils.verify_existence_and_get(cmpt_id, models.COMPONENTS)
+            jobs_components_to_insert.append({'job_id': values['id'],
+                                              'component_id': cmpt_id})
+        if jobs_components_to_insert:
+            flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
+                                    jobs_components_to_insert)
 
     return flask.Response(json.dumps({'job': values}), 201,
                           headers={'ETag': values['etag']},
@@ -134,39 +130,59 @@ def _build_job(product_id, topic_id, remoteci, components_ids, values):
     values.update({
         'product_id': product_id,
         'topic_id': topic_id,
-        'team_id': remoteci.team_id
+        'team_id': remoteci['team_id']
     })
-    base.create_resource_orm(models2.Job, values)
-    j = base.get_resource_orm(models2.Job, values['id'])
 
-    for sci in p_schedule_components_ids:
-        c = base.get_resource_orm(models2.Component, sci)
-        try:
-            j.components.append(c)
-            flask.g.session.add(j)
-            flask.g.session.commit()
-        except sa_exc.IntegrityError as e:
-            logger.error(str(e))
-            flask.g.session.rollback()
-            raise dci_exc.DCIException(message="conflict when adding component %s" % c.name, status_code=409)
+    with flask.g.db_conn.begin():
+        # create the job
+        flask.g.db_conn.execute(_TABLE.insert().values(**values))
+
+        if len(p_schedule_components_ids) > 0:
+            # Adds the components to the jobs using join_jobs_components
+            job_components = [
+                {'job_id': values['id'], 'component_id': sci}
+                for sci in p_schedule_components_ids
+            ]
+
+            flask.g.db_conn.execute(
+                models.JOIN_JOBS_COMPONENTS.insert(), job_components
+            )
 
     return values
 
 
-def kill_existing_jobs(remoteci_id, session=None):
-    try:
-        session = session or flask.g.session
-        yesterday = datetime.now() - timedelta(hours=24)
-        query = flask.g.session.query(models2.Job)
-        query = query.filter(models2.Job.remoteci_id == remoteci_id)
-        query = query.filter(models2.Job.status.in_(("new", "pre-run", "running", "post-run")))
-        query = query.filter(models2.Job.created_at < yesterday)
-        query = query.update({'status': 'killed'}, synchronize_session=False)
-        session.commit()
-    except Exception as e:
-        flask.g.session.rollback()
-        logger.error('error while killing existing jobs: %s' % str(e))
-        raise dci_exc.DCIException(message='error while killing existing jobs', status_code=409)
+def _get_job(user, job_id, embed=None):
+    # build the query thanks to the QueryBuilder class
+    args = {'embed': embed}
+    query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS)
+
+    if (user.is_not_super_admin() and user.is_not_read_only_user()
+        and user.is_not_epm()):
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
+
+    query.add_extra_condition(_TABLE.c.id == job_id)
+    query.add_extra_condition(_TABLE.c.state != 'archived')
+
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
+    if len(rows) != 1:
+        raise dci_exc.DCINotFound('Job', job_id)
+    job = rows[0]
+    return job, nb_rows
+
+
+def kill_existing_jobs(remoteci_id, db_conn=None):
+    db_conn = db_conn or flask.g.db_conn
+    yesterday = datetime.now() - timedelta(hours=24)
+    where_clause = sql.expression.and_(
+        models.JOBS.c.remoteci_id == remoteci_id,
+        models.JOBS.c.status.in_(("new", "pre-run", "running", "post-run")),
+        models.JOBS.c.created_at < yesterday,
+    )
+    kill_query = models.JOBS.update().where(where_clause).values(status="killed")
+    db_conn.execute(kill_query)
 
 
 @api.route('/jobs/schedule', methods=['POST'])
@@ -211,23 +227,23 @@ def schedule_jobs(user):
 
     previous_job_id = values["previous_job_id"]
     if previous_job_id:
-        base.get_resource_orm(models2.Job, previous_job_id)
+        v1_utils.verify_existence_and_get(previous_job_id, models.JOBS)
 
     # check remoteci
-    remoteci = base.get_resource_orm(models2.Remoteci, user.id)
-    if remoteci.state != 'active':
-        message = 'RemoteCI "%s" is disabled.' % remoteci.id
+    remoteci = v1_utils.verify_existence_and_get(user.id, models.REMOTECIS)
+    if remoteci['state'] != 'active':
+        message = 'RemoteCI "%s" is disabled.' % remoteci['id']
         raise dci_exc.DCIException(message, status_code=412)
 
     # check primary topic
-    topic = base.get_resource_orm(models2.Topic, topic_id)
-    product_id = topic.product_id
-    if topic.state != 'active':
-        msg = 'Topic %s:%s not active.' % (topic_id, topic.name)
+    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+    product_id = topic['product_id']
+    if topic['state'] != 'active':
+        msg = 'Topic %s:%s not active.' % (topic_id, topic['name'])
         raise dci_exc.DCIException(msg, status_code=412)
     export_control.verify_access_to_topic(user, topic)
 
-    kill_existing_jobs(remoteci.id)
+    kill_existing_jobs(remoteci['id'])
 
     components_ids = values.pop('components_ids')
     values = _build_job(product_id, topic_id, remoteci, components_ids, values)
@@ -253,20 +269,25 @@ def create_new_update_job_from_an_existing_job(user, job_id):
         'status': 'new'
     }
 
-    previous_job = base.get_resource_orm(models2.Job, previous_job_id)
+    previous_job = v1_utils.verify_existence_and_get(
+        previous_job_id,
+        models.JOBS
+    )
 
-    if user.is_not_in_team(previous_job.team_id) and user.is_not_epm():
+    if user.is_not_in_team(previous_job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     # get the remoteci
-    remoteci_id = str(previous_job.remoteci_id)
-    remoteci = base.get_resource_orm(models2.Remoteci, remoteci_id)
+    remoteci_id = str(previous_job['remoteci_id'])
+    remoteci = v1_utils.verify_existence_and_get(remoteci_id,
+                                                 models.REMOTECIS)
     values.update({'remoteci_id': remoteci_id})
 
     # get the associated topic
-    topic_id = str(previous_job.topic_id)
-    topic = base.get_resource_orm(models2.Topic, topic_id)
-    product_id = topic.product_id
+    topic_id = str(previous_job['topic_id'])
+    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
+    product_id = topic['product_id']
+    v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
 
     values.update({
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
@@ -299,18 +320,22 @@ def create_new_upgrade_job_from_an_existing_job(user):
         'status': 'new'
     })
 
-    previous_job = base.get_resource_orm(models2.Job, previous_job_id)
-    if user.is_not_in_team(previous_job.team_id) and user.is_not_epm():
+    previous_job = v1_utils.verify_existence_and_get(
+        previous_job_id,
+        models.JOBS
+    )
+    if user.is_not_in_team(previous_job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     # get the remoteci
-    remoteci_id = str(previous_job.remoteci_id)
-    remoteci = base.get_resource_orm(models2.Remoteci, remoteci_id)
+    remoteci_id = str(previous_job['remoteci_id'])
+    remoteci = v1_utils.verify_existence_and_get(remoteci_id,
+                                                 models.REMOTECIS)
     values.update({'remoteci_id': remoteci_id})
 
     # get the associated topic
-    topic_id = str(previous_job.topic_id)
-    topic = base.get_resource_orm(models2.Topic, topic_id)
+    topic_id = str(previous_job['topic_id'])
+    topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
 
     values.update({
         'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
@@ -319,13 +344,13 @@ def create_new_upgrade_job_from_an_existing_job(user):
         ),
     })
 
-    next_topic_id = topic.next_topic_id
+    next_topic_id = topic['next_topic_id']
 
     if not next_topic_id:
         raise dci_exc.DCIException(
             "topic %s does not contains a next topic" % topic_id)
-    topic = base.get_resource_orm(models2.Topic, next_topic_id)
-    product_id = topic.product_id
+    topic = v1_utils.verify_existence_and_get(next_topic_id, models.TOPICS)
+    product_id = topic['product_id']
 
     # instantiate a new job in the next_topic_id
     # todo(yassine): make possible the upgrade to choose specific components
@@ -347,56 +372,37 @@ def get_all_jobs(user, topic_id=None):
     # get the diverse parameters
     args = check_and_get_args(flask.request.args.to_dict())
 
-    query = flask.g.session.query(models2.Job)
+    # build the query thanks to the QueryBuilder class
+    query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS, ignore_columns=['data'])
 
-    # If not admin nor rh employee then restrict the view to the team
+    # add extra conditions for filtering
+
+    # # If not admin nor rh employee then restrict the view to the team
     if (user.is_not_super_admin() and user.is_not_read_only_user() and
         user.is_not_epm()):
-        query = query.filter(models2.Job.team_id.in_(user.teams_ids))
+        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
-    # If topic_id not None, then filter by topic_id
+    # # If topic_id not None, then filter by topic_id
     if topic_id is not None:
-        query = query.filter(models2.Job.topic_id == topic_id)
+        query.add_extra_condition(_TABLE.c.topic_id == topic_id)
 
-    # Get only the non archived jobs
-    query = query.filter(models2.Job.state != 'archived')
+    # # Get only the non archived jobs
+    query.add_extra_condition(_TABLE.c.state != 'archived')
 
-    # Load associated ressources
-    query = query.options(sa_orm.joinedload('results')).\
-        options(sa_orm.joinedload('remoteci')).\
-        options(sa_orm.joinedload('components')).\
-        options(sa_orm.joinedload('topic')).\
-        options(sa_orm.joinedload('team')).\
-        options(sa_orm.joinedload('files'))
-    query = declarative.handle_args(query, models2.Job, args)
-    nb_jobs = query.count()
+    nb_rows = query.get_number_of_rows()
+    rows = query.execute(fetchall=True)
+    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
+                                  _EMBED_MANY)
 
-    jobs = [j.serialize(ignore_columns=['data']) for j in query.all()]
-
-    return flask.jsonify({'jobs': jobs, '_meta': {'count': nb_jobs}})
+    return flask.jsonify({'jobs': rows, '_meta': {'count': nb_rows}})
 
 
 @api.route('/jobs/<uuid:job_id>/components', methods=['GET'])
 @decorators.login_required
 def get_components_from_job(user, job_id):
-
-    query = flask.g.session.query(models2.Job)
-
-    if (user.is_not_super_admin() and user.is_not_read_only_user()
-        and user.is_not_epm()):
-        query = query.filter(models2.Job.team_id.in_(user.teams_ids))
-
-    try:
-        j = query.filter(models2.Job.state != 'archived').\
-            filter(models2.Job.id == job_id).\
-            options(sa_orm.joinedload('components')).one()
-    except sa_orm.exc.NoResultFound:
-        raise dci_exc.DCIException(message="job not found", status_code=404)
-
-    j_serialized = j.serialize()
-    c_serialized = j_serialized['components']
-    return flask.jsonify({'components': c_serialized,
-                          '_meta': {'count': len(c_serialized)}})
+    job, nb_rows = _get_job(user, job_id, ['components'])
+    return flask.jsonify({'components': job['components'],
+                          '_meta': {'count': nb_rows}})
 
 
 @api.route('/jobs/<uuid:job_id>/components', methods=['POST'])
@@ -404,59 +410,37 @@ def get_components_from_job(user, job_id):
 def add_component_to_job(user, job_id):
     values = flask.request.json
     check_json_is_valid(add_component_schema, values)
-
-    j = base.get_resource_orm(models2.Job, job_id)
-    component = base.get_resource_orm(models2.Component, values['id'])
-
-    if component.team_id and not user.is_in_team(component.team_id):
+    v1_utils.verify_existence_and_get(job_id, models.JOBS)
+    component = v1_utils.verify_existence_and_get(values['id'], models.COMPONENTS)
+    if component['team_id'] and not user.is_in_team(component['team_id']):
         raise dci_exc.Unauthorized()
-
+    job_component_to_insert = [{'job_id': job_id,
+                                'component_id': values['id']}]
     try:
-        j.components.append(component)
-        flask.g.session.add(j)
-        flask.g.session.commit()
-    except sa_exc.IntegrityError as e:
-        flask.g.session.rollback()
-        logger.error(str(e))
-        raise dci_exc.DCIException(message="Unable to associate component %s to job %s" % (values['id'], job_id), status_code=409)
-
+        flask.g.db_conn.execute(
+            models.JOIN_JOBS_COMPONENTS.insert(),
+            job_component_to_insert)
+    except sa_exc.IntegrityError:
+        raise dci_exc.DCIException("Unable to associate component %s to job %s" % (values['id'], job_id), status_code=409)  # noqa
     return flask.Response(None, 201, content_type='application/json')
 
 
 @api.route('/jobs/<uuid:job_id>/jobstates', methods=['GET'])
 @decorators.login_required
 def get_jobstates_by_job(user, job_id):
-    base.get_resource_orm(models2.Job, job_id)
+    v1_utils.verify_existence_and_get(job_id, _TABLE)
     return jobstates.get_all_jobstates(user, job_id)
 
 
 @api.route('/jobs/<uuid:job_id>', methods=['GET'])
 @decorators.login_required
 def get_job_by_id(user, job_id):
-    query = flask.g.session.query(models2.Job)
-    query = query.filter(models2.Job.id == job_id)
-
-    # If not admin nor rh employee then restrict the view to the team
-    if (user.is_not_super_admin() and user.is_not_read_only_user() and
-        user.is_not_epm()):
-        query = query.filter(models2.Job.team_id.in_(user.teams_ids))
-
-    # Get only non archived job
-    query = query.filter(models2.Job.state != 'archived')
-    query = query.options(sa_orm.joinedload('results')).\
-        options(sa_orm.joinedload('remoteci')).\
-        options(sa_orm.joinedload('components')).\
-        options(sa_orm.joinedload('topic')).\
-        options(sa_orm.joinedload('team')).\
-        options(sa_orm.joinedload('jobstates')).\
-        options(sa_orm.joinedload('files'))
-
-    try:
-        job = query.one()
-    except sa_orm.exc.NoResultFound:
-        raise dci_exc.DCIException(message="job not found", status_code=404)
-
-    return flask.Response(json.dumps({'job': job.serialize()}), 200, headers={'ETag': job.etag}, content_type='application/json')
+    job = v1_utils.verify_existence_and_get(job_id, _TABLE)
+    job_dict = dict(job)
+    job_dict['issues'] = json.loads(
+        issues.get_issues_by_resource(job_id, _TABLE).response[0]
+    )['issues']
+    return base.get_resource_by_id(user, job_dict, _TABLE, _EMBED_MANY)
 
 
 @api.route('/jobs/<uuid:job_id>', methods=['PUT'])
@@ -470,27 +454,36 @@ def update_job_by_id(user, job_id):
 
     values = clean_json_with_schema(update_job_schema, flask.request.json)
 
-    job = base.get_resource_orm(models2.Job, job_id, if_match_etag)
+    job = v1_utils.verify_existence_and_get(job_id, _TABLE)
+    job = dict(job)
 
-    if user.is_not_in_team(job.team_id) and user.is_not_epm():
+    if user.is_not_in_team(job['team_id']) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     # Update jobstate if needed
     status = values.get('status')
-    if status and job.status != status:
+    if status and job.get('status') != status:
         jobstates.insert_jobstate(user, {
             'status': status,
             'job_id': job_id
         })
-        if status in models2.FINAL_STATUSES:
-            jobs_events.create_event(job_id, status, job.topic_id)
+        if status in models.FINAL_STATUSES:
+            jobs_events.create_event(job_id, status, job['topic_id'])
 
-    base.update_resource_orm(job, values)
-    job = base.get_resource_orm(models2.Job, job_id)
+    where_clause = sql.and_(_TABLE.c.etag == if_match_etag,
+                            _TABLE.c.id == job_id)
+
+    values['etag'] = utils.gen_etag()
+    query = _TABLE.update().returning(*_TABLE.columns).\
+        where(where_clause).values(**values)
+
+    result = flask.g.db_conn.execute(query)
+    if not result.rowcount:
+        raise dci_exc.DCIConflict('Job', job_id)
 
     return flask.Response(
-        json.dumps({'job': job.serialize()}), 200,
-        headers={'ETag': job.etag},
+        json.dumps({'job': result.fetchone()}), 200,
+        headers={'ETag': values['etag']},
         content_type='application/json'
     )
 
@@ -540,24 +533,20 @@ def get_all_results_from_jobs(user, j_id):
     """Get all results from job.
     """
 
-    job = base.get_resource_orm(models2.Job, j_id)
+    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
-    if (user.is_not_in_team(job.team_id) and user.is_not_read_only_user()
+    if (user.is_not_in_team(job['team_id']) and user.is_not_read_only_user()
         and user.is_not_epm()):
         raise dci_exc.Unauthorized()
 
     # get testscases from tests_results
-    try:
-        query = flask.g.session.query(models2.TestsResult)
-        query = query.filter(models2.TestsResult.job_id == job.id)
-        all_tests_results = query.all()
-    except Exception as e:
-        logger.error(str(e))
-        raise dci_exc.DCIException('error while getting the results: %s' % str(e))
+    query = sql.select([models.TESTS_RESULTS]). \
+        where(models.TESTS_RESULTS.c.job_id == job['id'])
+    all_tests_results = flask.g.db_conn.execute(query).fetchall()
 
     results = []
     for test_result in all_tests_results:
-        test_result = test_result.serialize()
+        test_result = dict(test_result)
         results.append({'filename': test_result['name'],
                         'name': test_result['name'],
                         'total': test_result['total'],
@@ -580,23 +569,28 @@ def delete_job_by_id(user, j_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
-    job = base.get_resource_orm(models2.Job, j_id, if_match_etag)
+    job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
-    if ((user.is_not_in_team(job.team_id) or user.is_read_only_user()) and
+    if ((user.is_not_in_team(job['team_id']) or user.is_read_only_user()) and
         user.is_not_epm()):
         raise dci_exc.Unauthorized()
 
-    try:
-        job.state = 'archived'
-        query = flask.g.session.query(models2.File)
-        query = query.filter(models2.File.job_id == j_id)
-        query = query.update({'state': 'archived'})
-        flask.g.session.add(job)
-        flask.g.session.commit()
-    except Exception as e:
-        flask.g.session.rollback()
-        logging.error("unable to delete job %s: %s" % (j_id, str(e)))
-        raise dci_exc.DCIException("unable to delete job %s: %s" % (j_id, str(e)))
+    with flask.g.db_conn.begin():
+        values = {'state': 'archived'}
+        where_clause = sql.and_(_TABLE.c.id == j_id,
+                                _TABLE.c.etag == if_match_etag)
+        query = _TABLE.update().where(where_clause).values(**values)
+
+        result = flask.g.db_conn.execute(query)
+
+        if not result.rowcount:
+            raise dci_exc.DCIDeleteConflict('Job', j_id)
+
+        for model in [models.FILES]:
+            query = model.update().where(model.c.job_id == j_id).values(
+                **values
+            )
+            flask.g.db_conn.execute(query)
 
     return flask.Response(None, 204, content_type='application/json')
 
