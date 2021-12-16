@@ -226,9 +226,9 @@ def get_all_files(user, job_id):
     query = query.filter(sql.and_(
         models2.File.job_id == job_id,
         models2.File.state != 'archived'))
-
-    nb_files = query.count()
     query = declarative.handle_args(query, models2.File, args)
+    nb_files = query.count()
+    query = declarative.handle_pagination(query, args)
     files = [f.serialize() for f in query.all()]
 
     return json.jsonify({'files': files, '_meta': {'count': nb_files}})

@@ -148,8 +148,8 @@ def clean_json_with_schema(schema, values):
 args_schema = {
     "type": "object",
     "properties": {
-        "limit": with_default(Properties.positive_string_integer, None),
-        "offset": with_default(Properties.positive_or_null_string_integer, None),
+        "limit": Properties.positive_string_integer,
+        "offset": Properties.positive_or_null_string_integer,
         "sort": Properties.string,
         "where": Properties.key_value_csv,
         "embed": Properties.string,

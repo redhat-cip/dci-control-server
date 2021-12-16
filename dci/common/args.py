@@ -16,10 +16,12 @@ def _get_int(element, dict):
 
 
 def parse_args(args):
-    return {
+    _res = {
         "limit": _get_int("limit", args),
         "offset": _get_int("offset", args),
         "sort": _get_csv("sort", args),
         "where": _get_csv("where", args),
         "embed": _get_csv("embed", args),
     }
+
+    return {k: _res[k] for k in _res if _res[k] is not None}
