@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime
 
 
 def _get_csv(element, dict):
@@ -15,6 +16,22 @@ def _get_int(element, dict):
     return e
 
 
+def _get_datetime(element, dict):
+    e = dict.get(element, None)
+    if e:
+        try:
+            return datetime.strptime(e, "%Y-%m-%dT%H:%M:%S.%f")
+        except ValueError:
+            pass
+
+        try:
+            timestamp_in_ms = int(e)
+            timestamp_in_second = timestamp_in_ms / 1000
+            return datetime.fromtimestamp(timestamp_in_second)
+        except ValueError:
+            pass
+
+
 def parse_args(args):
     return {
         "limit": _get_int("limit", args),
@@ -22,4 +39,6 @@ def parse_args(args):
         "sort": _get_csv("sort", args),
         "where": _get_csv("where", args),
         "embed": _get_csv("embed", args),
+        "created_after": _get_datetime("created_after", args),
+        "updated_after": _get_datetime("updated_after", args),
     }

@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from datetime import datetime
 from dci.common.exceptions import DCIException
 from dci.common.args import parse_args
 from jsonschema import validators, FormatChecker, Draft4Validator
@@ -53,7 +52,7 @@ class Properties(object):
     string_integer = {"type": "string", "pattern": "^([+-]?[1-9]\d*|0)$"}
     positive_string_integer = {"type": "string", "pattern": "^[1-9]\d*$"}
     positive_or_null_string_integer = {"type": "string", "pattern": "^\d+$"}
-    isoformat_date = {"type": "string", "is_date_isoformat": True}
+    isoformat_date = {"type": "string", "format": "date-time"}
 
     @staticmethod
     def enum(accepted_values):
@@ -68,16 +67,6 @@ def _is_key_value_csv(validator, value, instance, schema):
 
 all_validators = dict(Draft4Validator.VALIDATORS)
 all_validators["is_key_value_csv"] = _is_key_value_csv
-
-
-def _is_date_isoformat(validator, value, instance, schema):
-    try:
-        datetime.strptime(instance, "%Y-%m-%dT%H:%M:%S.%f")
-    except ValueError:
-        raise ValidationError("'%s' is not an iso format date" % instance)
-
-
-all_validators["is_date_isoformat"] = _is_date_isoformat
 
 
 def extend_with_default(validator_class):
@@ -153,6 +142,8 @@ args_schema = {
         "sort": Properties.string,
         "where": Properties.key_value_csv,
         "embed": Properties.string,
+        "created_after": Properties.isoformat_date,
+        "updated_after": Properties.isoformat_date
     },
     "dependencies": {
         "limit": {"required": ["offset"]},

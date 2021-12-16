@@ -19,6 +19,7 @@ from datetime import datetime as dt
 import mock
 import pytest
 import uuid
+import time
 from dci import dci_config
 from dci.api.v1 import components
 from dci.stores import files_utils
@@ -184,6 +185,60 @@ def test_create_component_with_release_at(admin, topic_id):
     assert cmpt.status_code == 200
 
     assert cmpt.data['component']['released_at'] == released_at
+
+
+def test_get_all_components_created_after(admin, topic_id):
+    created_after = int(time.time() * 1000)
+    for i in range(5):
+        admin.post(
+            "/api/v1/components",
+            data={
+                "name": "pname%s" % uuid.uuid4(),
+                "type": "gerrit_review",
+                "topic_id": topic_id,
+            },
+        ).data
+    db_all_cs = admin.get(
+        "/api/v1/topics/%s/components?created_after=%s&sort=created_at"
+        % (topic_id, created_after)
+    ).data
+    assert len(db_all_cs["components"]) == 5
+    component_2 = db_all_cs["components"][2]
+
+    created_after = int(time.time() * 1000)
+    db_all_cs = admin.get(
+        "/api/v1/topics/%s/components?created_after=%s&sort=created_at"
+        % (topic_id, created_after)
+    ).data
+    assert len(db_all_cs["components"]) == 0
+
+    created_after = component_2["created_at"]
+    db_all_cs = admin.get(
+        "/api/v1/topics/%s/components?created_after=%s&sort=created_at"
+        % (topic_id, created_after)
+    ).data
+    assert len(db_all_cs["components"]) == 3
+
+
+def test_get_all_components_updated_after(admin, topic_id):
+    for i in range(5):
+        admin.post('/api/v1/components',
+                   data={'name': 'pname%s' % uuid.uuid4(),
+                         'type': 'gerrit_review',
+                         'topic_id': topic_id}).data
+    db_all_cs = admin.get('/api/v1/topics/%s/components?sort=created_at' % topic_id).data
+    assert len(db_all_cs['components']) == 5
+    component_2 = db_all_cs['components'][2]
+
+    updated_after = dt.utcnow().isoformat()
+    db_all_cs = admin.get('/api/v1/topics/%s/components?updated_after=%s&sort=created_at' % (topic_id, updated_after)).data
+    assert len(db_all_cs['components']) == 0
+
+    admin.put('/api/v1/components/%s' % component_2['id'], headers={'If-match': component_2['etag']}, data={'name': 'lol'})
+    component_2 = admin.get('/api/v1/components/%s' % component_2['id'])
+    updated_after = component_2.data['component']['updated_at']
+    db_all_cs = admin.get('/api/v1/topics/%s/components?updated_after=%s&sort=created_at' % (topic_id, updated_after)).data
+    assert len(db_all_cs['components']) == 1
 
 
 def test_get_all_components(admin, topic_id):

@@ -115,6 +115,10 @@ def handle_args(query, model_object, args):
                 query = query.filter(m_column.contains(value.replace("*", "")))
             else:
                 query = query.filter(m_column == value)
+    if args.get("created_after"):
+        query = query.filter(getattr(model_object, "created_at") >= args.get("created_after"))
+    if args.get("updated_after"):
+        query = query.filter(getattr(model_object, "updated_at") >= args.get("updated_after"))
     if args.get("limit"):
         query = query.limit(args.get("limit"))
     if args.get("offset"):
