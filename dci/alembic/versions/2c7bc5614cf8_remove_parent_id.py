@@ -34,7 +34,7 @@ def upgrade():
     op.drop_constraint(constraint_name='teams_name_parent_id_key',
                        table_name='teams')
     op.drop_column('teams', 'parent_id')
-    op.create_unique_constraint(name='teams_name_key',
+    op.create_unique_constraint(constraint_name='teams_name_key',
                                 table_name='teams',
                                 columns=['name']
                                 )
