@@ -22,8 +22,8 @@ Create Date: 2020-09-29 12:45:37.073362
 """
 
 # revision identifiers, used by Alembic.
-revision = '26cfed00671'
-down_revision = '2a66d59901a'
+revision = "26cfed00671"
+down_revision = "2a66d59901a"
 branch_labels = None
 depends_on = None
 
@@ -36,15 +36,25 @@ from sqlalchemy import sql
 
 def upgrade():
     db_conn = op.get_bind()
-    op.add_column('components', sa.Column('released_at', sa.DateTime(),
-                  default=datetime.datetime.utcnow, nullable=True))
+    op.add_column(
+        "components",
+        sa.Column(
+            "released_at",
+            sa.DateTime(),
+            default=datetime.datetime.utcnow,
+            nullable=True,
+        ),
+    )
 
     query = sql.select([models.COMPONENTS])
     components = db_conn.execute(query).fetchall()
 
     for c in components:
-        query = models.COMPONENTS.update().where(models.COMPONENTS.c.id == c.id).\
-            values(released_at=c.created_at)
+        query = (
+            models.COMPONENTS.update()
+            .where(models.COMPONENTS.c.id == c.id)
+            .values(released_at=c.created_at)
+        )
         db_conn.execute(query)
 
 

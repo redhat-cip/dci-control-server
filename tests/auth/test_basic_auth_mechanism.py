@@ -27,8 +27,8 @@ class MockRequest(object):
 
 class AuthMock(object):
     def __init__(self):
-        self.username = 'test'
-        self.password = 'password'
+        self.username = "test"
+        self.password = "password"
 
 
 def test_basic_auth_mecanism_authenticate_fail_if_no_auth():

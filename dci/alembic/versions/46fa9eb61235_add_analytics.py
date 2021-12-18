@@ -22,8 +22,8 @@ Create Date: 2018-08-10 13:51:24.538380
 """
 
 # revision identifiers, used by Alembic.
-revision = '46fa9eb61235'
-down_revision = 'bcd903a35145'
+revision = "46fa9eb61235"
+down_revision = "bcd903a35145"
 branch_labels = None
 depends_on = None
 
@@ -40,31 +40,49 @@ from dci.common import utils
 def upgrade():
 
     op.create_table(
-        'analytics',
-        sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
-                  default=utils.gen_uuid),
-        sa.Column('created_at', sa.DateTime(),
-                  default=datetime.datetime.utcnow, nullable=False),
-        sa.Column('updated_at', sa.DateTime(),
-                  onupdate=datetime.datetime.utcnow,
-                  default=datetime.datetime.utcnow, nullable=False),
-        sa.Column('etag', sa.String(40), nullable=False,
-                  default=utils.gen_etag,
-                  onupdate=utils.gen_etag),
-        sa.Column('team_id', pg.UUID(as_uuid=True),
-                  sa.ForeignKey('teams.id', ondelete='CASCADE'),
-                  nullable=False),
-        sa.Index('analytics_team_id_idx', 'team_id'),
-        sa.Column('job_id', pg.UUID(as_uuid=True),
-                  sa.ForeignKey('jobs.id', ondelete='CASCADE'),
-                  nullable=False),
-        sa.Index('analytics_job_id_idx', 'job_id'),
-        sa.Column('type', sa.String(255), nullable=False),
-        sa.Column('name', sa.String(255), unique=False, nullable=False),
-        sa.Index('analytics_name_team_id_idx', 'name', 'team_id',
-                 unique=True),
-        sa.Column('url', sa.String(255)),
-        sa.Column('data', sa_utils.JSONType, default={}, nullable=False)
+        "analytics",
+        sa.Column(
+            "id", pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(),
+            default=datetime.datetime.utcnow,
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(),
+            onupdate=datetime.datetime.utcnow,
+            default=datetime.datetime.utcnow,
+            nullable=False,
+        ),
+        sa.Column(
+            "etag",
+            sa.String(40),
+            nullable=False,
+            default=utils.gen_etag,
+            onupdate=utils.gen_etag,
+        ),
+        sa.Column(
+            "team_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("teams.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Index("analytics_team_id_idx", "team_id"),
+        sa.Column(
+            "job_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("jobs.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Index("analytics_job_id_idx", "job_id"),
+        sa.Column("type", sa.String(255), nullable=False),
+        sa.Column("name", sa.String(255), unique=False, nullable=False),
+        sa.Index("analytics_name_team_id_idx", "name", "team_id", unique=True),
+        sa.Column("url", sa.String(255)),
+        sa.Column("data", sa_utils.JSONType, default={}, nullable=False),
     )
 
 

@@ -18,30 +18,29 @@ import uuid
 
 
 class Identity:
-
     def __init__(self, user_info):
 
-        self.id = user_info.get('id')
-        self.password = user_info.get('password', None)
-        self.name = user_info.get('name', None)
-        self.fullname = user_info.get('fullname', None)
-        self.timezone = user_info.get('timezone', None)
-        self.email = user_info.get('email', None)
-        self.sso_username = user_info.get('sso_username', None)
-        self.etag = user_info.get('etag', None)
-        self._is_user = user_info.get('is_user', False)
-        self.api_secret = user_info.get('api_secret', '')
-        self._is_remoteci = user_info.get('is_remoteci', False)
-        self._is_feeder = user_info.get('is_feeder', False)
+        self.id = user_info.get("id")
+        self.password = user_info.get("password", None)
+        self.name = user_info.get("name", None)
+        self.fullname = user_info.get("fullname", None)
+        self.timezone = user_info.get("timezone", None)
+        self.email = user_info.get("email", None)
+        self.sso_username = user_info.get("sso_username", None)
+        self.etag = user_info.get("etag", None)
+        self._is_user = user_info.get("is_user", False)
+        self.api_secret = user_info.get("api_secret", "")
+        self._is_remoteci = user_info.get("is_remoteci", False)
+        self._is_feeder = user_info.get("is_feeder", False)
         # user_info['teams'] = {'<team-id1>': {'id': <id>,
         #                                      'name': <name>,
         #                                      'etag': <etag>,
         #                       '<team-id2>: {...}}
-        self.teams = user_info.get('teams', {})
+        self.teams = user_info.get("teams", {})
         self.teams_ids = list(self.teams.keys())
-        self._is_super_admin = user_info.get('is_super_admin', False)
-        self._is_read_only_user = user_info.get('is_read_only_user', False)
-        self._is_epm_user = user_info.get('is_epm_user', False)
+        self._is_super_admin = user_info.get("is_super_admin", False)
+        self._is_read_only_user = user_info.get("is_read_only_user", False)
+        self._is_epm_user = user_info.get("is_epm_user", False)
 
     def is_super_admin(self):
         """Ensure the user is SUPER_ADMIN."""

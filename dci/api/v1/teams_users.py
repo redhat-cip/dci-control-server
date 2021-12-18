@@ -22,12 +22,14 @@ from dci.common import exceptions as dci_exc
 from dci.db import models2
 
 
-@api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['POST'])
+@api.route("/teams/<uuid:team_id>/users/<uuid:user_id>", methods=["POST"])
 @decorators.login_required
 def add_user_to_team(user, team_id, user_id):
-    if (team_id == flask.g.team_admin_id or
-        team_id == flask.g.team_redhat_id or
-        team_id == flask.g.team_epm_id) and user.is_not_super_admin():
+    if (
+        team_id == flask.g.team_admin_id
+        or team_id == flask.g.team_redhat_id
+        or team_id == flask.g.team_epm_id
+    ) and user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
     if user.is_not_epm():
@@ -44,10 +46,10 @@ def add_user_to_team(user, team_id, user_id):
         flask.g.session.rollback()
         raise dci_exc.DCIException(message="conflict when adding team", status_code=409)
 
-    return flask.Response(None, 201, content_type='application/json')
+    return flask.Response(None, 201, content_type="application/json")
 
 
-@api.route('/teams/<uuid:team_id>/users', methods=['GET'])
+@api.route("/teams/<uuid:team_id>/users", methods=["GET"])
 @decorators.login_required
 def get_users_from_team(user, team_id):
     if user.is_not_epm() and user.is_not_in_team(team_id):
@@ -55,10 +57,10 @@ def get_users_from_team(user, team_id):
     team = base.get_resource_orm(models2.Team, team_id)
     team_users = [u.serialize() for u in team.users]
 
-    return flask.jsonify({'users': team_users, '_meta': {'count': len(team_users)}})
+    return flask.jsonify({"users": team_users, "_meta": {"count": len(team_users)}})
 
 
-@api.route('/users/<uuid:user_id>/teams', methods=['GET'])
+@api.route("/users/<uuid:user_id>/teams", methods=["GET"])
 @decorators.login_required
 def get_teams_of_user(user, user_id):
     if user.is_not_super_admin() and user.id != user_id and user.is_not_epm():
@@ -67,10 +69,10 @@ def get_teams_of_user(user, user_id):
     user = base.get_resource_orm(models2.User, user_id)
     user_teams = [t.serialize() for t in user.team]
 
-    return flask.jsonify({'teams': user_teams, '_meta': {'count': len(user_teams)}})
+    return flask.jsonify({"teams": user_teams, "_meta": {"count": len(user_teams)}})
 
 
-@api.route('/teams/<uuid:team_id>/users/<uuid:user_id>', methods=['DELETE'])
+@api.route("/teams/<uuid:team_id>/users/<uuid:user_id>", methods=["DELETE"])
 @decorators.login_required
 def remove_user_from_team(user, team_id, user_id):
 
@@ -86,6 +88,8 @@ def remove_user_from_team(user, team_id, user_id):
         flask.g.session.commit()
     except sa_exc.IntegrityError:
         flask.g.session.rollback()
-        raise dci_exc.DCIException(message="conflict when user from team", status_code=409)
+        raise dci_exc.DCIException(
+            message="conflict when user from team", status_code=409
+        )
 
-    return flask.Response(None, 204, content_type='application/json')
+    return flask.Response(None, 204, content_type="application/json")

@@ -22,8 +22,8 @@ Create Date: 2018-04-05 15:02:04.432587
 """
 
 # revision identifiers, used by Alembic.
-revision = '3ad86da9baab'
-down_revision = '492d4ca8c7df'
+revision = "3ad86da9baab"
+down_revision = "492d4ca8c7df"
 branch_labels = None
 depends_on = None
 
@@ -31,7 +31,7 @@ from alembic import op
 
 
 def upgrade():
-    op.drop_column('remotecis', 'allow_upgrade_job')
+    op.drop_column("remotecis", "allow_upgrade_job")
 
 
 def downgrade():

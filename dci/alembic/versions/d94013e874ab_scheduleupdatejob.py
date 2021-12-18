@@ -22,8 +22,8 @@ Create Date: 2018-03-06 13:40:48.079028
 """
 
 # revision identifiers, used by Alembic.
-revision = 'd94013e874ab'
-down_revision = 'b0436aece81f'
+revision = "d94013e874ab"
+down_revision = "b0436aece81f"
 branch_labels = None
 depends_on = None
 
@@ -33,12 +33,19 @@ from sqlalchemy.dialects import postgresql as pg
 
 
 def upgrade():
-    op.add_column('jobs',
-                  sa.Column('update_previous_job_id', pg.UUID(as_uuid=True),
-                            sa.ForeignKey('jobs.id'),
-                            nullable=True, default=None))
-    op.create_index('jobs_update_previous_job_id_idx', 'jobs',
-                    ['update_previous_job_id'])
+    op.add_column(
+        "jobs",
+        sa.Column(
+            "update_previous_job_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("jobs.id"),
+            nullable=True,
+            default=None,
+        ),
+    )
+    op.create_index(
+        "jobs_update_previous_job_id_idx", "jobs", ["update_previous_job_id"]
+    )
 
 
 def downgrade():

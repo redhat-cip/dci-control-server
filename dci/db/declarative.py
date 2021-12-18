@@ -24,8 +24,8 @@ class Mixin(object):
         def _get_nested_columns():
             _res = {}
             for ic in ignore_columns:
-                if '.' in ic:
-                    k, v = ic.split('.')
+                if "." in ic:
+                    k, v = ic.split(".")
                     if k not in _res:
                         _res[k] = [v]
                     else:
@@ -57,16 +57,16 @@ class Mixin(object):
                 if attr in nested_ignore_columns:
                     _ignore_columns = nested_ignore_columns[attr]
                 _dict[attr] = attr_obj.serialize(ignore_columns=_ignore_columns)
-            elif not attr.startswith('_'):
+            elif not attr.startswith("_"):
                 _dict[attr] = self.__dict__[attr]
         return _dict
 
 
 def handle_pagination(query, args):
-    if args.get('limit'):
-        query = query.limit(args.get('limit', 20))
-    if args.get('offset'):
-        query = query.offset(args.get('offset', 0))
+    if args.get("limit"):
+        query = query.limit(args.get("limit", 20))
+    if args.get("offset"):
+        query = query.offset(args.get("offset", 0))
     return query
 
 
@@ -116,9 +116,13 @@ def handle_args(query, model_object, args):
             else:
                 query = query.filter(m_column == value)
     if args.get("created_after"):
-        query = query.filter(getattr(model_object, "created_at") >= args.get("created_after"))
+        query = query.filter(
+            getattr(model_object, "created_at") >= args.get("created_after")
+        )
     if args.get("updated_after"):
-        query = query.filter(getattr(model_object, "updated_at") >= args.get("updated_after"))
+        query = query.filter(
+            getattr(model_object, "updated_at") >= args.get("updated_after")
+        )
     if args.get("limit"):
         query = query.limit(args.get("limit"))
     if args.get("offset"):

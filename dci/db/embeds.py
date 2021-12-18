@@ -20,108 +20,156 @@ from sqlalchemy.sql import and_
 
 
 def ignore_columns_from_table(table, ignored_columns):
-    return [getattr(table.c, column.name)
-            for column in table.columns
-            if column.name not in ignored_columns]
+    return [
+        getattr(table.c, column.name)
+        for column in table.columns
+        if column.name not in ignored_columns
+    ]
+
 
 # These functions should be called by v1_utils.QueryBuilder
 
 
 # Create necessary aliases
-TEAM = models.TEAMS.alias('team')
-PRODUCT = models.PRODUCTS.alias('product')
-REMOTECI = models.REMOTECIS.alias('remoteci')
-CFILES = models.COMPONENT_FILES.alias('files')
+TEAM = models.TEAMS.alias("team")
+PRODUCT = models.PRODUCTS.alias("product")
+REMOTECI = models.REMOTECIS.alias("remoteci")
+CFILES = models.COMPONENT_FILES.alias("files")
 
-TESTS_RESULTS = models.TESTS_RESULTS.alias('results')
-JOB = models.JOBS.alias('job')
+TESTS_RESULTS = models.TESTS_RESULTS.alias("results")
+JOB = models.JOBS.alias("job")
 
-JOBSTATE = models.JOBSTATES.alias('jobstate')
-JOBSTATE_JOBS = models.JOBS.alias('jobstate.job')
+JOBSTATE = models.JOBSTATES.alias("jobstate")
+JOBSTATE_JOBS = models.JOBS.alias("jobstate.job")
 
-TOPIC = models.TOPICS.alias('topic')
-NEXT_TOPIC = models.TOPICS.alias('next_topic')
+TOPIC = models.TOPICS.alias("topic")
+NEXT_TOPIC = models.TOPICS.alias("next_topic")
 
-JOIN_USERS_TEAMS = models.JOIN_USERS_TEAMS.alias('join_users_teams')  # noqa
+JOIN_USERS_TEAMS = models.JOIN_USERS_TEAMS.alias("join_users_teams")
 
 
 def jobs(root_select=models.JOBS, root_id=None):
     if root_id is None:
         root_id = root_select.c.id
     return {
-        'files': [
-            {'right': models.FILES,
-             'onclause': and_(models.FILES.c.job_id == root_id,
-                              models.FILES.c.state != 'archived'),
-             'isouter': True}],
-        'jobstates': [
-            {'right': models.JOBSTATES,
-             'onclause': models.JOBSTATES.c.job_id == root_id,
-             'isouter': True}],
-        'topic': [
-            {'right': TOPIC,
-             'onclause': and_(root_select.c.topic_id == TOPIC.c.id,
-                              TOPIC.c.state != 'archived')}],
-        'remoteci': [
-            {'right': REMOTECI,
-             'onclause': and_(root_select.c.remoteci_id == REMOTECI.c.id,
-                              REMOTECI.c.state != 'archived')}],
-        'components': [
-            {'right': models.JOIN_JOBS_COMPONENTS,
-             'onclause': models.JOIN_JOBS_COMPONENTS.c.job_id == root_id,  # noqa
-             'isouter': True},
-            {'right': models.COMPONENTS,
-             'onclause': and_(models.COMPONENTS.c.id == models.JOIN_JOBS_COMPONENTS.c.component_id,  # noqa
-                              models.COMPONENTS.c.state != 'archived'),
-             'isouter': True}],
-        'team': [
-            {'right': TEAM,
-             'onclause': and_(root_select.c.team_id == TEAM.c.id,
-                              TEAM.c.state != 'archived')}],
-        'results': [
-            {'right': TESTS_RESULTS,
-             'onclause': TESTS_RESULTS.c.job_id == root_id,
-             'isouter': True}],
-        'issues': [
-            {'right': models.JOIN_JOBS_ISSUES,
-             'onclause': models.JOIN_JOBS_ISSUES.c.job_id == root_id,  # noqa
-             'isouter': True},
-            {'right': models.ISSUES,
-             'onclause': and_(models.ISSUES.c.id == models.JOIN_JOBS_ISSUES.c.issue_id),  # noqa
-             'isouter': True}],
+        "files": [
+            {
+                "right": models.FILES,
+                "onclause": and_(
+                    models.FILES.c.job_id == root_id, models.FILES.c.state != "archived"
+                ),
+                "isouter": True,
+            }
+        ],
+        "jobstates": [
+            {
+                "right": models.JOBSTATES,
+                "onclause": models.JOBSTATES.c.job_id == root_id,
+                "isouter": True,
+            }
+        ],
+        "topic": [
+            {
+                "right": TOPIC,
+                "onclause": and_(
+                    root_select.c.topic_id == TOPIC.c.id, TOPIC.c.state != "archived"
+                ),
+            }
+        ],
+        "remoteci": [
+            {
+                "right": REMOTECI,
+                "onclause": and_(
+                    root_select.c.remoteci_id == REMOTECI.c.id,
+                    REMOTECI.c.state != "archived",
+                ),
+            }
+        ],
+        "components": [
+            {
+                "right": models.JOIN_JOBS_COMPONENTS,
+                "onclause": models.JOIN_JOBS_COMPONENTS.c.job_id == root_id,
+                "isouter": True,
+            },
+            {
+                "right": models.COMPONENTS,
+                "onclause": and_(
+                    models.COMPONENTS.c.id
+                    == models.JOIN_JOBS_COMPONENTS.c.component_id,
+                    models.COMPONENTS.c.state != "archived",
+                ),
+                "isouter": True,
+            },
+        ],
+        "team": [
+            {
+                "right": TEAM,
+                "onclause": and_(
+                    root_select.c.team_id == TEAM.c.id, TEAM.c.state != "archived"
+                ),
+            }
+        ],
+        "results": [
+            {
+                "right": TESTS_RESULTS,
+                "onclause": TESTS_RESULTS.c.job_id == root_id,
+                "isouter": True,
+            }
+        ],
+        "issues": [
+            {
+                "right": models.JOIN_JOBS_ISSUES,
+                "onclause": models.JOIN_JOBS_ISSUES.c.job_id == root_id,
+                "isouter": True,
+            },
+            {
+                "right": models.ISSUES,
+                "onclause": and_(
+                    models.ISSUES.c.id == models.JOIN_JOBS_ISSUES.c.issue_id
+                ),
+                "isouter": True,
+            },
+        ],
     }
 
 
 def remotecis(root_select=models.REMOTECIS, root_id=None):
     return {
-        'team': [
-            {'right': TEAM,
-             'onclause': and_(TEAM.c.id == root_select.c.team_id,
-                              TEAM.c.state != 'archived')}
+        "team": [
+            {
+                "right": TEAM,
+                "onclause": and_(
+                    TEAM.c.id == root_select.c.team_id, TEAM.c.state != "archived"
+                ),
+            }
         ]
     }
 
 
 def files(root_select=models.FILES, root_id=None):
     return {
-        'jobstate': [
-            {'right': JOBSTATE,
-             'onclause': JOBSTATE.c.id == root_select.c.jobstate_id,
-             'isouter': True}
+        "jobstate": [
+            {
+                "right": JOBSTATE,
+                "onclause": JOBSTATE.c.id == root_select.c.jobstate_id,
+                "isouter": True,
+            }
         ],
-        'jobstate.job': [
-            {'right': JOBSTATE_JOBS,
-             'onclause': JOBSTATE.c.job_id == JOBSTATE_JOBS.c.id,
-             'isouter': True}],
-        'job': [
-            {'right': JOB,
-             'onclause': root_select.c.job_id == JOB.c.id,
-             'isouter': True}
+        "jobstate.job": [
+            {
+                "right": JOBSTATE_JOBS,
+                "onclause": JOBSTATE.c.job_id == JOBSTATE_JOBS.c.id,
+                "isouter": True,
+            }
         ],
-        'team': [
-            {'right': TEAM,
-             'onclause': root_select.c.team_id == TEAM.c.id}
-        ]
+        "job": [
+            {
+                "right": JOB,
+                "onclause": root_select.c.job_id == JOB.c.id,
+                "isouter": True,
+            }
+        ],
+        "team": [{"right": TEAM, "onclause": root_select.c.team_id == TEAM.c.id}],
     }
 
 
@@ -129,16 +177,23 @@ def jobstates(root_select=models.JOBSTATES, root_id=None):
     if root_id is None:
         root_id = root_select.c.id
     return {
-        'files': [
-            {'right': models.FILES,
-             'onclause': and_(models.FILES.c.jobstate_id == root_id,
-                              models.FILES.c.state != 'archived'),
-             'isouter': True}],
-        'job': [
-            {'right': JOB,
-             'onclause': root_select.c.job_id == JOB.c.id,
-             'isouter': True}
-        ]
+        "files": [
+            {
+                "right": models.FILES,
+                "onclause": and_(
+                    models.FILES.c.jobstate_id == root_id,
+                    models.FILES.c.state != "archived",
+                ),
+                "isouter": True,
+            }
+        ],
+        "job": [
+            {
+                "right": JOB,
+                "onclause": root_select.c.job_id == JOB.c.id,
+                "isouter": True,
+            }
+        ],
     }
 
 
@@ -146,28 +201,43 @@ def teams(root_select=models.TEAMS, root_id=None):
     if root_id is None:
         root_id = root_select.c.id
     return {
-        'topics': [
-            {'right': models.JOINS_TOPICS_TEAMS,
-             'onclause': models.JOINS_TOPICS_TEAMS.c.team_id == root_id,  # noqa
-             'isouter': True},
-            {'right': models.TOPICS,
-             'onclause': and_(models.TOPICS.c.id == models.JOINS_TOPICS_TEAMS.c.topic_id,  # noqa
-                              models.TOPICS.c.state != 'archived'),
-             'isouter': True}],
-        'remotecis': [
-            {'right': models.REMOTECIS,
-             'onclause': and_(models.REMOTECIS.c.team_id == root_id,
-                              models.REMOTECIS.c.state != 'archived'),
-             'isouter': True}]
+        "topics": [
+            {
+                "right": models.JOINS_TOPICS_TEAMS,
+                "onclause": models.JOINS_TOPICS_TEAMS.c.team_id == root_id,
+                "isouter": True,
+            },
+            {
+                "right": models.TOPICS,
+                "onclause": and_(
+                    models.TOPICS.c.id == models.JOINS_TOPICS_TEAMS.c.topic_id,
+                    models.TOPICS.c.state != "archived",
+                ),
+                "isouter": True,
+            },
+        ],
+        "remotecis": [
+            {
+                "right": models.REMOTECIS,
+                "onclause": and_(
+                    models.REMOTECIS.c.team_id == root_id,
+                    models.REMOTECIS.c.state != "archived",
+                ),
+                "isouter": True,
+            }
+        ],
     }
 
 
 def feeders(root_select=models.FEEDERS, root_id=None):
     return {
-        'team': [
-            {'right': TEAM,
-             'onclause': and_(TEAM.c.id == root_select.c.team_id,
-                              TEAM.c.state != 'archived')}
+        "team": [
+            {
+                "right": TEAM,
+                "onclause": and_(
+                    TEAM.c.id == root_select.c.team_id, TEAM.c.state != "archived"
+                ),
+            }
         ]
     }
 
@@ -176,11 +246,16 @@ def products(root_select=models.PRODUCTS, root_id=None):
     if root_id is None:
         root_id = root_select.c.id
     return {
-        'topics': [
-            {'right': models.TOPICS,
-             'onclause': and_(models.TOPICS.c.product_id == root_id,
-                              models.TOPICS.c.state != 'archived'),
-             'isouter': True}],
+        "topics": [
+            {
+                "right": models.TOPICS,
+                "onclause": and_(
+                    models.TOPICS.c.product_id == root_id,
+                    models.TOPICS.c.state != "archived",
+                ),
+                "isouter": True,
+            }
+        ],
     }
 
 
@@ -188,72 +263,81 @@ def topics(root_select=models.TOPICS, root_id=None):
     if root_id is None:
         root_id = root_select.c.id
     return {
-        'teams': [
-            {'right': models.JOINS_TOPICS_TEAMS,
-             'onclause': models.JOINS_TOPICS_TEAMS.c.topic_id == root_id,  # noqa
-             'isouter': True},
-            {'right': models.TEAMS,
-             'onclause': and_(models.TEAMS.c.id == models.JOINS_TOPICS_TEAMS.c.team_id,  # noqa
-                              models.TEAMS.c.state != 'archived'),
-             'isouter': True}],
-        'product': [
-            {'right': PRODUCT,
-             'onclause': and_(PRODUCT.c.id == root_select.c.product_id,
-                              PRODUCT.c.state != 'archived'),
-             'isouter': True}],
-        'next_topic': [
-            {'right': NEXT_TOPIC,
-             'onclause': and_(root_select.c.next_topic_id == NEXT_TOPIC.c.id,
-                              NEXT_TOPIC.c.state != 'archived'),
-             'isouter': True}],
+        "teams": [
+            {
+                "right": models.JOINS_TOPICS_TEAMS,
+                "onclause": models.JOINS_TOPICS_TEAMS.c.topic_id == root_id,
+                "isouter": True,
+            },
+            {
+                "right": models.TEAMS,
+                "onclause": and_(
+                    models.TEAMS.c.id == models.JOINS_TOPICS_TEAMS.c.team_id,
+                    models.TEAMS.c.state != "archived",
+                ),
+                "isouter": True,
+            },
+        ],
+        "product": [
+            {
+                "right": PRODUCT,
+                "onclause": and_(
+                    PRODUCT.c.id == root_select.c.product_id,
+                    PRODUCT.c.state != "archived",
+                ),
+                "isouter": True,
+            }
+        ],
+        "next_topic": [
+            {
+                "right": NEXT_TOPIC,
+                "onclause": and_(
+                    root_select.c.next_topic_id == NEXT_TOPIC.c.id,
+                    NEXT_TOPIC.c.state != "archived",
+                ),
+                "isouter": True,
+            }
+        ],
     }
 
 
 # associate the name table to the object table
 # used for select clause
 EMBED_STRING_TO_OBJECT = {
-    'jobs': {
-        'files': models.FILES,
-        'topic': TOPIC,
-        'issues': models.ISSUES,
-        'jobstates': models.JOBSTATES,
-        'remoteci': REMOTECI,
-        'components': models.COMPONENTS,
-        'team': TEAM,
-        'results': TESTS_RESULTS,
+    "jobs": {
+        "files": models.FILES,
+        "topic": TOPIC,
+        "issues": models.ISSUES,
+        "jobstates": models.JOBSTATES,
+        "remoteci": REMOTECI,
+        "components": models.COMPONENTS,
+        "team": TEAM,
+        "results": TESTS_RESULTS,
     },
-    'remotecis': {
-        'team': TEAM},
-    'feeders': {
-        'team': TEAM},
-    'files': {
-        'jobstate': JOBSTATE,
-        'jobstate.job': JOBSTATE_JOBS,
-        'job': JOB,
-        'team': TEAM},
-    'jobstates': {
-        'files': models.FILES,
-        'job': JOB
+    "remotecis": {"team": TEAM},
+    "feeders": {"team": TEAM},
+    "files": {
+        "jobstate": JOBSTATE,
+        "jobstate.job": JOBSTATE_JOBS,
+        "job": JOB,
+        "team": TEAM,
     },
-    'products': {
-        'topics': models.TOPICS,
+    "jobstates": {"files": models.FILES, "job": JOB},
+    "products": {
+        "topics": models.TOPICS,
     },
-    'topics': {
-        'teams': models.TEAMS,
-        'product': PRODUCT,
-        'next_topic': NEXT_TOPIC
-    }
+    "topics": {"teams": models.TEAMS, "product": PRODUCT, "next_topic": NEXT_TOPIC},
 }
 
 
 # for each table associate its embed's function handler
 EMBED_JOINS = {
-    'jobs': jobs,
-    'remotecis': remotecis,
-    'feeders': feeders,
-    'files': files,
-    'jobstates': jobstates,
-    'products': products,
-    'teams': teams,
-    'topics': topics
+    "jobs": jobs,
+    "remotecis": remotecis,
+    "feeders": feeders,
+    "files": files,
+    "jobstates": jobstates,
+    "products": products,
+    "teams": teams,
+    "topics": topics,
 }

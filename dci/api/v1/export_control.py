@@ -24,8 +24,10 @@ from sqlalchemy import sql
 
 def is_teams_associated_to_product(team_ids, product_id):
     q_get_product_team = sql.select([models2.JOIN_PRODUCTS_TEAMS]).where(
-        sql.and_(models2.JOIN_PRODUCTS_TEAMS.c.team_id.in_(team_ids),
-                 models2.JOIN_PRODUCTS_TEAMS.c.product_id == product_id)
+        sql.and_(
+            models2.JOIN_PRODUCTS_TEAMS.c.team_id.in_(team_ids),
+            models2.JOIN_PRODUCTS_TEAMS.c.product_id == product_id,
+        )
     )
     result = flask.g.db_conn.execute(q_get_product_team)
     return result.rowcount > 0
@@ -33,8 +35,10 @@ def is_teams_associated_to_product(team_ids, product_id):
 
 def is_teams_associated_to_topic(team_ids, topic_id):
     q_get_topic_team = sql.select([models2.JOINS_TOPICS_TEAMS]).where(
-        sql.and_(models2.JOINS_TOPICS_TEAMS.c.team_id.in_(team_ids),
-                 models2.JOINS_TOPICS_TEAMS.c.topic_id == topic_id)
+        sql.and_(
+            models2.JOINS_TOPICS_TEAMS.c.team_id.in_(team_ids),
+            models2.JOINS_TOPICS_TEAMS.c.topic_id == topic_id,
+        )
     )
     result = flask.g.db_conn.execute(q_get_topic_team)
     return result.rowcount > 0
@@ -57,7 +61,7 @@ def has_access_to_topic(user, topic):
 
 def verify_access_to_topic(user, topic):
     """Verify that the user can access to a topic, raise an unauthorized
-       exception if not."""
+    exception if not."""
     if (
         user.is_not_super_admin()
         and user.is_not_read_only_user()

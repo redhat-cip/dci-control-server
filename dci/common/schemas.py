@@ -143,7 +143,7 @@ args_schema = {
         "where": Properties.key_value_csv,
         "embed": Properties.string,
         "created_after": Properties.isoformat_date,
-        "updated_after": Properties.isoformat_date
+        "updated_after": Properties.isoformat_date,
     },
     "dependencies": {
         "limit": {"required": ["offset"]},
@@ -205,7 +205,7 @@ update_job_properties = {
     "status_reason": Properties.string,
     "configuration": Properties.string,
     "name": Properties.string,
-    "url": Properties.url
+    "url": Properties.url,
 }
 update_job_schema = {"type": "object", "properties": update_job_properties}
 
@@ -276,7 +276,7 @@ update_product_properties = {
     "name": Properties.string,
     "label": Properties.string,
     "description": Properties.string,
-    "state": Properties.enum(valid_resource_states)
+    "state": Properties.enum(valid_resource_states),
 }
 update_product_schema = {"type": "object", "properties": update_product_properties}
 
@@ -440,7 +440,7 @@ create_component_properties = {
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "data": with_default(Properties.json, {}),
     "tags": with_default(Properties.array, []),
-    "released_at": Properties.isoformat_date
+    "released_at": Properties.isoformat_date,
 }
 create_component_schema = {
     "type": "object",
@@ -460,7 +460,7 @@ update_component_properties = {
     "topic_id": Properties.uuid,
     "state": Properties.enum(valid_resource_states),
     "data": Properties.json,
-    "tags": Properties.array
+    "tags": Properties.array,
 }
 update_component_schema = {"type": "object", "properties": update_component_properties}
 
@@ -570,7 +570,7 @@ create_team_properties = {
     "name": Properties.string,
     "country": with_default(Properties.string, None),
     "state": with_default(Properties.enum(valid_resource_states), "active"),
-    "external": with_default(Properties.boolean, False)
+    "external": with_default(Properties.boolean, False),
 }
 create_team_schema = {
     "type": "object",
@@ -583,7 +583,7 @@ update_team_properties = {
     "name": Properties.string,
     "country": allow_none(Properties.string),
     "state": Properties.enum(valid_resource_states),
-    "external": Properties.boolean
+    "external": Properties.boolean,
 }
 update_team_schema = {"type": "object", "properties": update_team_properties}
 

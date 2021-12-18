@@ -35,7 +35,6 @@ from jwt import exceptions as jwt_exc
 
 
 class BaseMechanism(object):
-
     def __init__(self, request):
         self.request = request
         self.identity = None
@@ -49,25 +48,21 @@ class BaseMechanism(object):
 
         q_get_user_teams = (
             sql.select(
-                [
-                    model_cls,
-                    models.TEAMS,
-                    models.JOIN_USERS_TEAMS
-                ],
-                use_labels=True
-            ).select_from(
+                [model_cls, models.TEAMS, models.JOIN_USERS_TEAMS], use_labels=True
+            )
+            .select_from(
                 model_cls.join(
                     models.JOIN_USERS_TEAMS,
-                    models.JOIN_USERS_TEAMS.c.user_id == model_cls.c.id
+                    models.JOIN_USERS_TEAMS.c.user_id == model_cls.c.id,
                 ).outerjoin(
                     models.TEAMS,
-                    (models.JOIN_USERS_TEAMS.c.team_id ==
-                     models.TEAMS.c.id)
+                    (models.JOIN_USERS_TEAMS.c.team_id == models.TEAMS.c.id),
                 )
-            ).where(
+            )
+            .where(
                 sql.and_(
                     model_constraint,
-                    model_cls.c.state == 'active',
+                    model_cls.c.state == "active",
                 )
             )
         )
@@ -78,15 +73,15 @@ class BaseMechanism(object):
 
         user_info = {
             # UUID to str
-            'id': str(_user_teams[0][model_cls.c.id]),
-            'password': _user_teams[0][model_cls.c.password],
-            'name': _user_teams[0][model_cls.c.name],
-            'fullname': _user_teams[0][model_cls.c.fullname],
-            'timezone': _user_teams[0][model_cls.c.timezone],
-            'email': _user_teams[0][model_cls.c.email],
-            'sso_username': _user_teams[0][model_cls.c.sso_username],
-            'etag': _user_teams[0][model_cls.c.etag],
-            'is_user': True
+            "id": str(_user_teams[0][model_cls.c.id]),
+            "password": _user_teams[0][model_cls.c.password],
+            "name": _user_teams[0][model_cls.c.name],
+            "fullname": _user_teams[0][model_cls.c.fullname],
+            "timezone": _user_teams[0][model_cls.c.timezone],
+            "email": _user_teams[0][model_cls.c.email],
+            "sso_username": _user_teams[0][model_cls.c.sso_username],
+            "etag": _user_teams[0][model_cls.c.etag],
+            "is_user": True,
         }
 
         is_super_admin = False
@@ -101,34 +96,33 @@ class BaseMechanism(object):
             if user_team[models.TEAMS.c.id] == flask.g.team_epm_id:
                 is_epm_user = True
             user_teams[user_team[models.TEAMS.c.id]] = {
-                'id': user_team[models.TEAMS.c.id],
-                'name': user_team[models.TEAMS.c.name]}
+                "id": user_team[models.TEAMS.c.id],
+                "name": user_team[models.TEAMS.c.name],
+            }
 
-        user_info['teams'] = user_teams
-        user_info['is_super_admin'] = is_super_admin
-        user_info['is_read_only_user'] = is_read_only_user
-        user_info['is_epm_user'] = is_epm_user
+        user_info["teams"] = user_teams
+        user_info["is_super_admin"] = is_super_admin
+        user_info["is_read_only_user"] = is_read_only_user
+        user_info["is_epm_user"] = is_epm_user
 
         return Identity(user_info)
 
     def check_team_is_active(self, team_id):
-        if self.identity.teams[team_id]['state'] != 'active':
-            name = self.identity.teams[team_id]['team_name']
-            raise dci_exc.DCIException('team %s not active' % name, status_code=412)  # noqa
+        if self.identity.teams[team_id]["state"] != "active":
+            name = self.identity.teams[team_id]["team_name"]
+            raise dci_exc.DCIException("team %s not active" % name, status_code=412)
 
 
 class BasicAuthMechanism(BaseMechanism):
-
     def authenticate(self):
         auth = self.request.authorization
         if not auth:
-            raise dci_exc.DCIException('Authorization header missing',
-                                       status_code=401)
-        user, is_authenticated = \
-            self.get_user_and_check_auth(auth.username, auth.password)
+            raise dci_exc.DCIException("Authorization header missing", status_code=401)
+        user, is_authenticated = self.get_user_and_check_auth(
+            auth.username, auth.password
+        )
         if not is_authenticated:
-            raise dci_exc.DCIException('Invalid user credentials',
-                                       status_code=401)
+            raise dci_exc.DCIException("Invalid user credentials", status_code=401)
         self.identity = user
         return True
 
@@ -137,14 +131,14 @@ class BasicAuthMechanism(BaseMechanism):
         database.
         """
         constraint = sql.or_(
-            models.USERS.c.name == username,
-            models.USERS.c.email == username
+            models.USERS.c.name == username, models.USERS.c.email == username
         )
 
         user = self.identity_from_db(models.USERS, constraint)
         if user is None:
-            raise dci_exc.DCIException('User %s does not exists.' % username,
-                                       status_code=401)
+            raise dci_exc.DCIException(
+                "User %s does not exists." % username, status_code=401
+            )
 
         return user, auth.check_passwords_equal(password, user.password)
 
@@ -230,64 +224,61 @@ class Hmac2Mechanism(HmacMechanism):
 
 
 class OpenIDCAuth(BaseMechanism):
-
     def authenticate(self):
-        auth_header = self.request.headers.get('Authorization').split(' ')
+        auth_header = self.request.headers.get("Authorization").split(" ")
         if len(auth_header) != 2:
             return False
         bearer, token = auth_header
 
         conf = dci_config.CONFIG
         try:
-            decoded_token = auth.decode_jwt(token,
-                                            conf['SSO_PUBLIC_KEY'],
-                                            conf['SSO_CLIENT_ID'])
+            decoded_token = auth.decode_jwt(
+                token, conf["SSO_PUBLIC_KEY"], conf["SSO_CLIENT_ID"]
+            )
         except (jwt_exc.DecodeError, ValueError):
             decoded_token = sso.decode_token_with_latest_public_key(token)
         except jwt_exc.ExpiredSignatureError:
-            raise dci_exc.DCIException('JWT token expired, please refresh.',
-                                       status_code=401)
+            raise dci_exc.DCIException(
+                "JWT token expired, please refresh.", status_code=401
+            )
 
         team_id = None
-        ro_group = conf['SSO_READ_ONLY_GROUP']
-        realm_access = decoded_token['realm_access']
-        if 'roles' in realm_access and ro_group in realm_access['roles']:
+        ro_group = conf["SSO_READ_ONLY_GROUP"]
+        realm_access = decoded_token["realm_access"]
+        if "roles" in realm_access and ro_group in realm_access["roles"]:
             team_id = flask.g.team_redhat_id
 
         user_info = self._get_user_info(decoded_token)
         try:
             self.identity = self._get_or_create_user(user_info, team_id)
         except sa_exc.IntegrityError:
-            raise dci_exc.DCICreationConflict(models.USERS.name, 'username')
+            raise dci_exc.DCICreationConflict(models.USERS.name, "username")
         return True
 
     @staticmethod
     def _get_user_info(token):
         return {
-            'name': token.get('username'),
-            'fullname': token.get('username'),
-            'sso_username': token.get('username'),
-            'email': token.get('email'),
-            'timezone': 'UTC',
+            "name": token.get("username"),
+            "fullname": token.get("username"),
+            "sso_username": token.get("username"),
+            "email": token.get("email"),
+            "timezone": "UTC",
         }
 
     def _get_or_create_user(self, user_info, team_id=None):
         constraint = sql.or_(
-            models.USERS.c.sso_username == user_info['sso_username'],
-            models.USERS.c.email == user_info['sso_username'],
-            models.USERS.c.email == user_info['email']
+            models.USERS.c.sso_username == user_info["sso_username"],
+            models.USERS.c.email == user_info["sso_username"],
+            models.USERS.c.email == user_info["email"],
         )
-        identity = self.identity_from_db(models.USERS,
-                                         constraint)
+        identity = self.identity_from_db(models.USERS, constraint)
         if identity is None:
-            u_id = flask.g.db_conn.execute(models.USERS.insert().values(**user_info)).inserted_primary_key[0]  # noqa
+            u_id = flask.g.db_conn.execute(
+                models.USERS.insert().values(**user_info)
+            ).inserted_primary_key[0]
             flask.g.db_conn.execute(
-                models.JOIN_USERS_TEAMS.insert().values(
-                    user_id=u_id,
-                    team_id=team_id
-                )
+                models.JOIN_USERS_TEAMS.insert().values(user_id=u_id, team_id=team_id)
             )
-            identity = self.identity_from_db(models.USERS,
-                                             constraint)
+            identity = self.identity_from_db(models.USERS, constraint)
             return identity
         return identity

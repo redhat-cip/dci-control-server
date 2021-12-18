@@ -295,7 +295,7 @@ def test_check_json_is_valid_check_positive_string_integer_type():
     }
     try:
         check_json_is_valid(schema, {"positive_string_integer": "1"})
-    except DCIException as e:  # noqa
+    except DCIException:
         pytest.fail("positive_string_integer() is invalid")
 
     with pytest.raises(DCIException) as e:

@@ -22,8 +22,8 @@ Create Date: 2018-09-12 11:56:54.602128
 """
 
 # revision identifiers, used by Alembic.
-revision = '406a6d793f29'
-down_revision = 'b71a4139c14f'
+revision = "406a6d793f29"
+down_revision = "b71a4139c14f"
 branch_labels = None
 depends_on = None
 
@@ -32,9 +32,16 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('topics',
-                  sa.Column('export_control', sa.BOOLEAN, nullable=False,
-                            default=False, server_default='false'))
+    op.add_column(
+        "topics",
+        sa.Column(
+            "export_control",
+            sa.BOOLEAN,
+            nullable=False,
+            default=False,
+            server_default="false",
+        ),
+    )
 
 
 def downgrade():

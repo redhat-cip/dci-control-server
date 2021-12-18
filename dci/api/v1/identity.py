@@ -21,10 +21,7 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci import auth
 from dci.common import exceptions as dci_exc
-from dci.common.schemas import (
-    clean_json_with_schema,
-    update_current_user_schema
-)
+from dci.common.schemas import clean_json_with_schema, update_current_user_schema
 from dci.common import utils
 from dci.db import models2
 from dci import decorators
@@ -41,57 +38,62 @@ def _encode_dict(_dict):
     return res
 
 
-@api.route('/identity', methods=['GET'])
+@api.route("/identity", methods=["GET"])
 @decorators.login_required
 def get_identity(identity):
     """Returns some information about the currently authenticated identity"""
     return flask.Response(
         json.dumps(
             {
-                'identity': {
-                    'id': identity.id,
-                    'etag': identity.etag,
-                    'name': identity.name,
-                    'fullname': identity.fullname,
-                    'email': identity.email,
-                    'timezone': identity.timezone,
-                    'teams': _encode_dict(identity.teams)
+                "identity": {
+                    "id": identity.id,
+                    "etag": identity.etag,
+                    "name": identity.name,
+                    "fullname": identity.fullname,
+                    "email": identity.email,
+                    "timezone": identity.timezone,
+                    "teams": _encode_dict(identity.teams),
                 }
             }
-        ), 200,
-        headers={'ETag': identity.etag},
-        content_type='application/json'
+        ),
+        200,
+        headers={"ETag": identity.etag},
+        content_type="application/json",
     )
 
 
-@api.route('/identity', methods=['PUT'])
+@api.route("/identity", methods=["PUT"])
 @decorators.login_required
 def put_identity(user):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = clean_json_with_schema(update_current_user_schema, flask.request.json)
 
     if user.is_not_read_only_user():
-        current_password = values['current_password']
+        current_password = values["current_password"]
         encrypted_password = user.password
-        if not auth.check_passwords_equal(current_password,
-                                          encrypted_password):
-            raise dci_exc.DCIException('current_password invalid')
+        if not auth.check_passwords_equal(current_password, encrypted_password):
+            raise dci_exc.DCIException("current_password invalid")
 
     new_values = {}
-    new_password = values.get('new_password')
+    new_password = values.get("new_password")
     if new_password:
         encrypted_password = auth.hash_password(new_password)
-        new_values['password'] = encrypted_password
+        new_values["password"] = encrypted_password
 
     etag = utils.gen_etag()
-    new_values.update({'etag': etag,
-                       'fullname': values.get('fullname') or user.fullname,
-                       'email': values.get('email') or user.email,
-                       'timezone': values.get('timezone') or user.timezone})
+    new_values.update(
+        {
+            "etag": etag,
+            "fullname": values.get("fullname") or user.fullname,
+            "email": values.get("email") or user.email,
+            "timezone": values.get("timezone") or user.timezone,
+        }
+    )
 
     try:
-        flask.g.session.query(models2.User).\
-            filter(sql.and_(models2.User.id == user.id, models2.User.etag == if_match_etag)).update(new_values)
+        flask.g.session.query(models2.User).filter(
+            sql.and_(models2.User.id == user.id, models2.User.etag == if_match_etag)
+        ).update(new_values)
         flask.g.session.commit()
     except Exception as e:
         flask.g.session.rollback()
@@ -101,6 +103,8 @@ def put_identity(user):
     user_serialized = user.serialize()
 
     return flask.Response(
-        json.dumps({'user': user_serialized}), 200, headers={'ETag': etag},
-        content_type='application/json'
+        json.dumps({"user": user_serialized}),
+        200,
+        headers={"ETag": etag},
+        content_type="application/json",
     )

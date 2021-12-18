@@ -22,8 +22,8 @@ Create Date: 2020-08-19 17:28:27.973246
 """
 
 # revision identifiers, used by Alembic.
-revision = '2a66d59901a'
-down_revision = 'c5bbe7b63a'
+revision = "2a66d59901a"
+down_revision = "c5bbe7b63a"
 branch_labels = None
 depends_on = None
 
@@ -32,13 +32,21 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.create_index(index_name='active_components_name_topic_id_team_id_null_key',
-                    table_name='components',
-                    columns=['name', 'topic_id', 'type'],
-                    unique=True,
-                    postgresql_where=sa.sql.text("components.state = 'active' AND components.team_id is NULL"))
+    op.create_index(
+        index_name="active_components_name_topic_id_team_id_null_key",
+        table_name="components",
+        columns=["name", "topic_id", "type"],
+        unique=True,
+        postgresql_where=sa.sql.text(
+            "components.state = 'active' AND components.team_id is NULL"
+        ),
+    )
 
-    op.create_unique_constraint('name_topic_id_type_team_id_unique', 'components', ['name', 'topic_id', 'type', 'team_id'])
+    op.create_unique_constraint(
+        "name_topic_id_type_team_id_unique",
+        "components",
+        ["name", "topic_id", "type", "team_id"],
+    )
 
 
 def downgrade():

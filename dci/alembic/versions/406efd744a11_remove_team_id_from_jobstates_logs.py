@@ -22,8 +22,8 @@ Create Date: 2019-01-29 15:34:53.763827
 """
 
 # revision identifiers, used by Alembic.
-revision = '406efd744a11'
-down_revision = '1a86396beec0'
+revision = "406efd744a11"
+down_revision = "1a86396beec0"
 branch_labels = None
 depends_on = None
 
@@ -31,13 +31,13 @@ from alembic import op
 
 
 def upgrade():
-    op.drop_index('jobstates_team_id_idx', table_name='jobstates')
-    op.drop_column('jobstates', 'team_id')
+    op.drop_index("jobstates_team_id_idx", table_name="jobstates")
+    op.drop_column("jobstates", "team_id")
 
-    op.drop_index('logs_team_id_idx', table_name='logs')
-    op.drop_column('logs', 'team_id')
+    op.drop_index("logs_team_id_idx", table_name="logs")
+    op.drop_column("logs", "team_id")
 
-    op.drop_column('feeders', 'role_id')
+    op.drop_column("feeders", "role_id")
 
 
 def downgrade():

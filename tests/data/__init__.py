@@ -32,7 +32,7 @@ JUNIT = """<testsuite errors="1" failures="1" name="pytest" skipped="1" tests="6
         <system-err>STDERR</system-err>
     </testcase>
 </testsuite>
-"""  # noqa
+"""
 
 jobtest_one = """
 <testsuite errors="0" failures="0" name="Kikoolol1" tests="3" time="127.0">

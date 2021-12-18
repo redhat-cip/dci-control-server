@@ -28,11 +28,7 @@ from dci.api.v1 import transformations
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
-from dci.common.schemas import (
-    check_json_is_valid,
-    jobstate_schema,
-    check_and_get_args
-)
+from dci.common.schemas import check_json_is_valid, jobstate_schema, check_and_get_args
 from dci.common import utils
 from dci.db import models
 from dci.db import models2
@@ -42,18 +38,13 @@ import sqlalchemy.orm as sa_orm
 # associate column names with the corresponding SA Column object
 _TABLE = models.JOBSTATES
 _JS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_EMBED_MANY = {
-    'team': False,
-    'job': False,
-    'files': True
-}
+_EMBED_MANY = {"team": False, "job": False, "files": True}
 
 
 def insert_jobstate(user, values):
-    values.update({
-        'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat()
-    })
+    values.update(
+        {"id": utils.gen_uuid(), "created_at": datetime.datetime.utcnow().isoformat()}
+    )
 
     query = _TABLE.insert().values(**values)
 
@@ -83,25 +74,24 @@ def serialize_job(user, job):
     return job
 
 
-@api.route('/jobstates', methods=['POST'])
+@api.route("/jobstates", methods=["POST"])
 @decorators.login_required
 def create_jobstates(user):
     values = flask.request.json
     check_json_is_valid(jobstate_schema, values)
-    values.update({
-        'id': utils.gen_uuid(),
-        'created_at': datetime.datetime.utcnow().isoformat()
-    })
+    values.update(
+        {"id": utils.gen_uuid(), "created_at": datetime.datetime.utcnow().isoformat()}
+    )
 
     # if one create a 'failed' jobstates and the current state is either
     # 'run' or 'pre-run' then set the job to 'error' state
-    job_id = values.get('job_id')
+    job_id = values.get("job_id")
     job = base.get_resource_orm(models2.Job, job_id)
     job_serialized = job.serialize()
-    status = values.get('status')
-    if status in ['failure', 'error']:
-        if job.status in ['new', 'pre-run']:
-            values['status'] = 'error'
+    status = values.get("status")
+    if status in ["failure", "error"]:
+        if job.status in ["new", "pre-run"]:
+            values["status"] = "error"
 
     created_js = base.create_resource_orm(models2.Jobstate, values)
 
@@ -119,41 +109,39 @@ def create_jobstates(user):
     # send notification in case of final jobstate status
     if status in models2.FINAL_STATUSES:
         job = serialize_job(user, job_serialized)
-        jobs_events.create_event(
-            job['id'],
-            values['status'],
-            job['topic_id']
-        )
+        jobs_events.create_event(job["id"], values["status"], job["topic_id"])
         notifications.dispatcher(job)
 
-    result = json.dumps({'jobstate': created_js})
-    return flask.Response(result, 201, content_type='application/json')
+    result = json.dumps({"jobstate": created_js})
+    return flask.Response(result, 201, content_type="application/json")
 
 
 def get_all_jobstates(user, job_id):
-    """Get all jobstates.
-    """
+    """Get all jobstates."""
     args = check_and_get_args(flask.request.args.to_dict())
     job = base.get_resource_orm(models2.Job, job_id)
-    if (user.is_not_super_admin() and user.is_not_read_only_user()
-        and user.is_not_epm()):
+    if user.is_not_super_admin() and user.is_not_read_only_user() and user.is_not_epm():
         if job.team_id not in user.teams_ids:
             raise dci_exc.Unauthorized()
 
     query = flask.g.session.query(models2.Jobstate)
-    query = query.filter(models2.Jobstate.job_id == job_id).options(sa_orm.joinedload('files'))
+    query = query.filter(models2.Jobstate.job_id == job_id).options(
+        sa_orm.joinedload("files")
+    )
     query = declarative.handle_args(query, models2.Jobstate, args)
 
     nb_jobstates = query.count()
     jobstates = [js.serialize() for js in query.all()]
 
-    return flask.jsonify({'jobstates': jobstates, '_meta': {'count': nb_jobstates}})
+    return flask.jsonify({"jobstates": jobstates, "_meta": {"count": nb_jobstates}})
 
 
-@api.route('/jobstates/<uuid:js_id>', methods=['GET'])
+@api.route("/jobstates/<uuid:js_id>", methods=["GET"])
 @decorators.login_required
 def get_jobstate_by_id(user, js_id):
-    js = base.get_resource_orm(models2.Jobstate, js_id, options=[sa_orm.joinedload('files')])
+    js = base.get_resource_orm(
+        models2.Jobstate, js_id, options=[sa_orm.joinedload("files")]
+    )
     return flask.Response(
         json.dumps({"jobstate": js.serialize()}),
         200,
@@ -161,7 +149,7 @@ def get_jobstate_by_id(user, js_id):
     )
 
 
-@api.route('/jobstates/<uuid:js_id>', methods=['DELETE'])
+@api.route("/jobstates/<uuid:js_id>", methods=["DELETE"])
 @decorators.login_required
 def delete_jobstate_by_id(user, js_id):
     jobstate = base.get_resource_orm(models2.Jobstate, js_id)
@@ -177,4 +165,4 @@ def delete_jobstate_by_id(user, js_id):
         flask.g.session.rollback()
         raise dci_exc.DCIException(message=str(e), status_code=409)
 
-    return flask.Response(None, 204, content_type='application/json')
+    return flask.Response(None, 204, content_type="application/json")

@@ -22,8 +22,8 @@ Create Date: 2021-05-20 14:53:28.478095
 """
 
 # revision identifiers, used by Alembic.
-revision = '27d3441e7641'
-down_revision = '4509202d08ea'
+revision = "27d3441e7641"
+down_revision = "4509202d08ea"
 branch_labels = None
 depends_on = None
 
@@ -32,10 +32,10 @@ import sqlalchemy as sa
 
 
 def upgrade():
-    op.add_column('jobs', sa.Column('status_reason', sa.Text))
-    op.add_column('jobs', sa.Column('configuration', sa.Text))
-    op.add_column('jobs', sa.Column('name', sa.Text))
-    op.add_column('jobs', sa.Column('url', sa.Text))
+    op.add_column("jobs", sa.Column("status_reason", sa.Text))
+    op.add_column("jobs", sa.Column("configuration", sa.Text))
+    op.add_column("jobs", sa.Column("name", sa.Text))
+    op.add_column("jobs", sa.Column("url", sa.Text))
 
 
 def downgrade():

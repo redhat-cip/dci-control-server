@@ -29,7 +29,7 @@ def build_file_path(root, middle, file_id):
 
 
 def md5Checksum(filePath):
-    with open(filePath, 'rb') as fh:
+    with open(filePath, "rb") as fh:
         m = hashlib.md5()
         while True:
             data = fh.read(8192)

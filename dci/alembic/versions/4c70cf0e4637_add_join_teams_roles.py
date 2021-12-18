@@ -22,8 +22,8 @@ Create Date: 2018-12-07 15:27:31.181051
 """
 
 # revision identifiers, used by Alembic.
-revision = '4c70cf0e4637'
-down_revision = '2850e054d9f0'
+revision = "4c70cf0e4637"
+down_revision = "2850e054d9f0"
 branch_labels = None
 depends_on = None
 
@@ -34,19 +34,25 @@ from sqlalchemy.dialects import postgresql as pg
 
 def upgrade():
     op.create_table(
-        'users_teams_roles',
-        sa.Column('user_id', pg.UUID(as_uuid=True),
-                  sa.ForeignKey('users.id', ondelete='CASCADE'),
-                  nullable=False),
-        sa.Column('team_id', pg.UUID(as_uuid=True),
-                  sa.ForeignKey('teams.id', ondelete='CASCADE'),
-                  nullable=True),
-        sa.Column('role', sa.String(255), default='USER', nullable=False),
-        sa.UniqueConstraint('user_id', 'team_id', name='users_teams_roles_key')
+        "users_teams_roles",
+        sa.Column(
+            "user_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("users.id", ondelete="CASCADE"),
+            nullable=False,
+        ),
+        sa.Column(
+            "team_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("teams.id", ondelete="CASCADE"),
+            nullable=True,
+        ),
+        sa.Column("role", sa.String(255), default="USER", nullable=False),
+        sa.UniqueConstraint("user_id", "team_id", name="users_teams_roles_key"),
     )
 
-    op.alter_column('users', 'role_id', nullable=True)
-    op.alter_column('remotecis', 'role_id', nullable=True)
+    op.alter_column("users", "role_id", nullable=True)
+    op.alter_column("remotecis", "role_id", nullable=True)
 
 
 def downgrade():

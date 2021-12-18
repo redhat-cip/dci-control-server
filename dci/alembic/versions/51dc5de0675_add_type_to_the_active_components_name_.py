@@ -22,8 +22,8 @@ Create Date: 2019-04-02 18:29:21.409236
 """
 
 # revision identifiers, used by Alembic.
-revision = '51dc5de0675'
-down_revision = '406efd744a11'
+revision = "51dc5de0675"
+down_revision = "406efd744a11"
 branch_labels = None
 depends_on = None
 
@@ -32,22 +32,26 @@ from sqlalchemy import text
 
 
 def upgrade():
-    op.drop_index(index_name='active_components_name_topic_id_key',
-                  table_name='components')
-    op.create_index(index_name='active_components_name_topic_id_key',
-                    table_name='components',
-                    columns=['name', 'topic_id', 'type'],
-                    unique=True,
-                    postgresql_where=text("components.state = 'active'")
-                    )
+    op.drop_index(
+        index_name="active_components_name_topic_id_key", table_name="components"
+    )
+    op.create_index(
+        index_name="active_components_name_topic_id_key",
+        table_name="components",
+        columns=["name", "topic_id", "type"],
+        unique=True,
+        postgresql_where=text("components.state = 'active'"),
+    )
 
 
 def downgrade():
-    op.drop_index(index_name='active_components_name_topic_id_key',
-                  table_name='components')
-    op.create_index(index_name='active_components_name_topic_id_key',
-                    table_name='components',
-                    columns=['name', 'topic_id'],
-                    unique=True,
-                    postgresql_where=text("components.state = 'active'")
-                    )
+    op.drop_index(
+        index_name="active_components_name_topic_id_key", table_name="components"
+    )
+    op.create_index(
+        index_name="active_components_name_topic_id_key",
+        table_name="components",
+        columns=["name", "topic_id"],
+        unique=True,
+        postgresql_where=text("components.state = 'active'"),
+    )

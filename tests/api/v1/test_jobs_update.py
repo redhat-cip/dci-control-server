@@ -18,25 +18,26 @@
 def test_update_jobs(admin, remoteci_context, job_user_id, topic_user_id):
     # test update schedule latest components
     data = {
-        'name': 'pname',
-        'type': 'type_1',
-        'url': 'http://example.com/',
-        'topic_id': topic_user_id,
-        'state': 'active'}
-    c1 = admin.post('/api/v1/components', data=data).data['component']['id']
-    data.update({'type': 'type_2', 'name': 'pname1'})
-    c2 = admin.post('/api/v1/components', data=data).data['component']['id']
-    data.update({'type': 'type_3', 'name': 'pname2'})
-    c3 = admin.post('/api/v1/components', data=data).data['component']['id']
+        "name": "pname",
+        "type": "type_1",
+        "url": "http://example.com/",
+        "topic_id": topic_user_id,
+        "state": "active",
+    }
+    c1 = admin.post("/api/v1/components", data=data).data["component"]["id"]
+    data.update({"type": "type_2", "name": "pname1"})
+    c2 = admin.post("/api/v1/components", data=data).data["component"]["id"]
+    data.update({"type": "type_3", "name": "pname2"})
+    c3 = admin.post("/api/v1/components", data=data).data["component"]["id"]
     latest_components = {c1, c2, c3}
 
-    r = remoteci_context.post('/api/v1/jobs/%s/update' % job_user_id)
+    r = remoteci_context.post("/api/v1/jobs/%s/update" % job_user_id)
     assert r.status_code == 201
-    update_job = r.data['job']
+    update_job = r.data["job"]
 
-    assert update_job['update_previous_job_id'] == job_user_id
-    assert update_job['topic_id'] == topic_user_id
+    assert update_job["update_previous_job_id"] == job_user_id
+    assert update_job["topic_id"] == topic_user_id
 
-    update_cmpts = admin.get('/api/v1/jobs/%s/components' % update_job['id'])
-    update_cmpts = {cmpt['id'] for cmpt in update_cmpts.data['components']}
+    update_cmpts = admin.get("/api/v1/jobs/%s/components" % update_job["id"])
+    update_cmpts = {cmpt["id"] for cmpt in update_cmpts.data["components"]}
     assert latest_components == update_cmpts

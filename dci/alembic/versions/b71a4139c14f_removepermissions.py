@@ -22,8 +22,8 @@ Create Date: 2018-09-19 13:07:20.467918
 """
 
 # revision identifiers, used by Alembic.
-revision = 'b71a4139c14f'
-down_revision = '46fa9eb61235'
+revision = "b71a4139c14f"
+down_revision = "46fa9eb61235"
 branch_labels = None
 depends_on = None
 
@@ -31,8 +31,8 @@ from alembic import op
 
 
 def upgrade():
-    op.drop_table('roles_permissions')
-    op.drop_table('permissions')
+    op.drop_table("roles_permissions")
+    op.drop_table("permissions")
 
 
 def downgrade():

@@ -21,16 +21,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
-api = flask.Blueprint('api_v1', __name__)
+api = flask.Blueprint("api_v1", __name__)
 
 
-@api.route('/', strict_slashes=False)
+@api.route("/", strict_slashes=False)
 def index():
-    logger.info('control server is ok...')
-    return flask.Response(json.dumps({'_status': 'OK',
-                                      'message': 'Distributed CI.'}),
-                          status=200,
-                          content_type='application/json')
+    logger.info("control server is ok...")
+    return flask.Response(
+        json.dumps({"_status": "OK", "message": "Distributed CI."}),
+        status=200,
+        content_type="application/json",
+    )
 
 
 import dci.api.v1.analytics  # noqa

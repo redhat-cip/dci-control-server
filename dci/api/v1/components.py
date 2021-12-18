@@ -34,7 +34,7 @@ from dci.common.schemas import (
     clean_json_with_schema,
     create_component_schema,
     update_component_schema,
-    check_and_get_args
+    check_and_get_args,
 )
 from dci.common import utils
 from dci.db import models
@@ -68,7 +68,7 @@ def _verify_component_access_and_role(user, component):
         raise dci_exc.Unauthorized()
 
 
-@api.route('/components', methods=['POST'])
+@api.route("/components", methods=["POST"])
 @decorators.login_required
 def create_components(user):
     values = flask.request.json
@@ -76,7 +76,7 @@ def create_components(user):
     values.update(v1_utils.common_values_dict())
 
     if "team_id" in values:
-        if user.is_not_in_team(values['team_id']):
+        if user.is_not_in_team(values["team_id"]):
             raise dci_exc.Unauthorized()
     else:
         if user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
@@ -94,7 +94,7 @@ def create_components(user):
     )
 
 
-@api.route('/components/<uuid:c_id>', methods=['PUT'])
+@api.route("/components/<uuid:c_id>", methods=["PUT"])
 @decorators.login_required
 def update_components(user, c_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -109,10 +109,10 @@ def update_components(user, c_id):
     component = base.get_resource_orm(models2.Component, c_id)
 
     return flask.Response(
-        json.dumps({'component': component.serialize()}),
+        json.dumps({"component": component.serialize()}),
         200,
-        headers={'ETag': component.etag},
-        content_type='application/json'
+        headers={"ETag": component.etag},
+        content_type="application/json",
     )
 
 
@@ -123,16 +123,19 @@ def get_all_components(user, topic_id):
     args = check_and_get_args(flask.request.args.to_dict())
 
     query = flask.g.session.query(models2.Component)
-    query = query.filter(sql.and_(
-        models2.Component.topic_id == topic_id,
-        models2.Component.state != 'archived'))
+    query = query.filter(
+        sql.and_(
+            models2.Component.topic_id == topic_id,
+            models2.Component.state != "archived",
+        )
+    )
 
-    if (user.is_not_super_admin() and user.is_not_feeder() and
-        user.is_not_epm()):
+    if user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
         query = query.filter(
             sql.or_(
                 models2.Component.team_id.in_(user.teams_ids),
-                models2.Component.team_id == None)  # noqa
+                models2.Component.team_id == None,  # noqa
+            )
         )
 
     query = declarative.handle_args(query, models2.Component, args)
@@ -140,13 +143,17 @@ def get_all_components(user, topic_id):
 
     components = [component.serialize() for component in query.all()]
 
-    return flask.jsonify({'components': components, '_meta': {'count': nb_components}})
+    return flask.jsonify({"components": components, "_meta": {"count": nb_components}})
 
 
-@api.route('/components/<uuid:c_id>', methods=['GET'])
+@api.route("/components/<uuid:c_id>", methods=["GET"])
 @decorators.login_required
 def get_component_by_id(user, c_id):
-    component = base.get_resource_orm(models2.Component, c_id, options=[sa_orm.joinedload('files'), sa_orm.joinedload('jobs')])
+    component = base.get_resource_orm(
+        models2.Component,
+        c_id,
+        options=[sa_orm.joinedload("files"), sa_orm.joinedload("jobs")],
+    )
     _verify_component_and_topic_access(user, component)
 
     return flask.Response(
@@ -157,7 +164,7 @@ def get_component_by_id(user, c_id):
     )
 
 
-@api.route('/components/<uuid:c_id>', methods=['DELETE'])
+@api.route("/components/<uuid:c_id>", methods=["DELETE"])
 @decorators.login_required
 def delete_component_by_id(user, c_id):
 
@@ -169,7 +176,7 @@ def delete_component_by_id(user, c_id):
     return flask.Response(None, 204, content_type="application/json")
 
 
-@api.route('/components/<uuid:c_id>/files', methods=['GET'])
+@api.route("/components/<uuid:c_id>/files", methods=["GET"])
 @decorators.login_required
 def list_components_files(user, c_id):
     component = base.get_resource_orm(models2.Component, c_id)
@@ -178,8 +185,11 @@ def list_components_files(user, c_id):
 
     query = flask.g.session.query(models2.Componentfile)
     query = query.filter(
-        sql.and_(models2.Componentfile.component_id == c_id,
-                 models2.Componentfile.state != "archived"))
+        sql.and_(
+            models2.Componentfile.component_id == c_id,
+            models2.Componentfile.state != "archived",
+        )
+    )
 
     nb_componentfiles = query.count()
 
@@ -187,11 +197,12 @@ def list_components_files(user, c_id):
 
     componentfiles = [cf.serialize() for cf in query.all()]
 
-    return flask.jsonify({'component_files': componentfiles,
-                          '_meta': {'count': nb_componentfiles}})
+    return flask.jsonify(
+        {"component_files": componentfiles, "_meta": {"count": nb_componentfiles}}
+    )
 
 
-@api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['GET'])
+@api.route("/components/<uuid:c_id>/files/<uuid:f_id>", methods=["GET"])
 @decorators.login_required
 def get_component_file_by_id(user, c_id, f_id):
     component = base.get_resource_orm(models2.Component, c_id)
@@ -199,18 +210,17 @@ def get_component_file_by_id(user, c_id, f_id):
 
     componentfile = base.get_resource_orm(models2.Componentfile, f_id)
 
-    res = flask.jsonify({'component_file': componentfile.serialize()})
+    res = flask.jsonify({"component_file": componentfile.serialize()})
     return res
 
 
-@api.route('/components/<uuid:c_id>/files/<uuid:f_id>/content',
-           methods=['GET'])
+@api.route("/components/<uuid:c_id>/files/<uuid:f_id>/content", methods=["GET"])
 @decorators.login_required
 def download_component_file(user, c_id, f_id):
     component = base.get_resource_orm(models2.Component, c_id)
     _verify_component_and_topic_access(user, component)
 
-    store = dci_config.get_store('components')
+    store = dci_config.get_store("components")
 
     componentfile = base.get_resource_orm(models2.Componentfile, f_id)
     file_path = files_utils.build_file_path(component.topic_id, c_id, f_id)
@@ -222,7 +232,7 @@ def download_component_file(user, c_id, f_id):
     return flask.send_file(file_descriptor, mimetype=componentfile.mime)
 
 
-@api.route('/components/<uuid:c_id>/files', methods=['POST'])
+@api.route("/components/<uuid:c_id>/files", methods=["POST"])
 @decorators.login_required
 def upload_component_file(user, c_id):
     component = base.get_resource_orm(models2.Component, c_id)
@@ -231,35 +241,35 @@ def upload_component_file(user, c_id):
     if str(component.topic_id) not in v1_utils.user_topic_ids(user):
         raise dci_exc.Unauthorized()
 
-    store = dci_config.get_store('components')
+    store = dci_config.get_store("components")
 
     file_id = utils.gen_uuid()
-    file_path = files_utils.build_file_path(component.topic_id,
-                                            c_id,
-                                            file_id)
+    file_path = files_utils.build_file_path(component.topic_id, c_id, file_id)
     store.upload(file_path, flask.request.data)
     s_file = store.head(file_path)
 
-    values = dict.fromkeys(['md5', 'mime', 'component_id', 'name'])
+    values = dict.fromkeys(["md5", "mime", "component_id", "name"])
 
-    values.update({
-        'id': file_id,
-        'component_id': c_id,
-        'name': file_id,
-        'created_at': datetime.datetime.utcnow().isoformat(),
-        'etag': s_file['etag'],
-        'md5': s_file['etag'],
-        'mime': s_file['content-type'],
-        'size': s_file['content-length']
-    })
+    values.update(
+        {
+            "id": file_id,
+            "component_id": c_id,
+            "name": file_id,
+            "created_at": datetime.datetime.utcnow().isoformat(),
+            "etag": s_file["etag"],
+            "md5": s_file["etag"],
+            "mime": s_file["content-type"],
+            "size": s_file["content-length"],
+        }
+    )
 
     componentfile = base.create_resource_orm(models2.Componentfile, values)
 
-    result = json.dumps({'component_file': componentfile})
-    return flask.Response(result, 201, content_type='application/json')
+    result = json.dumps({"component_file": componentfile})
+    return flask.Response(result, 201, content_type="application/json")
 
 
-@api.route('/components/<uuid:c_id>/files/<uuid:f_id>', methods=['DELETE'])
+@api.route("/components/<uuid:c_id>/files/<uuid:f_id>", methods=["DELETE"])
 @decorators.login_required
 def delete_component_file(user, c_id, f_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
@@ -274,11 +284,10 @@ def delete_component_file(user, c_id, f_id):
 def get_component_types_from_topic(topic_id, db_conn=None):
     """Returns the component types of a topic."""
     db_conn = db_conn or flask.g.db_conn
-    query = sql.select([models.TOPICS]).\
-        where(models.TOPICS.c.id == topic_id)
+    query = sql.select([models.TOPICS]).where(models.TOPICS.c.id == topic_id)
     topic = db_conn.execute(query).fetchone()
     topic = dict(topic)
-    return topic['component_types']
+    return topic["component_types"]
 
 
 def get_last_components_by_type(component_types, topic_id, session=None):
@@ -288,55 +297,73 @@ def get_last_components_by_type(component_types, topic_id, session=None):
     _components = []
     for ct in component_types:
         try:
-            component = session.query(models2.Component).filter(
-                sql.and_(models2.Component.type == ct,
-                         models2.Component.topic_id == topic_id,
-                         models2.Component.state == 'active')
-            ).order_by(
-                models2.Component.created_at.desc()
-            ).first()
+            component = (
+                session.query(models2.Component)
+                .filter(
+                    sql.and_(
+                        models2.Component.type == ct,
+                        models2.Component.topic_id == topic_id,
+                        models2.Component.state == "active",
+                    )
+                )
+                .order_by(models2.Component.created_at.desc())
+                .first()
+            )
         except sa_orm.exc.NoResultFound:
             raise dci_exc.DCIException(
-                message="component of type %s not found or not exported" % ct, status_code=404
+                message="component of type %s not found or not exported" % ct,
+                status_code=404,
             )
         if component is None:
             msg = 'Component of type "%s" not found or not exported.' % ct
             raise dci_exc.DCIException(msg, status_code=412)
 
         if str(component.id) in _components_ids:
-            msg = ('Component types %s malformed: type %s duplicated.' %
-                   (component_types, ct))
+            msg = "Component types %s malformed: type %s duplicated." % (
+                component_types,
+                ct,
+            )
             raise dci_exc.DCIException(msg, status_code=412)
         _components.append(component)
         _components_ids.append(str(component.id))
     return _components
 
 
-def verify_and_get_components_ids(topic_id, components_ids, component_types,
-                                  session=None):
+def verify_and_get_components_ids(
+    topic_id, components_ids, component_types, session=None
+):
     """Process some verifications of the provided components ids."""
     session = session or flask.g.session
     if len(components_ids) != len(component_types):
-        msg = 'The number of component ids does not match the number ' \
-              'of component types %s' % component_types
+        msg = (
+            "The number of component ids does not match the number "
+            "of component types %s" % component_types
+        )
         raise dci_exc.DCIException(msg, status_code=412)
 
     # get the components from their ids
     schedule_component_types = set()
     for c_id in components_ids:
         try:
-            component = session.query(models2.Component).filter(
-                sql.and_(models2.Component.id == c_id,
-                         models2.Component.topic_id == topic_id,
-                         models2.Component.state == 'active')
-            ).one()
+            component = (
+                session.query(models2.Component)
+                .filter(
+                    sql.and_(
+                        models2.Component.id == c_id,
+                        models2.Component.topic_id == topic_id,
+                        models2.Component.state == "active",
+                    )
+                )
+                .one()
+            )
         except sa_orm.exc.NoResultFound:
             raise dci_exc.DCIException(
-                message="component id %s not found or not exported" % c_id, status_code=404
+                message="component id %s not found or not exported" % c_id,
+                status_code=404,
             )
 
         if component.type in schedule_component_types:
-            msg = 'Component types malformed: type %s duplicated.' % component.type
+            msg = "Component types malformed: type %s duplicated." % component.type
             raise dci_exc.DCIException(msg, status_code=412)
         schedule_component_types.add(component.type)
     return components_ids
@@ -344,47 +371,47 @@ def verify_and_get_components_ids(topic_id, components_ids, component_types,
 
 def get_schedule_components_ids(topic_id, component_types, components_ids):
     if components_ids == []:
-        return [c.id for c in get_last_components_by_type(
-            component_types, topic_id)]
-    return verify_and_get_components_ids(topic_id, components_ids,
-                                         component_types)
+        return [c.id for c in get_last_components_by_type(component_types, topic_id)]
+    return verify_and_get_components_ids(topic_id, components_ids, component_types)
 
 
-@api.route('/components/<c_id>/issues', methods=['GET'])
+@api.route("/components/<c_id>/issues", methods=["GET"])
 @decorators.login_required
 def retrieve_issues_from_component(user, c_id):
     """Retrieve all issues attached to a component."""
     return issues.get_issues_by_resource(c_id, _TABLE)
 
 
-@api.route('/components/<c_id>/issues', methods=['POST'])
+@api.route("/components/<c_id>/issues", methods=["POST"])
 @decorators.login_required
 def attach_issue_to_component(user, c_id):
     """Attach an issue to a component."""
     return issues.attach_issue(c_id, _TABLE, user.id)
 
 
-@api.route('/components/<c_id>/issues/<i_id>', methods=['DELETE'])
+@api.route("/components/<c_id>/issues/<i_id>", methods=["DELETE"])
 @decorators.login_required
 def unattach_issue_from_component(user, c_id, i_id):
     """Unattach an issue to a component."""
     return issues.unattach_issue(c_id, i_id, _TABLE)
 
 
-@api.route('/components/purge', methods=['GET'])
+@api.route("/components/purge", methods=["GET"])
 @decorators.login_required
 def get_to_purge_archived_components(user):
     return base.get_resources_to_purge_orm(user, models2.Component)
 
 
-@api.route('/components/purge', methods=['POST'])
+@api.route("/components/purge", methods=["POST"])
 @decorators.login_required
 def purge_archived_components(user):
 
     # get all archived components
-    archived_components = base.get_resources_to_purge_orm(user, models2.Component).json['components']
+    archived_components = base.get_resources_to_purge_orm(user, models2.Component).json[
+        "components"
+    ]
 
-    store = dci_config.get_store('components')
+    store = dci_config.get_store("components")
 
     # for each component delete it and all the component_files associated
     # from within a transaction
@@ -392,21 +419,29 @@ def purge_archived_components(user):
     # rollback the transaction, otherwise commit.
     for cmpt in archived_components:
         get_cmpt_files = flask.g.session.query(models2.Componentfile)
-        get_cmpt_files = get_cmpt_files.filter(models2.Componentfile.component_id == cmpt['id'])
+        get_cmpt_files = get_cmpt_files.filter(
+            models2.Componentfile.component_id == cmpt["id"]
+        )
         cmpt_files = get_cmpt_files.all()
         for cmpt_file in cmpt_files:
-            file_path = files_utils.build_file_path(cmpt['topic_id'],
-                                                    cmpt['id'],
-                                                    cmpt_file.id)
+            file_path = files_utils.build_file_path(
+                cmpt["topic_id"], cmpt["id"], cmpt_file.id
+            )
             try:
                 store.delete(file_path)
-                flask.g.session.query(models2.Componentfile).filter(models2.Componentfile.id == cmpt_file.id).delete()
+                flask.g.session.query(models2.Componentfile).filter(
+                    models2.Componentfile.id == cmpt_file.id
+                ).delete()
                 flask.g.session.commit()
             except Exception as e:
-                logger.error('Error while removing component file %s, message: %s'
-                             % (file_path, str(e)))
+                logger.error(
+                    "Error while removing component file %s, message: %s"
+                    % (file_path, str(e))
+                )
                 flask.g.session.rollback()
                 raise dci_exc.DCIException(str(e))
-        flask.g.session.query(models2.Component).filter(models2.Component.id == cmpt['id']).delete()
+        flask.g.session.query(models2.Component).filter(
+            models2.Component.id == cmpt["id"]
+        ).delete()
         flask.g.session.commit()
-    return flask.Response(None, 204, content_type='application/json')
+    return flask.Response(None, 204, content_type="application/json")

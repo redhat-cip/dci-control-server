@@ -22,8 +22,8 @@ Create Date: 2018-04-26 15:58:41.676961
 """
 
 # revision identifiers, used by Alembic.
-revision = '114108caa80f'
-down_revision = '3cdd5a268c45'
+revision = "114108caa80f"
+down_revision = "3cdd5a268c45"
 branch_labels = None
 depends_on = None
 
@@ -36,18 +36,21 @@ from sqlalchemy.dialects import postgresql as pg
 
 def upgrade():
 
-    op.drop_table('files_events')
-    op.execute('DROP TYPE files_actions')
+    op.drop_table("files_events")
+    op.execute("DROP TYPE files_actions")
     op.create_table(
-        'jobs_events',
-        sa.Column('id', sa.Integer, primary_key=True,
-                  autoincrement=True),
-        sa.Column('created_at', sa.DateTime(),
-                  default=datetime.datetime.utcnow, nullable=False),
-        sa.Column('job_id', pg.UUID(as_uuid=True), nullable=False),
-        sa.Column('topic_id', pg.UUID(as_uuid=True), nullable=False),
-        sa.Column('status', models.FINAL_STATUSES_ENUM),
-        sa.Index('jobs_events_job_id_idx', 'job_id')
+        "jobs_events",
+        sa.Column("id", sa.Integer, primary_key=True, autoincrement=True),
+        sa.Column(
+            "created_at",
+            sa.DateTime(),
+            default=datetime.datetime.utcnow,
+            nullable=False,
+        ),
+        sa.Column("job_id", pg.UUID(as_uuid=True), nullable=False),
+        sa.Column("topic_id", pg.UUID(as_uuid=True), nullable=False),
+        sa.Column("status", models.FINAL_STATUSES_ENUM),
+        sa.Index("jobs_events_job_id_idx", "job_id"),
     )
 
 

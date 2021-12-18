@@ -21,11 +21,16 @@ from requests.exceptions import ConnectionError
 
 
 @mock.patch("dci.api.v1.analytics.requests.get")
-def test_elasticsearch_ressource_not_found(mock_requests, admin, remoteci_id, topic_user_id):
+def test_elasticsearch_ressource_not_found(
+    mock_requests, admin, remoteci_id, topic_user_id
+):
     mock_404 = mock.MagicMock()
     mock_404.status_code = 404
     mock_requests.return_value = mock_404
-    res = admin.get('/api/v1/analytics/tasks_duration_cumulated?remoteci_id=%s&topic_id=%s' % (remoteci_id, topic_user_id))
+    res = admin.get(
+        "/api/v1/analytics/tasks_duration_cumulated?remoteci_id=%s&topic_id=%s"
+        % (remoteci_id, topic_user_id)
+    )
     assert res.status_code == 404
 
 
@@ -35,12 +40,20 @@ def test_elasticsearch_error(mock_requests, admin, remoteci_id, topic_user_id):
     mock_error.status_code = 400
     mock_error.text = "error"
     mock_requests.return_value = mock_error
-    res = admin.get('/api/v1/analytics/tasks_duration_cumulated?remoteci_id=%s&topic_id=%s' % (remoteci_id, topic_user_id))
+    res = admin.get(
+        "/api/v1/analytics/tasks_duration_cumulated?remoteci_id=%s&topic_id=%s"
+        % (remoteci_id, topic_user_id)
+    )
     assert res.status_code == 400
 
 
 @mock.patch("dci.api.v1.analytics.requests.get")
-def test_elasticsearch_connection_error(mock_requests, admin, remoteci_id, topic_user_id):
+def test_elasticsearch_connection_error(
+    mock_requests, admin, remoteci_id, topic_user_id
+):
     mock_requests.side_effect = ConnectionError()
-    res = admin.get('/api/v1/analytics/tasks_duration_cumulated?remoteci_id=%s&topic_id=%s' % (remoteci_id, topic_user_id))
+    res = admin.get(
+        "/api/v1/analytics/tasks_duration_cumulated?remoteci_id=%s&topic_id=%s"
+        % (remoteci_id, topic_user_id)
+    )
     assert res.status_code == 503

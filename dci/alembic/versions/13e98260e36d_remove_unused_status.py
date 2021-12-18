@@ -22,8 +22,8 @@ Create Date: 2018-04-06 20:24:53.843454
 """
 
 # revision identifiers, used by Alembic.
-revision = '13e98260e36d'
-down_revision = '3ad86da9baab'
+revision = "13e98260e36d"
+down_revision = "3ad86da9baab"
 branch_labels = None
 depends_on = None
 
@@ -31,12 +31,22 @@ from alembic import op
 
 
 def upgrade():
-    op.execute("UPDATE jobs SET status='failure' WHERE status='deployment-failure' or status='product-failure'")  # noqa
-    op.execute("UPDATE jobstates SET status='failure' WHERE status='deployment-failure' or status='product-failure'")  # noqa
+    op.execute(
+        "UPDATE jobs SET status='failure' WHERE status='deployment-failure' or status='product-failure'"
+    )
+    op.execute(
+        "UPDATE jobstates SET status='failure' WHERE status='deployment-failure' or status='product-failure'"
+    )
     op.execute("ALTER TYPE statuses RENAME TO statuses_old")
-    op.execute("CREATE TYPE statuses AS ENUM('new', 'pre-run', 'running', 'post-run', 'success', 'failure', 'killed')")  # noqa
-    op.execute("ALTER TABLE jobs ALTER COLUMN status TYPE statuses USING status::text::statuses")  # noqa
-    op.execute("ALTER TABLE jobstates ALTER COLUMN status TYPE statuses USING status::text::statuses")  # noqa
+    op.execute(
+        "CREATE TYPE statuses AS ENUM('new', 'pre-run', 'running', 'post-run', 'success', 'failure', 'killed')"
+    )
+    op.execute(
+        "ALTER TABLE jobs ALTER COLUMN status TYPE statuses USING status::text::statuses"
+    )
+    op.execute(
+        "ALTER TABLE jobstates ALTER COLUMN status TYPE statuses USING status::text::statuses"
+    )
     op.execute("DROP TYPE statuses_old")
 
 

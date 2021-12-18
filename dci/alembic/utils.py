@@ -24,7 +24,7 @@ from dci import alembic as dci_alembic
 
 def generate_conf():
     dci_alembic_path = path.dirname(path.abspath(dci_alembic.__file__))
-    alembic_cfg_path = path.join(dci_alembic_path, 'alembic.ini')
+    alembic_cfg_path = path.join(dci_alembic_path, "alembic.ini")
 
     return config.Config(alembic_cfg_path)
 
@@ -33,4 +33,4 @@ def sync():
     # then, load the Alembic configuration and generate the
     # version table if its the first run. Upgrading to the most
     # recent rev
-    command.upgrade(generate_conf(), 'head')
+    command.upgrade(generate_conf(), "head")

@@ -22,8 +22,8 @@ Create Date: 2018-03-20 00:48:16.985829
 """
 
 # revision identifiers, used by Alembic.
-revision = '3750c0221184'
-down_revision = 'd94013e874ab'
+revision = "3750c0221184"
+down_revision = "d94013e874ab"
 branch_labels = None
 depends_on = None
 
@@ -40,27 +40,42 @@ def upgrade():
     db_conn = op.get_bind()
     metadata = sa.MetaData()
     ROLES = sa.Table(
-        'roles', metadata,
-        sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
-                  default=utils.gen_uuid),
-        sa.Column('created_at', sa.DateTime(),
-                  default=datetime.datetime.utcnow, nullable=False),
-        sa.Column('updated_at', sa.DateTime(),
-                  onupdate=datetime.datetime.utcnow,
-                  default=datetime.datetime.utcnow, nullable=False),
-        sa.Column('etag', sa.String(40), nullable=False,
-                  default=utils.gen_etag, onupdate=utils.gen_etag),
-        sa.Column('name', sa.String(255), nullable=False),
-        sa.Column('label', sa.String(255), nullable=False),
-        sa.Column('description', sa.Text),
-        sa.UniqueConstraint('label', name='roles_label_key'),
-        sa.Column('state', models.STATES, default='active')
+        "roles",
+        metadata,
+        sa.Column(
+            "id", pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid
+        ),
+        sa.Column(
+            "created_at",
+            sa.DateTime(),
+            default=datetime.datetime.utcnow,
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(),
+            onupdate=datetime.datetime.utcnow,
+            default=datetime.datetime.utcnow,
+            nullable=False,
+        ),
+        sa.Column(
+            "etag",
+            sa.String(40),
+            nullable=False,
+            default=utils.gen_etag,
+            onupdate=utils.gen_etag,
+        ),
+        sa.Column("name", sa.String(255), nullable=False),
+        sa.Column("label", sa.String(255), nullable=False),
+        sa.Column("description", sa.Text),
+        sa.UniqueConstraint("label", name="roles_label_key"),
+        sa.Column("state", models.STATES, default="active"),
     )
 
     read_only_user_role = {
-        'name': 'Read only user',
-        'label': 'READ_ONLY_USER',
-        'description': 'User with RO access'
+        "name": "Read only user",
+        "label": "READ_ONLY_USER",
+        "description": "User with RO access",
     }
 
     query = ROLES.insert().values(**read_only_user_role)

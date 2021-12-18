@@ -22,8 +22,8 @@ Create Date: 2017-08-01 11:00:54.851361
 """
 
 # revision identifiers, used by Alembic.
-revision = '19dd8a44afdf'
-down_revision = '8e1349eb050b'
+revision = "19dd8a44afdf"
+down_revision = "8e1349eb050b"
 branch_labels = None
 depends_on = None
 
@@ -35,33 +35,50 @@ from sqlalchemy.dialects import postgresql as pg
 
 from dci.common import utils
 
-RESOURCE_STATES = ['active', 'inactive', 'archived']
-STATES = sa.Enum(*RESOURCE_STATES, name='states')
+RESOURCE_STATES = ["active", "inactive", "archived"]
+STATES = sa.Enum(*RESOURCE_STATES, name="states")
 
 
 def upgrade():
-    states = pg.ENUM('active', 'inactive', 'archived',
-                     name='states', create_type=False)
+    states = pg.ENUM("active", "inactive", "archived", name="states", create_type=False)
 
     op.create_table(
-        'fingerprints',
-        sa.Column('id', pg.UUID(as_uuid=True), primary_key=True,
-                  default=utils.gen_uuid),
-        sa.Column('name', sa.String(255), nullable=False),
-        sa.Column('created_at', sa.DateTime(),
-                  default=datetime.datetime.utcnow, nullable=False),
-        sa.Column('updated_at', sa.DateTime(),
-                  onupdate=datetime.datetime.utcnow,
-                  default=datetime.datetime.utcnow, nullable=False),
-        sa.Column('etag', sa.String(40), nullable=False,
-                  default=utils.gen_etag, onupdate=utils.gen_etag),
-        sa.Column('topic_id', pg.UUID(as_uuid=True),
-                  sa.ForeignKey('topics.id', ondelete='CASCADE'),
-                  nullable=False, primary_key=True),
-        sa.Column('fingerprint', sa_utils.JSONType, nullable=False),
-        sa.Column('actions', sa_utils.JSONType, nullable=False),
-        sa.Column('description', sa.String(255), nullable=False),
-        sa.Column('state', states, default='active')
+        "fingerprints",
+        sa.Column(
+            "id", pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid
+        ),
+        sa.Column("name", sa.String(255), nullable=False),
+        sa.Column(
+            "created_at",
+            sa.DateTime(),
+            default=datetime.datetime.utcnow,
+            nullable=False,
+        ),
+        sa.Column(
+            "updated_at",
+            sa.DateTime(),
+            onupdate=datetime.datetime.utcnow,
+            default=datetime.datetime.utcnow,
+            nullable=False,
+        ),
+        sa.Column(
+            "etag",
+            sa.String(40),
+            nullable=False,
+            default=utils.gen_etag,
+            onupdate=utils.gen_etag,
+        ),
+        sa.Column(
+            "topic_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("topics.id", ondelete="CASCADE"),
+            nullable=False,
+            primary_key=True,
+        ),
+        sa.Column("fingerprint", sa_utils.JSONType, nullable=False),
+        sa.Column("actions", sa_utils.JSONType, nullable=False),
+        sa.Column("description", sa.String(255), nullable=False),
+        sa.Column("state", states, default="active"),
     )
 
 

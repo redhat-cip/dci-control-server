@@ -18,13 +18,13 @@ def test_build_umb_messages():
                     "id": "3b59723c-4033-ba46-8df2-d93fdad1af8b",
                     "name": "hwcert-1584013618",
                     "type": "hwcert",
-                    "url": "http://hwcert-server.khw2.lab.eng.bos.redhat.com/packages/devel/RHEL8",  # noqa
+                    "url": "http://hwcert-server.khw2.lab.eng.bos.redhat.com/packages/devel/RHEL8",
                 },
                 {
                     "id": "b7c82f18-d2ac-ba46-b909-a7bb472f5ba9",
                     "name": "RHEL-8.3.0-20200312.n.0",
                     "type": "Compose",
-                    "url": "http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.3.0-20200312.n.0",  # noqa
+                    "url": "http://download-node-02.eng.bos.redhat.com/rhel-8/nightly/RHEL-8/RHEL-8.3.0-20200312.n.0",
                 },
             ],
             "results": [{"name": "beaker-results"}],
@@ -202,7 +202,7 @@ def test_cki_message():
                 {
                     "name": "RHEL-8.2.0-20200404.0",
                     "tags": ["kernel:4.18.0-240.3.el8"],
-                    "url": "http://download-node-02.eng.bos.redhat.com/rhel-8/rel-eng/RHEL-8/RHEL-8.2.0-20200404.0",  # noqa
+                    "url": "http://download-node-02.eng.bos.redhat.com/rhel-8/rel-eng/RHEL-8/RHEL-8.2.0-20200404.0",
                     "type": "Compose",
                     "created_at": datetime.datetime(2020, 10, 20, 7, 56, 17, 93452),
                     "title": None,

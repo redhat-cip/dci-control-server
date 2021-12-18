@@ -22,8 +22,8 @@ Create Date: 2019-07-29 10:51:27.152354
 """
 
 # revision identifiers, used by Alembic.
-revision = '5ad9b5342acf'
-down_revision = '7a7edb42a22'
+revision = "5ad9b5342acf"
+down_revision = "7a7edb42a22"
 branch_labels = None
 depends_on = None
 
@@ -31,11 +31,11 @@ from alembic import op
 
 
 def upgrade():
-    op.drop_index('jobs_rconfiguration_id_idx', table_name='jobs')
-    op.drop_constraint(u'jobs_rconfiguration_id_fkey', 'jobs', type_='foreignkey')
-    op.drop_column('jobs', 'rconfiguration_id')
-    op.drop_table('remotecis_rconfigurations')
-    op.drop_table('rconfigurations')
+    op.drop_index("jobs_rconfiguration_id_idx", table_name="jobs")
+    op.drop_constraint(u"jobs_rconfiguration_id_fkey", "jobs", type_="foreignkey")
+    op.drop_column("jobs", "rconfiguration_id")
+    op.drop_table("remotecis_rconfigurations")
+    op.drop_table("rconfigurations")
 
 
 def downgrade():

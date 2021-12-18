@@ -22,8 +22,8 @@ Create Date: 2019-05-31 19:12:57.166953
 """
 
 # revision identifiers, used by Alembic.
-revision = '236e3b2c2a3d'
-down_revision = '4e45b2030162'
+revision = "236e3b2c2a3d"
+down_revision = "4e45b2030162"
 branch_labels = None
 depends_on = None
 
@@ -34,13 +34,21 @@ from sqlalchemy.dialects import postgresql as pg
 
 def upgrade():
     op.create_table(
-        'products_teams',
-        sa.Column('product_id', pg.UUID(as_uuid=True),
-                  sa.ForeignKey('products.id', ondelete='CASCADE'),
-                  nullable=False, primary_key=True),
-        sa.Column('team_id', pg.UUID(as_uuid=True),
-                  sa.ForeignKey('teams.id', ondelete='CASCADE'),
-                  nullable=False, primary_key=True),
+        "products_teams",
+        sa.Column(
+            "product_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("products.id", ondelete="CASCADE"),
+            nullable=False,
+            primary_key=True,
+        ),
+        sa.Column(
+            "team_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("teams.id", ondelete="CASCADE"),
+            nullable=False,
+            primary_key=True,
+        ),
     )
 
 

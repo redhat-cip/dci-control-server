@@ -35,7 +35,7 @@ from dci.common.schemas import (
     upgrade_job_schema,
     schedule_job_schema,
     add_component_schema,
-    check_and_get_args
+    check_and_get_args,
 )
 from dci.common import utils
 from dci.db import embeds
@@ -48,21 +48,21 @@ from dci.api.v1 import jobstates
 from dci import dci_config
 
 
-_FILES_FOLDER = dci_config.CONFIG['FILES_UPLOAD_FOLDER']
+_FILES_FOLDER = dci_config.CONFIG["FILES_UPLOAD_FOLDER"]
 _TABLE = models.JOBS
 _VALID_EMBED = embeds.jobs()
 # associate column names with the corresponding SA Column object
 _JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 _EMBED_MANY = {
-    'files': True,
-    'topic': False,
-    'components': True,
-    'issues': True,
-    'jobstates': True,
-    'remoteci': False,
-    'team': False,
-    'results': True,
-    'tags': True
+    "files": True,
+    "topic": False,
+    "components": True,
+    "issues": True,
+    "jobstates": True,
+    "remoteci": False,
+    "team": False,
+    "results": True,
+    "tags": True,
 }
 
 
@@ -70,36 +70,38 @@ def get_utc_now():
     return datetime.utcnow()
 
 
-@api.route('/jobs', methods=['POST'])
+@api.route("/jobs", methods=["POST"])
 @decorators.login_required
 def create_jobs(user):
     values = flask.request.json
     check_json_is_valid(create_job_schema, values)
     values.update(v1_utils.common_values_dict())
 
-    components_ids = values.pop('components')
+    components_ids = values.pop("components")
 
     if user.is_not_remoteci():
-        raise dci_exc.DCIException('Only remoteci can create job')
+        raise dci_exc.DCIException("Only remoteci can create job")
 
-    topic_id = values.get('topic_id')
+    topic_id = values.get("topic_id")
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
     export_control.verify_access_to_topic(user, topic)
-    previous_job_id = values.get('previous_job_id')
+    previous_job_id = values.get("previous_job_id")
     if previous_job_id:
         v1_utils.verify_existence_and_get(previous_job_id, _TABLE)
 
-    values.update({
-        'status': 'new',
-        'remoteci_id': user.id,
-        'topic_id': topic_id,
-        'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
-        'client_version': flask.request.environ.get('HTTP_CLIENT_VERSION'),
-        'previous_job_id': previous_job_id,
-        'team_id': user.teams_ids[0],
-        'product_id': topic['product_id'],
-        'duration': 0
-    })
+    values.update(
+        {
+            "status": "new",
+            "remoteci_id": user.id,
+            "topic_id": topic_id,
+            "user_agent": flask.request.environ.get("HTTP_USER_AGENT"),
+            "client_version": flask.request.environ.get("HTTP_CLIENT_VERSION"),
+            "previous_job_id": previous_job_id,
+            "team_id": user.teams_ids[0],
+            "product_id": topic["product_id"],
+            "duration": 0,
+        }
+    )
 
     # create the job and feed the jobs_components table
     with flask.g.db_conn.begin():
@@ -109,15 +111,20 @@ def create_jobs(user):
         jobs_components_to_insert = []
         for cmpt_id in components_ids:
             v1_utils.verify_existence_and_get(cmpt_id, models.COMPONENTS)
-            jobs_components_to_insert.append({'job_id': values['id'],
-                                              'component_id': cmpt_id})
+            jobs_components_to_insert.append(
+                {"job_id": values["id"], "component_id": cmpt_id}
+            )
         if jobs_components_to_insert:
-            flask.g.db_conn.execute(models.JOIN_JOBS_COMPONENTS.insert(),
-                                    jobs_components_to_insert)
+            flask.g.db_conn.execute(
+                models.JOIN_JOBS_COMPONENTS.insert(), jobs_components_to_insert
+            )
 
-    return flask.Response(json.dumps({'job': values}), 201,
-                          headers={'ETag': values['etag']},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({"job": values}),
+        201,
+        headers={"ETag": values["etag"]},
+        content_type="application/json",
+    )
 
 
 def _build_job(product_id, topic_id, remoteci, components_ids, values):
@@ -125,13 +132,12 @@ def _build_job(product_id, topic_id, remoteci, components_ids, values):
     # get components of topic
     p_component_types = components.get_component_types_from_topic(topic_id)
     p_schedule_components_ids = components.get_schedule_components_ids(
-        topic_id, p_component_types, components_ids)
+        topic_id, p_component_types, components_ids
+    )
 
-    values.update({
-        'product_id': product_id,
-        'topic_id': topic_id,
-        'team_id': remoteci['team_id']
-    })
+    values.update(
+        {"product_id": product_id, "topic_id": topic_id, "team_id": remoteci["team_id"]}
+    )
 
     with flask.g.db_conn.begin():
         # create the job
@@ -140,7 +146,7 @@ def _build_job(product_id, topic_id, remoteci, components_ids, values):
         if len(p_schedule_components_ids) > 0:
             # Adds the components to the jobs using join_jobs_components
             job_components = [
-                {'job_id': values['id'], 'component_id': sci}
+                {"job_id": values["id"], "component_id": sci}
                 for sci in p_schedule_components_ids
             ]
 
@@ -153,22 +159,20 @@ def _build_job(product_id, topic_id, remoteci, components_ids, values):
 
 def _get_job(user, job_id, embed=None):
     # build the query thanks to the QueryBuilder class
-    args = {'embed': embed}
+    args = {"embed": embed}
     query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS)
 
-    if (user.is_not_super_admin() and user.is_not_read_only_user()
-        and user.is_not_epm()):
+    if user.is_not_super_admin() and user.is_not_read_only_user() and user.is_not_epm():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     query.add_extra_condition(_TABLE.c.id == job_id)
-    query.add_extra_condition(_TABLE.c.state != 'archived')
+    query.add_extra_condition(_TABLE.c.state != "archived")
 
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
+    rows = v1_utils.format_result(rows, _TABLE.name, args["embed"], _EMBED_MANY)
     if len(rows) != 1:
-        raise dci_exc.DCINotFound('Job', job_id)
+        raise dci_exc.DCINotFound("Job", job_id)
     job = rows[0]
     return job, nb_rows
 
@@ -185,7 +189,7 @@ def kill_existing_jobs(remoteci_id, db_conn=None):
     db_conn.execute(kill_query)
 
 
-@api.route('/jobs/schedule', methods=['POST'])
+@api.route("/jobs/schedule", methods=["POST"])
 @decorators.login_required
 def schedule_jobs(user):
     """Dispatch jobs to remotecis.
@@ -198,31 +202,30 @@ def schedule_jobs(user):
     """
     values = flask.request.json
     check_json_is_valid(schedule_job_schema, values)
-    values.update({
-        'id': utils.gen_uuid(),
-        'created_at': get_utc_now().isoformat(),
-        'updated_at': get_utc_now().isoformat(),
-        'etag': utils.gen_etag(),
-        'status': 'new',
-        'remoteci_id': user.id,
-        'duration': 0,
-        'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
-        'client_version': flask.request.environ.get(
-            'HTTP_CLIENT_VERSION'
-        ),
-    })
-    topic_id = values.pop('topic_id')
-    dry_run = values.pop('dry_run')
+    values.update(
+        {
+            "id": utils.gen_uuid(),
+            "created_at": get_utc_now().isoformat(),
+            "updated_at": get_utc_now().isoformat(),
+            "etag": utils.gen_etag(),
+            "status": "new",
+            "remoteci_id": user.id,
+            "duration": 0,
+            "user_agent": flask.request.environ.get("HTTP_USER_AGENT"),
+            "client_version": flask.request.environ.get("HTTP_CLIENT_VERSION"),
+        }
+    )
+    topic_id = values.pop("topic_id")
+    dry_run = values.pop("dry_run")
     if dry_run:
         component_types = components.get_component_types_from_topic(topic_id)
-        _components = components.get_last_components_by_type(
-            component_types,
-            topic_id
-        )
+        _components = components.get_last_components_by_type(component_types, topic_id)
         return flask.Response(
-            json.dumps({'components': [c.serialize() for c in _components], 'job': None}),
+            json.dumps(
+                {"components": [c.serialize() for c in _components], "job": None}
+            ),
             201,
-            content_type='application/json'
+            content_type="application/json",
         )
 
     previous_job_id = values["previous_job_id"]
@@ -231,137 +234,139 @@ def schedule_jobs(user):
 
     # check remoteci
     remoteci = v1_utils.verify_existence_and_get(user.id, models.REMOTECIS)
-    if remoteci['state'] != 'active':
-        message = 'RemoteCI "%s" is disabled.' % remoteci['id']
+    if remoteci["state"] != "active":
+        message = 'RemoteCI "%s" is disabled.' % remoteci["id"]
         raise dci_exc.DCIException(message, status_code=412)
 
     # check primary topic
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
-    product_id = topic['product_id']
-    if topic['state'] != 'active':
-        msg = 'Topic %s:%s not active.' % (topic_id, topic['name'])
+    product_id = topic["product_id"]
+    if topic["state"] != "active":
+        msg = "Topic %s:%s not active." % (topic_id, topic["name"])
         raise dci_exc.DCIException(msg, status_code=412)
     export_control.verify_access_to_topic(user, topic)
 
-    kill_existing_jobs(remoteci['id'])
+    kill_existing_jobs(remoteci["id"])
 
-    components_ids = values.pop('components_ids')
+    components_ids = values.pop("components_ids")
     values = _build_job(product_id, topic_id, remoteci, components_ids, values)
 
-    return flask.Response(json.dumps({'job': values}), 201,
-                          headers={'ETag': values['etag']},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({"job": values}),
+        201,
+        headers={"ETag": values["etag"]},
+        content_type="application/json",
+    )
 
 
-@api.route('/jobs/<uuid:job_id>/update', methods=['POST'])
+@api.route("/jobs/<uuid:job_id>/update", methods=["POST"])
 @decorators.login_required
 def create_new_update_job_from_an_existing_job(user, job_id):
     """Create a new job in the same topic as the job_id provided and
     associate the latest components of this topic."""
     previous_job_id = job_id
     values = {
-        'id': utils.gen_uuid(),
-        'created_at': get_utc_now().isoformat(),
-        'updated_at': get_utc_now().isoformat(),
-        'etag': utils.gen_etag(),
-        'previous_job_id': previous_job_id,
-        'update_previous_job_id': previous_job_id,
-        'status': 'new'
+        "id": utils.gen_uuid(),
+        "created_at": get_utc_now().isoformat(),
+        "updated_at": get_utc_now().isoformat(),
+        "etag": utils.gen_etag(),
+        "previous_job_id": previous_job_id,
+        "update_previous_job_id": previous_job_id,
+        "status": "new",
     }
 
-    previous_job = v1_utils.verify_existence_and_get(
-        previous_job_id,
-        models.JOBS
-    )
+    previous_job = v1_utils.verify_existence_and_get(previous_job_id, models.JOBS)
 
-    if user.is_not_in_team(previous_job['team_id']) and user.is_not_epm():
+    if user.is_not_in_team(previous_job["team_id"]) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     # get the remoteci
-    remoteci_id = str(previous_job['remoteci_id'])
-    remoteci = v1_utils.verify_existence_and_get(remoteci_id,
-                                                 models.REMOTECIS)
-    values.update({'remoteci_id': remoteci_id})
+    remoteci_id = str(previous_job["remoteci_id"])
+    remoteci = v1_utils.verify_existence_and_get(remoteci_id, models.REMOTECIS)
+    values.update({"remoteci_id": remoteci_id})
 
     # get the associated topic
-    topic_id = str(previous_job['topic_id'])
+    topic_id = str(previous_job["topic_id"])
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
-    product_id = topic['product_id']
+    product_id = topic["product_id"]
     v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
 
-    values.update({
-        'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
-        'client_version': flask.request.environ.get(
-            'HTTP_CLIENT_VERSION'
-        ),
-    })
+    values.update(
+        {
+            "user_agent": flask.request.environ.get("HTTP_USER_AGENT"),
+            "client_version": flask.request.environ.get("HTTP_CLIENT_VERSION"),
+        }
+    )
 
     values = _build_job(product_id, topic_id, remoteci, [], values)
 
-    return flask.Response(json.dumps({'job': values}), 201,
-                          headers={'ETag': values['etag']},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({"job": values}),
+        201,
+        headers={"ETag": values["etag"]},
+        content_type="application/json",
+    )
 
 
-@api.route('/jobs/upgrade', methods=['POST'])
+@api.route("/jobs/upgrade", methods=["POST"])
 @decorators.login_required
 def create_new_upgrade_job_from_an_existing_job(user):
     """Create a new job in the 'next topic' of the topic of
     the provided job_id."""
     values = flask.request.json
     check_json_is_valid(upgrade_job_schema, values)
-    previous_job_id = values.pop('job_id')
-    values.update({
-        'id': utils.gen_uuid(),
-        'created_at': get_utc_now().isoformat(),
-        'updated_at': get_utc_now().isoformat(),
-        'etag': utils.gen_etag(),
-        'previous_job_id': previous_job_id,
-        'status': 'new'
-    })
-
-    previous_job = v1_utils.verify_existence_and_get(
-        previous_job_id,
-        models.JOBS
+    previous_job_id = values.pop("job_id")
+    values.update(
+        {
+            "id": utils.gen_uuid(),
+            "created_at": get_utc_now().isoformat(),
+            "updated_at": get_utc_now().isoformat(),
+            "etag": utils.gen_etag(),
+            "previous_job_id": previous_job_id,
+            "status": "new",
+        }
     )
-    if user.is_not_in_team(previous_job['team_id']) and user.is_not_epm():
+
+    previous_job = v1_utils.verify_existence_and_get(previous_job_id, models.JOBS)
+    if user.is_not_in_team(previous_job["team_id"]) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     # get the remoteci
-    remoteci_id = str(previous_job['remoteci_id'])
-    remoteci = v1_utils.verify_existence_and_get(remoteci_id,
-                                                 models.REMOTECIS)
-    values.update({'remoteci_id': remoteci_id})
+    remoteci_id = str(previous_job["remoteci_id"])
+    remoteci = v1_utils.verify_existence_and_get(remoteci_id, models.REMOTECIS)
+    values.update({"remoteci_id": remoteci_id})
 
     # get the associated topic
-    topic_id = str(previous_job['topic_id'])
+    topic_id = str(previous_job["topic_id"])
     topic = v1_utils.verify_existence_and_get(topic_id, models.TOPICS)
 
-    values.update({
-        'user_agent': flask.request.environ.get('HTTP_USER_AGENT'),
-        'client_version': flask.request.environ.get(
-            'HTTP_CLIENT_VERSION'
-        ),
-    })
+    values.update(
+        {
+            "user_agent": flask.request.environ.get("HTTP_USER_AGENT"),
+            "client_version": flask.request.environ.get("HTTP_CLIENT_VERSION"),
+        }
+    )
 
-    next_topic_id = topic['next_topic_id']
+    next_topic_id = topic["next_topic_id"]
 
     if not next_topic_id:
-        raise dci_exc.DCIException(
-            "topic %s does not contains a next topic" % topic_id)
+        raise dci_exc.DCIException("topic %s does not contains a next topic" % topic_id)
     topic = v1_utils.verify_existence_and_get(next_topic_id, models.TOPICS)
-    product_id = topic['product_id']
+    product_id = topic["product_id"]
 
     # instantiate a new job in the next_topic_id
     # todo(yassine): make possible the upgrade to choose specific components
     values = _build_job(product_id, next_topic_id, remoteci, [], values)
 
-    return flask.Response(json.dumps({'job': values}), 201,
-                          headers={'ETag': values['etag']},
-                          content_type='application/json')
+    return flask.Response(
+        json.dumps({"job": values}),
+        201,
+        headers={"ETag": values["etag"]},
+        content_type="application/json",
+    )
 
 
-@api.route('/jobs', methods=['GET'])
+@api.route("/jobs", methods=["GET"])
 @decorators.login_required
 def get_all_jobs(user, topic_id=None):
     """Get all jobs.
@@ -373,13 +378,12 @@ def get_all_jobs(user, topic_id=None):
     args = check_and_get_args(flask.request.args.to_dict())
 
     # build the query thanks to the QueryBuilder class
-    query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS, ignore_columns=['data'])
+    query = v1_utils.QueryBuilder(_TABLE, args, _JOBS_COLUMNS, ignore_columns=["data"])
 
     # add extra conditions for filtering
 
     # # If not admin nor rh employee then restrict the view to the team
-    if (user.is_not_super_admin() and user.is_not_read_only_user() and
-        user.is_not_epm()):
+    if user.is_not_super_admin() and user.is_not_read_only_user() and user.is_not_epm():
         query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
 
     # # If topic_id not None, then filter by topic_id
@@ -387,68 +391,67 @@ def get_all_jobs(user, topic_id=None):
         query.add_extra_condition(_TABLE.c.topic_id == topic_id)
 
     # # Get only the non archived jobs
-    query.add_extra_condition(_TABLE.c.state != 'archived')
+    query.add_extra_condition(_TABLE.c.state != "archived")
 
     nb_rows = query.get_number_of_rows()
     rows = query.execute(fetchall=True)
-    rows = v1_utils.format_result(rows, _TABLE.name, args['embed'],
-                                  _EMBED_MANY)
+    rows = v1_utils.format_result(rows, _TABLE.name, args["embed"], _EMBED_MANY)
 
-    return flask.jsonify({'jobs': rows, '_meta': {'count': nb_rows}})
+    return flask.jsonify({"jobs": rows, "_meta": {"count": nb_rows}})
 
 
-@api.route('/jobs/<uuid:job_id>/components', methods=['GET'])
+@api.route("/jobs/<uuid:job_id>/components", methods=["GET"])
 @decorators.login_required
 def get_components_from_job(user, job_id):
-    job, nb_rows = _get_job(user, job_id, ['components'])
-    return flask.jsonify({'components': job['components'],
-                          '_meta': {'count': nb_rows}})
+    job, nb_rows = _get_job(user, job_id, ["components"])
+    return flask.jsonify({"components": job["components"], "_meta": {"count": nb_rows}})
 
 
-@api.route('/jobs/<uuid:job_id>/components', methods=['POST'])
+@api.route("/jobs/<uuid:job_id>/components", methods=["POST"])
 @decorators.login_required
 def add_component_to_job(user, job_id):
     values = flask.request.json
     check_json_is_valid(add_component_schema, values)
     v1_utils.verify_existence_and_get(job_id, models.JOBS)
-    component = v1_utils.verify_existence_and_get(values['id'], models.COMPONENTS)
-    if component['team_id'] and not user.is_in_team(component['team_id']):
+    component = v1_utils.verify_existence_and_get(values["id"], models.COMPONENTS)
+    if component["team_id"] and not user.is_in_team(component["team_id"]):
         raise dci_exc.Unauthorized()
-    job_component_to_insert = [{'job_id': job_id,
-                                'component_id': values['id']}]
+    job_component_to_insert = [{"job_id": job_id, "component_id": values["id"]}]
     try:
         flask.g.db_conn.execute(
-            models.JOIN_JOBS_COMPONENTS.insert(),
-            job_component_to_insert)
+            models.JOIN_JOBS_COMPONENTS.insert(), job_component_to_insert
+        )
     except sa_exc.IntegrityError:
-        raise dci_exc.DCIException("Unable to associate component %s to job %s" % (values['id'], job_id), status_code=409)  # noqa
-    return flask.Response(None, 201, content_type='application/json')
+        raise dci_exc.DCIException(
+            "Unable to associate component %s to job %s" % (values["id"], job_id),
+            status_code=409,
+        )
+    return flask.Response(None, 201, content_type="application/json")
 
 
-@api.route('/jobs/<uuid:job_id>/jobstates', methods=['GET'])
+@api.route("/jobs/<uuid:job_id>/jobstates", methods=["GET"])
 @decorators.login_required
 def get_jobstates_by_job(user, job_id):
     v1_utils.verify_existence_and_get(job_id, _TABLE)
     return jobstates.get_all_jobstates(user, job_id)
 
 
-@api.route('/jobs/<uuid:job_id>', methods=['GET'])
+@api.route("/jobs/<uuid:job_id>", methods=["GET"])
 @decorators.login_required
 def get_job_by_id(user, job_id):
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     job_dict = dict(job)
-    job_dict['issues'] = json.loads(
+    job_dict["issues"] = json.loads(
         issues.get_issues_by_resource(job_id, _TABLE).response[0]
-    )['issues']
+    )["issues"]
     return base.get_resource_by_id(user, job_dict, _TABLE, _EMBED_MANY)
 
 
-@api.route('/jobs/<uuid:job_id>', methods=['PUT'])
+@api.route("/jobs/<uuid:job_id>", methods=["PUT"])
 @decorators.login_required
 @decorators.log
 def update_job_by_id(user, job_id):
-    """Update a job
-    """
+    """Update a job"""
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
@@ -457,113 +460,116 @@ def update_job_by_id(user, job_id):
     job = v1_utils.verify_existence_and_get(job_id, _TABLE)
     job = dict(job)
 
-    if user.is_not_in_team(job['team_id']) and user.is_not_epm():
+    if user.is_not_in_team(job["team_id"]) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     # Update jobstate if needed
-    status = values.get('status')
-    if status and job.get('status') != status:
-        jobstates.insert_jobstate(user, {
-            'status': status,
-            'job_id': job_id
-        })
+    status = values.get("status")
+    if status and job.get("status") != status:
+        jobstates.insert_jobstate(user, {"status": status, "job_id": job_id})
         if status in models.FINAL_STATUSES:
-            jobs_events.create_event(job_id, status, job['topic_id'])
+            jobs_events.create_event(job_id, status, job["topic_id"])
 
-    where_clause = sql.and_(_TABLE.c.etag == if_match_etag,
-                            _TABLE.c.id == job_id)
+    where_clause = sql.and_(_TABLE.c.etag == if_match_etag, _TABLE.c.id == job_id)
 
-    values['etag'] = utils.gen_etag()
-    query = _TABLE.update().returning(*_TABLE.columns).\
-        where(where_clause).values(**values)
+    values["etag"] = utils.gen_etag()
+    query = (
+        _TABLE.update().returning(*_TABLE.columns).where(where_clause).values(**values)
+    )
 
     result = flask.g.db_conn.execute(query)
     if not result.rowcount:
-        raise dci_exc.DCIConflict('Job', job_id)
+        raise dci_exc.DCIConflict("Job", job_id)
 
     return flask.Response(
-        json.dumps({'job': result.fetchone()}), 200,
-        headers={'ETag': values['etag']},
-        content_type='application/json'
+        json.dumps({"job": result.fetchone()}),
+        200,
+        headers={"ETag": values["etag"]},
+        content_type="application/json",
     )
 
 
-@api.route('/jobs/<uuid:j_id>/files', methods=['POST'])
+@api.route("/jobs/<uuid:j_id>/files", methods=["POST"])
 @decorators.login_required
 def add_file_to_jobs(user, j_id):
     values = flask.request.json
     check_json_is_valid(create_job_schema, values)
-    values.update({'job_id': j_id})
+    values.update({"job_id": j_id})
 
     return files.create_files(user, values)
 
 
-@api.route('/jobs/<uuid:j_id>/issues', methods=['GET'])
+@api.route("/jobs/<uuid:j_id>/issues", methods=["GET"])
 @decorators.login_required
 def retrieve_issues_from_job(user, j_id):
     """Retrieve all issues attached to a job."""
     return issues.get_issues_by_resource(j_id, _TABLE)
 
 
-@api.route('/jobs/<uuid:j_id>/issues', methods=['POST'])
+@api.route("/jobs/<uuid:j_id>/issues", methods=["POST"])
 @decorators.login_required
 def attach_issue_to_jobs(user, j_id):
     """Attach an issue to a job."""
     return issues.attach_issue(j_id, _TABLE, user.id)
 
 
-@api.route('/jobs/<uuid:j_id>/issues/<uuid:i_id>', methods=['DELETE'])
+@api.route("/jobs/<uuid:j_id>/issues/<uuid:i_id>", methods=["DELETE"])
 @decorators.login_required
 def unattach_issue_from_job(user, j_id, i_id):
     """Unattach an issue to a job."""
     return issues.unattach_issue(j_id, i_id, _TABLE)
 
 
-@api.route('/jobs/<uuid:j_id>/files', methods=['GET'])
+@api.route("/jobs/<uuid:j_id>/files", methods=["GET"])
 @decorators.login_required
 def get_all_files_from_jobs(user, j_id):
-    """Get all files.
-    """
+    """Get all files."""
     return files.get_all_files(user, j_id)
 
 
-@api.route('/jobs/<uuid:j_id>/results', methods=['GET'])
+@api.route("/jobs/<uuid:j_id>/results", methods=["GET"])
 @decorators.login_required
 def get_all_results_from_jobs(user, j_id):
-    """Get all results from job.
-    """
+    """Get all results from job."""
 
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
-    if (user.is_not_in_team(job['team_id']) and user.is_not_read_only_user()
-        and user.is_not_epm()):
+    if (
+        user.is_not_in_team(job["team_id"])
+        and user.is_not_read_only_user()
+        and user.is_not_epm()
+    ):
         raise dci_exc.Unauthorized()
 
     # get testscases from tests_results
-    query = sql.select([models.TESTS_RESULTS]). \
-        where(models.TESTS_RESULTS.c.job_id == job['id'])
+    query = sql.select([models.TESTS_RESULTS]).where(
+        models.TESTS_RESULTS.c.job_id == job["id"]
+    )
     all_tests_results = flask.g.db_conn.execute(query).fetchall()
 
     results = []
     for test_result in all_tests_results:
         test_result = dict(test_result)
-        results.append({'filename': test_result['name'],
-                        'name': test_result['name'],
-                        'total': test_result['total'],
-                        'failures': test_result['failures'],
-                        'errors': test_result['errors'],
-                        'skips': test_result['skips'],
-                        'time': test_result['time'],
-                        'regressions': test_result['regressions'],
-                        'successfixes': test_result['successfixes'],
-                        'success': test_result['success'],
-                        'file_id': test_result['file_id']})
+        results.append(
+            {
+                "filename": test_result["name"],
+                "name": test_result["name"],
+                "total": test_result["total"],
+                "failures": test_result["failures"],
+                "errors": test_result["errors"],
+                "skips": test_result["skips"],
+                "time": test_result["time"],
+                "regressions": test_result["regressions"],
+                "successfixes": test_result["successfixes"],
+                "success": test_result["success"],
+                "file_id": test_result["file_id"],
+            }
+        )
 
-    return flask.jsonify({'results': results,
-                          '_meta': {'count': len(results)}})
+    return flask.jsonify({"results": results, "_meta": {"count": len(results)}})
 
 
-@api.route('/jobs/<uuid:j_id>', methods=['DELETE'])
+@api.route("/jobs/<uuid:j_id>", methods=["DELETE"])
 @decorators.login_required
 def delete_job_by_id(user, j_id):
     # get If-Match header
@@ -571,37 +577,35 @@ def delete_job_by_id(user, j_id):
 
     job = v1_utils.verify_existence_and_get(j_id, _TABLE)
 
-    if ((user.is_not_in_team(job['team_id']) or user.is_read_only_user()) and
-        user.is_not_epm()):
+    if (
+        user.is_not_in_team(job["team_id"]) or user.is_read_only_user()
+    ) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     with flask.g.db_conn.begin():
-        values = {'state': 'archived'}
-        where_clause = sql.and_(_TABLE.c.id == j_id,
-                                _TABLE.c.etag == if_match_etag)
+        values = {"state": "archived"}
+        where_clause = sql.and_(_TABLE.c.id == j_id, _TABLE.c.etag == if_match_etag)
         query = _TABLE.update().where(where_clause).values(**values)
 
         result = flask.g.db_conn.execute(query)
 
         if not result.rowcount:
-            raise dci_exc.DCIDeleteConflict('Job', j_id)
+            raise dci_exc.DCIDeleteConflict("Job", j_id)
 
         for model in [models.FILES]:
-            query = model.update().where(model.c.job_id == j_id).values(
-                **values
-            )
+            query = model.update().where(model.c.job_id == j_id).values(**values)
             flask.g.db_conn.execute(query)
 
-    return flask.Response(None, 204, content_type='application/json')
+    return flask.Response(None, 204, content_type="application/json")
 
 
-@api.route('/jobs/purge', methods=['GET'])
+@api.route("/jobs/purge", methods=["GET"])
 @decorators.login_required
 def get_to_purge_archived_jobs(user):
     return base.get_to_purge_archived_resources(user, _TABLE)
 
 
-@api.route('/jobs/purge', methods=['POST'])
+@api.route("/jobs/purge", methods=["POST"])
 @decorators.login_required
 def purge_archived_jobs(user):
     files.purge_archived_files()

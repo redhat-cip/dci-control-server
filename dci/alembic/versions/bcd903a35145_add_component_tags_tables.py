@@ -22,8 +22,8 @@ Create Date: 2018-07-09 11:47:28.174830
 """
 
 # revision identifiers, used by Alembic.
-revision = 'bcd903a35145'
-down_revision = 'd7d29a66aac5'
+revision = "bcd903a35145"
+down_revision = "d7d29a66aac5"
 branch_labels = None
 depends_on = None
 
@@ -37,27 +37,42 @@ from sqlalchemy.dialects import postgresql as pg
 
 def upgrade():
 
-    op.create_table('tags',
-                    sa.Column('id', pg.UUID(as_uuid=True), primary_key=True),
-                    sa.Column('created_at', sa.DateTime(),
-                              default=datetime.datetime.utcnow,
-                              nullable=False),
-                    sa.Column('name', sa.String(40), nullable=False,
-                              unique=True),
-                    sa.Column('etag', sa.String(40), nullable=False,
-                              default=utils.gen_etag,
-                              onupdate=utils.gen_etag)
-                    )
+    op.create_table(
+        "tags",
+        sa.Column("id", pg.UUID(as_uuid=True), primary_key=True),
+        sa.Column(
+            "created_at",
+            sa.DateTime(),
+            default=datetime.datetime.utcnow,
+            nullable=False,
+        ),
+        sa.Column("name", sa.String(40), nullable=False, unique=True),
+        sa.Column(
+            "etag",
+            sa.String(40),
+            nullable=False,
+            default=utils.gen_etag,
+            onupdate=utils.gen_etag,
+        ),
+    )
 
-    op.create_table('components_tags',
-                    sa.Column('tag_id', pg.UUID(as_uuid=True),
-                              sa.ForeignKey('tags.id', ondelete='CASCADE'),
-                              nullable=False, primary_key=True),
-                    sa.Column('component_id', pg.UUID(as_uuid=True),
-                              sa.ForeignKey('components.id',
-                                            ondelete='CASCADE'),
-                              nullable=False, primary_key=True),
-                    )
+    op.create_table(
+        "components_tags",
+        sa.Column(
+            "tag_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("tags.id", ondelete="CASCADE"),
+            nullable=False,
+            primary_key=True,
+        ),
+        sa.Column(
+            "component_id",
+            pg.UUID(as_uuid=True),
+            sa.ForeignKey("components.id", ondelete="CASCADE"),
+            nullable=False,
+            primary_key=True,
+        ),
+    )
 
 
 def downgrade():

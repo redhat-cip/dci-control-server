@@ -9,17 +9,17 @@ from sqlalchemy import sql
 
 
 conf = dci_config.CONFIG
-swift = dci_config.get_store('files')
+swift = dci_config.get_store("files")
 engine = dci_config.get_engine(conf).connect()
 
 _TABLE = models.FILES
 
 # Calculate the total files to sync
-file_list = os.walk(conf['FILES_UPLOAD_FOLDER'])
+file_list = os.walk(conf["FILES_UPLOAD_FOLDER"])
 
 
 with tqdm.tqdm(total=sum(1 for _ in file_list)) as pbar:
-    for dirname, dirnames, filenames in os.walk(conf['FILES_UPLOAD_FOLDER']):
+    for dirname, dirnames, filenames in os.walk(conf["FILES_UPLOAD_FOLDER"]):
         if not filenames:
             pbar.update(1)
             continue
@@ -37,11 +37,12 @@ with tqdm.tqdm(total=sum(1 for _ in file_list)) as pbar:
             # and then upload it to swift if needed
             if result.rowcount == 1:
                 tqdm.tqdm.write("File %s found in DB" % filename)
-                top_path = dirname[len(conf['FILES_UPLOAD_FOLDER']):]
+                folder_len = len(conf["FILES_UPLOAD_FOLDER"])
+                top_path = dirname[folder_len:]
                 row = result.fetchone()
-                swift_path = swift.build_file_path(row['team_id'],
-                                                   row['job_id'],
-                                                   filename)
+                swift_path = swift.build_file_path(
+                    row["team_id"], row["job_id"], filename
+                )
                 tqdm.tqdm.write("Check if file is in swift : %s" % swift_path)
                 try:
                     swift.head(swift_path)

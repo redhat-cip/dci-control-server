@@ -24,10 +24,7 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import export_control
 from dci.common import exceptions as dci_exc
-from dci.common.schemas import (
-    analytics_task_duration_cumulated,
-    check_json_is_valid
-)
+from dci.common.schemas import analytics_task_duration_cumulated, check_json_is_valid
 from dci.dci_config import CONFIG
 from dci.db import models2
 from dci import decorators
@@ -35,30 +32,45 @@ from dci import decorators
 logger = logging.getLogger(__name__)
 
 
-@api.route('/analytics/tasks_duration_cumulated', methods=['GET'])
+@api.route("/analytics/tasks_duration_cumulated", methods=["GET"])
 @decorators.login_required
 def tasks_duration_cumulated(user):
     args = flask.request.args.to_dict()
     check_json_is_valid(analytics_task_duration_cumulated, args)
-    topic = base.get_resource_orm(models2.Topic, args['topic_id'])
-    remoteci = base.get_resource_orm(models2.Remoteci, args['remoteci_id'])
+    topic = base.get_resource_orm(models2.Topic, args["topic_id"])
+    remoteci = base.get_resource_orm(models2.Remoteci, args["remoteci_id"])
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
         if remoteci.team_id not in user.teams_id:
             raise dci_exc.Unauthorized()
     export_control.verify_access_to_topic(user, topic)
 
-    query = "q=topic_id:%s AND remoteci_id:%s" % (args['topic_id'], args['remoteci_id'])
+    query = "q=topic_id:%s AND remoteci_id:%s" % (args["topic_id"], args["remoteci_id"])
 
     try:
-        res = requests.get("%s/tasks_duration_cumulated/_search?%s" % (CONFIG['ELASTICSEARCH_URL'], query))
+        res = requests.get(
+            "%s/tasks_duration_cumulated/_search?%s"
+            % (CONFIG["ELASTICSEARCH_URL"], query)
+        )
         if res.status_code == 200:
-            return flask.jsonify(res.json()['hits'])
+            return flask.jsonify(res.json()["hits"])
         elif res.status_code == 404:
-            return flask.Response(json.dumps({"error": "ressource not found in backend service"}), 404, content_type='application/json')
+            return flask.Response(
+                json.dumps({"error": "ressource not found in backend service"}),
+                404,
+                content_type="application/json",
+            )
         else:
             logger.error("analytics error: %s" % str(res.text))
-            return flask.Response(json.dumps({"error": "error with backend service"}), res.status_code, content_type='application/json')
+            return flask.Response(
+                json.dumps({"error": "error with backend service"}),
+                res.status_code,
+                content_type="application/json",
+            )
     except ConnectionError as e:
         logger.error("analytics error: %s" % str(e))
-        return flask.Response(json.dumps({"error": "connection error with backend service"}), 503, content_type='application/json')
+        return flask.Response(
+            json.dumps({"error": "connection error with backend service"}),
+            503,
+            content_type="application/json",
+        )
