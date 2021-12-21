@@ -34,10 +34,8 @@ def get_logs(user):
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
-    query = declarative.handle_args(query, models2.Log, args)
     nb_logs = query.count()
-    query = declarative.handle_pagination(query, args)
-
+    query = declarative.handle_args(query, models2.Log, args)
     audits = [
         {
             "id": audit.id,

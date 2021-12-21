@@ -75,9 +75,11 @@ def get_all_feeders(user, t_id=None):
         query = query.filter(models2.Feeder.team_id.in_(user.teams_ids))
 
     query = query.filter(models2.Feeder.state != "archived")
-    query = declarative.handle_args(query, models2.Feeder, args)
+
     nb_feeders = query.count()
-    query = declarative.handle_pagination(query, args)
+
+    query = declarative.handle_args(query, models2.Feeder, args)
+
     feeders = [feeder.serialize() for feeder in query.all()]
 
     return flask.jsonify({"feeders": feeders, "_meta": {"count": nb_feeders}})

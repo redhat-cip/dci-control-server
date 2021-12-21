@@ -137,7 +137,6 @@ def get_all_components(user, topic_id):
 
     query = declarative.handle_args(query, models2.Component, args)
     nb_components = query.count()
-    query = declarative.handle_pagination(query, args)
 
     components = [component.serialize() for component in query.all()]
 

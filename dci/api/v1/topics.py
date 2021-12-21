@@ -125,8 +125,6 @@ def get_all_topics(user):
 
     q = d.handle_args(q, models2.Topic, args)
     nb_topics = q.count()
-
-    q = d.handle_pagination(q, args)
     topics = q.all()
     topics = list(map(lambda t: t.serialize(), topics))
 
