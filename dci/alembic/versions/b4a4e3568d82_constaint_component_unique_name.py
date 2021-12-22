@@ -43,7 +43,7 @@ def upgrade():
 
 
 def downgrade():
-    op.create_unique_constraint(name='components_name_topic_id_key',
+    op.create_unique_constraint(constraint_name='components_name_topic_id_key',
                                 table_name='components',
                                 columns=['name', 'topic_id']
                                 )

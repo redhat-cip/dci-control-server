@@ -247,7 +247,7 @@ def test_build_certification():
         assert cert['description'] == 'DCI automatic upload test log'
         assert cert['filename'] == 'certification.xml.tar.gz'
 
-        base64.decodestring(cert['data'])
+        base64.decodebytes(cert['data'])
 
 
 def test_get_previous_job_in_topic(app, user, remoteci_context,

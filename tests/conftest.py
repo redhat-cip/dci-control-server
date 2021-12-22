@@ -81,7 +81,7 @@ def memoize_password_hash():
                 return value
         return helper
     pwd_context.verify = memoize(pwd_context.verify)
-    pwd_context.encrypt = memoize(pwd_context.encrypt)
+    pwd_context.hash = memoize(pwd_context.hash)
 
 
 @pytest.fixture

@@ -19,7 +19,7 @@ from passlib.apps import custom_app_context as pwd_context
 
 
 def hash_password(password):
-    return pwd_context.encrypt(password)
+    return pwd_context.hash(password)
 
 
 def check_passwords_equal(password, encrypted_password):
