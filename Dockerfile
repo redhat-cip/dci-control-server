@@ -1,4 +1,4 @@
-FROM centos:stream8
+FROM quay.io/centos/centos:stream8
 
 LABEL name="DCI API" version="0.0.3"
 LABEL maintainer="DCI Team <distributed-ci@redhat.com>"
