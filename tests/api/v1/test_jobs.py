@@ -21,6 +21,7 @@ import six
 import uuid
 
 import datetime
+from datetime import datetime as dt
 from dci import dci_config
 from dci.common import exceptions as dci_exc
 from dci.common import utils
@@ -29,6 +30,7 @@ from dci.stores import files_utils
 from dci.stores.swift import Swift
 from tests.data import JUNIT
 import tests.utils as t_utils
+import time
 
 import collections
 
@@ -346,6 +348,61 @@ def test_get_all_jobs_with_embed_and_limit(
 def test_get_all_jobs_with_embed_not_valid(remoteci_context):
     jds = remoteci_context.get("/api/v1/jobs?embed=mdr")
     assert jds.status_code == 400
+
+
+def test_get_all_jobs_created_after(
+    remoteci_context, topic_user_id, components_user_ids
+):
+    for i in range(5):
+        data = {"components_ids": components_user_ids, "topic_id": topic_user_id}
+        remoteci_context.post("/api/v1/jobs/schedule", data=data)
+
+    jobs = remoteci_context.get("/api/v1/jobs").data["jobs"]
+    assert len(jobs) == 5
+    job_2 = jobs[2]
+
+    created_after = int(time.time() * 1000)
+    db_jobs = remoteci_context.get(
+        "/api/v1/jobs?created_after=%s&sort=created_at" % created_after
+    ).data["jobs"]
+    assert len(db_jobs) == 0
+
+    created_after = job_2["created_at"]
+    db_jobs = remoteci_context.get(
+        "/api/v1/jobs?created_after=%s&sort=created_at" % created_after
+    ).data["jobs"]
+    assert len(db_jobs) == 3
+
+
+def test_get_all_jobs_updated_after(
+    admin, remoteci_context, topic_user_id, components_user_ids
+):
+
+    for i in range(5):
+        data = {"components_ids": components_user_ids, "topic_id": topic_user_id}
+        remoteci_context.post("/api/v1/jobs/schedule", data=data)
+
+    jobs = remoteci_context.get("/api/v1/jobs").data["jobs"]
+    assert len(jobs) == 5
+    job_2 = jobs[2]
+
+    updated_after = dt.utcnow().isoformat()
+    db_jobs = remoteci_context.get(
+        "/api/v1/jobs?updated_after=%s&sort=created_at" % updated_after
+    ).data["jobs"]
+    assert len(db_jobs) == 0
+
+    admin.put(
+        "/api/v1/jobs/%s" % job_2["id"],
+        headers={"If-match": job_2["etag"]},
+        data={"name": "lol"},
+    )
+    job_2 = remoteci_context.get("/api/v1/jobs/%s" % job_2["id"]).data["job"]
+    updated_after = job_2["updated_at"]
+    db_jobs = remoteci_context.get(
+        "/api/v1/jobs?updated_after=%s&sort=created_at" % updated_after
+    ).data["jobs"]
+    assert len(db_jobs) == 1
 
 
 def test_update_job(admin, job_user_id):

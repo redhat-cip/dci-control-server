@@ -281,7 +281,7 @@ class QueryBuilder(object):
         self._root_join_condition = root_join_condition
         self._root_id = root_id
         self._embeds = args.get("embed", [])
-        self._limit = args.get("limit", None)
+        self._limit = args.get("limit", 200)
         self._offset = args.get("offset", None)
         self._sort = self._get_sort_query_with_embeds(
             args.get("sort", []), root_table.name, strings_to_columns
@@ -289,6 +289,8 @@ class QueryBuilder(object):
         self._where = where_query(
             args.get("where", []), self._root_table, strings_to_columns
         )
+        self._created_after = args.get("created_after", None)
+        self._updated_after = args.get("updated_after", None)
         self._strings_to_columns = strings_to_columns
         self._extras_conditions = []
         self._ignored_columns = ignore_columns or []
@@ -333,6 +335,12 @@ class QueryBuilder(object):
             query = query.where(e_c)
         return query
 
+    def _add_created_after(self, query):
+        return query.where(self._root_table.c.created_at >= self._created_after)
+
+    def _add_updated_after(self, query):
+        return query.where(self._root_table.c.updated_at >= self._updated_after)
+
     def _do_subquery(self):
         # if embed with limit or offset requested then we will use a subquery
         # for the root table
@@ -366,6 +374,10 @@ class QueryBuilder(object):
                 root_subquery = root_subquery.limit(self._limit)
             if self._offset:
                 root_subquery = root_subquery.offset(self._offset)
+            if self._created_after:
+                root_subquery = self._add_created_after(root_subquery)
+            if self._updated_after:
+                query = self._add_updated_after(root_subquery)
             root_subquery = root_subquery.alias(self._root_table.name)
             select_clause = [root_subquery]
             root_select = root_subquery
@@ -413,6 +425,10 @@ class QueryBuilder(object):
                 query = query.limit(self._limit)
             if self._offset:
                 query = query.offset(self._offset)
+            if self._created_after:
+                query = self._add_created_after(query)
+            if self._updated_after:
+                query = self._add_updated_after(query)
         query = self._add_sort_to_query(query)
         return query
 
