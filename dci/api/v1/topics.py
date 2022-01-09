@@ -182,7 +182,7 @@ def delete_topic_by_id(user, topic_id):
         topic.state = "archived"
         flask.g.session.query(models2.Component).filter(
             models2.Component.topic_id == topic_id
-        ).update({"state": "archived"})
+        ).update({"state": "archived"}, synchronize_session=False)
         flask.g.session.commit()
     except Exception as e:
         flask.g.session.rollback()
