@@ -76,9 +76,9 @@ def get_all_feeders(user, t_id=None):
 
     query = query.filter(models2.Feeder.state != "archived")
 
-    nb_feeders = query.count()
-
     query = declarative.handle_args(query, models2.Feeder, args)
+    nb_feeders = query.count()
+    query = declarative.handle_pagination(query, args)
 
     feeders = [feeder.serialize() for feeder in query.all()]
 

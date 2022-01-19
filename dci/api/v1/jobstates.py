@@ -129,8 +129,9 @@ def get_all_jobstates(user, job_id):
         sa_orm.joinedload("files")
     )
     query = declarative.handle_args(query, models2.Jobstate, args)
-
     nb_jobstates = query.count()
+    query = declarative.handle_pagination(query, args)
+
     jobstates = [js.serialize() for js in query.all()]
 
     return flask.jsonify({"jobstates": jobstates, "_meta": {"count": nb_jobstates}})

@@ -393,6 +393,7 @@ def get_all_jobs(user, topic_id=None):
     )
 
     nb_jobs = query.count()
+    query = declarative.handle_pagination(query, args)
 
     jobs = [j.serialize(ignore_columns=["data"]) for j in query.all()]
 

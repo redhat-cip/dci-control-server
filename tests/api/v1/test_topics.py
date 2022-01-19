@@ -764,7 +764,7 @@ def test_get_topic_with_rolling_topic_name(admin, product):
 
     latest_rhel_85 = admin.get("/api/v1/topics?where=name:RHEL-8*&limit=1&offset=0")
     assert latest_rhel_85.status_code == 200
-    assert latest_rhel_85.data["_meta"]["count"] == 1
+    assert latest_rhel_85.data["_meta"]["count"] == 2
     assert latest_rhel_85.data["topics"][0]["id"] == RHEL_85["id"]
 
     latest_rhel_8 = admin.get("/api/v1/topics?where=name:RHEL-8*")
@@ -772,3 +772,7 @@ def test_get_topic_with_rolling_topic_name(admin, product):
     assert latest_rhel_8.data["_meta"]["count"] == 2
     assert latest_rhel_8.data["topics"][0]["id"] == RHEL_85["id"]
     assert latest_rhel_8.data["topics"][1]["id"] == RHEL_84["id"]
+
+    latest_rhel_7 = admin.get("/api/v1/topics?where=name:RHEL-7*")
+    assert latest_rhel_7.status_code == 200
+    assert latest_rhel_7.data["_meta"]["count"] == 0
