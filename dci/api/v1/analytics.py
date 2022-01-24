@@ -50,7 +50,9 @@ def tasks_duration_cumulated(user):
     try:
         res = requests.get(
             "%s/tasks_duration_cumulated/_search?%s"
-            % (CONFIG["ELASTICSEARCH_URL"], query)
+            % (CONFIG["ELASTICSEARCH_URL"], query),
+            headers={"Content-Type": "application/json"},
+            data=json.dumps({"sort": [{"created_at": {"order": "desc"}}]}),
         )
         if res.status_code == 200:
             return flask.jsonify(res.json()["hits"])
