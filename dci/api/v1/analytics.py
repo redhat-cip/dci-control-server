@@ -24,7 +24,11 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import export_control
 from dci.common import exceptions as dci_exc
-from dci.common.schemas import analytics_task_duration_cumulated, check_json_is_valid
+from dci.common.schemas import (
+    analytics_task_duration_cumulated,
+    analytics_task_components_coverage,
+    check_json_is_valid,
+)
 from dci.dci_config import CONFIG
 from dci.db import models2
 from dci import decorators
@@ -54,6 +58,53 @@ def tasks_duration_cumulated(user):
             headers={"Content-Type": "application/json"},
             data=json.dumps({"sort": [{"created_at": {"order": "desc"}}]}),
         )
+        if res.status_code == 200:
+            return flask.jsonify(res.json()["hits"])
+        elif res.status_code == 404:
+            return flask.Response(
+                json.dumps({"error": "ressource not found in backend service"}),
+                404,
+                content_type="application/json",
+            )
+        else:
+            logger.error("analytics error: %s" % str(res.text))
+            return flask.Response(
+                json.dumps({"error": "error with backend service"}),
+                res.status_code,
+                content_type="application/json",
+            )
+    except ConnectionError as e:
+        logger.error("analytics error: %s" % str(e))
+        return flask.Response(
+            json.dumps({"error": "connection error with backend service"}),
+            503,
+            content_type="application/json",
+        )
+
+
+@api.route("/analytics/tasks_components_coverage", methods=["GET"])
+@decorators.login_required
+def tasks_components_coverage(user):
+    args = flask.request.args.to_dict()
+    check_json_is_valid(analytics_task_components_coverage, args)
+
+    team_id = args.get("team_id") if args.get("team_id") else "red_hat"
+    topic_id = args["topic_id"]
+
+    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
+        if team_id not in user.teams_id:
+            raise dci_exc.Unauthorized()
+
+    query = "q=topic_id:%s AND team_id:%s" % (topic_id, team_id)
+
+    try:
+        res = requests.get(
+            "%s/tasks_components_coverage/_search?%s"
+            % (CONFIG["ELASTICSEARCH_URL"], query),
+            headers={"Content-Type": "application/json"},
+            data=json.dumps({"sort": [{"component_name": {"order": "asc"}}]}),
+        )
+
         if res.status_code == 200:
             return flask.jsonify(res.json()["hits"])
         elif res.status_code == 404:
