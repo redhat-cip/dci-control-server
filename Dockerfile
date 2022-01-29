@@ -8,7 +8,13 @@ ENV LANG en_US.UTF-8
 WORKDIR /opt/dci-control-server
 COPY dci-control-server.spec /opt/dci-control-server/
 
-RUN dnf -y install epel-release centos-release-openstack-train https://packages.distributed-ci.io/dci-release.el8.noarch.rpm && \
+RUN dnf -y install centos-release-openstack-ussuri && dnf clean all
+# Temporary fix Error: Failed to download metadata for repo 'centos-ceph-nautilus'
+RUN sed -i 's/mirrorlist/#mirrorlist/g' /etc/yum.repos.d/CentOS-Ceph-Nautilus.repo
+RUN sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' /etc/yum.repos.d/CentOS-Ceph-Nautilus.repo
+# End of temporary fix
+
+RUN dnf -y install epel-release https://packages.distributed-ci.io/dci-release.el8.noarch.rpm && \
     echo -e "[dci-extras]\nname=DCI Extras YUM repo\nbaseurl=https://packages.distributed-ci.io/repos/extras/el/\$releasever/\$basearch/\nenabled=1\ngpgcheck=0" > /etc/yum.repos.d/dci-extras.repo && \
     dnf update -y && \
     dnf -y install rpm-build gcc && \

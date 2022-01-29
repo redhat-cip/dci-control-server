@@ -44,12 +44,12 @@ def downgrade():
         sa.Column("tag_id", postgresql.UUID(), autoincrement=False, nullable=False),
         sa.Column("job_id", postgresql.UUID(), autoincrement=False, nullable=False),
         sa.ForeignKeyConstraint(
-            ["job_id"], [u"jobs.id"], name=u"jobs_tags_job_id_fkey", ondelete=u"CASCADE"
+            ["job_id"], ["jobs.id"], name="jobs_tags_job_id_fkey", ondelete="CASCADE"
         ),
         sa.ForeignKeyConstraint(
-            ["tag_id"], [u"tags.id"], name=u"jobs_tags_tag_id_fkey", ondelete=u"CASCADE"
+            ["tag_id"], ["tags.id"], name="jobs_tags_tag_id_fkey", ondelete="CASCADE"
         ),
-        sa.PrimaryKeyConstraint("tag_id", "job_id", name=u"jobs_tags_pkey"),
+        sa.PrimaryKeyConstraint("tag_id", "job_id", name="jobs_tags_pkey"),
     )
     op.create_table(
         "components_tags",
@@ -59,17 +59,17 @@ def downgrade():
         ),
         sa.ForeignKeyConstraint(
             ["component_id"],
-            [u"components.id"],
-            name=u"components_tags_component_id_fkey",
-            ondelete=u"CASCADE",
+            ["components.id"],
+            name="components_tags_component_id_fkey",
+            ondelete="CASCADE",
         ),
         sa.ForeignKeyConstraint(
             ["tag_id"],
-            [u"tags.id"],
-            name=u"components_tags_tag_id_fkey",
-            ondelete=u"CASCADE",
+            ["tags.id"],
+            name="components_tags_tag_id_fkey",
+            ondelete="CASCADE",
         ),
-        sa.PrimaryKeyConstraint("tag_id", "component_id", name=u"components_tags_pkey"),
+        sa.PrimaryKeyConstraint("tag_id", "component_id", name="components_tags_pkey"),
     )
     op.create_table(
         "tags",
@@ -79,6 +79,6 @@ def downgrade():
         ),
         sa.Column("name", sa.VARCHAR(length=40), autoincrement=False, nullable=False),
         sa.Column("etag", sa.VARCHAR(length=40), autoincrement=False, nullable=False),
-        sa.PrimaryKeyConstraint("id", name=u"tags_pkey"),
-        sa.UniqueConstraint("name", name=u"tags_name_key"),
+        sa.PrimaryKeyConstraint("id", name="tags_pkey"),
+        sa.UniqueConstraint("name", name="tags_name_key"),
     )

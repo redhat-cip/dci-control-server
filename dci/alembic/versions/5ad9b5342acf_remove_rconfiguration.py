@@ -32,7 +32,7 @@ from alembic import op
 
 def upgrade():
     op.drop_index("jobs_rconfiguration_id_idx", table_name="jobs")
-    op.drop_constraint(u"jobs_rconfiguration_id_fkey", "jobs", type_="foreignkey")
+    op.drop_constraint("jobs_rconfiguration_id_fkey", "jobs", type_="foreignkey")
     op.drop_column("jobs", "rconfiguration_id")
     op.drop_table("remotecis_rconfigurations")
     op.drop_table("rconfigurations")

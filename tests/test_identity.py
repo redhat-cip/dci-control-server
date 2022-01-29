@@ -135,15 +135,12 @@ def test_super_admin_is_epm():
 
 def test_teams_ids():
     user = identity_factory(is_user=True)
-    assert (
-        set(
-            [
-                UUID("894c7af1-f90f-48dd-8276-fbc4bfa80371"),
-                UUID("2d89a1ad-0638-4738-940d-166c6a8105ec"),
-            ]
-        )
-        == set(user.teams_ids)
-    )
+    assert set(
+        [
+            UUID("894c7af1-f90f-48dd-8276-fbc4bfa80371"),
+            UUID("2d89a1ad-0638-4738-940d-166c6a8105ec"),
+        ]
+    ) == set(user.teams_ids)
 
 
 def test_teams_ids_sso_user():

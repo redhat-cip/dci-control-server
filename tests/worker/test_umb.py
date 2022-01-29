@@ -80,35 +80,35 @@ def test_build_umb_messages():
     # version
     assert "version" in message
     assert message == {
-        u"contact": {
-            u"docs": u"https://docs.distributed-ci.io/",
-            u"url": u"https://distributed-ci.io/",
-            u"team": u"DCI",
-            u"name": u"DCI CI",
-            u"email": u"distributed-ci@redhat.com",
+        "contact": {
+            "docs": "https://docs.distributed-ci.io/",
+            "url": "https://distributed-ci.io/",
+            "team": "DCI",
+            "name": "DCI CI",
+            "email": "distributed-ci@redhat.com",
         },
-        u"artifact": {
-            u"compose_type": u"nightly",
-            u"type": u"productmd-compose",
-            u"id": u"RHEL-8.3.0-20200312.n.0",
+        "artifact": {
+            "compose_type": "nightly",
+            "type": "productmd-compose",
+            "id": "RHEL-8.3.0-20200312.n.0",
         },
-        u"run": {
-            u"log": u"https://www.distributed-ci.io/jobs/81fe1916-8929-4bc3-90b6-021983654663/jobStates",
-            u"url": u"https://www.distributed-ci.io/jobs/81fe1916-8929-4bc3-90b6-021983654663/jobStates",
+        "run": {
+            "log": "https://www.distributed-ci.io/jobs/81fe1916-8929-4bc3-90b6-021983654663/jobStates",
+            "url": "https://www.distributed-ci.io/jobs/81fe1916-8929-4bc3-90b6-021983654663/jobStates",
         },
-        u"test": {
-            u"namespace": u"dci",
-            u"type": u"beaker-results",
-            u"result": u"passed",
-            u"category": u"system",
+        "test": {
+            "namespace": "dci",
+            "type": "beaker-results",
+            "result": "passed",
+            "category": "system",
         },
-        u"pipeline": {
-            u"id": u"81fe1916-8929-4bc3-90b6-021983654663",
-            u"name": u"job id",
+        "pipeline": {
+            "id": "81fe1916-8929-4bc3-90b6-021983654663",
+            "name": "job id",
         },
-        u"system": [{"provider": "beaker", "architecture": "x86_64"}],
-        u"generated_at": u"2018-09-14T18:50:26.143559Z",
-        u"version": u"0.1.0",
+        "system": [{"provider": "beaker", "architecture": "x86_64"}],
+        "generated_at": "2018-09-14T18:50:26.143559Z",
+        "version": "0.1.0",
     }
 
 
@@ -228,35 +228,35 @@ def test_cki_message():
     messages = build_umb_messages(event, now)
     message = json.loads(messages[0]["body"])
     assert message == {
-        u"summarized_result": u"",
-        u"team_email": u"distributed-ci@redhat.com",
-        u"team_name": u"DCI",
-        u"kernel_version": u"4.18.0-240.3.el8",
-        u"artifact": {
-            u"compose_type": u"rel-eng",
-            u"id": u"RHEL-8.2.0-20200404.0",
-            u"type": u"productmd-compose",
+        "summarized_result": "",
+        "team_email": "distributed-ci@redhat.com",
+        "team_name": "DCI",
+        "kernel_version": "4.18.0-240.3.el8",
+        "artifact": {
+            "compose_type": "rel-eng",
+            "id": "RHEL-8.2.0-20200404.0",
+            "type": "productmd-compose",
         },
         "results": [
             {
-                u"test_description": u"LTP",
-                u"is_debug": False,
-                u"test_log_url": [
-                    u"https://www.distributed-ci.io/jobs/6015a9ae-15a3-4e1f-8603-0daf95da6da6/jobStates"
+                "test_description": "LTP",
+                "is_debug": False,
+                "test_log_url": [
+                    "https://www.distributed-ci.io/jobs/6015a9ae-15a3-4e1f-8603-0daf95da6da6/jobStates"
                 ],
-                u"test_arch": u"ppc64le",
-                u"test_result": u"PASS",
-                u"test_name": u"exit_code",
+                "test_arch": "ppc64le",
+                "test_result": "PASS",
+                "test_name": "exit_code",
             },
             {
-                u"test_description": u"LTP",
-                u"is_debug": False,
-                u"test_log_url": [
-                    u"https://www.distributed-ci.io/jobs/6015a9ae-15a3-4e1f-8603-0daf95da6da6/jobStates"
+                "test_description": "LTP",
+                "is_debug": False,
+                "test_log_url": [
+                    "https://www.distributed-ci.io/jobs/6015a9ae-15a3-4e1f-8603-0daf95da6da6/jobStates"
                 ],
-                u"test_arch": u"ppc64le",
-                u"test_result": u"PASS",
-                u"test_name": u"RHELKT1LITE.FILTERED",
+                "test_arch": "ppc64le",
+                "test_result": "PASS",
+                "test_name": "RHELKT1LITE.FILTERED",
             },
         ],
     }
