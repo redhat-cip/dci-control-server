@@ -474,15 +474,14 @@ def get_job_by_id(user, job_id):
     # Get only non archived job
     query = query.filter(models2.Job.state != "archived")
     query = (
-        query.options(sa_orm.joinedload("results"))
-        .options(sa_orm.joinedload("remoteci"))
-        .options(sa_orm.joinedload("components"))
+        query.options(sa_orm.joinedload("remoteci"))
         .options(sa_orm.joinedload("topic"))
         .options(sa_orm.joinedload("team"))
-        .options(sa_orm.joinedload("jobstates"))
-        .options(sa_orm.joinedload("files"))
+        .options(sa_orm.subqueryload("results"))
+        .options(sa_orm.subqueryload("components"))
+        .options(sa_orm.subqueryload("jobstates"))
+        .options(sa_orm.subqueryload("files"))
     )
-
     try:
         job = query.one()
     except sa_orm.exc.NoResultFound:
