@@ -24,6 +24,7 @@ from passlib.apps import custom_app_context as pwd_context
 import contextlib
 import pytest
 import sqlalchemy_utils.functions
+from sqlalchemy.orm import sessionmaker
 
 import uuid
 
@@ -39,6 +40,11 @@ def engine(request):
         sqlalchemy_utils.functions.create_database(db_uri)
     utils.restore_db(engine)
     return engine
+
+
+@pytest.fixture
+def session(engine):
+    return sessionmaker(bind=engine)()
 
 
 @pytest.fixture
