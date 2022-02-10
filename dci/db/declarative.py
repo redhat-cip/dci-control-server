@@ -16,6 +16,7 @@
 
 from dci.common import exceptions as dci_exc
 
+import datetime
 import uuid
 
 
@@ -57,6 +58,10 @@ class Mixin(object):
                 if attr in nested_ignore_columns:
                     _ignore_columns = nested_ignore_columns[attr]
                 _dict[attr] = attr_obj.serialize(ignore_columns=_ignore_columns)
+            elif isinstance(attr_obj, uuid.UUID):
+                _dict[attr] = str(attr_obj)
+            elif isinstance(attr_obj, datetime.datetime):
+                _dict[attr] = attr_obj.isoformat()
             elif not attr.startswith("_"):
                 _dict[attr] = self.__dict__[attr]
         return _dict

@@ -33,6 +33,7 @@ def get_jobs(session, offset, limit, unit, amount):
     query = (
         query.options(sa_orm.subqueryload("components"))
         .options(sa_orm.subqueryload("jobstates"))
+        .options(sa_orm.subqueryload("jobstates.files"))
         .options(sa_orm.subqueryload("files"))
     )
 

@@ -30,15 +30,23 @@ def test_get_jobs(
     m_utcnow.isoformat.return_value = (
         datetime.datetime.utcnow() - datetime.timedelta(hours=2)
     ).isoformat()
+
+    jobs_ids = []
     data = {"components": components_user_ids, "topic_id": topic_user_id}
-    remoteci_context.post("/api/v1/jobs", data=data)
-    remoteci_context.post("/api/v1/jobs", data=data)
-    remoteci_context.post("/api/v1/jobs", data=data)
-    remoteci_context.post("/api/v1/jobs", data=data)
+    for _ in range(4):
+        j_id = remoteci_context.post("/api/v1/jobs", data=data).data["job"]["id"]
+        jobs_ids.append(j_id)
+
+    for j_id in jobs_ids:
+        remoteci_context.post(
+            "/api/v1/jobstates",
+            data={"job_id": j_id, "comment": "kikoolol", "status": "running"},
+        )
 
     jobs = a_d_l.get_jobs(session, 0, 10, "hours", 3)
     assert len(jobs) == 4
     assert "jobstates" in jobs[0]
+    assert "files" in jobs[0]["jobstates"][0]
     assert "components" in jobs[0]
     assert "files" in jobs[0]
 
