@@ -153,6 +153,7 @@ TOPICS = sa.Table(
     ),
     sa.Column("name", sa.String(255), unique=True, nullable=False),
     sa.Column("component_types", pg.JSON, default=[]),
+    sa.Column("component_types_optional", pg.JSON, default=[]),
     sa.Column(
         "product_id", pg.UUID(as_uuid=True), sa.ForeignKey("products.id"), nullable=True
     ),

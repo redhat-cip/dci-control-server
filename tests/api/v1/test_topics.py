@@ -29,21 +29,6 @@ def topic_creation(identity, product):
     return identity.get("/api/v1/topics/%s" % pt_id)
 
 
-def topic_creation_with_opts(identity, product):
-    data = {
-        "name": "tname",
-        "product_id": product["id"],
-        "component_types": ["type1", "type2"],
-        "data": {"foo": "bar"},
-        "label": "rob",
-    }
-    pt = identity.post("/api/v1/topics", data=data).data
-    pt_id = pt["topic"]["id"]
-    t = identity.get("/api/v1/topics/%s" % pt_id)
-    assert t["topic"]["data"]["foo"] == "bar"
-    assert t["topic"]["label"] == "rob"
-
-
 def topic_update(identity, topic_id):
     t = identity.get("/api/v1/topics/" + topic_id).data["topic"]
     data = {"component_types": ["lol1", "lol2"], "data": {"foo": "bar"}}
@@ -62,6 +47,21 @@ def test_create_topics(admin, product):
     topic = topic_creation(admin, product).data
     assert topic["topic"]["name"] == "tname"
     assert topic["topic"]["component_types"] == ["type1", "type2"]
+
+
+def test_topic_creation_with_opts(admin, product):
+    data = {
+        "name": "tname",
+        "product_id": product["id"],
+        "component_types": ["type1", "type2"],
+        "component_types_optional": ["type3"],
+        "data": {"foo": "bar"},
+    }
+    pt = admin.post("/api/v1/topics", data=data).data
+    pt_id = pt["topic"]["id"]
+    t = admin.get("/api/v1/topics/%s" % pt_id).data
+    assert t["topic"]["data"]["foo"] == "bar"
+    assert t["topic"]["component_types_optional"] == ["type3"]
 
 
 def test_create_topic_as_feeder(feeder_context, product):
