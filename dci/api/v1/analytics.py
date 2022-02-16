@@ -36,6 +36,15 @@ from dci import decorators
 logger = logging.getLogger(__name__)
 
 
+def _handle_pagination(args):
+    limit_max = 200
+    default_limit = 20
+    default_offset = 0
+    offset = args.get("offset", default_offset)
+    limit = min(args.get("limit", default_limit), limit_max)
+    return (offset, limit)
+
+
 @api.route("/analytics/tasks_duration_cumulated", methods=["GET"])
 @decorators.login_required
 def tasks_duration_cumulated(user):
@@ -50,13 +59,19 @@ def tasks_duration_cumulated(user):
     export_control.verify_access_to_topic(user, topic)
 
     query = "q=topic_id:%s AND remoteci_id:%s" % (args["topic_id"], args["remoteci_id"])
-
+    offset, limit = _handle_pagination(args)
     try:
         res = requests.get(
             "%s/tasks_duration_cumulated/_search?%s"
             % (CONFIG["ELASTICSEARCH_URL"], query),
             headers={"Content-Type": "application/json"},
-            data=json.dumps({"sort": [{"created_at": {"order": "desc"}}]}),
+            data=json.dumps(
+                {
+                    "from": offset,
+                    "size": limit,
+                    "sort": [{"created_at": {"order": "desc"}}],
+                }
+            ),
         )
         if res.status_code == 200:
             return flask.jsonify(res.json()["hits"])
@@ -96,13 +111,19 @@ def tasks_components_coverage(user):
             raise dci_exc.Unauthorized()
 
     query = "q=topic_id:%s AND team_id:%s" % (topic_id, team_id)
-
+    offset, limit = _handle_pagination(args)
     try:
         res = requests.get(
             "%s/tasks_components_coverage/_search?%s"
             % (CONFIG["ELASTICSEARCH_URL"], query),
             headers={"Content-Type": "application/json"},
-            data=json.dumps({"sort": [{"component_name": {"order": "asc"}}]}),
+            data=json.dumps(
+                {
+                    "from": offset,
+                    "size": limit,
+                    "sort": [{"created_at": {"order": "desc"}}],
+                }
+            ),
         )
 
         if res.status_code == 200:
