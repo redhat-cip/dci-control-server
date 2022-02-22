@@ -38,7 +38,7 @@ class Properties(object):
     string = {"type": "string"}
     uuid = {
         "type": "string",
-        "pattern": "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+        "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
     }
     email = {"type": "string", "format": "email"}
     url = {"type": "string", "format": "uri", "pattern": "^https?://"}

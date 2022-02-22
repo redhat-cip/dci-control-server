@@ -138,6 +138,15 @@ def test_check_json_is_valid_check_uuid_type():
     assert len(errors) == 1
     assert errors[0] == "uuid: 'not an uuid' is not a valid 'uuid'"
 
+    with pytest.raises(DCIException) as e:
+        check_json_is_valid(schema, {"uuid": "-506e5ef5-5db8-410e-b566-a85d1ca24946-"})
+    errors = e.value.payload["errors"]
+    assert len(errors) == 1
+    assert (
+        errors[0]
+        == "uuid: '-506e5ef5-5db8-410e-b566-a85d1ca24946-' is not a valid 'uuid'"
+    )
+
 
 def test_check_json_is_valid_check_email_type():
     schema = {
