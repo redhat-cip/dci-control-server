@@ -506,6 +506,7 @@ create_topic_properties = {
     "next_topic_id": with_default(Properties.uuid, None),
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "component_types": with_default(Properties.array, []),
+    "component_types_optional": with_default(Properties.array, []),
     "export_control": with_default(Properties.boolean, False),
 }
 create_topic_schema = {
@@ -522,6 +523,7 @@ update_topic_properties = {
     "next_topic_id": allow_none(Properties.uuid),
     "state": Properties.enum(valid_resource_states),
     "component_types": Properties.array,
+    "component_types_optional": Properties.array,
     "export_control": Properties.boolean,
 }
 update_topic_schema = {"type": "object", "properties": update_topic_properties}

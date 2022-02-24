@@ -217,6 +217,7 @@ class Topic(dci_declarative.Mixin, Base):
     )
     name = sa.Column(sa.String(255), unique=True, nullable=False)
     component_types = sa.Column(pg.JSON, default=[])
+    component_types_optional = sa.Column(pg.JSON, default=[])
     product_id = sa.Column(
         pg.UUID(as_uuid=True), sa.ForeignKey("products.id"), nullable=True
     )
