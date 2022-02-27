@@ -104,9 +104,8 @@ def fs_clean(request):
 
 
 @pytest.fixture
-def db_provisioning(empty_db, engine):
-    with engine.begin() as conn:
-        utils.provision(conn)
+def db_provisioning(empty_db, session):
+    utils.provision(session)
 
 
 @pytest.fixture
@@ -118,7 +117,7 @@ def app(db_provisioning, engine, fs_clean):
 
 
 @pytest.fixture
-def admin(app, db_provisioning):
+def admin(app):
     return utils.generate_client(app, ("admin", "admin"))
 
 
@@ -130,27 +129,27 @@ def admin_id(admin):
 
 
 @pytest.fixture
-def unauthorized(app, db_provisioning):
+def unauthorized(app):
     return utils.generate_client(app, ("bob", "bob"))
 
 
 @pytest.fixture
-def user(app, db_provisioning):
+def user(app):
     return utils.generate_client(app, ("user", "user"))
 
 
 @pytest.fixture
-def user2(app, db_provisioning):
+def user2(app):
     return utils.generate_client(app, ("user2", "user2"))
 
 
 @pytest.fixture
-def rh_employee(app, db_provisioning):
+def rh_employee(app):
     return utils.generate_client(app, ("rh_employee", "rh_employee"))
 
 
 @pytest.fixture
-def user_sso(app, db_provisioning, access_token):
+def user_sso(app, access_token):
     client = utils.generate_client(app, access_token=access_token)
     # first call, it create the user in the database
     client.get("/api/v1/users/me")
@@ -171,7 +170,7 @@ def user_no_team(admin):
 
 
 @pytest.fixture
-def epm(app, db_provisioning):
+def epm(app):
     return utils.generate_client(app, ("epm", "epm"))
 
 

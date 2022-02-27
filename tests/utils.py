@@ -28,7 +28,8 @@ import shutil
 import six
 
 import dci.auth as auth
-import dci.db.models as models
+from dci.db import models
+from dci.db import models2
 import dci.dci_config as config
 from dci.common import utils
 from dciauth.v2.headers import generate_headers
@@ -142,122 +143,98 @@ def post_file(client, jobstate_id, file_desc, mime="text/plain"):
     return res.data["file"]["id"]
 
 
-def provision(db_conn):
-    def db_insert(model_item, return_pk=True, **kwargs):
-        query = model_item.insert().values(**kwargs)
-        if return_pk:
-            return db_conn.execute(query).inserted_primary_key[0]
-        else:
-            db_conn.execute(query)
-
-    # Create teams
-    team_admin_id = db_insert(models.TEAMS, name="admin")
-    team_user_id = db_insert(models.TEAMS, name="user")
-    team_user_id2 = db_insert(models.TEAMS, name="user2")
-    db_insert(models.TEAMS, name="product")
-    team_redhat_id = db_insert(models.TEAMS, name="Red Hat")
-    team_epm_id = db_insert(models.TEAMS, name="EPM")
-
-    # Create users
-    user_pw_hash = auth.hash_password("user")
-    u_id = db_insert(
-        models.USERS,
-        name="user",
-        sso_username="user",
-        password=user_pw_hash,
-        fullname="User",
-        email="user@example.org",
-    )
-
-    db_insert(
-        models.JOIN_USERS_TEAMS, return_pk=False, user_id=u_id, team_id=team_user_id
-    )
-
-    user_pw_hash2 = auth.hash_password("user2")
-    u_id2 = db_insert(
-        models.USERS,
-        name="user2",
-        sso_username="user2",
-        password=user_pw_hash2,
-        fullname="User2",
-        email="user2@example.org",
-    )
-
-    db_insert(
-        models.JOIN_USERS_TEAMS, return_pk=False, user_id=u_id2, team_id=team_user_id2
-    )
-
-    user_no_team_pw_hash = auth.hash_password("user_no_team")
-    u_id = db_insert(
-        models.USERS,
-        name="user_no_team",
-        sso_username="user_no_team",
-        password=user_no_team_pw_hash,
-        fullname="User No Team",
-        email="user_no_team@example.org",
-    )
-
-    db_insert(models.JOIN_USERS_TEAMS, return_pk=False, user_id=u_id, team_id=None)
-
-    rh_employee_pw_hash = auth.hash_password("rh_employee")
-    rh_employee = db_insert(
-        models.USERS,
-        name="rh_employee",
-        sso_username="rh_employee",
-        password=rh_employee_pw_hash,
-        fullname="Employee at Red Hat",
-        email="rh_employee@redhat.com",
-    )
-    db_insert(
-        models.JOIN_USERS_TEAMS,
-        return_pk=False,
-        user_id=rh_employee,
-        team_id=team_redhat_id,
-    )
-
-    epm_pw_hash = auth.hash_password("epm")
-    u_id = db_insert(
-        models.USERS,
-        name="epm",
-        sso_username="epm",
-        password=epm_pw_hash,
-        fullname="Partner Engineer",
-        email="epm@redhat.com",
-    )
-
-    db_insert(
-        models.JOIN_USERS_TEAMS, return_pk=False, user_id=u_id, team_id=team_epm_id
-    )
-
-    admin_pw_hash = auth.hash_password("admin")
-    u_id = db_insert(
-        models.USERS,
+def provision(session):
+    # Create admin
+    admin_team = models2.Team(name="admin")
+    admin_user = models2.User(
         name="admin",
         sso_username="admin",
-        password=admin_pw_hash,
+        password=auth.hash_password("admin"),
         fullname="Admin",
         email="admin@example.org",
     )
+    admin_user.team.append(admin_team)
+    session.add(admin_user)
 
-    db_insert(
-        models.JOIN_USERS_TEAMS, return_pk=False, user_id=u_id, team_id=team_admin_id
+    # Create user
+    user_team = models2.Team(name="user")
+    user = models2.User(
+        name="user",
+        sso_username="user",
+        password=auth.hash_password("user"),
+        fullname="User",
+        email="user@example.org",
     )
+    user.team.append(user_team)
+    session.add(user)
+
+    # Create user 2
+    user2_team = models2.Team(name="user2")
+    user2 = models2.User(
+        name="user2",
+        sso_username="user2",
+        password=auth.hash_password("user2"),
+        fullname="User2",
+        email="user2@example.org",
+    )
+    user2.team.append(user2_team)
+    session.add(user2)
+
+    # Create user no team
+    user_no_team = models2.User(
+        name="user_no_team",
+        sso_username="user_no_team",
+        password=auth.hash_password("user_no_team"),
+        fullname="User No Team",
+        email="user_no_team@example.org",
+    )
+    session.add(user_no_team)
+
+    # Create Red Hat employee
+    red_hat = models2.Team(name="Red Hat")
+    rh_employee = models2.User(
+        name="rh_employee",
+        sso_username="rh_employee",
+        password=auth.hash_password("rh_employee"),
+        fullname="Employee at Red Hat",
+        email="rh_employee@redhat.com",
+    )
+    rh_employee.team.append(red_hat)
+    session.add(rh_employee)
+
+    # Create EPM
+    epm_team = models2.Team(name="EPM")
+    epm = models2.User(
+        name="epm",
+        sso_username="epm",
+        password=auth.hash_password("epm"),
+        fullname="Partner Engineer",
+        email="epm@redhat.com",
+    )
+    epm.team.append(epm_team)
+    session.add(epm)
+
+    # Create product team
+    session.add(models2.Team(name="product"))
 
     # Create a product
-    db_insert(
-        models.PRODUCTS,
-        name="Awesome product",
-        label="AWSM",
-        description="My Awesome product",
+    session.add(
+        models2.Product(
+            name="Awesome product",
+            label="AWSM",
+            description="My Awesome product",
+        )
     )
 
-    # Create a product
-    db_insert(
-        models.PRODUCTS,
-        name="Best product",
-        label="BEST",
-        description="My best product",
+    # Create a second product
+    session.add(
+        models2.Product(
+            name="Best product",
+            label="BEST",
+            description="My best product",
+        )
     )
+    session.commit()
 
 
 SWIFT = "dci.stores.swift.Swift"
