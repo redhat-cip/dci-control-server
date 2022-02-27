@@ -22,7 +22,7 @@ import six
 from sqlalchemy import sql
 
 from dci.api.v1 import transformations
-from dci.db import models
+from dci.db import models2
 from dci.stores.swift import Swift
 from dci.common import utils
 from tests.data import JUNIT
@@ -268,7 +268,7 @@ def test_create_file_fill_tests_results_table(engine, admin, job_user_id):
         }
         admin.post("/api/v1/files", headers=headers, data=content_file)
 
-    query = sql.select([models.TESTS_RESULTS])
+    query = sql.select([models2.TestsResult])
     tests_results = engine.execute(query).fetchall()
     test_result = dict(tests_results[0])
 

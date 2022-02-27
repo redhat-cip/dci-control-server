@@ -25,7 +25,6 @@ from dci import decorators
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
-from dci.api.v1 import teams
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     check_json_is_valid,
@@ -41,8 +40,7 @@ from dci.db import models
 from dci.db import models2
 
 _TABLE = models.PRODUCTS
-_T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_EMBED_MANY = {"topics": True}
+_T_COLUMNS_TEAMS = v1_utils.get_columns_name_with_objects(models.TEAMS)
 
 
 @api.route("/products", methods=["POST"])
@@ -305,7 +303,7 @@ def get_all_teams_from_product(user, product_id):
     query = v1_utils.QueryBuilder(
         models.TEAMS,
         args,
-        teams._T_COLUMNS,
+        _T_COLUMNS_TEAMS,
         root_join_table=_JPT,
         root_join_condition=sql.and_(
             _JPT.c.product_id == product["id"],

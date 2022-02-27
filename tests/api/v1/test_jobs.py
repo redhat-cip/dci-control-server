@@ -24,7 +24,7 @@ import datetime
 from dci import dci_config
 from dci.common import exceptions as dci_exc
 from dci.common import utils
-import dci.db.models as models
+from dci.db import models2
 from dci.stores import files_utils
 from dci.stores.swift import Swift
 from tests.data import JUNIT
@@ -370,18 +370,14 @@ def test_success_update_job_status(admin, job_user_id):
     assert job["status"] == "failure"
 
 
-def test_job_duration(admin, job_user_id, engine):
+def test_job_duration(session, admin, job_user_id):
     job = admin.get("/api/v1/jobs/%s" % job_user_id)
     job = job.data["job"]
     assert job["status"] == "new"
     # update the job with a created_at 5 seconds in the past
-    with engine.begin() as conn:
-        q = (
-            models.JOBS.update()
-            .where(models.JOBS.c.id == job_user_id)
-            .values(created_at=datetime.datetime.utcnow() - datetime.timedelta(0, 5))
-        )
-        conn.execute(q)
+    job = session.query(models2.Job).filter(models2.Job.id == job_user_id).one()
+    job.created_at = datetime.datetime.utcnow() - datetime.timedelta(0, 5)
+    session.commit()
 
     data = {"job_id": job_user_id, "status": "running"}
     js = admin.post("/api/v1/jobstates", data=data)

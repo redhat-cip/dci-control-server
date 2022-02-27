@@ -27,7 +27,6 @@ from flask import json
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import transformations as tsfm
-from dci.api.v1 import utils as v1_utils
 from dci.api.v1 import tests
 from dci import decorators
 from dci.common import exceptions as dci_exc
@@ -37,8 +36,6 @@ from dci.common.schemas import (
     check_and_get_args,
 )
 from dci.common import utils
-from dci.db import embeds
-from dci.db import models
 from dci.db import models2
 from dci.db import declarative
 from dci import dci_config
@@ -50,12 +47,6 @@ from sqlalchemy import orm
 from sqlalchemy import exc as sa_exc
 
 logger = logging.getLogger(__name__)
-_TABLE = models.FILES
-# associate column names with the corresponding SA Column object
-_FILES_FOLDER = dci_config.CONFIG["FILES_UPLOAD_FOLDER"]
-_VALID_EMBED = embeds.files()
-_FILES_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_EMBED_MANY = {"jobstate": False, "job": False, "team": False}
 
 
 def get_previous_job_in_topic(job):

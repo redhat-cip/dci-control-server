@@ -34,15 +34,11 @@ from dci.common.schemas import (
 )
 from dci.common import utils
 from dci.db import declarative as d
-from dci.db import embeds
 from dci.db import models
 from dci.db import models2
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.TEAMS
-_VALID_EMBED = embeds.teams()
-_T_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_EMBED_MANY = {"remotecis": True, "topics": True}
 
 
 @api.route("/teams", methods=["POST"])
