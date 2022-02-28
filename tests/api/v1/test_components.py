@@ -24,7 +24,6 @@ from dci import dci_config
 from dci.api.v1 import components
 from dci.stores import files_utils
 from dci.common import exceptions as dci_exc
-from sqlalchemy.orm import sessionmaker
 
 
 def test_create_components(admin, topic_id):
@@ -697,7 +696,7 @@ def create_component(admin, topic_id, ct, name):
     return str(component["component"]["id"])
 
 
-def test_get_last_components_by_type(engine, admin, topic):
+def test_get_last_components_by_type(session, admin, topic):
 
     components_ids = []
     for i in range(3):
@@ -705,16 +704,16 @@ def test_get_last_components_by_type(engine, admin, topic):
         components_ids.append(cid)
 
     last_components = components.get_last_components_by_type(
-        ["puddle_osp"], topic_id=topic["id"], session=sessionmaker(bind=engine)()
+        ["puddle_osp"], topic_id=topic["id"], session=session
     )
     assert str(last_components[0].id) == components_ids[-1]
 
 
-def test_verify_and_get_components_ids(engine, admin, topic, topic_user_id):
+def test_verify_and_get_components_ids(session, admin, topic, topic_user_id):
     # components types not valid
     with pytest.raises(dci_exc.DCIException):
         components.verify_and_get_components_ids(
-            topic["id"], [], ["puddle_osp"], session=sessionmaker(bind=engine)()
+            topic["id"], [], ["puddle_osp"], session=session
         )
 
     with pytest.raises(dci_exc.DCIException):
@@ -722,7 +721,7 @@ def test_verify_and_get_components_ids(engine, admin, topic, topic_user_id):
             topic["id"],
             [str(uuid.uuid4())],
             ["puddle_osp"],
-            session=sessionmaker(bind=engine)(),
+            session=session,
         )
 
     # duplicated component types
@@ -734,14 +733,14 @@ def test_verify_and_get_components_ids(engine, admin, topic, topic_user_id):
             topic_user_id,
             [c1, c2, c3],
             ["type_1", "type_2", "type_3"],
-            session=sessionmaker(bind=engine)(),
+            session=session,
         )
 
     cids = components.verify_and_get_components_ids(
         topic_user_id,
         [c1, c3],
         ["type_1", "type_2"],
-        session=sessionmaker(bind=engine)(),
+        session=session,
     )
     assert set(cids) == {c1, c3}
 

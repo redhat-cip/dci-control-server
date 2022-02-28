@@ -32,7 +32,6 @@ from dci.db import models2
 from dci.stores import files_utils
 from tests import data as tests_data
 import tests.utils as t_utils
-from sqlalchemy.orm import sessionmaker
 
 import collections
 
@@ -264,7 +263,7 @@ def test_get_previous_job_in_topic(
     remoteci_context,
     components_user_ids,
     team_user_id,
-    engine,
+    session,
     topic_user_id,
 ):
     def get_new_remoteci_context():
@@ -308,7 +307,7 @@ def test_get_previous_job_in_topic(
     new_job = models2.Job(**new_job["job"])
 
     with app.app_context():
-        flask.g.session = sessionmaker(bind=engine)()
+        flask.g.session = session
         test_prev_job_id = str(files.get_previous_job_in_topic(new_job).id)
         assert prev_job_id == test_prev_job_id
 

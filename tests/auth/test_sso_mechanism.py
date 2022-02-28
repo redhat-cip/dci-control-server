@@ -19,7 +19,6 @@ import datetime
 import dci.auth_mechanism as authm
 from dci.common import exceptions as dci_exc
 from dci import dci_config
-from sqlalchemy.orm import sessionmaker
 
 import flask
 import mock
@@ -31,7 +30,7 @@ def test_sso_auth_verified(
     m_datetime,
     admin,
     app,
-    engine,
+    session,
     access_token,
     team_admin_id,
     team_redhat_id,
@@ -49,7 +48,7 @@ def test_sso_auth_verified(
         flask.g.team_admin_id = team_admin_id
         flask.g.team_redhat_id = team_redhat_id
         flask.g.team_epm_id = team_epm_id
-        flask.g.session = sessionmaker(bind=engine)()
+        flask.g.session = session
         mech = authm.OpenIDCAuth(sso_headers)
         assert mech.authenticate()
         assert mech.identity.name == "dci"
@@ -62,7 +61,7 @@ def test_sso_auth_verified(
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
 @mock.patch("dci.auth_mechanism.sso.get_latest_public_key")
 def test_sso_auth_verified_public_key_rotation(
-    m_get_last_pubkey, m_datetime, user_sso, app, engine, team_admin_id
+    m_get_last_pubkey, m_datetime, user_sso, app, session, team_admin_id
 ):
     sso_public_key = dci_config.CONFIG["SSO_PUBLIC_KEY"]
     dci_config.CONFIG["SSO_PUBLIC_KEY"] = "= non valid sso public key here ="
@@ -74,7 +73,7 @@ def test_sso_auth_verified_public_key_rotation(
     m_get_last_pubkey.return_value = sso_public_key
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
-        flask.g.session = sessionmaker(bind=engine)()
+        flask.g.session = session
         teams = user_sso.get("/api/v1/users/me")
         assert teams.status_code == 200
     assert dci_config.CONFIG["SSO_PUBLIC_KEY"] == sso_public_key
@@ -85,7 +84,7 @@ def test_sso_auth_verified_rh_employee(
     m_datetime,
     admin,
     app,
-    engine,
+    session,
     access_token_rh_employee,
     team_admin_id,
     team_redhat_id,
@@ -103,7 +102,7 @@ def test_sso_auth_verified_rh_employee(
         flask.g.team_admin_id = team_admin_id
         flask.g.team_redhat_id = team_redhat_id
         flask.g.team_epm_id = team_epm_id
-        flask.g.session = sessionmaker(bind=engine)()
+        flask.g.session = session
         mech = authm.OpenIDCAuth(sso_headers)
         assert mech.authenticate()
         assert mech.identity.name == "dci-rh"
@@ -124,7 +123,7 @@ def test_sso_auth_verified_rh_employee(
 
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
 def test_sso_auth_not_verified(
-    m_datetime, admin, app, engine, access_token, team_admin_id
+    m_datetime, admin, app, session, access_token, team_admin_id
 ):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime.fromtimestamp(
@@ -138,7 +137,7 @@ def test_sso_auth_not_verified(
     nb_users = len(admin.get("/api/v1/users").data["users"])
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
-        flask.g.session = sessionmaker(bind=engine)()
+        flask.g.session = session
         mech = authm.OpenIDCAuth(sso_headers)
         with pytest.raises(dci_exc.DCIException):
             mech.authenticate()
@@ -148,7 +147,7 @@ def test_sso_auth_not_verified(
 
 
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
-def test_sso_auth_get_users(m_datetime, user_sso, app, engine, team_admin_id):
+def test_sso_auth_get_users(m_datetime, user_sso, app, session, team_admin_id):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime.fromtimestamp(
         1518653629
@@ -156,13 +155,13 @@ def test_sso_auth_get_users(m_datetime, user_sso, app, engine, team_admin_id):
     m_datetime.utcnow.return_value = m_utcnow
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
-        flask.g.session = sessionmaker(bind=engine)()
+        flask.g.session = session
         gusers = user_sso.get("/api/v1/users")
         assert gusers.status_code == 401
 
 
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
-def test_sso_auth_get_current_user(m_datetime, user_sso, app, engine, team_admin_id):
+def test_sso_auth_get_current_user(m_datetime, user_sso, app, session, team_admin_id):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime.fromtimestamp(
         1518653629
@@ -170,6 +169,6 @@ def test_sso_auth_get_current_user(m_datetime, user_sso, app, engine, team_admin
     m_datetime.utcnow.return_value = m_utcnow
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
-        flask.g.session = sessionmaker(bind=engine)()
+        flask.g.session = session
         request = user_sso.get("/api/v1/users/me?embed=team,remotecis")
         assert request.status_code == 200
