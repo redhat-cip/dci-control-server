@@ -16,6 +16,9 @@
 
 import dci.auth_mechanism as authm
 from dci.common import exceptions as dci_exc
+from dci.db import models2
+from dci import auth
+from tests import utils
 
 import pytest
 
@@ -54,3 +57,27 @@ def test_bam_authenticate():
     basic_auth_mecanism = authm.BasicAuthMechanism(MockRequest(AuthMock()))
     basic_auth_mecanism.get_user_and_check_auth = return_is_authenticated
     assert basic_auth_mecanism.authenticate()
+
+
+def test_nrt_one_user_s_name_is_equal_to_the_email_of_another_user(session, app):
+    session.add(
+        models2.User(
+            name="user3@example.org",
+            sso_username="user3@example.org",
+            fullname="user3@example.org",
+            password=auth.hash_password("user3@example.org"),
+            email="user4@example.org",
+        )
+    )
+    session.add(
+        models2.User(
+            name="user4@example.org",
+            sso_username="user4@example.org",
+            fullname="user4@example.org",
+            password=auth.hash_password("user4@example.org"),
+            email="user3@example.org",
+        )
+    )
+    session.commit()
+    user = utils.generate_client(app, ("user3@example.org", "user3@example.org"))
+    assert user.get("/api/v1/identity").status_code == 200

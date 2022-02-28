@@ -115,14 +115,13 @@ class BasicAuthMechanism(BaseMechanism):
         """Check the combination username/password that is valid on the
         database.
         """
-        constraint = sql.or_(
-            models2.User.name == username, models2.User.email == username
-        )
-        user = self.identity_from_db(constraint)
+        user = self.identity_from_db(models2.User.name == username)
         if user is None:
-            raise dci_exc.DCIException(
-                "User %s does not exists." % username, status_code=401
-            )
+            user = self.identity_from_db(models2.User.email == username)
+            if user is None:
+                raise dci_exc.DCIException(
+                    "User %s does not exists." % username, status_code=401
+                )
 
         return user, auth.check_passwords_equal(password, user.password)
 
