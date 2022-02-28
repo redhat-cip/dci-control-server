@@ -28,7 +28,6 @@ import shutil
 import six
 
 import dci.auth as auth
-from dci.db import models
 from dci.db import models2
 import dci.dci_config as config
 from dci.common import utils
@@ -42,8 +41,9 @@ conf = config.CONFIG
 
 
 def restore_db(engine):
-    models.metadata.drop_all(engine)
-    models.metadata.create_all(engine)
+    models2.Base.metadata.reflect(engine)
+    models2.Base.metadata.drop_all(engine)
+    models2.Base.metadata.create_all(engine)
 
 
 def rm_upload_folder():

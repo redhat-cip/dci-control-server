@@ -16,7 +16,7 @@
 
 import dci.app
 from dci import dci_config
-from dci.db import models
+from dci.db import models2
 import tests.utils as utils
 import tests.sso_tokens as sso_tokens
 
@@ -50,7 +50,7 @@ def session(engine):
 @pytest.fixture
 def empty_db(engine):
     with contextlib.closing(engine.connect()) as con:
-        meta = models.metadata
+        meta = models2.Base.metadata
         trans = con.begin()
         for table in reversed(meta.sorted_tables):
             con.execute(table.delete())
@@ -69,7 +69,8 @@ def reset_job_event(engine):
 
 @pytest.fixture
 def delete_db(request, engine, teardown_db_clean):
-    models.metadata.drop_all(engine)
+    models2.Base.metadata.reflect(engine)
+    models2.Base.metadata.drop_all(engine)
     engine.execute("DROP TABLE IF EXISTS alembic_version")
 
 
