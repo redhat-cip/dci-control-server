@@ -122,13 +122,6 @@ def admin(app):
 
 
 @pytest.fixture
-def admin_id(admin):
-    team = admin.get("/api/v1/users?where=name:admin")
-    team = admin.get("/api/v1/users/%s" % team.data["users"][0]["id"]).data
-    return str(team["user"]["id"])
-
-
-@pytest.fixture
 def unauthorized(app):
     return utils.generate_client(app, ("bob", "bob"))
 
@@ -457,7 +450,7 @@ def feeder(admin, team_product_id):
 
 
 @pytest.fixture
-def product_openstack(admin, team_id):
+def product_openstack(admin):
     data = {
         "name": "OpenStack",
         "label": "OPENSTACK",
@@ -474,11 +467,6 @@ def product(admin):
 @pytest.fixture
 def product2(admin):
     return admin.get("/api/v1/products?where=label:BEST").data["products"][0]
-
-
-@pytest.fixture
-def product_id(product):
-    return str(product["id"])
 
 
 @pytest.fixture

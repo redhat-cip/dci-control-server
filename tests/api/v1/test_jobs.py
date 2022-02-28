@@ -439,10 +439,10 @@ def test_get_all_jobs_with_sort(remoteci_context, components_user_ids, topic_use
     assert jobs["jobs"][2]["id"] == job_1["id"]
 
 
-def test_get_jobs_by_product(user, epm, topic_user_id, product_id, job_user_id):
-    jobs = user.get("/api/v1/jobs?where=product_id:%s" % product_id).data["jobs"]
+def test_get_jobs_by_product(user, product):
+    jobs = user.get("/api/v1/jobs?where=product_id:%s" % product["id"]).data["jobs"]
     for job in jobs:
-        assert job["product_id"] == product_id
+        assert job["product_id"] == product["id"]
 
 
 def test_get_job_by_id(
