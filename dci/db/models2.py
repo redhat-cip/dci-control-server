@@ -320,7 +320,7 @@ class Feeder(dci_declarative.Mixin, Base):
     etag = sa.Column(
         sa.String(40), nullable=False, default=utils.gen_etag, onupdate=utils.gen_etag
     )
-    name = sa.Column("name", sa.String(255))
+    name = sa.Column("name", sa.String(255), nullable=False)
     data = sa.Column("data", sa_utils.JSONType, default={})
     api_secret = sa.Column("api_secret", sa.String(64), default=signature.gen_secret)
     team_id = sa.Column(
@@ -575,7 +575,7 @@ class Tests(dci_declarative.Mixin, Base):
 
 class TestsResult(dci_declarative.Mixin, Base):
     __tablename__ = "tests_results"
-    __table_args = (
+    __table_args__ = (
         sa.Index("tests_results_job_id_idx", "job_id"),
         sa.Index("tests_results_file_id_idx", "file_id"),
     )
