@@ -25,7 +25,6 @@ from dci.api.v1 import jobs_events
 from dci.api.v1 import notifications
 from dci.api.v1 import files
 from dci.api.v1 import transformations
-from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import check_json_is_valid, jobstate_schema, check_and_get_args
@@ -37,8 +36,6 @@ import sqlalchemy.orm as sa_orm
 
 # associate column names with the corresponding SA Column object
 _TABLE = models.JOBSTATES
-_JS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_EMBED_MANY = {"team": False, "job": False, "files": True}
 
 
 def insert_jobstate(user, values):

@@ -682,14 +682,6 @@ def test_component_success_update_field_by_field(admin, topic_id):
     assert c["title"] == "a new title"
 
 
-def test_get_component_types_from_topic(admin, engine, topic):
-    expected_component_types = ["puddle_osp"]
-    component_types = components.get_component_types_from_topic(
-        topic["id"], db_conn=engine
-    )
-    assert expected_component_types == component_types
-
-
 def create_component(admin, topic_id, ct, name):
     data = {"topic_id": topic_id, "name": name, "type": ct}
     component = admin.post("/api/v1/components", data=data).data

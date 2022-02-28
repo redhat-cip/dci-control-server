@@ -40,7 +40,6 @@ from dci.common.schemas import (
 )
 from dci.common import utils
 from dci.db import declarative
-from dci.db import embeds
 from dci.db import models
 from dci.db import models2
 
@@ -48,25 +47,10 @@ from dci.api.v1 import files
 from dci.api.v1 import export_control
 from dci.api.v1 import issues
 from dci.api.v1 import jobstates
-from dci import dci_config
 
 
-_FILES_FOLDER = dci_config.CONFIG["FILES_UPLOAD_FOLDER"]
 _TABLE = models.JOBS
-_VALID_EMBED = embeds.jobs()
-# associate column names with the corresponding SA Column object
-_JOBS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_EMBED_MANY = {
-    "files": True,
-    "topic": False,
-    "components": True,
-    "issues": True,
-    "jobstates": True,
-    "remoteci": False,
-    "team": False,
-    "results": True,
-    "tags": True,
-}
+
 
 logger = logging.getLogger(__name__)
 

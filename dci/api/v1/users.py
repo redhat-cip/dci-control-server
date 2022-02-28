@@ -38,11 +38,6 @@ from dci.common.schemas import (
 )
 
 _TABLE = models.USERS
-_USERS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
-_EMBED_MANY = {
-    "team": True,
-    "remotecis": True,
-}
 
 
 @api.route("/users", methods=["POST"])

@@ -282,13 +282,10 @@ def delete_component_file(user, c_id, f_id):
     return flask.Response(None, 204, content_type="application/json")
 
 
-def get_component_types_from_topic(topic_id, db_conn=None):
+def get_component_types_from_topic(topic_id):
     """Returns the component types of a topic."""
-    db_conn = db_conn or flask.g.db_conn
-    query = sql.select([models.TOPICS]).where(models.TOPICS.c.id == topic_id)
-    topic = db_conn.execute(query).fetchone()
-    topic = dict(topic)
-    return topic["component_types"]
+    topic = base.get_resource_orm(models2.Topic, topic_id)
+    return topic.component_types
 
 
 def get_last_components_by_type(component_types, topic_id, session=None):
