@@ -54,7 +54,7 @@ def get_components(session, offset, limit, unit, amount):
     query = query.filter(models2.Component.created_at >= (dt.now() - td(**delta)))
     query = query.order_by(models2.Component.created_at.asc())
 
-    query = query.options(sa_orm.joinedload("jobs"))
+    query = query.options(sa_orm.selectinload("jobs"))
 
     query = query.offset(offset)
     query = query.limit(limit)

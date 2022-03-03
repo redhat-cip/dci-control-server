@@ -89,8 +89,8 @@ def get_all_remotecis(user, t_id=None):
 
     q = (
         q.filter(models2.Remoteci.state != "archived")
-        .options(sa_orm.joinedload("team"))
-        .options(sa_orm.joinedload("users"))
+        .options(sa_orm.joinedload("team", innerjoin=True))
+        .options(sa_orm.selectinload("users"))
     )
 
     q = d.handle_args(q, models2.Remoteci, args)
@@ -114,8 +114,8 @@ def get_remoteci_by_id(user, remoteci_id):
             flask.g.session.query(models2.Remoteci)
             .filter(models2.Remoteci.state != "archived")
             .filter(models2.Remoteci.id == remoteci_id)
-            .options(sa_orm.joinedload("team"))
-            .options(sa_orm.joinedload("users"))
+            .options(sa_orm.joinedload("team", innerjoin=True))
+            .options(sa_orm.selectinload("users"))
             .one()
         )
     except sa_orm.exc.NoResultFound:
@@ -212,7 +212,7 @@ def add_user_to_remoteci(user, remoteci_id):
             flask.g.session.query(models2.Remoteci)
             .filter(models2.Remoteci.state != "archived")
             .filter(models2.Remoteci.id == remoteci_id)
-            .options(sa_orm.joinedload("users"))
+            .options(sa_orm.selectinload("users"))
             .one()
         )
     except sa_orm.exc.NoResultFound:
@@ -269,7 +269,7 @@ def delete_user_from_remoteci(user, remoteci_id, u_id):
             flask.g.session.query(models2.Remoteci)
             .filter(models2.Remoteci.state != "archived")
             .filter(models2.Remoteci.id == remoteci_id)
-            .options(sa_orm.joinedload("users"))
+            .options(sa_orm.selectinload("users"))
             .one()
         )
     except sa_orm.exc.NoResultFound:

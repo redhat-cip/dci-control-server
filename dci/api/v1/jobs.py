@@ -385,11 +385,11 @@ def get_all_jobs(user, topic_id=None):
 
     # Load associated ressources
     query = (
-        query.options(sa_orm.joinedload("results"))
-        .options(sa_orm.joinedload("remoteci"))
-        .options(sa_orm.joinedload("components"))
-        .options(sa_orm.joinedload("topic"))
-        .options(sa_orm.joinedload("team"))
+        query.options(sa_orm.selectinload("results"))
+        .options(sa_orm.joinedload("remoteci", innerjoin=True))
+        .options(sa_orm.selectinload("components"))
+        .options(sa_orm.joinedload("topic", innerjoin=True))
+        .options(sa_orm.joinedload("team", innerjoin=True))
     )
 
     nb_jobs = query.count()
@@ -413,7 +413,7 @@ def get_components_from_job(user, job_id):
         j = (
             query.filter(models2.Job.state != "archived")
             .filter(models2.Job.id == job_id)
-            .options(sa_orm.joinedload("components"))
+            .options(sa_orm.selectinload("components"))
             .one()
         )
     except sa_orm.exc.NoResultFound:
@@ -474,13 +474,13 @@ def get_job_by_id(user, job_id):
     # Get only non archived job
     query = query.filter(models2.Job.state != "archived")
     query = (
-        query.options(sa_orm.joinedload("remoteci"))
-        .options(sa_orm.joinedload("topic"))
-        .options(sa_orm.joinedload("team"))
-        .options(sa_orm.subqueryload("results"))
-        .options(sa_orm.subqueryload("components"))
-        .options(sa_orm.subqueryload("jobstates"))
-        .options(sa_orm.subqueryload("files"))
+        query.options(sa_orm.joinedload("remoteci", innerjoin=True))
+        .options(sa_orm.joinedload("topic", innerjoin=True))
+        .options(sa_orm.joinedload("team", innerjoin=True))
+        .options(sa_orm.selectinload("results"))
+        .options(sa_orm.selectinload("components"))
+        .options(sa_orm.selectinload("jobstates"))
+        .options(sa_orm.selectinload("files"))
     )
     try:
         job = query.one()

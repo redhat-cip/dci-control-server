@@ -80,9 +80,9 @@ def get_topic_by_id(user, topic_id):
         models2.Topic,
         topic_id,
         options=[
-            sa_orm.joinedload("teams"),
-            sa_orm.joinedload("product"),
-            sa_orm.joinedload("next_topic"),
+            sa_orm.selectinload("teams"),
+            sa_orm.joinedload("product", innerjoin=True),
+            sa_orm.selectinload("next_topic"),
         ],
     )
     topic_serialized = topic.serialize()
@@ -121,8 +121,8 @@ def get_all_topics(user):
     q = (
         flask.g.session.query(models2.Topic)
         .filter(models2.Topic.state != "archived")
-        .options(sa_orm.joinedload("product"))
-        .options(sa_orm.joinedload("next_topic"))
+        .options(sa_orm.joinedload("product", innerjoin=True))
+        .options(sa_orm.selectinload("next_topic"))
     )
 
     if user.is_not_super_admin() and user.is_not_read_only_user() and user.is_not_epm():
@@ -135,7 +135,7 @@ def get_all_topics(user):
             )
         )
     else:
-        q = q.options(sa_orm.joinedload("teams"))
+        q = q.options(sa_orm.selectinload("teams"))
 
     q = d.handle_args(q, models2.Topic, args)
     nb_topics = q.count()
