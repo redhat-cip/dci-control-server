@@ -84,8 +84,8 @@ def get_all_teams(user):
 
     q = (
         q.filter(models2.Team.state != "archived")
-        .options(sa_orm.joinedload("topics"))
-        .options(sa_orm.joinedload("remotecis"))
+        .options(sa_orm.selectinload("topics"))
+        .options(sa_orm.selectinload("remotecis"))
     )
     q = d.handle_args(q, models2.Team, args)
     nb_teams = q.count()
@@ -109,8 +109,8 @@ def get_team_by_id(user, t_id):
             flask.g.session.query(models2.Team)
             .filter(models2.Team.state != "archived")
             .filter(models2.Team.id == t_id)
-            .options(sa_orm.joinedload("remotecis"))
-            .options(sa_orm.joinedload("topics"))
+            .options(sa_orm.selectinload("remotecis"))
+            .options(sa_orm.selectinload("topics"))
             .one()
         )
     except sa_orm.exc.NoResultFound:

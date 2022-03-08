@@ -153,7 +153,7 @@ def get_component_by_id(user, c_id):
     component = base.get_resource_orm(
         models2.Component,
         c_id,
-        options=[sa_orm.joinedload("files"), sa_orm.joinedload("jobs")],
+        options=[sa_orm.selectinload("files"), sa_orm.selectinload("jobs")],
     )
     _verify_component_and_topic_access(user, component)
 

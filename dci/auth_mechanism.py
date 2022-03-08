@@ -48,7 +48,7 @@ class BaseMechanism(object):
             user = (
                 flask.g.session.query(models2.User)
                 .filter(models2.User.state == "active")
-                .options(orm.joinedload("team"))
+                .options(orm.selectinload("team"))
                 .filter(model_constraint)
                 .one()
             )
@@ -165,7 +165,7 @@ class HmacMechanism(BaseMechanism):
         if identity_model is None:
             return None
         identity = base.get_resource_orm(
-            identity_model, client_info["client_id"], options=[orm.joinedload("team")]
+            identity_model, client_info["client_id"], options=[orm.selectinload("team")]
         )
         return Identity(
             {

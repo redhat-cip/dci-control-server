@@ -111,7 +111,7 @@ def get_all_products(user):
     q = (
         flask.g.session.query(models2.Product)
         .filter(models2.Product.state != "archived")
-        .options(sa_orm.joinedload("topics"))
+        .options(sa_orm.selectinload("topics"))
     )
     q = d.handle_args(q, models2.Product, args)
 
@@ -141,7 +141,7 @@ def get_product_by_id(user, product_id):
             flask.g.session.query(models2.Product)
             .filter(models2.Product.state != "archived")
             .filter(models2.Product.id == product_id)
-            .options(sa_orm.joinedload("topics"))
+            .options(sa_orm.selectinload("topics"))
         )
         if (
             user.is_not_super_admin()

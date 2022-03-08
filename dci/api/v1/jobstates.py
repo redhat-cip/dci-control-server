@@ -126,7 +126,7 @@ def get_all_jobstates(user, job_id):
 
     query = flask.g.session.query(models2.Jobstate)
     query = query.filter(models2.Jobstate.job_id == job_id).options(
-        sa_orm.joinedload("files")
+        sa_orm.selectinload("files")
     )
     query = declarative.handle_args(query, models2.Jobstate, args)
     nb_jobstates = query.count()
@@ -141,7 +141,7 @@ def get_all_jobstates(user, job_id):
 @decorators.login_required
 def get_jobstate_by_id(user, js_id):
     js = base.get_resource_orm(
-        models2.Jobstate, js_id, options=[sa_orm.joinedload("files")]
+        models2.Jobstate, js_id, options=[sa_orm.selectinload("files")]
     )
     return flask.Response(
         json.dumps({"jobstate": js.serialize()}),
