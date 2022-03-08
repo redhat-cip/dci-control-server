@@ -15,7 +15,7 @@
 # under the License.
 
 from dci import stores
-from dci.common import exceptions, utils
+from dci.common import exceptions
 
 import logging
 import os
@@ -79,6 +79,11 @@ class Swift(stores.Store):
             tenant_name=self.os_tenant_name,
             os_options=self.os_options,
             authurl=self.os_auth_url,
+            retries=5,
+            starting_backoff=1,
+            max_backoff=2,
+            timeout=5,
+            force_auth_retry=True,
         )
 
     def delete(self, filename):
@@ -128,12 +133,4 @@ class Swift(stores.Store):
                         status_code=exc.http_status,
                     )
 
-        utils.retry(
-            self.connection.put_object,
-            self.container,
-            file_path,
-            iterable,
-            tries=3,
-            delay=1,
-            allowed_exceptions=(swiftclient.exceptions.ClientException,),
-        )
+        self.connection.put_object(self.container, file_path, iterable)

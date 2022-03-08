@@ -19,7 +19,6 @@ import hashlib
 import uuid
 import logging
 import flask
-import time
 
 import six
 from sqlalchemy.engine import result
@@ -86,19 +85,3 @@ def check_and_get_etag(headers):
             "'If-match' header must be provided", status_code=412
         )
     return if_match_etag
-
-
-def retry(func, *args, **kwargs):
-    tries = kwargs.pop("tries", 5)
-    delay = kwargs.pop("delay", 1)
-    allowed_exceptions = kwargs.pop("allowed_exceptions", ())
-    for _ in range(tries):
-        try:
-            result = func(*args, **kwargs)
-            if result:
-                return result
-        except allowed_exceptions as e:
-            logger.debug("allowed exception in retry function")
-            logger.exception(e)
-        logger.debug("retrying in %d seconds..." % delay)
-        time.sleep(delay)
