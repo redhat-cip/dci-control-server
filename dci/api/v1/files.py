@@ -15,6 +15,7 @@
 # under the License.
 import base64
 import datetime
+import io
 
 try:
     from xmlrpclib import ServerProxy
@@ -177,7 +178,7 @@ def create_files(user):
     file_path = files_utils.build_file_path(job.team_id, values["job_id"], file_id)
 
     store = dci_config.get_store("files")
-    store.upload(file_path, flask.request.data)
+    store.upload(file_path, io.BytesIO(flask.request.data))
     s_file = store.head(file_path)
 
     etag = utils.gen_etag()
