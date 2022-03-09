@@ -312,38 +312,6 @@ def test_get_previous_job_in_topic(
         assert prev_job_id == test_prev_job_id
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
-def test_known_issues_in_tests(mocked_disp, admin, user, job_user_id, topic_user_id):
-
-    pissue = user.post(
-        "/api/v1/issues", data={"url": "http://bugzilla/42", "topic_id": topic_user_id}
-    )
-    pissue_id1 = pissue.data["issue"]["id"]
-    pissue = user.post(
-        "/api/v1/issues", data={"url": "http://bugzilla/43", "topic_id": topic_user_id}
-    )
-    pissue_id2 = pissue.data["issue"]["id"]
-    test = user.post("/api/v1/tests", data={"name": "Testsuite_1:test_3"})
-    test_id1 = test.data["test"]["id"]
-    user.post("/api/v1/issues/%s/tests" % pissue_id1, data={"test_id": test_id1})
-    user.post("/api/v1/issues/%s/tests" % pissue_id2, data={"test_id": test_id1})
-
-    data = {"job_id": job_user_id, "status": "failure"}
-    jobstate_1 = admin.post("/api/v1/jobstates", data=data).data["jobstate"]
-    file_id = t_utils.post_file(
-        admin,
-        jobstate_1["id"],
-        FileDesc("Tempest", tests_data.jobtest_two),
-        mime="application/junit",
-    )
-    testscases = admin.get("/api/v1/files/%s/testscases" % file_id).data["testscases"]
-    for testcase in testscases:
-        if testcase["name"] == "Testsuite_1:test_3":
-            assert len(testcase["issues"]) == 2
-            issues_ids = {issue["id"] for issue in testcase["issues"]}
-            assert issues_ids == {pissue_id1, pissue_id2}
-
-
 def test_purge(app, admin, user, jobstate_user_id, team_user_id, job_user_id):
     # create two files and archive them
     file_id1 = t_utils.post_file(

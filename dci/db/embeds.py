@@ -116,20 +116,6 @@ def jobs(root_select=models.JOBS, root_id=None):
                 "isouter": True,
             }
         ],
-        "issues": [
-            {
-                "right": models.JOIN_JOBS_ISSUES,
-                "onclause": models.JOIN_JOBS_ISSUES.c.job_id == root_id,
-                "isouter": True,
-            },
-            {
-                "right": models.ISSUES,
-                "onclause": and_(
-                    models.ISSUES.c.id == models.JOIN_JOBS_ISSUES.c.issue_id
-                ),
-                "isouter": True,
-            },
-        ],
     }
 
 
@@ -307,7 +293,6 @@ EMBED_STRING_TO_OBJECT = {
     "jobs": {
         "files": models.FILES,
         "topic": TOPIC,
-        "issues": models.ISSUES,
         "jobstates": models.JOBSTATES,
         "remoteci": REMOTECI,
         "components": models.COMPONENTS,

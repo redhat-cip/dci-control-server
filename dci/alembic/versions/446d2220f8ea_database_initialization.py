@@ -53,9 +53,6 @@ STATUSES = sa.Enum(*JOB_STATUSES, name="statuses")
 RESOURCE_STATES = ["active", "inactive", "archived"]
 STATES = sa.Enum(*RESOURCE_STATES, name="states")
 
-ISSUE_TRACKERS = ["github", "bugzilla"]
-TRACKERS = sa.Enum(*ISSUE_TRACKERS, name="trackers")
-
 FILES_CREATE = "create"
 FILES_DELETE = "delete"
 FILES_ACTIONS = sa.Enum(FILES_CREATE, FILES_DELETE, name="files_actions")
@@ -248,7 +245,6 @@ def upgrade():
             nullable=False,
         ),
         sa.Column("url", sa.Text, unique=True),
-        sa.Column("tracker", TRACKERS, nullable=False),
     )
 
     op.create_table(

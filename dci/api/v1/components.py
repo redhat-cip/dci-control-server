@@ -25,7 +25,6 @@ from dci import dci_config
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import export_control
-from dci.api.v1 import issues
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
@@ -371,27 +370,6 @@ def get_schedule_components_ids(topic_id, component_types, components_ids):
     if components_ids == []:
         return [c.id for c in get_last_components_by_type(component_types, topic_id)]
     return verify_and_get_components_ids(topic_id, components_ids, component_types)
-
-
-@api.route("/components/<c_id>/issues", methods=["GET"])
-@decorators.login_required
-def retrieve_issues_from_component(user, c_id):
-    """Retrieve all issues attached to a component."""
-    return issues.get_issues_by_resource(c_id, _TABLE)
-
-
-@api.route("/components/<c_id>/issues", methods=["POST"])
-@decorators.login_required
-def attach_issue_to_component(user, c_id):
-    """Attach an issue to a component."""
-    return issues.attach_issue(c_id, _TABLE, user.id)
-
-
-@api.route("/components/<c_id>/issues/<i_id>", methods=["DELETE"])
-@decorators.login_required
-def unattach_issue_from_component(user, c_id, i_id):
-    """Unattach an issue to a component."""
-    return issues.unattach_issue(c_id, i_id, _TABLE)
 
 
 @api.route("/components/purge", methods=["GET"])

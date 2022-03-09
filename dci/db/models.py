@@ -42,9 +42,6 @@ FINAL_STATUSES_ENUM = sa.Enum(*FINAL_STATUSES, name="final_statuses")
 RESOURCE_STATES = ["active", "inactive", "archived"]
 STATES = sa.Enum(*RESOURCE_STATES, name="states")
 
-ISSUE_TRACKERS = ["github", "bugzilla"]
-TRACKERS = sa.Enum(*ISSUE_TRACKERS, name="trackers")
-
 
 COMPONENTS = sa.Table(
     "components",
@@ -107,28 +104,6 @@ COMPONENTS = sa.Table(
     sa.Column("tags", pg.ARRAY(sa.Text), default=[]),
 )
 
-JOIN_COMPONENTS_ISSUES = sa.Table(
-    "components_issues",
-    metadata,
-    sa.Column(
-        "component_id",
-        pg.UUID(as_uuid=True),
-        sa.ForeignKey("components.id", ondelete="CASCADE"),
-        nullable=False,
-        primary_key=True,
-    ),
-    sa.Column(
-        "issue_id",
-        pg.UUID(as_uuid=True),
-        sa.ForeignKey("issues.id", ondelete="CASCADE"),
-        nullable=False,
-        primary_key=True,
-    ),
-    sa.Column(
-        "user_id", pg.UUID(as_uuid=True), sa.ForeignKey("users.id"), nullable=False
-    ),
-    sa.Index("components_issues_user_id_idx", "user_id"),
-)
 
 TOPICS = sa.Table(
     "topics",
@@ -193,32 +168,6 @@ JOINS_TOPICS_TEAMS = sa.Table(
         sa.ForeignKey("teams.id", ondelete="CASCADE"),
         nullable=False,
         primary_key=True,
-    ),
-)
-
-TESTS = sa.Table(
-    "tests",
-    metadata,
-    sa.Column("id", pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid),
-    sa.Column(
-        "created_at", sa.DateTime(), default=datetime.datetime.utcnow, nullable=False
-    ),
-    sa.Column(
-        "updated_at",
-        sa.DateTime(),
-        onupdate=datetime.datetime.utcnow,
-        default=datetime.datetime.utcnow,
-        nullable=False,
-    ),
-    sa.Column("name", sa.Text, nullable=False, unique=True),
-    sa.Column("data", sa_utils.JSONType),
-    sa.Column("state", STATES, default="active"),
-    sa.Column(
-        "etag",
-        sa.String(40),
-        nullable=False,
-        default=utils.gen_etag,
-        onupdate=utils.gen_etag,
     ),
 )
 
@@ -429,27 +378,6 @@ JOIN_JOBS_COMPONENTS = sa.Table(
     ),
 )
 
-JOIN_JOBS_ISSUES = sa.Table(
-    "jobs_issues",
-    metadata,
-    sa.Column(
-        "job_id",
-        pg.UUID(as_uuid=True),
-        sa.ForeignKey("jobs.id", ondelete="CASCADE"),
-        nullable=False,
-        primary_key=True,
-    ),
-    sa.Column(
-        "issue_id",
-        pg.UUID(as_uuid=True),
-        sa.ForeignKey("issues.id", ondelete="CASCADE"),
-        nullable=False,
-        primary_key=True,
-    ),
-    sa.Column("user_id", pg.UUID(as_uuid=True), sa.ForeignKey("users.id")),
-    sa.Index("jobs_issues_user_id_idx", "user_id"),
-)
-
 JOBSTATES = sa.Table(
     "jobstates",
     metadata,
@@ -494,13 +422,6 @@ FILES = sa.Table(
         nullable=True,
     ),
     sa.Index("files_jobstate_id_idx", "jobstate_id"),
-    sa.Column(
-        "test_id",
-        pg.UUID(as_uuid=True),
-        sa.ForeignKey("tests.id", ondelete="CASCADE"),
-        nullable=True,
-        default=None,
-    ),
     sa.Column(
         "team_id",
         pg.UUID(as_uuid=True),
@@ -676,60 +597,6 @@ LOGS = sa.Table(
     sa.Index("logs_user_id_idx", "user_id"),
     sa.Column("action", sa.Text, nullable=False),
 )
-
-ISSUES = sa.Table(
-    "issues",
-    metadata,
-    sa.Column("id", pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid),
-    sa.Column(
-        "created_at", sa.DateTime(), default=datetime.datetime.utcnow, nullable=False
-    ),
-    sa.Column(
-        "updated_at",
-        sa.DateTime(),
-        onupdate=datetime.datetime.utcnow,
-        default=datetime.datetime.utcnow,
-        nullable=False,
-    ),
-    sa.Column(
-        "etag",
-        sa.String(40),
-        nullable=False,
-        default=utils.gen_etag,
-        onupdate=utils.gen_etag,
-    ),
-    sa.Column(
-        "topic_id",
-        pg.UUID(as_uuid=True),
-        sa.ForeignKey("topics.id", ondelete="CASCADE"),
-        nullable=True,
-    ),
-    sa.Column("url", sa.Text),
-    sa.Column("tracker", TRACKERS, nullable=False),
-    sa.Column("state", STATES, default="active"),
-    sa.UniqueConstraint("url", "topic_id", name="issues_url_topic_id_key"),
-)
-
-
-JOIN_ISSUES_TESTS = sa.Table(
-    "issues_tests",
-    metadata,
-    sa.Column(
-        "issue_id",
-        pg.UUID(as_uuid=True),
-        sa.ForeignKey("issues.id", ondelete="CASCADE"),
-        nullable=False,
-        primary_key=True,
-    ),
-    sa.Column(
-        "test_id",
-        pg.UUID(as_uuid=True),
-        sa.ForeignKey("tests.id", ondelete="CASCADE"),
-        nullable=False,
-        primary_key=True,
-    ),
-)
-
 
 PRODUCTS = sa.Table(
     "products",

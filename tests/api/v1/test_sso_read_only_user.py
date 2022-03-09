@@ -128,18 +128,6 @@ def test_products(rh_employee, app):
     assert products.status_code == 200
 
 
-# TESTS
-def test_tests(admin, rh_employee, app, team_user_id):
-    pt = admin.post(
-        "/api/v1/tests", data={"name": "pname", "team_id": team_user_id}
-    ).data
-    pt_id = pt["test"]["id"]
-
-    # get by uuid
-    created_t = rh_employee.get("/api/v1/tests/%s" % pt_id)
-    assert created_t.status_code == 200
-
-
 # TOPICS
 def test_topics(rh_employee, app, topic_user_id):
     gtopic = rh_employee.get("/api/v1/topics/%s" % topic_user_id)

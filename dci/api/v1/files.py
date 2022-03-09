@@ -28,7 +28,6 @@ from flask import json
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import transformations as tsfm
-from dci.api.v1 import tests
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
@@ -100,17 +99,11 @@ def _compute_regressions_successfix(jsonunit, previous_jsonunit):
     return jsonunit
 
 
-def _compute_known_tests_cases(jsonunit, job):
-    tests_to_issues = tests.get_tests_to_issues(job.topic_id)
-    return tsfm.add_known_issues_to_tests(jsonunit, tests_to_issues)
-
-
 def _process_junit_file(values, junit_file, job):
     jsonunit = tsfm.junit2dict(junit_file)
     previous_jsonunit = _get_previous_jsonunit(job, values["name"])
 
     jsonunit = _compute_regressions_successfix(jsonunit, previous_jsonunit)
-    jsonunit = _compute_known_tests_cases(jsonunit, job)
 
     tr = models2.TestsResult()
     tr.id = utils.gen_uuid()
@@ -143,7 +136,7 @@ def get_file_info_from_headers(headers):
     new_headers = {}
     for key, value in headers.items():
         key = key.lower().replace("dci-", "").replace("-", "_")
-        if key in ["md5", "mime", "jobstate_id", "job_id", "name", "test_id"]:
+        if key in ["md5", "mime", "jobstate_id", "job_id", "name"]:
             new_headers[key] = value
     return new_headers
 
@@ -152,7 +145,7 @@ def get_file_info_from_headers(headers):
 @decorators.login_required
 def create_files(user):
     file_info = get_file_info_from_headers(dict(flask.request.headers))
-    values = dict.fromkeys(["md5", "mime", "jobstate_id", "job_id", "name", "test_id"])
+    values = dict.fromkeys(["md5", "mime", "jobstate_id", "job_id", "name"])
     values.update(file_info)
 
     if values.get("jobstate_id") is None and values.get("job_id") is None:

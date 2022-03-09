@@ -543,26 +543,6 @@ add_team_to_topic_schema = {
     "additionalProperties": False,
 }
 
-
-###############################################################################
-#                                                                             #
-#                                Issues schemas                               #
-#                                                                             #
-###############################################################################
-issue_properties = {
-    "url": Properties.url,
-    "topic_id": with_default(Properties.uuid, None),
-}
-issue_schema = {
-    "type": "object",
-    "properties": issue_properties,
-    "required": ["url"],
-    "additionalProperties": False,
-}
-
-issue_test_properties = {"test_id": Properties.uuid}
-issue_test_schema = {"type": "object", "properties": issue_test_properties}
-
 ###############################################################################
 #                                                                             #
 #                                  Team schema                                #

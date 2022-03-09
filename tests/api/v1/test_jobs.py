@@ -197,7 +197,7 @@ def test_get_all_jobs(
 
 
 def test_get_all_jobs_with_pagination(
-    remoteci_context, components_user_ids, test_id, team_user_id, topic_user_id
+    remoteci_context, components_user_ids, topic_user_id
 ):
     data = {"components": components_user_ids, "topic_id": topic_user_id}
     remoteci_context.post("/api/v1/jobs", data=data)

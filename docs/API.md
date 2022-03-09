@@ -700,7 +700,6 @@ Status: Upload test results | Code: 201
         "size": "75",
         "state": "active",
         "team_id": "713ecb86-0157-4445-ad90-c7aa7d0306a0",
-        "test_id": null,
         "updated_at": "2019-10-29T15:34:48.962824"
     }
 }

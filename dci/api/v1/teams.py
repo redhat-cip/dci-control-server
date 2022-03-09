@@ -21,7 +21,6 @@ import sqlalchemy.orm as sa_orm
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import remotecis
-from dci.api.v1 import tests
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
@@ -132,16 +131,6 @@ def get_remotecis_by_team(user, team_id):
 
     team = v1_utils.verify_existence_and_get(team_id, _TABLE)
     return remotecis.get_all_remotecis(team["id"])
-
-
-@api.route("/teams/<uuid:team_id>/tests", methods=["GET"])
-@decorators.login_required
-def get_tests_by_team(user, team_id):
-    if user.is_in_team(team_id) and user.is_not_epm():
-        raise dci_exc.Unauthorized()
-
-    team = v1_utils.verify_existence_and_get(team_id, _TABLE)
-    return tests.get_all_tests_by_team(user, team["id"])
 
 
 @api.route("/teams/<uuid:t_id>", methods=["PUT"])

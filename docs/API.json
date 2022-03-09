@@ -883,7 +883,7 @@
           "_postman_previewlanguage": "json",
           "header": [],
           "cookie": [],
-          "body": "{\n    \"file\": {\n        \"created_at\": \"2019-10-29T15:34:48.962810\",\n        \"etag\": \"0a7200c0e3223ffcb78ace010e5ea10e\",\n        \"id\": \"deba6adf-aba1-4db3-800a-aa491bde7394\",\n        \"job_id\": \"bf878d0c-3119-4194-913b-1da1cf3a19fa\",\n        \"jobstate_id\": null,\n        \"md5\": null,\n        \"mime\": \"application/junit\",\n        \"name\": \"test-result.log\",\n        \"size\": \"75\",\n        \"state\": \"active\",\n        \"team_id\": \"713ecb86-0157-4445-ad90-c7aa7d0306a0\",\n        \"test_id\": null,\n        \"updated_at\": \"2019-10-29T15:34:48.962824\"\n    }\n}"
+          "body": "{\n    \"file\": {\n        \"created_at\": \"2019-10-29T15:34:48.962810\",\n        \"etag\": \"0a7200c0e3223ffcb78ace010e5ea10e\",\n        \"id\": \"deba6adf-aba1-4db3-800a-aa491bde7394\",\n        \"job_id\": \"bf878d0c-3119-4194-913b-1da1cf3a19fa\",\n        \"jobstate_id\": null,\n        \"md5\": null,\n        \"mime\": \"application/junit\",\n        \"name\": \"test-result.log\",\n        \"size\": \"75\",\n        \"state\": \"active\",\n        \"team_id\": \"713ecb86-0157-4445-ad90-c7aa7d0306a0\",\n        \"updated_at\": \"2019-10-29T15:34:48.962824\"\n    }\n}"
         }
       ]
     }

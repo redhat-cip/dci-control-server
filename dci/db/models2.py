@@ -643,12 +643,6 @@ class File(dci_declarative.Mixin, Base):
         sa.ForeignKey("jobstates.id", ondelete="CASCADE"),
         nullable=True,
     )
-    test_id = sa.Column(
-        pg.UUID(as_uuid=True),
-        sa.ForeignKey("tests.id", ondelete="CASCADE"),
-        nullable=True,
-        default=None,
-    )
     team_id = sa.Column(
         pg.UUID(as_uuid=True),
         sa.ForeignKey("teams.id", ondelete="CASCADE"),
