@@ -36,9 +36,6 @@ from dci.db import declarative as d
 from dci.db import models
 from dci.db import models2
 
-# associate column names with the corresponding SA Column object
-_TABLE = models.TEAMS
-
 
 @api.route("/teams", methods=["POST"])
 @decorators.login_required
@@ -99,7 +96,7 @@ def get_all_teams(user):
 @api.route("/teams/<uuid:t_id>", methods=["GET"])
 @decorators.login_required
 def get_team_by_id(user, t_id):
-    v1_utils.verify_existence_and_get(t_id, _TABLE)
+    base.get_resource_orm(models2.Team, t_id)
     if user.is_not_in_team(t_id) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
@@ -129,8 +126,8 @@ def get_remotecis_by_team(user, team_id):
     if user.is_not_in_team(team_id) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    team = v1_utils.verify_existence_and_get(team_id, _TABLE)
-    return remotecis.get_all_remotecis(team["id"])
+    team = base.get_resource_orm(models2.Team, team_id)
+    return remotecis.get_all_remotecis(team.id)
 
 
 @api.route("/teams/<uuid:t_id>", methods=["PUT"])
@@ -143,7 +140,7 @@ def put_team(user, t_id):
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    v1_utils.verify_existence_and_get(t_id, _TABLE)
+    base.get_resource_orm(models2.Team, t_id)
 
     values["etag"] = utils.gen_etag()
 
@@ -179,7 +176,7 @@ def put_team(user, t_id):
 def delete_team_by_id(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    v1_utils.verify_existence_and_get(t_id, _TABLE)
+    base.get_resource_orm(models2.Team, t_id)
 
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()

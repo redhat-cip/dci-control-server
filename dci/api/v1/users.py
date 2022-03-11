@@ -26,7 +26,6 @@ from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common import utils
 from dci.db import declarative as d
-from dci.db import models
 from dci.db import models2
 from dci.common.schemas import (
     check_json_is_valid,
@@ -36,8 +35,6 @@ from dci.common.schemas import (
     update_current_user_schema,
     check_and_get_args,
 )
-
-_TABLE = models.USERS
 
 
 @api.route("/users", methods=["POST"])
@@ -109,7 +106,7 @@ def get_all_users(user):
 def user_by_id(user, user_id):
     if user.id != user_id and user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
-    v1_utils.verify_existence_and_get(user_id, _TABLE)
+    base.get_resource_orm(models2.User, user_id)
 
     u = (
         flask.g.session.query(models2.User)
@@ -244,7 +241,7 @@ def put_user(user, user_id):
 def delete_user_by_id(user, user_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    v1_utils.verify_existence_and_get(user_id, _TABLE)
+    base.get_resource_orm(models2.User, user_id)
 
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()

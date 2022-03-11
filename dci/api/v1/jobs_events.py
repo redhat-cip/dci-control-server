@@ -17,6 +17,7 @@
 import flask
 from flask import json
 
+from dci.api.v1 import base
 from dci.api.v1 import api
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
@@ -28,6 +29,7 @@ from dci.common.schemas import (
 )
 from dci.common import utils
 from dci.db import models
+from dci.db import models2
 
 from sqlalchemy import sql, func
 
@@ -87,9 +89,8 @@ def purge_jobs_events_from_sequence(user, sequence):
 def create_event(job_id, status, topic_id=None):
     values = {"job_id": str(job_id), "status": status, "topic_id": str(topic_id)}
     if not topic_id:
-        job = v1_utils.verify_existence_and_get(job_id, models.JOBS)
-        job = dict(job)
-        values["topic_id"] = str(job["topic_id"])
+        job = base.get_resource_orm(models2.Job, job_id)
+        values["topic_id"] = str(job.topic_id)
     q_add_job_event = models.JOBS_EVENTS.insert().values(**values)
     flask.g.db_conn.execute(q_add_job_event)
 

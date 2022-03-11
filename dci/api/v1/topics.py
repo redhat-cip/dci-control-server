@@ -39,9 +39,6 @@ from dci.db import declarative as d
 from dci.db import models
 from dci.db import models2
 
-# associate column names with the corresponding SA Column object
-_TABLE = models.TOPICS
-
 
 @api.route("/topics", methods=["POST"])
 @decorators.login_required
@@ -246,7 +243,7 @@ def delete_team_from_topic(user, topic_id, team_id):
 @api.route("/topics/<uuid:topic_id>/teams", methods=["GET"])
 @decorators.login_required
 def get_all_teams_from_topic(user, topic_id):
-    topic = v1_utils.verify_existence_and_get(topic_id, _TABLE)
+    topic = base.get_resource_orm(models2.Topic, topic_id)
 
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
@@ -256,7 +253,7 @@ def get_all_teams_from_topic(user, topic_id):
     query = (
         sql.select([models.TEAMS])
         .select_from(JTT.join(models.TEAMS))
-        .where(JTT.c.topic_id == topic["id"])
+        .where(JTT.c.topic_id == topic.id)
     )
     rows = flask.g.db_conn.execute(query)
 

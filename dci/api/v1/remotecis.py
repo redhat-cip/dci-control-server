@@ -108,7 +108,7 @@ def get_all_remotecis(user, t_id=None):
 @api.route("/remotecis/<uuid:remoteci_id>", methods=["GET"])
 @decorators.login_required
 def get_remoteci_by_id(user, remoteci_id):
-    v1_utils.verify_existence_and_get(remoteci_id, _TABLE)
+    base.get_resource_orm(models2.Remoteci, remoteci_id)
     try:
         r = (
             flask.g.session.query(models2.Remoteci)
@@ -247,7 +247,7 @@ def add_user_to_remoteci(user, remoteci_id):
 @api.route("/remotecis/<uuid:remoteci_id>/users", methods=["GET"])
 @decorators.login_required
 def get_all_users_from_remotecis(user, remoteci_id):
-    v1_utils.verify_existence_and_get(remoteci_id, _TABLE)
+    base.get_resource_orm(models2.Remoteci, remoteci_id)
 
     JUR = models.JOIN_USER_REMOTECIS
     query = (

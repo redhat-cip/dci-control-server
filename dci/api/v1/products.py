@@ -39,7 +39,6 @@ from dci.db import declarative as d
 from dci.db import models
 from dci.db import models2
 
-_TABLE = models.PRODUCTS
 _T_COLUMNS_TEAMS = v1_utils.get_columns_name_with_objects(models.TEAMS)
 
 
@@ -177,7 +176,7 @@ def delete_product_by_id(user, product_id):
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
-    v1_utils.verify_existence_and_get(product_id, _TABLE)
+    base.get_resource_orm(models2.Product, product_id)
 
     deleted_product = (
         flask.g.session.query(models2.Product)
@@ -293,7 +292,7 @@ def serialize_teams(rows):
 @api.route("/products/<uuid:product_id>/teams", methods=["GET"])
 @decorators.login_required
 def get_all_teams_from_product(user, product_id):
-    product = v1_utils.verify_existence_and_get(product_id, _TABLE)
+    product = base.get_resource_orm(models2.Product, product_id)
 
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
@@ -306,7 +305,7 @@ def get_all_teams_from_product(user, product_id):
         _T_COLUMNS_TEAMS,
         root_join_table=_JPT,
         root_join_condition=sql.and_(
-            _JPT.c.product_id == product["id"],
+            _JPT.c.product_id == product.id,
             _JPT.c.team_id == models.TEAMS.c.id,
         ),
     )

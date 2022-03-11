@@ -40,15 +40,11 @@ from dci.common.schemas import (
 )
 from dci.common import utils
 from dci.db import declarative
-from dci.db import models
 from dci.db import models2
 
 from dci.api.v1 import files
 from dci.api.v1 import export_control
 from dci.api.v1 import jobstates
-
-
-_TABLE = models.JOBS
 
 
 logger = logging.getLogger(__name__)
