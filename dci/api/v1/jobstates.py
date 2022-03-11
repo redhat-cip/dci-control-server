@@ -29,46 +29,44 @@ from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import check_json_is_valid, jobstate_schema, check_and_get_args
 from dci.common import utils
-from dci.db import models
 from dci.db import models2
 from dci.db import declarative
 import sqlalchemy.orm as sa_orm
 
-# associate column names with the corresponding SA Column object
-_TABLE = models.JOBSTATES
 
-
-def insert_jobstate(user, values):
-    values.update(
-        {"id": utils.gen_uuid(), "created_at": datetime.datetime.utcnow().isoformat()}
+def insert_jobstate(values):
+    job_state = models2.Jobstate(
+        id=utils.gen_uuid(),
+        job_id=values["job_id"],
+        status=values["status"],
+        created_at=datetime.datetime.utcnow().isoformat(),
     )
-
-    query = _TABLE.insert().values(**values)
-
-    flask.g.db_conn.execute(query)
+    flask.g.session.add(job_state)
+    flask.g.session.commit()
 
 
-def serialize_job(user, job):
-    embeds = ["components", "topic", "remoteci", "results"]
-    embeds_many = {
-        "components": True,
-        "topic": False,
-        "remoteci": False,
-        "results": True,
-    }
-    job = base.get_resource_by_id(
-        user, job, models.JOBS, embed_many=embeds_many, embeds=embeds, jsonify=False
+def serialize_job_with_testcases(job_id):
+    job = base.get_resource_orm(
+        models2.Job,
+        job_id,
+        options=[
+            sa_orm.joinedload("topic", innerjoin=True),
+            sa_orm.joinedload("remoteci", innerjoin=True),
+            sa_orm.selectinload("components"),
+            sa_orm.selectinload("results"),
+        ],
     )
+    job_serialized = job.serialize()
     results_with_testcases = []
-    for result in job["results"]:
+    for result in job_serialized["results"]:
         file = base.get_resource_orm(models2.File, result["file_id"])
         file_descriptor = files.get_file_descriptor(file)
         jsonunit = transformations.junit2dict(file_descriptor)
         result_with_testcases = result.copy()
         result_with_testcases["testcases"] = jsonunit["testscases"]
         results_with_testcases.append(result_with_testcases)
-    job["results"] = results_with_testcases
-    return job
+    job_serialized["results"] = results_with_testcases
+    return job_serialized
 
 
 @api.route("/jobstates", methods=["POST"])
@@ -84,7 +82,6 @@ def create_jobstates(user):
     # 'run' or 'pre-run' then set the job to 'error' state
     job_id = values.get("job_id")
     job = base.get_resource_orm(models2.Job, job_id)
-    job_serialized = job.serialize()
     status = values.get("status")
     if status in ["failure", "error"]:
         if job.status in ["new", "pre-run"]:
@@ -105,9 +102,11 @@ def create_jobstates(user):
 
     # send notification in case of final jobstate status
     if status in models2.FINAL_STATUSES:
-        job = serialize_job(user, job_serialized)
-        jobs_events.create_event(job["id"], values["status"], job["topic_id"])
-        notifications.dispatcher(job)
+        job_serialized = serialize_job_with_testcases(job_id)
+        jobs_events.create_event(
+            job_serialized["id"], values["status"], job_serialized["topic_id"]
+        )
+        notifications.dispatcher(job_serialized)
 
     result = json.dumps({"jobstate": created_js})
     return flask.Response(result, 201, content_type="application/json")
