@@ -210,10 +210,10 @@ def delete_team_by_id(user, t_id):
 @api.route("/teams/purge", methods=["GET"])
 @decorators.login_required
 def get_to_purge_archived_teams(user):
-    return base.get_to_purge_archived_resources(user, _TABLE)
+    return base.get_to_purge_archived_resources(user, models2.Team)
 
 
 @api.route("/teams/purge", methods=["POST"])
 @decorators.login_required
 def purge_archived_teams(user):
-    return base.purge_archived_resources(user, _TABLE)
+    return base.purge_archived_resources(user, models2.Team)

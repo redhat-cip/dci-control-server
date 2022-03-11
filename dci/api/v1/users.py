@@ -295,10 +295,10 @@ def get_subscribed_remotecis(identity, user_id):
 @api.route("/users/purge", methods=["GET"])
 @decorators.login_required
 def get_to_purge_archived_users(user):
-    return base.get_to_purge_archived_resources(user, _TABLE)
+    return base.get_to_purge_archived_resources(user, models2.User)
 
 
 @api.route("/users/purge", methods=["POST"])
 @decorators.login_required
 def purge_archived_users(user):
-    return base.purge_archived_resources(user, _TABLE)
+    return base.purge_archived_resources(user, models2.User)

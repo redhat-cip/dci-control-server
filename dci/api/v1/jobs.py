@@ -604,11 +604,11 @@ def delete_job_by_id(user, j_id):
 @api.route("/jobs/purge", methods=["GET"])
 @decorators.login_required
 def get_to_purge_archived_jobs(user):
-    return base.get_to_purge_archived_resources(user, _TABLE)
+    return base.get_to_purge_archived_resources(user, models2.Job)
 
 
 @api.route("/jobs/purge", methods=["POST"])
 @decorators.login_required
 def purge_archived_jobs(user):
     files.purge_archived_files()
-    return base.purge_archived_resources(user, _TABLE)
+    return base.purge_archived_resources(user, models2.Job)

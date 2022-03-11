@@ -266,10 +266,10 @@ def get_all_teams_from_topic(user, topic_id):
 @api.route("/topics/purge", methods=["GET"])
 @decorators.login_required
 def get_to_purge_archived_topics(user):
-    return base.get_to_purge_archived_resources(user, _TABLE)
+    return base.get_to_purge_archived_resources(user, models2.Topic)
 
 
 @api.route("/topics/purge", methods=["POST"])
 @decorators.login_required
 def purge_archived_topics(user):
-    return base.purge_archived_resources(user, _TABLE)
+    return base.purge_archived_resources(user, models2.Topic)

@@ -320,10 +320,10 @@ def get_all_teams_from_product(user, product_id):
 @api.route("/products/purge", methods=["GET"])
 @decorators.login_required
 def get_to_purge_archived_products(user):
-    return base.get_to_purge_archived_resources(user, _TABLE)
+    return base.get_to_purge_archived_resources(user, models2.Product)
 
 
 @api.route("/products/purge", methods=["POST"])
 @decorators.login_required
 def purge_archived_products(user):
-    return base.purge_archived_resources(user, _TABLE)
+    return base.purge_archived_resources(user, models2.Product)
