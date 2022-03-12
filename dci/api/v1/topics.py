@@ -36,7 +36,6 @@ from dci.common.schemas import (
 )
 from dci.common import utils
 from dci.db import declarative as d
-from dci.db import models
 from dci.db import models2
 
 
@@ -243,21 +242,19 @@ def delete_team_from_topic(user, topic_id, team_id):
 @api.route("/topics/<uuid:topic_id>/teams", methods=["GET"])
 @decorators.login_required
 def get_all_teams_from_topic(user, topic_id):
-    topic = base.get_resource_orm(models2.Topic, topic_id)
-
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    # Get all teams which belongs to a given topic
-    JTT = models.JOINS_TOPICS_TEAMS
     query = (
-        sql.select([models.TEAMS])
-        .select_from(JTT.join(models.TEAMS))
-        .where(JTT.c.topic_id == topic.id)
+        flask.g.session.query(models2.Team)
+        .filter(models2.Team.state != "archived")
+        .join(models2.Team.topics)
+        .filter(models2.Topic.id == topic_id)
+        .filter(models2.Topic.state != "archived")
     )
-    rows = flask.g.db_conn.execute(query)
+    teams = [t.serialize() for t in query.all()]
 
-    return flask.jsonify({"teams": rows, "_meta": {"count": rows.rowcount}})
+    return flask.jsonify({"teams": teams, "_meta": {"count": len(teams)}})
 
 
 @api.route("/topics/purge", methods=["GET"])

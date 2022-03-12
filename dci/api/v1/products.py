@@ -36,10 +36,7 @@ from dci.common.schemas import (
 )
 from dci.common import utils
 from dci.db import declarative as d
-from dci.db import models
 from dci.db import models2
-
-_T_COLUMNS_TEAMS = v1_utils.get_columns_name_with_objects(models.TEAMS)
 
 
 @api.route("/products", methods=["POST"])
@@ -276,44 +273,23 @@ def delete_team_from_product(user, product_id, team_id):
     return flask.Response(None, 204, content_type="application/json")
 
 
-def serialize_teams(rows):
-    result = []
-    for row in rows:
-        new_row = {}
-        for k, v in row.items():
-            if not k.startswith("products_teams"):
-                new_key = k.split("_")[1]
-                new_row[new_key] = v
-        result.append(new_row)
-    return result
-
-
 # this is already provided by GET /products/<uuid:product_id> and will be removed
 @api.route("/products/<uuid:product_id>/teams", methods=["GET"])
 @decorators.login_required
 def get_all_teams_from_product(user, product_id):
-    product = base.get_resource_orm(models2.Product, product_id)
-
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    args = check_and_get_args(flask.request.args.to_dict())
-    _JPT = models.JOIN_PRODUCTS_TEAMS
-    query = v1_utils.QueryBuilder(
-        models.TEAMS,
-        args,
-        _T_COLUMNS_TEAMS,
-        root_join_table=_JPT,
-        root_join_condition=sql.and_(
-            _JPT.c.product_id == product.id,
-            _JPT.c.team_id == models.TEAMS.c.id,
-        ),
+    query = (
+        flask.g.session.query(models2.Team)
+        .filter(models2.Team.state != "archived")
+        .join(models2.Team.products)
+        .filter(models2.Product.id == product_id)
+        .filter(models2.Product.state != "archived")
     )
-    rows = query.execute(fetchall=True)
+    teams = [t.serialize() for t in query.all()]
 
-    return flask.jsonify(
-        {"teams": serialize_teams(rows), "_meta": {"count": len(rows)}}
-    )
+    return flask.jsonify({"teams": teams, "_meta": {"count": len(teams)}})
 
 
 @api.route("/products/purge", methods=["GET"])
