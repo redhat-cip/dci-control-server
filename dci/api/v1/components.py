@@ -235,7 +235,7 @@ def upload_component_file(user, c_id):
     component = base.get_resource_orm(models2.Component, c_id)
     _verify_component_and_topic_access(user, component)
 
-    if str(component.topic_id) not in v1_utils.user_topic_ids(user):
+    if str(component.topic_id) not in v1_utils.user_topic_ids(flask.g.session, user):
         raise dci_exc.Unauthorized()
 
     store = dci_config.get_store("components")

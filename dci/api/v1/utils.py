@@ -22,7 +22,7 @@ from OpenSSL import crypto
 
 from dci.common import exceptions as dci_exc
 from dci.common import utils
-from dci.db import models
+from dci.db import models2
 from dci.db import embeds
 
 
@@ -88,33 +88,23 @@ def get_key_and_cert_signed(pkey_path, cert_path, digest="sha256"):
     return key, cert
 
 
-def user_topic_ids(user):
+def user_topic_ids(session, user):
     """Retrieve the list of topics IDs a user has access to."""
-
     if (
         user.is_super_admin()
         or user.is_read_only_user()
         or user.is_epm()
         or user.is_feeder()
     ):
-        query = sql.select([models.TOPICS])
+        query = session.query(models2.Topic.id)
     else:
         query = (
-            sql.select([models.JOINS_TOPICS_TEAMS.c.topic_id])
-            .select_from(
-                models.JOINS_TOPICS_TEAMS.join(
-                    models.TOPICS,
-                    sql.and_(
-                        models.JOINS_TOPICS_TEAMS.c.topic_id == models.TOPICS.c.id,
-                        models.TOPICS.c.state == "active",
-                    ),
-                )
-            )
-            .where(models.JOINS_TOPICS_TEAMS.c.team_id.in_(user.teams_ids))
+            session.query(models2.Topic.id)
+            .join(models2.Topic.teams)
+            .filter(models2.Team.state != "archived")
+            .filter(models2.Team.id.in_(user.teams_ids))
         )
-
-    rows = flask.g.db_conn.execute(query).fetchall()
-    return [str(row[0]) for row in rows]
+    return [str(t.id) for t in query.all()]
 
 
 def get_columns_name_with_objects(table, table_prefix=False):

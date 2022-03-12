@@ -119,7 +119,7 @@ def get_all_topics(user):
         q = q.filter(
             sql.or_(
                 models2.Topic.export_control == True,  # noqa
-                models2.Topic.id.in_(v1_utils.user_topic_ids(user)),
+                models2.Topic.id.in_(v1_utils.user_topic_ids(flask.g.session, user)),
             )
         )
     else:
