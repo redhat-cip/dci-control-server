@@ -19,7 +19,6 @@ from flask import json
 
 from dci.api.v1 import base
 from dci.api.v1 import api
-from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
@@ -28,14 +27,8 @@ from dci.common.schemas import (
     check_and_get_args,
 )
 from dci.common import utils
-from dci.db import models
 from dci.db import models2
-
-from sqlalchemy import sql, func
-
-
-_TABLE = models.JOBS_EVENTS
-_JOBS_EVENTS_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
+from dci.db import declarative
 
 
 @api.route("/jobs_events/<int:sequence>", methods=["GET"])
@@ -49,30 +42,21 @@ def get_jobs_events_from_sequence(user, sequence):
         raise dci_exc.Unauthorized()
 
     query = (
-        sql.select([models.JOBS_EVENTS])
-        .select_from(
-            models.JOBS_EVENTS.join(
-                models.JOBS, models.JOBS.c.id == models.JOBS_EVENTS.c.job_id
-            )
-        )
-        .where(_TABLE.c.id >= sequence)
+        flask.g.session.query(models2.JobEvent)
+        .select_from(models2.JobEvent)
+        .join(models2.Job, models2.Job.id == models2.JobEvent.job_id)
+        .filter(models2.JobEvent.id >= sequence)
     )
-    sort_list = v1_utils.sort_query(
-        args["sort"], _JOBS_EVENTS_COLUMNS, default="created_at"
+
+    query = declarative.handle_args(query, models2.JobEvent, args)
+    nb_jobs_events = query.count()
+
+    query = declarative.handle_pagination(query, args)
+    jobs_events = [je.serialize() for je in query.all()]
+
+    return json.jsonify(
+        {"jobs_events": jobs_events, "_meta": {"count": nb_jobs_events}}
     )
-    query = v1_utils.add_sort_to_query(query, sort_list)
-
-    if args.get("limit", None):
-        query = query.limit(args.get("limit"))
-    if args.get("offset", None):
-        query = query.offset(args.get("offset"))
-
-    rows = flask.g.db_conn.execute(query).fetchall()
-
-    query_nb_rows = sql.select([func.count(models.JOBS_EVENTS.c.id)])
-    nb_rows = flask.g.db_conn.execute(query_nb_rows).scalar()
-
-    return json.jsonify({"jobs_events": rows, "_meta": {"count": nb_rows}})
 
 
 @api.route("/jobs_events/<int:sequence>", methods=["DELETE"])
@@ -80,9 +64,14 @@ def get_jobs_events_from_sequence(user, sequence):
 def purge_jobs_events_from_sequence(user, sequence):
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
-    query = _TABLE.delete().where(_TABLE.c.id >= sequence)
-    flask.g.db_conn.execute(query)
-
+    try:
+        flask.g.session.query(models2.JobEvent).filter(
+            models2.JobEvent.id >= sequence
+        ).delete()
+        flask.g.session.commit()
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e), status_code=409)
     return flask.Response(None, 204, content_type="application/json")
 
 
@@ -91,8 +80,8 @@ def create_event(job_id, status, topic_id=None):
     if not topic_id:
         job = base.get_resource_orm(models2.Job, job_id)
         values["topic_id"] = str(job.topic_id)
-    q_add_job_event = models.JOBS_EVENTS.insert().values(**values)
-    flask.g.db_conn.execute(q_add_job_event)
+
+    base.create_resource_orm(models2.JobEvent, values)
 
 
 @api.route("/jobs_events/sequence", methods=["GET"])
@@ -103,16 +92,16 @@ def get_current_sequence(user):
 
     def create_sequence():
         etag = utils.gen_etag()
-        q_add_counter = models.COUNTER.insert().values(
-            name="jobs_events", sequence=0, etag=etag
+        base.create_resource_orm(
+            models2.Counter, {"name": "jobs_events", "sequence": 0, "etag": etag}
         )
-        flask.g.db_conn.execute(q_add_counter)
 
     def get_sequence():
-        query = sql.select([models.COUNTER]).where(
-            models.COUNTER.c.name == "jobs_events"
+        return (
+            flask.g.session.query(models2.Counter)
+            .filter(models2.Counter.name == "jobs_events")
+            .first()
         )
-        return flask.g.db_conn.execute(query).fetchone()
 
     je_sequence = get_sequence()
     if not je_sequence:
@@ -133,19 +122,16 @@ def put_current_sequence(user):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     values = clean_json_with_schema(counter_schema, flask.request.json)
-    etag = utils.gen_etag()
-    q_update = (
-        models.COUNTER.update()
-        .where(
-            sql.and_(
-                models.COUNTER.c.name == "jobs_events",
-                models.COUNTER.c.etag == if_match_etag,
-            )
+    counter = (
+        flask.g.session.query(models2.Counter)
+        .filter(
+            models2.Counter.name == "jobs_events",
+            models2.Counter.etag == if_match_etag,
         )
-        .values(sequence=values["sequence"], etag=etag)
+        .first()
     )
-    result = flask.g.db_conn.execute(q_update)
-    if not result.rowcount:
+    if not counter:
         raise dci_exc.DCIConflict("jobs_events", "sequence")
-
+    counter.sequence = values["sequence"]
+    flask.g.session.commit()
     return flask.Response(None, 204, content_type="application/json")

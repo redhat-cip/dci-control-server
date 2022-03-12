@@ -653,3 +653,33 @@ class File(dci_declarative.Mixin, Base):
         sa.ForeignKey("jobs.id", ondelete="CASCADE"),
         nullable=True,
     )
+
+
+class JobEvent(dci_declarative.Mixin, Base):
+    __tablename__ = "jobs_events"
+    __table_args__ = (sa.Index("jobs_events_job_id_idx", "job_id"),)
+    id = sa.Column(sa.Integer, primary_key=True, autoincrement=True)
+    created_at = sa.Column(
+        sa.DateTime(), default=datetime.datetime.utcnow, nullable=False
+    )
+    job_id = sa.Column("job_id", pg.UUID(as_uuid=True), nullable=False)
+    topic_id = sa.Column("topic_id", pg.UUID(as_uuid=True), nullable=False)
+    status = sa.Column("status", FINAL_STATUSES_ENUM)
+
+
+class Counter(dci_declarative.Mixin, Base):
+    __tablename__ = "counter"
+    name = sa.Column(sa.String(255), primary_key=True, nullable=False)
+    created_at = sa.Column(
+        sa.DateTime(), default=datetime.datetime.utcnow, nullable=False
+    )
+    updated_at = sa.Column(
+        sa.DateTime(),
+        onupdate=datetime.datetime.utcnow,
+        default=datetime.datetime.utcnow,
+        nullable=False,
+    )
+    sequence = sa.Column(sa.Integer, default=0)
+    etag = sa.Column(
+        sa.String(40), nullable=False, default=utils.gen_etag, onupdate=utils.gen_etag
+    )
