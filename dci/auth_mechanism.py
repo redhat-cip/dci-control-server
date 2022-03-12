@@ -79,7 +79,7 @@ class BaseMechanism(object):
                 is_read_only_user = True
             if user_team.id == flask.g.team_epm_id:
                 is_epm_user = True
-            # todo gvincent: use user_team.serialize()
+            # TODO (gvincent): use user_team.serialize()
             user_teams[user_team.id] = {
                 "id": user_team.id,
                 "name": user_team.name,

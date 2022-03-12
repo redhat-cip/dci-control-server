@@ -18,7 +18,6 @@ import re
 from flask import json
 from sqlalchemy import exc as sa_exc
 import sqlalchemy.orm as sa_orm
-from sqlalchemy import sql
 from OpenSSL import crypto
 
 from dci.api.v1 import api
@@ -38,13 +37,7 @@ from dci.common.schemas import (
 from dci.common import signature
 from dci.common import utils
 from dci.db import declarative as d
-from dci.db import models
 from dci.db import models2
-
-
-# associate column names with the corresponding SA Column object
-_TABLE = models.REMOTECIS
-_R_COLUMNS = v1_utils.get_columns_name_with_objects(_TABLE)
 
 
 @api.route("/remotecis", methods=["POST"])
@@ -108,19 +101,14 @@ def get_all_remotecis(user, t_id=None):
 @api.route("/remotecis/<uuid:remoteci_id>", methods=["GET"])
 @decorators.login_required
 def get_remoteci_by_id(user, remoteci_id):
-    base.get_resource_orm(models2.Remoteci, remoteci_id)
-    try:
-        r = (
-            flask.g.session.query(models2.Remoteci)
-            .filter(models2.Remoteci.state != "archived")
-            .filter(models2.Remoteci.id == remoteci_id)
-            .options(sa_orm.joinedload("team", innerjoin=True))
-            .options(sa_orm.selectinload("users"))
-            .one()
-        )
-    except sa_orm.exc.NoResultFound:
-        raise dci_exc.DCIException(message="remoteci not found", status_code=404)
-
+    r = base.get_resource_orm(
+        models2.Remoteci,
+        remoteci_id,
+        options=[
+            sa_orm.joinedload("team", innerjoin=True),
+            sa_orm.selectinload("users"),
+        ],
+    )
     if user.is_not_in_team(r.team_id) and user.is_not_read_only_user():
         raise dci_exc.Unauthorized()
 
@@ -169,13 +157,14 @@ def delete_remoteci_by_id(user, remoteci_id):
 
     base.update_resource_orm(remoteci, {"state": "archived"})
 
-    # will use models2 when FILES and JOBS will be done in models2
-    for model in [models.JOBS]:
-        values = {"state": "archived"}
-        query = (
-            model.update().where(model.c.remoteci_id == remoteci_id).values(**values)
-        )
-        flask.g.db_conn.execute(query)
+    try:
+        flask.g.session.query(models2.Job).filter(
+            models2.Job.remoteci_id == remoteci_id
+        ).update({"state": "archived"})
+        flask.g.session.commit()
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e), status_code=409)
 
     return flask.Response(None, 204, content_type="application/json")
 
@@ -184,18 +173,12 @@ def delete_remoteci_by_id(user, remoteci_id):
 @api.route("/remotecis/<uuid:remoteci_id>/data", methods=["GET"])
 @decorators.login_required
 def get_remoteci_data(user, remoteci_id):
-    query = v1_utils.QueryBuilder(_TABLE, {}, _R_COLUMNS)
+    r = base.get_resource_orm(models2.Remoteci, remoteci_id)
 
-    if user.is_not_super_admin() and user.is_not_epm():
-        query.add_extra_condition(_TABLE.c.team_id.in_(user.teams_ids))
+    if user.is_not_in_team(r.team_id) and user.is_not_read_only_user():
+        raise dci_exc.Unauthorized()
 
-    query.add_extra_condition(_TABLE.c.id == remoteci_id)
-    row = query.execute(fetchone=True)
-
-    if row is None:
-        raise dci_exc.DCINotFound("RemoteCI", remoteci_id)
-
-    remoteci_data = row["remotecis_data"]
+    remoteci_data = r.data
 
     if "keys" in "keys" in flask.request.args:
         keys = flask.request.args.get("keys").split(",")
@@ -207,26 +190,10 @@ def get_remoteci_data(user, remoteci_id):
 @api.route("/remotecis/<uuid:remoteci_id>/users", methods=["POST"])
 @decorators.login_required
 def add_user_to_remoteci(user, remoteci_id):
-    try:
-        r = (
-            flask.g.session.query(models2.Remoteci)
-            .filter(models2.Remoteci.state != "archived")
-            .filter(models2.Remoteci.id == remoteci_id)
-            .options(sa_orm.selectinload("users"))
-            .one()
-        )
-    except sa_orm.exc.NoResultFound:
-        raise dci_exc.DCIException(message="remoteci not found", status_code=404)
-
-    try:
-        u = (
-            flask.g.session.query(models2.User)
-            .filter(models2.User.state != "archived")
-            .filter(models2.User.id == user.id)
-            .one()
-        )
-    except sa_orm.exc.NoResultFound:
-        raise dci_exc.DCIException(message="user not found", status_code=404)
+    r = base.get_resource_orm(
+        models2.Remoteci, remoteci_id, options=[sa_orm.selectinload("users")]
+    )
+    u = base.get_resource_orm(models2.User, user.id)
 
     if user.is_not_in_team(r.team_id) and user.is_not_epm():
         raise dci_exc.Unauthorized()
@@ -247,43 +214,23 @@ def add_user_to_remoteci(user, remoteci_id):
 @api.route("/remotecis/<uuid:remoteci_id>/users", methods=["GET"])
 @decorators.login_required
 def get_all_users_from_remotecis(user, remoteci_id):
-    base.get_resource_orm(models2.Remoteci, remoteci_id)
-
-    JUR = models.JOIN_USER_REMOTECIS
-    query = (
-        sql.select([models.USERS])
-        .select_from(JUR.join(models.USERS))
-        .where(JUR.c.remoteci_id == remoteci_id)
+    r = base.get_resource_orm(
+        models2.Remoteci, remoteci_id, options=[sa_orm.selectinload("users")]
     )
-    rows = flask.g.db_conn.execute(query)
-
-    res = flask.jsonify({"users": rows, "_meta": {"count": rows.rowcount}})
+    if user.is_not_in_team(r.team_id) and user.is_not_epm():
+        raise dci_exc.Unauthorized()
+    users = r.serialize()["users"]
+    res = flask.jsonify({"users": users, "_meta": {"count": len(users)}})
     return res
 
 
 @api.route("/remotecis/<uuid:remoteci_id>/users/<uuid:u_id>", methods=["DELETE"])
 @decorators.login_required
 def delete_user_from_remoteci(user, remoteci_id, u_id):
-    try:
-        r = (
-            flask.g.session.query(models2.Remoteci)
-            .filter(models2.Remoteci.state != "archived")
-            .filter(models2.Remoteci.id == remoteci_id)
-            .options(sa_orm.selectinload("users"))
-            .one()
-        )
-    except sa_orm.exc.NoResultFound:
-        raise dci_exc.DCIException(message="remoteci not found", status_code=404)
-
-    try:
-        u = (
-            flask.g.session.query(models2.User)
-            .filter(models2.User.state != "archived")
-            .filter(models2.User.id == u_id)
-            .one()
-        )
-    except sa_orm.exc.NoResultFound:
-        raise dci_exc.DCIException(message="user not found", status_code=404)
+    r = base.get_resource_orm(
+        models2.Remoteci, remoteci_id, options=[sa_orm.selectinload("users")]
+    )
+    u = base.get_resource_orm(models2.User, u_id)
 
     if user.is_not_in_team(r.team_id) and user.is_not_epm():
         raise dci_exc.Unauthorized()

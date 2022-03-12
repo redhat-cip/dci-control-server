@@ -33,7 +33,6 @@ from dci.common.schemas import (
 )
 from dci.common import utils
 from dci.db import declarative as d
-from dci.db import models
 from dci.db import models2
 
 
@@ -196,10 +195,15 @@ def delete_team_by_id(user, t_id):
             status_code=409,
         )
 
-    # will use models2 when FILES and JOBS will be done in models2
-    for model in [models.FILES, models.REMOTECIS, models.JOBS]:
-        query = model.update().where(model.c.team_id == t_id).values(state="archived")
-        flask.g.db_conn.execute(query)
+    try:
+        for model in [models2.File, models2.Remoteci, models2.Job]:
+            flask.g.session.query(model).filter(model.team_id == t_id).update(
+                {"state": "archived"}
+            )
+        flask.g.session.commit()
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e), status_code=409)
 
     return flask.Response(None, 204, content_type="application/json")
 

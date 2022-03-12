@@ -24,6 +24,7 @@ from dci.common import utils
 from dci.common.schemas import check_and_get_args
 
 
+# TODO (gvincent): remove me unused no ?
 def get_resource_by_id(
     user,
     resource,
@@ -81,6 +82,20 @@ def get_resource_by_id(
         return res
     else:
         return resource
+
+
+def get_resources_orm(table, filters=[], options=[]):
+    query = flask.g.session.query(table)
+    try:
+        getattr(table, "state")
+        query = query.filter(table.state != "archived")
+    except AttributeError:
+        pass
+    for filter in filters:
+        query = query.filter(filter)
+    for option in options:
+        query = query.options(option)
+    return query.all()
 
 
 def get_resource_orm(table, id, etag=None, options=[]):
