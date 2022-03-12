@@ -142,6 +142,7 @@ def get_file_info_from_headers(headers):
 
 
 @api.route("/files", methods=["POST"])
+@decorators.log_file_info
 @decorators.login_required
 def create_files(user):
     file_info = get_file_info_from_headers(dict(flask.request.headers))
@@ -172,8 +173,9 @@ def create_files(user):
 
     store = dci_config.get_store("files")
     store.upload(file_path, io.BytesIO(flask.request.data))
+    logger.info("store upload %s (%s)" % (values["name"], file_id))
     s_file = store.head(file_path)
-
+    logger.info("store head %s (%s)" % (values["name"], file_id))
     etag = utils.gen_etag()
     values.update(
         {

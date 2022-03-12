@@ -95,3 +95,17 @@ def log(f):
         return f(*args, **kwargs)
 
     return decorated
+
+
+def log_file_info(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        logger.info("log_file_info")
+        for key, value in flask.request.headers.items():
+            key = key.lower().replace("dci-", "").replace("-", "_")
+            if key in ["md5", "mime", "jobstate_id", "job_id", "name", "test_id"]:
+                logger.info("DCI-%s:%s" % (key.upper(), value))
+        logger.info("DCI-FILE-SIZE:%s" % len(flask.request.data))
+        return f(*args, **kwargs)
+
+    return decorated
