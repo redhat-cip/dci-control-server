@@ -36,14 +36,11 @@ from dci.common.schemas import (
     check_and_get_args,
 )
 from dci.common import utils
-from dci.db import models
 from dci.db import models2
 from dci.db import declarative
 from dci.stores import files_utils
 import sqlalchemy.orm as sa_orm
 
-# associate column names with the corresponding SA Column object
-_TABLE = models.COMPONENTS
 
 logger = logging.getLogger(__name__)
 

@@ -16,7 +16,7 @@
 from dci.api import v1 as api_v1
 from dci.common import exceptions
 from dci.common import utils
-from dci.db import models
+from dci.db import models2
 from dci import dci_config
 
 import flask
@@ -25,7 +25,6 @@ import sys
 import time
 import zmq
 
-import sqlalchemy
 from sqlalchemy import exc as sa_exc
 from sqlalchemy.orm import sessionmaker
 
@@ -42,10 +41,11 @@ class DciControlServer(flask.Flask):
         self.engine = dci_config.get_engine()
         conf = dci_config.CONFIG
         self.sender = self._get_zmq_sender(conf["ZMQ_CONN"])
-        with self.engine.connect() as db_conn:
-            self.team_admin_id = self._get_team_id(db_conn, "admin")
-            self.team_redhat_id = self._get_team_id(db_conn, "Red Hat")
-            self.team_epm_id = self._get_team_id(db_conn, "EPM")
+        session = sessionmaker(bind=self.engine)()
+        self.team_admin_id = self._get_team_id(session, "admin")
+        self.team_redhat_id = self._get_team_id(session, "Red Hat")
+        self.team_epm_id = self._get_team_id(session, "EPM")
+        session.close()
 
     def _get_zmq_sender(self, zmq_conn):
         global zmq_sender
@@ -70,17 +70,15 @@ class DciControlServer(flask.Flask):
 
         return super(DciControlServer, self).process_response(resp)
 
-    def _get_team_id(self, db_conn, name):
-        query = sqlalchemy.sql.select([models.TEAMS]).where(models.TEAMS.c.name == name)
-        row = db_conn.execute(query).fetchone()
-
-        if row is None:
+    def _get_team_id(self, session, name):
+        team = session.query(models2.Team).filter(models2.Team.name == name).first()
+        if team is None:
             print(
                 "%s team not found. Please init the database"
                 " with the '%s' team and 'admin' user." % (name, name)
             )
             sys.exit(1)
-        return row.id
+        return team.id
 
 
 def configure_root_logger():
