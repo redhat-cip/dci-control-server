@@ -17,7 +17,7 @@
 from alembic import context
 from logging.config import fileConfig
 
-from dci.db import models
+from dci.db import models2
 from dci import dci_config
 
 # this is the Alembic Config object, which provides
@@ -28,7 +28,7 @@ config = context.config
 # This line sets up loggers basically.
 fileConfig(config.config_file_name)
 
-target_metadata = models.metadata
+target_metadata = models2.Base.metadata
 
 
 def run_migrations_offline():

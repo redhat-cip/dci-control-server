@@ -19,7 +19,7 @@ import alembic.environment
 import alembic.script
 
 import dci.alembic.utils
-import dci.db.models as models
+from dci.db import models2
 
 
 def test_cors_preflight(admin):
@@ -57,14 +57,14 @@ def test_db_migration(engine, delete_db):
 
     with env_context, engine.connect() as connection:
         context.configure(
-            connection, target_metadata=models.metadata, compare_type=True
+            connection, target_metadata=models2.Base.metadata, compare_type=True
         )
 
         with context.begin_transaction():
             context.run_migrations()
 
         diff = alembic.autogenerate.api.compare_metadata(
-            context.get_context(), models.metadata
+            context.get_context(), models2.Base.metadata
         )
 
     assert diff == []

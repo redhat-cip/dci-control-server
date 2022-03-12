@@ -552,27 +552,6 @@ class Jobstate(dci_declarative.Mixin, Base):
     files = sa_orm.relationship("File")
 
 
-class Tests(dci_declarative.Mixin, Base):
-    __tablename__ = "tests"
-
-    id = sa.Column(pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid)
-    created_at = sa.Column(
-        sa.DateTime(), default=datetime.datetime.utcnow, nullable=False
-    )
-    updated_at = sa.Column(
-        sa.DateTime(),
-        onupdate=datetime.datetime.utcnow,
-        default=datetime.datetime.utcnow,
-        nullable=False,
-    )
-    etag = sa.Column(
-        sa.String(40), nullable=False, default=utils.gen_etag, onupdate=utils.gen_etag
-    )
-    name = sa.Column(sa.Text, nullable=False, unique=True)
-    data = sa.Column(sa_utils.JSONType)
-    state = sa.Column(STATES, default="active")
-
-
 class TestsResult(dci_declarative.Mixin, Base):
     __tablename__ = "tests_results"
     __table_args__ = (
