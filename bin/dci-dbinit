@@ -21,78 +21,69 @@ on DCI environment variable.
 """
 
 import os
-import sys
 
 import sqlalchemy
-from sqlalchemy import exc as sa_exc
 from sqlalchemy_utils import functions as sa_funcs
+from sqlalchemy.orm import sessionmaker
 
 from dci import auth
-from dci.db import models
+from dci.db import models2
 from dci import dci_config
 from dci.alembic import utils as dci_alembic
 
 
-DCI_LOGIN = os.environ.get('DCI_LOGIN', 'admin')
-DCI_PASSWORD = os.environ.get('DCI_PASSWORD', 'admin')
+DCI_LOGIN = os.environ.get("DCI_LOGIN", "admin")
+DCI_PASSWORD = os.environ.get("DCI_PASSWORD", "admin")
 DCI_PASSWORD_HASH = auth.hash_password(DCI_PASSWORD)
 
 
-def init_db(db_conn):
+def init_db(session):
     def db_insert_with_name(model_item, **kwargs):
-        query = sqlalchemy.sql.select([model_item]).where(
-            model_item.c.name == kwargs['name'])
-        try:
-            result = db_conn.execute(query).fetchone()
-        except sa_exc.DBAPIError as e:
-            print(str(e))
-            sys.exit(1)
-
-        if result is None:
-            query = model_item.insert().values(**kwargs)
-            return db_conn.execute(query).inserted_primary_key[0]
+        resource = (
+            session.query(model_item).filter(model_item.name == kwargs["name"]).first()
+        )
+        if resource is None:
+            resource = model_item(**kwargs)
+            session.add(resource)
         else:
-            result = dict(result)
-            query = model_item.update().where(
-                model_item.c.name == result['name']).values(**kwargs)
-            try:
-                db_conn.execute(query)
-            except sa_exc.DBAPIError as e:
-                print(str(e))
-                sys.exit(1)
-            return result['id']
+            resource.update(**kwargs)
+
+        return resource
 
     # Create team admin
-    team_admin_id = db_insert_with_name(models.TEAMS, name='admin')
+    team_admin = db_insert_with_name(models2.Team, name="admin")
     # Create Red Hat team
-    db_insert_with_name(models.TEAMS, name='Red Hat')
-    db_insert_with_name(models.TEAMS, name='EPM')
+    db_insert_with_name(models2.Team, name="Red Hat")
+    db_insert_with_name(models2.Team, name="EPM")
 
     # Create super admin user
-    super_admin_id = db_insert_with_name(models.USERS,
-                                         name=DCI_LOGIN,
-                                         password=DCI_PASSWORD_HASH,
-                                         fullname='Admin',
-                                         email='admin@example.org')
-    # assign super admin to team_admin_id
-    q = models.JOIN_USERS_TEAMS.insert().values(user_id=super_admin_id,
-                                                team_id=team_admin_id)
+    super_admin = db_insert_with_name(
+        models2.User,
+        name=DCI_LOGIN,
+        password=DCI_PASSWORD_HASH,
+        fullname="Admin",
+        email="admin@example.org",
+    )
 
-    db_conn.execute(q)
+    super_admin.team.append(team_admin)
+    session.add(super_admin)
+
+    session.commit()
 
 
 def main():
     conf = dci_config.CONFIG
-    db_uri = conf['SQLALCHEMY_DATABASE_URI']
+    db_uri = conf["SQLALCHEMY_DATABASE_URI"]
 
     if not sa_funcs.database_exists(db_uri):
         sa_funcs.create_database(db_uri)
 
     dci_alembic.sync()
     engine = sqlalchemy.create_engine(db_uri)
-    with engine.begin() as conn:
-        init_db(conn)
+    session = sessionmaker(bind=engine)()
+    init_db(session)
+    session.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
