@@ -75,7 +75,7 @@ def verify_repo_access():
     topic = base.get_resource_orm(models2.Topic, topic_id)
     if topic.state != "active":
         raise dci_exc.DCIException(
-            message="topic %s/%s is not active" % (topic["name"], topic["id"]),
+            message="topic %s/%s is not active" % (topic.name, topic.id),
             status_code=403,
         )
 
