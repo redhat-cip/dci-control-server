@@ -81,8 +81,8 @@ DEFAULT_ZMQ_CONN = "tcp://{zmq_host}:{zmq_port}".format(
 ZMQ_CONN = os.getenv("ZMQ_CONN", DEFAULT_ZMQ_CONN)
 
 
-# ElasticSearch
-ELASTICSEARCH_URL = os.getenv("ELASTICSEARCH_URL", "http://elasticsearch:9200")
+# Analytics
+ANALYTICS_URL = os.getenv("ANALYTICS_URL", "http://dci-analytics-reverse-proxy:8080")
 
 
 # Logging related parameters
