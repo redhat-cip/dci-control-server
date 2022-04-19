@@ -121,7 +121,7 @@ def tasks_components_coverage(user):
                 {
                     "from": offset,
                     "size": limit,
-                    "sort": [{"created_at": {"order": "desc"}}],
+                    "sort": [{"released_at": {"order": "desc"}}],
                 }
             ),
         )
