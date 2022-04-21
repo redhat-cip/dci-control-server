@@ -16,7 +16,7 @@
 import mock
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_get_stats(n, admin, job_admin, user, job_user, topic_user_id, product):
     admin.post(
         "/api/v1/jobstates", data={"job_id": job_admin["id"], "status": "failure"}

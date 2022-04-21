@@ -257,6 +257,74 @@ def get_all_teams_from_topic(user, topic_id):
     return flask.jsonify({"teams": teams, "_meta": {"count": len(teams)}})
 
 
+@api.route("/topics/<uuid:topic_id>/notifications", methods=["POST"])
+@decorators.login_required
+def subscribe_user_to_topic(user, topic_id):
+    t = base.get_resource_orm(models2.Topic, topic_id)
+    export_control.verify_access_to_topic(user, t)
+    ut = base.create_resource_orm(
+        models2.UserTopic, {"user_id": user.id, "topic_id": topic_id}
+    )
+
+    return flask.Response(
+        json.dumps(ut),
+        201,
+        content_type="application/json",
+    )
+
+
+@api.route("/topics/<uuid:topic_id>/notifications/users", methods=["GET"])
+@decorators.login_required
+def get_all_subscribed_users_from_topic(user, topic_id):
+    if user.is_not_super_admin() and user.is_not_epm():
+        raise dci_exc.Unauthorized()
+    base.get_resource_orm(models2.Topic, topic_id)
+
+    query = (
+        flask.g.session.query(models2.User)
+        .join(models2.UserTopic)
+        .filter(models2.UserTopic.topic_id == topic_id)
+    )
+    users = [u.serialize() for u in query.all()]
+
+    return flask.jsonify({"users": users, "_meta": {"count": len(users)}})
+
+
+@api.route("/topics/<uuid:topic_id>/notifications", methods=["DELETE"])
+@decorators.login_required
+def unsubscribed_user_from_topic(user, topic_id):
+    base.get_resource_orm(models2.Topic, topic_id)
+    query = flask.g.session.query(models2.UserTopic)
+    query = query.filter(
+        sql.and_(
+            models2.UserTopic.topic_id == topic_id, models2.UserTopic.user_id == user.id
+        )
+    )
+    query = query.delete()
+
+    try:
+        flask.g.session.commit()
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e), status_code=409)
+
+    return flask.Response(None, 204, content_type="application/json")
+
+
+@api.route("/topics/notifications", methods=["GET"])
+@decorators.login_required
+def get_all_subscribed_topics(user):
+
+    query = (
+        flask.g.session.query(models2.Topic)
+        .join(models2.UserTopic)
+        .filter(models2.UserTopic.user_id == user.id)
+    )
+    topics = [t.serialize() for t in query.all()]
+
+    return flask.jsonify({"topics": topics, "_meta": {"count": len(topics)}})
+
+
 @api.route("/topics/purge", methods=["GET"])
 @decorators.login_required
 def get_to_purge_archived_topics(user):

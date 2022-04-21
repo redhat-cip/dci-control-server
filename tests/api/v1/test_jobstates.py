@@ -25,7 +25,7 @@ def test_create_jobstates(user, job_user_id):
 
     with mock.patch("dci.api.v1.notifications") as mocked_notif:
         js = user.post("/api/v1/jobstates", data=data).data
-        assert not mocked_notif.displatcher.called
+        assert not mocked_notif.job_dispatcher.called
     js_id = js["jobstate"]["id"]
 
     js = user.get("/api/v1/jobstates/%s" % js_id).data
@@ -35,7 +35,7 @@ def test_create_jobstates(user, job_user_id):
     assert job["job"]["status"] == "running"
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_create_jobstates_failure(mocked_disp, user, job_user_id):
     data = {"job_id": job_user_id, "status": "failure"}
 
@@ -48,7 +48,7 @@ def test_create_jobstates_failure(mocked_disp, user, job_user_id):
     assert job["job"]["status"] == "failure"
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_create_jobstates_notification(mocked_disp, user, job_user_id):
     data = {"job_id": job_user_id, "status": "failure"}
 
@@ -61,7 +61,7 @@ def test_create_jobstates_notification(mocked_disp, user, job_user_id):
     assert "results" in event
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_create_final_job_status_umb_notification(mocked_disp, user, job_user_id):
     data = {"job_id": job_user_id, "status": "success"}
     user.post("/api/v1/jobstates", data=data)
@@ -70,7 +70,7 @@ def test_create_final_job_status_umb_notification(mocked_disp, user, job_user_id
     assert str(event["id"]) == job_user_id
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_create_jobstates_new_to_failure(mocked_disp, user, job_user_id):
     data = {"job_id": job_user_id, "status": "new"}
     js = user.post("/api/v1/jobstates", data=data).data
@@ -81,7 +81,7 @@ def test_create_jobstates_new_to_failure(mocked_disp, user, job_user_id):
     assert js["jobstate"]["status"] == "error"
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_create_jobstates_error(mocked_disp, user, job_user_id):
     data = {"job_id": job_user_id, "status": "error"}
 
@@ -131,7 +131,7 @@ def test_get_jobstate_with_embed(user, job_user_id):
     assert js_embed.status_code == 200
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_delete_jobstate_by_id(mocked_disp, user, job_user_id):
     js = user.post(
         "/api/v1/jobstates",
@@ -154,7 +154,7 @@ def test_delete_jobstate_by_id(mocked_disp, user, job_user_id):
 # Tests for the isolation
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_create_jobstate_as_user(mocked_disp, user, job_user_id):
     jobstate = user.post(
         "/api/v1/jobstates",
@@ -168,7 +168,7 @@ def test_create_jobstate_as_user(mocked_disp, user, job_user_id):
     assert jobstate.data["jobstate"]["job_id"] == job_user_id
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_get_jobstate_as_user(mocked_disp, user, jobstate_user_id, job_user_id):
     # jobstate = user.get('/api/v1/jobstates/%s' % jobstate_id)
     # assert jobstate.status_code == 404
@@ -182,7 +182,7 @@ def test_get_jobstate_as_user(mocked_disp, user, jobstate_user_id, job_user_id):
     assert jobstate.status_code == 200
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_delete_jobstate_as_user(mocked_disp, user, job_user_id):
     js_user = user.post(
         "/api/v1/jobstates",
