@@ -616,7 +616,7 @@ analytics_task_components_coverage = {
     "additionalProperties": False,
 }
 
-analytics_tasks_junit = {
+analytics_tasks_junit_properties = {
     "team_1_id": Properties.string,
     "topic_1_id": Properties.string,
     "topic_1_start_date": Properties.string,
@@ -633,10 +633,9 @@ analytics_tasks_junit = {
     "tags_2": with_default(Properties.array, []),
     "test_name": Properties.string,
 }
-
-analytics_task_components_coverage = {
+analytics_tasks_junit = {
     "type": "object",
-    "properties": analytics_tasks_junit,
+    "properties": analytics_tasks_junit_properties,
     "required": [
         "team_1_id",
         "topic_1_id",
