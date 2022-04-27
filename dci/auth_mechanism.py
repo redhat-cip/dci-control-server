@@ -187,7 +187,7 @@ class Hmac2Mechanism(HmacMechanism):
     def authenticate(self):
         headers = parse_headers(self.request.headers)
         if not headers:
-            return dci_exc.DCIException(
+            raise dci_exc.DCIException(
                 "Hmac2Mechanism failed: bad or incomplete headers.", status_code=400
             )
         self.identity = self.build_identity(headers)
