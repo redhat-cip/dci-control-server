@@ -185,7 +185,7 @@ def create_files(user):
             "updated_at": datetime.datetime.utcnow().isoformat(),
             "team_id": job.team_id,
             "md5": None,
-            "size": s_file["content-length"],
+            "size": s_file.get("content-length", s_file.get("ContentLength")),
             "state": "active",
             "etag": etag,
         }

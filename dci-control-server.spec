@@ -110,6 +110,7 @@ Requires:       python3-dciauth
 Requires:       python3-swiftclient
 Requires:       python3-jsonschema
 Requires:       python3-pytz
+Requires:       python3-boto3
 %endif
 Requires:       zeromq
 %{?systemd_requires}

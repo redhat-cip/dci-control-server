@@ -16,7 +16,7 @@
 
 import os
 
-from dci.stores import filesystem, swift
+from dci.stores import filesystem, swift, s3
 
 import flask
 import sqlalchemy
@@ -67,6 +67,15 @@ def get_store():
             "STORE_PROJECT_DOMAIN_NAME"
         )
         return swift.Swift(configuration)
-
-    configuration["path"] = CONFIG["STORE_FILE_PATH"]
-    return filesystem.FileSystem(configuration)
+    elif CONFIG["STORE_ENGINE"] == CONFIG["S3_STORE"]:
+        configuration["aws_access_key_id"] = CONFIG["STORE_S3_AWS_ACCESS_KEY_ID"]
+        configuration["aws_secret_access_key"] = CONFIG[
+            "STORE_S3_AWS_SECRET_ACCESS_KEY"
+        ]
+        configuration["aws_region"] = CONFIG["STORE_S3_AWS_REGION"]
+        configuration["endpoint_url"] = CONFIG["STORE_S3_ENDPOINT_URL"]
+        configuration["signature_version"] = CONFIG["STORE_S3_SIGNATURE_VERSION"]
+        return s3.S3(configuration)
+    else:
+        configuration["path"] = CONFIG["STORE_FILE_PATH"]
+        return filesystem.FileSystem(configuration)

@@ -15,6 +15,7 @@
 # under the License.
 
 import datetime
+import io
 
 import flask
 from flask import json
@@ -260,7 +261,7 @@ def upload_component_file(user, c_id):
 
     file_id = utils.gen_uuid()
     file_path = files_utils.build_file_path(component.topic_id, c_id, file_id)
-    store.upload("components", file_path, flask.request.data)
+    store.upload("components", file_path, io.BytesIO(flask.request.data))
     s_file = store.head("components", file_path)
 
     values = dict.fromkeys(["md5", "mime", "component_id", "name"])
@@ -271,10 +272,10 @@ def upload_component_file(user, c_id):
             "component_id": c_id,
             "name": file_id,
             "created_at": datetime.datetime.utcnow().isoformat(),
-            "etag": s_file["etag"],
-            "md5": s_file["etag"],
-            "mime": s_file["content-type"],
-            "size": s_file["content-length"],
+            "etag": s_file.get("etag", s_file.get("ETag")),
+            "md5": s_file.get("etag", s_file.get("ChecksumSHA256")),
+            "mime": s_file.get("content-type", s_file.get("ContentType")),
+            "size": s_file.get("content-length", s_file.get("ContentLength")),
         }
     )
 
