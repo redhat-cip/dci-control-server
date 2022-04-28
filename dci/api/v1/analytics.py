@@ -154,11 +154,11 @@ def tasks_components_coverage(user):
 @api.route("/analytics/junit_comparison", methods=["POST"])
 @decorators.login_required
 def tasks_junit_comparison(user):
-    args = flask.request.args.to_dict()
-    check_json_is_valid(analytics_tasks_junit, args)
+    values = flask.request.json
+    check_json_is_valid(analytics_tasks_junit, values)
 
-    team_1_id = args.get("team_1_id")
-    team_2_id = args.get("team_2_id")
+    team_1_id = values.get("team_1_id")
+    team_2_id = values.get("team_2_id")
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
         if team_1_id not in user.teams_id or team_2_id not in user.teams_id:
@@ -168,7 +168,7 @@ def tasks_junit_comparison(user):
         res = requests.post(
             "%s/analytics/junit_topics_comparison" % CONFIG["ANALYTICS_URL"],
             headers={"Content-Type": "application/json"},
-            json=args,
+            json=values,
         )
 
         if res.status_code == 200:
