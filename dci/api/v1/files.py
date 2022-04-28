@@ -152,7 +152,7 @@ def create_files(user):
 
     if values.get("jobstate_id") is None and values.get("job_id") is None:
         raise dci_exc.DCIException(
-            "HTTP headers DCI-JOBSTATE-ID or " "DCI-JOB-ID must be specified"
+            "HTTP headers DCI-JOBSTATE-ID or DCI-JOB-ID must be specified"
         )
     if values.get("name") is None:
         raise dci_exc.DCIException("HTTP header DCI-NAME must be specified")

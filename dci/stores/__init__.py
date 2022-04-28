@@ -26,9 +26,7 @@ class Store(object):
     def get(self, container, filename):
         pass
 
-    def upload(
-        self, container, filename, iterable, pseudo_folder=None, create_container=True
-    ):
+    def upload(self, container, filename, iterable):
         pass
 
     def _get_container(self, container_name):
