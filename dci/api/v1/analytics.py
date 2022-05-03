@@ -106,25 +106,43 @@ def tasks_components_coverage(user):
 
     team_id = args.get("team_id") if args.get("team_id") else "red_hat"
     topic_id = args["topic_id"]
+    component_type = args["type"]
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
         if team_id not in user.teams_id:
             raise dci_exc.Unauthorized()
 
-    query = "q=topic_id:%s AND team_id:%s" % (topic_id, team_id)
-    offset, limit = _handle_pagination(args)
+    query = {
+        "query": {
+            "bool": {
+                "must": [
+                    {"term": {"topic_id": topic_id}},
+                    {"term": {"team_id": team_id}},
+                ]
+            }
+        },
+        "sort": [
+            {
+                "released_at": {
+                    "order": "desc",
+                    "format": "strict_date_optional_time_nanos",
+                }
+            }
+        ],
+    }
+    if component_type:
+        # returns only components of a specific type
+        query["query"]["bool"]["must"].append({"term": {"type": component_type}})
+    else:
+        # returns only one unique component for each type (with latest first)
+        query["collapse"] = {"field": "type"}
+
     try:
         res = requests.get(
-            "%s/elasticsearch/tasks_components_coverage/_search?%s"
-            % (CONFIG["ANALYTICS_URL"], query),
+            "%s/elasticsearch/tasks_components_coverage/_search"
+            % (CONFIG["ANALYTICS_URL"]),
             headers={"Content-Type": "application/json"},
-            data=json.dumps(
-                {
-                    "from": offset,
-                    "size": limit,
-                    "sort": [{"released_at": {"order": "desc"}}],
-                }
-            ),
+            json=query,
         )
 
         if res.status_code == 200:
