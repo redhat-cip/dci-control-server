@@ -103,16 +103,17 @@ def tasks_duration_cumulated(user):
 def tasks_components_coverage(user):
     args = flask.request.args.to_dict()
     check_json_is_valid(analytics_task_components_coverage, args)
+    types = flask.request.args.getlist("types")
 
     team_id = args.get("team_id") if args.get("team_id") else "red_hat"
     topic_id = args["topic_id"]
-    component_type = args["type"]
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
         if team_id not in user.teams_id:
             raise dci_exc.Unauthorized()
 
     query = {
+        "size": 10000,
         "query": {
             "bool": {
                 "must": [
@@ -130,9 +131,10 @@ def tasks_components_coverage(user):
             }
         ],
     }
-    if component_type:
-        # returns only components of a specific type
-        query["query"]["bool"]["must"].append({"term": {"type": component_type}})
+    if types:
+        query["query"]["bool"]["should"] = []
+        for t in types:
+            query["query"]["bool"]["should"].append({"term": {"type": t}})
     else:
         # returns only one unique component for each type (with latest first)
         query["collapse"] = {"field": "type"}

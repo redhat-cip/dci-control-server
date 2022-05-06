@@ -608,7 +608,7 @@ analytics_task_duration_cumulated = {
 analytics_task_components_coverage_properties = {
     "topic_id": Properties.uuid,
     "team_id": with_default(Properties.string, None),
-    "type": with_default(Properties.uuid, None),
+    "types": with_default(Properties.string, None),
 }
 analytics_task_components_coverage = {
     "type": "object",
