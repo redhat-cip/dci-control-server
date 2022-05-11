@@ -618,14 +618,12 @@ analytics_task_components_coverage = {
 }
 
 analytics_tasks_junit_properties = {
-    "team_1_id": Properties.string,
     "topic_1_id": Properties.string,
     "topic_1_start_date": Properties.string,
     "topic_1_end_date": Properties.string,
     "remoteci_1_id": Properties.string,
     "topic_1_baseline_computation": Properties.string,
     "tags_1": with_default(Properties.array, []),
-    "team_2_id": Properties.string,
     "topic_2_id": Properties.string,
     "topic_2_start_date": Properties.string,
     "topic_2_end_date": Properties.string,
@@ -638,14 +636,12 @@ analytics_tasks_junit = {
     "type": "object",
     "properties": analytics_tasks_junit_properties,
     "required": [
-        "team_1_id",
         "topic_1_id",
         "topic_1_start_date",
         "topic_1_end_date",
         "remoteci_1_id",
         "topic_1_baseline_computation",
         "tags_1",
-        "team_2_id",
         "topic_2_id",
         "topic_2_start_date",
         "topic_2_end_date",
