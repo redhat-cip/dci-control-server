@@ -177,11 +177,14 @@ def tasks_junit_comparison(user):
     values = flask.request.json
     check_json_is_valid(analytics_tasks_junit, values)
 
-    team_1_id = values.get("team_1_id")
-    team_2_id = values.get("team_2_id")
+    remoteci_1 = base.get_resource_orm(models2.Remoteci, values["remoteci_1_id"])
+    remoteci_2 = base.get_resource_orm(models2.Remoteci, values["remoteci_2_id"])
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
-        if team_1_id not in user.teams_id or team_2_id not in user.teams_id:
+        if (
+            remoteci_1.team_id not in user.teams_id
+            or remoteci_2.team_id not in user.teams_id
+        ):
             raise dci_exc.Unauthorized()
 
     try:
