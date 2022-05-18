@@ -15,7 +15,8 @@
 # under the License.
 
 from dci.common import exceptions as dci_exc
-
+from sqlalchemy import func
+from sqlalchemy.types import ARRAY, String
 import datetime
 import uuid
 
@@ -113,12 +114,15 @@ def handle_args(query, model_object, args):
                     'Invalid where key: "%s"' % w, payload=payload
                 )
             m_column = getattr(model_object, name)
-            if str(m_column.type) == "UUID" and uuid.UUID(value):
-                query = query.filter(m_column == value)
-            elif m_column.type.python_type == list:
+            if isinstance(m_column.type, String):
+                value = value.lower()
+                m_column = func.lower(m_column)
+                if value.endswith("*") and value.count("*") == 1:
+                    query = query.filter(m_column.contains(value.replace("*", "")))
+                else:
+                    query = query.filter(m_column == value)
+            elif isinstance(m_column.type, ARRAY):
                 query = query.filter(m_column.contains([value]))
-            elif value.endswith("*") and value.count("*") == 1:
-                query = query.filter(m_column.contains(value.replace("*", "")))
             else:
                 query = query.filter(m_column == value)
     if args.get("created_after"):
