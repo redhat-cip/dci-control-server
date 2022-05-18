@@ -15,7 +15,9 @@
 # under the License.
 
 from dci.common import exceptions as dci_exc
-
+from sqlalchemy import func, String
+from sqlalchemy.types import ARRAY
+from sqlalchemy.sql.expression import cast
 import datetime
 import uuid
 
@@ -100,25 +102,39 @@ def handle_args(query, model_object, args):
         for w in args.get("where"):
             try:
                 name, value = w.split(":", 1)
-                if name not in columns:
-                    raise dci_exc.DCIException(
-                        'Invalid where key: "%s"' % w,
-                        payload={"Valid where keys": sorted(set(columns))},
-                    )
             except ValueError:
-                payload = {
-                    "error": 'where key must have the following form "key:value"'
-                }
                 raise dci_exc.DCIException(
-                    'Invalid where key: "%s"' % w, payload=payload
+                    'Invalid where key: "%s"' % w,
+                    payload={
+                        "error": 'where key must have the following form "key:value"'
+                    },
                 )
+
+            if name not in columns:
+                raise dci_exc.DCIException(
+                    'Invalid where key: "%s"' % w,
+                    payload={"Valid where keys": sorted(set(columns))},
+                )
+
+            forbidden_column_names = [
+                "api_secret",
+                "data",
+                "password",
+                "cert_fp",
+            ]
+            if name in forbidden_column_names:
+                raise dci_exc.DCIException('Invalid where key: "%s"' % name)
+
             m_column = getattr(model_object, name)
-            if str(m_column.type) == "UUID" and uuid.UUID(value):
-                query = query.filter(m_column == value)
-            elif m_column.type.python_type == list:
+            if isinstance(m_column.type, String):
+                value = value.lower()
+                m_column = func.lower(cast(m_column, String))
+                if value.endswith("*") and value.count("*") == 1:
+                    query = query.filter(m_column.contains(value.replace("*", "")))
+                else:
+                    query = query.filter(m_column == value)
+            elif isinstance(m_column.type, ARRAY):
                 query = query.filter(m_column.contains([value]))
-            elif value.endswith("*") and value.count("*") == 1:
-                query = query.filter(m_column.contains(value.replace("*", "")))
             else:
                 query = query.filter(m_column == value)
     if args.get("created_after"):
