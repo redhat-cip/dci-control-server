@@ -29,6 +29,19 @@ def parse_time(string_value):
         return 0.0
 
 
+def parse_properties(root):
+    properties = {}
+    for child in root:
+        tag = child.tag
+        if tag != "property":
+            continue
+        property_name = child.get("name", "").strip()
+        property_value = child.get("value", "")
+        if property_name:
+            properties[property_name] = property_value
+    return properties
+
+
 def parse_element(root):
     testcase = {
         "name": root.attrib.get("name", ""),
@@ -42,16 +55,26 @@ def parse_element(root):
         "type": "",
         "stdout": None,
         "stderr": None,
+        "properties": {},
     }
     for child in root:
         tag = child.tag
-        if tag not in ["skipped", "error", "failure", "system-out", "system-err"]:
+        if tag not in [
+            "skipped",
+            "error",
+            "failure",
+            "system-out",
+            "system-err",
+            "properties",
+        ]:
             continue
         text = child.text
         if tag == "system-out":
             testcase["stdout"] = text
         elif tag == "system-err":
             testcase["stderr"] = text
+        elif tag == "properties":
+            testcase["properties"] = parse_properties(child)
         else:
             testcase["action"] = tag
             testcase["message"] = child.get("message", "")
