@@ -51,7 +51,7 @@ JSONUNIT = {
             "value": "test skipped",
             "stdout": None,
             "stderr": None,
-            "properties": {},
+            "properties": [],
         },
         {
             "name": "test_2",
@@ -65,7 +65,7 @@ JSONUNIT = {
             "value": "test in error",
             "stdout": None,
             "stderr": None,
-            "properties": {},
+            "properties": [],
         },
         {
             "name": "test_3",
@@ -79,7 +79,7 @@ JSONUNIT = {
             "value": "test in failure",
             "stdout": None,
             "stderr": None,
-            "properties": {},
+            "properties": [],
         },
         {
             "name": "test_4",
@@ -93,7 +93,7 @@ JSONUNIT = {
             "value": "",
             "stdout": None,
             "stderr": None,
-            "properties": {},
+            "properties": [],
         },
         {
             "name": "test_5",
@@ -107,7 +107,7 @@ JSONUNIT = {
             "value": "",
             "stdout": "STDOUT",
             "stderr": None,
-            "properties": {},
+            "properties": [],
         },
         {
             "name": "test_6",
@@ -121,7 +121,7 @@ JSONUNIT = {
             "value": "",
             "stdout": None,
             "stderr": "STDERR",
-            "properties": {},
+            "properties": [],
         },
     ],
 }
@@ -355,7 +355,11 @@ def test_junit2dict_nrt_with_testsuites_as_root_node():
         "type": "",
         "stdout": None,
         "stderr": None,
-        "properties": {"prop1": "1", "prop2": "2"},
+        "properties": [
+            {"name": "prop1", "value": "1"},
+            {"name": "prop2", "value": "2"},
+            {"name": "prop2", "value": "2"},
+        ],
     }
 
 
@@ -398,7 +402,7 @@ def test_nrt_keep_systemout_and_systemerr():
                 "value": "failure content",
                 "stdout": "system out content",
                 "stderr": "system err content",
-                "properties": {},
+                "properties": [],
             },
         ],
     }

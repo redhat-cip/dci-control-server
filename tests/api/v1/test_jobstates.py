@@ -230,7 +230,7 @@ def test_umb_notification_has_testcases(mocked_disp, user, job_user, cki_test_fi
             "time": 0.0,
             "stdout": "\n  Logs:\n  recipes/1/tasks/1/logs/harness.log\nrecipes/1/tasks/1/logs/taskout.log\nrecipes/1/tasks/1/logs/sched.run.log\n",
             "stderr": None,
-            "properties": {},
+            "properties": [],
         },
         {
             "classname": "LTP",
@@ -244,7 +244,7 @@ def test_umb_notification_has_testcases(mocked_disp, user, job_user, cki_test_fi
             "time": 0.0,
             "stdout": "\n  Logs:\n  recipes/1/tasks/1/results/1584053404/logs/resultoutputfile.log\n",
             "stderr": None,
-            "properties": {},
+            "properties": [],
         },
         {
             "classname": "LTP",
@@ -258,6 +258,6 @@ def test_umb_notification_has_testcases(mocked_disp, user, job_user, cki_test_fi
             "time": 0.0,
             "stdout": None,
             "stderr": None,
-            "properties": {},
+            "properties": [],
         },
     ]

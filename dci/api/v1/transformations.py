@@ -30,7 +30,7 @@ def parse_time(string_value):
 
 
 def parse_properties(root):
-    properties = {}
+    properties = []
     for child in root:
         tag = child.tag
         if tag != "property":
@@ -38,7 +38,7 @@ def parse_properties(root):
         property_name = child.get("name", "").strip()
         property_value = child.get("value", "")
         if property_name:
-            properties[property_name] = property_value
+            properties.append({"name": property_name, "value": property_value})
     return properties
 
 
@@ -55,7 +55,7 @@ def parse_element(root):
         "type": "",
         "stdout": None,
         "stderr": None,
-        "properties": {},
+        "properties": [],
     }
     for child in root:
         tag = child.tag

@@ -6,6 +6,7 @@
                 <property name="prop1" value="1" />
                 <property name="prop2  " value="2" />
                 <property name=" " value="property skipped because name is empty" />
+                <property name=" prop2  " value="2" />
             </properties>
             <error message="error message"></error>
         </testcase>
