@@ -1,4 +1,4 @@
-pyjwt==1.6.1  # python-jwt-1.6.1-2.el8.src.rpm baseos
+pyjwt==2.4.0  # python-jwt-1.6.1-2.el8.src.rpm baseos
 cryptography==3.2.1  # python-cryptography-3.2.1-5.el8.src.rpm baseos
 
 pytz==2017.2  # pytz-2017.2-9.el8.src.rpm appstream
