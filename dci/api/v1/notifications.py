@@ -22,7 +22,7 @@ from dci.common import utils
 from dci.db import models2
 
 
-def format_mail_message(mesg):
+def format_job_mail_message(mesg):
     # compute test name:regressions number
     regressions = ", ".join(
         ["%s: %s" % (k, v) for (k, v) in mesg["regressions"].items()]
@@ -51,7 +51,22 @@ https://www.distributed-ci.io/jobs/{job_id}
     )
 
 
-def build_job_finished_event(job):
+def format_component_mail_message(event):
+    return """
+You are receiving this email because of the DCI topic {topic}.
+
+A new component has been created:
+
+  https://www.distributed-ci.io/topics/{topic_id}/components/{component_id}
+
+""".format(
+        topic=event["topic_name"],
+        topic_id=event["topic_id"],
+        component_id=event["component_id"],
+    )
+
+
+def build_job_finished_umb_event(job):
     return {
         "event": "job_finished",
         "type": "job_finished",
@@ -59,7 +74,7 @@ def build_job_finished_event(job):
     }
 
 
-def get_email_event(job, emails):
+def get_job_event(job, emails):
 
     if job["status"] == "success":
         return None
@@ -106,7 +121,7 @@ def dlrn(job):
     return None
 
 
-def get_emails(remoteci_id):
+def get_emails_from_remoteci(remoteci_id):
 
     try:
         remoteci = base.get_resource_orm(models2.Remoteci, remoteci_id)
@@ -119,20 +134,62 @@ def send_events(events):
     flask.g.sender.send_json(events)
 
 
-def dispatcher(job):
+def _handle_job_event(job):
     events = []
-    emails = get_emails(job["remoteci_id"])
-    email_event = get_email_event(job, emails)
-    if email_event:
-        events.append(email_event)
+    emails = get_emails_from_remoteci(job["remoteci_id"])
+    job_event = get_job_event(job, emails)
+    if job_event:
+        events.append(job_event)
 
     dlrn_event = dlrn(job)
     if dlrn_event:
         events.append(dlrn_event)
 
-    job_finished = build_job_finished_event(job)
-    if job_finished:
-        events.append(job_finished)
+    umb_job_finished_event = build_job_finished_umb_event(job)
+    if umb_job_finished_event:
+        events.append(umb_job_finished_event)
 
     if events:
         send_events(events)
+
+
+def get_emails_from_topic(topic_id):
+    try:
+        query = (
+            flask.g.session.query(models2.User.email)
+            .join(models2.UserTopic)
+            .filter(models2.UserTopic.topic_id == topic_id)
+        )
+        return [um[0] for um in query.all()]
+    except dci_exc.DCIException:
+        return []
+
+
+def get_component_event(component, emails):
+    if not emails:
+        return None
+
+    return {
+        "event": "component_notification",
+        "emails": emails,
+        "component_id": str(component["id"]),
+        "component_name": component["name"],
+        "topic_name": component["topic_name"],
+        "topic_id": str(component["topic_id"]),
+        "status": "new",
+    }
+
+
+def _handle_component_event(component):
+    emails = get_emails_from_topic(component["topic_id"])
+    component_event = get_component_event(component, emails)
+    if component_event:
+        send_events([component_event])
+
+
+def job_dispatcher(job):
+    _handle_job_event(job)
+
+
+def component_dispatcher(component):
+    _handle_component_event(component)

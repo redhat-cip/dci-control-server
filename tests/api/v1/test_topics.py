@@ -776,3 +776,30 @@ def test_get_topic_with_rolling_topic_name(admin, product):
     latest_rhel_7 = admin.get("/api/v1/topics?where=name:RHEL-7*")
     assert latest_rhel_7.status_code == 200
     assert latest_rhel_7.data["_meta"]["count"] == 0
+
+
+def test_notifications(admin, user, user_id, topic_user_id):
+    r = admin.get("/api/v1/topics/%s/notifications/users" % topic_user_id)
+    assert len(r.data["users"]) == 0
+
+    r = user.get("/api/v1/topics/notifications")
+    assert len(r.data["topics"]) == 0
+
+    r = user.post("/api/v1/topics/%s/notifications" % topic_user_id)
+    assert r.status_code == 201
+
+    r = admin.get("/api/v1/topics/%s/notifications/users" % topic_user_id)
+    assert r.data["users"][0]["id"] == user_id
+
+    r = user.get("/api/v1/topics/notifications")
+    assert len(r.data["topics"]) == 1
+    assert r.data["topics"][0]["id"] == topic_user_id
+
+    r = user.delete("/api/v1/topics/%s/notifications" % topic_user_id)
+    assert r.status_code == 204
+
+    r = admin.get("/api/v1/topics/%s/notifications/users" % topic_user_id)
+    assert len(r.data["users"]) == 0
+
+    r = user.get("/api/v1/topics/notifications")
+    assert len(r.data["topics"]) == 0

@@ -17,7 +17,7 @@
 import mock
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_jobs_events_create(mocked_disp, admin, user, job_user_id, reset_job_event):
     data = {"job_id": job_user_id, "status": "success", "comment": "kikoolol"}
     user.post("/api/v1/jobstates", data=data).data
@@ -28,7 +28,7 @@ def test_jobs_events_create(mocked_disp, admin, user, job_user_id, reset_job_eve
     assert j_events.status_code == 200
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_jobs_events_delete_from_sequence_number(
     mocked_disp, admin, user, job_user_id, reset_job_event
 ):

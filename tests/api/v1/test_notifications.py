@@ -22,7 +22,7 @@ import flask
 import mock
 
 
-def test_get_emails(user, remoteci_user_id, app, engine, session):
+def test_get_emails_from_remoteci(user, remoteci_user_id, app, engine, session):
 
     r = user.post("/api/v1/remotecis/%s/users" % remoteci_user_id)
     assert r.status_code == 201
@@ -30,11 +30,11 @@ def test_get_emails(user, remoteci_user_id, app, engine, session):
     with app.app_context():
         flask.g.db_conn = engine.connect()
         flask.g.session = session
-        emails = notifications.get_emails(remoteci_user_id)
+        emails = notifications.get_emails_from_remoteci(remoteci_user_id)
         assert emails == ["user@example.org"]
 
 
-def test_get_emails_remoteci_deleted(user, remoteci_user_id, app, engine, session):
+def test_get_emails_from_remoteci_deleted(user, remoteci_user_id, app, engine, session):
 
     r = user.post("/api/v1/remotecis/%s/users" % remoteci_user_id)
     assert r.status_code == 201
@@ -48,12 +48,12 @@ def test_get_emails_remoteci_deleted(user, remoteci_user_id, app, engine, sessio
     with app.app_context():
         flask.g.db_conn = engine.connect()
         flask.g.session = session
-        emails = notifications.get_emails(remoteci_user_id)
+        emails = notifications.get_emails_from_remoteci(remoteci_user_id)
         assert emails == []
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
-def test_get_email_event_on_job_error(mocked_disp, user, job_user_id):
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
+def test_get_job_event_on_job_error(mocked_disp, user, job_user_id):
     # set job to error status
     data = {"job_id": job_user_id, "status": "error"}
     user.post("/api/v1/jobstates", data=data)
@@ -61,7 +61,7 @@ def test_get_email_event_on_job_error(mocked_disp, user, job_user_id):
         "/api/v1/jobs/%s?embed=components,topic,remoteci,results" % job_user_id
     )
     job = job.data["job"]
-    email_event = notifications.get_email_event(job, ["user@exameple.org"])
+    email_event = notifications.get_job_event(job, ["user@exameple.org"])
     assert email_event["event"] == "notification"
     assert email_event["emails"] == ["user@exameple.org"]
     assert email_event["job_id"] == job_user_id
@@ -74,8 +74,8 @@ def test_get_email_event_on_job_error(mocked_disp, user, job_user_id):
     assert email_event["regressions"] == {}
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
-def test_get_email_event_on_job_success(mocked_disp, user, job_user_id):
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
+def test_get_job_event_on_job_success(mocked_disp, user, job_user_id):
     # set job to error status
     data = {"job_id": job_user_id, "status": "success"}
     user.post("/api/v1/jobstates", data=data)
@@ -83,11 +83,11 @@ def test_get_email_event_on_job_success(mocked_disp, user, job_user_id):
         "/api/v1/jobs/%s?embed=components,topic,remoteci,results" % job_user_id
     )
     job = job.data["job"]
-    email_event = notifications.get_email_event(job, ["user@exameple.org"])
+    email_event = notifications.get_job_event(job, ["user@exameple.org"])
     assert email_event is None
 
 
-def test_format_mail_message():
+def test_format_job_mail_message():
     expected_message = """
 You are receiving this email because of the DCI job abc123 for the
 topic rhel-7.8 on the Remote CI rhel_labs.
@@ -108,4 +108,24 @@ https://www.distributed-ci.io/jobs/abc123
         "components": ["c_1", "c_2"],
         "regressions": {},
     }
-    assert expected_message == notifications.format_mail_message(mesg)
+    assert expected_message == notifications.format_job_mail_message(mesg)
+
+
+@mock.patch("dci.api.v1.notifications.component_dispatcher")
+def test_new_component_created(mocked_disp, admin, topic_user_id):
+    _arg = {}
+
+    def side_effect(component):
+        _arg.update(component)
+
+    mocked_disp.side_effect = side_effect
+
+    data = {
+        "name": "pname",
+        "type": "gerrit_review",
+        "url": "http://example.com/",
+        "topic_id": topic_user_id,
+        "state": "active",
+    }
+    admin.post("/api/v1/components", data=data).data
+    mocked_disp.assert_called_once_with(_arg)

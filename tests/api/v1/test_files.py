@@ -79,7 +79,7 @@ def test_create_file_update_job_duration(m_datetime_j, m_datetime_f, user, job_u
     assert job_user["duration"] == 10
 
 
-@mock.patch("dci.api.v1.notifications.dispatcher")
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_upload_tests_with_regressions_successfix(
     mocked_disp, admin, remoteci_context, topic
 ):

@@ -106,7 +106,7 @@ def create_jobstates(user):
         jobs_events.create_event(
             job_serialized["id"], values["status"], job_serialized["topic_id"]
         )
-        notifications.dispatcher(job_serialized)
+        notifications.job_dispatcher(job_serialized)
 
     result = json.dumps({"jobstate": created_js})
     return flask.Response(result, 201, content_type="application/json")

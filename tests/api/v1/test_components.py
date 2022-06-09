@@ -26,7 +26,8 @@ from dci.stores import files_utils
 from dci.common import exceptions as dci_exc
 
 
-def test_create_components(admin, topic_id):
+@mock.patch("dci.api.v1.notifications.component_dispatcher")
+def test_create_components_active(mock_disp, admin, topic_id):
     data = {
         "name": "pname",
         "type": "gerrit_review",
@@ -39,6 +40,24 @@ def test_create_components(admin, topic_id):
     gc = admin.get("/api/v1/components/%s" % pc_id).data
     assert gc["component"]["name"] == "pname"
     assert gc["component"]["state"] == "active"
+    mock_disp.assert_called()
+
+
+@mock.patch("dci.api.v1.notifications.component_dispatcher")
+def test_create_components_inactive(mock_disp, admin, topic_id):
+    data = {
+        "name": "pname",
+        "type": "gerrit_review",
+        "url": "http://example.com/",
+        "topic_id": topic_id,
+        "state": "inactive",
+    }
+    pc = admin.post("/api/v1/components", data=data).data
+    pc_id = pc["component"]["id"]
+    gc = admin.get("/api/v1/components/%s" % pc_id).data
+    assert gc["component"]["name"] == "pname"
+    assert gc["component"]["state"] == "inactive"
+    mock_disp.assert_not_called()
 
 
 def test_create_component_lowercase_type(admin, topic_id):
@@ -477,6 +496,26 @@ def test_put_component(admin, user, topic_id):
 
     assert ct_1["etag"] != ct_2["etag"]
     assert ct_2["name"] == "cname2"
+
+
+@mock.patch("dci.api.v1.notifications.component_dispatcher")
+def test_put_component_from_inactive_to_active(mock_disp, admin, user, topic_id):
+    data = {
+        "name": "pname1",
+        "title": "aaa",
+        "type": "gerrit_review",
+        "topic_id": topic_id,
+        "state": "inactive",
+    }
+
+    ct_1 = admin.post("/api/v1/components", data=data).data["component"]
+    mock_disp.assert_not_called()
+
+    url = "/api/v1/components/%s" % ct_1["id"]
+    data = {"name": "cname2", "state": "active"}
+    headers = {"If-match": ct_1["etag"]}
+    admin.put(url, data=data, headers=headers)
+    mock_disp.assert_called()
 
 
 def test_update_component_with_tags(admin, topic_id):

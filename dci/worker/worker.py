@@ -106,7 +106,7 @@ def dlrn_publish(event):
     )
 
 
-def send_mail(mesg):
+def send_job_mail(mesg):
     email_configuration = get_email_configuration()
     if email_configuration:
         subject = "[DCI Status][%s][%s][%s]" % (
@@ -114,7 +114,7 @@ def send_mail(mesg):
             mesg["remoteci_name"],
             mesg["status"],
         )
-        message = notifications.format_mail_message(mesg)
+        message = notifications.format_job_mail_message(mesg)
         email = MIMEText(message)
         email["From"] = (
             "Distributed-CI Notification <%s>" % email_configuration["account"]
@@ -137,6 +137,35 @@ def send_mail(mesg):
         server.quit()
 
 
+def send_component_mail(event):
+    email_configuration = get_email_configuration()
+    if email_configuration:
+        subject = "[DCI Status][%s][%s][%s]" % (
+            event["topic_name"],
+            event["component_name"],
+            event["status"],
+        )
+        message = notifications.format_component_mail_message(event)
+        email = MIMEText(message)
+        email["From"] = (
+            "Distributed-CI Notification <%s>" % email_configuration["account"]
+        )
+        email["subject"] = subject
+
+        server = smtplib.SMTP(
+            email_configuration["server"], email_configuration["port"]
+        )
+        server.starttls()
+        server.login(email_configuration["account"], email_configuration["password"])
+        for contact in event["emails"]:
+            # email.message are not classic dict, a new affectation does
+            # not overwrite the previous one.
+            del email["To"]
+            email["To"] = contact
+            server.sendmail(email["From"], email["To"], email.as_string())
+        server.quit()
+
+
 def loop(msg):
 
     try:
@@ -147,7 +176,9 @@ def loop(msg):
                 logger.info("Start processing event type %s" % event["event"])
                 time_start = time.time()
                 if event["event"] == "notification":
-                    send_mail(event)
+                    send_job_mail(event)
+                elif event["event"] == "component_notification":
+                    send_component_mail(event)
                 elif event["event"] == "dlrn_publish":
                     dlrn_publish(event)
                 elif event["event"] == "job_finished":

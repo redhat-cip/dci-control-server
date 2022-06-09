@@ -22,7 +22,7 @@ import logging
 from sqlalchemy import sql
 
 from dci import dci_config
-from dci.api.v1 import api
+from dci.api.v1 import api, notifications
 from dci.api.v1 import base
 from dci.api.v1 import export_control
 from dci.api.v1 import utils as v1_utils
@@ -82,6 +82,14 @@ def create_components(user):
 
     c = base.create_resource_orm(models2.Component, values)
 
+    # todo(yassine): move this logic the event handler
+    # just send a "component_created" event with the component payload
+    if c["state"] == "active":
+        c_notification = dict(c)
+        t = base.get_resource_orm(models2.Topic, c["topic_id"])
+        c_notification["topic_name"] = t.name
+        notifications.component_dispatcher(c_notification)
+
     return flask.Response(
         json.dumps({"component": c}),
         201,
@@ -98,11 +106,22 @@ def update_components(user, c_id):
 
     _verify_component_and_topic_access(user, component)
 
+    initial_component_state = component.state
+
     values = clean_json_with_schema(update_component_schema, flask.request.json)
     values["type"] = values.get("type", component.type).lower()
     base.update_resource_orm(component, values)
 
     component = base.get_resource_orm(models2.Component, c_id)
+    new_component_state = component.state
+
+    # todo(yassine): move this logic the event handler
+    # just send a "component_updated" event with the component payload
+    if initial_component_state != "active" and new_component_state == "active":
+        c_notification = component.serialize()
+        t = base.get_resource_orm(models2.Topic, component.topic_id)
+        c_notification["topic_name"] = t.name
+        notifications.component_dispatcher(c_notification)
 
     return flask.Response(
         json.dumps({"component": component.serialize()}),
