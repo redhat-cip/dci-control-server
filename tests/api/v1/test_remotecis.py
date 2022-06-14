@@ -280,7 +280,6 @@ def test_delete_remoteci_not_found(user):
 
 def test_delete_remoteci_archive_dependencies(
     user,
-    team_user_id,
     remoteci_user_id,
     topic_user_id,
     components_user_ids,

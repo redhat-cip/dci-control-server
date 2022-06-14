@@ -155,7 +155,7 @@ def delete_remoteci_by_id(user, remoteci_id):
     if user.is_not_in_team(remoteci.team_id) and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    base.update_resource_orm(remoteci, {"state": "archived"})
+    base.update_resource_orm(remoteci, {"state": "archived", "users": []})
 
     try:
         flask.g.session.query(models2.Job).filter(

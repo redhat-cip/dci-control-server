@@ -129,3 +129,26 @@ def test_new_component_created(mocked_disp, admin, topic_user_id):
     }
     admin.post("/api/v1/components", data=data).data
     mocked_disp.assert_called_once_with(_arg)
+
+
+def test_delete_a_remoteci_delete_the_associated_subscriptions(
+    user, user_id, team_user_id
+):
+    remoteci = user.post(
+        "/api/v1/remotecis",
+        data={"name": "My remoteci", "team_id": team_user_id},
+    ).data["remoteci"]
+
+    r = user.post("/api/v1/remotecis/%s/users" % remoteci["id"])
+    assert r.status_code == 201
+
+    r = user.delete(
+        "/api/v1/remotecis/%s" % remoteci["id"],
+        headers={"If-match": remoteci["etag"]},
+    )
+    assert r.status_code == 204
+
+    subscribed_remotecis = user.get("/api/v1/users/%s/remotecis" % user_id).data[
+        "remotecis"
+    ]
+    assert len(subscribed_remotecis) == 0
