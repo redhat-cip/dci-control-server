@@ -214,7 +214,6 @@ schedule_job_schema = {
     "type": "object",
     "properties": {
         "remoteci_id": Properties.uuid,
-        "dry_run": with_default(Properties.boolean, False),
         "topic_id": Properties.uuid,
         "components_ids": with_default(Properties.array, []),
         "comment": with_default(Properties.string, None),

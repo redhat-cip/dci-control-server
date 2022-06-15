@@ -21,15 +21,13 @@ import mock
 import uuid
 
 
-@mock.patch("dci.api.v1.jobs.v1_utils.datetime")
+@mock.patch("dci.api.v1.jobs.get_utc_now")
 def test_get_jobs(
-    m_datetime, session, remoteci_context, components_user_ids, topic_user_id
+    m_get_utc_now, session, remoteci_context, components_user_ids, topic_user_id
 ):
-    m_utcnow = mock.MagicMock()
-    m_datetime.datetime.utcnow.return_value = m_utcnow
-    m_utcnow.isoformat.return_value = (
-        datetime.datetime.utcnow() - datetime.timedelta(hours=2)
-    ).isoformat()
+    m_get_utc_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(
+        hours=2
+    )
 
     jobs_ids = []
     data = {"components": components_user_ids, "topic_id": topic_user_id}
@@ -75,5 +73,5 @@ def test_get_components(m_datetime, session, admin, topic_id):
     assert len(components) == 5
     assert "jobs" in components[0]
 
-    jobs = a_d_l.get_components(session, 0, 10, "hours", 1)
-    assert len(jobs) == 0
+    components = a_d_l.get_components(session, 0, 10, "hours", 1)
+    assert len(components) == 0
