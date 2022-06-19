@@ -15,6 +15,7 @@
 # under the License.
 
 import datetime
+from dci.common.time import get_job_duration
 
 import flask
 from flask import json
@@ -90,9 +91,8 @@ def create_jobstates(user):
     created_js = base.create_resource_orm(models2.Jobstate, values)
 
     # Update job status
-    job_duration = datetime.datetime.utcnow() - job.created_at
     job.status = status
-    job.duration = job_duration.seconds
+    job.duration = get_job_duration(job)
 
     try:
         flask.g.session.commit()
