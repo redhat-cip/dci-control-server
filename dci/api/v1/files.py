@@ -16,6 +16,7 @@
 import base64
 import datetime
 import io
+from dci.common.time import get_job_duration
 
 try:
     from xmlrpclib import ServerProxy
@@ -198,8 +199,7 @@ def create_files(user):
         _process_junit_file(values, junit_file, job)
 
     # Update job duration if it's jobstate's file
-    job_duration = datetime.datetime.utcnow() - job.created_at
-    base.update_resource_orm(job, {"duration": job_duration.seconds})
+    base.update_resource_orm(job, {"duration": get_job_duration(job)})
 
     return flask.Response(result, 201, content_type="application/json")
 
