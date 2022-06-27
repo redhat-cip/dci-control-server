@@ -749,10 +749,10 @@ def test_purge(user, admin, job_user_id, jobstate_user_id, team_user_id):
 
     admin.post("/api/v1/jobs/purge")
     path1 = files_utils.build_file_path(team_user_id, job_user_id, file_id1)
-    store = dci_config.get_store("files")
+    store = dci_config.get_store()
     # the purge removed the file from the backend, get() must raise exception
     with pytest.raises(dci_exc.StoreExceptions):
-        store.get(path1)
+        store.get("files", path1)
 
     admin.post("/api/v1/jobs/purge")
     to_purge_jobs = admin.get("/api/v1/jobs/purge").data
@@ -783,10 +783,10 @@ def test_purge_failure(user, admin, job_user_id, jobstate_user_id, team_user_id)
         purge_res = admin.post("/api/v1/jobs/purge")
         assert purge_res.status_code == 400
         path1 = files_utils.build_file_path(team_user_id, job_user_id, file_id1)
-        store = dci_config.get_store("files")
+        store = dci_config.get_store()
         # because the delete fail the backend didn't remove the files and the
         # files are still in the database
-        store.get(path1)
+        store.get("files", path1)
     to_purge_files = admin.get("/api/v1/files/purge").data
     assert len(to_purge_files["files"]) == 1
     to_purge_jobs = admin.get("/api/v1/jobs/purge").data

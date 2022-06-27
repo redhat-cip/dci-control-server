@@ -172,10 +172,10 @@ def create_files(user):
     file_id = utils.gen_uuid()
     file_path = files_utils.build_file_path(job.team_id, values["job_id"], file_id)
 
-    store = dci_config.get_store("files")
-    store.upload(file_path, io.BytesIO(flask.request.data))
+    store = flask.g.store
+    store.upload("files", file_path, io.BytesIO(flask.request.data))
     logger.info("store upload %s (%s)" % (values["name"], file_id))
-    s_file = store.head(file_path)
+    s_file = store.head("files", file_path)
     logger.info("store head %s (%s)" % (values["name"], file_id))
     etag = utils.gen_etag()
     values.update(
@@ -195,7 +195,7 @@ def create_files(user):
     result = json.dumps({"file": new_file})
 
     if new_file["mime"] == "application/junit":
-        _, junit_file = store.get(file_path)
+        _, junit_file = store.get("files", file_path)
         _process_junit_file(values, junit_file, job)
 
     # Update job duration if it's jobstate's file
@@ -239,13 +239,13 @@ def get_file_by_id(user, file_id):
 
 
 def get_file_descriptor(file_object):
-    store = dci_config.get_store("files")
+    store = flask.g.store
     file_path = files_utils.build_file_path(
         file_object.team_id, file_object.job_id, file_object.id
     )
     # Check if file exist on the storage engine
-    store.head(file_path)
-    _, file_descriptor = store.get(file_path)
+    store.head("files", file_path)
+    _, file_descriptor = store.get("files", file_path)
     return file_descriptor
 
 
@@ -354,7 +354,7 @@ def purge_archived_files(user):
 
     # get all archived files
     archived_files = base.get_resources_to_purge_orm(user, models2.File).json["files"]
-    store = dci_config.get_store("files")
+    store = flask.g.store
 
     # for each file delete it from within a transaction
     # if the SQL deletion or the Store deletion fail then
@@ -364,7 +364,7 @@ def purge_archived_files(user):
             file_path = files_utils.build_file_path(
                 file["team_id"], file["job_id"], file["id"]
             )
-            store.delete(file_path)
+            store.delete("files", file_path)
             flask.g.session.query(models2.File).filter(
                 models2.File.id == file["id"]
             ).delete()

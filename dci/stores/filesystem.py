@@ -29,11 +29,14 @@ class FileSystem(stores.Store):
     def __init__(self, conf):
         super(FileSystem, self).__init__(conf)
         self.path = conf["path"]
-        self.container = conf["container"]
-        self._root_directory = os.path.join(self.path, self.container)
 
-    def delete(self, filename):
-        file_path = os.path.join(self._root_directory, filename)
+    def _get_root_directory(self, container_name):
+        container = self._get_container(container_name)
+        return os.path.join(self.path, container)
+
+    def delete(self, container_name, filename):
+        root_directory = self._get_root_directory(container_name)
+        file_path = os.path.join(root_directory, filename)
         try:
             os.remove(file_path)
         except OSError as e:
@@ -46,9 +49,11 @@ class FileSystem(stores.Store):
                 status_code=status_code,
             )
 
-    def get(self, filename):
-        file_path = os.path.join(self._root_directory, filename)
+    def get(self, container_name, filename):
+        root_directory = self._get_root_directory(container_name)
+        file_path = os.path.join(root_directory, filename)
         try:
+
             return ([], open(file_path, "r"))
         except IOError as e:
             status_code = 400
@@ -59,9 +64,11 @@ class FileSystem(stores.Store):
                 status_code=status_code,
             )
 
-    def head(self, filename):
-        file_path = os.path.join(self._root_directory, filename)
+    def head(self, container_name, filename):
+        root_directory = self._get_root_directory(container_name)
+        file_path = os.path.join(root_directory, filename)
         try:
+
             file_size = os.path.getsize(file_path)
         except IOError as e:
             status_code = 400
@@ -78,9 +85,18 @@ class FileSystem(stores.Store):
             "content-type": "application/octet-stream",
         }
 
-    def upload(self, filename, iterable, pseudo_folder=None, create_container=True):
-        file_path = os.path.join(self._root_directory, filename)
+    def upload(
+        self,
+        container_name,
+        filename,
+        iterable,
+        pseudo_folder=None,
+        create_container=True,
+    ):
+        root_directory = self._get_root_directory(container_name)
+        file_path = os.path.join(root_directory, filename)
         path = os.path.dirname(file_path)
+
         if not os.path.exists(path):
             os.makedirs(path)
 

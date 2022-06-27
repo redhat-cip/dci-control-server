@@ -328,13 +328,13 @@ def test_purge(app, admin, user, jobstate_user_id, team_user_id, job_user_id):
     assert len(to_purge["files"]) == 2
     admin.post("/api/v1/files/purge")
     path1 = files_utils.build_file_path(team_user_id, job_user_id, file_id1)
-    store = dci_config.get_store("files")
+    store = dci_config.get_store()
     # the purge removed the file from the backend, get() must raise exception
     with pytest.raises(dci_exc.StoreExceptions):
-        store.get(path1)
+        store.get("files", path1)
     path2 = files_utils.build_file_path(team_user_id, job_user_id, file_id2)
     with pytest.raises(dci_exc.StoreExceptions):
-        store.get(path2)
+        store.get("files", path2)
     to_purge = admin.get("/api/v1/files/purge").data
     assert len(to_purge["files"]) == 0
 
@@ -360,8 +360,8 @@ def test_purge_failure(app, admin, user, jobstate_user_id, job_user_id, team_use
         assert purge_res.status_code == 400
         path1 = files_utils.build_file_path(team_user_id, job_user_id, file_id1)
         path2 = files_utils.build_file_path(team_user_id, job_user_id, file_id2)
-        store = dci_config.get_store("files")
-        store.get(path1)
-        store.get(path2)
+        store = dci_config.get_store()
+        store.get("files", path1)
+        store.get("files", path2)
     to_purge = admin.get("/api/v1/files/purge").data
     assert len(to_purge["files"]) == 2

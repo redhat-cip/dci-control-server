@@ -21,7 +21,6 @@ from flask import json
 import logging
 from sqlalchemy import sql
 
-from dci import dci_config
 from dci.api.v1 import api, notifications
 from dci.api.v1 import base
 from dci.api.v1 import export_control
@@ -236,15 +235,15 @@ def download_component_file(user, c_id, f_id):
     component = base.get_resource_orm(models2.Component, c_id)
     _verify_component_and_topic_access(user, component)
 
-    store = dci_config.get_store("components")
+    store = flask.g.store
 
     componentfile = base.get_resource_orm(models2.Componentfile, f_id)
     file_path = files_utils.build_file_path(component.topic_id, c_id, f_id)
 
     # Check if file exist on the storage engine
-    store.head(file_path)
+    store.head("components", file_path)
 
-    _, file_descriptor = store.get(file_path)
+    _, file_descriptor = store.get("components", file_path)
     return flask.send_file(file_descriptor, mimetype=componentfile.mime)
 
 
@@ -257,12 +256,12 @@ def upload_component_file(user, c_id):
     if str(component.topic_id) not in v1_utils.user_topic_ids(flask.g.session, user):
         raise dci_exc.Unauthorized()
 
-    store = dci_config.get_store("components")
+    store = flask.g.store
 
     file_id = utils.gen_uuid()
     file_path = files_utils.build_file_path(component.topic_id, c_id, file_id)
-    store.upload(file_path, flask.request.data)
-    s_file = store.head(file_path)
+    store.upload("components", file_path, flask.request.data)
+    s_file = store.head("components", file_path)
 
     values = dict.fromkeys(["md5", "mime", "component_id", "name"])
 
@@ -403,7 +402,7 @@ def purge_archived_components(user):
         "components"
     ]
 
-    store = dci_config.get_store("components")
+    store = flask.g.store
 
     # for each component delete it and all the component_files associated
     # from within a transaction
@@ -420,7 +419,7 @@ def purge_archived_components(user):
                 cmpt["topic_id"], cmpt["id"], cmpt_file.id
             )
             try:
-                store.delete(file_path)
+                store.delete("components", file_path)
                 flask.g.session.query(models2.Componentfile).filter(
                     models2.Componentfile.id == cmpt_file.id
                 ).delete()

@@ -26,6 +26,7 @@ logger = logging.getLogger(__name__)
 
 class Swift(stores.Store):
     def __init__(self, conf):
+        self.containers = conf["containers"]
         self.os_username = conf.get("os_username", os.getenv("OS_USERNAME"))
         self.os_password = conf.get("os_password", os.getenv("OS_PASSWORD"))
         self.os_tenant_name = conf.get("os_tenant_name", os.getenv("OS_TENANT_NAME"))
@@ -68,7 +69,6 @@ class Swift(stores.Store):
                 if not self.os_options[opt]:
                     del self.os_options[opt]
 
-        self.container = conf.get("container")
         self.connection = self.get_connection()
 
     def get_connection(self):
@@ -86,10 +86,11 @@ class Swift(stores.Store):
             force_auth_retry=True,
         )
 
-    def delete(self, filename):
+    def delete(self, container_name, filename):
+        container = self._get_container(container_name)
         try:
             self.connection.delete_object(
-                self.container, filename, headers={"X-Delete-After": 1}
+                container, filename, headers={"X-Delete-After": 1}
             )
         except swiftclient.exceptions.ClientException as e:
             if e.http_status == 404:
@@ -100,10 +101,11 @@ class Swift(stores.Store):
                 status_code=e.http_status,
             )
 
-    def get(self, filename):
+    def get(self, container_name, filename):
+        container = self._get_container(container_name)
         try:
             return self.connection.get_object(
-                self.container, filename, resp_chunk_size=65535
+                container, filename, resp_chunk_size=65535
             )
         except swiftclient.exceptions.ClientException as exc:
             raise exceptions.StoreExceptions(
@@ -111,26 +113,35 @@ class Swift(stores.Store):
                 status_code=exc.http_status,
             )
 
-    def head(self, filename):
+    def head(self, container_name, filename):
+        container = self._get_container(container_name)
         try:
-            return self.connection.head_object(self.container, filename)
+            return self.connection.head_object(container, filename)
         except swiftclient.exceptions.ClientException as exc:
             raise exceptions.StoreExceptions(
                 "Error while heading file " "%s: %s" % (filename, str(exc)),
                 status_code=exc.http_status,
             )
 
-    def upload(self, file_path, iterable, pseudo_folder=None, create_container=True):
+    def upload(
+        self,
+        container_name,
+        file_path,
+        iterable,
+        pseudo_folder=None,
+        create_container=True,
+    ):
+        container = self._get_container(container_name)
         try:
-            self.connection.head_container(self.container)
+            self.connection.head_container(container)
         except swiftclient.exceptions.ClientException as exc:
             if exc.http_status == 404 and create_container:
                 try:
-                    self.connection.put_container(self.container)
+                    self.connection.put_container(container)
                 except swiftclient.exceptions.ClientException as exc:
                     raise exceptions.StoreExceptions(
                         "Error while creating file " "%s: %s" % (file_path, str(exc)),
                         status_code=exc.http_status,
                     )
 
-        self.connection.put_object(self.container, file_path, iterable)
+        self.connection.put_object(container, file_path, iterable)

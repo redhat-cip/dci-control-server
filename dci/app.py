@@ -39,6 +39,7 @@ class DciControlServer(flask.Flask):
         self.config.update(dci_config.CONFIG)
         self.url_map.strict_slashes = False
         self.engine = dci_config.get_engine()
+        self.store = dci_config.get_store()
         conf = dci_config.CONFIG
         self.sender = self._get_zmq_sender(conf["ZMQ_CONN"])
         session = sessionmaker(bind=self.engine)()
@@ -142,7 +143,7 @@ def create_app(param=None):
                 )
                 time.sleep(1)
                 pass
-
+        flask.g.store = dci_app.store
         flask.g.sender = dci_app.sender
 
     @dci_app.teardown_request

@@ -44,12 +44,13 @@ def get_engine():
     return sa_engine
 
 
-def get_store(container):
-    configuration = {}
-    if container == "files":
-        configuration["container"] = CONFIG["STORE_FILES_CONTAINER"]
-    elif container == "components":
-        configuration["container"] = CONFIG["STORE_COMPONENTS_CONTAINER"]
+def get_store():
+    configuration = {
+        "containers": {
+            "files": CONFIG["STORE_FILES_CONTAINER"],
+            "components": CONFIG["STORE_COMPONENTS_CONTAINER"],
+        }
+    }
     if CONFIG["STORE_ENGINE"] == CONFIG["SWIFT_STORE"]:
         configuration["os_username"] = CONFIG["STORE_USERNAME"]
         configuration["os_password"] = CONFIG["STORE_PASSWORD"]
@@ -65,8 +66,7 @@ def get_store(container):
         configuration["os_project_domain_name"] = CONFIG.get(
             "STORE_PROJECT_DOMAIN_NAME"
         )
-        store_engine = swift.Swift(configuration)
-    else:
-        configuration["path"] = CONFIG["STORE_FILE_PATH"]
-        store_engine = filesystem.FileSystem(configuration)
-    return store_engine
+        return swift.Swift(configuration)
+
+    configuration["path"] = CONFIG["STORE_FILE_PATH"]
+    return filesystem.FileSystem(configuration)

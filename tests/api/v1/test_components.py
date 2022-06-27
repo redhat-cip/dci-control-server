@@ -778,7 +778,7 @@ def test_verify_and_get_components_ids(session, admin, topic, topic_user_id):
 
 def test_purge(admin, components_user_ids, topic_user_id):
     component_id = components_user_ids[0]
-    store = dci_config.get_store("components")
+    store = dci_config.get_store()
 
     url = "/api/v1/components/%s/files" % component_id
     c_file1 = admin.post(url, data="lol")
@@ -787,7 +787,7 @@ def test_purge(admin, components_user_ids, topic_user_id):
     path1 = files_utils.build_file_path(
         topic_user_id, component_id, c_file1.data["component_file"]["id"]
     )
-    store.get(path1)
+    store.get("components", path1)
 
     url = "/api/v1/components/%s/files" % component_id
     c_file2 = admin.post(url, data="lol")
@@ -796,7 +796,7 @@ def test_purge(admin, components_user_ids, topic_user_id):
     path2 = files_utils.build_file_path(
         topic_user_id, component_id, c_file2.data["component_file"]["id"]
     )
-    store.get(path2)
+    store.get("components", path2)
 
     component = admin.get("/api/v1/components/%s" % component_id).data["component"]
     admin.delete(
@@ -808,10 +808,10 @@ def test_purge(admin, components_user_ids, topic_user_id):
     assert c_purged.status_code == 204
 
     with pytest.raises(dci_exc.StoreExceptions):
-        store.get(path1)
+        store.get("components", path1)
 
     with pytest.raises(dci_exc.StoreExceptions):
-        store.get(path2)
+        store.get("components", path2)
 
     to_purge = admin.get("/api/v1/components/purge").data
     assert len(to_purge["components"]) == 0
@@ -842,8 +842,8 @@ def test_purge_failure(admin, components_user_ids, topic_user_id):
         mock_delete.side_effect = dci_exc.StoreExceptions("error")
         purge_res = admin.post("/api/v1/components/purge")
         assert purge_res.status_code == 400
-        store = dci_config.get_store("components")
-        store.get(path1)
+        store = dci_config.get_store()
+        store.get("components", path1)
         to_purge = admin.get("/api/v1/components/purge").data
         assert len(to_purge["components"]) == 1
 
