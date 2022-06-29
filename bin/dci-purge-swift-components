@@ -22,7 +22,8 @@ from sqlalchemy import sql
 
 conf = dci_config.CONFIG
 swift = dci_config.get_store()
-engine = dci_config.get_engine(conf).connect()
+uri = conf["SQLALCHEMY_DATABASE_URI"]
+engine = dci_config.get_engine(uri).connect()
 
 _C = models.COMPONENTS
 _JJC = models.JOIN_JOBS_COMPONENTS
