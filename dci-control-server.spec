@@ -7,8 +7,8 @@
 %endif
 
 Name:           dci-control-server
-Version:        0.3.1
-Release:        2.VERS%{?dist}
+Version:        0.3.2
+Release:        1.VERS%{?dist}
 Summary:        DCI control server
 License:        ASL 2.0
 URL:            https://github.com/redhat-cip/dci-control-server
@@ -148,7 +148,6 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %files
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
-%{_bindir}/dci-purge-swift-components
 %license LICENSE
 %{python_sitelib}/dci
 %{python_sitelib}/*.egg-info
@@ -161,6 +160,9 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %exclude %{python_sitelib}/dci/settings.py?
 
 %changelog
+* Thu Jul 07 2022 Guillaume Vincent <gvincent@redhat.com> - 0.3.2-1
+- Remove unused dci-purge-swift-components
+
 * Mon Jun 15 2020 Haïkel Guémar <hguemar@fedoraproject.org> - 0.3.1-2
 - Add EL8 support
 
