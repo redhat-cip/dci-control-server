@@ -178,7 +178,6 @@ create_job_properties = {
     "configuration": with_default(Properties.string, None),
     "name": with_default(Properties.string, None),
     "url": with_default(Properties.url, None),
-    "pipeline_id": with_default(Properties.uuid, None),
 }
 create_job_schema = {
     "type": "object",
@@ -225,7 +224,6 @@ schedule_job_schema = {
         "configuration": with_default(Properties.string, None),
         "name": with_default(Properties.string, None),
         "url": with_default(Properties.url, None),
-        "pipeline_id": with_default(Properties.uuid, None),
     },
     "required": ["topic_id"],
     "additionalProperties": False,
@@ -652,31 +650,4 @@ analytics_tasks_junit = {
         "test_name",
     ],
     "additionalProperties": False,
-}
-
-###############################################################################
-#                                                                             #
-#                                  Pipelines schema                           #
-#                                                                             #
-###############################################################################
-
-create_pipeline_properties = {
-    "name": Properties.string,
-    "team_id": Properties.uuid,
-    "state": with_default(Properties.enum(valid_resource_states), "active"),
-}
-create_pipeline_schema = {
-    "type": "object",
-    "properties": create_pipeline_properties,
-    "required": ["name", "team_id"],
-    "additionalProperties": False,
-}
-
-update_pipeline_properties = {
-    "name": Properties.string,
-    "state": with_default(Properties.enum(valid_resource_states), "active"),
-}
-update_pipeline_schema = {
-    "type": "object",
-    "properties": update_pipeline_properties,
 }
