@@ -32,16 +32,15 @@ def generate_conf(param=None):
     return CONFIG
 
 
-def get_engine():
-    sa_engine = sqlalchemy.create_engine(
-        CONFIG["SQLALCHEMY_DATABASE_URI"],
+def get_engine(db_uri):
+    return sqlalchemy.create_engine(
+        db_uri,
         pool_size=CONFIG["SQLALCHEMY_POOL_SIZE"],
         max_overflow=CONFIG["SQLALCHEMY_MAX_OVERFLOW"],
         encoding="utf8",
         convert_unicode=CONFIG["SQLALCHEMY_NATIVE_UNICODE"],
         echo=CONFIG["SQLALCHEMY_ECHO"],
     )
-    return sa_engine
 
 
 def get_store():

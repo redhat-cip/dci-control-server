@@ -38,26 +38,27 @@ DCI_PASSWORD_HASH = auth.hash_password(DCI_PASSWORD)
 
 
 def init_db(session):
-    def db_insert_with_name(model_item, **kwargs):
+    def db_insert_with_name(session, model_item, **kwargs):
         resource = (
             session.query(model_item).filter(model_item.name == kwargs["name"]).first()
         )
-        if resource is None:
-            resource = model_item(**kwargs)
-            session.add(resource)
-        else:
-            resource.update(**kwargs)
+        if resource:
+            return resource
 
+        resource = model_item(**kwargs)
+        session.add(resource)
+        session.commit()
         return resource
 
     # Create team admin
-    team_admin = db_insert_with_name(models2.Team, name="admin")
+    team_admin = db_insert_with_name(session, models2.Team, name="admin")
     # Create Red Hat team
-    db_insert_with_name(models2.Team, name="Red Hat")
-    db_insert_with_name(models2.Team, name="EPM")
+    db_insert_with_name(session, models2.Team, name="Red Hat")
+    db_insert_with_name(session, models2.Team, name="EPM")
 
     # Create super admin user
     super_admin = db_insert_with_name(
+        session,
         models2.User,
         name=DCI_LOGIN,
         password=DCI_PASSWORD_HASH,

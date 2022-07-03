@@ -38,10 +38,9 @@ class DciControlServer(flask.Flask):
         super(DciControlServer, self).__init__(__name__)
         self.config.update(dci_config.CONFIG)
         self.url_map.strict_slashes = False
-        self.engine = dci_config.get_engine()
+        self.engine = dci_config.get_engine(self.config["SQLALCHEMY_DATABASE_URI"])
+        self.sender = self._get_zmq_sender(self.config["ZMQ_CONN"])
         self.store = dci_config.get_store()
-        conf = dci_config.CONFIG
-        self.sender = self._get_zmq_sender(conf["ZMQ_CONN"])
         session = sessionmaker(bind=self.engine)()
         self.team_admin_id = self._get_team_id(session, "admin")
         self.team_redhat_id = self._get_team_id(session, "Red Hat")

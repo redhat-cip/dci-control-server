@@ -34,7 +34,7 @@ def engine(request):
     utils.rm_upload_folder()
     db_uri = utils.conf["SQLALCHEMY_DATABASE_URI"]
 
-    engine = dci_config.get_engine()
+    engine = dci_config.get_engine(db_uri)
 
     if not sqlalchemy_utils.functions.database_exists(db_uri):
         sqlalchemy_utils.functions.create_database(db_uri)
@@ -65,13 +65,6 @@ def reset_job_event(engine):
         con.execute("ALTER SEQUENCE jobs_events_id_seq RESTART WITH 1")
         trans.commit()
     return True
-
-
-@pytest.fixture
-def delete_db(request, engine, teardown_db_clean):
-    models2.Base.metadata.reflect(engine)
-    models2.Base.metadata.drop_all(engine)
-    engine.execute("DROP TABLE IF EXISTS alembic_version")
 
 
 @pytest.fixture(scope="session", autouse=True)
