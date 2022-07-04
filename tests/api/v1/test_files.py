@@ -365,3 +365,71 @@ def test_purge_failure(app, admin, user, jobstate_user_id, job_user_id, team_use
         store.get("files", path2)
     to_purge = admin.get("/api/v1/files/purge").data
     assert len(to_purge["files"]) == 2
+
+
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
+def test_get_junit_file(_, user, jobstate_user_id):
+    junit_id = t_utils.post_file(
+        user,
+        jobstate_user_id,
+        FileDesc("Tempest", tests_data.jobtest_one),
+        mime="application/junit",
+    )
+    testsuites = user.get("/api/v1/files/%s/junit" % junit_id).data["testsuites"]
+    assert len(testsuites) == 1
+    assert testsuites[0] == {
+        "errors": 0,
+        "failures": 1,
+        "id": 0,
+        "name": "Kikoolol1",
+        "skipped": 0,
+        "success": 2,
+        "successfixes": 0,
+        "regressions": 0,
+        "testcases": [
+            {
+                "action": "failure",
+                "classname": "Testsuite_1",
+                "message": None,
+                "name": "test_1",
+                "properties": [],
+                "stderr": None,
+                "stdout": None,
+                "time": 30.0,
+                "type": "Exception",
+                "value": "Traceback",
+                "successfix": False,
+                "regression": False,
+            },
+            {
+                "action": "success",
+                "classname": "Testsuite_1",
+                "message": None,
+                "name": "test_2",
+                "properties": [],
+                "stderr": None,
+                "stdout": None,
+                "time": 40.0,
+                "type": None,
+                "value": "",
+                "successfix": False,
+                "regression": False,
+            },
+            {
+                "action": "success",
+                "classname": "Testsuite_1",
+                "message": None,
+                "name": "test_3[id-2fc6822e-b5a8-42ed-967b-11d86e881ce3,smoke]",
+                "properties": [],
+                "stderr": None,
+                "stdout": None,
+                "time": 40.0,
+                "type": None,
+                "value": "",
+                "successfix": False,
+                "regression": False,
+            },
+        ],
+        "tests": 3,
+        "time": 110.0,
+    }

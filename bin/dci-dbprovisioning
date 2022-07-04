@@ -288,7 +288,7 @@ def create_files(jobs):
     create_file(jobs[0]["id"], "Tempest", "tests/data/tempest-results.xml", PARTNER)
     create_file(jobs[0]["id"], "Rally", "tests/data/rally-results.xml", PARTNER)
     create_file(
-        jobs[0]["id"], "Rally", "tests/data/rally-results.regression.xml", PARTNER
+        jobs[0]["id"], "Multiple testsuite", "tests/data/junit_with_multiple_testsuite.xml", PARTNER
     )
     create_file(
         jobs[0]["id"],
