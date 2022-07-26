@@ -72,8 +72,8 @@ def get_store():
             "STORE_S3_AWS_SECRET_ACCESS_KEY"
         ]
         configuration["aws_region"] = CONFIG["STORE_S3_AWS_REGION"]
-        configuration["endpoint_url"] = CONFIG["STORE_S3_ENDPOINT_URL"]
-        configuration["signature_version"] = CONFIG["STORE_S3_SIGNATURE_VERSION"]
+        configuration["endpoint_url"] = CONFIG.get("STORE_S3_ENDPOINT_URL")
+        configuration["signature_version"] = CONFIG.get("STORE_S3_SIGNATURE_VERSION")
         return s3.S3(configuration)
     else:
         configuration["path"] = CONFIG["STORE_FILE_PATH"]
