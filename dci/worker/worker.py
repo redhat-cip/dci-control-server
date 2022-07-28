@@ -50,12 +50,9 @@ def get_email_configuration():
     configuration = {
         "server": os.getenv("DCI_EMAIL_SERVER", "mail.distributed-ci.io"),
         "port": os.getenv("DCI_EMAIL_SERVER_PORT", 587),
-        "account": os.getenv("DCI_EMAIL_ACCOUNT"),
+        "account": os.getenv("DCI_EMAIL_ACCOUNT", "no-reply@distributed-ci.io"),
         "password": os.getenv("DCI_EMAIL_PASSWORD"),
     }
-
-    if not configuration["account"] or not configuration["password"]:
-        return None
 
     return configuration
 
@@ -106,6 +103,14 @@ def dlrn_publish(event):
     )
 
 
+def _get_smtp_server(email_configuration):
+    server = smtplib.SMTP(email_configuration["server"], email_configuration["port"])
+    server.starttls()
+    if email_configuration["account"] and email_configuration["password"]:
+        server.login(email_configuration["account"], email_configuration["password"])
+    return server
+
+
 def send_job_mail(mesg):
     email_configuration = get_email_configuration()
     if email_configuration:
@@ -123,11 +128,7 @@ def send_job_mail(mesg):
         email["DCI-remoteci"] = mesg["remoteci_id"]
         email["DCI-topic"] = mesg["topic_id"]
 
-        server = smtplib.SMTP(
-            email_configuration["server"], email_configuration["port"]
-        )
-        server.starttls()
-        server.login(email_configuration["account"], email_configuration["password"])
+        server = _get_smtp_server(email_configuration)
         for contact in mesg["emails"]:
             # email.message are not classic dict, a new affectation does
             # not overwrite the previous one.
@@ -152,11 +153,7 @@ def send_component_mail(event):
         )
         email["subject"] = subject
 
-        server = smtplib.SMTP(
-            email_configuration["server"], email_configuration["port"]
-        )
-        server.starttls()
-        server.login(email_configuration["account"], email_configuration["password"])
+        server = _get_smtp_server(email_configuration)
         for contact in event["emails"]:
             # email.message are not classic dict, a new affectation does
             # not overwrite the previous one.
