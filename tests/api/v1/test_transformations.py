@@ -23,11 +23,11 @@ from sqlalchemy import sql
 
 from dci.api.v1 import transformations
 from dci.db import models2
-from dci.stores.swift import Swift
+from dci.stores.s3 import S3
 from dci.common import utils
 from tests.data import JUNIT
 
-SWIFT = "dci.stores.swift.Swift"
+AWSS3 = "dci.stores.s3.S3"
 
 JSONUNIT = {
     "success": 3,
@@ -209,7 +209,7 @@ def test_junit2dict_invalid():
 
 
 def test_retrieve_junit2dict(admin, job_user_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    with mock.patch(AWSS3, spec=S3) as mock_s3:
         mockito = mock.MagicMock()
 
         head_result = {
@@ -226,7 +226,7 @@ def test_retrieve_junit2dict(admin, job_user_id):
             )
 
         mockito.get = get
-        mock_swift.return_value = mockito
+        mock_s3.return_value = mockito
         headers = {
             "DCI-NAME": "junit_file.xml",
             "DCI-JOB-ID": job_user_id,
@@ -254,7 +254,7 @@ def test_retrieve_junit2dict(admin, job_user_id):
 def test_create_file_fill_tests_results_table(engine, admin, job_user_id):
     with open("tests/data/tempest-results.xml", "r") as f:
         content_file = f.read()
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    with mock.patch(AWSS3, spec=S3) as mock_s3:
         mockito = mock.MagicMock()
         head_result = {
             "etag": utils.gen_etag(),
@@ -263,7 +263,7 @@ def test_create_file_fill_tests_results_table(engine, admin, job_user_id):
         }
         mockito.head.return_value = head_result
         mockito.get.return_value = [True, six.StringIO(content_file)]
-        mock_swift.return_value = mockito
+        mock_s3.return_value = mockito
 
         headers = {
             "DCI-JOB-ID": job_user_id,

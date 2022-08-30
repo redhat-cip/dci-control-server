@@ -43,7 +43,6 @@ BuildRequires:  python-dciauth
 BuildRequires:  dci-umb
 BuildRequires:  python2-pytest
 BuildRequires:  python2-rpm-macros
-BuildRequires:  python2-swiftclient
 BuildRequires:  python2-jsonschema
 %else
 BuildRequires:  python3-devel
@@ -67,7 +66,6 @@ BuildRequires:  python3-jwt
 BuildRequires:  python3-dciauth
 BuildRequires:  python3-pytest
 BuildRequires:  python3-rpm-macros
-BuildRequires:  python3-swiftclient
 BuildRequires:  python3-jsonschema
 %endif
 BuildRequires:  systemd
@@ -88,7 +86,6 @@ Requires:       python2-zmq
 Requires:       python2-jwt
 Requires:       python2-dciauth
 Requires:       dci-umb
-Requires:       python2-swiftclient
 Requires:       python2-jsonschema
 Requires:       pytz
 Requires:       zeromq
@@ -107,7 +104,6 @@ Requires:       python3-werkzeug
 Requires:       python3-zmq
 Requires:       python3-jwt
 Requires:       python3-dciauth
-Requires:       python3-swiftclient
 Requires:       python3-jsonschema
 Requires:       python3-pytz
 Requires:       python3-boto3
@@ -161,6 +157,9 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %exclude %{python_sitelib}/dci/settings.py?
 
 %changelog
+* Tue Aug 30 2022 Cedric Lecomte <clecomte@redhat.com> - 0.3.3
+- Remove all swift dependencies
+
 * Thu Jul 07 2022 Guillaume Vincent <gvincent@redhat.com> - 0.3.2-1
 - Remove unused dci-purge-swift-components
 

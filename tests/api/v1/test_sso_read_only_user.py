@@ -21,10 +21,10 @@ import uuid
 import mock
 
 from dci.common import utils
-from dci.stores.swift import Swift
+from dci.stores.s3 import S3
 import tests.utils as t_utils
 
-SWIFT = "dci.stores.swift.Swift"
+AWSS3 = "dci.stores.s3.S3"
 FileDesc = collections.namedtuple("FileDesc", ["name", "content"])
 
 
@@ -47,7 +47,7 @@ def test_components(admin, rh_employee, app, topic_id):
     assert cmpt.status_code == 200
     # get component's files
 
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    with mock.patch(AWSS3, spec=S3) as mock_s3:
 
         mockito = mock.MagicMock()
 
@@ -59,7 +59,7 @@ def test_components(admin, rh_employee, app, topic_id):
         }
         mockito.head.return_value = head_result
 
-        mock_swift.return_value = mockito
+        mock_s3.return_value = mockito
 
         url = "/api/v1/components/%s/files" % pc_id
         files = rh_employee.get(url)
@@ -78,7 +78,7 @@ def test_files(admin, rh_employee, app, jobstate_user_id, job_user_id):
     files = rh_employee.get("/api/v1/jobs/%s/files" % job_user_id)
     assert files.status_code == 200
     # get file content
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    with mock.patch(AWSS3, spec=S3) as mock_s3:
 
         mockito = mock.MagicMock()
 
@@ -90,7 +90,7 @@ def test_files(admin, rh_employee, app, jobstate_user_id, job_user_id):
 
         mockito.head.return_value = head_result
         mockito.get.return_value = [head_result, six.StringIO("azertyuiop1234567890")]
-        mock_swift.return_value = mockito
+        mock_s3.return_value = mockito
         content = "azertyuiop1234567890"
         file_id = t_utils.post_file(admin, jobstate_user_id, FileDesc("foo", content))
 

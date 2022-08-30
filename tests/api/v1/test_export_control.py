@@ -18,9 +18,9 @@ import mock
 import six
 
 from dci.common import utils
-from dci.stores.swift import Swift
+from dci.stores.s3 import S3
 
-SWIFT = "dci.stores.swift.Swift"
+AWSS3 = "dci.stores.s3.S3"
 
 # team_user_id is subscribing to topic_user_id
 
@@ -73,7 +73,7 @@ def test_components_export_control_true(
     topic = epm.get("/api/v1/topics/%s" % topic_user_id).data["topic"]
     assert topic["export_control"] is True
 
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    with mock.patch(AWSS3, spec=S3) as mock_s3:
 
         mockito = mock.MagicMock()
         mockito.get.return_value = ["test", six.StringIO("lollollel")]
@@ -83,7 +83,7 @@ def test_components_export_control_true(
             "content-length": 1,
         }
         mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
+        mock_s3.return_value = mockito
 
         url = "/api/v1/components/%s/files" % components_user_ids[0]
         c_file = epm.post(url, data="lol")
@@ -123,7 +123,7 @@ def test_components_export_control_false(
     )
     assert res.status_code == 201
 
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    with mock.patch(AWSS3, spec=S3) as mock_s3:
 
         mockito = mock.MagicMock()
         mockito.get.return_value = ["test", six.StringIO("lollollel")]
@@ -133,7 +133,7 @@ def test_components_export_control_false(
             "content-length": 1,
         }
         mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
+        mock_s3.return_value = mockito
 
         url = "/api/v1/components/%s/files" % components_user_ids[0]
         c_file = epm.post(url, data="lol")

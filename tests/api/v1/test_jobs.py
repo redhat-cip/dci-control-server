@@ -26,14 +26,14 @@ from dci.common import exceptions as dci_exc
 from dci.common import utils
 from dci.db import models2
 from dci.stores import files_utils
-from dci.stores.swift import Swift
+from dci.stores.s3 import S3
 from tests.data import JUNIT
 import tests.utils as t_utils
 
 import collections
 
 FileDesc = collections.namedtuple("FileDesc", ["name", "content"])
-SWIFT = "dci.stores.swift.Swift"
+AWSS3 = "dci.stores.s3.S3"
 
 
 def test_create_jobs(
@@ -252,7 +252,7 @@ def test_get_all_jobs_with_subresources(
     assert jobs["_meta"]["count"] == 2
     assert len(jobs["jobs"]) == 2
 
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    with mock.patch(AWSS3, spec=S3) as mock_s3:
         mockito = mock.MagicMock()
         head_result = {
             "etag": utils.gen_etag(),
@@ -268,7 +268,7 @@ def test_get_all_jobs_with_subresources(
 
         mockito.head.return_value = head_result
         mockito.get = get
-        mock_swift.return_value = mockito
+        mock_s3.return_value = mockito
         query = "/api/v1/jobs"
         jobs = admin.get(query).data
         for job in jobs["jobs"]:
@@ -511,7 +511,7 @@ def test_get_jobstates_by_job_id_by_epm(epm, admin, job_user_id):
 
 
 def test_get_jobstates_by_job_id_with_embed(admin, job_user_id, jobstate_user_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    with mock.patch(AWSS3, spec=S3) as mock_s3:
         mockito = mock.MagicMock()
 
         head_result = {
@@ -521,7 +521,7 @@ def test_get_jobstates_by_job_id_with_embed(admin, job_user_id, jobstate_user_id
         }
 
         mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
+        mock_s3.return_value = mockito
         headers = {"DCI-JOBSTATE-ID": jobstate_user_id, "DCI-NAME": "name1"}
         pfile = admin.post("/api/v1/files", headers=headers, data="kikoolol").data
         file1_id = pfile["file"]["id"]
@@ -579,7 +579,7 @@ def test_delete_job_by_id(remoteci_context, components_user_ids, topic_user_id):
 
 
 def test_delete_job_archive_dependencies(admin, job_user_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    with mock.patch(AWSS3, spec=S3) as mock_s3:
 
         mockito = mock.MagicMock()
 
@@ -590,7 +590,7 @@ def test_delete_job_archive_dependencies(admin, job_user_id):
         }
 
         mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
+        mock_s3.return_value = mockito
 
         headers = {
             "DCI-JOB-ID": job_user_id,
@@ -660,7 +660,7 @@ def test_delete_job_as_user(user, job_user_id):
 def test_create_file_for_job_id(
     user, remoteci_context, components_user_ids, topic_user_id
 ):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    with mock.patch(AWSS3, spec=S3) as mock_s3:
 
         mockito = mock.MagicMock()
         head_result = {
@@ -669,7 +669,7 @@ def test_create_file_for_job_id(
             "content-length": 7,
         }
         mockito.head.return_value = head_result
-        mock_swift.return_value = mockito
+        mock_s3.return_value = mockito
         # create a job
         job = remoteci_context.post(
             "/api/v1/jobs",
@@ -701,7 +701,7 @@ def test_get_files_by_job_id_as_epm(epm, job_user_id, file_job_user_id):
 
 
 def test_get_results_by_job_id(user, job_user_id):
-    with mock.patch(SWIFT, spec=Swift) as mock_swift:
+    with mock.patch(AWSS3, spec=S3) as mock_s3:
         mockito = mock.MagicMock()
         head_result = {
             "etag": utils.gen_etag(),
@@ -714,7 +714,7 @@ def test_get_results_by_job_id(user, job_user_id):
 
         mockito.head.return_value = head_result
         mockito.get = get
-        mock_swift.return_value = mockito
+        mock_s3.return_value = mockito
         headers = {
             "DCI-JOB-ID": job_user_id,
             "Content-Type": "application/junit",

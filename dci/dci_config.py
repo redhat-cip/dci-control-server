@@ -16,7 +16,7 @@
 
 import os
 
-from dci.stores import filesystem, swift, s3
+from dci.stores import filesystem, s3
 
 import flask
 import sqlalchemy
@@ -50,23 +50,7 @@ def get_store():
             "components": CONFIG["STORE_COMPONENTS_CONTAINER"],
         }
     }
-    if CONFIG["STORE_ENGINE"] == CONFIG["SWIFT_STORE"]:
-        configuration["os_username"] = CONFIG["STORE_USERNAME"]
-        configuration["os_password"] = CONFIG["STORE_PASSWORD"]
-        configuration["os_tenant_name"] = CONFIG["STORE_TENANT_NAME"]
-        configuration["os_auth_url"] = CONFIG["STORE_AUTH_URL"]
-        configuration["os_region_name"] = CONFIG["STORE_REGION"]
-        configuration["os_identity_api_version"] = CONFIG.get(
-            "STORE_IDENTITY_API_VERSION"
-        )
-        configuration["os_user_domain_name"] = CONFIG.get("STORE_USER_DOMAIN_NAME")
-        configuration["os_user_domain_id"] = CONFIG.get("STORE_USER_DOMAIN_ID")
-        configuration["os_project_domain_id"] = CONFIG.get("STORE_PROJECT_DOMAIN_ID")
-        configuration["os_project_domain_name"] = CONFIG.get(
-            "STORE_PROJECT_DOMAIN_NAME"
-        )
-        return swift.Swift(configuration)
-    elif CONFIG["STORE_ENGINE"] == CONFIG["S3_STORE"]:
+    if CONFIG["STORE_ENGINE"] == CONFIG["S3_STORE"]:
         configuration["aws_access_key_id"] = CONFIG["STORE_S3_AWS_ACCESS_KEY_ID"]
         configuration["aws_secret_access_key"] = CONFIG[
             "STORE_S3_AWS_SECRET_ACCESS_KEY"

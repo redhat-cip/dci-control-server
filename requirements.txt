@@ -12,8 +12,6 @@ six==1.14.0  # python-six-1.14.0-2.el8.src.rpm centos-openstack-train
 requests==2.22.0  # python-requests-2.22.0-7.el8.src.rpm centos-openstack-train
 flask==1.1.1  # python-flask-1.1.1-1.el8.src.rpm centos-openstack-train
 SQLAlchemy-Utils==0.34.2  # python-sqlalchemy-utils-0.34.2-2.el8.src.rpm centos-openstack-train
-python-keystoneclient==3.21.0  # python-keystoneclient-3.21.0-2.el8.src.rpm centos-openstack-train
-python-swiftclient==3.8.1  # python-swiftclient-3.8.1-1.el8.src.rpm centos-openstack-train
 
 passlib==1.7.2  # python-passlib-1.7.2-1.el8.src.rpm epel
 python-qpid-proton==0.35.0 # qpid-proton-0.35.0-2.el8.src.rpm epel
