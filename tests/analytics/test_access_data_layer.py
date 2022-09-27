@@ -23,14 +23,30 @@ import uuid
 
 @mock.patch("dci.api.v1.jobs.get_utc_now")
 def test_get_jobs(
-    m_get_utc_now, session, remoteci_context, components_user_ids, topic_user_id
+    m_get_utc_now,
+    session,
+    remoteci_context,
+    components_user_ids,
+    topic_user_id,
+    team_user_id,
 ):
     m_get_utc_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(
         hours=2
     )
 
+    pipeline = remoteci_context.post(
+        "/api/v1/pipelines",
+        data={"name": "pipeline1", "team_id": team_user_id},
+    )
+    assert pipeline.status_code == 201
+    pipeline_id = pipeline.data["pipeline"]["id"]
+
     jobs_ids = []
-    data = {"components": components_user_ids, "topic_id": topic_user_id}
+    data = {
+        "components": components_user_ids,
+        "topic_id": topic_user_id,
+        "pipeline_id": pipeline_id,
+    }
     for _ in range(4):
         j_id = remoteci_context.post("/api/v1/jobs", data=data).data["job"]["id"]
         jobs_ids.append(j_id)
@@ -47,6 +63,8 @@ def test_get_jobs(
     assert "files" in jobs[0]["jobstates"][0]
     assert "components" in jobs[0]
     assert "files" in jobs[0]
+    assert "pipeline" in jobs[0]
+    assert pipeline_id == jobs[0]["pipeline"]["id"]
 
     jobs = a_d_l.get_jobs(session, 0, 10, "hours", 1)
     assert len(jobs) == 0
