@@ -553,6 +553,7 @@ class Job(dci_declarative.Mixin, Base):
     files = sa_orm.relationship(
         "File", primaryjoin="and_(File.job_id == Job.id, File.jobstate_id == None)"
     )
+    pipeline = sa_orm.relationship("Pipeline")
 
 
 class Jobstate(dci_declarative.Mixin, Base):
