@@ -28,6 +28,7 @@ from dci.common.schemas import (
     analytics_task_duration_cumulated,
     analytics_task_components_coverage,
     analytics_tasks_junit,
+    analytics_tasks_pipelines_status,
     check_json_is_valid,
 )
 from dci.dci_config import CONFIG
@@ -191,6 +192,43 @@ def tasks_junit_comparison(user):
     try:
         res = requests.post(
             "%s/analytics/junit_topics_comparison" % CONFIG["ANALYTICS_URL"],
+            headers={"Content-Type": "application/json"},
+            json=values,
+        )
+
+        if res.status_code == 200:
+            return flask.jsonify(res.json())
+        else:
+            logger.error("analytics error: %s" % str(res.text))
+            return flask.Response(
+                json.dumps({"error": "error with backend service"}),
+                res.status_code,
+                content_type="application/json",
+            )
+    except ConnectionError as e:
+        logger.error("analytics error: %s" % str(e))
+        return flask.Response(
+            json.dumps({"error": "connection error with backend service"}),
+            503,
+            content_type="application/json",
+        )
+
+
+@api.route("/analytics/pipelines_status", methods=["POST"])
+@decorators.login_required
+def tasks_pipelines_status(user):
+    values = flask.request.json
+    check_json_is_valid(analytics_tasks_pipelines_status, values)
+
+    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
+        if values["teams_ids"]:
+            for team_id in values["teams_ids"]:
+                if team_id not in user.teams_ids:
+                    raise dci_exc.Unauthorized()
+
+    try:
+        res = requests.post(
+            "%s/analytics/pipelines_status" % CONFIG["ANALYTICS_URL"],
             headers={"Content-Type": "application/json"},
             json=values,
         )

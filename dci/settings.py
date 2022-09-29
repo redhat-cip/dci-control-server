@@ -98,7 +98,7 @@ ZMQ_CONN = os.getenv("ZMQ_CONN", DEFAULT_ZMQ_CONN)
 
 
 # Analytics
-ANALYTICS_URL = os.getenv("ANALYTICS_URL", "http://dci-analytics-reverse-proxy:8080")
+ANALYTICS_URL = os.getenv("ANALYTICS_URL", "http://dci-analytics:2345")
 
 
 # Logging related parameters

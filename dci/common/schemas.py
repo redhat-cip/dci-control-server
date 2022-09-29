@@ -654,6 +654,24 @@ analytics_tasks_junit = {
     "additionalProperties": False,
 }
 
+analytics_tasks_pipelines_status_properties = {
+    "start_date": Properties.string,
+    "end_date": Properties.string,
+    "teams_ids": with_default(Properties.array, []),
+    "pipelines_names": with_default(Properties.array, []),
+}
+analytics_tasks_pipelines_status = {
+    "type": "object",
+    "properties": analytics_tasks_pipelines_status_properties,
+    "required": [
+        "start_date",
+        "end_date",
+        "teams_ids",
+        "pipelines_names",
+    ],
+    "additionalProperties": False,
+}
+
 ###############################################################################
 #                                                                             #
 #                                  Pipelines schema                           #

@@ -31,10 +31,10 @@ def get_jobs(session, offset, limit, unit, amount):
     query = query.from_self()
 
     query = (
-        query.options(sa_orm.subqueryload("components"))
-        .options(sa_orm.subqueryload("jobstates"))
-        .options(sa_orm.subqueryload("jobstates.files"))
-        .options(sa_orm.subqueryload("files"))
+        query.options(sa_orm.selectinload("components"))
+        .options(sa_orm.selectinload("jobstates"))
+        .options(sa_orm.selectinload("jobstates.files"))
+        .options(sa_orm.selectinload("files"))
         .options(sa_orm.joinedload("pipeline", innerjoin=True))
     )
 

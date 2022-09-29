@@ -57,3 +57,16 @@ def test_elasticsearch_connection_error(
         % (remoteci_id, topic_user_id)
     )
     assert res.status_code == 503
+
+
+def test_tasks_analytics_pipelines_status(user, team_admin_id):
+    res = user.post(
+        "/api/v1/analytics/pipelines_status",
+        data={
+            "start_date": "1970-01-01",
+            "end_date": "1970-01-01",
+            "teams_ids": [team_admin_id],
+            "pipelines_names": ["pipeline_name"],
+        },
+    )
+    assert res.status_code == 401
