@@ -108,7 +108,7 @@ def _build(sa_query, parsed_query, model_object):
     elif op == "not_contains":
         res = not m_column.contains([value])
     elif op == "null":
-        res = m_column.is_(None)
+        res = sql.or_(m_column.is_(None), m_column == "", m_column == "")
     elif op == "like":
         res = m_column.like(value)
     elif op == "ilike":

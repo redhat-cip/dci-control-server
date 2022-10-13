@@ -116,9 +116,7 @@ def check_json_is_valid(schema, json):
     v = DCIValidator(schema, format_checker=FormatChecker())
     errors = []
     for error in sorted(v.iter_errors(json), key=str):
-        msg = _get_error_message(error)
-        if not msg.startswith("where: 'q("):
-            errors.append(msg)
+        errors.append(_get_error_message(error))
     if len(errors):
         raise DCIException("Request malformed", {"errors": errors, "error": errors[0]})
 
@@ -434,10 +432,13 @@ update_remoteci_schema = {"type": "object", "properties": update_remoteci_proper
 ###############################################################################
 create_component_properties = {
     "name": Properties.string,
-    "title": with_default(Properties.string, None),
-    "message": with_default(Properties.string, None),
-    "canonical_project_name": with_default(Properties.string, None),
-    "url": with_default(Properties.url, None),
+    "title": with_default(Properties.string, ""),
+    "message": with_default(Properties.string, ""),
+    "canonical_project_name": with_default(Properties.string, ""),
+    "display_name": with_default(Properties.string, ""),
+    "version": with_default(Properties.string, ""),
+    "url": with_default(Properties.string, ""),
+    "uid": with_default(Properties.string, ""),
     "type": Properties.string,
     "topic_id": Properties.uuid,
     "team_id": Properties.uuid,
@@ -458,13 +459,15 @@ update_component_properties = {
     "title": Properties.string,
     "message": Properties.string,
     "canonical_project_name": Properties.string,
-    "export_control": Properties.boolean,
-    "url": Properties.url,
+    "display_name": Properties.string,
+    "version": Properties.string,
+    "url": Properties.string,
     "type": Properties.string,
     "topic_id": Properties.uuid,
     "state": Properties.enum(valid_resource_states),
     "data": Properties.json,
     "tags": Properties.array,
+    "released_at": Properties.isoformat_date,
 }
 update_component_schema = {"type": "object", "properties": update_component_properties}
 

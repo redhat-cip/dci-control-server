@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) Red Hat, Inc
+# Copyright (C) 2015-2023 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -39,6 +39,109 @@ def test_create_components_active(mock_disp, admin, topic_id):
     pc_id = pc["component"]["id"]
     gc = admin.get("/api/v1/components/%s" % pc_id).data
     assert gc["component"]["name"] == "pname"
+    assert gc["component"]["state"] == "active"
+    mock_disp.assert_called()
+
+
+@mock.patch("dci.api.v1.notifications.component_dispatcher")
+def test_create_component_with_canonical_project_name(mock_disp, admin, topic_id):
+    data = {
+        "name": "4.12.0 2023-01-12",
+        "canonical_project_name": "OpenShift 4.12.0 2023-01-12",
+        "type": "ocp",
+        "url": "quay.io/openshift-release-dev/ocp-release@sha256:4c5a7e26d707780be6466ddc9591865beb2e3baa5556432d23e8d57966a2dd18",
+        "topic_id": topic_id,
+    }
+    pc = admin.post("/api/v1/components", data=data).data
+    pc_id = pc["component"]["id"]
+    gc = admin.get("/api/v1/components/%s" % pc_id).data
+    assert gc["component"]["name"] == "4.12.0 2023-01-12"
+    assert gc["component"]["canonical_project_name"] == "OpenShift 4.12.0 2023-01-12"
+    assert gc["component"]["display_name"] == "OpenShift 4.12.0 2023-01-12"
+    assert gc["component"]["version"] == "4.12.0 2023-01-12"
+    assert gc["component"]["uid"] == ""
+    assert (
+        gc["component"]["url"]
+        == "quay.io/openshift-release-dev/ocp-release@sha256:4c5a7e26d707780be6466ddc9591865beb2e3baa5556432d23e8d57966a2dd18"
+    )
+    assert gc["component"]["state"] == "active"
+    mock_disp.assert_called()
+
+
+@mock.patch("dci.api.v1.notifications.component_dispatcher")
+def test_create_component_without_canonical_project_name(mock_disp, admin, topic_id):
+    data = {
+        "name": "OpenShift 4.12.0",
+        "type": "ocp",
+        "url": "quay.io/openshift-release-dev/ocp-release@sha256:4c5a7e26d707780be6466ddc9591865beb2e3baa5556432d23e8d57966a2dd18",
+        "topic_id": topic_id,
+    }
+    pc = admin.post("/api/v1/components", data=data).data
+    pc_id = pc["component"]["id"]
+    gc = admin.get("/api/v1/components/%s" % pc_id).data
+    assert gc["component"]["name"] == "OpenShift 4.12.0"
+    assert gc["component"]["canonical_project_name"] == ""
+    assert gc["component"]["display_name"] == "OpenShift 4.12.0"
+    assert gc["component"]["version"] == "4.12.0"
+    assert (
+        gc["component"]["url"]
+        == "quay.io/openshift-release-dev/ocp-release@sha256:4c5a7e26d707780be6466ddc9591865beb2e3baa5556432d23e8d57966a2dd18"
+    )
+    assert gc["component"]["state"] == "active"
+    mock_disp.assert_called()
+
+
+@mock.patch("dci.api.v1.notifications.component_dispatcher")
+def test_create_component_with_version(mock_disp, admin, topic_id):
+    data = {
+        "name": "RHEL-8.6.0-20211205.3",
+        "version": "8.6.0-20211205.3",
+        "uid": "abc",
+        "type": "compose",
+        "url": "http://example.org/RHEL-8.6.0-20211205.3",
+        "topic_id": topic_id,
+    }
+    component = admin.post("/api/v1/components", data=data).data["component"]
+    assert component["name"] == "RHEL-8.6.0-20211205.3"
+    assert component["canonical_project_name"] == ""
+    assert component["display_name"] == "RHEL-8.6.0-20211205.3"
+    assert component["version"] == "8.6.0-20211205.3"
+    assert component["uid"] == "abc"
+    assert component["url"] == "http://example.org/RHEL-8.6.0-20211205.3"
+    assert component["state"] == "active"
+    assert component["message"] == ""
+    assert component["title"] == ""
+
+    mock_disp.assert_called()
+
+
+@mock.patch("dci.api.v1.notifications.component_dispatcher")
+def test_create_component_without_version_nor_display_name(mock_disp, admin, topic_id):
+    data = {
+        "name": "dci-openshift-agent 0.5.0-1.202209222145git23657e82.el8",
+        "canonical_project_name": "dci-openshift-agent 0.5.0-1.202209222145git23657e82.el8",
+        "type": "git",
+        "url": "http://example.org/doa0.5.0.1",
+        "topic_id": topic_id,
+        "state": "active",
+    }
+    pc = admin.post("/api/v1/components", data=data).data
+    pc_id = pc["component"]["id"]
+    gc = admin.get("/api/v1/components/%s" % pc_id).data
+    assert (
+        gc["component"]["name"]
+        == "dci-openshift-agent 0.5.0-1.202209222145git23657e82.el8"
+    )
+    assert (
+        gc["component"]["canonical_project_name"]
+        == "dci-openshift-agent 0.5.0-1.202209222145git23657e82.el8"
+    )
+    assert (
+        gc["component"]["display_name"]
+        == "dci-openshift-agent 0.5.0-1.202209222145git23657e82.el8"
+    )
+    assert gc["component"]["version"] == "0.5.0-1.202209222145git23657e82.el8"
+    assert gc["component"]["uid"] == ""
     assert gc["component"]["state"] == "active"
     mock_disp.assert_called()
 
@@ -111,7 +214,7 @@ def test_create_components_with_same_name_on_same_topics(admin, topic_user_id):
     assert pc2.status_code == 409
 
 
-def test_create_components_with_same_name_on_same_topics_same_team(
+def test_name_topic_id_type_team_id_version_uniqueness(
     user, topic_user_id, team_user_id
 ):
     data = {
@@ -120,11 +223,18 @@ def test_create_components_with_same_name_on_same_topics_same_team(
         "topic_id": topic_user_id,
         "team_id": team_user_id,
     }
-    pstatus_code = user.post("/api/v1/components", data=data).status_code
-    assert pstatus_code == 201
+    p = user.post("/api/v1/components", data=data)
+    assert p.status_code == 201
 
-    pstatus_code = user.post("/api/v1/components", data=data).status_code
-    assert pstatus_code == 409
+    p = user.post("/api/v1/components", data=data)
+    assert p.status_code == 409
+
+    data["version"] = "1.2.3"
+    p = user.post("/api/v1/components", data=data)
+    assert p.status_code == 201
+
+    p = user.post("/api/v1/components", data=data)
+    assert p.status_code == 409
 
 
 def test_create_components_with_same_name_on_same_topics_different_team(
@@ -353,8 +463,7 @@ def test_get_all_components_with_pagination(admin, topic_id):
     assert cs.data["components"] == []
 
 
-def test_get_all_components_with_where(admin, topic_id):
-
+def test_get_all_components_with_where_and_query(admin, topic_id):
     pc = admin.post(
         "/api/v1/components",
         data={"name": "pname1", "type": "gerrit_review", "topic_id": topic_id},
@@ -394,7 +503,6 @@ def test_get_all_components_with_where(admin, topic_id):
         "/api/v1/topics/%s/components?query=and(eq(name,pname1),not(null(url)))"
         % topic_id
     ).data
-    print(db_c["components"])
     assert db_c["_meta"]["count"] == 0
 
     db_c = admin.get(
@@ -547,7 +655,7 @@ def test_delete_component_not_found(admin):
     assert result.status_code == 404
 
 
-def test_put_component(admin, user, topic_id):
+def test_update_component(admin, topic_id):
     data = {
         "name": "pname1",
         "title": "aaa",
@@ -567,6 +675,42 @@ def test_put_component(admin, user, topic_id):
 
     assert ct_1["etag"] != ct_2["etag"]
     assert ct_2["name"] == "cname2"
+
+
+def test_update_component_v2(admin, topic_id):
+    released_at = dt.utcnow().isoformat()
+    data = {
+        "name": "RHEL-8.6.0-20211205.3",
+        "version": "8.6.0-20211205.3",
+        "type": "compose",
+        "url": "http://example.org/RHEL-8.6.0-20211205.3",
+        "topic_id": topic_id,
+        "released_at": released_at,
+        "state": "inactive",
+    }
+    component = admin.post("/api/v1/components", data=data).data["component"]
+    assert component["name"] == "RHEL-8.6.0-20211205.3"
+    assert component["version"] == "8.6.0-20211205.3"
+    assert component["released_at"] == released_at
+    assert component["state"] == "inactive"
+
+    new_released_at = dt.utcnow().isoformat()
+    component["name"] = "RHEL-8.6.0-20211205.4"
+    component["version"] = "8.6.0-20211205.4"
+    component["url"] = "http://example.org/RHEL-8.6.0-20211205.4"
+    component["released_at"] = new_released_at
+    component["state"] = "active"
+
+    updated_component = admin.put(
+        "/api/v1/components/%s" % component["id"],
+        data=component,
+        headers={"If-match": component["etag"]},
+    ).data["component"]
+
+    assert updated_component["name"] == "RHEL-8.6.0-20211205.4"
+    assert updated_component["version"] == "8.6.0-20211205.4"
+    assert updated_component["released_at"] == new_released_at
+    assert updated_component["state"] == "active"
 
 
 @mock.patch("dci.api.v1.notifications.component_dispatcher")
@@ -767,7 +911,7 @@ def test_component_success_update_field_by_field(admin, topic_id):
 
     assert c["name"] == "pname"
     assert c["state"] == "inactive"
-    assert c["title"] is None
+    assert c["title"] == ""
 
     c = admin.put(
         "/api/v1/components/%s" % c["id"],
@@ -777,7 +921,7 @@ def test_component_success_update_field_by_field(admin, topic_id):
 
     assert c["name"] == "pname2"
     assert c["state"] == "inactive"
-    assert c["title"] is None
+    assert c["title"] == ""
 
     admin.put(
         "/api/v1/components/%s" % c["id"],
