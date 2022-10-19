@@ -489,6 +489,35 @@ def test_get_jobstates_by_job_id(admin, user, job_user_id):
     assert len(jobstates.data["job"]["jobstates"]) == len(found_jobstate_ids)
 
 
+def test_get_jobstates_by_job_id_sorted(admin, user, job_user_id, session):
+    data = {"status": "new", "job_id": job_user_id}
+    jobstate_ids = [
+        admin.post("/api/v1/jobstates", data=data).data["jobstate"]["id"],
+        admin.post("/api/v1/jobstates", data=data).data["jobstate"]["id"],
+        admin.post("/api/v1/jobstates", data=data).data["jobstate"]["id"],
+    ]
+
+    job = user.get("/api/v1/jobs/%s" % job_user_id)
+    assert job.status_code == 200
+
+    for i in range(3):
+        assert jobstate_ids[i] == job.data["job"]["jobstates"][i]["id"]
+
+    jobstate = (
+        session.query(models2.Jobstate)
+        .filter(models2.Jobstate.id == jobstate_ids[2])
+        .one()
+    )
+    jobstate.created_at = datetime.datetime.utcnow() - datetime.timedelta(days=1)
+    session.commit()
+
+    job = user.get("/api/v1/jobs/%s" % job_user_id)
+    assert job.status_code == 200
+    assert jobstate_ids[2] == job.data["job"]["jobstates"][0]["id"]
+    assert jobstate_ids[0] == job.data["job"]["jobstates"][1]["id"]
+    assert jobstate_ids[1] == job.data["job"]["jobstates"][2]["id"]
+
+
 def test_get_jobstates_by_job_id_by_epm(epm, admin, job_user_id):
     data = {"status": "new", "job_id": job_user_id}
     jobstate_ids = set(

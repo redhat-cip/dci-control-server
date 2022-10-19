@@ -549,7 +549,7 @@ class Job(dci_declarative.Mixin, Base):
     remoteci = sa_orm.relationship("Remoteci")
     topic = sa_orm.relationship("Topic")
     team = sa_orm.relationship("Team")
-    jobstates = sa_orm.relationship("Jobstate")
+    jobstates = sa_orm.relationship("Jobstate", order_by="Jobstate.created_at.asc()")
     files = sa_orm.relationship(
         "File", primaryjoin="and_(File.job_id == Job.id, File.jobstate_id == None)"
     )
