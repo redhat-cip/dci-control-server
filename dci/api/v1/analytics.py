@@ -56,7 +56,7 @@ def tasks_duration_cumulated(user):
     remoteci = base.get_resource_orm(models2.Remoteci, args["remoteci_id"])
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
-        if remoteci.team_id not in user.teams_id:
+        if remoteci.team_id not in user.teams_ids:
             raise dci_exc.Unauthorized()
     export_control.verify_access_to_topic(user, topic)
 
@@ -110,7 +110,7 @@ def tasks_components_coverage(user):
     topic_id = args["topic_id"]
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
-        if team_id not in user.teams_id:
+        if team_id not in user.teams_ids:
             raise dci_exc.Unauthorized()
 
     query = {
@@ -184,8 +184,8 @@ def tasks_junit_comparison(user):
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
         if (
-            remoteci_1.team_id not in user.teams_id
-            or remoteci_2.team_id not in user.teams_id
+            remoteci_1.team_id not in user.teams_ids
+            or remoteci_2.team_id not in user.teams_ids
         ):
             raise dci_exc.Unauthorized()
 
