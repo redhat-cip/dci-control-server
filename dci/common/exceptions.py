@@ -65,9 +65,9 @@ class DCICreationConflict(DCIException):
         super(DCICreationConflict, self).__init__(msg, payload, 409)
 
 
-class StoreExceptions(DCIException):
+class StoreException(DCIException):
     def __init__(self, message, status_code=400):
-        super(StoreExceptions, self).__init__(message, status_code=status_code)
+        super(StoreException, self).__init__(message, status_code=status_code)
 
 
 class Unauthorized(DCIException):

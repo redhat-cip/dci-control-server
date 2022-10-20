@@ -54,39 +54,22 @@ SQLALCHEMY_MAX_OVERFLOW = 25
 
 # Stores configuration, to store files and components
 # STORE
-FILE_STORE = "file"
 SWIFT_STORE = "swift"
 S3_STORE = "s3"
 
-STORE_ENGINE = os.getenv("STORE_ENGINE", FILE_STORE)
+STORE_ENGINE = os.getenv("STORE_ENGINE", S3_STORE)
 
 # Generic store
-STORE_FILES_CONTAINER = os.getenv("STORE_FILES_CONTAINER", "dci_files")
-STORE_COMPONENTS_CONTAINER = os.getenv("STORE_COMPONENTS_CONTAINER", "dci_components")
+STORE_FILES_CONTAINER = os.getenv("STORE_FILES_CONTAINER", "dci-files")
+STORE_COMPONENTS_CONTAINER = os.getenv("STORE_COMPONENTS_CONTAINER", "dci-components")
 
-
-# File Store
-STORE_FILE_PATH = os.getenv("STORE_FILE_PATH", "/tmp/")
-
-
-# Swift Store
-STORE_USERNAME = os.getenv("STORE_USERNAME", "dci")
-STORE_PASSWORD = os.getenv("STORE_PASSWORD", "dci")
-STORE_TENANT_NAME = os.getenv("STORE_TENANT_NAME", "dci")
-STORE_HOST = os.getenv("STORE_HOST", "swift")
-STORE_PORT = int(os.getenv("STORE_PORT", "5001"))
-DEFAULT_STORE_AUTH_URL = "http://{store_host}:{store_port}/v3".format(
-    store_host=STORE_HOST, store_port=STORE_PORT
-)
-STORE_AUTH_URL = os.getenv("STORE_AUTH_URL", DEFAULT_STORE_AUTH_URL)
-STORE_REGION = os.getenv("STORE_REGION", "regionOne")
 
 # S3/minio Store
-STORE_S3_AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-STORE_S3_AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
-STORE_S3_AWS_REGION = os.getenv("AWS_REGION")
-STORE_S3_ENDPOINT_URL = os.getenv("S3_ENDPOINT_URL")
-STORE_S3_SIGNATURE_VERSION = os.getenv("AWS_SIGNATURE_VERSION")
+STORE_S3_AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "minioadmin")
+STORE_S3_AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "minioadmin")
+STORE_S3_AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+STORE_S3_ENDPOINT_URL = os.getenv("S3_ENDPOINT_URL", "http://127.0.0.1:9000")
+STORE_S3_SIGNATURE_VERSION = os.getenv("AWS_SIGNATURE_VERSION", "v4")
 
 # ZMQ Connection
 ZMQ_HOST = os.getenv("ZMQ_HOST", "127.0.0.1")

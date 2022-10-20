@@ -31,7 +31,7 @@ class Store(object):
 
     def _get_container(self, container_name):
         if container_name not in self.containers:
-            raise exceptions.StoreExceptions(
+            raise exceptions.StoreException(
                 "container name %s not in available containers" % container_name,
                 status_code=400,
             )

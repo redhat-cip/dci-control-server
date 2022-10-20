@@ -330,10 +330,10 @@ def test_purge(app, admin, user, jobstate_user_id, team_user_id, job_user_id):
     path1 = files_utils.build_file_path(team_user_id, job_user_id, file_id1)
     store = dci_config.get_store()
     # the purge removed the file from the backend, get() must raise exception
-    with pytest.raises(dci_exc.StoreExceptions):
+    with pytest.raises(dci_exc.StoreException):
         store.get("files", path1)
     path2 = files_utils.build_file_path(team_user_id, job_user_id, file_id2)
-    with pytest.raises(dci_exc.StoreExceptions):
+    with pytest.raises(dci_exc.StoreException):
         store.get("files", path2)
     to_purge = admin.get("/api/v1/files/purge").data
     assert len(to_purge["files"]) == 0
@@ -354,8 +354,8 @@ def test_purge_failure(app, admin, user, jobstate_user_id, job_user_id, team_use
     assert len(to_purge["files"]) == 2
 
     # purge will fail
-    with mock.patch("dci.stores.filesystem.FileSystem.delete") as mock_delete:
-        mock_delete.side_effect = dci_exc.StoreExceptions("error")
+    with mock.patch("dci.stores.s3.S3.delete") as mock_delete:
+        mock_delete.side_effect = dci_exc.StoreException("error")
         purge_res = admin.post("/api/v1/files/purge")
         assert purge_res.status_code == 400
         path1 = files_utils.build_file_path(team_user_id, job_user_id, file_id1)

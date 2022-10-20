@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 class S3(stores.Store):
     def __init__(self, conf):
-        super().__init__(conf)
+        super(S3, self).__init__(conf)
         self.aws_access_key_id = conf.get("aws_access_key_id")
         self.aws_secret_access_key = conf.get("aws_secret_access_key")
         self.aws_region = conf.get("aws_region")
@@ -63,10 +63,10 @@ class S3(stores.Store):
                     "file '%s' not found in s3 bucket '%s'" % (filename, bucket)
                 )
                 return
-            raise exceptions.StoreExceptions(
+            raise exceptions.StoreException(
                 "Error while deleting file '%s'from bucket '%s': %s"
                 % (filename, bucket, e),
-                status_code=int(e.response["Error"]["Code"]),
+                status_code=e.response["Error"]["Code"],
             )
 
     def get(self, container_name, filename):
@@ -79,7 +79,21 @@ class S3(stores.Store):
         except ClientError as e:
             raise exceptions.StoreException(
                 "Error while getting file '%s': %s" % (filename, e),
-                status_code=int(e.response["Error"]["Code"]),
+                status_code=e.response["Error"]["Code"],
+            )
+
+    def get_presigned_url(self, method, container_name, filepath):
+        bucket = self._get_container(container_name)
+        try:
+            return self.s3.generate_presigned_url(
+                ClientMethod=method,
+                Params={"Bucket": bucket, "Key": filepath},
+                ExpiresIn=600,
+            )
+        except ClientError as e:
+            raise exceptions.StoreException(
+                "Error while getting file '%s': %s" % (filepath, e),
+                status_code=e.response["Error"]["Code"],
             )
 
     def head(self, container_name, filename):
@@ -89,7 +103,7 @@ class S3(stores.Store):
         except ClientError as e:
             raise exceptions.StoreException(
                 "Error while heading file '%s': %s" % (filename, e),
-                status_code=int(e.response["Error"]["Code"]),
+                status_code=e.response["Error"]["Code"],
             )
 
     def upload(self, container_name, filename, iterable):
@@ -102,13 +116,13 @@ class S3(stores.Store):
                 try:
                     self.s3.create_bucket(Bucket=bucket)
                 except ClientError as exc:
-                    raise exceptions.StoreExceptions(
+                    raise exceptions.StoreException(
                         "Error while creating bucket '%s' for file '%s': %s"
                         % (bucket, filename, exc),
                         status_code=int(e.response["Error"]["Code"]),
                     )
             else:
-                raise exceptions.StoreExceptions(
+                raise exceptions.StoreException(
                     "Error while creating bucket for file '%s': %s" % (filename, e),
                     status_code=int(e.response["Error"]["Code"]),
                 )

@@ -16,6 +16,7 @@
 
 import datetime
 import io
+import os
 
 import flask
 from flask import json
@@ -215,6 +216,30 @@ def list_components_files(user, c_id):
 
     return flask.jsonify(
         {"component_files": componentfiles, "_meta": {"count": nb_componentfiles}}
+    )
+
+
+@api.route("/components/<uuid:c_id>/files/<path:filepath>", methods=["GET", "HEAD"])
+@decorators.login_required
+def get_component_file_from_s3(user, c_id, filepath):
+    component = base.get_resource_orm(models2.Component, c_id)
+    _verify_component_and_topic_access(user, component)
+
+    normalized_filepath = os.path.normpath("/" + filepath).lstrip("/")
+    normalized_component_id_filepath = os.path.join(str(c_id), normalized_filepath)
+    component_id_filepath = os.path.join(str(c_id), filepath)
+    if component_id_filepath != normalized_component_id_filepath:
+        raise dci_exc.DCIException("Request malformed: filepath is invalid")
+
+    presign_url_method = "get_object"
+    if flask.request.method == "HEAD":
+        presign_url_method = "head_object"
+    presigned_url = flask.g.store.get_presigned_url(
+        presign_url_method, "components", normalized_component_id_filepath
+    )
+
+    return flask.Response(
+        None, 302, content_type="application/json", headers={"Location": presigned_url}
     )
 
 
