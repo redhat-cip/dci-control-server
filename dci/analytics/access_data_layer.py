@@ -35,6 +35,7 @@ def get_jobs(session, offset, limit, unit, amount):
         .options(sa_orm.selectinload("jobstates"))
         .options(sa_orm.selectinload("jobstates.files"))
         .options(sa_orm.selectinload("files"))
+        .options(sa_orm.selectinload("results"))
         .options(sa_orm.joinedload("pipeline", innerjoin=True))
     )
 
