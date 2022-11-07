@@ -659,6 +659,7 @@ analytics_tasks_pipelines_status_properties = {
     "end_date": Properties.string,
     "teams_ids": with_default(Properties.array, []),
     "pipelines_names": with_default(Properties.array, []),
+    "components_types": with_default(Properties.array, []),
 }
 analytics_tasks_pipelines_status = {
     "type": "object",
