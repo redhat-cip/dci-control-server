@@ -376,6 +376,14 @@ def test_get_all_components_with_where(admin, topic_id):
     assert db_c["_meta"]["count"] == 1
 
 
+def test_nrt_get_all_components_with_new_line_in_where(admin, topic_id):
+    response = admin.get(
+        "/api/v1/topics/%s/components?sort=-created_at&where=name:RHOS-16.2-RHEL-8-20221005.n.1-\nASYNC,type:compose,state:active&limit=1&offset=0"
+        % topic_id
+    )
+    assert response.status_code == 200
+
+
 def test_where_invalid(admin, topic_id):
     err = admin.get("/api/v1/topics/%s/components?where=id" % topic_id)
 

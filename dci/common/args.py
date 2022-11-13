@@ -5,6 +5,7 @@ from datetime import datetime
 def _get_csv(element, dict):
     e = dict.get(element, [])
     if e:
+        e = e.strip().replace("\n", "").replace("\t", "")
         return list(csv.reader([e]))[0]
     return e
 
