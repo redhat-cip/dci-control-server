@@ -343,8 +343,10 @@ def test_check_json_is_valid_check_key_value_csv_type():
     try:
         check_json_is_valid(schema, {"kvcsv": "k1:v1"})
         check_json_is_valid(schema, {"kvcsv": "k1:v1,k2:v2"})
-    except DCIException:
-        pytest.fail("kvcsv() is invalid")
+        check_json_is_valid(schema, {"kvcsv": "k1:"})
+        check_json_is_valid(schema, {"kvcsv": "k1:,k2:v2"})
+    except DCIException as e:
+        pytest.fail(f"kvcsv() is invalid: {e}")
 
     with pytest.raises(DCIException) as e:
         check_json_is_valid(schema, {"kvcsv": "k1 v1"})

@@ -29,7 +29,7 @@ def test_args():
                 "limit": "100",
                 "offset": "0",
                 "sort": "field_1,field_2",
-                "where": "field_1:value_1,field_2:value_2",
+                "where": "field_0:,field_1:value_1,field_2:value_2,field_3:",
                 "embed": "resource_1,resource_2",
             },
         )
@@ -65,7 +65,7 @@ def test_args_invalid_limit_equal_to_zero():
 
 def test_args_invalid_where_field():
     with pytest.raises(DCIException):
-        check_json_is_valid(args_schema, {"where": "f1:"})
+        check_json_is_valid(args_schema, {"where": "f1"})
 
 
 def test_parse_args():

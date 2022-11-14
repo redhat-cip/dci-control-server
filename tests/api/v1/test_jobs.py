@@ -408,6 +408,14 @@ def test_get_all_jobs_with_where(admin, team_user_id, job_user_id):
     db_job_id = db_job["jobs"][0]["id"]
     assert db_job_id == job_user_id
 
+    db_job = admin.get("/api/v1/jobs?where=url:,team_id:%s" % team_user_id).data
+    db_job_id = db_job["jobs"][0]["id"]
+    assert db_job_id == job_user_id
+
+    db_job = admin.get("/api/v1/jobs?where=url:").data
+    db_job_id = db_job["jobs"][0]["id"]
+    assert db_job_id == job_user_id
+
 
 def test_where_invalid(admin):
     err = admin.get("/api/v1/jobs?where=id")

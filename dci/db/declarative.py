@@ -102,6 +102,8 @@ def handle_args(query, model_object, args):
         for w in args.get("where"):
             try:
                 name, value = w.split(":", 1)
+                if not value:
+                    value = None
             except ValueError:
                 raise dci_exc.DCIException(
                     'Invalid where key: "%s"' % w,
@@ -126,7 +128,9 @@ def handle_args(query, model_object, args):
                 raise dci_exc.DCIException('Invalid where key: "%s"' % name)
 
             m_column = getattr(model_object, name)
-            if isinstance(m_column.type, String):
+            if value is None:
+                query = query.filter(m_column == value)
+            elif isinstance(m_column.type, String):
                 value = value.lower()
                 m_column = func.lower(cast(m_column, String))
                 if value.endswith("*") and value.count("*") == 1:
