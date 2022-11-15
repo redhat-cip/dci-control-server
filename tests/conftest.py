@@ -144,10 +144,8 @@ def user_sso(app, access_token):
 
 
 @pytest.fixture
-def user_id(admin):
-    user = admin.get("/api/v1/users?where=name:user")
-    user = admin.get("/api/v1/users/%s" % user.data["users"][0]["id"]).data
-    return str(user["user"]["id"])
+def user_id(user):
+    return user.get("/api/v1/users/me").data["user"]["id"]
 
 
 @pytest.fixture

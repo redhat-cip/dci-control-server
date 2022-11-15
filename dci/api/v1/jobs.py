@@ -546,15 +546,14 @@ def get_all_results_from_jobs(user, j_id):
 
 @api.route("/jobs/<uuid:j_id>", methods=["DELETE"])
 @decorators.login_required
+@decorators.log
 def delete_job_by_id(user, j_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
 
     job = base.get_resource_orm(models2.Job, j_id, if_match_etag)
 
-    if (
-        user.is_not_in_team(job.team_id) or user.is_read_only_user()
-    ) and user.is_not_epm():
+    if user.is_not_in_team(job.team_id):
         raise dci_exc.Unauthorized()
 
     try:
