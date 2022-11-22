@@ -694,6 +694,39 @@ def test_delete_job_as_user(user, job_user_id):
     assert job.status_code == 404
 
 
+def test_nrt_delete_job_as_user_and_red_hat(
+    admin, team_redhat_id, user_id, user, job_user_id
+):
+    add_user_in_redhat_team = admin.post(
+        "/api/v1/teams/%s/users/%s" % (team_redhat_id, user_id), data={}
+    )
+    assert add_user_in_redhat_team.status_code == 201
+
+    job = user.get("/api/v1/jobs/%s" % job_user_id)
+    job_etag = job.headers.get("ETag")
+    job_delete = user.delete(
+        "/api/v1/jobs/%s" % job_user_id, headers={"If-match": job_etag}
+    )
+    assert job_delete.status_code == 204
+    job = user.get("/api/v1/jobs/%s" % job_user_id)
+    assert job.status_code == 404
+
+
+def test_when_a_user_delete_a_job_we_add_log_entry(session, user, user_id, job_user_id):
+    job = user.get("/api/v1/jobs/%s" % job_user_id)
+    job_etag = job.headers.get("ETag")
+
+    job_delete = user.delete(
+        "/api/v1/jobs/%s" % job_user_id, headers={"If-match": job_etag}
+    )
+    assert job_delete.status_code == 204
+
+    logs = session.query(models2.Log).all()
+    assert len(logs) == 1
+    assert str(logs[0].user_id) == user_id
+    assert logs[0].action == "delete_job_by_id"
+
+
 def test_create_file_for_job_id(
     user, remoteci_context, components_user_ids, topic_user_id
 ):
