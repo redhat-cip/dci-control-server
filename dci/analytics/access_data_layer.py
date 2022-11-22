@@ -20,15 +20,14 @@ import sqlalchemy.orm as sa_orm
 from dci.db import models2
 
 
-def get_jobs(session, offset, limit, unit, amount, state=None):
+def get_jobs(session, offset, limit, unit, amount, status=None):
 
     delta = {unit: amount}
 
     query = session.query(models2.Job)
-    if state:
-        query = query.filter(models2.Job.state == state)
-    else:
-        query = query.filter(models2.Job.state != "archived")
+    if status:
+        query = query.filter(models2.Job.status == status)
+    query = query.filter(models2.Job.state != "archived")
     query = query.filter(models2.Job.created_at >= (dt.now() - td(**delta)))
     query = query.order_by(models2.Job.created_at.asc())
     query = query.from_self()
