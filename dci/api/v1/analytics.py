@@ -86,14 +86,14 @@ def tasks_duration_cumulated(user):
         else:
             logger.error("analytics error: %s" % str(res.text))
             return flask.Response(
-                json.dumps({"error": "error with backend service"}),
+                json.dumps({"error": "error with backend service: %s" % str(res.text)}),
                 res.status_code,
                 content_type="application/json",
             )
     except ConnectionError as e:
-        logger.error("analytics error: %s" % str(e))
+        logger.error("analytics connection error: %s" % str(e))
         return flask.Response(
-            json.dumps({"error": "connection error with backend service"}),
+            json.dumps({"error": "connection error with backend service: %s" % str(e)}),
             503,
             content_type="application/json",
         )
@@ -160,14 +160,14 @@ def tasks_components_coverage(user):
         else:
             logger.error("analytics error: %s" % str(res.text))
             return flask.Response(
-                json.dumps({"error": "error with backend service"}),
+                json.dumps({"error": "error with backend service: %s" % str(res.text)}),
                 res.status_code,
                 content_type="application/json",
             )
     except ConnectionError as e:
-        logger.error("analytics error: %s" % str(e))
+        logger.error("analytics connection error: %s" % str(e))
         return flask.Response(
-            json.dumps({"error": "connection error with backend service"}),
+            json.dumps({"error": "connection error with backend service: %s" % str(e)}),
             503,
             content_type="application/json",
         )
@@ -201,14 +201,14 @@ def tasks_junit_comparison(user):
         else:
             logger.error("analytics error: %s" % str(res.text))
             return flask.Response(
-                json.dumps({"error": "error with backend service"}),
+                json.dumps({"error": "error with backend service: %s" % str(res.text)}),
                 res.status_code,
                 content_type="application/json",
             )
     except ConnectionError as e:
-        logger.error("analytics error: %s" % str(e))
+        logger.error("analytics connection error: %s" % str(e))
         return flask.Response(
-            json.dumps({"error": "connection error with backend service"}),
+            json.dumps({"error": "connection error with backend service: %s" % str(e)}),
             503,
             content_type="application/json",
         )
@@ -238,14 +238,14 @@ def tasks_pipelines_status(user):
         else:
             logger.error("analytics error: %s" % str(res.text))
             return flask.Response(
-                json.dumps({"error": "error with backend service"}),
+                json.dumps({"error": "error with backend service: %s" % str(res.text)}),
                 res.status_code,
                 content_type="application/json",
             )
     except ConnectionError as e:
-        logger.error("analytics error: %s" % str(e))
+        logger.error("analytics connection error: %s" % str(e))
         return flask.Response(
-            json.dumps({"error": "connection error with backend service"}),
+            json.dumps({"error": "connection error with backend service: %s" % str(e)}),
             503,
             content_type="application/json",
         )
