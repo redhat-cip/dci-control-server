@@ -69,7 +69,7 @@ STORE_S3_AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID", "minioadmin")
 STORE_S3_AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY", "minioadmin")
 STORE_S3_AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 STORE_S3_ENDPOINT_URL = os.getenv("S3_ENDPOINT_URL", "http://127.0.0.1:9000")
-STORE_S3_SIGNATURE_VERSION = os.getenv("AWS_SIGNATURE_VERSION", "v4")
+STORE_S3_SIGNATURE_VERSION = os.getenv("AWS_SIGNATURE_VERSION", "s3v4")
 
 # ZMQ Connection
 ZMQ_HOST = os.getenv("ZMQ_HOST", "127.0.0.1")

@@ -35,22 +35,26 @@ class S3(stores.Store):
         self.signature_version = conf.get("signature_version")
 
         self.buckets = conf.get("buckets")
+        self.s3_config = self.get_s3_config()
         self.s3 = self.get_s3()
 
-    def get_s3(self):
+    def get_s3_config(self):
         s3_config = Config()
-
         if self.aws_region:
-            s3_config.merge(Config(region_name=self.aws_region))
+            s3_config = s3_config.merge(Config(region_name=self.aws_region))
         if self.signature_version:
-            s3_config.merge(Config(signature_version=self.signature_version))
+            s3_config = s3_config.merge(
+                Config(signature_version=self.signature_version)
+            )
+        return s3_config
 
+    def get_s3(self):
         return boto3.client(
             "s3",
             endpoint_url=self.endpoint_url,
             aws_access_key_id=self.aws_access_key_id,
             aws_secret_access_key=self.aws_secret_access_key,
-            config=s3_config,
+            config=self.s3_config,
         )
 
     def delete(self, container_name, filename):
