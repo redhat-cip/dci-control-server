@@ -344,6 +344,7 @@ def get_all_jobs(user, topic_id=None):
         .options(sa_orm.selectinload("components"))
         .options(sa_orm.joinedload("topic", innerjoin=True))
         .options(sa_orm.joinedload("team", innerjoin=True))
+        .options(sa_orm.joinedload("pipeline", innerjoin=False))
     )
 
     nb_jobs = query.count()
