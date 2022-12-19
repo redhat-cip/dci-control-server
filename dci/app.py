@@ -103,11 +103,11 @@ def werkzeug_logger_to_error():
 
 
 def create_app(param=None):
-    dci_app = DciControlServer()
-    dci_app.url_map.converters["uuid"] = utils.UUIDConverter
-
     werkzeug_logger_to_error()
     configure_root_logger()
+
+    dci_app = DciControlServer()
+    dci_app.url_map.converters["uuid"] = utils.UUIDConverter
 
     logger.info("dci control server startup")
 

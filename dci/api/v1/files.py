@@ -15,6 +15,7 @@
 # under the License.
 import base64
 import datetime
+import gc
 import io
 from dci.common.time import get_job_duration
 
@@ -201,6 +202,7 @@ def create_files(user):
 
     # Update job duration if it's jobstate's file
     base.update_resource_orm(job, {"duration": get_job_duration(job)})
+    gc.collect()
 
     return flask.Response(result, 201, content_type="application/json")
 

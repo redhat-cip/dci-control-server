@@ -131,4 +131,4 @@ class S3(stores.Store):
                     status_code=int(e.response["Error"]["Code"]),
                 )
 
-        self.s3.upload_fileobj(iterable, bucket, filename)
+        self.s3.put_object(Bucket=bucket, Key=filename, Body=iterable)
