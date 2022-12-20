@@ -417,6 +417,29 @@ def test_get_all_jobs_with_where(admin, team_user_id, job_user_id):
     assert db_job_id == job_user_id
 
 
+def test_get_all_jobs_with_pipeline(
+    remoteci_context, user, team_user_id, topic_user_id
+):
+    pipeline = user.post(
+        "/api/v1/pipelines",
+        data={"name": "pipeline1", "team_id": team_user_id},
+    )
+    pipeline_id = pipeline.data["pipeline"]["id"]
+    remoteci_context.post(
+        "/api/v1/jobs/schedule",
+        data={"pipeline_id": pipeline_id, "topic_id": topic_user_id},
+    )
+    remoteci_context.post(
+        "/api/v1/jobs/schedule",
+        data={"pipeline_id": pipeline_id, "topic_id": topic_user_id},
+    )
+
+    jobs = user.get("/api/v1/jobs").data["jobs"]
+    for j in jobs:
+        assert "pipeline" in j
+        assert j["pipeline"]["name"] == "pipeline1"
+
+
 def test_where_invalid(admin):
     err = admin.get("/api/v1/jobs?where=id")
 
