@@ -75,27 +75,22 @@ def tasks_duration_cumulated(user):
                 }
             ),
         )
+
         if res.status_code == 200:
             return flask.jsonify(res.json()["hits"])
         elif res.status_code == 404:
-            return flask.Response(
-                json.dumps({"error": "ressource not found in backend service"}),
-                404,
-                content_type="application/json",
+            raise dci_exc.DCIException(
+                "resource not found in backend server: %s" % res.text, status_code=404
             )
         else:
-            logger.error("analytics error: %s" % str(res.text))
-            return flask.Response(
-                json.dumps({"error": "error with backend service: %s" % str(res.text)}),
-                res.status_code,
-                content_type="application/json",
+            logger.error("analytics error: %s" % res.text)
+            raise dci_exc.DCIException(
+                "error with backend service: %s" % res.text, status_code=res.status_code
             )
     except ConnectionError as e:
-        logger.error("analytics connection error: %s" % str(e))
-        return flask.Response(
-            json.dumps({"error": "connection error with backend service: %s" % str(e)}),
-            503,
-            content_type="application/json",
+        logger.error("analytics connection error: %s " % str(e))
+        raise dci_exc.DCIException(
+            "connection error with backend service", status_code=503
         )
 
 
@@ -152,24 +147,18 @@ def tasks_components_coverage(user):
         if res.status_code == 200:
             return flask.jsonify(res.json()["hits"])
         elif res.status_code == 404:
-            return flask.Response(
-                json.dumps({"error": "ressource not found in backend service"}),
-                404,
-                content_type="application/json",
+            raise dci_exc.DCIException(
+                "resource not found in backend server: %s" % res.text, status_code=404
             )
         else:
-            logger.error("analytics error: %s" % str(res.text))
-            return flask.Response(
-                json.dumps({"error": "error with backend service: %s" % str(res.text)}),
-                res.status_code,
-                content_type="application/json",
+            logger.error("analytics error: %s" % res.text)
+            raise dci_exc.DCIException(
+                "error with backend service: %s" % res.text, status_code=res.status_code
             )
     except ConnectionError as e:
         logger.error("analytics connection error: %s" % str(e))
-        return flask.Response(
-            json.dumps({"error": "connection error with backend service: %s" % str(e)}),
-            503,
-            content_type="application/json",
+        raise dci_exc.DCIException(
+            "connection error with backend service", status_code=503
         )
 
 
@@ -198,19 +187,19 @@ def tasks_junit_comparison(user):
 
         if res.status_code == 200:
             return flask.jsonify(res.json())
+        elif res.status_code == 404:
+            raise dci_exc.DCIException(
+                "resource not found in backend server: %s" % res.text, status_code=404
+            )
         else:
-            logger.error("analytics error: %s" % str(res.text))
-            return flask.Response(
-                json.dumps({"error": "error with backend service: %s" % str(res.text)}),
-                res.status_code,
-                content_type="application/json",
+            logger.error("analytics error: %s" % res.text)
+            raise dci_exc.DCIException(
+                "error with backend service: %s" % res.text, status_code=res.status_code
             )
     except ConnectionError as e:
-        logger.error("analytics connection error: %s" % str(e))
-        return flask.Response(
-            json.dumps({"error": "connection error with backend service: %s" % str(e)}),
-            503,
-            content_type="application/json",
+        logger.error("analytics connection error: %s " % str(e))
+        raise dci_exc.DCIException(
+            "connection error with backend service", status_code=503
         )
 
 
