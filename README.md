@@ -81,7 +81,7 @@ On the resource endpoint:
 
 `/resources/<resource_id>`
 
-Concurrency control with etag:
+#### Concurrency control with etag
 
 The REST API support etag headers, each request result contains the HTTP header 'ETag' which is a fingerprint of the requested resource.
 
@@ -132,6 +132,26 @@ Server: Eve/0.6 Werkzeug/0.10.4 Python/2.7.6
 
 The update succeed and the etag has been updated.
 
+#### Complex where clauses
+
+If you need more complex queries, you can use this format in the `where` parameter:
+
+`/resources?sort=field1,-field2&limit=20&offset=0&where=q(and(eq(field1,foo),eq(field2,bar)))`
+
+The where clause must start with `q(` and end with a `)`.
+
+Then the language is defined like that:
+
+`eq(<field>,<value>)` to lookup resources with a `<field>` having the value `<value>`.
+
+You can use the comparison functions `gt` (greater than), `ge` (greater or equal), `lt` (less than) or `le` (less or equal) using the same syntax as `eq`: `<op>(<field>,<value>)`.
+
+`like(<field>,<value with percent>)` and `ilike(<field>,<value with percent>)` to lookup a field with a SQL glob like way.
+
+`contains(<field>,<value1>,...)` and `not_contains(<field>,<value1>,...)` to lookup elements in an array. This is useful mainly for tags.
+
+`and(<op1>(...),<op2>(...))`, `or(<op1>(...),<op2>(...))` and `not(<op>)` allow to build nested boolean queries.
+
 #### Component Type
 
 object attributes:
@@ -166,6 +186,7 @@ object attributes
 - id
 - created_at
 - updated_at
+- released_at
 - name
 - componenttype
 

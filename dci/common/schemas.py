@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright 2018 Red Hat, Inc.
+# Copyright 2018-2023 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -116,7 +116,9 @@ def check_json_is_valid(schema, json):
     v = DCIValidator(schema, format_checker=FormatChecker())
     errors = []
     for error in sorted(v.iter_errors(json), key=str):
-        errors.append(_get_error_message(error))
+        msg = _get_error_message(error)
+        if not msg.startswith("where: 'q("):
+            errors.append(msg)
     if len(errors):
         raise DCIException("Request malformed", {"errors": errors, "error": errors[0]})
 

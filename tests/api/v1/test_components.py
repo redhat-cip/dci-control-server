@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2016 Red Hat, Inc
+# Copyright (C) 2015-2023 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -371,6 +371,13 @@ def test_get_all_components_with_where(admin, topic_id):
     assert db_c_id == pc_id
 
     db_c = admin.get("/api/v1/topics/%s/components?where=name:pname1" % topic_id).data
+    db_c_id = db_c["components"][0]["id"]
+    assert db_c_id == pc_id
+    assert db_c["_meta"]["count"] == 1
+
+    db_c = admin.get(
+        "/api/v1/topics/%s/components?where=q(eq(name,pname1))" % topic_id
+    ).data
     db_c_id = db_c["components"][0]["id"]
     assert db_c_id == pc_id
     assert db_c["_meta"]["count"] == 1
@@ -1009,6 +1016,14 @@ def test_filter_teams_components_by_tag(user, team_user_id, topic_user_id):
 
     res = user.get(
         "/api/v1/topics/%s/components?where=tags:tag1,team_id:%s"
+        % (topic_user_id, team_user_id)
+    )
+    assert len(res.data["components"]) == 1
+    assert "tag1" in res.data["components"][0]["tags"]
+    assert "tag2" not in res.data["components"][0]["tags"]
+
+    res = user.get(
+        "/api/v1/topics/%s/components?where=q(and(contains(tags,tag1),eq(team_id,%s)))"
         % (topic_user_id, team_user_id)
     )
     assert len(res.data["components"]) == 1
