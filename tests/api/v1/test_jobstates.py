@@ -35,14 +35,13 @@ def test_create_jobstates(user, job_user_id):
     assert job["job"]["status"] == "running"
 
 
-@mock.patch("dci.api.v1.notifications.job_dispatcher")
+@mock.patch("dci.api.v1.jobstates.notifications.job_dispatcher")
 def test_create_jobstates_failure(mocked_disp, user, job_user_id):
     data = {"job_id": job_user_id, "status": "failure"}
-
     user.post("/api/v1/jobstates", data=data)
     # Notification should be sent just one time
     user.post("/api/v1/jobstates", data=data)
-    assert mocked_disp.called_once()
+    mocked_disp.assert_called_once()
 
     job = user.get("/api/v1/jobs/%s" % job_user_id).data
     assert job["job"]["status"] == "failure"

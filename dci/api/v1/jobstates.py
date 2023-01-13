@@ -90,6 +90,8 @@ def create_jobstates(user):
 
     created_js = base.create_resource_orm(models2.Jobstate, values)
 
+    is_job_final_state = job.status in models2.FINAL_STATUSES
+
     # Update job status
     job.status = status
     job.duration = get_job_duration(job)
@@ -101,7 +103,7 @@ def create_jobstates(user):
         raise dci_exc.DCIException(message=str(e), status_code=409)
 
     # send notification in case of final jobstate status
-    if status in models2.FINAL_STATUSES:
+    if status in models2.FINAL_STATUSES and not is_job_final_state:
         job_serialized = serialize_job_with_testcases(job_id)
         jobs_events.create_event(
             job_serialized["id"], values["status"], job_serialized["topic_id"]
