@@ -75,11 +75,9 @@ The update succeeded and the `ETag` has been updated.
 
 ### Complex where clauses
 
-If you need more complex queries, you can use this format in the `where` parameter:
+If you need more complex queries, you can use this format in the `query` parameter:
 
-`/<resources>?sort=<field1>,-<field2>&limit=20&offset=0&where=q(and(eq(<field1>,foo),eq(<field2>,bar)))`
-
-The where clause must start with `q(` and end with a `)`.
+`/<resources>?sort=<field1>,-<field2>&limit=20&offset=0&query=and(eq(<field1>,foo),eq(<field2>,bar))`
 
 Then the language is defined like that:
 

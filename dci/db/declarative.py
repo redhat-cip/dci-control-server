@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2020-2023 Red Hat, Inc
+# Copyright (C) Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -15,7 +15,9 @@
 # under the License.
 
 from dci.common import exceptions as dci_exc
-from dci.db import query as ql
+from dci.db import query_dsl
+
+import pyparsing as pp
 from sqlalchemy import func, String
 from sqlalchemy.types import ARRAY
 from sqlalchemy.sql.expression import cast
@@ -101,59 +103,54 @@ def handle_args(query, model_object, args):
     where = args.get("where")
     if where:
         columns = model_object.__mapper__.columns.keys()
-        if len(where) > 0 and where[0].startswith("q("):
+        for w in where:
             try:
-                query = ql.build(
-                    ql.parse(",".join(where)), model_object, query, columns
-                )
-            except ql.SyntaxError as excpt:
+                name, value = w.split(":", 1)
+                if not value:
+                    value = None
+            except ValueError:
                 raise dci_exc.DCIException(
-                    "Syntax error: %s" % excpt,
-                    payload={"error": "Syntax error: %s" % excpt},
+                    'Invalid where key: "%s"' % w,
+                    payload={
+                        "error": 'where key must have the following form "key:value"'
+                    },
                 )
-        else:
-            for w in where:
-                try:
-                    name, value = w.split(":", 1)
-                    if not value:
-                        value = None
-                except ValueError:
-                    raise dci_exc.DCIException(
-                        'Invalid where key: "%s"' % w,
-                        payload={
-                            "error": 'where key must have the following form "key:value"'
-                        },
-                    )
 
-                if name not in columns:
-                    raise dci_exc.DCIException(
-                        'Invalid where key: "%s"' % w,
-                        payload={"Valid where keys": sorted(set(columns))},
-                    )
+            if name not in columns:
+                raise dci_exc.DCIException(
+                    'Invalid where key: "%s"' % w,
+                    payload={"Valid where keys": sorted(set(columns))},
+                )
 
-                forbidden_column_names = [
-                    "api_secret",
-                    "data",
-                    "password",
-                    "cert_fp",
-                ]
-                if name in forbidden_column_names:
-                    raise dci_exc.DCIException('Invalid where key: "%s"' % name)
+            forbidden_column_names = [
+                "api_secret",
+                "data",
+                "password",
+                "cert_fp",
+            ]
+            if name in forbidden_column_names:
+                raise dci_exc.DCIException('Invalid where key: "%s"' % name)
 
-                m_column = getattr(model_object, name)
-                if value is None:
-                    query = query.filter(m_column == value)
-                elif isinstance(m_column.type, String):
-                    value = value.lower()
-                    m_column = func.lower(cast(m_column, String))
-                    if value.endswith("*") and value.count("*") == 1:
-                        query = query.filter(m_column.contains(value.replace("*", "")))
-                    else:
-                        query = query.filter(m_column == value)
-                elif isinstance(m_column.type, ARRAY):
-                    query = query.filter(m_column.contains([value]))
+            m_column = getattr(model_object, name)
+            if value is None:
+                query = query.filter(m_column == value)
+            elif isinstance(m_column.type, String):
+                value = value.lower()
+                m_column = func.lower(cast(m_column, String))
+                if value.endswith("*") and value.count("*") == 1:
+                    query = query.filter(m_column.contains(value.replace("*", "")))
                 else:
                     query = query.filter(m_column == value)
+            elif isinstance(m_column.type, ARRAY):
+                query = query.filter(m_column.contains([value]))
+            else:
+                query = query.filter(m_column == value)
+    elif args.get("query"):
+        try:
+            parsed_query = query_dsl.parse(args.get("query"))
+            query = query_dsl.build(query, parsed_query, model_object)
+        except pp.ParseException as pe:
+            raise dci_exc.DCIException("error while parsing the query %s" % str(pe))
     if args.get("created_after"):
         query = query.filter(
             getattr(model_object, "created_at") >= args.get("created_after")

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2023 Red Hat, Inc
+# Copyright (C) Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -354,6 +354,7 @@ def test_get_all_components_with_pagination(admin, topic_id):
 
 
 def test_get_all_components_with_where(admin, topic_id):
+
     pc = admin.post(
         "/api/v1/components",
         data={"name": "pname1", "type": "gerrit_review", "topic_id": topic_id},
@@ -376,18 +377,33 @@ def test_get_all_components_with_where(admin, topic_id):
     assert db_c["_meta"]["count"] == 1
 
     db_c = admin.get(
-        "/api/v1/topics/%s/components?where=q(and(eq(name,pname1),null(url)))"
-        % topic_id
+        "/api/v1/topics/%s/components?query=eq(name,pname1)" % topic_id
     ).data
     assert db_c["_meta"]["count"] == 1
     db_c_id = db_c["components"][0]["id"]
     assert db_c_id == pc_id
 
     db_c = admin.get(
-        "/api/v1/topics/%s/components?where=q(and(eq(name,pname1),not(null(url))))"
+        "/api/v1/topics/%s/components?query=and(eq(name,pname1),null(url))" % topic_id
+    ).data
+    assert db_c["_meta"]["count"] == 1
+    db_c_id = db_c["components"][0]["id"]
+    assert db_c_id == pc_id
+
+    db_c = admin.get(
+        "/api/v1/topics/%s/components?query=and(eq(name,pname1),not(null(url)))"
         % topic_id
     ).data
+    print(db_c["components"])
     assert db_c["_meta"]["count"] == 0
+
+    db_c = admin.get(
+        "/api/v1/topics/%s/components?query=and(eq(name,pname1),eq(type,gerrit_review),eq(topic_id,%s))"
+        % (topic_id, topic_id)
+    ).data
+    db_c_id = db_c["components"][0]["id"]
+    assert db_c_id == pc_id
+    assert db_c["_meta"]["count"] == 1
 
 
 def test_nrt_get_all_components_with_new_line_in_where(admin, topic_id):
@@ -1050,7 +1066,7 @@ def test_filter_teams_components_by_tag(user, team_user_id, topic_user_id):
     assert "tag2" not in res.data["components"][0]["tags"]
 
     res = user.get(
-        "/api/v1/topics/%s/components?where=q(and(contains(tags,tag1),eq(team_id,%s)))"
+        "/api/v1/topics/%s/components?query=and(contains(tags,tag1),eq(team_id,%s))"
         % (topic_user_id, team_user_id)
     )
     assert len(res.data["components"]) == 1

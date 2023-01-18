@@ -7,7 +7,7 @@
 %endif
 
 Name:           dci-control-server
-Version:        0.3.2
+Version:        0.3.4
 Release:        1.VERS%{?dist}
 Summary:        DCI control server
 License:        ASL 2.0
@@ -67,6 +67,7 @@ BuildRequires:  python3-dciauth
 BuildRequires:  python3-pytest
 BuildRequires:  python3-rpm-macros
 BuildRequires:  python3-jsonschema
+BuildRequires:  python3-pyparsing
 %endif
 BuildRequires:  systemd
 BuildRequires:  zeromq
@@ -107,6 +108,7 @@ Requires:       python3-dciauth
 Requires:       python3-jsonschema
 Requires:       python3-pytz
 Requires:       python3-boto3
+Requires:  python3-pyparsing
 %endif
 Requires:       zeromq
 %{?systemd_requires}
@@ -157,6 +159,9 @@ install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-
 %exclude %{python_sitelib}/dci/settings.py?
 
 %changelog
+* Tue Feb 21 2023 Yassine Lamgarchal <ylamgarc@redhat.com> - 0.3.4
+- Add pyparsing dependency
+
 * Tue Aug 30 2022 Cedric Lecomte <clecomte@redhat.com> - 0.3.3
 - Remove all swift dependencies
 

@@ -17,6 +17,10 @@ def _get_int(element, dict):
     return e
 
 
+def _get_str(element, dict):
+    return dict.get(element, None)
+
+
 def _get_datetime(element, dict):
     e = dict.get(element, None)
     if e:
@@ -42,6 +46,7 @@ def parse_args(args):
         "embed": _get_csv("embed", args),
         "created_after": _get_datetime("created_after", args),
         "updated_after": _get_datetime("updated_after", args),
+        "query": _get_str("query", args),
     }
 
     return {k: _res[k] for k in _res if _res[k] is not None}
