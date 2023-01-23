@@ -47,6 +47,7 @@ class Properties(object):
     array = {"type": "array"}
     integer = {"type": "integer"}
     boolean = {"type": "boolean"}
+    integer_or_float = {"type": "number"}
     key_value_csv = {"type": "string", "is_key_value_csv": True}
     positive_integer = {"type": "integer", "minimum": 1}
     positive_or_null_integer = {"type": "integer", "minimum": 0}
@@ -244,6 +245,21 @@ add_component_schema = {
     "type": "object",
     "properties": {"id": Properties.uuid},
     "required": ["id"],
+    "additionalProperties": False,
+}
+
+
+create_job_kv_schema = {
+    "type": "object",
+    "properties": {"key": Properties.string, "value": Properties.integer_or_float},
+    "required": ["key", "value"],
+    "additionalProperties": False,
+}
+
+delete_job_kv_schema = {
+    "type": "object",
+    "properties": {"key": Properties.string},
+    "required": ["key"],
     "additionalProperties": False,
 }
 
