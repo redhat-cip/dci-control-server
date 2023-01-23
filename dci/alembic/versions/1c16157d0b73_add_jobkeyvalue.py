@@ -16,14 +16,14 @@
 """Add JobKeyValue
 
 Revision ID: 1c16157d0b73
-Revises: 46dff7ed04c2
+Revises: 609db7251b15
 Create Date: 2023-01-25 13:37:09.897416
 
 """
 
 # revision identifiers, used by Alembic.
 revision = "1c16157d0b73"
-down_revision = "46dff7ed04c2"
+down_revision = "609db7251b15"
 branch_labels = None
 depends_on = None
 

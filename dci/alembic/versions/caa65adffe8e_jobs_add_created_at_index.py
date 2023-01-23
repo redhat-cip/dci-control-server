@@ -16,14 +16,14 @@
 """jobs_add_created_at_index
 
 Revision ID: caa65adffe8e
-Revises: 667206af3c8b
+Revises: 46dff7ed04c2
 Create Date: 2023-06-23 01:31:49.194371
 
 """
 
 # revision identifiers, used by Alembic.
 revision = "caa65adffe8e"
-down_revision = "667206af3c8b"
+down_revision = "46dff7ed04c2"
 branch_labels = None
 depends_on = None
 
