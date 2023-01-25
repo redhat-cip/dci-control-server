@@ -173,8 +173,14 @@ def get_component_by_id(user, c_id):
     )
     _verify_component_and_topic_access(user, component)
 
+    # temp workaround remove the jobs not from the user
+    serialized_component = component.serialize()
+    teams_ids = [str(team_id) for team_id in user.teams_ids]
+    serialized_component["jobs"] = [
+        j for j in serialized_component["jobs"] if j["team_id"] in teams_ids
+    ]
     return flask.Response(
-        json.dumps({"component": component.serialize()}),
+        json.dumps({"component": serialized_component}),
         200,
         headers={"ETag": component.etag},
         content_type="application/json",

@@ -409,6 +409,19 @@ def test_get_component_by_id_or_name(admin, topic_id):
     assert created_ct["component"]["id"] == pc_id
 
 
+def test_nrt_get_component_by_id_return_list_of_jobs_only_from_team_of_the_user(
+    job_admin, remoteci_context, components_user_ids
+):
+    assert len(remoteci_context.get("/api/v1/jobs").data["jobs"]) == 0
+    get_component = remoteci_context.get(
+        "/api/v1/components/%s" % components_user_ids[0]
+    )
+    assert get_component.status_code == 200
+
+    component = get_component.data["component"]
+    assert len(component["jobs"]) == 0
+
+
 def test_get_component_not_found(admin):
     result = admin.get("/api/v1/components/ptdr")
     assert result.status_code == 404
