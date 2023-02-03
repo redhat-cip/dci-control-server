@@ -138,6 +138,9 @@ def get_all_components(user, topic_id):
 
     args = check_and_get_args(flask.request.args.to_dict())
 
+    if len(args["sort"]) == 0:
+        args["sort"] = ["-released_at"]
+
     query = flask.g.session.query(models2.Component)
     query = query.filter(
         sql.and_(

@@ -623,3 +623,23 @@ def cki_test_file(user, job_user):
     data = open("tests/data/cki-results.xml").read()
     r = user.post("/api/v1/files", headers=headers, data=data)
     return r.data["file"]
+
+
+@pytest.fixture
+def openshift(admin):
+    data = {
+        "name": "OpenShift",
+        "label": "OPENSHIFT",
+        "description": "OpenShift is an open source container application platform	",
+    }
+    return admin.post("/api/v1/products", data=data).data["product"]
+
+
+@pytest.fixture
+def openshift_410(admin, openshift):
+    data = {
+        "name": "OCP-4.10",
+        "product_id": openshift["id"],
+        "component_types": ["ocp"],
+    }
+    return admin.post("/api/v1/topics", data=data).data["topic"]

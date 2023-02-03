@@ -1229,3 +1229,31 @@ def test_get_component_file_from_s3_return_400_if_transversal_attack(
         % (component["id"], RHEL80Component["id"])
     )
     assert r.status_code == 400
+
+
+def test_default_components_sort_is_by_released_at(admin, openshift_410):
+    r = admin.post(
+        "/api/v1/components",
+        data={
+            "name": "OpenShift 4.10.50",
+            "type": "ocp",
+            "topic_id": openshift_410["id"],
+            "released_at": "2023-01-18T18:16:25.312257",
+        },
+    )
+    assert r.status_code == 201
+    r = admin.post(
+        "/api/v1/components",
+        data={
+            "name": "OpenShift 4.10.49",
+            "type": "ocp",
+            "topic_id": openshift_410["id"],
+            "released_at": "2023-01-18T08:58:25.521351",
+        },
+    )
+    assert r.status_code == 201
+    components = admin.get(
+        "/api/v1/topics/%s/components" % openshift_410["id"],
+    ).data["components"]
+    assert components[0]["name"] == "OpenShift 4.10.50"
+    assert components[1]["name"] == "OpenShift 4.10.49"
