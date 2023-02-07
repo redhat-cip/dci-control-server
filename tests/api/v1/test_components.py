@@ -376,11 +376,18 @@ def test_get_all_components_with_where(admin, topic_id):
     assert db_c["_meta"]["count"] == 1
 
     db_c = admin.get(
-        "/api/v1/topics/%s/components?where=q(eq(name,pname1))" % topic_id
+        "/api/v1/topics/%s/components?where=q(and(eq(name,pname1),null(url)))"
+        % topic_id
     ).data
+    assert db_c["_meta"]["count"] == 1
     db_c_id = db_c["components"][0]["id"]
     assert db_c_id == pc_id
-    assert db_c["_meta"]["count"] == 1
+
+    db_c = admin.get(
+        "/api/v1/topics/%s/components?where=q(and(eq(name,pname1),not(null(url))))"
+        % topic_id
+    ).data
+    assert db_c["_meta"]["count"] == 0
 
 
 def test_nrt_get_all_components_with_new_line_in_where(admin, topic_id):

@@ -1,33 +1,158 @@
 
 # DCI Server API documentation
 
-Subset of DCI server API calls related to HMAC authentication, identity, create job and upload test results.
+## Endpoints
 
-## Indices
+The resources of DCI can be accessed through our API in a Restful way. Currently, only the json output format is supported.
 
-* [DCI Server](#dci-server)
+Each resource provides two endpoints, one for listing: `/<resources>/`, one for fetching a dedicated element: `/<resources>/<resource_id>/`.
 
-  * [Check if the request is authenticated](#1-check-if-the-request-is-authenticated)
-  * [Get all topics](#2-get-all-topics)
-  * [Get a topic id by topic name](#3-get-a-topic-id-by-topic-name)
-  * [Get components for a topic](#4-get-components-for-a-topic)
-  * [Get all jobs](#5-get-all-jobs)
-  * [Create a new job](#6-create-a-new-job)
-  * [Change  a job state to pre-run](#7-change--a-job-state-to-pre-run)
-  * [Change  a job state to running](#8-change--a-job-state-to-running)
-  * [Change  a job state to success](#9-change--a-job-state-to-success)
-  * [Change  a job state to failure](#10-change--a-job-state-to-failure)
-  * [Upload test results](#11-upload-test-results)
+On those endpoints we can use some parameters on the GET method to filter, search or complete results.
+
+On the listing endpoint:
+
+`/<resources>?sort=field1,-field2&limit=20&offset=0&where=field1:foo,field2:bar`
+
+- **sort** parameter will allow the user to sort the listing output according to fields, the sorting is done by ascending results, if the field is prefixed with `-`, the sorting is done descending. The order also matter, it sorts the first field, when its done it sorts the second field with the resources which have the same first field values, and so on. In our example, it will sort ascending on field1 and on resources which have the same value for field1 will sort descending on field2.
+- **limit** parameter is usually used with the offset one in order to paginate results. It will limit the number of resources retrivied, by default it is set to 20 entries, but you can augment that value. Be careful, the more you fetch the longer the http call can be.
+- **offset** parameter is the second pagination parameter, this will indicate at which entry we want to start the listing in the order defined by default or with other parameters.
+- **where** parameter is here to filter the resources according to a field value. In this example we will retrieve the resources which field1 is equal to foo and field2 equal to bar.
+
+On the resource endpoint:
+
+`/<resources>/<resource_id>`
+
+### Concurrency control with ETag
+
+The REST API support etag headers, each request result contains the HTTP header `ETag` which is a fingerprint of the requested resource.
+
+When a user wants to update or delete a resource then the API requires the user to provide the HTTP header `If-match` with the corresponding `ETag` in order to prevent concurrency errors.
+
+This mechanism ensure that the user has read the most up to date value of the resource before to update/delete it.
+
+Example:
+
+```ShellSession
+$ http POST $URL/api/v1/componenttypes name=kikoolol
+HTTP/1.0 201 CREATED
+Content-Length: 217
+Content-Type: application/json
+Date: Fri, 13 Nov 2015 12:46:18 GMT
+ETag: 8f5dc53c14b865d2c2f0ca6654a4a5c2
+Server: Werkzeug/0.10.4 Python/2.7.6
+```
+
+Here is the etag `ETag: 8f5dc53c14b865d2c2f0ca6654a4a5c2`.
+
+```ShellSession
+$ http PUT $URL/api/v1/componenttypes/kikoolol name=kikoolol2
+HTTP/1.0 412 PRECONDITION FAILED
+Content-Length: 92
+Content-Type: application/json
+Date: Fri, 13 Nov 2015 12:47:33 GMT
+Server: Werkzeug/0.10.4 Python/2.7.6
+{
+    "message": "'If-match' header must be provided",
+    "payload": {},
+    "status_code": 412
+}
+```
+
+Here an update request must provide the `If-match` header.
+
+```ShellSession
+$ http PUT $URL/api/v1/componenttypes/kikoolol \
+If-match:8f5dc53c14b865d2c2f0ca6654a4a5c2 name=kikoolol2
+HTTP/1.0 204 NO CONTENT
+Content-Length: 0
+Content-Type: application/json
+Date: Fri, 13 Nov 2015 12:48:45 GMT
+ETag: 71c076a7ccda10632a40be60ba065511
+Server: Eve/0.6 Werkzeug/0.10.4 Python/2.7.6
+```
+
+The update succeeded and the `ETag` has been updated.
+
+### Complex where clauses
+
+If you need more complex queries, you can use this format in the `where` parameter:
+
+`/<resources>?sort=<field1>,-<field2>&limit=20&offset=0&where=q(and(eq(<field1>,foo),eq(<field2>,bar)))`
+
+The where clause must start with `q(` and end with a `)`.
+
+Then the language is defined like that:
+
+`eq(<field>,<value>)` to lookup resources with a `<field>` having the value `<value>`.
+
+You can use the comparison functions `gt` (greater than), `ge` (greater or equal), `lt` (less than) or `le` (less or equal) using the same syntax as `eq`: `<op>(<field>,<value>)`.
+
+`like(<field>,<value with percent>)` and `ilike(<field>,<value with percent>)` to lookup a field with a SQL glob like way.
+
+`contains(<field>,<value1>,...)` and `not_contains(<field>,<value1>,...)` to lookup elements in an array. This is useful mainly for tags.
+
+`and(<op1>(...),<op2>(...))`, `or(<op1>(...),<op2>(...))` and `not(<op>)` allow to build nested boolean queries.
+
+`null(<field>)` to lookup resources with a `field` having a `NULL` value.
+
+### Component Type
+
+object attributes:
+
+- id
+- created_at
+- updated_at
+- name
+
+listing url: `/api/v1/componenttypes`
+
+- `GET`: get all the components type
+  - response: 200 {'componenttypes': \[{componenttype1}, {componenttype2}\]}
+- `POST`: create a component type element
+  - data: {'name': ...}
+  - response: 201 {'componenttype': {componenttype}}
+
+resource url: `/api/v1/componenttypes/<componenttype_id>`
+
+- `GET`: retrieve the dedicated component type
+  - response: 200 {'componenttype': {componenttype}}
+- `PUT`: update the given component type
+  - data: {'name': ...}
+  - response: 204 {'componenttype': {componentype}}
+- `DELETE`: remove the given component type
+  - response: 204
+
+### Component
+
+object attributes
+
+- id
+- created_at
+- updated_at
+- released_at
+- name
+- componenttype
+
+listing url: `/api/v1/components`
+
+- `GET`: get all the components
+  - response: 200 {'components': \[{component1}, {component2}\]}
+- `POST`: create a component element
+  - data: {'name': ..., 'componenttype': ...}
+  - response: 201 {'component': {component}}
+
+resource url: `/api/v1/components/<component_id>`
+
+- `GET`: retrieve the dedicated component
+  - response: 200 {'component': {component}}
+- `PUT`: update the given component
+  - data: {'name': ..., 'componenttype': ...}
+  - response: 201 {'component': {component}}
+- `DELETE`: remove the given component
+  - response: 204
 
 
---------
-
-
-## DCI Server
-
-
-
-### 1. Check if the request is authenticated
+## Check if the request is authenticated
 
 
 Check if the request is authenticated. Returns 200 = success, or 401 = failure.
@@ -51,7 +176,7 @@ Status: Check if the request is authenticated | Code: 200
 
 
 
-```js
+```json
 {
     "identity": {
         "email": null,
@@ -71,7 +196,7 @@ Status: Check if the request is authenticated | Code: 200
 
 
 
-### 2. Get all topics
+## Get all topics
 
 
 Get all topics
@@ -87,7 +212,7 @@ URL: https://api.distributed-ci.io/api/v1/topics
 
 
 
-### 3. Get a topic id by topic name
+## Get a topic id by topic name
 
 
 Get topic id by topic name:
@@ -98,7 +223,7 @@ Get topic id by topic name:
       id: <topic_id>
     }
     
-id: \<topic_id\> in response body should be saved for later use in requests: Get components for a topic and Create a new job
+`id: <topic_id>` in response body should be saved for later use in requests: Get components for a topic and Create a new job
 
 
 ***Endpoint:***
@@ -125,7 +250,7 @@ URL: https://api.distributed-ci.io/api/v1/topics
 Status: Get a topic id by topic name | Code: 200
 
 
-```js
+```json
 {
     "_meta": {
         "count": 1
@@ -153,7 +278,7 @@ Status: Get a topic id by topic name | Code: 200
 
 
 
-### 4. Get components for a topic
+## Get components for a topic
 
 
 GET /api/v1/topics/\<topic_id\>/components <br>
@@ -188,7 +313,7 @@ Status: Get components for a topic | Code: 200
 
 
 
-```js
+```json
 {
     "_meta": {
         "count": 21
@@ -294,7 +419,7 @@ Status: Get components for a topic | Code: 200
 
 
 
-### 5. Get all jobs
+## Get all jobs
 
 
 Get all jobs
@@ -310,7 +435,7 @@ URL: https://api.distributed-ci.io/api/v1/jobs
 
 
 
-### 6. Create a new job
+## Create a new job
 
 
 Create a new job:
@@ -396,7 +521,7 @@ Status: Create a new job | Code: 201
 
 
 
-### 7. Change  a job state to pre-run
+## Change a job state to pre-run
 
 
 A job can have different states: ['new', 'pre-run', 'running', 'post-run', 'success', 'failure', 'killed', 'error']. <br>
@@ -423,7 +548,7 @@ URL: https://api.distributed-ci.io/api/v1/jobstates
 
 ***Body:***
 
-```js        
+```json
 {
  "job_id": "bf878d0c-3119-4194-913b-1da1cf3a19fa",
  "status": "pre-run"
@@ -454,7 +579,7 @@ Status: Change  a job state to pre-run | Code: 201
 
 
 
-### 8. Change  a job state to running
+## Change a job state to running
 
 
 
@@ -477,7 +602,7 @@ URL: https://api.distributed-ci.io/api/v1/jobstates
 
 ***Body:***
 
-```js        
+```json
 {
  "job_id": "bf878d0c-3119-4194-913b-1da1cf3a19fa",
  "status": "running"
@@ -493,7 +618,7 @@ Status: Change  a job state to running | Code: 201
 
 
 
-```js
+```json
 {
     "jobstate": {
         "comment": null,
@@ -507,7 +632,7 @@ Status: Change  a job state to running | Code: 201
 
 
 
-### 9. Change  a job state to success
+## Change a job state to success
 
 
 When a job is created it has a state 'new'. A job can have different states: ['new', 'pre-run', 'running', 'post-run', 'success', 'failure', 'killed', 'error']. At the end of a partner remote CI run job_state should be changed to success or failure for the created job.
@@ -538,7 +663,7 @@ URL: https://api.distributed-ci.io/api/v1/jobstates
 
 ***Body:***
 
-```js        
+```json
 {
  "job_id": "bf878d0c-3119-4194-913b-1da1cf3a19fa",
  "status": "success"
@@ -554,7 +679,7 @@ Status: Change  a job state to success | Code: 201
 
 
 
-```js
+```json
 {
     "jobstate": {
         "comment": null,
@@ -568,7 +693,7 @@ Status: Change  a job state to success | Code: 201
 
 
 
-### 10. Change  a job state to failure
+## Change a job state to failure
 
 
 A job can have different states: ['new', 'pre-run', 'running', 'post-run', 'success', 'failure', 'killed', 'error']. <br>
@@ -602,7 +727,7 @@ URL: https://api.distributed-ci.io/api/v1/jobstates
 
 ***Body:***
 
-```js        
+```json
 {
  "job_id": "bf878d0c-3119-4194-913b-1da1cf3a19fa",
  "status": "failure"
@@ -617,7 +742,7 @@ URL: https://api.distributed-ci.io/api/v1/jobstates
 Status: Change  a job state to failure | Code: 201
 
 
-```js
+```json
 {
     "jobstate": {
         "comment": null,
@@ -631,7 +756,7 @@ Status: Change  a job state to failure | Code: 201
 
 
 
-### 11. Upload test results
+## Upload test results
 
 
 Upload test results:
@@ -670,7 +795,7 @@ URL: https://api.distributed-ci.io/api/v1/files
 
 ***Body:***
 
-```js        
+```json
 {
  "job_id": "bf878d0c-3119-4194-913b-1da1cf3a19fa",
  "status": "failure"
@@ -686,7 +811,7 @@ Status: Upload test results | Code: 201
 
 
 
-```js
+```json
 {
     "file": {
         "created_at": "2019-10-29T15:34:48.962810",

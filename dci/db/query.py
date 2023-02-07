@@ -152,6 +152,16 @@ def _le(args, model, query, columns, do_filter):
         return m_column <= val
 
 
+def _null(args, model, query, columns, do_filter):
+    if len(args) != 1:
+        raise SyntaxError("invalid number of args %d for null" % len(args))
+    m_column = left(args[0], model, columns)
+    if do_filter:
+        return query.filter(m_column.is_(None))
+    else:
+        return m_column.is_(None)
+
+
 def _like(args, model, query, columns, do_filter):
     if len(args) != 2:
         raise SyntaxError("invalid number of args %d for like" % len(args))
