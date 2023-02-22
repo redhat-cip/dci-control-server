@@ -18,7 +18,9 @@ import flask
 from flask import json
 import logging
 from sqlalchemy import exc as sa_exc
+from sqlalchemy import sql
 import sqlalchemy.orm as sa_orm
+
 from datetime import datetime, timedelta
 
 from dci.api.v1 import api
@@ -435,17 +437,31 @@ def get_job_by_id(user, job_id):
         .options(sa_orm.selectinload("results"))
         .options(sa_orm.selectinload("components"))
         .options(sa_orm.selectinload("jobstates"))
-        .options(sa_orm.selectinload("files"))
     )
     try:
         job = query.one()
+        job = job.serialize()
+        files = [
+            f.serialize()
+            for f in flask.g.session.query(models2.File)
+            .filter(
+                sql.and_(
+                    models2.File.jobstate_id == None,  # noqa
+                    models2.File.job_id == job_id,
+                    models2.File.state != "archived",
+                )
+            )
+            .all()
+        ]
+        job["files"] = files
+
     except sa_orm.exc.NoResultFound:
         raise dci_exc.DCIException(message="job not found", status_code=404)
 
     return flask.Response(
-        json.dumps({"job": job.serialize()}),
+        json.dumps({"job": job}),
         200,
-        headers={"ETag": job.etag},
+        headers={"ETag": job["etag"]},
         content_type="application/json",
     )
 

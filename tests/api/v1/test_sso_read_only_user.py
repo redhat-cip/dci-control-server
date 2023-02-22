@@ -74,7 +74,7 @@ def test_components(admin, rh_employee, app, topic_id):
 
 
 # FILES
-def test_files(admin, rh_employee, app, jobstate_user_id, job_user_id):
+def test_files(admin, rh_employee, job_user_id):
     files = rh_employee.get("/api/v1/jobs/%s/files" % job_user_id)
     assert files.status_code == 200
     # get file content
@@ -92,9 +92,9 @@ def test_files(admin, rh_employee, app, jobstate_user_id, job_user_id):
         mockito.get.return_value = [head_result, six.StringIO("azertyuiop1234567890")]
         mock_s3.return_value = mockito
         content = "azertyuiop1234567890"
-        file_id = t_utils.post_file(admin, jobstate_user_id, FileDesc("foo", content))
+        file = t_utils.create_file(admin, job_user_id, "foo", content)
 
-        get_file = rh_employee.get("/api/v1/files/%s" % file_id)
+        get_file = rh_employee.get("/api/v1/files/%s" % file["id"])
 
         assert get_file.status_code == 200
 

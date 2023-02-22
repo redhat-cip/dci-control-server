@@ -33,27 +33,23 @@ from dci.stores import files_utils
 from tests import data as tests_data
 import tests.utils as t_utils
 
-import collections
-
-FileDesc = collections.namedtuple("FileDesc", ["name", "content"])
-
 
 def test_create_files(user, jobstate_user_id):
-    file_id = t_utils.post_file(user, jobstate_user_id, FileDesc("kikoolol", "content"))
+    file_id = t_utils.create_task_file(user, jobstate_user_id, "file", "content")["id"]
 
     file = user.get("/api/v1/files/%s" % file_id).data["file"]
 
-    assert file["name"] == "kikoolol"
+    assert file["name"] == "file"
     assert file["size"] == 7
 
 
 def test_create_files_jobstate_id_and_job_id_missing(admin):
-    file = admin.post("/api/v1/files", headers={"DCI-NAME": "kikoolol"}, data="content")
+    file = admin.post("/api/v1/files", headers={"DCI-NAME": "file"}, data="content")
     assert file.status_code == 400
 
 
 @mock.patch("dci.common.time.datetime")
-def test_create_file_update_job_duration(m_datetime_j, user, job_user):
+def test_create_task_file_update_job_duration(m_datetime_j, user, job_user):
     job_created_at = job_user["created_at"]
     d_j_created_at = datetime.strptime(job_created_at, "%Y-%m-%dT%H:%M:%S.%f")
 
@@ -66,15 +62,16 @@ def test_create_file_update_job_duration(m_datetime_j, user, job_user):
     job_user = user.get("/api/v1/jobs/%s" % job_user["id"]).data["job"]
     assert job_user["duration"] == 86405
 
-    # check file creation updating job duration
+    # check task file creation update job duration
     m_datetime_j.datetime.utcnow.return_value = d_j_created_at + timedelta(
         seconds=86410
     )
-    t_utils.post_file(
+    t_utils.create_task_file(
         user,
         jobstate["id"],
-        FileDesc("Rally", tests_data.jobtest_one),
-        mime="ansible/output",
+        "Rally",
+        tests_data.jobtest_one,
+        "ansible/output",
     )
     job_user = user.get("/api/v1/jobs/%s" % job_user["id"]).data["job"]
     assert job_user["duration"] == 86410
@@ -89,7 +86,7 @@ def test_upload_tests_with_regressions_successfix(
         "Client-Version": "python-dciclient_0.1.0",
     }
 
-    # 1. schedule two jobs and create their jobstate
+    # 1. schedule two jobs and create their files
     data = {"topic_id": topic["id"]}
     job_1 = remoteci_context.post(
         "/api/v1/jobs/schedule", headers=headers, data=data
@@ -98,38 +95,36 @@ def test_upload_tests_with_regressions_successfix(
         "/api/v1/jobs/schedule", headers=headers, data=data
     ).data["job"]
 
-    # 2. create the associated jobstates for each job
-    data = {"job_id": job_1["id"], "status": "success"}
-    jobstate_1 = admin.post("/api/v1/jobstates", data=data).data["jobstate"]
-    data = {"job_id": job_2["id"], "status": "failure"}
-    jobstate_2 = admin.post("/api/v1/jobstates", data=data).data["jobstate"]
-
-    f_1 = t_utils.post_file(
+    f_1 = t_utils.create_file(
         admin,
-        jobstate_1["id"],
-        FileDesc("Tempest", tests_data.jobtest_one),
-        mime="application/junit",
-    )
+        job_1["id"],
+        "Tempest",
+        tests_data.jobtest_one,
+        "application/junit",
+    )["id"]
     assert f_1 is not None
-    t_utils.post_file(
+    t_utils.create_file(
         admin,
-        jobstate_1["id"],
-        FileDesc("Rally", tests_data.jobtest_one),
-        mime="application/junit",
+        job_1["id"],
+        "Rally",
+        tests_data.jobtest_one,
+        "application/junit",
     )
 
-    f_2 = t_utils.post_file(
+    f_2 = t_utils.create_file(
         admin,
-        jobstate_2["id"],
-        FileDesc("Tempest", tests_data.jobtest_two),
-        mime="application/junit",
-    )
+        job_2["id"],
+        "Tempest",
+        tests_data.jobtest_two,
+        "application/junit",
+    )["id"]
     assert f_2 is not None
-    t_utils.post_file(
+    t_utils.create_file(
         admin,
-        jobstate_2["id"],
-        FileDesc("Rally", tests_data.jobtest_one),
-        mime="application/junit",
+        job_2["id"],
+        "Rally",
+        tests_data.jobtest_one,
+        "application/junit",
     )
 
     # 3. verify regression in job_2's result which is 'test_3'
@@ -153,13 +148,13 @@ def test_upload_tests_with_regressions_successfix(
     assert tcs[2]["regression"]
 
 
-def test_get_file_by_id(user, jobstate_user_id):
-    file_id = t_utils.post_file(user, jobstate_user_id, FileDesc("kikoolol", ""))
+def test_get_file_by_id(user, job_user_id):
+    file_id = t_utils.create_file(user, job_user_id, "file")["id"]
 
     # get by uuid
     created_file = user.get("/api/v1/files/%s" % file_id)
     assert created_file.status_code == 200
-    assert created_file.data["file"]["name"] == "kikoolol"
+    assert created_file.data["file"]["name"] == "file"
 
 
 def test_get_file_not_found(user):
@@ -167,8 +162,8 @@ def test_get_file_not_found(user):
     assert result.status_code == 404
 
 
-def test_delete_file_by_id(user, jobstate_user_id):
-    file_id = t_utils.post_file(user, jobstate_user_id, FileDesc("name", ""))
+def test_delete_file_by_id(user, job_user_id):
+    file_id = t_utils.create_file(user, job_user_id, "name")["id"]
     url = "/api/v1/files/%s" % file_id
 
     created_file = user.get(url)
@@ -202,7 +197,7 @@ def test_delete_file_as_user(user, file_user_id):
 
 def test_get_file_content_as_user(user, jobstate_user_id):
     content = "azertyuiop1234567890"
-    file_id = t_utils.post_file(user, jobstate_user_id, FileDesc("foo", content))
+    file_id = t_utils.create_task_file(user, jobstate_user_id, "foo", content)["id"]
 
     get_file = user.get("/api/v1/files/%s/content" % file_id)
 
@@ -212,7 +207,7 @@ def test_get_file_content_as_user(user, jobstate_user_id):
 
 def test_change_file_to_invalid_state(admin, file_user_id):
     t = admin.get("/api/v1/files/" + file_user_id).data["file"]
-    data = {"state": "kikoolol"}
+    data = {"state": "file"}
     r = admin.put(
         "/api/v1/files/" + file_user_id, data=data, headers={"If-match": t["etag"]}
     )
@@ -279,7 +274,7 @@ def test_get_previous_job_in_topic(
 
     # job_1 from remoteci_context
     data = {
-        "comment": "kikoolol",
+        "comment": "file",
         "components": components_user_ids,
         "team_id": team_user_id,
         "topic_id": topic_user_id,
@@ -313,15 +308,16 @@ def test_get_previous_job_in_topic(
         assert prev_job_id == test_prev_job_id
 
 
-def test_purge(app, admin, user, jobstate_user_id, team_user_id, job_user_id):
+def test_purge(
+    admin,
+    user,
+    job_user_id,
+    team_user_id,
+):
     # create two files and archive them
-    file_id1 = t_utils.post_file(
-        user, jobstate_user_id, FileDesc("kikoolol", "content")
-    )
+    file_id1 = t_utils.create_file(user, job_user_id, "file1", "content1")["id"]
     user.delete("/api/v1/files/%s" % file_id1)
-    file_id2 = t_utils.post_file(
-        user, jobstate_user_id, FileDesc("kikoolol2", "content2")
-    )
+    file_id2 = t_utils.create_file(user, job_user_id, "file2", "content2")["id"]
     user.delete("/api/v1/files/%s" % file_id2)
 
     to_purge = admin.get("/api/v1/files/purge").data
@@ -339,15 +335,11 @@ def test_purge(app, admin, user, jobstate_user_id, team_user_id, job_user_id):
     assert len(to_purge["files"]) == 0
 
 
-def test_purge_failure(app, admin, user, jobstate_user_id, job_user_id, team_user_id):
+def test_purge_failure(admin, user, job_user_id, team_user_id):
     # create two files and archive them
-    file_id1 = t_utils.post_file(
-        user, jobstate_user_id, FileDesc("kikoolol", "content")
-    )
+    file_id1 = t_utils.create_file(user, job_user_id, "file", "content")["id"]
     user.delete("/api/v1/files/%s" % file_id1)
-    file_id2 = t_utils.post_file(
-        user, jobstate_user_id, FileDesc("kikoolol2", "content2")
-    )
+    file_id2 = t_utils.create_file(user, job_user_id, "file2", "content2")["id"]
     user.delete("/api/v1/files/%s" % file_id2)
 
     to_purge = admin.get("/api/v1/files/purge").data
@@ -368,13 +360,14 @@ def test_purge_failure(app, admin, user, jobstate_user_id, job_user_id, team_use
 
 
 @mock.patch("dci.api.v1.notifications.job_dispatcher")
-def test_get_junit_file(_, user, jobstate_user_id):
-    junit_id = t_utils.post_file(
+def test_get_junit_file(_, user, job_user_id):
+    junit_id = t_utils.create_file(
         user,
-        jobstate_user_id,
-        FileDesc("Tempest", tests_data.jobtest_one),
-        mime="application/junit",
-    )
+        job_user_id,
+        "Tempest",
+        tests_data.jobtest_one,
+        "application/junit",
+    )["id"]
     testsuites = user.get("/api/v1/files/%s/junit" % junit_id).data["testsuites"]
     assert len(testsuites) == 1
     assert testsuites[0] == {
@@ -433,3 +426,12 @@ def test_get_junit_file(_, user, jobstate_user_id):
         "tests": 3,
         "time": 110.0,
     }
+
+
+def test_nrt_dont_returned_deleted_files_in_get_job(user, job_user_id):
+    file1 = t_utils.create_file(user, job_user_id, "file1", "content1")
+    user.delete("/api/v1/files/%s" % file1["id"])
+    file2 = t_utils.create_file(user, job_user_id, "file2", "content2")
+    job = user.get("/api/v1/jobs/%s" % job_user_id).data["job"]
+    assert len(job["files"]) == 1
+    assert job["files"][0]["id"] == file2["id"]

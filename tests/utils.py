@@ -132,15 +132,34 @@ def generate_token_based_client(app, resource):
     return client
 
 
-def post_file(client, jobstate_id, file_desc, mime="text/plain"):
-    headers = {
-        "DCI-JOBSTATE-ID": jobstate_id,
-        "DCI-NAME": file_desc.name,
-        "DCI-MIME": mime,
-        "Content-Type": "text/plain",
-    }
-    res = client.post("/api/v1/files", headers=headers, data=file_desc.content)
-    return res.data["file"]["id"]
+def _post_file(client, headers, content):
+    return client.post("/api/v1/files", headers=headers, data=content).data["file"]
+
+
+def create_task_file(client, jobstate_id, name, content="", content_type="text/plain"):
+    return _post_file(
+        client,
+        {
+            "DCI-JOBSTATE-ID": jobstate_id,
+            "DCI-NAME": name,
+            "DCI-MIME": content_type,
+            "Content-Type": content_type,
+        },
+        content,
+    )
+
+
+def create_file(client, job_id, name, content="", content_type="text/plain"):
+    return _post_file(
+        client,
+        {
+            "DCI-JOB-ID": job_id,
+            "DCI-NAME": name,
+            "DCI-MIME": content_type,
+            "Content-Type": content_type,
+        },
+        content,
+    )
 
 
 def provision(session):

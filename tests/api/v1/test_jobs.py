@@ -30,9 +30,7 @@ from dci.stores.s3 import S3
 from tests.data import JUNIT
 import tests.utils as t_utils
 
-import collections
 
-FileDesc = collections.namedtuple("FileDesc", ["name", "content"])
 AWSS3 = "dci.stores.s3.S3"
 
 
@@ -824,11 +822,8 @@ def test_get_results_by_job_id(user, job_user_id):
         assert file_from_job.data["results"][0]["total"] == 6
 
 
-def test_purge(user, admin, job_user_id, jobstate_user_id, team_user_id):
-    # create a file
-    file_id1 = t_utils.post_file(
-        user, jobstate_user_id, FileDesc("kikoolol", "content")
-    )
+def test_purge(user, admin, job_user_id, team_user_id):
+    file_id1 = t_utils.create_file(user, job_user_id, "kikoolol", "content")["id"]
     job = user.get("/api/v1/jobs/%s" % job_user_id).data["job"]
 
     djob = admin.delete(
@@ -854,11 +849,8 @@ def test_purge(user, admin, job_user_id, jobstate_user_id, team_user_id):
     assert len(to_purge_files["files"]) == 0
 
 
-def test_purge_failure(user, admin, job_user_id, jobstate_user_id, team_user_id):
-    # create a file
-    file_id1 = t_utils.post_file(
-        user, jobstate_user_id, FileDesc("kikoolol", "content")
-    )
+def test_purge_failure(user, admin, job_user_id, team_user_id):
+    file_id1 = t_utils.create_file(user, job_user_id, "kikoolol", "content")["id"]
     job = user.get("/api/v1/jobs/%s" % job_user_id).data["job"]
 
     djob = admin.delete(
