@@ -424,36 +424,16 @@ def test_get_component_by_id_or_name(admin, topic_id):
 
 
 def test_nrt_get_component_by_id_return_list_of_jobs_only_from_team_of_the_user(
-    job_admin, admin, user
+    job_admin, remoteci_context, components_user_ids
 ):
-    component = admin.get("/api/v1/jobs/%s" % job_admin["id"]).data["job"][
-        "components"
-    ][0]
-
-    assert len(user.get("/api/v1/jobs").data["jobs"]) == 0
-    assert (
-        len(
-            user.get("/api/v1/components/%s" % component["id"]).data["component"][
-                "jobs"
-            ]
-        )
-        == 0
+    assert len(remoteci_context.get("/api/v1/jobs").data["jobs"]) == 0
+    get_component = remoteci_context.get(
+        "/api/v1/components/%s" % components_user_ids[0]
     )
+    assert get_component.status_code == 200
 
-
-def test_nrt_get_component_by_id_return_list_of_jobs_if_rh_employee(
-    job_admin, admin, rh_employee
-):
-    component = admin.get("/api/v1/jobs/%s" % job_admin["id"]).data["job"][
-        "components"
-    ][0]
-
-    assert len(rh_employee.get("/api/v1/jobs").data["jobs"]) == 1
-    jobs = rh_employee.get("/api/v1/components/%s" % component["id"]).data["component"][
-        "jobs"
-    ]
-    assert len(jobs) == 1
-    assert jobs[0]["id"] == job_admin["id"]
+    component = get_component.data["component"]
+    assert len(component["jobs"]) == 0
 
 
 def test_get_component_not_found(admin):

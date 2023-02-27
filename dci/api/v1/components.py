@@ -170,30 +170,22 @@ def get_all_components(user, topic_id):
 @decorators.login_required
 def get_component_by_id(user, c_id):
     component = base.get_resource_orm(
-        models2.Component, c_id, options=[sa_orm.selectinload("files")]
+        models2.Component,
+        c_id,
+        options=[sa_orm.selectinload("files"), sa_orm.selectinload("jobs")],
     )
     _verify_component_and_topic_access(user, component)
 
-    component_jobs_query = (
-        flask.g.session.query(models2.Job)
-        .filter(models2.Job.state != "archived")
-        .join(
-            models2.JOIN_JOBS_COMPONENTS,
-            models2.JOIN_JOBS_COMPONENTS.c.component_id == component.id,
-        )
-    )
-
-    if user.is_not_super_admin() and user.is_not_read_only_user() and user.is_not_epm():
-        component_jobs_query = component_jobs_query.filter(
-            models2.Job.team_id.in_(user.teams_ids)
-        )
-
+    # temp workaround remove the jobs not from the user
     serialized_component = component.serialize()
-    serialized_component["jobs"] = [j.serialize() for j in component_jobs_query.all()]
+    teams_ids = [str(team_id) for team_id in user.teams_ids]
+    serialized_component["jobs"] = [
+        j for j in serialized_component["jobs"] if j["team_id"] in teams_ids
+    ]
     return flask.Response(
         json.dumps({"component": serialized_component}),
         200,
-        headers={"ETag": serialized_component["etag"]},
+        headers={"ETag": component.etag},
         content_type="application/json",
     )
 
