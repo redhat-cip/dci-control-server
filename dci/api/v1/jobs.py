@@ -437,6 +437,7 @@ def get_job_by_id(user, job_id):
         .options(sa_orm.selectinload("results"))
         .options(sa_orm.selectinload("components"))
         .options(sa_orm.selectinload("jobstates"))
+        .options(sa_orm.joinedload("pipeline", innerjoin=False))
     )
     try:
         job = query.one()

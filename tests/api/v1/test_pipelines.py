@@ -97,6 +97,11 @@ def test_jobs_create_with_pipeline(
     assert jobs_pipeline[0]["id"] == job_1["id"]
     assert jobs_pipeline[1]["id"] == job_2["id"]
 
+    job_1 = remoteci_context.get("/api/v1/jobs/%s" % job_1["id"])
+    job_1 = job_1.data["job"]
+    assert "pipeline" in job_1
+    assert job_1["pipeline"]["name"] == "pipeline1"
+
 
 def test_get_pipelines(remoteci_context, team_user_id):
     for _ in range(3):
