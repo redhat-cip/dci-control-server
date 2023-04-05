@@ -36,6 +36,7 @@ def with_default(property, default):
 
 class Properties(object):
     string = {"type": "string"}
+    non_empty_string = {"type": "string", "minLength": 1}
     uuid = {
         "type": "string",
         "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
@@ -431,11 +432,11 @@ update_remoteci_schema = {"type": "object", "properties": update_remoteci_proper
 #                                                                             #
 ###############################################################################
 create_component_properties = {
-    "name": Properties.string,
+    "name": Properties.non_empty_string,
     "title": with_default(Properties.string, ""),
     "message": with_default(Properties.string, ""),
     "canonical_project_name": with_default(Properties.string, ""),
-    "display_name": with_default(Properties.string, ""),
+    "display_name": Properties.non_empty_string,
     "version": with_default(Properties.string, ""),
     "url": with_default(Properties.string, ""),
     "uid": with_default(Properties.string, ""),
@@ -450,8 +451,9 @@ create_component_properties = {
 create_component_schema = {
     "type": "object",
     "properties": create_component_properties,
-    "required": ["name", "type", "topic_id"],
+    "required": ["type", "topic_id"],
     "additionalProperties": False,
+    "oneOf": [{"required": ["name"]}, {"required": ["display_name"]}],
 }
 
 update_component_properties = {

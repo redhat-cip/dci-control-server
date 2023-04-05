@@ -92,6 +92,59 @@ def test_create_component_without_canonical_project_name(mock_disp, admin, topic
 
 
 @mock.patch("dci.api.v1.notifications.component_dispatcher")
+def test_create_component_with_display_name(mock_disp, admin, topic_id):
+    data = {
+        "display_name": "RHEL-8.6.0-20211205.3",
+        "version": "8.6.0-20211205.3",
+        "uid": "abc",
+        "type": "compose",
+        "url": "http://example.org/RHEL-8.6.0-20211205.3",
+        "topic_id": topic_id,
+    }
+    component = admin.post("/api/v1/components", data=data).data["component"]
+    assert component["name"] == "RHEL-8.6.0-20211205.3"
+    assert component["canonical_project_name"] == ""
+    assert component["display_name"] == "RHEL-8.6.0-20211205.3"
+    assert component["version"] == "8.6.0-20211205.3"
+    assert component["uid"] == "abc"
+    assert component["url"] == "http://example.org/RHEL-8.6.0-20211205.3"
+    assert component["state"] == "active"
+    assert component["message"] == ""
+    assert component["title"] == ""
+
+    mock_disp.assert_called()
+
+
+def test_raise_an_error_if_name_and_display_name_are_absent(admin, topic_id):
+    data = {
+        "version": "8.6.0-20211205.3",
+        "uid": "abc",
+        "type": "compose",
+        "url": "http://example.org/RHEL-8.6.0-20211205.3",
+        "topic_id": topic_id,
+    }
+    r = admin.post("/api/v1/components", data=data)
+    assert r.status_code == 400
+
+
+def test_raise_an_error_if_name_or_display_name_empty(admin, topic_id):
+    data = {
+        "display_name": "",
+        "type": "compose",
+        "topic_id": topic_id,
+    }
+    r = admin.post("/api/v1/components", data=data)
+    assert r.status_code == 400
+    data = {
+        "name": "",
+        "type": "compose",
+        "topic_id": topic_id,
+    }
+    r = admin.post("/api/v1/components", data=data)
+    assert r.status_code == 400
+
+
+@mock.patch("dci.api.v1.notifications.component_dispatcher")
 def test_create_component_with_version(mock_disp, admin, topic_id):
     data = {
         "name": "RHEL-8.6.0-20211205.3",

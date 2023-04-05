@@ -81,17 +81,16 @@ def create_components(user):
             raise dci_exc.Unauthorized()
 
     values["type"] = values["type"].lower()
-    name = values.get("name")
+    display_name = values.get("display_name")
+    values["name"] = values.get("name", display_name)
     canonical_project_name = values.get("canonical_project_name")
     component_info = migration_components.get_new_component_info(
         {
-            "name": name,
+            "name": values["name"],
             "canonical_project_name": canonical_project_name,
         }
     )
-    values["display_name"] = (
-        values.get("display_name") or component_info["display_name"]
-    )
+    values["display_name"] = display_name or component_info["display_name"]
     values["version"] = values.get("version") or component_info["version"]
     values["uid"] = values.get("uid") or component_info["uid"]
 
