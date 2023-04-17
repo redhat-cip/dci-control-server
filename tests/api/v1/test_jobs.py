@@ -194,6 +194,52 @@ def test_get_all_jobs(
     assert db_all_jobs_ids == [job_1_id, job_2_id]
 
 
+def test_get_jobs_with_query(
+    user, remoteci_context, topic_user_id, components_user_ids, team_user_id, product
+):
+    data = {"components_ids": components_user_ids, "topic_id": topic_user_id}
+    job_1 = remoteci_context.post("/api/v1/jobs/schedule", data=data).data["job"]
+    status_reason = {"status_reason": "Invalid tasks"}
+    remoteci_context.put(
+        "/api/v1/jobs/%s" % job_1["id"],
+        data=status_reason,
+        headers={"If-match": job_1["etag"]},
+    )
+
+    job_2 = remoteci_context.post("/api/v1/jobs/schedule", data=data).data["job"]
+    status_reason = {"status_reason": "Invalid tasks2"}
+    remoteci_context.put(
+        "/api/v1/jobs/%s" % job_2["id"],
+        data=status_reason,
+        headers={"If-match": job_2["etag"]},
+    )
+
+    jobs = user.get(
+        "/api/v1/jobs?query=and(eq(product_id,%s),eq(status_reason,Invalid tasks))"
+        % product["id"]
+    ).data["jobs"]
+    assert len(jobs) == 1
+
+    jobs = user.get(
+        "/api/v1/jobs?query=and(eq(product_id,%s),eq(status_reason,Invalid tasks2))"
+        % product["id"]
+    ).data["jobs"]
+    assert len(jobs) == 1
+
+    jobs = user.get(
+        "/api/v1/jobs?query=and(eq(product_id,"
+        + product["id"]
+        + "),ilike(status_reason,Invalid tasks%))"
+    ).data["jobs"]
+    assert len(jobs) == 2
+
+    jobs = user.get(
+        "/api/v1/jobs?query=and(eq(product_id,%s),eq(status_reason,Invalid tasks3))"
+        % product["id"]
+    ).data["jobs"]
+    assert len(jobs) == 0
+
+
 def test_get_all_jobs_with_pagination(
     remoteci_context, components_user_ids, topic_user_id
 ):
