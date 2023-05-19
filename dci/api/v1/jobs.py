@@ -158,7 +158,6 @@ def internal_create_jobs(user, values, components_ids=None):
 
 
 def _build_job(product_id, topic_id, remoteci, components_ids, values):
-
     # get components of topic
     p_component_types = components.get_component_types_from_topic(topic_id)
     p_schedule_components_ids = components.get_schedule_components_ids(
@@ -360,7 +359,6 @@ def get_all_jobs(user, topic_id=None):
 @api.route("/jobs/<uuid:job_id>/components", methods=["GET"])
 @decorators.login_required
 def get_components_from_job(user, job_id):
-
     query = flask.g.session.query(models2.Job)
 
     if user.is_not_super_admin() and user.is_not_read_only_user() and user.is_not_epm():

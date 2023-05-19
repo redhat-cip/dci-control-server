@@ -74,7 +74,6 @@ def test_components_export_control_true(
     assert topic["export_control"] is True
 
     with mock.patch(AWSS3, spec=S3) as mock_s3:
-
         mockito = mock.MagicMock()
         mockito.get.return_value = ["test", six.StringIO("lollollel")]
         head_result = {
@@ -124,7 +123,6 @@ def test_components_export_control_false(
     assert res.status_code == 201
 
     with mock.patch(AWSS3, spec=S3) as mock_s3:
-
         mockito = mock.MagicMock()
         mockito.get.return_value = ["test", six.StringIO("lollollel")]
         head_result = {

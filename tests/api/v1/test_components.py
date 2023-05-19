@@ -639,7 +639,6 @@ def test_get_component_not_found(admin):
 
 
 def test_delete_component_by_id(admin, feeder_context, topic_user_id):
-
     data = {"name": "pname", "type": "gerrit_review", "topic_id": topic_user_id}
     pc = feeder_context.post("/api/v1/components", data=data)
     pc_id = pc.data["component"]["id"]
@@ -996,7 +995,6 @@ def create_component(admin, topic_id, ct, name):
 
 
 def test_get_last_components_by_type(session, admin, topic):
-
     components_ids = []
     for i in range(3):
         cid = create_component(admin, topic["id"], "puddle_osp", "name-%s" % i)
@@ -1235,7 +1233,6 @@ def test_delete_teams_components(user, team_user_id, topic_user_id):
 
 
 def test_filter_teams_components_by_tag(user, team_user_id, topic_user_id):
-
     data = {
         "name": "pname",
         "type": "mytest",
@@ -1329,7 +1326,6 @@ def test_get_component_file_from_s3_user_team_in_RHEL_export_control_true(
     RHELProduct,
     RHEL80Component,
 ):
-
     r = remoteci_context.get(
         "/api/v1/components/%s/files/.composeinfo" % RHEL80Component["id"]
     )
@@ -1374,7 +1370,6 @@ def test_get_component_file_from_s3_user_team_in_RHEL_export_control_false(
     RHEL81Topic,
     RHEL81Component,
 ):
-
     r = remoteci_context.get(
         "/api/v1/components/%s/files/compose/BaseOS/x86_64/images/SHA256SUM"
         % RHEL81Component["id"]
@@ -1420,7 +1415,6 @@ def test_get_component_file_from_s3_user_team_in_RHEL81(
     RHEL81Topic,
     RHEL81Component,
 ):
-
     r = remoteci_context.get(
         "/api/v1/components/%s/files/COMPOSE_ID" % RHEL81Component["id"]
     )

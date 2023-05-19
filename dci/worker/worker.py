@@ -46,7 +46,6 @@ stream = zmqstream.ZMQStream(receiver)
 
 
 def get_email_configuration():
-
     configuration = {
         "server": os.getenv("DCI_EMAIL_SERVER", "mail.distributed-ci.io"),
         "port": os.getenv("DCI_EMAIL_SERVER_PORT", 587),
@@ -58,7 +57,6 @@ def get_email_configuration():
 
 
 def get_dlrn_configuration():
-
     configuration = {
         "server": os.getenv("DCI_DLRN_SERVER_URL", "trunk.rdoproject.org"),
         "login": os.getenv("DCI_DLRN_LOGIN"),
@@ -164,7 +162,6 @@ def send_component_mail(event):
 
 
 def loop(msg):
-
     try:
         events = json.loads(msg[0])
         logger.info("Worker received %d events." % len(events))

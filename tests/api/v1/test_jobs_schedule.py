@@ -119,7 +119,6 @@ def _update_topic(admin, topic, data):
 
 
 def test_schedule_jobs_on_topic_inactive(admin, remoteci_context, topic, team_user_id):
-
     admin.post("/api/v1/topics/%s/teams" % topic["id"], data={"team_id": team_user_id})
     topic = _update_topic(admin, topic, {"state": "inactive"})
     data = {"topic_id": topic["id"]}

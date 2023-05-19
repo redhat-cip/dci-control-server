@@ -416,35 +416,30 @@ def test_change_remoteci_to_invalid_state(admin, remoteci_id):
 def test_success_attach_user_to_remoteci_in_team_as_admin(
     admin, user, user_id, remoteci_user_id
 ):
-
     r = user.post("/api/v1/remotecis/%s/users" % remoteci_user_id)
 
     assert r.status_code == 201
 
 
 def test_success_attach_po_to_partner_remoteci(admin, remoteci_user_id, epm):
-
     r = epm.post("/api/v1/remotecis/%s/users" % remoteci_user_id)
 
     assert r.status_code == 201
 
 
 def test_success_attach_myself_to_remoteci_in_team(user, user_id, remoteci_user_id):
-
     r = user.post("/api/v1/remotecis/%s/users" % remoteci_user_id)
 
     assert r.status_code == 201
 
 
 def test_failure_attach_myself_to_remoteci_not_in_team(user, user_id, remoteci_id):
-
     r = user.post("/api/v1/remotecis/%s/users" % remoteci_id)
 
     assert r.status_code == 401
 
 
 def test_success_detach_myself_from_remoteci_in_team(user, user_id, remoteci_user_id):
-
     r = user.post("/api/v1/remotecis/%s/users" % remoteci_user_id)
 
     assert r.status_code == 201

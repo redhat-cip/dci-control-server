@@ -48,7 +48,6 @@ def test_components(admin, rh_employee, app, topic_id):
     # get component's files
 
     with mock.patch(AWSS3, spec=S3) as mock_s3:
-
         mockito = mock.MagicMock()
 
         mockito.get.return_value = ["test", six.StringIO("lollollel")]
@@ -79,7 +78,6 @@ def test_files(admin, rh_employee, job_user_id):
     assert files.status_code == 200
     # get file content
     with mock.patch(AWSS3, spec=S3) as mock_s3:
-
         mockito = mock.MagicMock()
 
         head_result = {

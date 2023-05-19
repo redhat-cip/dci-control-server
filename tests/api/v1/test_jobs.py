@@ -71,7 +71,6 @@ def test_create_jobs_with_team_components(
     team_user_id,
     topic_user_id,
 ):
-
     data = {
         "name": "pname",
         "type": "mytest",
@@ -661,7 +660,6 @@ def test_get_jobs_with_schedule(remoteci_context, topic_user_id, components_user
 
 
 def test_delete_job_by_id(remoteci_context, components_user_ids, topic_user_id):
-
     job = remoteci_context.post(
         "/api/v1/jobs",
         data={"components": components_user_ids, "topic_id": topic_user_id},
@@ -684,7 +682,6 @@ def test_delete_job_by_id(remoteci_context, components_user_ids, topic_user_id):
 
 def test_delete_job_archive_dependencies(admin, job_user_id):
     with mock.patch(AWSS3, spec=S3) as mock_s3:
-
         mockito = mock.MagicMock()
 
         head_result = {
@@ -798,7 +795,6 @@ def test_create_file_for_job_id(
     user, remoteci_context, components_user_ids, topic_user_id
 ):
     with mock.patch(AWSS3, spec=S3) as mock_s3:
-
         mockito = mock.MagicMock()
         head_result = {
             "etag": utils.gen_etag(),

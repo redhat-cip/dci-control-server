@@ -19,7 +19,6 @@ import uuid
 
 class Identity:
     def __init__(self, user_info):
-
         self.id = user_info.get("id")
         self.password = user_info.get("password", None)
         self.name = user_info.get("name", None)

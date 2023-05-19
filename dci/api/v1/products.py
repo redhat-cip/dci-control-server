@@ -236,7 +236,6 @@ def add_team_to_product(user, product_id):
 @api.route("/products/<uuid:product_id>/teams/<uuid:team_id>", methods=["DELETE"])
 @decorators.login_required
 def delete_team_from_product(user, product_id, team_id):
-
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 

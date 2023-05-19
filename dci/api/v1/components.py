@@ -214,7 +214,6 @@ def get_component_by_id(user, c_id):
 @api.route("/components/<uuid:c_id>", methods=["DELETE"])
 @decorators.login_required
 def delete_component_by_id(user, c_id):
-
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     component = base.get_resource_orm(models2.Component, c_id, if_match_etag)
     _verify_component_access_and_role(user, component)
@@ -452,7 +451,6 @@ def get_to_purge_archived_components(user):
 @api.route("/components/purge", methods=["POST"])
 @decorators.login_required
 def purge_archived_components(user):
-
     # get all archived components
     archived_components = base.get_resources_to_purge_orm(user, models2.Component).json[
         "components"

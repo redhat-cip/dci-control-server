@@ -314,7 +314,6 @@ def unsubscribed_user_from_topic(user, topic_id):
 @api.route("/topics/notifications", methods=["GET"])
 @decorators.login_required
 def get_all_subscribed_topics(user):
-
     query = (
         flask.g.session.query(models2.Topic)
         .join(models2.UserTopic)

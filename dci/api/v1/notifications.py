@@ -75,7 +75,6 @@ def build_job_finished_umb_event(job):
 
 
 def get_job_event(job, emails):
-
     if job["status"] == "success":
         return None
 
@@ -100,7 +99,6 @@ def get_job_event(job, emails):
 
 
 def dlrn(job):
-
     for component in job["components"]:
         data = component["data"]
         if "dlrn" in data and data["dlrn"]:
@@ -122,7 +120,6 @@ def dlrn(job):
 
 
 def get_emails_from_remoteci(remoteci_id):
-
     try:
         remoteci = base.get_resource_orm(models2.Remoteci, remoteci_id)
         return [u.email for u in remoteci.users]

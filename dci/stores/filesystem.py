@@ -53,7 +53,6 @@ class FileSystem(stores.Store):
         root_directory = self._get_root_directory(container_name)
         file_path = os.path.join(root_directory, filename)
         try:
-
             return ([], open(file_path, "r"))
         except IOError as e:
             status_code = 400
@@ -68,7 +67,6 @@ class FileSystem(stores.Store):
         root_directory = self._get_root_directory(container_name)
         file_path = os.path.join(root_directory, filename)
         try:
-
             file_size = os.path.getsize(file_path)
         except IOError as e:
             status_code = 400

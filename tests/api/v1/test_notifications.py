@@ -23,7 +23,6 @@ import mock
 
 
 def test_get_emails_from_remoteci(user, remoteci_user_id, app, engine, session):
-
     r = user.post("/api/v1/remotecis/%s/users" % remoteci_user_id)
     assert r.status_code == 201
 
@@ -35,7 +34,6 @@ def test_get_emails_from_remoteci(user, remoteci_user_id, app, engine, session):
 
 
 def test_get_emails_from_remoteci_deleted(user, remoteci_user_id, app, engine, session):
-
     r = user.post("/api/v1/remotecis/%s/users" % remoteci_user_id)
     assert r.status_code == 201
     r = user.get("/api/v1/remotecis/%s" % remoteci_user_id)

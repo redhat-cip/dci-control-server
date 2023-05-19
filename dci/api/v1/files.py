@@ -354,7 +354,6 @@ def get_to_purge_archived_files(user):
 @api.route("/files/purge", methods=["POST"])
 @decorators.login_required
 def purge_archived_files(user):
-
     # get all archived files
     archived_files = base.get_resources_to_purge_orm(user, models2.File).json["files"]
     store = flask.g.store

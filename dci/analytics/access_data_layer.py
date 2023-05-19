@@ -21,7 +21,6 @@ from dci.db import models2
 
 
 def get_jobs(session, offset, limit, unit, amount, status=None):
-
     delta = {unit: amount}
 
     query = session.query(models2.Job)
@@ -50,7 +49,6 @@ def get_jobs(session, offset, limit, unit, amount, status=None):
 
 
 def get_components(session, offset, limit, unit, amount):
-
     delta = {unit: amount}
 
     query = session.query(models2.Component)

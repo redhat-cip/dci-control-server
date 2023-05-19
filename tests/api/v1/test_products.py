@@ -163,7 +163,6 @@ def test_success_get_products_embed(admin, user, team_user_id, product):
 
 
 def test_success_get_only_po_product(admin, epm, product_openstack):
-
     products_admin = admin.get("/api/v1/products").data
     assert len(products_admin["products"]) == 3
     products = [p["label"] for p in products_admin["products"]]

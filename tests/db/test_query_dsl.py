@@ -31,21 +31,23 @@ def test_query_valid():
 
 
 def test_query_complex_1():
-    ret = query_dsl.parse("and(eq(name,openshift-vanilla),not_contains(tags,debug)))")
+    ret = query_dsl.parse(
+        "and(eq(name,openshift-vanilla),not_contains(tags,ocp-vanilla-4.12-ok)))"
+    )
     assert ret == [
         "and",
         ["eq", "name", "openshift-vanilla"],
-        ["not_contains", "tags", "debug"],
+        ["not_contains", "tags", "ocp-vanilla-4.12-ok"],
     ]
 
 
 def test_query_complex_2():
     ret = query_dsl.parse(
-        "and(eq(name,openshift-vanilla),not_contains(tags,debug),not(null(url)))"
+        "and(eq(name,openshift-vanilla),not_contains(tags,build:ga),not(null(url)))"
     )
     assert ret == [
         "and",
         ["eq", "name", "openshift-vanilla"],
-        ["not_contains", "tags", "debug"],
+        ["not_contains", "tags", "build:ga"],
         ["not", ["null", "url"]],
     ]

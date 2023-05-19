@@ -75,7 +75,6 @@ def get_teams_of_user(user, user_id):
 @api.route("/teams/<uuid:team_id>/users/<uuid:user_id>", methods=["DELETE"])
 @decorators.login_required
 def remove_user_from_team(user, team_id, user_id):
-
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
