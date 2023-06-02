@@ -51,3 +51,25 @@ def test_query_complex_2():
         ["not_contains", "tags", "build:ga"],
         ["not", ["null", "url"]],
     ]
+
+
+def test_nrt_query_ordering():
+    ret = query_dsl.parse(
+        "and(eq(state,active),contains(tags,nightly),or(eq(type,compose),eq(type,compose-noinstall)))"
+    )
+    assert ret == [
+        "and",
+        ["eq", "state", "active"],
+        ["contains", "tags", "nightly"],
+        ["or", ["eq", "type", "compose"], ["eq", "type", "compose-noinstall"]],
+    ]
+
+    ret = query_dsl.parse(
+        "and(or(eq(type,compose),eq(type,compose-noinstall)),eq(state,active),contains(tags,nightly))"
+    )
+    assert ret == [
+        "and",
+        ["or", ["eq", "type", "compose"], ["eq", "type", "compose-noinstall"]],
+        ["eq", "state", "active"],
+        ["contains", "tags", "nightly"],
+    ]
