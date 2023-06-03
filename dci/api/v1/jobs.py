@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2022 Red Hat, Inc
+# Copyright (C) 2015-2023 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -403,6 +403,33 @@ def add_component_to_job(user, job_id):
         raise dci_exc.DCIException(
             message="Unable to associate component %s to job %s"
             % (values["id"], job_id),
+            status_code=409,
+        )
+
+    return flask.Response(None, 201, content_type="application/json")
+
+
+@api.route("/jobs/<uuid:job_id>/components/<uuid:cmpt_id>", methods=["DELETE"])
+@decorators.login_required
+def remove_component_from_job(user, job_id, cmpt_id):
+    j = base.get_resource_orm(models2.Job, job_id)
+    component = base.get_resource_orm(models2.Component, cmpt_id)
+
+    if component.team_id and not user.is_in_team(component.team_id):
+        raise dci_exc.Unauthorized()
+
+    try:
+        j.components.remove(component)
+        flask.g.session.add(j)
+        flask.g.session.commit()
+    # if the component is not present
+    except ValueError:
+        pass
+    except sa_exc.IntegrityError as e:
+        flask.g.session.rollback()
+        logger.error(str(e))
+        raise dci_exc.DCIException(
+            message="Unable to remove component %s from job %s" % (cmpt_id, job_id),
             status_code=409,
         )
 

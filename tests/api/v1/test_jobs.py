@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2016 Red Hat, Inc
+# Copyright (C) 2015-2016, 2023 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -125,6 +125,14 @@ def test_add_component_to_job(user, team_user_id, topic_user_id, job_user_id):
         if c["id"] == pc_id:
             cmpt_found = True
     assert cmpt_found
+    p1 = user.delete("/api/v1/jobs/%s/components/%s" % (job_user_id, pc_id))
+    assert p1.status_code == 201
+    cmpts = user.get("/api/v1/jobs/%s/components" % job_user_id).data["components"]
+    cmpt_found = False
+    for c in cmpts:
+        if c["id"] == pc_id:
+            cmpt_found = True
+    assert not cmpt_found
 
 
 def test_add_component_with_no_team_to_job(
