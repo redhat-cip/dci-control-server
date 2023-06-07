@@ -45,6 +45,7 @@ import dci.api.v1.identity  # noqa
 import dci.api.v1.jobs  # noqa
 import dci.api.v1.jobstates  # noqa
 import dci.api.v1.jobs_events  # noqa
+import dci.api.v1.jobs_kv  # noqa
 import dci.api.v1.products  # noqa
 import dci.api.v1.pipelines  # noqa
 import dci.api.v1.remotecis  # noqa
