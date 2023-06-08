@@ -346,7 +346,6 @@ def get_all_jobs(user, topic_id=None):
         .options(sa_orm.joinedload("topic", innerjoin=True))
         .options(sa_orm.joinedload("team", innerjoin=True))
         .options(sa_orm.joinedload("pipeline", innerjoin=False))
-        .options(sa_orm.joinedload("keys_values", innerjoin=False))
     )
 
     nb_jobs = query.count()
@@ -464,7 +463,6 @@ def get_job_by_id(user, job_id):
         .options(sa_orm.selectinload("components"))
         .options(sa_orm.selectinload("jobstates"))
         .options(sa_orm.joinedload("pipeline", innerjoin=False))
-        .options(sa_orm.joinedload("keys_values", innerjoin=False))
     )
     try:
         job = query.one()
