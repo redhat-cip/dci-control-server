@@ -56,7 +56,7 @@ query << (
     _ops
     | _lbop
     + _lp
-    + (_ops | query)
+    + (_ops | pp.Group(query))
     + pp.ZeroOrMore(_comma + (_ops | pp.Group(query)))
     + _rp
 )
