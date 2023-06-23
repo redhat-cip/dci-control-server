@@ -491,6 +491,7 @@ class Job(dci_declarative.Mixin, Base):
         sa.Index("jobs_product_id_idx", "product_id"),
         sa.Index("jobs_previous_job_id_idx", "previous_job_id"),
         sa.Index("jobs_update_previous_job_id_idx", "update_previous_job_id"),
+        sa.Index("jobs_created_at_idx", "created_at"),
     )
 
     id = sa.Column(pg.UUID(as_uuid=True), primary_key=True, default=utils.gen_uuid)
