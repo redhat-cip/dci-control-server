@@ -282,7 +282,6 @@ class Remoteci(dci_declarative.Mixin, Base):
         nullable=False,
     )
     public = sa.Column("public", sa.BOOLEAN, default=False)
-    cert_fp = sa.Column("cert_fp", sa.String(255))
     state = sa.Column("state", STATES, default="active")
     users = sa_orm.relationship(
         "User", secondary=USER_REMOTECIS, back_populates="remotecis"

@@ -14,16 +14,13 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 import flask
-import re
 from flask import json
 from sqlalchemy import exc as sa_exc
 import sqlalchemy.orm as sa_orm
-from OpenSSL import crypto
 
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import utils as v1_utils
-from dci import dci_config
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
@@ -91,9 +88,7 @@ def get_all_remotecis(user, t_id=None):
 
     q = d.handle_pagination(q, args)
     remotecis = q.all()
-    remotecis = list(
-        map(lambda r: r.serialize(ignore_columns=["keys", "cert_fp"]), remotecis)
-    )
+    remotecis = list(map(lambda r: r.serialize(), remotecis))
 
     return flask.jsonify({"remotecis": remotecis, "_meta": {"count": nb_remotecis}})
 
@@ -113,7 +108,7 @@ def get_remoteci_by_id(user, remoteci_id):
         raise dci_exc.Unauthorized()
 
     return flask.Response(
-        json.dumps({"remoteci": r.serialize(ignore_columns=["keys", "cert_fp"])}),
+        json.dumps({"remoteci": r.serialize()}),
         200,
         headers={"ETag": r.etag},
         content_type="application/json",
@@ -276,42 +271,5 @@ def put_api_secret_remoteci(user, remoteci_id):
         json.dumps({"remoteci": remoteci.serialize()}),
         200,
         headers={"ETag": remoteci.etag},
-        content_type="application/json",
-    )
-
-
-@api.route("/remotecis/<uuid:remoteci_id>/keys", methods=["PUT"])
-@decorators.login_required
-def update_remoteci_keys(user, remoteci_id):
-    _CAKEY = dci_config.CONFIG["CA_KEY"]
-    _CACERT = dci_config.CONFIG["CA_CERT"]
-
-    if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    key, cert = v1_utils.get_key_and_cert_signed(_CAKEY, _CACERT)
-
-    remoteci = base.get_resource_orm(models2.Remoteci, remoteci_id, if_match_etag)
-
-    if user.is_not_in_team(remoteci.team_id) and user.is_not_epm():
-        raise dci_exc.Unauthorized()
-
-    base.update_resource_orm(
-        remoteci,
-        {"cert_fp": re.sub(":", "", cert.digest("sha1").decode("utf-8")).lower()},
-    )
-
-    return flask.Response(
-        json.dumps(
-            {
-                "keys": {
-                    "key": crypto.dump_privatekey(crypto.FILETYPE_PEM, key).decode(
-                        "utf-8"
-                    ),
-                    "cert": crypto.dump_certificate(crypto.FILETYPE_PEM, cert).decode(
-                        "utf-8"
-                    ),
-                }
-            }
-        ),
-        201,
         content_type="application/json",
     )

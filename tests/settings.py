@@ -31,8 +31,5 @@ mplSKaebWKCs71xk60skpJfuXJIkp3W3KfZn9ZsIVE2wZo5Yk/rEy4x9+MT39vB0
 -----END PUBLIC KEY-----
 """
 
-CA_CERT = "/tmp/ca.crt"
-CA_KEY = "/tmp/ca.key"
-
 SSO_URL = "http://keycloak:8080"
 SSO_REALM = "redhat-external"
