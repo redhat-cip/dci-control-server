@@ -47,10 +47,15 @@ def create_users(user):
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
+    name = values.get("name", values["email"])
+    password = (
+        auth.hash_password(values.get("password")) if values.get("password") else None
+    )
     values.update(
         {
-            "password": auth.hash_password(values.get("password")),
-            "fullname": values.get("fullname", values["name"]),
+            "name": name,
+            "password": password,
+            "fullname": values.get("fullname", name),
             "timezone": values.get("timezone", "UTC"),
             "sso_username": None,
         }

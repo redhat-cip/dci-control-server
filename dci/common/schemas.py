@@ -339,7 +339,7 @@ create_user_properties = {
 create_user_schema = {
     "type": "object",
     "properties": create_user_properties,
-    "required": ["name", "fullname", "email"],
+    "required": ["email"],
     "additionalProperties": False,
 }
 

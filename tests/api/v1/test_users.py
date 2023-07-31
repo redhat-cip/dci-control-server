@@ -16,6 +16,7 @@
 
 from __future__ import unicode_literals
 import uuid
+import mock
 
 import pytest
 
@@ -711,10 +712,7 @@ def test_create_user_schema_required_value(user_json):
         check_json_is_valid(create_user_schema, {})
     result = e.value
     assert result.status_code == 400
-    assert len(result.payload["errors"]) == len(user_json.keys())
-    errors = "\n".join(result.payload["errors"])
-    for key in user_json.keys():
-        assert "'%s' is a required property" % key in errors
+    assert result.payload["errors"] == ["'email' is a required property"]
 
 
 def test_create_user_schema_optional_value(user_json):
@@ -778,3 +776,29 @@ def test_get_user_then_update_user_doesnt_raise_error_500(admin, team_id):
     )
     assert request.status_code == 200
     assert request.data["user"]["fullname"] == "Mr User 1"
+
+
+def test_create_user_with_only_email(admin):
+    request = admin.post(
+        "/api/v1/users",
+        data={
+            "email": "onlyemail@example.org",
+        },
+    )
+    assert request.status_code == 201
+
+    user = admin.get("/api/v1/users/%s" % request.data["user"]["id"]).data["user"]
+    assert user == {
+        "id": mock.ANY,
+        "etag": mock.ANY,
+        "email": "onlyemail@example.org",
+        "name": "onlyemail@example.org",
+        "fullname": "onlyemail@example.org",
+        "timezone": "UTC",
+        "sso_username": None,
+        "created_at": mock.ANY,
+        "updated_at": mock.ANY,
+        "state": "active",
+        "team": [],
+        "remotecis": [],
+    }

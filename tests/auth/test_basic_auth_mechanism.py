@@ -81,3 +81,18 @@ def test_nrt_one_user_s_name_is_equal_to_the_email_of_another_user(session, app)
     session.commit()
     user = utils.generate_client(app, ("user3@example.org", "user3@example.org"))
     assert user.get("/api/v1/identity").status_code == 200
+
+
+def test_user_without_password_cannot_basic_auth(session, app):
+    session.add(
+        models2.User(
+            name="nopassword@example.org",
+            sso_username="nopassword@example.org",
+            fullname="nopassword@example.org",
+            password=None,
+            email="nopassword@example.org",
+        )
+    )
+    session.commit()
+    user = utils.generate_client(app, ("nopassword@example.org", ""))
+    assert user.get("/api/v1/identity").status_code == 401
