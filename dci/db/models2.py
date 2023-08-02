@@ -106,7 +106,7 @@ class User(dci_declarative.Mixin, Base):
     name = sa.Column(sa.String(255), nullable=False, unique=True)
     sso_username = sa.Column(sa.String(255), nullable=True, unique=True)
     fullname = sa.Column(sa.String(255), nullable=False)
-    email = sa.Column(sa.String(255), nullable=False, unique=True)
+    email = sa.Column(sa.String(255), nullable=True, unique=True)
     password = sa.Column(sa.Text, nullable=True)
     timezone = sa.Column(sa.String(255), nullable=False, default="UTC")
     state = sa.Column(STATES, default="active")

@@ -348,6 +348,7 @@ create_user_properties = {
     "name": Properties.string,
     "fullname": Properties.string,
     "email": Properties.email,
+    "sso_username": Properties.string,
     "timezone": Properties.string,
     "password": Properties.string,
     "state": with_default(Properties.enum(valid_resource_states), "active"),
@@ -355,7 +356,7 @@ create_user_properties = {
 create_user_schema = {
     "type": "object",
     "properties": create_user_properties,
-    "required": ["email"],
+    "anyOf": [{"required": ["email"]}, {"required": ["sso_username"]}],
     "additionalProperties": False,
 }
 

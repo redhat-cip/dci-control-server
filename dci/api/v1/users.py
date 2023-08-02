@@ -44,20 +44,21 @@ def create_users(user):
     check_json_is_valid(create_user_schema, values)
     values.update(v1_utils.common_values_dict())
 
-    if user.is_not_super_admin():
+    if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    name = values.get("name", values["email"])
+    sso_username = values.get("sso_username")
+    email = values.get("email")
+    default_name = email if email else sso_username
     password = (
         auth.hash_password(values.get("password")) if values.get("password") else None
     )
     values.update(
         {
-            "name": name,
+            "name": values.get("name", default_name),
+            "fullname": values.get("fullname", default_name),
             "password": password,
-            "fullname": values.get("fullname", name),
             "timezone": values.get("timezone", "UTC"),
-            "sso_username": None,
         }
     )
 
