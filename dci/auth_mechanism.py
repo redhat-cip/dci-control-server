@@ -20,7 +20,7 @@ from sqlalchemy import sql
 from sqlalchemy import orm
 
 from dci.api.v1 import base, sso
-from dci import auth
+from dci.auth import check_passwords_equal, decode_jwt
 from dci import dci_config
 from dci.common import exceptions as dci_exc
 from dciauth.request import AuthRequest
@@ -43,9 +43,9 @@ class BaseMechanism(object):
         method must raise an exception with proper error message."""
         pass
 
-    def identity_from_db(self, model_constraint):
+    def get_user(self, model_constraint):
         try:
-            user = (
+            return (
                 flask.g.session.query(models2.User)
                 .filter(models2.User.state == "active")
                 .options(orm.selectinload("team"))
@@ -55,6 +55,7 @@ class BaseMechanism(object):
         except orm.exc.NoResultFound:
             return None
 
+    def identity_from_user(self, user):
         user_info = {
             # UUID to str
             "id": str(user.id),
@@ -103,27 +104,20 @@ class BasicAuthMechanism(BaseMechanism):
         auth = self.request.authorization
         if not auth:
             raise dci_exc.DCIException("Authorization header missing", status_code=401)
-        user, is_authenticated = self.get_user_and_check_auth(
-            auth.username, auth.password
-        )
-        if not is_authenticated:
-            raise dci_exc.DCIException("Invalid user credentials", status_code=401)
-        self.identity = user
-        return True
 
-    def get_user_and_check_auth(self, username, password):
-        """Check the combination username/password that is valid on the
-        database.
-        """
-        user = self.identity_from_db(models2.User.name == username)
+        username = auth.username
+        user = self.get_user(models2.User.name == username)
         if user is None:
-            user = self.identity_from_db(models2.User.email == username)
+            user = self.get_user(models2.User.email == username)
             if user is None:
                 raise dci_exc.DCIException(
                     "User %s does not exists." % username, status_code=401
                 )
-
-        return user, auth.check_passwords_equal(password, user.password)
+        is_authenticated = check_passwords_equal(auth.password, user.password)
+        if not is_authenticated:
+            raise dci_exc.DCIException("Invalid user credentials", status_code=401)
+        self.identity = self.identity_from_user(user)
+        return True
 
 
 class HmacMechanism(BaseMechanism):
@@ -219,7 +213,7 @@ class OpenIDCAuth(BaseMechanism):
 
         conf = dci_config.CONFIG
         try:
-            decoded_token = auth.decode_jwt(
+            decoded_token = decode_jwt(
                 token, conf["SSO_PUBLIC_KEY"], conf["SSO_CLIENT_ID"]
             )
         except (jwt_exc.DecodeError, ValueError):
@@ -230,50 +224,85 @@ class OpenIDCAuth(BaseMechanism):
             )
 
         team_id = None
-        ro_group = conf["SSO_READ_ONLY_GROUP"]
-        realm_access = decoded_token["realm_access"]
-        if "roles" in realm_access and ro_group in realm_access["roles"]:
+        read_only_group = conf["SSO_READ_ONLY_GROUP"]
+        if self._is_read_only_user(decoded_token, read_only_group):
             team_id = flask.g.team_redhat_id
 
         user_info = self._get_user_info(decoded_token)
         try:
-            self.identity = self._get_or_create_user(user_info, team_id)
+            self.identity = self._get_or_update_or_create_user(user_info, team_id)
         except sa_exc.IntegrityError:
             raise dci_exc.DCICreationConflict("users", "username")
         return True
 
     @staticmethod
+    def _is_read_only_user(token, read_only_group):
+        # todo(gvincent): implement the solution with idp and verified email
+        try:
+            realm_access = token["realm_access"]
+            return "roles" in realm_access and read_only_group in realm_access["roles"]
+        except:
+            return False
+
+    @staticmethod
     def _get_user_info(token):
+        # preferred_username is OIDC Standard
+        username = token.get("preferred_username", token.get("username"))
         return {
-            "name": token.get("username"),
-            "fullname": token.get("username"),
-            "sso_username": token.get("username"),
+            "name": username,
+            "fullname": username,
+            "sso_username": username,
             "email": token.get("email"),
             "timezone": "UTC",
         }
 
-    def _get_or_create_user(self, user_info, team_id=None):
-        constraint = sql.or_(
-            models2.User.sso_username == user_info["sso_username"],
-            models2.User.email == user_info["sso_username"],
-            models2.User.email == user_info["email"],
+    def _get_or_update_or_create_user(self, user_info, team_id=None):
+        sso_username = user_info["sso_username"]
+        if not sso_username:
+            raise Exception(
+                "Red Hat login is required. Please contact a DCI administrator."
+            )
+        user = self._get_user_with_email_and_red_hat_login(user_info)
+        if user:
+            return self.identity_from_user(user)
+
+        user = self._get_user_with_only_red_hat_login(user_info)
+        if user:
+            user_updated = self._update_user(user, user_info)
+            return self.identity_from_user(user_updated)
+
+        user_created = self._create_user(user_info, team_id)
+        return self.identity_from_user(user_created)
+
+    def _get_user_with_email_and_red_hat_login(self, user_info):
+        sso_username = user_info["sso_username"]
+        email = user_info["email"]
+        existing_user_constraint = sql.and_(
+            models2.User.sso_username == sso_username,
+            models2.User.email == email,
         )
-        identity = self.identity_from_db(constraint)
-        if identity is None:
-            try:
-                user = models2.User(**user_info)
-                flask.g.session.add(user)
+        return self.get_user(existing_user_constraint)
+
+    def _get_user_with_only_red_hat_login(self, user_info):
+        return self.get_user(models2.User.sso_username == user_info["sso_username"])
+
+    def _create_user(self, user_info, team_id):
+        try:
+            user = models2.User(**user_info)
+            flask.g.session.add(user)
+            flask.g.session.commit()
+            if team_id is not None:
+                team = base.get_resource_orm(models2.Team, team_id)
+                team.users.append(user)
+                flask.g.session.add(team)
                 flask.g.session.commit()
-                if team_id is not None:
-                    team = base.get_resource_orm(models2.Team, team_id)
-                    team.users.append(user)
-                    flask.g.session.add(team)
-                    flask.g.session.commit()
-            except Exception:
-                flask.g.session.rollback()
-                raise dci_exc.DCIException(
-                    message="Cannot create user in Open ID Connect auth mechanism"
-                )
-            identity = self.identity_from_db(constraint)
-            return identity
-        return identity
+        except Exception:
+            flask.g.session.rollback()
+            raise dci_exc.DCIException(
+                message="Cannot create user in Open ID Connect auth mechanism"
+            )
+        return self._get_user_with_email_and_red_hat_login(user_info)
+
+    def _update_user(self, user, user_info):
+        base.update_resource_orm(user, {"email": user_info["email"]})
+        return self._get_user_with_email_and_red_hat_login(user_info)

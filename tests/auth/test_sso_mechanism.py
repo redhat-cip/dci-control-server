@@ -19,7 +19,7 @@ import datetime
 import dci.auth_mechanism as authm
 from dci.common import exceptions as dci_exc
 from dci import dci_config
-
+from tests.utils import generate_client
 import flask
 import mock
 import pytest
@@ -119,6 +119,44 @@ def test_sso_auth_verified_rh_employee(
             if iu["name"] == "dci-rh" and iu["email"] == "dci-rh@redhat.com":
                 ro_user_found = True
         assert ro_user_found
+
+
+@mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
+def test_sso_auth_update_email_employee_with_preferred_username(
+    m_datetime,
+    app,
+    admin,
+):
+    m_utcnow = mock.MagicMock()
+    m_utcnow.utctimetuple.return_value = datetime.datetime.fromtimestamp(
+        1518653629
+    ).timetuple()
+    m_datetime.utcnow.return_value = m_utcnow
+
+    with app.app_context():
+        token_jdoe_with_example_org_email = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InVReHNRcHBzS29vYkZoM0hOdGt1V29SakZkdTBja3RGLVN5NGVXRTV4eTQifQ.eyJqdGkiOiJkNDg1Y2ViNC00ZDVhLTRiMDctODg4Zi1mOTMzNDg2YWNlMTUiLCJleHAiOjE1MTg2NTM4MjksIm5iZiI6MCwiaWF0IjoxNTE4NjUzNTI5LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgxODAvYXV0aC9yZWFsbXMvcmVkaGF0LWV4dGVybmFsIiwiYXVkIjoiZGNpIiwic3ViIjoiMzI3MjQ3NGQtYTA4My00ZTM3LTk0MjYtODY3YWE2YTQ2ZWQ2IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiZGNpIiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiYjc3NGQ3ZWEtMmMzMi00NGE3LTkxYTgtMWI3YzhmZjk4NzA2IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgwMDAiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwiZW1haWwiOiJqZG9lQGV4YW1wbGUub3JnIiwidXNlcm5hbWUiOiJqZG9lIn0.h6dwdIO7Kh6W3e7LUgfqqj1_G6lNcz7w6K_L0qqa1frcSHpIzBSujNtXsUliPHMUSDDXyp6sZC_VWw5rNNtFUzpymTFlAhhHvmepDw2itotIqn_yyV2prEygYK0DKEfwenhwqeGdf34h4B9As1Uz8ZAPoIrbxO4y9dMY8fjQtl_thNzE83GTlvFCAt22DWbr_zeVj6wuJ4C49wPE6huRev9s8KOddWWVVORyM1MXwwR_xu5_F9QJtyTJdQceokP5JwfKrni1MZH_tSM1SOAohwnV8RXfnOnjoFftr6lCQilxQiZU9eGAprmMwzUKnC2iAvTap3iWHnWLs0cW30iaYg"
+        john_doe_client = generate_client(
+            app, access_token=token_jdoe_with_example_org_email
+        )
+        r = john_doe_client.get("/api/v1/identity")
+        assert r.status_code == 200
+
+        jdoe = admin.get("/api/v1/users?where=email:jdoe@example.org").data["users"][0]
+        assert jdoe["name"] == "jdoe"
+        assert jdoe["sso_username"] == "jdoe"
+        assert jdoe["email"] == "jdoe@example.org"
+
+        token_jdoe_with_red_hat_com_email = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InVReHNRcHBzS29vYkZoM0hOdGt1V29SakZkdTBja3RGLVN5NGVXRTV4eTQifQ.eyJqdGkiOiJkNDg1Y2ViNC00ZDVhLTRiMDctODg4Zi1mOTMzNDg2YWNlMTUiLCJleHAiOjE1MTg2NTM4MjksIm5iZiI6MCwiaWF0IjoxNTE4NjUzNTMwLCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgxODAvYXV0aC9yZWFsbXMvcmVkaGF0LWV4dGVybmFsIiwiYXVkIjoiZGNpIiwic3ViIjoiMzI3MjQ3NGQtYTA4My00ZTM3LTk0MjYtODY3YWE2YTQ2ZWQ2IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiZGNpIiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiYjc3NGQ3ZWEtMmMzMi00NGE3LTkxYTgtMWI3YzhmZjk4NzA2IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgwMDAiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwiZW1haWwiOiJqZG9lQHJlZGhhdC5jb20iLCJ1c2VybmFtZSI6Impkb2UifQ.A46fkEKTXGFUJI-h3fRFUmxlBtKbqv83TjTiYy47O0pqSyFzrryn6jvU1pwUAlZqKCD0CjsO43wOsSXs8HABO5jl9vx71un2qvh_qD8nn1MVyV0PITaWSJ-UYPw8tfmdfpyyywFEjrkF5cSQIdJSlIaps-v6QYt-YDwLZSzj_8VHHh9fMF5yP2BYZ1BgjReQn-3A5rz9SD1LNuMQQIv9UvPqnd9zkR9U7LTkgyInh8M2B5RWCNLbdfwKn2lZl-IXKFHywp20jYKodSuyXIE_LEOVSQo4MpFfz25ul5VX-SsUCJc2Z0HihBKoJ-8OP2G2KyVy-Vz6pf6jejt2YcFblw"
+        john_doe_client = generate_client(
+            app, access_token=token_jdoe_with_red_hat_com_email
+        )
+        r = john_doe_client.get("/api/v1/identity")
+        assert r.status_code == 200
+
+        jdoe = admin.get("/api/v1/users?where=email:jdoe@redhat.com").data["users"][0]
+        assert jdoe["name"] == "jdoe"
+        assert jdoe["sso_username"] == "jdoe"
+        assert jdoe["email"] == "jdoe@redhat.com"
 
 
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
