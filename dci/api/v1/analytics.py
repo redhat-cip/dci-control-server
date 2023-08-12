@@ -233,8 +233,6 @@ def tasks_pipelines_status(user):
             )
     except ConnectionError as e:
         logger.error("analytics connection error: %s" % str(e))
-        return flask.Response(
-            json.dumps({"error": "connection error with backend service: %s" % str(e)}),
-            503,
-            content_type="application/json",
+        return dci_exc.DCIException(
+            "connection error with backend service", status_code=503
         )

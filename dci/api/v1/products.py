@@ -53,17 +53,7 @@ def create_product(user):
     if not values["label"]:
         values.update({"label": values["name"].upper()})
 
-    try:
-        p = models2.Product(**values)
-        p_serialized = p.serialize()
-        flask.g.session.add(p)
-        flask.g.session.commit()
-    except sa_exc.IntegrityError as ie:
-        flask.g.session.rollback()
-        raise dci_exc.DCIException(message=str(ie), status_code=409)
-    except Exception as e:
-        flask.g.session.rollback()
-        raise dci_exc.DCIException(message=str(e))
+    p_serialized = base.create_resource_orm(models2.Product, values)
 
     return flask.Response(
         json.dumps({"product": p_serialized}),

@@ -63,9 +63,17 @@ def update_resource_orm(resource, data):
     setattr(resource, "etag", utils.gen_etag())
     try:
         flask.g.session.commit()
-    except Exception as e:
+    except exc.IntegrityError:
         flask.g.session.rollback()
-        raise dci_exc.DCIException(message=str(e), status_code=409)
+        raise dci_exc.DCIException(
+            message="We are unable to update this resource. A similar resource already exists.",
+            status_code=409,
+        )
+    except Exception:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(
+            message="We are unable to update this resource. Please contact a DCI administrator."
+        )
 
 
 def create_resource_orm(table, data):
@@ -75,12 +83,17 @@ def create_resource_orm(table, data):
         flask.g.session.add(resource)
         flask.g.session.commit()
         return resource_serialized
-    except exc.IntegrityError as ie:
+    except exc.IntegrityError:
         flask.g.session.rollback()
-        raise dci_exc.DCIException(message=str(ie), status_code=409)
-    except Exception as e:
+        raise dci_exc.DCIException(
+            message="We are unable to create this resource. A similar resource already exists.",
+            status_code=409,
+        )
+    except Exception:
         flask.g.session.rollback()
-        raise dci_exc.DCIException(message=str(e))
+        raise dci_exc.DCIException(
+            message="We are unable to create this resource. Please contact a DCI administrator."
+        )
 
 
 def get_archived_resources_query(table):
