@@ -579,6 +579,7 @@ create_team_properties = {
     "country": with_default(Properties.string, None),
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "external": with_default(Properties.boolean, False),
+    "has_pre_release_access": with_default(Properties.boolean, False),
 }
 create_team_schema = {
     "type": "object",
@@ -592,6 +593,7 @@ update_team_properties = {
     "country": allow_none(Properties.string),
     "state": Properties.enum(valid_resource_states),
     "external": Properties.boolean,
+    "has_pre_release_access": Properties.boolean,
 }
 update_team_schema = {"type": "object", "properties": update_team_properties}
 

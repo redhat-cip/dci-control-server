@@ -184,6 +184,9 @@ class Team(dci_declarative.Mixin, Base):
     country = sa.Column(sa.String(255), nullable=True)
     state = sa.Column(STATES, default="active")
     external = sa.Column(sa.BOOLEAN, default=True)
+    has_pre_release_access = sa.Column(
+        sa.BOOLEAN, nullable=False, default=False, server_default="false"
+    )
     users = sa_orm.relationship("User", secondary=USERS_TEAMS, back_populates="team")
     remotecis = sa_orm.relationship("Remoteci", back_populates="team")
     feeders = sa_orm.relationship("Feeder", back_populates="team")
