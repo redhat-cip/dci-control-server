@@ -401,3 +401,22 @@ def test_nrt_update_team_after_get(admin, team_id):
     assert r.status_code == 200
     team = admin.get("/api/v1/teams/%s" % team_id).data["team"]
     assert team["name"] == "new team name"
+
+
+def test_create_and_update_team_with_has_pre_release_access_flag(admin, epm):
+    team_data = {"name": "new team", "external": True, "has_pre_release_access": False}
+    create_team_request = admin.post("/api/v1/teams", data=team_data)
+    assert create_team_request.status_code == 201
+
+    team_created = create_team_request.data["team"]
+    assert team_created["has_pre_release_access"] is False
+
+    update_team_request = epm.put(
+        "/api/v1/teams/%s" % team_created["id"],
+        data={"has_pre_release_access": True},
+        headers={"If-match": team_created["etag"]},
+    )
+    assert update_team_request.status_code == 200
+
+    team_updated = update_team_request.data["team"]
+    assert team_updated["has_pre_release_access"]
