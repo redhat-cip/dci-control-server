@@ -1,37 +1,25 @@
-FROM quay.io/centos/centos:stream8
-
-LABEL name="DCI API" version="0.0.3"
+FROM registry.access.redhat.com/ubi8/ubi-minimal
+LABEL name="DCI API"
 LABEL maintainer="DCI Team <distributed-ci@redhat.com>"
 
-ENV LANG en_US.UTF-8
 
-WORKDIR /opt/dci-control-server
-COPY dci-control-server.spec /opt/dci-control-server/
+COPY . /usr/src/dci-control-server
 
-RUN dnf -y install centos-release-openstack-ussuri && dnf clean all
+COPY entrypoint.sh /usr/local/sbin/
+COPY gunicorn.conf.py /etc/
 
-RUN dnf -y install epel-release https://packages.distributed-ci.io/dci-release.el8.noarch.rpm && \
-    echo -e "[dci-extras]\nname=DCI Extras YUM repo\nbaseurl=https://packages.distributed-ci.io/repos/extras/el/\$releasever/\$basearch/\nenabled=1\ngpgcheck=0" > /etc/yum.repos.d/dci-extras.repo && \
-    dnf update -y && \
-    dnf -y install rpm-build gcc && \
-    dnf -y install $(rpmspec -q --requires -E '%define rhel 8' dci-control-server.spec|grep -v systemd) && \
-    rpm -q $(rpmspec -q --requires -E '%define rhel 8' dci-control-server.spec|grep -v systemd) && \
-    dnf -y install python36 python36-devel python3-pip python3-setuptools python3-tox && \
-    dnf module enable -y postgresql:9.6 && \
-    dnf -y install postgresql postgresql-contrib postgresql-devel && \
-    dnf clean all
+WORKDIR /usr/src/dci-control-server
 
-COPY sso/ca.key /etc/ssl/repo/
-COPY sso/ca.crt /etc/ssl/repo/
-COPY sso/RH-IT-Root-CA.crt /etc/pki/ca-trust/source/anchors/RH-IT-Root-CA.crt
-RUN update-ca-trust
-
-ENV PYTHONPATH /opt/dci-control-server
-ENV DISABLE_DB_START 1
+RUN microdnf update && \
+    microdnf -y install python3-pip python3-wheel && \
+    microdnf -y install python3-devel gcc postgresql-devel && \
+    pip3 --no-cache-dir install -r requirements.txt && \
+    pip3 --no-cache-dir install . && \
+    microdnf -y remove python3-devel gcc postgresql-devel && \
+    microdnf -y clean all
 
 EXPOSE 5000
 
-COPY entrypoint.sh /entrypoint.sh
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/sbin/entrypoint.sh"]
 
-CMD ["python3", "/opt/dci-control-server/bin/dci-runtestserver"]
+CMD ["/usr/local/bin/gunicorn", "-c", "/etc/gunicorn.conf.py", "-b", "0.0.0.0:5000", "dci.app:create_app()"]

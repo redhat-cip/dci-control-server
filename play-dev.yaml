@@ -1,0 +1,25 @@
+---
+# Podman Kube Play for development environment
+apiVersion: v1
+kind: Pod
+metadata:
+  name:
+    dci-cs
+spec:
+  containers:
+    - image: docker.io/library/postgres:10.23-alpine
+      name: db
+      env:
+        - name: POSTGRES_PASSWORD
+          value: dci
+        - name: POSTGRES_USER
+          value: dci
+    - image: localhost/dci-control-server:latest
+      name: api
+      env:
+        - name: DB_HOST
+          value: dci-cs-db
+      ports:
+        - containerPort: 5000
+          hostPort: 0
+...
