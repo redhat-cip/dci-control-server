@@ -75,10 +75,14 @@ def get_topic_by_id(user, topic_id):
     )
     topic_serialized = topic.serialize()
 
-    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_feeder():
-        if not user.is_read_only_user():
-            export_control.verify_access_to_topic(user, topic)
-            topic_serialized["teams"] = []
+    if (
+        user.is_not_super_admin()
+        and user.is_not_epm()
+        and user.is_not_feeder()
+        and user.is_not_read_only_user()
+    ):
+        export_control.verify_access_to_topic(user, topic)
+        topic_serialized["teams"] = []
 
     return flask.Response(
         json.dumps({"topic": topic_serialized}),
@@ -116,12 +120,8 @@ def get_all_topics(user):
     if user.is_not_super_admin() and user.is_not_read_only_user() and user.is_not_epm():
         product_ids = _get_user_product_ids()
         q = q.filter(models2.Topic.product_id.in_(product_ids))
-        q = q.filter(
-            sql.or_(
-                models2.Topic.export_control == True,  # noqa
-                models2.Topic.id.in_(v1_utils.user_topic_ids(flask.g.session, user)),
-            )
-        )
+        if user.has_not_pre_release_access():
+            q = q.filter(models2.Topic.export_control == True)  # noqa
     else:
         q = q.options(sa_orm.selectinload("teams"))
 

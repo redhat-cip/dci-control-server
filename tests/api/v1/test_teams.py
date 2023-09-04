@@ -214,11 +214,8 @@ def test_delete_team_not_found(admin):
 
 
 def test_delete_team_archive_dependencies(
-    admin, remoteci_context, product, team_user_id, topic_user_id
+    admin, remoteci_context, product, team_user, topic_user_id
 ):
-    team_user = admin.get("/api/v1/teams/%s" % team_user_id).data["team"]
-    team_user_etag = team_user["etag"]
-
     user = admin.post(
         "/api/v1/users",
         data={
@@ -231,7 +228,7 @@ def test_delete_team_archive_dependencies(
     assert user.status_code == 201
 
     remoteci = admin.post(
-        "/api/v1/remotecis", data={"name": "pname", "team_id": team_user_id}
+        "/api/v1/remotecis", data={"name": "pname", "team_id": team_user["id"]}
     )
     remoteci_id = remoteci.data["remoteci"]["id"]
     assert remoteci.status_code == 201
@@ -259,7 +256,7 @@ def test_delete_team_archive_dependencies(
     assert component.status_code == 201
 
     data = {
-        "team_id": team_user_id,
+        "team_id": team_user["id"],
         "comment": "kikoolol",
         "components": [component_id],
         "topic_id": topic_user_id,
@@ -269,7 +266,7 @@ def test_delete_team_archive_dependencies(
     assert job.status_code == 201
 
     deleted_team = admin.delete(
-        "/api/v1/teams/%s" % team_user_id, headers={"If-match": team_user_etag}
+        "/api/v1/teams/%s" % team_user["id"], headers={"If-match": team_user["etag"]}
     )
     assert deleted_team.status_code == 204
 

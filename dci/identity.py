@@ -98,3 +98,13 @@ class Identity:
 
     def is_not_feeder(self):
         return not self.is_feeder()
+
+    def has_pre_release_access(self):
+        has_pre_release_access = False
+        for team in self.teams.values():
+            if "has_pre_release_access" in team and team["has_pre_release_access"]:
+                has_pre_release_access = True
+        return has_pre_release_access
+
+    def has_not_pre_release_access(self):
+        return not self.has_pre_release_access()

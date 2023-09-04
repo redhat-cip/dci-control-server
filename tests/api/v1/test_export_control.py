@@ -23,59 +23,122 @@ from dci.stores.s3 import S3
 AWSS3 = "dci.stores.s3.S3"
 
 
-def test_topics_export_control_true(user, epm, rhel_81_topic):
+def allow_team_to_access_product(client, team_id, product_id):
+    assert (
+        client.post(
+            "/api/v1/products/%s/teams" % product_id,
+            data={"team_id": team_id},
+        ).status_code
+        == 201
+    )
+
+
+def deny_team_to_access_product(client, team_id, product_id):
+    assert (
+        client.delete(
+            "/api/v1/products/%s/teams/%s" % (product_id, team_id)
+        ).status_code
+        == 204
+    )
+
+
+def change_team_pre_release_access(client, team, has_access=True):
+    res = client.put(
+        "/api/v1/teams/%s" % team["id"],
+        data={"has_pre_release_access": has_access},
+        headers={"If-match": team["etag"]},
+    )
+    assert res.status_code == 200
+    return res.data["team"]
+
+
+def test_user_can_access_ga_topic_s_components_if_has_access_to_the_product(
+    epm, user, team_user, rhel_product, rhel_80_topic
+):
+
+    assert rhel_80_topic["export_control"]
+
+    # user can list the components because he has access to the RHEL product
+    assert (
+        user.get("/api/v1/topics/%s/components" % rhel_80_topic["id"]).status_code
+        == 200
+    )
+
+    # epm remove the RHEL product permission
+    deny_team_to_access_product(epm, team_user["id"], rhel_product["id"])
+
+    # topic export_control is true but the user can't access the components
+    # because his team doesn't have access to the product now
+    assert (
+        user.get("/api/v1/topics/%s/components" % rhel_80_topic["id"]).status_code
+        == 401
+    )
+
+
+def test_user_can_access_pre_ga_topic_s_components_if_team_has_pre_release_access(
+    epm, user, team_user, rhel_product, rhel_81_topic
+):
+    assert rhel_81_topic["export_control"] is False
+
+    # the user can't access the components because his team doesn't have access to the product
     assert (
         user.get("/api/v1/topics/%s/components" % rhel_81_topic["id"]).status_code
         == 401
     )
 
-    topic = epm.get("/api/v1/topics/%s" % rhel_81_topic["id"]).data["topic"]
-    assert topic["export_control"] is False
+    # give access to the product
+    assert rhel_product["id"] == rhel_81_topic["product_id"]
+    allow_team_to_access_product(epm, team_user["id"], rhel_product["id"])
 
-    epm.put(
-        "/api/v1/topics/%s" % rhel_81_topic["id"],
-        data={"export_control": True},
-        headers={"If-match": rhel_81_topic["etag"]},
+    # the user still doesn't have access to the component
+    # because his team doesn't have the has_pre_release_access and topic is not exported
+    assert (
+        user.get("/api/v1/topics/%s/components" % rhel_81_topic["id"]).status_code
+        == 401
     )
 
-    topic = epm.get("/api/v1/topics/%s" % rhel_81_topic["id"]).data["topic"]
-    assert topic["export_control"]
-    # team_user_id is associated to the product and the topic is exported
-    # then it should have access to the topic's components
+    # change has_pre_release_access for the team
+    change_team_pre_release_access(epm, team_user, has_access=True)
+
+    # now the user can access the components
     assert (
         user.get("/api/v1/topics/%s/components" % rhel_81_topic["id"]).status_code
         == 200
     )
 
 
-def test_topics_export_control_false(user, epm, rhel_80_topic):
+def test_user_cant_access_topic_components_with_has_pre_release_access_if_no_product_access(
+    epm, user, team_user, rhel_product, rhel_81_topic
+):
+    assert rhel_81_topic["export_control"] is False
+
+    # the user can't access the components because has_pre_release_access not set
     assert (
-        user.get("/api/v1/topics/%s/components" % rhel_80_topic["id"]).status_code
+        user.get("/api/v1/topics/%s/components" % rhel_81_topic["id"]).status_code
+        == 401
+    )
+
+    # allow pre release access for the team
+    change_team_pre_release_access(epm, team_user, has_access=True)
+
+    # The user should be able to access the components because he has access to the product
+    assert (
+        user.get("/api/v1/topics/%s/components" % rhel_81_topic["id"]).status_code
         == 200
     )
 
-    topic = epm.get("/api/v1/topics/%s" % rhel_80_topic["id"]).data["topic"]
-    assert topic["export_control"]
+    # epm remove the RHEL product permission
+    deny_team_to_access_product(epm, team_user["id"], rhel_product["id"])
 
-    epm.put(
-        "/api/v1/topics/%s" % rhel_80_topic["id"],
-        data={"export_control": False},
-        headers={"If-match": rhel_80_topic["etag"]},
-    )
-
-    topic = epm.get("/api/v1/topics/%s" % rhel_80_topic["id"]).data["topic"]
-    assert topic["export_control"] is False
-    # team_user_id is associated to the product and the topic is not exported anymore
-    # then user should lose the access to the topic's components
+    # The user can't see the components now
     assert (
-        user.get("/api/v1/topics/%s/components" % rhel_80_topic["id"]).status_code
+        user.get("/api/v1/topics/%s/components" % rhel_81_topic["id"]).status_code
         == 401
     )
 
 
-def test_components_export_control_true(user, epm, rhel_80_topic, rhel_80_component):
-    topic = epm.get("/api/v1/topics/%s" % rhel_80_topic["id"]).data["topic"]
-    assert topic["export_control"] is True
+def test_components_export_control_true(admin, user, rhel_80_topic, rhel_80_component):
+    assert rhel_80_topic["export_control"]
 
     with mock.patch(AWSS3, spec=S3) as mock_s3:
         mockito = mock.MagicMock()
@@ -89,9 +152,9 @@ def test_components_export_control_true(user, epm, rhel_80_topic, rhel_80_compon
         mock_s3.return_value = mockito
 
         url = "/api/v1/components/%s/files" % rhel_80_component["id"]
-        c_file = epm.post(url, data="lol")
+        c_file = admin.post(url, data="lol")
         c_file_1_id = c_file.data["component_file"]["id"]
-        # team_user_id is not subscribing to topic_user_id but it's
+        # team_user has not access to pre release content but it's
         # associated to the product thus it can access the topic's components
         assert (
             user.get("/api/v1/components/%s" % rhel_80_component["id"]).status_code
@@ -120,8 +183,9 @@ def test_components_export_control_true(user, epm, rhel_80_topic, rhel_80_compon
 
 
 def test_components_export_control_false(
-    user, epm, rhel_81_component, team_user_id, rhel_81_topic
+    admin, user, team_user, rhel_product, rhel_81_topic, rhel_81_component
 ):
+    assert rhel_81_topic["export_control"] is False
     with mock.patch(AWSS3, spec=S3) as mock_s3:
         mockito = mock.MagicMock()
         mockito.get.return_value = ["test", six.StringIO("lollollel")]
@@ -134,43 +198,11 @@ def test_components_export_control_false(
         mock_s3.return_value = mockito
 
         url = "/api/v1/components/%s/files" % rhel_81_component["id"]
-        c_file = epm.post(url, data="lol")
+        c_file = admin.post(url, data="lol")
         c_file_1_id = c_file.data["component_file"]["id"]
 
-        # team_user_id is associated to the product but not to the topic,
-        # since the topic is not exported the user doesn't have the access
-        assert (
-            user.get("/api/v1/components/%s" % rhel_81_component["id"]).status_code
-            == 401
-        )
-        assert (
-            user.get(
-                "/api/v1/components/%s/files" % rhel_81_component["id"]
-            ).status_code
-            == 401
-        )
-        assert (
-            user.get(
-                "/api/v1/components/%s/files/%s"
-                % (rhel_81_component["id"], c_file_1_id)
-            ).status_code
-            == 401
-        )
-        assert (
-            user.get(
-                "/api/v1/components/%s/files/%s/content"
-                % (rhel_81_component["id"], c_file_1_id)
-            ).status_code
-            == 401
-        )
-
-        # explicitly allow team to download rhel_81_component
-        epm.post(
-            "/api/v1/topics/%s/teams" % rhel_81_topic["id"],
-            data={"team_id": team_user_id},
-        )
-
-        # team_user_id is now associated with the topic
+        # allow team to download pre release content
+        team_user = change_team_pre_release_access(admin, team_user, has_access=True)
         assert (
             user.get("/api/v1/components/%s" % rhel_81_component["id"]).status_code
             == 200
@@ -194,4 +226,32 @@ def test_components_export_control_false(
                 % (rhel_81_component["id"], c_file_1_id)
             ).status_code
             == 200
+        )
+
+        # remove pre release content access
+        change_team_pre_release_access(admin, team_user, has_access=False)
+
+        assert (
+            user.get("/api/v1/components/%s" % rhel_81_component["id"]).status_code
+            == 401
+        )
+        assert (
+            user.get(
+                "/api/v1/components/%s/files" % rhel_81_component["id"]
+            ).status_code
+            == 401
+        )
+        assert (
+            user.get(
+                "/api/v1/components/%s/files/%s"
+                % (rhel_81_component["id"], c_file_1_id)
+            ).status_code
+            == 401
+        )
+        assert (
+            user.get(
+                "/api/v1/components/%s/files/%s/content"
+                % (rhel_81_component["id"], c_file_1_id)
+            ).status_code
+            == 401
         )

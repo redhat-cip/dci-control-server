@@ -1319,7 +1319,7 @@ def test_teams_components_isolation(
 # S3 components related tests
 
 
-def test_get_component_file_from_s3_user_team_in_RHEL_export_control_true(
+def test_get_component_file_from_s3_user_team_in_RHEL_with_released_component(
     admin,
     remoteci_context,
     remoteci_user,
@@ -1362,11 +1362,10 @@ def test_get_component_file_from_s3_user_team_in_RHEL_export_control_true(
     assert r.status_code == 401
 
 
-def test_get_component_file_from_s3_user_team_in_RHEL_export_control_false(
+def test_get_component_file_from_s3_user_team_in_RHEL_with_pre_release_component(
     admin,
     remoteci_context,
-    remoteci_user,
-    rhel_81_topic,
+    team_user,
     rhel_81_component,
 ):
     r = remoteci_context.get(
@@ -1375,11 +1374,12 @@ def test_get_component_file_from_s3_user_team_in_RHEL_export_control_false(
     )
     assert r.status_code == 401
 
-    r = admin.post(
-        "/api/v1/topics/%s/teams" % rhel_81_topic["id"],
-        data={"team_id": remoteci_user["team_id"]},
+    r = admin.put(
+        "/api/v1/teams/%s" % team_user["id"],
+        data={"has_pre_release_access": True},
+        headers={"If-match": team_user["etag"]},
     )
-    assert r.status_code == 201
+    assert r.status_code == 200
 
     r = remoteci_context.get(
         "/api/v1/components/%s/files/compose/BaseOS/x86_64/images/SHA256SUM"
@@ -1397,9 +1397,8 @@ def test_get_component_file_from_s3_user_team_in_RHEL_export_control_false(
 def test_get_component_file_from_s3_user_team_in_RHEL81(
     admin,
     remoteci_context,
-    remoteci_user,
+    team_user,
     rhel_product,
-    rhel_81_topic,
     rhel_81_component,
 ):
     r = remoteci_context.get(
@@ -1409,15 +1408,16 @@ def test_get_component_file_from_s3_user_team_in_RHEL81(
 
     r = admin.post(
         "/api/v1/products/%s/teams" % rhel_product["id"],
-        data={"team_id": remoteci_user["team_id"]},
+        data={"team_id": team_user["id"]},
     )
     assert r.status_code == 201
 
-    r = admin.post(
-        "/api/v1/topics/%s/teams" % rhel_81_topic["id"],
-        data={"team_id": remoteci_user["team_id"]},
+    r = admin.put(
+        "/api/v1/teams/%s" % team_user["id"],
+        data={"has_pre_release_access": True},
+        headers={"If-match": team_user["etag"]},
     )
-    assert r.status_code == 201
+    assert r.status_code == 200
 
     r = remoteci_context.get(
         "/api/v1/components/%s/files/COMPOSE_ID" % rhel_81_component["id"]

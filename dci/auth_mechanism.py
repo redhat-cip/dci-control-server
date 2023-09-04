@@ -84,6 +84,7 @@ class BaseMechanism(object):
             user_teams[user_team.id] = {
                 "id": user_team.id,
                 "name": user_team.name,
+                "has_pre_release_access": user_team.has_pre_release_access,
             }
 
         user_info["teams"] = user_teams
@@ -168,6 +169,7 @@ class HmacMechanism(BaseMechanism):
                     identity.team.id: {
                         "team_name": identity.team.name,
                         "state": identity.team.state,
+                        "has_pre_release_access": identity.team.has_pre_release_access,
                     }
                 },
                 "api_secret": str(identity.api_secret),

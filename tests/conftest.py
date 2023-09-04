@@ -175,9 +175,13 @@ def topic(rhel_80_topic):
 
 
 @pytest.fixture
-def team_user_id(admin):
-    team = admin.get("/api/v1/teams?where=name:user").data["teams"][0]
-    return str(team["id"])
+def team_user(admin):
+    return admin.get("/api/v1/teams?where=name:user").data["teams"][0]
+
+
+@pytest.fixture
+def team_user_id(team_user):
+    return str(team_user["id"])
 
 
 @pytest.fixture

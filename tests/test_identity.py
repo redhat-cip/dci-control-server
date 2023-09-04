@@ -29,59 +29,31 @@ all_teams = [
 
 
 def identity_factory(
-    is_user=False,
     is_super_admin=False,
     is_read_only_user=False,
     is_epm_user=False,
     is_remoteci=False,
     is_feeder=False,
+    teams={},
 ):
-    user_info = {
-        "id": "12368feb-0e23-4dee-9737-7538af531234",
-        "password": "password",
-        "name": "name",
-        "fullname": "fullname",
-        "timezone": "UTC",
-        "email": "user@email.com",
-        "etag": "2975580b-1915-41b7-9672-c16ccbcc1234",
-        "is_super_admin": is_super_admin,
-        "is_read_only_user": is_read_only_user,
-        "is_epm_user": is_epm_user,
-        "is_remoteci": is_remoteci,
-        "is_feeder": is_feeder,
-    }
 
-    if is_super_admin:
-        team_name = "admin"
-        user_info["teams"] = {
-            UUID("2975580b-1915-41b7-9672-c16ccbcc6fc1"): {
-                "team_name": team_name,
-            }
+    return Identity(
+        {
+            "id": "12368feb-0e23-4dee-9737-7538af531234",
+            "password": "password",
+            "name": "name",
+            "fullname": "fullname",
+            "timezone": "UTC",
+            "email": "user@email.com",
+            "etag": "2975580b-1915-41b7-9672-c16ccbcc1234",
+            "is_super_admin": is_super_admin,
+            "is_read_only_user": is_read_only_user,
+            "is_epm_user": is_epm_user,
+            "is_remoteci": is_remoteci,
+            "is_feeder": is_feeder,
+            "teams": teams,
         }
-    elif is_user:
-        team_name = "user"
-        user_info["teams"] = {
-            UUID("894c7af1-f90f-48dd-8276-fbc4bfa80371"): {
-                "team_name": team_name,
-            },
-            UUID("2d89a1ad-0638-4738-940d-166c6a8105ec"): {
-                "team_name": team_name,
-            },
-        }
-    elif is_read_only_user:
-        user_info["teams"] = {
-            UUID("12347af1-f90f-48dd-8276-fbc4bfa81234"): {
-                "team_name": "Red Hat",
-            }
-        }
-    elif is_epm_user:
-        user_info["teams"] = {
-            UUID("12347af1-f90f-1234-8276-fbc4bfa81234"): {
-                "team_name": "epm",
-            }
-        }
-
-    return Identity(user_info)
+    )
 
 
 def test_is_super_admin():
@@ -90,7 +62,7 @@ def test_is_super_admin():
 
 
 def test_is_not_super_admin():
-    assert identity_factory(is_user=True).is_not_super_admin()
+    assert identity_factory().is_not_super_admin()
 
 
 def test_is_feeder():
@@ -110,13 +82,26 @@ def test_is_not_remoteci():
 
 
 def test_user_is_in_team():
-    user = identity_factory(is_user=True)
+    user = identity_factory(
+        teams={
+            UUID("894c7af1-f90f-48dd-8276-fbc4bfa80371"): {
+                "team_name": "team 1",
+                "state": "active",
+                "has_pre_release_access": False,
+            },
+            UUID("2d89a1ad-0638-4738-940d-166c6a8105ec"): {
+                "team_name": "team 2",
+                "state": "active",
+                "has_pre_release_access": False,
+            },
+        }
+    )
     assert user.is_in_team(team_id="894c7af1-f90f-48dd-8276-fbc4bfa80371")
     assert user.is_in_team(team_id="2d89a1ad-0638-4738-940d-166c6a8105ec")
 
 
 def test_user_is_not_in_team():
-    user = identity_factory(is_user=True)
+    user = identity_factory()
     assert user.is_not_in_team(team_id="eaa68feb-0e23-4dee-9737-7538af531024")
     assert user.is_not_in_team(team_id="2975580b-1915-41b7-9672-c16ccbcc6fc1")
 
@@ -134,7 +119,20 @@ def test_super_admin_is_epm():
 
 
 def test_teams_ids():
-    user = identity_factory(is_user=True)
+    user = identity_factory(
+        teams={
+            UUID("894c7af1-f90f-48dd-8276-fbc4bfa80371"): {
+                "team_name": "team 1",
+                "state": "active",
+                "has_pre_release_access": False,
+            },
+            UUID("2d89a1ad-0638-4738-940d-166c6a8105ec"): {
+                "team_name": "team 2",
+                "state": "active",
+                "has_pre_release_access": False,
+            },
+        }
+    )
     assert set(
         [
             UUID("894c7af1-f90f-48dd-8276-fbc4bfa80371"),
@@ -153,5 +151,52 @@ def test_is_epm():
     assert epm.is_epm()
 
 
-def test_is_not_epmn():
+def test_is_not_epm():
     assert identity_factory(is_epm_user=False).is_not_epm()
+    assert identity_factory().is_not_epm()
+
+
+def test_has_pre_release_access_if_at_least_in_team_with_pre_release_access():
+    user = identity_factory(
+        teams={
+            UUID("894c7af1-f90f-48dd-8276-fbc4bfa80371"): {
+                "team_name": "team 1",
+                "state": "active",
+                "has_pre_release_access": False,
+            },
+            UUID("2d89a1ad-0638-4738-940d-166c6a8105ec"): {
+                "team_name": "team 2",
+                "state": "active",
+                "has_pre_release_access": True,
+            },
+        }
+    )
+    assert user.has_pre_release_access()
+
+
+def test_doesnt_have_pre_release_access_if_no_team_with_pre_release_access():
+    user = identity_factory(
+        teams={
+            UUID("894c7af1-f90f-48dd-8276-fbc4bfa80371"): {
+                "team_name": "team 1",
+                "state": "active",
+                "has_pre_release_access": False,
+            },
+            UUID("2d89a1ad-0638-4738-940d-166c6a8105ec"): {
+                "team_name": "team 2",
+                "state": "active",
+                "has_pre_release_access": False,
+            },
+        }
+    )
+    assert user.has_pre_release_access() is False
+
+
+def test_doesnt_have_pre_release_access_if_doesnt_belong_to_a_team():
+    user = identity_factory()
+    assert user.has_pre_release_access() is False
+
+
+def test_has_not_pre_release_access():
+    user = identity_factory()
+    assert user.has_not_pre_release_access()

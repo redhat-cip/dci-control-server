@@ -202,21 +202,38 @@ def test_get_all_topics_by_user_and_remoteci(
         assert my_topic.status_code == 201
         my_topic_id = my_topic.data["topic"]["id"]
         my_topic_etag = my_topic.data["topic"]["etag"]
+
+        team_user = admin.get("/api/v1/teams/%s" % team_user_id).data["team"]
+        assert team_user["has_pre_release_access"] is False
+
         # user should not find it
         my_topic = caller.get("/api/v1/topics?where=name:%s" % topic_name)
         assert len(my_topic.data["topics"]) == 0
 
-        # associate the user's team to the topic
-        admin.post(
-            "/api/v1/topics/%s/teams" % my_topic_id, data={"team_id": team_user_id}
+        # allow team to access pre release content
+        assert (
+            admin.put(
+                "/api/v1/teams/%s" % team_user["id"],
+                data={"has_pre_release_access": True},
+                headers={"If-match": team_user["etag"]},
+            ).status_code
+            == 200
         )
 
         # user should see the topic now
         my_topic = caller.get("/api/v1/topics?where=name:%s" % topic_name)
         assert my_topic.data["topics"][0]["name"] == topic_name
 
-        # remove user'team from topic
-        admin.delete("/api/v1/topics/%s/teams/%s" % (my_topic_id, team_user_id))
+        # remove team permission
+        team_user = admin.get("/api/v1/teams/%s" % team_user_id).data["team"]
+        assert (
+            admin.put(
+                "/api/v1/teams/%s" % team_user["id"],
+                data={"has_pre_release_access": False},
+                headers={"If-match": team_user["etag"]},
+            ).status_code
+            == 200
+        )
 
         # user should not find it
         my_topic = caller.get("/api/v1/topics?where=name:%s" % topic_name)
@@ -286,34 +303,6 @@ def test_get_all_topics_with_where(admin, product):
         assert r["topics"][0]["id"] == t_id
 
 
-def test_get_topics_of_user(admin, user, team_user_id, product):
-    pat = admin.post(
-        "/api/v1/products/%s/teams" % product["id"], data={"team_id": team_user_id}
-    )
-    assert pat.status_code == 201
-    data = {
-        "name": "test_name",
-        "product_id": product["id"],
-        "component_types": ["type1", "type2"],
-    }
-    topic = admin.post("/api/v1/topics", data=data).data["topic"]
-    topic_id = topic["id"]
-    admin.post("/api/v1/topics/%s/teams" % topic_id, data={"team_id": team_user_id})
-    for i in range(5):
-        admin.post(
-            "/api/v1/topics",
-            data={
-                "name": "tname%s" % uuid.uuid4(),
-                "product_id": product["id"],
-                "component_types": ["type1", "type2"],
-                "data": {},
-            },
-        )
-    topics_user = user.get("/api/v1/topics").data
-    assert topic["id"] == topics_user["topics"][0]["id"]
-    assert len(topics_user["topics"]) == 1
-
-
 def test_get_topics_by_with_embed_authorization(admin, user, epm):
     topics_admin = admin.get("/api/v1/topics?embed=teams")
     assert topics_admin.status_code == 200
@@ -331,16 +320,15 @@ def test_get_topics_by_with_embed_authorization(admin, user, epm):
         assert t["teams"] == []
 
 
-def test_get_topic_by_id(admin, user, team_user_id, product):
+def test_get_topic_by_id(admin, user, rhel_product):
     data = {
         "name": "tname",
-        "product_id": product["id"],
+        "product_id": rhel_product["id"],
         "component_types": ["type1", "type2"],
+        "export_control": True,
     }
     pt = admin.post("/api/v1/topics", data=data).data
     pt_id = pt["topic"]["id"]
-
-    admin.post("/api/v1/topics/%s/teams" % pt_id, data={"team_id": team_user_id})
 
     # get by uuid
     created_ct = user.get("/api/v1/topics/%s" % pt_id)
@@ -350,18 +338,13 @@ def test_get_topic_by_id(admin, user, team_user_id, product):
     assert created_ct["topic"]["id"] == pt_id
 
 
-def test_get_topic_by_id_with_embed_teams(admin, user, rhel_81_topic, team_user_id):
-    admin.post(
-        "/api/v1/topics/%s/teams" % rhel_81_topic["id"], data={"team_id": team_user_id}
-    )
-
-    topics_admin = admin.get("/api/v1/topics/%s?embed=teams" % rhel_81_topic["id"])
+# todo(gvincent): remove me because team.topics relationship will be removed
+def test_get_topic_by_id_with_embed_teams(admin, user, rhel_80_topic):
+    topics_admin = admin.get("/api/v1/topics/%s?embed=teams" % rhel_80_topic["id"])
     assert topics_admin.status_code == 200
-    teams = topics_admin.data["topic"]["teams"]
-    assert len(teams) == 1
-    assert teams[0]["id"] == team_user_id
+    assert topics_admin.data["topic"]["teams"] == []
 
-    topics_user = user.get("/api/v1/topics/%s?embed=teams" % rhel_81_topic["id"])
+    topics_user = user.get("/api/v1/topics/%s?embed=teams" % rhel_80_topic["id"])
     assert topics_user.status_code == 200
     assert topics_user.data["topic"]["teams"] == []
 
@@ -743,6 +726,30 @@ def test_get_topic_by_id_export_control_true(
     request = user.get("/api/v1/topics/%s" % rhel_80_topic["id"])
     assert request.status_code == 200
     assert request.data["topic"]["id"] == rhel_80_topic["id"]
+
+
+def test_get_topic_by_id_export_control_false(
+    admin, user, team_user_id, rhel_product, rhel_81_topic
+):
+    request = admin.post(
+        "/api/v1/products/%s/teams" % rhel_product["id"], data={"team_id": team_user_id}
+    )
+    assert request.status_code == 201
+    assert rhel_81_topic["export_control"] is False
+    assert user.get("/api/v1/topics/%s" % rhel_81_topic["id"]).status_code == 401
+
+    team_user = admin.get("/api/v1/teams/%s" % team_user_id).data["team"]
+    assert (
+        admin.put(
+            "/api/v1/teams/%s" % team_user["id"],
+            data={"has_pre_release_access": True},
+            headers={"If-match": team_user["etag"]},
+        ).status_code
+        == 200
+    )
+    request = user.get("/api/v1/topics/%s" % rhel_81_topic["id"])
+    assert request.status_code == 200
+    assert request.data["topic"]["id"] == rhel_81_topic["id"]
 
 
 def test_get_topic_with_rolling_topic_name(admin, product):

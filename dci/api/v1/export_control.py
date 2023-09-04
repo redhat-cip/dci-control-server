@@ -33,30 +33,22 @@ def is_teams_associated_to_product(team_ids, product_id):
     return result.rowcount > 0
 
 
-def is_teams_associated_to_topic(team_ids, topic_id):
-    q_get_topic_team = sql.select([models2.JOINS_TOPICS_TEAMS]).where(
-        sql.and_(
-            models2.JOINS_TOPICS_TEAMS.c.team_id.in_(team_ids),
-            models2.JOINS_TOPICS_TEAMS.c.topic_id == topic_id,
-        )
-    )
-    result = flask.g.db_conn.execute(q_get_topic_team)
-    return result.rowcount > 0
-
-
 def has_access_to_topic(user, topic):
     """If the topic has it's export_control set to True then all the teams
     associated to the product can access to the topic's resources. If the
-    export control is False check if user's teams associated to the topic.
+    export control is False check if user's teams has pre release access.
 
     :param user:
     :param topic:
     :return: True if has_access_to_topic, False otherwise
     """
+    product = base.get_resource_orm(models2.Product, topic.product_id)
+    has_access_to_the_product = is_teams_associated_to_product(
+        user.teams_ids, product.id
+    )
     if topic.export_control is True:
-        product = base.get_resource_orm(models2.Product, topic.product_id)
-        return is_teams_associated_to_product(user.teams_ids, product.id)
-    return is_teams_associated_to_topic(user.teams_ids, topic.id)
+        return has_access_to_the_product
+    return has_access_to_the_product and user.has_pre_release_access()
 
 
 def verify_access_to_topic(user, topic):
