@@ -162,9 +162,37 @@ def create_file(client, job_id, name, content="", content_type="text/plain"):
     )
 
 
+def allow_team_to_access_product(session, team, product):
+    insert = models2.JOIN_PRODUCTS_TEAMS.insert().values(
+        product_id=product.id, team_id=team.id
+    )
+    session.execute(insert)
+
+
 def provision(session):
+    # Create RHEL product
+    rhel = models2.Product(
+        name="RHEL",
+        label="RHEL",
+        description="RHEL is a Linux distribution developed by Red Hat and targeted toward the commercial market",
+    )
+    session.add(rhel)
+    # Create OpenStack product
+    openstack = models2.Product(
+        name="OpenStack",
+        label="OPENSTACK",
+        description="OpenStack is a free and open-source software platform for cloud computing",
+    )
+    session.add(openstack)
+    # Create OpenShift product
+    openshift = models2.Product(
+        name="OpenShift",
+        label="OPENSHIFT",
+        description="OpenShift is an open source container application platform	",
+    )
+    session.add(openshift)
     # Create admin
-    admin_team = models2.Team(name="admin")
+    admin_team = models2.Team(name="admin", has_pre_release_access=True)
     admin_user = models2.User(
         name="admin",
         sso_username="admin",
@@ -233,26 +261,19 @@ def provision(session):
     epm.team.append(epm_team)
     session.add(epm)
 
-    # Create product team
-    session.add(models2.Team(name="product"))
+    # Commit to create all products, teams and users
+    session.commit()
 
-    # Create a product
-    session.add(
-        models2.Product(
-            name="Awesome product",
-            label="AWSM",
-            description="My Awesome product",
-        )
-    )
-
-    # Create a second product
-    session.add(
-        models2.Product(
-            name="Best product",
-            label="BEST",
-            description="My best product",
-        )
-    )
+    # Allow teams to access products
+    allow_team_to_access_product(session, admin_team, rhel)
+    allow_team_to_access_product(session, admin_team, openstack)
+    allow_team_to_access_product(session, admin_team, openshift)
+    allow_team_to_access_product(session, user_team, rhel)
+    allow_team_to_access_product(session, user_team, openstack)
+    allow_team_to_access_product(session, user2_team, rhel)
+    allow_team_to_access_product(session, red_hat, rhel)
+    allow_team_to_access_product(session, red_hat, openstack)
+    allow_team_to_access_product(session, red_hat, openshift)
     session.commit()
 
 

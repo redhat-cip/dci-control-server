@@ -339,24 +339,23 @@ def test_get_all_jobs_with_subresources(
 
 
 def test_get_all_jobs_with_duplicated_embed(
-    admin, remoteci_context, remoteci_user_id, components_user_ids, topic_user_id
+    remoteci_context, rhel_80_component, rhel_80_topic
 ):
-    data = {"topic_id": topic_user_id, "components": components_user_ids}
-
+    data = {"topic_id": rhel_80_topic["id"], "components": [rhel_80_component["id"]]}
     remoteci_context.post("/api/v1/jobs", data=data)
     query_embed = "/api/v1/jobs?embed=" "topic,components," "files,topic,team,remoteci"
     jobs = remoteci_context.get(query_embed).data
     assert len(jobs["jobs"]) == 1
-    assert len(jobs["jobs"][0]["components"]) == 3
+    assert len(jobs["jobs"][0]["components"]) == 1
     assert "topic" in jobs["jobs"][0]
     assert "remoteci" in jobs["jobs"][0]
 
 
 def test_get_all_jobs_with_embed_and_limit(
-    remoteci_context, components_user_ids, team_user_id, topic_user_id
+    remoteci_context, rhel_80_topic, rhel_80_component
 ):
     # create 2 jobs and check meta data count
-    data = {"components": components_user_ids, "topic_id": topic_user_id}
+    data = {"topic_id": rhel_80_topic["id"], "components": [rhel_80_component["id"]]}
     remoteci_context.post("/api/v1/jobs", data=data)
     remoteci_context.post("/api/v1/jobs", data=data)
 
@@ -365,7 +364,7 @@ def test_get_all_jobs_with_embed_and_limit(
     jobs = remoteci_context.get(query_embed).data
 
     assert len(jobs["jobs"]) == 1
-    assert len(jobs["jobs"][0]["components"]) == 3
+    assert len(jobs["jobs"][0]["components"]) == 1
 
 
 def test_update_job(admin, job_user_id):

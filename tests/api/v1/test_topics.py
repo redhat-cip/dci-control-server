@@ -350,12 +350,18 @@ def test_get_topic_by_id(admin, user, team_user_id, product):
     assert created_ct["topic"]["id"] == pt_id
 
 
-def test_get_topic_by_id_with_embed_teams(admin, user, topic_user_id):
-    topics_admin = admin.get("/api/v1/topics/%s?embed=teams" % topic_user_id)
-    assert topics_admin.status_code == 200
-    assert len(topics_admin.data["topic"]["teams"]) > 0
+def test_get_topic_by_id_with_embed_teams(admin, user, rhel_81_topic, team_user_id):
+    admin.post(
+        "/api/v1/topics/%s/teams" % rhel_81_topic["id"], data={"team_id": team_user_id}
+    )
 
-    topics_user = user.get("/api/v1/topics/%s?embed=teams" % topic_user_id)
+    topics_admin = admin.get("/api/v1/topics/%s?embed=teams" % rhel_81_topic["id"])
+    assert topics_admin.status_code == 200
+    teams = topics_admin.data["topic"]["teams"]
+    assert len(teams) == 1
+    assert teams[0]["id"] == team_user_id
+
+    topics_user = user.get("/api/v1/topics/%s?embed=teams" % rhel_81_topic["id"])
     assert topics_user.status_code == 200
     assert topics_user.data["topic"]["teams"] == []
 
@@ -491,7 +497,7 @@ def test_put_topics(admin, topic_id, product):
     gt = admin.get("/api/v1/topics/%s?embed=next_topic" % pt.data["topic"]["id"])
     assert gt.status_code == 200
     assert gt.data["topic"]["name"] == "nname"
-    assert gt.data["topic"]["next_topic"]["name"] == "topic_name"
+    assert gt.data["topic"]["next_topic"]["name"] == "RHEL-8.0"
     assert gt.data["topic"]["next_topic"]["id"] == topic_id
 
 
@@ -654,7 +660,7 @@ def test_component_success_update_field_by_field(admin, topic_id):
 
     t = admin.get("/api/v1/topics/%s" % topic_id).data["topic"]
 
-    assert t["name"] == "topic_name"
+    assert t["name"] == "RHEL-8.0"
     assert t["state"] == "inactive"
 
     admin.put(
@@ -684,20 +690,20 @@ def test_success_get_topics_embed(admin, topic_id, product):
     assert result.data["topics"][0]["product"]["id"]
 
 
-def test_add_multiple_topic_and_get(admin, user, product, product2):
-    # create a topic from product
+def test_add_multiple_topic_and_get(admin, rhel_product, openstack_product):
+    # create a topic for rhel
     data = {
         "name": "tname",
-        "product_id": product["id"],
+        "product_id": rhel_product["id"],
         "component_types": ["type1", "type2"],
     }
     pt = admin.post("/api/v1/topics", data=data).data
     pt_id = pt["topic"]["id"]
 
-    # create a topic from product2
+    # create a topic for openstack
     data2 = {
         "name": "tname2",
-        "product_id": product2["id"],
+        "product_id": openstack_product["id"],
         "component_types": ["type1", "type2"],
     }
     pt2 = admin.post("/api/v1/topics", data=data2).data
@@ -728,15 +734,15 @@ def test_add_multiple_topic_and_get(admin, user, product, product2):
 
 
 def test_get_topic_by_id_export_control_true(
-    admin, user, team_user_id, RHELProduct, RHEL80Topic
+    admin, user, team_user_id, rhel_product, rhel_80_topic
 ):
     request = admin.post(
-        "/api/v1/products/%s/teams" % RHELProduct["id"], data={"team_id": team_user_id}
+        "/api/v1/products/%s/teams" % rhel_product["id"], data={"team_id": team_user_id}
     )
     assert request.status_code == 201
-    request = user.get("/api/v1/topics/%s" % RHEL80Topic["id"])
+    request = user.get("/api/v1/topics/%s" % rhel_80_topic["id"])
     assert request.status_code == 200
-    assert request.data["topic"]["id"] == RHEL80Topic["id"]
+    assert request.data["topic"]["id"] == rhel_80_topic["id"]
 
 
 def test_get_topic_with_rolling_topic_name(admin, product):

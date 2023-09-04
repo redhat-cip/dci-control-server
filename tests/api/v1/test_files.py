@@ -79,7 +79,7 @@ def test_create_task_file_update_job_duration(m_datetime_j, user, job_user):
 
 @mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_upload_tests_with_regressions_successfix(
-    mocked_disp, admin, remoteci_context, topic
+    mocked_disp, admin, remoteci_context, rhel_80_topic, rhel_80_component
 ):
     headers = {
         "User-Agent": "python-dciclient",
@@ -87,7 +87,10 @@ def test_upload_tests_with_regressions_successfix(
     }
 
     # 1. schedule two jobs and create their files
-    data = {"topic_id": topic["id"]}
+    data = {
+        "topic_id": rhel_80_topic["id"],
+        "components_ids": [rhel_80_component["id"]],
+    }
     job_1 = remoteci_context.post(
         "/api/v1/jobs/schedule", headers=headers, data=data
     ).data["job"]

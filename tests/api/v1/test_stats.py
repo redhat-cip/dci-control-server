@@ -17,7 +17,7 @@ import mock
 
 
 @mock.patch("dci.api.v1.notifications.job_dispatcher")
-def test_get_stats(n, admin, job_admin, user, job_user, topic_user_id, product):
+def test_get_stats(n, admin, job_admin, user, job_user, rhel_80_topic, product):
     admin.post(
         "/api/v1/jobstates", data={"job_id": job_admin["id"], "status": "failure"}
     )
@@ -44,7 +44,7 @@ def test_get_stats(n, admin, job_admin, user, job_user, topic_user_id, product):
                     "team_name": "admin",
                 },
             ],
-            "topic": {"id": topic_user_id, "name": "topic_user_name"},
+            "topic": {"id": rhel_80_topic["id"], "name": "RHEL-8.0"},
         }
     ]
     assert user.get("/api/v1/stats").data["stats"] == [
@@ -62,6 +62,6 @@ def test_get_stats(n, admin, job_admin, user, job_user, topic_user_id, product):
                     "team_name": "user",
                 }
             ],
-            "topic": {"id": topic_user_id, "name": "topic_user_name"},
+            "topic": {"id": rhel_80_topic["id"], "name": "RHEL-8.0"},
         }
     ]

@@ -22,55 +22,59 @@ from dci.stores.s3 import S3
 
 AWSS3 = "dci.stores.s3.S3"
 
-# team_user_id is subscribing to topic_user_id
 
-
-def test_topics_export_control_true(user, epm, team_user_id, topic_user_id):
-    topic = epm.get("/api/v1/topics/%s" % topic_user_id).data["topic"]
-    res = epm.post(
-        "/api/v1/products/%s/teams" % topic["product_id"],
-        data={"team_id": team_user_id},
+def test_topics_export_control_true(user, epm, rhel_81_topic):
+    assert (
+        user.get("/api/v1/topics/%s/components" % rhel_81_topic["id"]).status_code
+        == 401
     )
-    assert res.status_code == 201
+
+    topic = epm.get("/api/v1/topics/%s" % rhel_81_topic["id"]).data["topic"]
+    assert topic["export_control"] is False
 
     epm.put(
-        "/api/v1/topics/%s" % topic_user_id,
+        "/api/v1/topics/%s" % rhel_81_topic["id"],
         data={"export_control": True},
-        headers={"If-match": topic["etag"]},
+        headers={"If-match": rhel_81_topic["etag"]},
     )
-    topic = epm.get("/api/v1/topics/%s" % topic_user_id).data["topic"]
-    assert topic["export_control"] is True
+
+    topic = epm.get("/api/v1/topics/%s" % rhel_81_topic["id"]).data["topic"]
+    assert topic["export_control"]
     # team_user_id is associated to the product and the topic is exported
     # then it should have access to the topic's components
-    assert user.get("/api/v1/topics/%s/components" % topic_user_id).status_code == 200
-
-
-def test_topics_export_control_false(user, admin, team_user_id, topic_user_id):
-    topic = admin.get("/api/v1/topics/%s" % topic_user_id).data["topic"]
-
-    assert topic["export_control"] is False
-    assert user.get("/api/v1/topics/%s/components" % topic_user_id).status_code == 200
-
-    # team_user_id is no associated to the product nor to the topic
-    admin.delete("/api/v1/topics/%s/teams/%s" % (topic_user_id, team_user_id))
-    assert user.get("/api/v1/topics/%s/components" % topic_user_id).status_code == 401
-
-
-def test_components_export_control_true(
-    user, epm, team_user_id, topic_user_id, components_user_ids
-):
-    topic = epm.get("/api/v1/topics/%s" % topic_user_id).data["topic"]
-    res = epm.post(
-        "/api/v1/products/%s/teams" % topic["product_id"],
-        data={"team_id": team_user_id},
+    assert (
+        user.get("/api/v1/topics/%s/components" % rhel_81_topic["id"]).status_code
+        == 200
     )
-    assert res.status_code == 201
+
+
+def test_topics_export_control_false(user, epm, rhel_80_topic):
+    assert (
+        user.get("/api/v1/topics/%s/components" % rhel_80_topic["id"]).status_code
+        == 200
+    )
+
+    topic = epm.get("/api/v1/topics/%s" % rhel_80_topic["id"]).data["topic"]
+    assert topic["export_control"]
+
     epm.put(
-        "/api/v1/topics/%s" % topic_user_id,
-        data={"export_control": True},
-        headers={"If-match": topic["etag"]},
+        "/api/v1/topics/%s" % rhel_80_topic["id"],
+        data={"export_control": False},
+        headers={"If-match": rhel_80_topic["etag"]},
     )
-    topic = epm.get("/api/v1/topics/%s" % topic_user_id).data["topic"]
+
+    topic = epm.get("/api/v1/topics/%s" % rhel_80_topic["id"]).data["topic"]
+    assert topic["export_control"] is False
+    # team_user_id is associated to the product and the topic is not exported anymore
+    # then user should lose the access to the topic's components
+    assert (
+        user.get("/api/v1/topics/%s/components" % rhel_80_topic["id"]).status_code
+        == 401
+    )
+
+
+def test_components_export_control_true(user, epm, rhel_80_topic, rhel_80_component):
+    topic = epm.get("/api/v1/topics/%s" % rhel_80_topic["id"]).data["topic"]
     assert topic["export_control"] is True
 
     with mock.patch(AWSS3, spec=S3) as mock_s3:
@@ -84,44 +88,40 @@ def test_components_export_control_true(
         mockito.head.return_value = head_result
         mock_s3.return_value = mockito
 
-        url = "/api/v1/components/%s/files" % components_user_ids[0]
+        url = "/api/v1/components/%s/files" % rhel_80_component["id"]
         c_file = epm.post(url, data="lol")
         c_file_1_id = c_file.data["component_file"]["id"]
         # team_user_id is not subscribing to topic_user_id but it's
         # associated to the product thus it can access the topic's components
         assert (
-            user.get("/api/v1/components/%s" % components_user_ids[0]).status_code
-            == 200
-        )
-        assert (
-            user.get("/api/v1/components/%s/files" % components_user_ids[0]).status_code
+            user.get("/api/v1/components/%s" % rhel_80_component["id"]).status_code
             == 200
         )
         assert (
             user.get(
-                "/api/v1/components/%s/files/%s" % (components_user_ids[0], c_file_1_id)
+                "/api/v1/components/%s/files" % rhel_80_component["id"]
+            ).status_code
+            == 200
+        )
+        assert (
+            user.get(
+                "/api/v1/components/%s/files/%s"
+                % (rhel_80_component["id"], c_file_1_id)
             ).status_code
             == 200
         )
         assert (
             user.get(
                 "/api/v1/components/%s/files/%s/content"
-                % (components_user_ids[0], c_file_1_id)
+                % (rhel_80_component["id"], c_file_1_id)
             ).status_code
             == 200
         )
 
 
 def test_components_export_control_false(
-    user, epm, team_user_id, topic_user_id, components_user_ids
+    user, epm, rhel_81_component, team_user_id, rhel_81_topic
 ):
-    topic = epm.get("/api/v1/topics/%s" % topic_user_id).data["topic"]
-    res = epm.post(
-        "/api/v1/products/%s/teams" % topic["product_id"],
-        data={"team_id": team_user_id},
-    )
-    assert res.status_code == 201
-
     with mock.patch(AWSS3, spec=S3) as mock_s3:
         mockito = mock.MagicMock()
         mockito.get.return_value = ["test", six.StringIO("lollollel")]
@@ -133,54 +133,65 @@ def test_components_export_control_false(
         mockito.head.return_value = head_result
         mock_s3.return_value = mockito
 
-        url = "/api/v1/components/%s/files" % components_user_ids[0]
+        url = "/api/v1/components/%s/files" % rhel_81_component["id"]
         c_file = epm.post(url, data="lol")
         c_file_1_id = c_file.data["component_file"]["id"]
 
-        assert topic["export_control"] is False
-        assert (
-            user.get("/api/v1/components/%s" % components_user_ids[0]).status_code
-            == 200
-        )
-        assert (
-            user.get("/api/v1/components/%s/files" % components_user_ids[0]).status_code
-            == 200
-        )
-        assert (
-            user.get(
-                "/api/v1/components/%s/files/%s" % (components_user_ids[0], c_file_1_id)
-            ).status_code
-            == 200
-        )
-        assert (
-            user.get(
-                "/api/v1/components/%s/files/%s/content"
-                % (components_user_ids[0], c_file_1_id)
-            ).status_code
-            == 200
-        )
-
         # team_user_id is associated to the product but not to the topic,
         # since the topic is not exported the user doesn't have the access
-        epm.delete("/api/v1/topics/%s/teams/%s" % (topic_user_id, team_user_id))
         assert (
-            user.get("/api/v1/components/%s" % components_user_ids[0]).status_code
-            == 401
-        )
-        assert (
-            user.get("/api/v1/components/%s/files" % components_user_ids[0]).status_code
+            user.get("/api/v1/components/%s" % rhel_81_component["id"]).status_code
             == 401
         )
         assert (
             user.get(
-                "/api/v1/components/%s/files/%s" % (components_user_ids[0], c_file_1_id)
+                "/api/v1/components/%s/files" % rhel_81_component["id"]
+            ).status_code
+            == 401
+        )
+        assert (
+            user.get(
+                "/api/v1/components/%s/files/%s"
+                % (rhel_81_component["id"], c_file_1_id)
             ).status_code
             == 401
         )
         assert (
             user.get(
                 "/api/v1/components/%s/files/%s/content"
-                % (components_user_ids[0], c_file_1_id)
+                % (rhel_81_component["id"], c_file_1_id)
             ).status_code
             == 401
+        )
+
+        # explicitly allow team to download rhel_81_component
+        epm.post(
+            "/api/v1/topics/%s/teams" % rhel_81_topic["id"],
+            data={"team_id": team_user_id},
+        )
+
+        # team_user_id is now associated with the topic
+        assert (
+            user.get("/api/v1/components/%s" % rhel_81_component["id"]).status_code
+            == 200
+        )
+        assert (
+            user.get(
+                "/api/v1/components/%s/files" % rhel_81_component["id"]
+            ).status_code
+            == 200
+        )
+        assert (
+            user.get(
+                "/api/v1/components/%s/files/%s"
+                % (rhel_81_component["id"], c_file_1_id)
+            ).status_code
+            == 200
+        )
+        assert (
+            user.get(
+                "/api/v1/components/%s/files/%s/content"
+                % (rhel_81_component["id"], c_file_1_id)
+            ).status_code
+            == 200
         )

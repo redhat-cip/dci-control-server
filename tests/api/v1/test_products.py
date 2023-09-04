@@ -19,9 +19,9 @@ from __future__ import unicode_literals
 
 def test_success_create_product(admin):
     data = {
-        "name": "OpenStack",
-        "label": "OPENSTACK",
-        "description": "Red Hat OpenStack Platform",
+        "name": "New product",
+        "label": "NEW_PRODUCT",
+        "description": "New product description",
     }
 
     result = admin.post("/api/v1/products", data=data)
@@ -34,9 +34,9 @@ def test_success_create_product(admin):
 
 def test_fail_create_permission_user(user):
     data = {
-        "name": "OpenStack",
-        "label": "OPENSTACK",
-        "description": "Red Hat OpenStack Platform",
+        "name": "New product",
+        "label": "NEW_PRODUCT",
+        "description": "New product description",
     }
 
     result = user.post("/api/v1/products", data=data)
@@ -56,9 +56,9 @@ def test_fail_ensure_payload_content_is_checked(admin):
 
 def test_fail_create_product_already_exists(admin):
     data = {
-        "name": "OpenStack",
-        "label": "OPENSTACK",
-        "description": "Red Hat OpenStack Platform",
+        "name": "New product",
+        "label": "NEW_PRODUCT",
+        "description": "New product description",
     }
 
     result = admin.post("/api/v1/products", data=data)
@@ -67,21 +67,24 @@ def test_fail_create_product_already_exists(admin):
     assert result.status_code == 409
 
 
-def test_success_update_product(admin, product_openstack):
-    product_id = product_openstack["id"]
+def test_success_update_product(admin, openstack_product):
+    product_id = openstack_product["id"]
 
     url = "/api/v1/products/%s" % product_id
-    assert product_openstack["name"] == "OpenStack"
+    assert openstack_product["name"] == "OpenStack"
 
     result = admin.put(
         url,
         data={"name": "New OpenStack", "label": "new-label"},
-        headers={"If-match": product_openstack["etag"]},
+        headers={"If-match": openstack_product["etag"]},
     )
     assert result.status_code == 200
     assert result.data["product"]["name"] == "New OpenStack"
     assert result.data["product"]["label"] == "NEW-LABEL"
-    assert result.data["product"]["description"] == "Red Hat OpenStack Platform"
+    assert (
+        result.data["product"]["description"]
+        == "OpenStack is a free and open-source software platform for cloud computing"
+    )
 
     result = admin.put(
         url,
@@ -93,30 +96,33 @@ def test_success_update_product(admin, product_openstack):
     assert result.data["product"]["description"] == "new product"
 
 
-def test_success_get_all_products_admin(admin, product, product_openstack):
+def test_success_get_all_products_admin(
+    admin,
+):
     result = admin.get("/api/v1/products")
 
     assert result.status_code == 200
 
     products = [r["label"] for r in result.data["products"]]
-    assert ["AWSM", "BEST", "OPENSTACK"] == sorted(products)
+    assert ["OPENSHIFT", "OPENSTACK", "RHEL"] == sorted(products)
 
 
-def test_success_get_all_products_user(admin, user, product, product2, team_user_id):
+def test_success_get_all_products_user(admin, user, openshift_product, team_user_id):
     result = user.get("/api/v1/products")
     assert result.status_code == 200
     products = [r["label"] for r in result.data["products"]]
-    assert [] == sorted(products)
+    assert ["OPENSTACK", "RHEL"] == sorted(products)
 
     respos = admin.post(
-        "/api/v1/products/%s/teams" % product["id"], data={"team_id": team_user_id}
+        "/api/v1/products/%s/teams" % openshift_product["id"],
+        data={"team_id": team_user_id},
     )
     assert respos.status_code == 201
 
     result = user.get("/api/v1/products")
     assert result.status_code == 200
     products = [r["label"] for r in result.data["products"]]
-    assert [product["label"]] == sorted(products)
+    assert ["OPENSHIFT", "OPENSTACK", "RHEL"] == sorted(products)
 
 
 def test_success_delete_product_admin(admin, product):
@@ -144,29 +150,30 @@ def test_fail_delete_product_user(user, product):
     assert result.status_code == 401
 
 
-def test_success_get_products_embed(admin, user, team_user_id, product):
-    result = admin.get("/api/v1/products/%s?embed=topics" % product["id"])
+def test_success_get_products_embed(admin, user, team_user_id, openshift_product):
+    result = admin.get("/api/v1/products/%s?embed=topics" % openshift_product["id"])
 
     assert result.status_code == 200
     assert "topics" in result.data["product"].keys()
 
-    result = user.get("/api/v1/products/%s?embed=topics" % product["id"])
+    result = user.get("/api/v1/products/%s?embed=topics" % openshift_product["id"])
     assert result.status_code == 404
     result = admin.post(
-        "api/v1/products/%s/teams" % product["id"], data={"team_id": team_user_id}
+        "api/v1/products/%s/teams" % openshift_product["id"],
+        data={"team_id": team_user_id},
     )
     assert result.status_code == 201
 
-    result = user.get("/api/v1/products/%s?embed=topics" % product["id"])
+    result = user.get("/api/v1/products/%s?embed=topics" % openshift_product["id"])
     assert result.status_code == 200
     assert "topics" in result.data["product"].keys()
 
 
-def test_success_get_only_po_product(admin, epm, product_openstack):
+def test_success_get_only_po_product(admin, epm, openstack_product):
     products_admin = admin.get("/api/v1/products").data
     assert len(products_admin["products"]) == 3
     products = [p["label"] for p in products_admin["products"]]
-    assert ["AWSM", "BEST", product_openstack["label"]] == sorted(products)
+    assert ["OPENSHIFT", "OPENSTACK", "RHEL"] == sorted(products)
 
     products_po = epm.get("/api/v1/products").data
     assert len(products_po["products"]) == 3
@@ -199,11 +206,11 @@ def add_get_delete_team_to_product(caller, product, team_user_id):
     assert team_user_id not in teams_ids
 
 
-def test_add_get_delete_team_to_product(admin, epm, product, team_user_id):
+def test_add_get_delete_team_to_product(admin, epm, openshift_product, team_user_id):
     # as admin
-    add_get_delete_team_to_product(admin, product, team_user_id)
+    add_get_delete_team_to_product(admin, openshift_product, team_user_id)
     # as product owner
-    add_get_delete_team_to_product(epm, product, team_user_id)
+    add_get_delete_team_to_product(epm, openshift_product, team_user_id)
 
 
 def test_add_get_delete_team_to_product_as_user(user, product, team_user_id):

@@ -212,7 +212,7 @@ def test_umb_notification_has_testcases(mocked_disp, user, job_user, cki_test_fi
     assert job["id"] == job_user["id"]
     assert job["status"] == "success"
     components = job["components"]
-    assert len(components) == 3
+    assert len(components) == 1
     assert components[0]["tags"] == []
     assert len(job["results"]) == 1
     result = job["results"][0]

@@ -31,7 +31,7 @@ def test_create_and_get_pipeline(user, team_user_id):
 
 
 def test_jobs_schedule_with_pipeline(
-    remoteci_context, user, team_user_id, topic_user_id
+    remoteci_context, user, team_user_id, rhel_80_topic, rhel_80_component
 ):
     pipeline = user.post(
         "/api/v1/pipelines",
@@ -40,7 +40,7 @@ def test_jobs_schedule_with_pipeline(
     pipeline_id = pipeline.data["pipeline"]["id"]
     job_1 = remoteci_context.post(
         "/api/v1/jobs/schedule",
-        data={"pipeline_id": pipeline_id, "topic_id": topic_user_id},
+        data={"pipeline_id": pipeline_id, "topic_id": rhel_80_topic["id"]},
     )
     assert job_1.status_code == 201
     assert job_1.data["job"]["pipeline_id"] == pipeline_id
@@ -48,7 +48,7 @@ def test_jobs_schedule_with_pipeline(
 
     job_2 = remoteci_context.post(
         "/api/v1/jobs/schedule",
-        data={"pipeline_id": pipeline_id, "topic_id": topic_user_id},
+        data={"pipeline_id": pipeline_id, "topic_id": rhel_80_topic["id"]},
     )
     assert job_2.status_code == 201
     assert job_2.data["job"]["pipeline_id"] == pipeline_id
@@ -182,7 +182,7 @@ def test_get_pipeline_not_authorized(
 
 
 def test_jobs_from_pipeline_not_authorized(
-    remoteci_context, user, team_user_id, topic_user_id, user2
+    remoteci_context, user, team_user_id, rhel_80_topic, rhel_80_component, user2
 ):
     pipeline = user.post(
         "/api/v1/pipelines",
@@ -191,7 +191,7 @@ def test_jobs_from_pipeline_not_authorized(
     pipeline_id = pipeline.data["pipeline"]["id"]
     job = remoteci_context.post(
         "/api/v1/jobs/schedule",
-        data={"pipeline_id": pipeline_id, "topic_id": topic_user_id},
+        data={"pipeline_id": pipeline_id, "topic_id": rhel_80_topic["id"]},
     )
     assert job.status_code == 201
     get_pipeline = user2.get("/api/v1/pipelines/%s/jobs" % pipeline_id)

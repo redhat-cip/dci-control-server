@@ -26,8 +26,6 @@ import pytest
 import sqlalchemy_utils.functions
 from sqlalchemy.orm import sessionmaker
 
-import uuid
-
 
 @pytest.fixture(scope="session")
 def engine(request):
@@ -164,52 +162,16 @@ def epm_id(epm):
     return epm.get("/api/v1/users/me").data["user"]["id"]
 
 
+# Todo(gvincent): remove me. Don't use me, use rhel_80_topic fixture instead
 @pytest.fixture
-def topic_id(admin, team_id, product):
-    data = {
-        "name": "topic_name",
-        "product_id": product["id"],
-        "component_types": ["type_1", "type_2", "type_3"],
-    }
-    topic = admin.post("/api/v1/topics", data=data).data
-    t_id = topic["topic"]["id"]
-    admin.post("/api/v1/topics/%s/teams" % t_id, data={"team_id": team_id})
-    return str(t_id)
+def topic_id(rhel_80_topic):
+    return str(rhel_80_topic["id"])
 
 
+# Todo(gvincent): remove me. Don't use me, use rhel_80_topic fixture instead
 @pytest.fixture
-def topic(admin, team_user_id, product):
-    topic = admin.post(
-        "/api/v1/topics",
-        data={
-            "name": "OSP12",
-            "product_id": product["id"],
-            "component_types": ["puddle_osp"],
-        },
-    ).data["topic"]
-    admin.post(
-        "/api/v1/components",
-        data={
-            "topic_id": topic["id"],
-            "name": "RH7-RHOS-12.0 2017-11-09.2",
-            "type": "puddle_osp",
-        },
-    )
-    admin.post("/api/v1/topics/%s/teams" % topic["id"], data={"team_id": team_user_id})
-    return topic
-
-
-@pytest.fixture
-def team_id(admin, team_user_id):
-    team = admin.post("/api/v1/teams", data={"name": "pname"})
-    return str(team.data["team"]["id"])
-
-
-@pytest.fixture
-def team_product_id(admin):
-    team = admin.get("/api/v1/teams?where=name:product")
-    team = admin.get("/api/v1/teams/%s" % team.data["teams"][0]["id"]).data
-    return str(team["team"]["id"])
+def topic(rhel_80_topic):
+    return rhel_80_topic
 
 
 @pytest.fixture
@@ -222,6 +184,12 @@ def team_user_id(admin):
 def team_user_id2(admin):
     team = admin.get("/api/v1/teams?where=name:user2").data["teams"][0]
     return str(team["id"])
+
+
+# Todo(gvincent): remove me. Don't use me, use team_user_id2 fixture instead
+@pytest.fixture
+def team_id(team_user_id2):
+    return team_user_id2
 
 
 @pytest.fixture
@@ -242,22 +210,10 @@ def team_epm_id(admin):
     return str(team["id"])
 
 
+# Todo(gvincent): remove me. Don't use me, use rhel_80_topic fixture instead
 @pytest.fixture
-def topic_user(admin, user, team_user_id, team_user_id2, product):
-    data = {
-        "name": "topic_user_name",
-        "product_id": product["id"],
-        "component_types": ["type_1", "type_2", "type_3"],
-    }
-    topic = admin.post("/api/v1/topics", data=data).data["topic"]
-    admin.post("/api/v1/topics/%s/teams" % topic["id"], data={"team_id": team_user_id})
-    admin.post("/api/v1/topics/%s/teams" % topic["id"], data={"team_id": team_user_id2})
-    for i in range(1, 4):
-        admin.post(
-            "/api/v1/components",
-            data={"topic_id": topic["id"], "name": "comp%s" % i, "type": "type_%s" % i},
-        )
-    return topic
+def topic_user(rhel_80_topic):
+    return rhel_80_topic
 
 
 @pytest.fixture
@@ -279,7 +235,7 @@ def remoteci_user_api_secret(user, remoteci_user_id):
 
 
 @pytest.fixture
-def remoteci_user(user, admin, team_user_id, topic_user_id):
+def remoteci_user(user, team_user_id):
     data = {"name": "user remoteci", "team_id": team_user_id}
     remoteci = user.post("/api/v1/remotecis", data=data).data
 
@@ -355,43 +311,34 @@ def feeder_context(app, feeder_id, feeder_api_secret):
     return utils.generate_token_based_client(app, feeder)
 
 
-def create_components(user, topic_id, component_types):
-    component_ids = []
-    for ct in component_types:
-        data = {"topic_id": topic_id, "name": "name-" + str(uuid.uuid4()), "type": ct}
-        cmpt = user.post("/api/v1/components", data=data).data
-        component_ids.append(str(cmpt["component"]["id"]))
-    return component_ids
+# Todo(gvincent): remove me. Don't use me, use array of explicit components ids
+@pytest.fixture
+def components_ids(rhel_80_component):
+    return [rhel_80_component["id"]]
+
+
+# Todo(gvincent): remove me. Don't use me, use array of explicit components ids
+@pytest.fixture
+def components_user_ids(components_ids):
+    return components_ids
 
 
 @pytest.fixture
-def components_ids(admin, topic_id):
-    component_types = ["type_1", "type_2", "type_3"]
-    return create_components(admin, topic_id, component_types)
-
-
-@pytest.fixture
-def components_user_ids(admin, topic_user_id):
-    component_types = ["type_1", "type_2", "type_3"]
-    return create_components(admin, topic_user_id, component_types)
-
-
-@pytest.fixture
-def job_admin(
-    admin, admin_remoteci_context, components_user_ids, topic_user_id, team_admin_id
-):
-    admin.post(
-        "/api/v1/topics/%s/teams" % topic_user_id, data={"team_id": team_admin_id}
-    )
-    data = {"components_ids": components_user_ids, "topic_id": topic_user_id}
+def job_admin(admin_remoteci_context, rhel_80_topic, rhel_80_component):
+    data = {
+        "components_ids": [rhel_80_component["id"]],
+        "topic_id": rhel_80_topic["id"],
+    }
     return admin_remoteci_context.post("/api/v1/jobs/schedule", data=data).data["job"]
 
 
 @pytest.fixture
-def job_user(remoteci_context, components_user_ids, topic_user_id):
-    data = {"components_ids": components_user_ids, "topic_id": topic_user_id}
-    job = remoteci_context.post("/api/v1/jobs/schedule", data=data).data
-    return job["job"]
+def job_user(remoteci_context, rhel_80_topic, rhel_80_component):
+    data = {
+        "components_ids": [rhel_80_component["id"]],
+        "topic_id": rhel_80_topic["id"],
+    }
+    return remoteci_context.post("/api/v1/jobs/schedule", data=data).data["job"]
 
 
 @pytest.fixture
@@ -425,33 +372,18 @@ def file_job_user_id(user, job_user_id, team_user_id):
 
 
 @pytest.fixture
-def feeder(admin, team_product_id):
+def feeder(admin, team_admin_id):
     data = {
         "name": "random-name-feeder",
-        "team_id": team_product_id,
+        "team_id": team_admin_id,
     }
-    feeder = admin.post("/api/v1/feeders", data=data).data
-    return feeder["feeder"]
+    return admin.post("/api/v1/feeders", data=data).data["feeder"]
 
 
+# Todo(gvincent): remove me. Don't use me, use rhel_product fixture instead
 @pytest.fixture
-def product_openstack(admin):
-    data = {
-        "name": "OpenStack",
-        "label": "OPENSTACK",
-        "description": "Red Hat OpenStack Platform",
-    }
-    return admin.post("/api/v1/products", data=data).data["product"]
-
-
-@pytest.fixture
-def product(admin):
-    return admin.get("/api/v1/products?where=label:AWSM").data["products"][0]
-
-
-@pytest.fixture
-def product2(admin):
-    return admin.get("/api/v1/products?where=label:BEST").data["products"][0]
+def product(rhel_product):
+    return rhel_product
 
 
 @pytest.fixture
@@ -465,51 +397,91 @@ def access_token_rh_employee():
 
 
 @pytest.fixture
-def RHELProduct(admin):
-    data = {"name": "RHEL", "label": "RHEL", "description": "Red Hat Entreprise Linux"}
-    return admin.post("/api/v1/products", data=data).data["product"]
+def rhel_product(admin):
+    return admin.get("/api/v1/products?where=label:RHEL").data["products"][0]
 
 
 @pytest.fixture
-def RHEL80Topic(admin, RHELProduct):
+def rhel_80_topic(admin, rhel_product):
     data = {
         "name": "RHEL-8.0",
-        "product_id": RHELProduct["id"],
-        "component_types": ["Compose"],
+        "product_id": rhel_product["id"],
+        "component_types": ["compose"],
         "export_control": True,
     }
     return admin.post("/api/v1/topics", data=data).data["topic"]
 
 
 @pytest.fixture
-def RHEL80Component(admin, RHEL80Topic):
+def rhel_80_component(admin, rhel_80_topic):
     data = {
-        "topic_id": RHEL80Topic["id"],
+        "topic_id": rhel_80_topic["id"],
         "name": "RHEL-8.0.0-20190926.n.0",
-        "type": "Compose",
+        "type": "compose",
     }
     return admin.post("/api/v1/components", data=data).data["component"]
 
 
 @pytest.fixture
-def RHEL81Topic(admin, RHELProduct):
+def rhel_81_topic(admin, rhel_product):
     data = {
         "name": "RHEL-8.1",
-        "product_id": RHELProduct["id"],
-        "component_types": ["Compose"],
+        "product_id": rhel_product["id"],
+        "component_types": ["compose"],
         "export_control": False,
     }
     return admin.post("/api/v1/topics", data=data).data["topic"]
 
 
 @pytest.fixture
-def RHEL81Component(admin, RHEL81Topic):
+def rhel_81_component(admin, rhel_81_topic):
     data = {
-        "topic_id": RHEL81Topic["id"],
+        "topic_id": rhel_81_topic["id"],
         "name": "RHEL-8.1.0-20190926.n.0",
-        "type": "Compose",
+        "type": "compose",
     }
     return admin.post("/api/v1/components", data=data).data["component"]
+
+
+@pytest.fixture
+def openstack_product(admin):
+    return admin.get("/api/v1/products?where=label:OPENSTACK").data["products"][0]
+
+
+@pytest.fixture
+def openstack_171_topic(admin, openstack_product):
+    data = {
+        "name": "OSP17.1",
+        "product_id": openstack_product["id"],
+        "component_types": ["compose"],
+        "export_control": False,
+    }
+    return admin.post("/api/v1/topics", data=data).data["topic"]
+
+
+@pytest.fixture
+def openstack_171_component(admin, openstack_171_topic):
+    data = {
+        "topic_id": openstack_171_topic["id"],
+        "name": "RHOS-17.1-RHEL-9-20230831.n.1",
+        "type": "compose",
+    }
+    return admin.post("/api/v1/components", data=data).data["component"]
+
+
+@pytest.fixture
+def openshift_product(admin):
+    return admin.get("/api/v1/products?where=label:OPENSHIFT").data["products"][0]
+
+
+@pytest.fixture
+def openshift_410_topic(admin, openshift_product):
+    data = {
+        "name": "OCP-4.10",
+        "product_id": openshift_product["id"],
+        "component_types": ["ocp"],
+    }
+    return admin.post("/api/v1/topics", data=data).data["topic"]
 
 
 @pytest.fixture
@@ -524,23 +496,3 @@ def cki_test_file(user, job_user):
     data = open("tests/data/cki-results.xml").read()
     r = user.post("/api/v1/files", headers=headers, data=data)
     return r.data["file"]
-
-
-@pytest.fixture
-def openshift(admin):
-    data = {
-        "name": "OpenShift",
-        "label": "OPENSHIFT",
-        "description": "OpenShift is an open source container application platform	",
-    }
-    return admin.post("/api/v1/products", data=data).data["product"]
-
-
-@pytest.fixture
-def openshift_410(admin, openshift):
-    data = {
-        "name": "OCP-4.10",
-        "product_id": openshift["id"],
-        "component_types": ["ocp"],
-    }
-    return admin.post("/api/v1/topics", data=data).data["topic"]

@@ -474,12 +474,12 @@ def test_get_all_components(admin, topic_id):
     assert db_all_cs_ids == created_c_ids
 
 
-def test_get_all_components_not_in_topic(admin, user, product_openstack):
+def test_get_all_components_not_in_topic(admin, user, openstack_product):
     topic = admin.post(
         "/api/v1/topics",
         data={
             "name": "topic_test",
-            "product_id": product_openstack["id"],
+            "product_id": openstack_product["id"],
             "component_types": ["type1", "type2"],
         },
     ).data
@@ -1323,87 +1323,74 @@ def test_get_component_file_from_s3_user_team_in_RHEL_export_control_true(
     admin,
     remoteci_context,
     remoteci_user,
-    RHELProduct,
-    RHEL80Component,
+    rhel_product,
+    rhel_80_component,
 ):
     r = remoteci_context.get(
-        "/api/v1/components/%s/files/.composeinfo" % RHEL80Component["id"]
-    )
-    assert r.status_code == 401
-
-    r = remoteci_context.head(
-        "/api/v1/components/%s/files/.composeinfo" % RHEL80Component["id"]
-    )
-    assert r.status_code == 401
-
-    r = admin.post(
-        "/api/v1/products/%s/teams" % RHELProduct["id"],
-        data={"team_id": remoteci_user["team_id"]},
-    )
-    assert r.status_code == 201
-
-    r = remoteci_context.get(
-        "/api/v1/components/%s/files/.composeinfo" % RHEL80Component["id"]
+        "/api/v1/components/%s/files/.composeinfo" % rhel_80_component["id"]
     )
     assert r.status_code == 302
 
     s3_endpoint_url = dci_config.CONFIG["STORE_S3_ENDPOINT_URL"]
     bucket = dci_config.CONFIG["STORE_COMPONENTS_CONTAINER"]
     assert r.headers["Location"].startswith(
-        f"{s3_endpoint_url}/{bucket}/{RHEL80Component['id']}/.composeinfo"
+        f"{s3_endpoint_url}/{bucket}/{rhel_80_component['id']}/.composeinfo"
     )
 
     r = remoteci_context.head(
-        "/api/v1/components/%s/files/.composeinfo" % RHEL80Component["id"]
+        "/api/v1/components/%s/files/.composeinfo" % rhel_80_component["id"]
     )
     assert r.status_code == 302
     assert r.headers["Location"].startswith(
-        f"{s3_endpoint_url}/{bucket}/{RHEL80Component['id']}/.composeinfo"
+        f"{s3_endpoint_url}/{bucket}/{rhel_80_component['id']}/.composeinfo"
     )
+
+    # delete product team permission
+    r = admin.delete(
+        "/api/v1/products/%s/teams/%s" % (rhel_product["id"], remoteci_user["team_id"]),
+    )
+    assert r.status_code == 204
+
+    r = remoteci_context.get(
+        "/api/v1/components/%s/files/.composeinfo" % rhel_80_component["id"]
+    )
+    assert r.status_code == 401
+
+    r = remoteci_context.head(
+        "/api/v1/components/%s/files/.composeinfo" % rhel_80_component["id"]
+    )
+    assert r.status_code == 401
 
 
 def test_get_component_file_from_s3_user_team_in_RHEL_export_control_false(
     admin,
     remoteci_context,
     remoteci_user,
-    RHELProduct,
-    RHEL81Topic,
-    RHEL81Component,
+    rhel_81_topic,
+    rhel_81_component,
 ):
     r = remoteci_context.get(
         "/api/v1/components/%s/files/compose/BaseOS/x86_64/images/SHA256SUM"
-        % RHEL81Component["id"]
+        % rhel_81_component["id"]
     )
     assert r.status_code == 401
 
     r = admin.post(
-        "/api/v1/products/%s/teams" % RHELProduct["id"],
+        "/api/v1/topics/%s/teams" % rhel_81_topic["id"],
         data={"team_id": remoteci_user["team_id"]},
     )
     assert r.status_code == 201
 
     r = remoteci_context.get(
         "/api/v1/components/%s/files/compose/BaseOS/x86_64/images/SHA256SUM"
-        % RHEL81Component["id"]
-    )
-    assert r.status_code == 401
-
-    r = admin.post(
-        "/api/v1/topics/%s/teams" % RHEL81Topic["id"],
-        data={"team_id": remoteci_user["team_id"]},
-    )
-    assert r.status_code == 201
-
-    r = remoteci_context.get(
-        "/api/v1/components/%s/files/compose/BaseOS/x86_64/images/SHA256SUM"
-        % RHEL81Component["id"]
+        % rhel_81_component["id"]
     )
     assert r.status_code == 302
 
     s3_endpoint_url = dci_config.CONFIG["STORE_S3_ENDPOINT_URL"]
     bucket = dci_config.CONFIG["STORE_COMPONENTS_CONTAINER"]
     assert r.headers["Location"].startswith(
-        f'{s3_endpoint_url}/{bucket}/{RHEL81Component["id"]}/compose/BaseOS/x86_64/images/SHA256SUM'
+        f'{s3_endpoint_url}/{bucket}/{rhel_81_component["id"]}/compose/BaseOS/x86_64/images/SHA256SUM'
     )
 
 
@@ -1411,67 +1398,66 @@ def test_get_component_file_from_s3_user_team_in_RHEL81(
     admin,
     remoteci_context,
     remoteci_user,
-    RHELProduct,
-    RHEL81Topic,
-    RHEL81Component,
+    rhel_product,
+    rhel_81_topic,
+    rhel_81_component,
 ):
     r = remoteci_context.get(
-        "/api/v1/components/%s/files/COMPOSE_ID" % RHEL81Component["id"]
+        "/api/v1/components/%s/files/COMPOSE_ID" % rhel_81_component["id"]
     )
     assert r.status_code == 401
 
     r = admin.post(
-        "/api/v1/products/%s/teams" % RHELProduct["id"],
+        "/api/v1/products/%s/teams" % rhel_product["id"],
         data={"team_id": remoteci_user["team_id"]},
     )
     assert r.status_code == 201
 
     r = admin.post(
-        "/api/v1/topics/%s/teams" % RHEL81Topic["id"],
+        "/api/v1/topics/%s/teams" % rhel_81_topic["id"],
         data={"team_id": remoteci_user["team_id"]},
     )
     assert r.status_code == 201
 
     r = remoteci_context.get(
-        "/api/v1/components/%s/files/COMPOSE_ID" % RHEL81Component["id"]
+        "/api/v1/components/%s/files/COMPOSE_ID" % rhel_81_component["id"]
     )
     assert r.status_code == 302
 
     s3_endpoint_url = dci_config.CONFIG["STORE_S3_ENDPOINT_URL"]
     bucket = dci_config.CONFIG["STORE_COMPONENTS_CONTAINER"]
     assert r.headers["Location"].startswith(
-        f'{s3_endpoint_url}/{bucket}/{RHEL81Component["id"]}/COMPOSE_ID'
+        f'{s3_endpoint_url}/{bucket}/{rhel_81_component["id"]}/COMPOSE_ID'
     )
 
 
 def test_get_component_file_from_s3_return_400_if_transversal_attack(
-    remoteci_context, topic_user_id, RHEL80Component
+    remoteci_context, rhel_80_component, rhel_81_component
 ):
     r = remoteci_context.get(
-        "/api/v1/components/%s/files/COMPOSE_ID" % RHEL80Component["id"]
+        "/api/v1/components/%s/files/COMPOSE_ID" % rhel_81_component["id"]
     )
     assert r.status_code == 401
 
-    component = remoteci_context.get(
-        "/api/v1/topics/%s/components" % topic_user_id
-    ).data["components"][0]
-    r = remoteci_context.get("/api/v1/components/%s/files/COMPOSE_ID" % component["id"])
+    r = remoteci_context.get(
+        "/api/v1/components/%s/files/COMPOSE_ID" % rhel_80_component["id"]
+    )
     assert r.status_code == 302
 
     r = remoteci_context.get(
         "/api/v1/components/%s/files/../%s/COMPOSE_ID"
-        % (component["id"], RHEL80Component["id"])
+        % (rhel_80_component["id"], rhel_81_component["id"])
     )
     assert r.status_code == 400
 
 
-def test_default_components_sort_is_by_released_at(admin, openshift_410):
+def test_default_components_sort_is_by_released_at(admin, openshift_410_topic):
     r = admin.post(
         "/api/v1/components",
         data={
             "name": "OpenShift 4.10.50",
             "type": "ocp",
-            "topic_id": openshift_410["id"],
+            "topic_id": openshift_410_topic["id"],
             "released_at": "2023-01-18T18:16:25.312257",
         },
     )
@@ -1481,13 +1467,13 @@ def test_default_components_sort_is_by_released_at(admin, openshift_410):
         data={
             "name": "OpenShift 4.10.49",
             "type": "ocp",
-            "topic_id": openshift_410["id"],
+            "topic_id": openshift_410_topic["id"],
             "released_at": "2023-01-18T08:58:25.521351",
         },
     )
     assert r.status_code == 201
     components = admin.get(
-        "/api/v1/topics/%s/components" % openshift_410["id"],
+        "/api/v1/topics/%s/components" % openshift_410_topic["id"],
     ).data["components"]
     assert components[0]["name"] == "OpenShift 4.10.50"
     assert components[1]["name"] == "OpenShift 4.10.49"

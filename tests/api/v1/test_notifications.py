@@ -68,7 +68,7 @@ def test_get_job_event_on_job_error(mocked_disp, user, job_user_id):
     assert email_event["topic_name"] == job["topic"]["name"]
     assert email_event["remoteci_id"] == job["remoteci_id"]
     assert email_event["remoteci_name"] == job["remoteci"]["name"]
-    assert len(email_event["components"]) == 3
+    assert len(email_event["components"]) == 1
     assert email_event["regressions"] == {}
 
 

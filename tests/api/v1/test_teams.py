@@ -123,9 +123,12 @@ def test_get_all_teams_with_sort(admin):
     assert gts == db_teams
 
 
-def test_get_all_teams_with_embed(admin, topic_user_id):
+def test_get_all_teams_with_embed(admin, rhel_81_topic, team_user_id):
+    admin.post(
+        "/api/v1/topics/%s/teams" % rhel_81_topic["id"], data={"team_id": team_user_id}
+    )
     db_teams = admin.get("/api/v1/teams?embed=topics&where=name:user").data
-    assert db_teams["teams"][0]["topics"][0]["id"] == topic_user_id
+    assert db_teams["teams"][0]["topics"][0]["id"] == rhel_81_topic["id"]
 
 
 def test_get_team_by_id(admin):
@@ -340,30 +343,30 @@ def test_delete_as_admin(user, team_user_id, admin):
     assert team_delete.status_code == 204
 
 
-def test_success_update_field_by_field(admin, team_id):
-    t = admin.get("/api/v1/teams/%s" % team_id).data["team"]
+def test_success_update_field_by_field(admin, team_user_id):
+    t = admin.get("/api/v1/teams/%s" % team_user_id).data["team"]
 
     admin.put(
-        "/api/v1/teams/%s" % team_id,
+        "/api/v1/teams/%s" % team_user_id,
         data={"state": "inactive"},
         headers={"If-match": t["etag"]},
     )
 
-    t = admin.get("/api/v1/teams/%s" % team_id).data["team"]
+    t = admin.get("/api/v1/teams/%s" % team_user_id).data["team"]
 
-    assert t["name"] == "pname"
+    assert t["name"] == "user"
     assert t["state"] == "inactive"
     assert t["country"] is None
 
     admin.put(
-        "/api/v1/teams/%s" % team_id,
+        "/api/v1/teams/%s" % team_user_id,
         data={"country": "FR"},
         headers={"If-match": t["etag"]},
     )
 
-    t = admin.get("/api/v1/teams/%s" % team_id).data["team"]
+    t = admin.get("/api/v1/teams/%s" % team_user_id).data["team"]
 
-    assert t["name"] == "pname"
+    assert t["name"] == "user"
     assert t["state"] == "inactive"
     assert t["country"] == "FR"
 
