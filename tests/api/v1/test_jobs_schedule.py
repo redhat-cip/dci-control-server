@@ -31,6 +31,30 @@ def test_schedule_jobs(remoteci_context, rhel_80_topic, rhel_80_component):
     assert job["client_version"] == headers["Client-Version"]
 
 
+def test_schedule_jobs_with_teams_components(
+    admin, remoteci_context, rhel_80_topic, rhel_80_component, team_id
+):
+    # remoteci_context does not belongs to team_id
+    data = {
+        "name": "pname",
+        "type": "compose",
+        "url": "http://example.com/",
+        "topic_id": rhel_80_topic["id"],
+        "state": "active",
+        "team_id": team_id,
+    }
+    pc = admin.post("/api/v1/components", data=data)
+    assert pc.status_code == 201
+
+    data = {"topic_id": rhel_80_topic["id"]}
+    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    assert r.status_code == 201
+    job_id = r.data["job"]["id"]
+    job = remoteci_context.get("/api/v1/jobs/%s" % job_id).data["job"]
+    assert job["components"][0]["name"] != "pname"
+    assert job["components"][0]["team_id"] is None
+
+
 def test_schedule_jobs_with_components_ids(
     user, remoteci_context, rhel_80_topic, rhel_80_component
 ):

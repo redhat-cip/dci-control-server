@@ -371,6 +371,7 @@ def get_last_components_by_type(component_types, topic_id, session=None):
                         models2.Component.type == ct,
                         models2.Component.topic_id == topic_id,
                         models2.Component.state == "active",
+                        models2.Component.team_id == None,  # noqa
                     )
                 )
                 .order_by(models2.Component.created_at.desc())
