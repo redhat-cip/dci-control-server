@@ -12,7 +12,7 @@ alembic==1.3.1  # python-alembic-1.3.1-1.el8.src.rpm centos-openstack-train
 six==1.14.0  # python-six-1.14.0-2.el8.src.rpm centos-openstack-train
 requests==2.22.0  # python-requests-2.22.0-7.el8.src.rpm centos-openstack-train
 gunicorn
-flask==1.1.1  # python-flask-1.1.1-1.el8.src.rpm centos-openstack-train
+flask==2.2.5  # python-flask-1.1.1-1.el8.src.rpm centos-openstack-train
 SQLAlchemy-Utils==0.34.2  # python-sqlalchemy-utils-0.34.2-2.el8.src.rpm centos-openstack-train
 
 passlib==1.7.2  # python-passlib-1.7.2-1.el8.src.rpm epel
