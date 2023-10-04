@@ -18,7 +18,11 @@ import datetime
 import hashlib
 import uuid
 import logging
-import flask
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 import six
 from sqlalchemy.engine import result
@@ -47,7 +51,7 @@ class UUIDConverter(BaseConverter):
         return str(values)
 
 
-class JSONEncoder(flask.json.JSONEncoder):
+class JSONEncoder(json.JSONEncoder):
     """Default JSON encoder."""
 
     def default(self, o):
