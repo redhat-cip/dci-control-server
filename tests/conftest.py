@@ -129,6 +129,11 @@ def user2(app):
 
 
 @pytest.fixture
+def user3(app):
+    return utils.generate_client(app, ("user3", "user3"))
+
+
+@pytest.fixture
 def rh_employee(app):
     return utils.generate_client(app, ("rh_employee", "rh_employee"))
 
@@ -187,6 +192,12 @@ def team_user_id(team_user):
 @pytest.fixture
 def team_user_id2(admin):
     team = admin.get("/api/v1/teams?where=name:user2").data["teams"][0]
+    return str(team["id"])
+
+
+@pytest.fixture
+def team_user_id3(admin):
+    team = admin.get("/api/v1/teams?where=name:user3").data["teams"][0]
     return str(team["id"])
 
 

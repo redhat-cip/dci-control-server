@@ -1316,6 +1316,99 @@ def test_teams_components_isolation(
     assert components.data["components"][0]["team_id"] == team_user_id2
 
 
+def test_components_access_of_other_teams(
+    admin, user, user2, topic_user_id, team_user_id, team_user_id2, team_user_id3
+):
+
+    # create a component associated to team_user_id
+    data = {
+        "name": "pname",
+        "type": "mytest",
+        "topic_id": topic_user_id,
+        "team_id": team_user_id,
+    }
+    pc = user.post("/api/v1/components", data=data)
+    assert pc.status_code == 201
+
+    components = user.get(
+        "/api/v1/topics/%s/components?where=team_id:%s" % (topic_user_id, team_user_id)
+    ).data
+    assert components["components"][0]["team_id"] == team_user_id
+
+    # create a component associated to team_user_id2
+    data = {
+        "name": "pname",
+        "type": "mytest",
+        "topic_id": topic_user_id,
+        "team_id": team_user_id2,
+    }
+    pc = user2.post("/api/v1/components", data=data)
+    assert pc.status_code == 201
+
+    # user doesn't have access to team_user_id2's components
+    components = user.get(
+        "/api/v1/topics/%s/components?where=team_id:%s" % (topic_user_id, team_user_id2)
+    )
+    assert components.status_code == 200
+    assert components.data["components"] == []
+
+    permissions = admin.get("/api/v1/teams/%s/permissions/components" % team_user_id)
+    assert permissions.data["teams"] == []
+
+    # team_user_id has now access to the components of team_user_id2
+    cat = admin.post(
+        "/api/v1/teams/%s/permissions/components" % team_user_id,
+        data={"teams_ids": [team_user_id2]},
+    )
+    assert cat.status_code == 201
+
+    # don't raise errors if the permission is already set
+    # team_user_id has now access to the components of team_user_id2 and team_user_id3
+    cat = admin.post(
+        "/api/v1/teams/%s/permissions/components" % team_user_id,
+        data={"teams_ids": [team_user_id2, team_user_id3]},
+    )
+    assert cat.status_code == 201
+
+    permissions = admin.get("/api/v1/teams/%s/permissions/components" % team_user_id)
+    assert permissions.data["teams"][0]["id"] in {team_user_id2, team_user_id3}
+    assert permissions.data["teams"][1]["id"] in {team_user_id2, team_user_id3}
+
+    components = user.get(
+        "/api/v1/topics/%s/components?where=team_id:%s" % (topic_user_id, team_user_id2)
+    )
+    assert components.status_code == 200
+    assert components.data["components"][0]["team_id"] == team_user_id2
+
+    # team_user_id has no longer access to the components of team_user_id2 and team_user_id3
+    cat = admin.delete(
+        "/api/v1/teams/%s/permissions/components" % team_user_id,
+        data={"teams_ids": [team_user_id2, team_user_id3]},
+    )
+    assert cat.status_code == 204
+
+    permissions = admin.get("/api/v1/teams/%s/permissions/components" % team_user_id)
+    assert permissions.data["teams"] == []
+
+    components = user.get(
+        "/api/v1/topics/%s/components?where=team_id:%s" % (topic_user_id, team_user_id2)
+    )
+    assert components.status_code == 200
+    assert components.data["components"] == []
+
+    # test unable to add permission to the same team
+    cat = admin.post(
+        "/api/v1/teams/%s/permissions/components" % team_user_id,
+        data={"teams_ids": [team_user_id, team_user_id2]},
+    )
+    assert cat.status_code == 201
+
+    permissions = admin.get("/api/v1/teams/%s/permissions/components" % team_user_id)
+    assert permissions.status_code == 200
+    assert len(permissions.data["teams"]) == 1
+    assert permissions.data["teams"][0]["id"] == team_user_id2
+
+
 # S3 components related tests
 
 
