@@ -130,11 +130,32 @@ def internal_create_jobs(user, values, components_ids=None):
         kill_existing_jobs(remoteci.id)
 
         components_ids = values.pop("components_ids")
+        components_access_teams_ids = components.get_components_access_teams_ids(
+            user.teams_ids
+        )
+        for c_id in components_ids:
+            c = base.get_resource_orm(models2.Component, c_id)
+            if (
+                c.team_id is not None
+                and c.team_id not in user.teams_ids
+                and c.team_id not in components_access_teams_ids
+            ):
+                raise dci_exc.Unauthorized()
+
         values = _build_job(product_id, topic_id, remoteci, components_ids, values)
     # create
     else:
         base.create_resource_orm(models2.Job, values)
         j = base.get_resource_orm(models2.Job, values["id"])
+        for cmpt_id in components_ids:
+            c = base.get_resource_orm(models2.Component, cmpt_id)
+            if (
+                c.team_id is not None
+                and c.team_id not in user.teams_ids
+                and c.team_id not in components_access_teams_ids
+            ):
+                raise dci_exc.Unauthorized()
+
         for cmpt_id in components_ids:
             c = base.get_resource_orm(models2.Component, cmpt_id)
             try:

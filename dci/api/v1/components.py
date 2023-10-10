@@ -68,8 +68,7 @@ def _verify_component_and_topic_access(user, component):
                 user.teams_ids
             )
             if component_team_id not in components_access_teams_ids:
-                pass
-                # dci_exc.Unauthorized()
+                raise dci_exc.Unauthorized()
     else:
         topic = base.get_resource_orm(models2.Topic, component.topic_id)
         export_control.verify_access_to_topic(user, topic)

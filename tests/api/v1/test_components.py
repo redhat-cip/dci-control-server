@@ -1409,6 +1409,45 @@ def test_components_access_of_other_teams(
     assert permissions.data["teams"][0]["id"] == team_user_id2
 
 
+def test_components_access_by_id(
+    admin, user, user2, topic_user_id, team_user_id, team_user_id2
+):
+    data = {
+        "name": "pname",
+        "type": "mytest",
+        "topic_id": topic_user_id,
+        "team_id": team_user_id,
+    }
+    pc = user.post("/api/v1/components", data=data)
+    assert pc.status_code == 201
+
+    data = {
+        "name": "pname",
+        "type": "mytest",
+        "topic_id": topic_user_id,
+        "team_id": team_user_id2,
+    }
+    pc = user2.post("/api/v1/components", data=data)
+    assert pc.status_code == 201
+    pc_team_user_id2 = pc.data["component"]["id"]
+
+    c = user2.get("/api/v1/components/%s" % pc_team_user_id2)
+    assert c.status_code == 200
+
+    c = user.get("/api/v1/components/%s" % pc_team_user_id2)
+    assert c.status_code == 401
+
+    # team_user_id has now access to the components of team_user_id2
+    cat = admin.post(
+        "/api/v1/teams/%s/permissions/components" % team_user_id,
+        data={"teams_ids": [team_user_id2]},
+    )
+    assert cat.status_code == 201
+
+    c = user.get("/api/v1/components/%s" % pc_team_user_id2)
+    assert c.status_code == 200
+
+
 # S3 components related tests
 
 
