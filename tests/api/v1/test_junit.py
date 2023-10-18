@@ -224,3 +224,8 @@ def test_add_regressions_successfix_with_no_previous_junit():
     assert tests[0]["testcases"][1]["successfix"] is False
     assert tests[0]["testcases"][2]["regression"] is False
     assert tests[0]["testcases"][2]["successfix"] is False
+
+
+def test_nrt_parse_junit_with_an_empty_junit():
+    junit_file = BytesIO()
+    assert junit.parse_junit(junit_file) == []

@@ -438,3 +438,17 @@ def test_nrt_dont_returned_deleted_files_in_get_job(user, job_user_id):
     job = user.get("/api/v1/jobs/%s" % job_user_id).data["job"]
     assert len(job["files"]) == 1
     assert job["files"][0]["id"] == file2["id"]
+
+
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
+def test_nrt_get_an_empty_junit_file(_, user, job_user_id):
+    content = ""
+    junit_id = t_utils.create_file(
+        user,
+        job_user_id,
+        "Tempest",
+        content,
+        "application/junit",
+    )["id"]
+    testsuites = user.get("/api/v1/files/%s/junit" % junit_id).data["testsuites"]
+    assert len(testsuites) == 0

@@ -15,6 +15,7 @@
 # under the License.
 
 from xml.etree import ElementTree
+from xml.parsers.expat import errors as xml_errors
 from datetime import timedelta
 
 
@@ -111,16 +112,22 @@ def parse_testsuite(testsuite_xml):
 
 
 def parse_junit(file_descriptor):
-    testsuites = []
-    nb_of_testsuites = 0
-    for event, element in ElementTree.iterparse(file_descriptor):
-        if element.tag == "testsuite":
-            testsuite = parse_testsuite(element)
-            testsuite["id"] = nb_of_testsuites
-            nb_of_testsuites += 1
-            testsuites.append(testsuite)
-            element.clear()
-    return testsuites
+    try:
+        testsuites = []
+        nb_of_testsuites = 0
+        for event, element in ElementTree.iterparse(file_descriptor):
+            if element.tag == "testsuite":
+                testsuite = parse_testsuite(element)
+                testsuite["id"] = nb_of_testsuites
+                nb_of_testsuites += 1
+                testsuites.append(testsuite)
+                element.clear()
+        return testsuites
+    except ElementTree.ParseError as parse_error:
+        error_code_no_elements = xml_errors.codes[xml_errors.XML_ERROR_NO_ELEMENTS]
+        if parse_error.code == error_code_no_elements:
+            return []
+        raise parse_error
 
 
 def _get_unique_testcase_key(testsuite, testcase):
