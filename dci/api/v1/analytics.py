@@ -19,6 +19,7 @@ import json
 import logging
 import requests
 from requests.exceptions import ConnectionError
+import uuid
 
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -101,12 +102,18 @@ def tasks_components_coverage(user):
     check_json_is_valid(analytics_task_components_coverage, args)
     types = flask.request.args.getlist("types")
 
-    team_id = args.get("team_id") if args.get("team_id") else "red_hat"
     topic_id = args["topic_id"]
 
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
-        if team_id not in user.teams_ids:
+        team_id = args.get("team_id")
+        if not team_id:
+            raise dci_exc.DCIException(
+                "team_id argument is mandatory for regular users",
+            )
+        if uuid.UUID(team_id) not in user.teams_ids:
             raise dci_exc.Unauthorized()
+    else:
+        team_id = args.get("team_id") if args.get("team_id") else "red_hat"
 
     query = {
         "size": 10000,
@@ -233,6 +240,8 @@ def tasks_pipelines_status(user):
             )
     except ConnectionError as e:
         logger.error("analytics connection error: %s" % str(e))
-        return dci_exc.DCIException(
-            "connection error with backend service", status_code=503
+        return flask.Response(
+            json.dumps({"error": "connection error with backend service: %s" % str(e)}),
+            503,
+            content_type="application/json",
         )
