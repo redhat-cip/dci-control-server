@@ -30,7 +30,7 @@ def _build_generic_message(job, component, result, now):
     test_name = result["name"]
     job_id = str(job["id"])
     job_url = "https://www.distributed-ci.io/jobs/%s/jobStates" % job_id
-    target = "topic://VirtualTopic.eng.dci.job.complete"
+    target = "topic://VirtualTopic.eng.distributed-ci.job.complete"
     architecture = _get_architecture(job)
     return {
         "target": target,
@@ -72,7 +72,7 @@ def _get_kernel_version(component):
 
 def _build_cki_message(job, component, result):
     job_url = "https://www.distributed-ci.io/jobs/%s/jobStates" % str(job["id"])
-    target = "topic://VirtualTopic.eng.dci.cki"
+    target = "topic://VirtualTopic.eng.distributed-ci.cki"
     architecture = _get_architecture(job)
     return {
         "target": target,
