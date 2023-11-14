@@ -1,5 +1,5 @@
 FROM registry.access.redhat.com/ubi8/ubi-minimal
-LABEL name="DCI API"
+LABEL name="DCI API" version="0.1.0"
 LABEL maintainer="DCI Team <distributed-ci@redhat.com>"
 
 
@@ -14,7 +14,7 @@ RUN microdnf update && \
     microdnf -y install python3-pip python3-wheel && \
     microdnf -y install python3-devel gcc postgresql-devel && \
     pip3 --no-cache-dir install -r requirements.txt && \
-    pip3 --no-cache-dir install . && \
+    pip3 --no-cache-dir install --editable . && \
     microdnf -y remove python3-devel gcc postgresql-devel && \
     microdnf -y clean all
 
