@@ -227,6 +227,18 @@ def provision(session):
     user2.team.append(user2_team)
     session.add(user2)
 
+    # Create user 3
+    user3_team = models2.Team(name="user3")
+    user3 = models2.User(
+        name="user3",
+        sso_username="user3",
+        password=auth.hash_password("user3"),
+        fullname="User3",
+        email="user3@example.org",
+    )
+    user3.team.append(user3_team)
+    session.add(user3)
+
     # Create user no team
     user_no_team = models2.User(
         name="user_no_team",

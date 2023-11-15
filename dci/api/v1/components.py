@@ -47,11 +47,29 @@ import sqlalchemy.orm as sa_orm
 logger = logging.getLogger(__name__)
 
 
+def get_components_access_teams_ids(teams_ids):
+    components_access_teams_ids = []
+    JTCA = models2.JOIN_TEAMS_COMPONENTS_ACCESS
+    for team_id in teams_ids:
+        query = flask.g.session.query(JTCA)
+        query = query.filter(JTCA.c.team_id == team_id)
+        teams_components_access = query.all()
+        if teams_components_access:
+            for tca in teams_components_access:
+                components_access_teams_ids.append(tca.access_team_id)
+    return components_access_teams_ids
+
+
 def _verify_component_and_topic_access(user, component):
     component_team_id = component.team_id
     if component_team_id is not None:
         if user.is_not_in_team(component_team_id):
-            dci_exc.Unauthorized()
+            components_access_teams_ids = get_components_access_teams_ids(
+                user.teams_ids
+            )
+            if component_team_id not in components_access_teams_ids:
+                pass
+                # dci_exc.Unauthorized()
     else:
         topic = base.get_resource_orm(models2.Topic, component.topic_id)
         export_control.verify_access_to_topic(user, topic)
@@ -163,9 +181,11 @@ def get_all_components(user, topic_id):
     )
 
     if user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
+        components_access_teams_ids = get_components_access_teams_ids(user.teams_ids)
         query = query.filter(
             sql.or_(
                 models2.Component.team_id.in_(user.teams_ids),
+                models2.Component.team_id.in_(components_access_teams_ids),
                 models2.Component.team_id == None,  # noqa
             )
         )

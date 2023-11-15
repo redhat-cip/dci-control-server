@@ -22,10 +22,10 @@ from tests import utils
 def test_nrt_one_user_s_name_is_equal_to_the_email_of_another_user(session, app):
     session.add(
         models2.User(
-            name="user3@example.org",
-            sso_username="user3@example.org",
-            fullname="user3@example.org",
-            password=auth.hash_password("user3@example.org"),
+            name="user33@example.org",
+            sso_username="user33@example.org",
+            fullname="user33@example.org",
+            password=auth.hash_password("user33@example.org"),
             email="user4@example.org",
         )
     )
@@ -35,11 +35,11 @@ def test_nrt_one_user_s_name_is_equal_to_the_email_of_another_user(session, app)
             sso_username="user4@example.org",
             fullname="user4@example.org",
             password=auth.hash_password("user4@example.org"),
-            email="user3@example.org",
+            email="user33@example.org",
         )
     )
     session.commit()
-    user = utils.generate_client(app, ("user3@example.org", "user3@example.org"))
+    user = utils.generate_client(app, ("user33@example.org", "user33@example.org"))
     assert user.get("/api/v1/identity").status_code == 200
 
 

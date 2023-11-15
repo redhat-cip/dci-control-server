@@ -162,6 +162,26 @@ JOIN_PRODUCTS_TEAMS = sa.Table(
 )
 
 
+JOIN_TEAMS_COMPONENTS_ACCESS = sa.Table(
+    "teams_components_access",
+    Base.metadata,
+    sa.Column(
+        "team_id",
+        pg.UUID(as_uuid=True),
+        sa.ForeignKey("teams.id", ondelete="CASCADE"),
+        nullable=False,
+        primary_key=True,
+    ),
+    sa.Column(
+        "access_team_id",
+        pg.UUID(as_uuid=True),
+        sa.ForeignKey("teams.id", ondelete="CASCADE"),
+        nullable=False,
+        primary_key=True,
+    ),
+)
+
+
 class Team(dci_declarative.Mixin, Base):
     __tablename__ = "teams"
     __table_args__ = (sa.UniqueConstraint("name", name="teams_name_key"),)
@@ -195,6 +215,12 @@ class Team(dci_declarative.Mixin, Base):
     )
     products = sa_orm.relationship(
         "Product", secondary=JOIN_PRODUCTS_TEAMS, back_populates="teams"
+    )
+    components_access_teams = sa_orm.relationship(
+        "Team",
+        secondary=JOIN_TEAMS_COMPONENTS_ACCESS,
+        primaryjoin=id == JOIN_TEAMS_COMPONENTS_ACCESS.c.team_id,
+        secondaryjoin=id == JOIN_TEAMS_COMPONENTS_ACCESS.c.access_team_id,
     )
 
 

@@ -597,6 +597,20 @@ update_team_properties = {
 }
 update_team_schema = {"type": "object", "properties": update_team_properties}
 
+add_team_components_access = {
+    "type": "object",
+    "properties": {"teams_ids": with_default(Properties.array, [])},
+    "required": ["teams_ids"],
+    "additionalProperties": False,
+}
+
+delete_team_components_access = {
+    "type": "object",
+    "properties": {"teams_ids": with_default(Properties.array, [])},
+    "required": ["teams_ids"],
+    "additionalProperties": False,
+}
+
 ###############################################################################
 #                                                                             #
 #                                  File schema                                #
