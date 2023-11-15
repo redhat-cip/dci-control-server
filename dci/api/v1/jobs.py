@@ -124,15 +124,14 @@ def internal_create_jobs(user, values, components_ids=None):
             "previous_job_id": previous_job_id,
         }
     )
-
+    components_access_teams_ids = components.get_components_access_teams_ids(
+        user.teams_ids
+    )
     # schedule
     if components_ids is None:
         kill_existing_jobs(remoteci.id)
 
         components_ids = values.pop("components_ids")
-        components_access_teams_ids = components.get_components_access_teams_ids(
-            user.teams_ids
-        )
         for c_id in components_ids:
             c = base.get_resource_orm(models2.Component, c_id)
             if (
