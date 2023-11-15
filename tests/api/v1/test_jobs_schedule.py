@@ -68,6 +68,41 @@ def test_schedule_jobs_with_components_ids(
     assert r.status_code == 201
 
 
+def test_schedule_teams_components_access(
+    admin, remoteci_context, rhel_80_topic, rhel_80_component, team_id, team_user_id
+):
+    # remoteci_context does not belongs to team_id
+    data = {
+        "name": "pname",
+        "type": "compose",
+        "url": "http://example.com/",
+        "topic_id": rhel_80_topic["id"],
+        "state": "active",
+        "team_id": team_id,
+    }
+    pc = admin.post("/api/v1/components", data=data)
+    assert pc.status_code == 201
+    pc_id = pc.data["component"]["id"]
+
+    data = {"topic_id": rhel_80_topic["id"], "components_ids": [pc_id]}
+    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    assert r.status_code == 401
+
+    cat = admin.post(
+        "/api/v1/teams/%s/permissions/components" % team_user_id,
+        data={"teams_ids": [team_id]},
+    )
+    assert cat.status_code == 201
+
+    data = {"topic_id": rhel_80_topic["id"], "components_ids": [pc_id]}
+    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    assert r.status_code == 201
+    job_id = r.data["job"]["id"]
+    job = remoteci_context.get("/api/v1/jobs/%s" % job_id).data["job"]
+    assert job["components"][0]["name"] == "pname"
+    assert job["components"][0]["team_id"] == team_id
+
+
 def test_schedule_jobs_with_previous_job_id(
     remoteci_context, rhel_80_topic, rhel_80_component
 ):
