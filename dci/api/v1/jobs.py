@@ -411,7 +411,15 @@ def add_component_to_job(user, job_id):
     j = base.get_resource_orm(models2.Job, job_id)
     component = base.get_resource_orm(models2.Component, values["id"])
 
-    if component.team_id and not user.is_in_team(component.team_id):
+    components_access_teams_ids = components.get_components_access_teams_ids(
+        user.teams_ids
+    )
+
+    if (
+        component.team_id
+        and user.is_not_in_team(component.team_id)
+        and component.team_id not in components_access_teams_ids
+    ):
         raise dci_exc.Unauthorized()
 
     try:

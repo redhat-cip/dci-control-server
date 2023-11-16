@@ -135,6 +135,43 @@ def test_add_component_to_job(user, team_user_id, topic_user_id, job_user_id):
     assert not cmpt_found
 
 
+def test_attach_component_from_other_team_to_job(
+    admin, user, user2, team_user_id, team_user_id2, topic_user_id, job_user_id
+):
+    # create component as user2 under the team team_user_id2
+    data = {
+        "name": "pname",
+        "type": "gerrit_review",
+        "url": "http://example.com/",
+        "team_id": team_user_id2,
+        "topic_id": topic_user_id,
+        "state": "active",
+    }
+    pc = user2.post("/api/v1/components", data=data).data
+    pc_id = pc["component"]["id"]
+
+    # attach this component to the job that belongs to the team team_user_id
+    p1 = user.post("/api/v1/jobs/%s/components" % job_user_id, data={"id": pc_id})
+    assert p1.status_code == 401
+
+    # team_user_id as now access to team_user_id2's components
+    pc = admin.post(
+        "/api/v1/teams/%s/permissions/components" % team_user_id,
+        data={"teams_ids": [team_user_id2]},
+    )
+    assert pc.status_code == 201
+
+    p1 = user.post("/api/v1/jobs/%s/components" % job_user_id, data={"id": pc_id})
+    assert p1.status_code == 201
+
+    cmpts = user.get("/api/v1/jobs/%s/components" % job_user_id).data["components"]
+    cmpt_found = False
+    for c in cmpts:
+        if c["id"] == pc_id:
+            cmpt_found = True
+    assert cmpt_found
+
+
 def test_add_component_with_no_team_to_job(
     user, admin, team_user_id, topic_user_id, job_user_id
 ):
