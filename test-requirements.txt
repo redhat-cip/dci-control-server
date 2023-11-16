@@ -3,4 +3,3 @@ pytest
 dciclient
 flake8
 tox
-pytest-cov

@@ -1,6 +1,6 @@
 pyjwt==1.6.1  # python-jwt-1.6.1-2.el8.src.rpm baseos
 cryptography==3.2.1  # python-cryptography-3.2.1-5.el8.src.rpm baseos
-pyparsing==2.1.10 # pyparsing-2.1.10-7.el8.src.rpm baseos
+pyparsing==2.1.10  # pyparsing-2.1.10-7.el8.src.rpm baseos
 
 pytz==2017.2  # pytz-2017.2-9.el8.src.rpm appstream
 psycopg2==2.7.5  # python-psycopg2-2.7.5-7.el8.src.rpm appstream
@@ -16,7 +16,7 @@ flask==1.1.1  # python-flask-1.1.1-1.el8.src.rpm centos-openstack-train
 SQLAlchemy-Utils==0.34.2  # python-sqlalchemy-utils-0.34.2-2.el8.src.rpm centos-openstack-train
 
 passlib==1.7.2  # python-passlib-1.7.2-1.el8.src.rpm epel
-python-qpid-proton==0.35.0 # qpid-proton-0.35.0-2.el8.src.rpm epel
+python-qpid-proton==0.35.0  # qpid-proton-0.35.0-2.el8.src.rpm epel
 pyzmq==19.0.0  # python-zmq-19.0.0-1.el8.src.rpm epel
 
 boto3==1.15.15  # python3-boto3-1.15.15-1.el8.src.rpm epel

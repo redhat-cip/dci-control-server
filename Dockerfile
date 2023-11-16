@@ -2,13 +2,12 @@ FROM registry.access.redhat.com/ubi8/ubi-minimal
 LABEL name="DCI API" version="0.1.0"
 LABEL maintainer="DCI Team <distributed-ci@redhat.com>"
 
-
-COPY . /usr/src/dci-control-server
+COPY . /opt/dci-control-server
 
 COPY entrypoint.sh /usr/local/sbin/
 COPY gunicorn.conf.py /etc/
 
-WORKDIR /usr/src/dci-control-server
+WORKDIR /opt/dci-control-server
 
 RUN microdnf update && \
     microdnf -y install python3-pip python3-wheel && \
