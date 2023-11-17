@@ -139,6 +139,10 @@ def internal_create_jobs(user, values, components_ids=None):
                 and c.team_id not in user.teams_ids
                 and c.team_id not in components_access_teams_ids
             ):
+                logger.error(
+                    "c.team_id: %s, uer.teams_ids: %s, components_access_teams_ids: %s"
+                    % (c.team_id, user.teams_ids, components_access_teams_ids)
+                )
                 raise dci_exc.Unauthorized()
 
         values = _build_job(product_id, topic_id, remoteci, components_ids, values)
@@ -153,6 +157,10 @@ def internal_create_jobs(user, values, components_ids=None):
                 and c.team_id not in user.teams_ids
                 and c.team_id not in components_access_teams_ids
             ):
+                logger.error(
+                    "c.team_id: %s, uer.teams_ids: %s, components_access_teams_ids: %s"
+                    % (c.team_id, user.teams_ids, components_access_teams_ids)
+                )
                 raise dci_exc.Unauthorized()
 
         for cmpt_id in components_ids:
