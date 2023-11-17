@@ -29,7 +29,6 @@ from flask import json
 
 from dci.api.v1 import api
 from dci.api.v1 import base
-from dci.api.v1 import transformations as tsfm
 from dci.api.v1 import junit
 from dci import decorators
 from dci.common import exceptions as dci_exc
@@ -93,20 +92,16 @@ def _get_previous_jsonunit(job, filename):
         return None
     test_file = base.get_resource_orm(models2.File, res.file_id)
     file_descriptor = get_file_descriptor(test_file)
-    return tsfm.junit2dict(file_descriptor)
-
-
-def _compute_regressions_successfix(jsonunit, previous_jsonunit):
-    if previous_jsonunit and len(previous_jsonunit["testscases"]) > 0:
-        return tsfm.add_regressions_and_successfix_to_tests(previous_jsonunit, jsonunit)
-    return jsonunit
+    return junit.parse_junit(file_descriptor)
 
 
 def _process_junit_file(values, junit_file, job):
-    jsonunit = tsfm.junit2dict(junit_file)
+    jsonunit = junit.parse_junit(junit_file)
     previous_jsonunit = _get_previous_jsonunit(job, values["name"])
-
-    jsonunit = _compute_regressions_successfix(jsonunit, previous_jsonunit)
+    testsuites = junit.add_regressions_and_successfix_to_tests(
+        previous_jsonunit, jsonunit
+    )
+    tests_results = junit.calculate_test_results(testsuites)
 
     tr = models2.TestsResult()
     tr.id = utils.gen_uuid()
@@ -115,14 +110,14 @@ def _process_junit_file(values, junit_file, job):
     tr.file_id = values["id"]
     tr.job_id = job.id
     tr.name = values["name"]
-    tr.success = jsonunit["success"]
-    tr.failures = jsonunit["failures"]
-    tr.errors = jsonunit["errors"]
-    tr.regressions = jsonunit["regressions"]
-    tr.successfixes = jsonunit["successfixes"]
-    tr.skips = jsonunit["skips"]
-    tr.total = jsonunit["total"]
-    tr.time = jsonunit["time"]
+    tr.success = tests_results["success"]
+    tr.failures = tests_results["failures"]
+    tr.errors = tests_results["errors"]
+    tr.regressions = tests_results["regressions"]
+    tr.successfixes = tests_results["successfixes"]
+    tr.skips = tests_results["skipped"]
+    tr.total = tests_results["tests"]
+    tr.time = tests_results["time"]
 
     try:
         flask.g.session.add(tr)
@@ -271,28 +266,6 @@ def get_file_content(user, file_id):
     )
 
 
-@api.route("/files/<uuid:file_id>/testscases", methods=["GET"])
-@decorators.login_required
-def get_file_testscases(user, file_id):
-    file = base.get_resource_orm(models2.File, file_id)
-    if (
-        user.is_not_in_team(file.team_id)
-        and user.is_not_read_only_user()
-        and user.is_not_epm()
-    ):
-        raise dci_exc.Unauthorized()
-    file_descriptor = get_file_descriptor(file)
-    jsonunit = tsfm.junit2dict(file_descriptor)
-    job = base.get_resource_orm(models2.Job, file.job_id)
-    previous_jsonunit = _get_previous_jsonunit(job, file.name)
-    jsonunit = _compute_regressions_successfix(jsonunit, previous_jsonunit)
-    return flask.Response(
-        json.dumps({"testscases": jsonunit["testscases"]}),
-        200,
-        content_type="application/json",
-    )
-
-
 @api.route("/files/<uuid:file_id>", methods=["DELETE"])
 @decorators.login_required
 def delete_file_by_id(user, file_id):
@@ -382,25 +355,6 @@ def purge_archived_files(user):
     return flask.Response(None, 204, content_type="application/json")
 
 
-def _get_previous_jsonunit2(job, filename):
-    prev_job = get_previous_job_in_topic(job)
-    if prev_job is None:
-        return None
-    query = flask.g.session.query(models2.TestsResult).filter(
-        sql.and_(
-            models2.TestsResult.job_id == prev_job.id,
-            models2.TestsResult.name == filename,
-        )
-    )
-    try:
-        res = query.one()
-    except orm.exc.NoResultFound:
-        return None
-    test_file = base.get_resource_orm(models2.File, res.file_id)
-    file_descriptor = get_file_descriptor(test_file)
-    return junit.parse_junit(file_descriptor)
-
-
 @api.route("/files/<uuid:file_id>/junit", methods=["GET"])
 @decorators.login_required
 def get_junit_file(user, file_id):
@@ -414,7 +368,7 @@ def get_junit_file(user, file_id):
     junit_file = get_file_descriptor(file)
     jsonunit = junit.parse_junit(junit_file)
     job = base.get_resource_orm(models2.Job, file.job_id)
-    previous_jsonunit = _get_previous_jsonunit2(job, file.name)
+    previous_jsonunit = _get_previous_jsonunit(job, file.name)
     testsuites = junit.add_regressions_and_successfix_to_tests(
         previous_jsonunit, jsonunit
     )

@@ -164,3 +164,26 @@ def add_regressions_and_successfix_to_tests(testsuites1, testsuites2):
                     testsuite["successfixes"] += 1
 
     return testsuites2
+
+
+def calculate_test_results(testsuites):
+    results = {
+        "success": 0,
+        "failures": 0,
+        "errors": 0,
+        "skipped": 0,
+        "tests": 0,
+        "regressions": 0,
+        "successfixes": 0,
+        "time": 0,
+    }
+    for testsuite in testsuites:
+        results["success"] += testsuite["success"]
+        results["failures"] += testsuite["failures"]
+        results["errors"] += testsuite["errors"]
+        results["skipped"] += testsuite["skipped"]
+        results["tests"] += testsuite["tests"]
+        results["regressions"] += testsuite["regressions"]
+        results["successfixes"] += testsuite["successfixes"]
+        results["time"] += testsuite["time"]
+    return results

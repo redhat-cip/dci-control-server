@@ -56,7 +56,7 @@ jobtest_one = """
 """
 
 jobtest_two = """
-<testsuite errors="1" failures="1" name="Kikoolol2" tests="3" time="3385.127">
+<testsuite errors="1" failures="1" name="Kikoolol1" tests="3" time="3385.127">
     <testcase
             classname="Testsuite_1"
             name="test_1"

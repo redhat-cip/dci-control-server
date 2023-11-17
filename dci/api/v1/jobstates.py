@@ -24,8 +24,6 @@ from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import jobs_events
 from dci.api.v1 import notifications
-from dci.api.v1 import files
-from dci.api.v1 import transformations
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import check_json_is_valid, jobstate_schema, check_and_get_args
@@ -46,7 +44,7 @@ def insert_jobstate(values):
     flask.g.session.commit()
 
 
-def serialize_job_with_testcases(job_id):
+def serialize_job(job_id):
     job = base.get_resource_orm(
         models2.Job,
         job_id,
@@ -57,17 +55,7 @@ def serialize_job_with_testcases(job_id):
             sa_orm.selectinload("results"),
         ],
     )
-    job_serialized = job.serialize()
-    results_with_testcases = []
-    for result in job_serialized["results"]:
-        file = base.get_resource_orm(models2.File, result["file_id"])
-        file_descriptor = files.get_file_descriptor(file)
-        jsonunit = transformations.junit2dict(file_descriptor)
-        result_with_testcases = result.copy()
-        result_with_testcases["testcases"] = jsonunit["testscases"]
-        results_with_testcases.append(result_with_testcases)
-    job_serialized["results"] = results_with_testcases
-    return job_serialized
+    return job.serialize()
 
 
 @api.route("/jobstates", methods=["POST"])
@@ -104,7 +92,7 @@ def create_jobstates(user):
 
     # send notification in case of final jobstate status
     if status in models2.FINAL_STATUSES and not is_job_final_state:
-        job_serialized = serialize_job_with_testcases(job_id)
+        job_serialized = serialize_job(job_id)
         jobs_events.create_event(
             job_serialized["id"], values["status"], job_serialized["topic_id"]
         )

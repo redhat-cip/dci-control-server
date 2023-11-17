@@ -497,17 +497,3 @@ def openshift_410_topic(admin, openshift_product):
         "component_types": ["ocp"],
     }
     return admin.post("/api/v1/topics", data=data).data["topic"]
-
-
-@pytest.fixture
-def cki_test_file(user, job_user):
-    headers = {
-        "DCI-JOB-ID": job_user["id"],
-        "DCI-NAME": "cki-result",
-        "DCI-MIME": "application/junit",
-        "Content-Disposition": "attachment; filename=cki-results.xml",
-        "Content-Type": "application/junit",
-    }
-    data = open("tests/data/cki-results.xml").read()
-    r = user.post("/api/v1/files", headers=headers, data=data)
-    return r.data["file"]

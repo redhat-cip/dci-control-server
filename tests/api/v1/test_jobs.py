@@ -17,7 +17,6 @@
 from __future__ import unicode_literals
 import mock
 import pytest
-import six
 import uuid
 
 import datetime
@@ -309,7 +308,9 @@ def test_get_all_jobs_with_pagination(
     assert jobs.data["jobs"] == []
 
 
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
 def test_get_all_jobs_with_subresources(
+    job_dispatcher_mock,
     admin,
     remoteci_context,
     team_user_id,
@@ -339,33 +340,15 @@ def test_get_all_jobs_with_subresources(
 
     assert jobs["_meta"]["count"] == 2
     assert len(jobs["jobs"]) == 2
-
-    with mock.patch(AWSS3, spec=S3) as mock_s3:
-        mockito = mock.MagicMock()
-        head_result = {
-            "etag": utils.gen_etag(),
-            "content-type": "stream",
-            "content-length": 7,
+    jobs = admin.get("/api/v1/jobs").data
+    for job in jobs["jobs"]:
+        headers = {
+            "DCI-JOB-ID": job["id"],
+            "DCI-NAME": "name1.xml",
+            "DCI-MIME": "application/junit",
+            "Content-Type": "application/junit",
         }
-
-        def get(a):
-            return (
-                True,
-                six.StringIO(JUNIT),
-            )
-
-        mockito.head.return_value = head_result
-        mockito.get = get
-        mock_s3.return_value = mockito
-        query = "/api/v1/jobs"
-        jobs = admin.get(query).data
-        for job in jobs["jobs"]:
-            headers = {
-                "DCI-JOB-ID": job["id"],
-                "DCI-NAME": "name1",
-                "DCI-MIME": "application/junit",
-            }
-            admin.post("/api/v1/files", headers=headers, data=JUNIT)
+        admin.post("/api/v1/files", headers=headers, data=JUNIT)
     jobs = admin.get("/api/v1/jobs").data
     assert jobs["_meta"]["count"] == 2
     assert len(jobs["jobs"]) == 2
@@ -877,35 +860,22 @@ def test_get_files_by_job_id_as_epm(epm, job_user_id, file_job_user_id):
     assert file_from_job.data["_meta"]["count"] == 1
 
 
-def test_get_results_by_job_id(user, job_user_id):
-    with mock.patch(AWSS3, spec=S3) as mock_s3:
-        mockito = mock.MagicMock()
-        head_result = {
-            "etag": utils.gen_etag(),
-            "content-type": "stream",
-            "content-length": 1,
-        }
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
+def test_get_results_by_job_id(job_dispatcher_mock, user, job_user_id):
+    headers = {
+        "DCI-JOB-ID": job_user_id,
+        "Content-Type": "application/junit",
+        "DCI-MIME": "application/junit",
+        "DCI-NAME": "res_junit.xml",
+    }
 
-        def get(a):
-            return [True, six.StringIO(JUNIT)]
+    user.post("/api/v1/files", headers=headers, data=JUNIT)
 
-        mockito.head.return_value = head_result
-        mockito.get = get
-        mock_s3.return_value = mockito
-        headers = {
-            "DCI-JOB-ID": job_user_id,
-            "Content-Type": "application/junit",
-            "DCI-MIME": "application/junit",
-            "DCI-NAME": "res_junit.xml",
-        }
-
-        user.post("/api/v1/files", headers=headers, data=JUNIT)
-
-        # get file from job
-        file_from_job = user.get("/api/v1/jobs/%s/results" % job_user_id)
-        assert file_from_job.status_code == 200
-        assert file_from_job.data["_meta"]["count"] == 1
-        assert file_from_job.data["results"][0]["total"] == 6
+    # get file from job
+    file_from_job = user.get("/api/v1/jobs/%s/results" % job_user_id)
+    assert file_from_job.status_code == 200
+    assert file_from_job.data["_meta"]["count"] == 1
+    assert file_from_job.data["results"][0]["total"] == 6
 
 
 def test_purge(user, admin, job_user_id, team_user_id):

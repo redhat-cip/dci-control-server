@@ -60,45 +60,6 @@ def _build_generic_message(job, component, result, now):
     }
 
 
-def _get_kernel_version(component):
-    if "tags" not in component:
-        return None
-    kernel_version = None
-    for tag in component["tags"]:
-        if "kernel:" in tag:
-            kernel_version = tag.replace("kernel:", "")
-    return kernel_version
-
-
-def _build_cki_message(job, component, result):
-    job_url = "https://www.distributed-ci.io/jobs/%s/jobStates" % str(job["id"])
-    target = "topic://VirtualTopic.eng.distributed-ci.cki"
-    architecture = _get_architecture(job)
-    return {
-        "target": target,
-        "body": json.dumps(
-            {
-                "results": [
-                    {
-                        "test_arch": architecture,
-                        "test_description": tc["classname"],
-                        "test_log_url": [job_url],
-                        "test_name": tc["name"],
-                        "test_result": "PASS" if job["status"] == "success" else "FAIL",
-                        "is_debug": False,
-                    }
-                    for tc in result["testcases"]
-                ],
-                "summarized_result": "",
-                "team_email": "distributed-ci@redhat.com",
-                "team_name": "DCI",
-                "kernel_version": _get_kernel_version(component),
-                "artifact": _get_artifact(component),
-            }
-        ),
-    }
-
-
 def build_umb_messages(event, now=datetime.datetime.utcnow()):
     logger.debug("Received event to send on UMB: %s" % event)
     messages = []
@@ -111,8 +72,6 @@ def build_umb_messages(event, now=datetime.datetime.utcnow()):
             )
             continue
         for result in job["results"]:
-            if "cki-results" == result["name"].lower():
-                messages.append(_build_cki_message(job, component, result))
             messages.append(_build_generic_message(job, component, result, now))
     return messages
 

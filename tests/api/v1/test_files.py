@@ -17,21 +17,23 @@
 from __future__ import unicode_literals
 
 import base64
-from datetime import datetime
-from datetime import timedelta
 
 import flask
 import mock
 import pytest
 
+from datetime import datetime
+from datetime import timedelta
+from uuid import UUID
+from sqlalchemy import sql
+
 from dci import dci_config
 from dci.api.v1 import files
-from dci.api.v1.files import get_file_info_from_headers
 from dci.common import exceptions as dci_exc
 from dci.db import models2
 from dci.stores import files_utils
 from tests import data as tests_data
-import tests.utils as t_utils
+from tests import utils as t_utils
 
 
 def test_create_files(user, jobstate_user_id):
@@ -134,6 +136,7 @@ def test_upload_tests_with_regressions_successfix(
     job_2_results = admin.get("/api/v1/jobs/%s?embed=results" % job_2["id"]).data[
         "job"
     ]["results"]
+
     for job_res in job_2_results:
         if job_res["name"] == "Tempest":
             assert job_res["regressions"] == 1
@@ -141,14 +144,6 @@ def test_upload_tests_with_regressions_successfix(
         elif job_res["name"] == "Rally":
             assert job_res["regressions"] == 0
             assert job_res["successfixes"] == 0
-
-    tcs = admin.get("/api/v1/files/%s/testscases" % f_2).data["testscases"]
-    assert tcs[0]["successfix"]
-    assert not tcs[0]["regression"]
-    assert not tcs[1]["successfix"]
-    assert not tcs[1]["regression"]
-    assert not tcs[2]["successfix"]
-    assert tcs[2]["regression"]
 
 
 def test_get_file_by_id(user, job_user_id):
@@ -229,7 +224,7 @@ def test_get_file_info_from_header():
         "mime": "",
         "Dci-Job-Id": "",
     }
-    file_info = get_file_info_from_headers(headers)
+    file_info = files.get_file_info_from_headers(headers)
     assert len(file_info.keys()) == 2
     assert "mime" in file_info
     assert "job_id" in file_info
@@ -452,3 +447,91 @@ def test_nrt_get_an_empty_junit_file(_, user, job_user_id):
     )["id"]
     testsuites = user.get("/api/v1/files/%s/junit" % junit_id).data["testsuites"]
     assert len(testsuites) == 0
+
+
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
+def test_retrieve_junit2dict(job_dispatcher_mock, admin, job_user_id):
+    headers = {
+        "DCI-NAME": "junit_file.xml",
+        "DCI-JOB-ID": job_user_id,
+        "DCI-MIME": "application/junit",
+        "Content-Disposition": "attachment; filename=junit_file.xml",
+        "Content-Type": "application/junit",
+    }
+
+    file = admin.post("/api/v1/files", headers=headers, data=tests_data.JUNIT)
+    file_id = file.data["file"]["id"]
+
+    # First retrieve file
+    res = admin.get("/api/v1/files/%s/content" % file_id)
+
+    assert res.data == tests_data.JUNIT
+
+    # Non Regression Test: XHR doesn't modify content
+    headers = {"X-Requested-With": "XMLHttpRequest"}
+    res = admin.get("/api/v1/files/%s/content" % file_id, headers=headers)
+
+    assert res.data == tests_data.JUNIT
+    assert res.headers["Content-Type"] == "application/junit"
+
+
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
+def test_create_file_fill_tests_results_table(
+    job_dispatcher_mock, engine, admin, job_user_id
+):
+    with open("tests/data/tempest-results.xml", "r") as f:
+        content_file = f.read()
+
+    headers = {
+        "DCI-JOB-ID": job_user_id,
+        "DCI-NAME": "tempest-results.xml",
+        "DCI-MIME": "application/junit",
+        "Content-Disposition": "attachment; filename=tempest-results.xml",
+        "Content-Type": "application/junit",
+    }
+    admin.post("/api/v1/files", headers=headers, data=content_file)
+
+    query = sql.select([models2.TestsResult])
+    tests_results = engine.execute(query).fetchall()
+    test_result = dict(tests_results[0])
+
+    assert len(tests_results) == 1
+    assert UUID(str(test_result["id"]), version=4)
+    assert test_result["name"] == "tempest-results.xml"
+    assert test_result["total"] == 131
+    assert test_result["skips"] == 13
+    assert test_result["failures"] == 1
+    assert test_result["errors"] == 0
+    assert test_result["success"] == 117
+    assert test_result["time"] == 1319
+
+
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
+def test_tests_results_table_with_multiple_testsuites(
+    job_dispatcher_mock, engine, admin, job_user_id
+):
+    with open("tests/data/junit_with_multiple_testsuite.xml", "r") as f:
+        content_file = f.read()
+
+    headers = {
+        "DCI-JOB-ID": job_user_id,
+        "DCI-NAME": "junit_with_multiple_testsuite.xml",
+        "DCI-MIME": "application/junit",
+        "Content-Disposition": "attachment; filename=junit_with_multiple_testsuite.xml",
+        "Content-Type": "application/junit",
+    }
+    admin.post("/api/v1/files", headers=headers, data=content_file)
+
+    query = sql.select([models2.TestsResult])
+    tests_results = engine.execute(query).fetchall()
+    test_result = dict(tests_results[0])
+
+    assert len(tests_results) == 1
+    assert UUID(str(test_result["id"]), version=4)
+    assert test_result["name"] == "junit_with_multiple_testsuite.xml"
+    assert test_result["total"] == 6
+    assert test_result["skips"] == 1
+    assert test_result["failures"] == 1
+    assert test_result["errors"] == 1
+    assert test_result["success"] == 3
+    assert test_result["time"] == 24
