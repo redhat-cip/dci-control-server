@@ -17,6 +17,7 @@ import base64
 import datetime
 import gc
 import io
+import xml.etree.ElementTree
 from dci.common.time import get_job_duration
 
 try:
@@ -189,17 +190,23 @@ def create_files(user):
     )
 
     new_file = base.create_resource_orm(models2.File, values)
-    result = json.dumps({"file": new_file})
-
-    if new_file["mime"] == "application/junit":
-        _, junit_file = store.get("files", file_path)
-        _process_junit_file(values, junit_file, job)
+    result = {"file": new_file}
 
     # Update job duration if it's jobstate's file
     base.update_resource_orm(job, {"duration": get_job_duration(job)})
     gc.collect()
 
-    return flask.Response(result, 201, content_type="application/json")
+    if new_file["mime"] == "application/junit":
+        try:
+            _, junit_file = store.get("files", file_path)
+            _process_junit_file(values, junit_file, job)
+        except xml.etree.ElementTree.ParseError as xmlerror:
+            result["error"] = "Invalid XML: " + xmlerror.msg
+            return flask.Response(
+                json.dumps(result), 400, content_type="application/json"
+            )
+
+    return flask.Response(json.dumps(result), 201, content_type="application/json")
 
 
 def get_all_files(user, job_id):

@@ -535,3 +535,36 @@ def test_tests_results_table_with_multiple_testsuites(
     assert test_result["errors"] == 1
     assert test_result["success"] == 3
     assert test_result["time"] == 24
+
+
+@mock.patch("dci.api.v1.notifications.job_dispatcher")
+def test_upload_tests_with_invalid_xml(
+    mocked_disp, admin, remoteci_context, rhel_80_topic, rhel_80_component
+):
+    headers = {
+        "User-Agent": "python-dciclient",
+        "Client-Version": "python-dciclient_0.1.0",
+    }
+
+    # 1. schedule two jobs and create their files
+    data = {
+        "topic_id": rhel_80_topic["id"],
+        "components_ids": [rhel_80_component["id"]],
+    }
+    job = remoteci_context.post(
+        "/api/v1/jobs/schedule", headers=headers, data=data
+    ).data["job"]
+
+    headers = {
+        "DCI-JOB-ID": job["id"],
+        "DCI-NAME": "Some Invalid JUnit File",
+        "DCI-MIME": "application/junit",
+        "Content-Type": "application/junit",
+        "Content-Disposition": "attachment; filename=invalid_xml_file.xml",
+    }
+
+    file_upload_result = remoteci_context.post(
+        "/api/v1/files", headers=headers, data="garbage<>!"
+    )
+    assert file_upload_result.status_code == 400
+    assert file_upload_result.data["error"].startswith("Invalid XML: ")
