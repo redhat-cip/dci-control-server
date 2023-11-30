@@ -567,4 +567,4 @@ def test_upload_tests_with_invalid_xml(
         "/api/v1/files", headers=headers, data="garbage<>!"
     )
     assert file_upload_result.status_code == 400
-    assert file_upload_result.data["error"].startswith("Invalid XML: ")
+    assert file_upload_result.data["message"].startswith("Invalid XML: ")

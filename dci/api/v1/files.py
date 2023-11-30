@@ -201,10 +201,7 @@ def create_files(user):
             _, junit_file = store.get("files", file_path)
             _process_junit_file(values, junit_file, job)
         except xml.etree.ElementTree.ParseError as xmlerror:
-            result["error"] = "Invalid XML: " + xmlerror.msg
-            return flask.Response(
-                json.dumps(result), 400, content_type="application/json"
-            )
+            raise dci_exc.DCIException(message="Invalid XML: " + xmlerror.msg)
 
     return flask.Response(json.dumps(result), 201, content_type="application/json")
 
