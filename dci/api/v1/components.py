@@ -162,7 +162,7 @@ def update_components(user, c_id):
     )
 
 
-def get_all_components(user, topic_id):
+def get_all_components(user, topics_ids):
     """Get all components of a topic that are accessible by
     the user."""
 
@@ -174,7 +174,7 @@ def get_all_components(user, topic_id):
     query = flask.g.session.query(models2.Component)
     query = query.filter(
         sql.and_(
-            models2.Component.topic_id == topic_id,
+            models2.Component.topic_id.in_(topics_ids),
             models2.Component.state != "archived",
         )
     )
@@ -196,6 +196,13 @@ def get_all_components(user, topic_id):
     components = [component.serialize() for component in query.all()]
 
     return flask.jsonify({"components": components, "_meta": {"count": nb_components}})
+
+
+@api.route("/components", methods=["GET"])
+@decorators.login_required
+def get_components(user):
+    topics_ids = export_control.get_user_topic_ids(user)
+    return get_all_components(user, topics_ids)
 
 
 @api.route("/components/<uuid:c_id>", methods=["GET"])

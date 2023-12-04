@@ -62,3 +62,25 @@ def verify_access_to_topic(user, topic):
         and not has_access_to_topic(user, topic)
     ):
         raise dci_exc.Unauthorized()
+
+
+def get_user_product_ids(user):
+    query = flask.g.session.query(models2.Product).filter(
+        models2.Product.state != "archived"
+    )
+    query = query.join(
+        models2.JOIN_PRODUCTS_TEAMS,
+        sql.and_(
+            models2.JOIN_PRODUCTS_TEAMS.c.product_id == models2.Product.id,
+            models2.JOIN_PRODUCTS_TEAMS.c.team_id.in_(user.teams_ids),
+        ),
+    )
+    return [product.id for product in query.all()]
+
+
+def get_user_topic_ids(user):
+    product_ids = get_user_product_ids(user)
+    filters = [models2.Topic.product_id.in_(product_ids)]
+    if user.has_not_pre_release_access():
+        filters.append(models2.Topic.export_control == True)  # noqa
+    return [t.id for t in base.get_resources_orm(models2.Topic, filters)]

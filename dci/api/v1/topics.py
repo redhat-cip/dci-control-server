@@ -95,20 +95,6 @@ def get_topic_by_id(user, topic_id):
 @api.route("/topics", methods=["GET"])
 @decorators.login_required
 def get_all_topics(user):
-    def _get_user_product_ids():
-        q = flask.g.session.query(models2.Product).filter(
-            models2.Product.state != "archived"
-        )
-        _JPT = models2.JOIN_PRODUCTS_TEAMS
-        q = q.join(
-            _JPT,
-            sql.and_(
-                _JPT.c.product_id == models2.Product.id,
-                _JPT.c.team_id.in_(user.teams_ids),
-            ),
-        )
-        return [p.id for p in q.all()]
-
     args = check_and_get_args(flask.request.args.to_dict())
     q = (
         flask.g.session.query(models2.Topic)
@@ -118,7 +104,7 @@ def get_all_topics(user):
     )
 
     if user.is_not_super_admin() and user.is_not_read_only_user() and user.is_not_epm():
-        product_ids = _get_user_product_ids()
+        product_ids = export_control.get_user_product_ids(user)
         q = q.filter(models2.Topic.product_id.in_(product_ids))
         if user.has_not_pre_release_access():
             q = q.filter(models2.Topic.export_control == True)  # noqa
@@ -187,7 +173,7 @@ def delete_topic_by_id(user, topic_id):
 def get_topics_components(user, topic_id):
     topic = base.get_resource_orm(models2.Topic, topic_id)
     export_control.verify_access_to_topic(user, topic)
-    return components.get_all_components(user, topic_id=topic_id)
+    return components.get_all_components(user, [topic_id])
 
 
 # teams set apis

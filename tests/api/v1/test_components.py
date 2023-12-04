@@ -1319,7 +1319,6 @@ def test_teams_components_isolation(
 def test_components_access_of_other_teams(
     admin, user, user2, topic_user_id, team_user_id, team_user_id2, team_user_id3
 ):
-
     # create a component associated to team_user_id
     data = {
         "name": "pname",
@@ -1609,3 +1608,112 @@ def test_default_components_sort_is_by_released_at(admin, openshift_410_topic):
     ).data["components"]
     assert components[0]["name"] == "OpenShift 4.10.50"
     assert components[1]["name"] == "OpenShift 4.10.49"
+
+
+def test_get_components_without_any_permissions(
+    admin,
+    remoteci_context,
+    rhel_81_component,
+    rhel_80_component,
+):
+    r = remoteci_context.get("/api/v1/components")
+    assert r.status_code == 200
+    assert len(r.data["components"]) == 1
+    assert r.data["components"][0]["id"] == rhel_80_component["id"]
+
+    r = admin.get("/api/v1/components")
+    assert r.status_code == 200
+    components_ids = [c["id"] for c in r.data["components"]]
+    assert components_ids == [rhel_80_component["id"], rhel_81_component["id"]]
+
+
+def test_get_components_with_pre_release_access(
+    admin,
+    remoteci_context,
+    team_user,
+    rhel_81_component,
+    rhel_80_component,
+):
+    r = remoteci_context.get("/api/v1/components")
+    assert r.status_code == 200
+    assert len(r.data["components"]) == 1
+    assert r.data["components"][0]["id"] == rhel_80_component["id"]
+
+    r = admin.put(
+        "/api/v1/teams/%s" % team_user["id"],
+        data={"has_pre_release_access": True},
+        headers={"If-match": team_user["etag"]},
+    )
+    assert r.status_code == 200
+
+    r = remoteci_context.get("/api/v1/components")
+    assert r.status_code == 200
+    components_ids = [c["id"] for c in r.data["components"]]
+    assert components_ids == [rhel_80_component["id"], rhel_81_component["id"]]
+
+
+def test_get_components_sort(
+    admin,
+    rhel_81_component,
+    rhel_80_component,
+):
+    r = admin.get("/api/v1/components?sort=-created_at")
+    assert r.status_code == 200
+    components_ids = [c["id"] for c in r.data["components"]]
+    assert components_ids == [rhel_80_component["id"], rhel_81_component["id"]]
+
+    r = admin.get("/api/v1/components?sort=created_at")
+    assert r.status_code == 200
+    components_ids = [c["id"] for c in r.data["components"]]
+    assert components_ids == [rhel_81_component["id"], rhel_80_component["id"]]
+
+
+def test_get_components_with_teams_component(
+    remoteci_context,
+    team_user,
+    rhel_80_topic,
+    rhel_80_component,
+):
+    r = remoteci_context.get("/api/v1/components")
+    assert r.status_code == 200
+    assert len(r.data["components"]) == 1
+    assert r.data["components"][0]["id"] == rhel_80_component["id"]
+
+    data = {
+        "name": "Kernel module",
+        "type": "kernel_module",
+        "topic_id": rhel_80_topic["id"],
+        "team_id": team_user["id"],
+    }
+    r = remoteci_context.post("/api/v1/components", data=data)
+    assert r.status_code == 201
+    team_component = r.data["component"]
+
+    r = remoteci_context.get("/api/v1/components")
+    assert r.status_code == 200
+    components_ids = [c["id"] for c in r.data["components"]]
+    assert components_ids == [team_component["id"], rhel_80_component["id"]]
+
+
+def test_a_user_cant_access_another_user_component(
+    user, topic_user_id, team_user_id, user2
+):
+    assert user.get("/api/v1/components").data["components"] == []
+    assert user2.get("/api/v1/components").data["components"] == []
+
+    data = {
+        "name": "Kernel module",
+        "type": "kernel_module",
+        "topic_id": topic_user_id,
+        "team_id": team_user_id,
+    }
+    r = user.post("/api/v1/components", data=data)
+    assert r.status_code == 201
+    user_component = r.data["component"]
+
+    r = user.get("/api/v1/components")
+    assert r.status_code == 200
+    assert len(r.data["components"]) == 1
+    assert r.data["components"][0]["id"] == user_component["id"]
+
+    assert user2.get("/api/v1/components").data["components"] == []
