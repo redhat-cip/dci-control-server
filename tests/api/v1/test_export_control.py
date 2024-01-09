@@ -55,7 +55,6 @@ def change_team_pre_release_access(client, team, has_access=True):
 def test_user_can_access_ga_topic_s_components_if_has_access_to_the_product(
     epm, user, team_user, rhel_product, rhel_80_topic
 ):
-
     assert rhel_80_topic["export_control"]
 
     # user can list the components because he has access to the RHEL product
