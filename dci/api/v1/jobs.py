@@ -21,7 +21,7 @@ from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 import sqlalchemy.orm as sa_orm
 
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from dci.api.v1 import api
 from dci.api.v1 import base
@@ -129,8 +129,6 @@ def internal_create_jobs(user, values, components_ids=None):
     )
     # schedule
     if components_ids is None:
-        kill_existing_jobs(remoteci.id)
-
         components_ids = values.pop("components_ids")
         for c_id in components_ids:
             c = base.get_resource_orm(models2.Component, c_id)
@@ -212,26 +210,6 @@ def _build_job(product_id, topic_id, remoteci, components_ids, values):
             )
 
     return values
-
-
-def kill_existing_jobs(remoteci_id, session=None):
-    try:
-        session = session or flask.g.session
-        yesterday = datetime.now() - timedelta(hours=24)
-        query = flask.g.session.query(models2.Job)
-        query = query.filter(models2.Job.remoteci_id == remoteci_id)
-        query = query.filter(
-            models2.Job.status.in_(("new", "pre-run", "running", "post-run"))
-        )
-        query = query.filter(models2.Job.created_at < yesterday)
-        query = query.update({"status": "killed"}, synchronize_session=False)
-        session.commit()
-    except Exception as e:
-        flask.g.session.rollback()
-        logger.error("error while killing existing jobs: %s" % str(e))
-        raise dci_exc.DCIException(
-            message="error while killing existing jobs", status_code=409
-        )
 
 
 @api.route("/jobs/<uuid:job_id>/update", methods=["POST"])
