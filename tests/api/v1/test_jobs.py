@@ -211,10 +211,10 @@ def test_create_jobs_empty_comment(
 ):
     data = {"components": components_user_ids, "topic_id": topic_user_id}
     job = remoteci_context.post("/api/v1/jobs", data=data).data
-    assert job["job"]["comment"] is None
+    assert job["job"]["comment"] == ""
 
     job = remoteci_context.get("/api/v1/jobs/%s" % job["job"]["id"]).data
-    assert job["job"]["comment"] is None
+    assert job["job"]["comment"] == ""
 
 
 def test_get_all_jobs(
@@ -478,11 +478,9 @@ def test_get_all_jobs_with_where(admin, team_user_id, job_user_id):
     db_job_id = db_job["jobs"][0]["id"]
     assert db_job_id == job_user_id
 
-    db_job = admin.get("/api/v1/jobs?where=url:,team_id:%s" % team_user_id).data
-    db_job_id = db_job["jobs"][0]["id"]
-    assert db_job_id == job_user_id
-
-    db_job = admin.get("/api/v1/jobs?where=url:").data
+    db_job = admin.get(
+        "/api/v1/jobs?where=id:%s,team_id:%s" % (job_user_id, team_user_id)
+    ).data
     db_job_id = db_job["jobs"][0]["id"]
     assert db_job_id == job_user_id
 
@@ -932,3 +930,15 @@ def test_purge_failure(user, admin, job_user_id, team_user_id):
     assert len(to_purge_files["files"]) == 1
     to_purge_jobs = admin.get("/api/v1/jobs/purge").data
     assert len(to_purge_jobs["jobs"]) == 1
+
+
+def test_nrt_get_then_put_on_job_with_no_error(user, job_user_id):
+    r = user.get("/api/v1/jobs/%s" % job_user_id)
+    assert r.status_code == 200
+    job = r.data["job"]
+    r = user.put(
+        "/api/v1/jobs/%s" % job_user_id,
+        data=job,
+        headers={"If-match": job["etag"]},
+    )
+    assert r.status_code == 200

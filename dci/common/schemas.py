@@ -43,6 +43,12 @@ class Properties(object):
     }
     email = {"type": "string", "format": "email"}
     url = {"type": "string", "format": "uri", "pattern": "^https?://"}
+    url_or_empty_string = {
+        "anyOf": [
+            {"type": "string", "format": "uri", "pattern": "^https?://"},
+            {"type": "string", "maxLength": 0},
+        ]
+    }
     json = {"type": "object"}
     array = {"type": "array"}
     integer = {"type": "integer"}
@@ -170,17 +176,17 @@ create_job_properties = {
     "remoteci_id": Properties.uuid,
     "team_id": Properties.uuid,
     "components": Properties.array,
-    "comment": with_default(Properties.string, None),
+    "comment": with_default(Properties.string, ""),
     "previous_job_id": with_default(Properties.uuid, None),
     "update_previous_job_id": with_default(Properties.uuid, None),
     "state": with_default(Properties.enum(valid_resource_states), "active"),
     "topic_id": with_default(Properties.uuid, None),
     "tags": with_default(Properties.array, []),
     "data": with_default(Properties.json, {}),
-    "status_reason": with_default(Properties.string, None),
-    "configuration": with_default(Properties.string, None),
-    "name": with_default(Properties.string, None),
-    "url": with_default(Properties.url, None),
+    "status_reason": with_default(Properties.string, ""),
+    "configuration": with_default(Properties.string, ""),
+    "name": with_default(Properties.string, ""),
+    "url": with_default(Properties.url_or_empty_string, ""),
     "pipeline_id": with_default(Properties.uuid, None),
 }
 create_job_schema = {
@@ -209,7 +215,7 @@ update_job_properties = {
     "status_reason": Properties.string,
     "configuration": Properties.string,
     "name": Properties.string,
-    "url": Properties.url,
+    "url": Properties.url_or_empty_string,
 }
 update_job_schema = {"type": "object", "properties": update_job_properties}
 
