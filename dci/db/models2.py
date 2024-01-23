@@ -537,11 +537,11 @@ class Job(dci_declarative.Mixin, Base):
     )
     # duration in seconds
     duration = sa.Column(sa.Integer, default=0)
-    comment = sa.Column(sa.Text, default="")
-    status_reason = sa.Column(sa.Text, default="")
-    configuration = sa.Column(sa.Text, default="")
-    url = sa.Column(sa.Text, default="")
-    name = sa.Column(sa.Text, default="")
+    comment = sa.Column(sa.Text, nullable=False, default="")
+    status_reason = sa.Column(sa.Text, nullable=False, default="")
+    configuration = sa.Column(sa.Text, nullable=False, default="")
+    url = sa.Column(sa.Text, nullable=False, default="")
+    name = sa.Column(sa.Text, nullable=False, default="")
     status = sa.Column(STATUSES, default="new")
     topic_id = sa.Column(
         pg.UUID(as_uuid=True),
@@ -569,8 +569,8 @@ class Job(dci_declarative.Mixin, Base):
         sa.ForeignKey("pipelines.id", ondelete="CASCADE"),
         nullable=True,
     )
-    user_agent = sa.Column(sa.String(255), default="")
-    client_version = sa.Column(sa.String(255), default="")
+    user_agent = sa.Column(sa.String(255), nullable=False, default="")
+    client_version = sa.Column(sa.String(255), nullable=False, default="")
     previous_job_id = sa.Column(
         pg.UUID(as_uuid=True), sa.ForeignKey("jobs.id"), nullable=True, default=None
     )
