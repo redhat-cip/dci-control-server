@@ -7,6 +7,9 @@ COPY . /opt/dci-control-server
 COPY entrypoint.sh /usr/local/sbin/
 COPY gunicorn.conf.py /etc/
 
+COPY sso/RH-IT-Root-CA.crt /etc/pki/ca-trust/source/anchors/RH-IT-Root-CA.crt
+RUN update-ca-trust
+
 WORKDIR /opt/dci-control-server
 
 RUN microdnf update && \
