@@ -60,4 +60,4 @@ $ %s https://sso.redhat.com redhat-external
         print(usage)
         sys.exit(1)
     public_key = get_latest_public_key(sys.argv[1], sys.argv[2])
-    print(public_key)
+    print(public_key.decode("utf-8"))
