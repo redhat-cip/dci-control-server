@@ -370,6 +370,7 @@ update_user_properties = {
     "name": Properties.string,
     "fullname": Properties.string,
     "email": Properties.email,
+    "sso_sub": with_default(Properties.string, None),
     "timezone": Properties.string,
     "password": Properties.string,
     "team_id": Properties.uuid,

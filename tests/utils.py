@@ -25,6 +25,7 @@ import collections
 import flask
 import shutil
 
+import jwt
 import six
 
 import dci.auth as auth
@@ -130,6 +131,10 @@ def generate_token_based_client(app, resource):
     client = app.test_client()
     client.open = client_open_decorator(client.open)
     return client
+
+
+def generate_jwt(payload, private_key):
+    return jwt.encode(payload, private_key, algorithm="RS256").decode("utf-8")
 
 
 def _post_file(client, headers, content):

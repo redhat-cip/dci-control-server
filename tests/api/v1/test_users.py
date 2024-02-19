@@ -795,6 +795,7 @@ def test_create_user_with_only_email(epm):
         "fullname": "onlyemail@example.org",
         "timezone": "UTC",
         "sso_username": None,
+        "sso_sub": None,
         "created_at": mock.ANY,
         "updated_at": mock.ANY,
         "state": "active",
@@ -821,9 +822,28 @@ def test_create_user_with_only_sso_username(epm):
         "fullname": "rh-login-1",
         "timezone": "UTC",
         "sso_username": "rh-login-1",
+        "sso_sub": None,
         "created_at": mock.ANY,
         "updated_at": mock.ANY,
         "state": "active",
         "team": [],
         "remotecis": [],
     }
+
+
+def test_admin_can_update_sso_sub_field(admin):
+    request = admin.post(
+        "/api/v1/users",
+        data={
+            "email": "jdoe@example.org",
+        },
+    )
+    assert request.status_code == 201
+    jdoe = admin.get("/api/v1/users?where=email:jdoe@example.org").data["users"][0]
+    assert jdoe["sso_sub"] is None
+    jdoe["sso_sub"] = "87654321"
+    request = admin.put(
+        "/api/v1/users/%s" % jdoe["id"], data=jdoe, headers={"If-match": jdoe["etag"]}
+    )
+    assert request.status_code == 200
+    assert request.data["user"]["sso_sub"] == "87654321"

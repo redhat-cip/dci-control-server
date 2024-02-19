@@ -268,12 +268,13 @@ class OpenIDCAuth(BaseMechanism):
 
     @staticmethod
     def _get_user_info(token):
-        # preferred_username is OIDC Standard
         username = token.get("preferred_username", token.get("username"))
+        sso_sub = None if token.get("scope", "openid") == "openid" else token.get("sub")
         return {
             "name": username,
-            "fullname": username,
+            "fullname": token.get("name", username),
             "sso_username": username,
+            "sso_sub": sso_sub,
             "email": token.get("email"),
             "timezone": "UTC",
         }
