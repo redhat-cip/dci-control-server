@@ -20,7 +20,7 @@ from sqlalchemy import sql
 from sqlalchemy import orm
 
 from dci.api.v1 import base, sso
-from dci.auth import check_passwords_equal, decode_jwt
+from dci.auth import check_passwords_equal
 from dci import dci_config
 from dci.common import exceptions as dci_exc
 from dciauth.request import AuthRequest
@@ -30,7 +30,10 @@ from dciauth.v2.signature import is_valid
 from dci.db import models2
 from dci.identity import Identity
 
+import logging
 from jwt import exceptions as jwt_exc
+
+logger = logging.getLogger(__name__)
 
 
 class BaseMechanism(object):
@@ -211,15 +214,32 @@ class OpenIDCAuth(BaseMechanism):
         auth_header = self.request.headers.get("Authorization").split(" ")
         if len(auth_header) != 2:
             return False
-        bearer, token = auth_header
-
+        _, token = auth_header
         conf = dci_config.CONFIG
+
+        def __get_and_set_sso_public_key():
+            public_key = sso.get_public_key_from_token(token)
+            if conf.get("SSO_PUBLIC_KEY") != public_key:
+                logging.info("sso public key has been updated")
+                conf["SSO_PUBLIC_KEY"] = public_key
+
+        if not conf.get("SSO_PUBLIC_KEY"):
+            __get_and_set_sso_public_key()
+
         try:
-            decoded_token = decode_jwt(
-                token, conf["SSO_PUBLIC_KEY"], conf["SSO_CLIENT_ID"]
+            decoded_token = sso.decode_token(token, conf["SSO_PUBLIC_KEY"])
+        except (jwt_exc.DecodeError, ValueError) as e:
+            logging.debug(
+                "JWT token decode error: %s, will refresh sso public key and retry decode"
+                % str(e)
             )
-        except (jwt_exc.DecodeError, ValueError):
-            decoded_token = sso.decode_token_with_latest_public_key(token)
+            try:
+                __get_and_set_sso_public_key()
+                decoded_token = sso.decode_token(token, conf["SSO_PUBLIC_KEY"])
+            except (jwt_exc.DecodeError, ValueError) as e2:
+                raise dci_exc.DCIException(
+                    "JWT token decode error: %s" % str(e2), status_code=401
+                )
         except jwt_exc.ExpiredSignatureError:
             raise dci_exc.DCIException(
                 "JWT token expired, please refresh.", status_code=401

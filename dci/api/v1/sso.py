@@ -14,9 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from cryptography.hazmat.primitives import serialization
-import json
-from jwt.algorithms import RSAAlgorithm
+import jwt
 import requests
 
 from dci import auth
@@ -27,34 +25,44 @@ from dci.common import exceptions as dci_exc
 from jwt import exceptions as jwt_exc
 
 
-def get_latest_public_key():
+def get_public_key_from_token(token):
+    header = jwt.get_unverified_header(token)
+    kid = header["kid"]
     sso_url = dci_config.CONFIG.get("SSO_URL")
     realm = dci_config.CONFIG.get("SSO_REALM")
+
     url = "%s/auth/realms/%s/.well-known/openid-configuration" % (sso_url, realm)
-    jwks_uri = requests.get(url).json()["jwks_uri"]
-    jwks = requests.get(jwks_uri).json()["keys"]
-    return RSAAlgorithm.from_jwk(json.dumps(jwks[0])).public_bytes(
-        encoding=serialization.Encoding.PEM,
-        format=serialization.PublicFormat.SubjectPublicKeyInfo,
-    )
+    openid_configuration = requests.get(url)
+    if openid_configuration.status_code != 200:
+        raise Exception(
+            "unable to get sso openid-configuration from url '%s', status=%s, error=%s"
+            % (url, openid_configuration.status_code, openid_configuration.text)
+        )
+    if "jwks_uri" not in openid_configuration.json():
+        raise dci_exc.DCIException("jwks_uri key not in the sso openid-configuration")
+
+    jwks_uri = openid_configuration.json()["jwks_uri"]
+    keys = requests.get(jwks_uri)
+    if keys.status_code != 200:
+        raise dci_exc.DCIException(
+            "unable to get jwks content from url '%s', status=%s, error=%s"
+            % (jwks_uri, keys.status_code, keys.text)
+        )
+    if "keys" not in keys.json():
+        raise dci_exc.DCIException("no 'keys' key found in jwks content")
+
+    keys = keys.json()["keys"]
+    for k in keys:
+        if k["kid"] == kid:
+            return k
+    raise dci_exc.DCIException("kid '%s' from token not found in sso server" % kid)
 
 
-def decode_token_with_latest_public_key(token):
-    """Get the latest public key and decode the JWT token with it. This
-    function is usefull when the SSO server rotated its key."""
+def decode_token(token, public_key):
+
     conf = dci_config.CONFIG
     try:
-        latest_public_key = get_latest_public_key()
-    except Exception as e:
-        raise dci_exc.DCIException(
-            "Unable to get last SSO public key: %s" % str(e), status_code=401
-        )
-    # SSO server didn't update its public key
-    if conf["SSO_PUBLIC_KEY"] == latest_public_key:
-        raise dci_exc.DCIException("Invalid JWT token.", status_code=401)
-    try:
-        decoded_token = auth.decode_jwt(token, latest_public_key, conf["SSO_CLIENT_ID"])
-        conf["SSO_PUBLIC_KEY"] = latest_public_key
+        decoded_token = auth.decode_jwt(token, public_key, conf["SSO_CLIENT_ID"])
         return decoded_token
     except (jwt_exc.DecodeError, TypeError):
         raise dci_exc.DCIException("Invalid JWT token.", status_code=401)

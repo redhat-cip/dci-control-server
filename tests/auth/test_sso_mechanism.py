@@ -59,9 +59,9 @@ def test_sso_auth_verified(
 
 
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
-@mock.patch("dci.auth_mechanism.sso.get_latest_public_key")
+@mock.patch("dci.auth_mechanism.sso.get_public_key_from_token")
 def test_sso_auth_verified_public_key_rotation(
-    m_get_last_pubkey, m_datetime, user_sso, app, session, team_admin_id
+    m_get_public_key_from_token, m_datetime, user_sso, app, session, team_admin_id
 ):
     sso_public_key = dci_config.CONFIG["SSO_PUBLIC_KEY"]
     dci_config.CONFIG["SSO_PUBLIC_KEY"] = "= non valid sso public key here ="
@@ -70,7 +70,7 @@ def test_sso_auth_verified_public_key_rotation(
         1518653629
     ).timetuple()
     m_datetime.utcnow.return_value = m_utcnow
-    m_get_last_pubkey.return_value = sso_public_key
+    m_get_public_key_from_token.return_value = sso_public_key
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
         flask.g.session = session
