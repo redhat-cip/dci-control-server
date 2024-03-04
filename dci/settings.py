@@ -109,7 +109,7 @@ FILES_UPLOAD_FOLDER = os.getenv(
 
 # SSO_PUBLIC_KEY is set by bin/dci-gen-pem-ks-key.py
 SSO_PUBLIC_KEY = os.getenv("SSO_PUBLIC_KEY")
-SSO_CLIENT_ID = os.getenv("SSO_CLIENT_ID", "api.dci,dci").split(",")
+SSO_AUDIENCES = os.getenv("SSO_AUDIENCES", "api.dci,dci").split(",")
 SSO_READ_ONLY_GROUP = os.getenv("SSO_READ_ONLY_GROUP", "redhat:employees")
 SSO_URL = os.getenv("SSO_URL", "https://sso.redhat.com")
 SSO_REALM = os.getenv("SSO_REALM", "redhat-external")

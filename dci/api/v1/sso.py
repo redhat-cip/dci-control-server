@@ -62,7 +62,7 @@ def decode_token(token, public_key):
 
     conf = dci_config.CONFIG
     try:
-        decoded_token = auth.decode_jwt(token, public_key, conf["SSO_CLIENT_ID"])
+        decoded_token = auth.decode_jwt(token, public_key, conf["SSO_AUDIENCES"])
         return decoded_token
     except (jwt_exc.DecodeError, TypeError):
         raise dci_exc.DCIException("Invalid JWT token.", status_code=401)
