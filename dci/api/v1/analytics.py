@@ -30,6 +30,7 @@ from dci.common.schemas import (
     analytics_task_components_coverage,
     analytics_tasks_junit,
     analytics_tasks_pipelines_status,
+    analytics_jobs,
     check_json_is_valid,
 )
 from dci.dci_config import CONFIG
@@ -227,6 +228,43 @@ def tasks_pipelines_status(user):
             "%s/analytics/pipelines_status" % CONFIG["ANALYTICS_URL"],
             headers={"Content-Type": "application/json"},
             json=values,
+        )
+
+        if res.status_code == 200:
+            return flask.jsonify(res.json())
+        else:
+            logger.error("analytics error: %s" % str(res.text))
+            return flask.Response(
+                json.dumps({"error": "error with backend service: %s" % str(res.text)}),
+                res.status_code,
+                content_type="application/json",
+            )
+    except ConnectionError as e:
+        logger.error("analytics connection error: %s" % str(e))
+        return flask.Response(
+            json.dumps({"error": "connection error with backend service: %s" % str(e)}),
+            503,
+            content_type="application/json",
+        )
+
+
+@api.route("/analytics/jobs", methods=["GET"])
+@decorators.login_required
+def tasks_jobs(user):
+    if user.is_not_super_admin():
+        raise dci_exc.Unauthorized()
+
+    args = flask.request.args.to_dict()
+    if "team_id" not in args:
+        raise dci_exc.DCIException("team_id argument missing")
+    query = flask.request.json
+    check_json_is_valid(analytics_jobs, query)
+
+    try:
+        res = requests.get(
+            "%s/jobs?team_id=%s" % (CONFIG["ANALYTICS_URL"], args["team_id"]),
+            headers={"Content-Type": "application/json"},
+            json=query,
         )
 
         if res.status_code == 200:

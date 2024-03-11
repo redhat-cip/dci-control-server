@@ -721,6 +721,14 @@ analytics_tasks_pipelines_status = {
     "additionalProperties": False,
 }
 
+analytics_jobs_properties = {"query": Properties.json}
+analytics_jobs = {
+    "type": "object",
+    "properties": analytics_jobs_properties,
+    "required": ["query"],
+    "additionalProperties": False,
+}
+
 ###############################################################################
 #                                                                             #
 #                                  Pipelines schema                           #

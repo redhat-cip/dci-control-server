@@ -36,7 +36,6 @@ def identity_factory(
     is_feeder=False,
     teams={},
 ):
-
     return Identity(
         {
             "id": "12368feb-0e23-4dee-9737-7538af531234",
