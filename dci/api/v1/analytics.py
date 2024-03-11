@@ -262,7 +262,7 @@ def tasks_jobs(user):
 
     try:
         res = requests.get(
-            "%s/jobs?team_id=%s" % (CONFIG["ANALYTICS_URL"], args["team_id"]),
+            "%s/analytics/jobs?team_id=%s" % (CONFIG["ANALYTICS_URL"], args["team_id"]),
             headers={"Content-Type": "application/json"},
             json=query,
         )
