@@ -257,14 +257,21 @@ def tasks_jobs(user):
     args = flask.request.args.to_dict()
     if "team_id" not in args:
         raise dci_exc.DCIException("team_id argument missing")
-    query = flask.request.json
-    check_json_is_valid(analytics_jobs, query)
+    payload = flask.request.json
+    check_json_is_valid(analytics_jobs, payload)
+
+    default_limit = 200
+    payload["from"] = payload["offset"]
+    payload.pop("offset", None)
+
+    payload["size"] = min(payload["limit"], default_limit)
+    payload.pop("limit", None)
 
     try:
         res = requests.get(
             "%s/analytics/jobs?team_id=%s" % (CONFIG["ANALYTICS_URL"], args["team_id"]),
             headers={"Content-Type": "application/json"},
-            json=query,
+            json=payload,
         )
 
         if res.status_code == 200:

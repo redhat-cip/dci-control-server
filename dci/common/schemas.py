@@ -721,7 +721,11 @@ analytics_tasks_pipelines_status = {
     "additionalProperties": False,
 }
 
-analytics_jobs_properties = {"query": Properties.json}
+analytics_jobs_properties = {
+    "query": Properties.json,
+    "offset": with_default(Properties.integer, 0),
+    "limit": with_default(Properties.integer, 20),
+}
 analytics_jobs = {
     "type": "object",
     "properties": analytics_jobs_properties,
