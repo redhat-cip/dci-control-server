@@ -220,7 +220,7 @@ def tasks_pipelines_status(user):
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
         if values["teams_ids"]:
             for team_id in values["teams_ids"]:
-                if team_id not in user.teams_ids:
+                if uuid.UUID(team_id) not in user.teams_ids:
                     raise dci_exc.Unauthorized()
 
     try:
