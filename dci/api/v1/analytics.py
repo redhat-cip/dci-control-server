@@ -251,7 +251,7 @@ def tasks_pipelines_status(user):
 @api.route("/analytics/jobs", methods=["GET"])
 @decorators.login_required
 def tasks_jobs(user):
-    if user.is_not_super_admin():
+    if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
     args = flask.request.args.to_dict()
