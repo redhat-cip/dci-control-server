@@ -723,6 +723,7 @@ analytics_tasks_pipelines_status = {
 
 analytics_jobs_properties = {
     "query": Properties.json,
+    "sort": Properties.array,
     "offset": with_default(Properties.integer, 0),
     "limit": with_default(Properties.integer, 20),
 }
