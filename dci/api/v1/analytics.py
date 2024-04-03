@@ -248,7 +248,7 @@ def tasks_pipelines_status(user):
         )
 
 
-@api.route("/analytics/jobs", methods=["GET"])
+@api.route("/analytics/jobs", methods=["GET", "POST"])
 @decorators.login_required
 def tasks_jobs(user):
     if user.is_not_super_admin() and user.is_not_epm():
