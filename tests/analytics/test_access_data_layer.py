@@ -51,7 +51,7 @@ def test_get_jobs(
         j_id = remoteci_context.post("/api/v1/jobs", data=data).data["job"]["id"]
         jobs_ids.append(j_id)
 
-    for j_id in jobs_ids:
+    for j_id in jobs_ids[:2]:
         remoteci_context.post(
             "/api/v1/jobstates",
             data={"job_id": j_id, "comment": "kikoolol", "status": "running"},
@@ -67,7 +67,7 @@ def test_get_jobs(
     assert pipeline_id == jobs[0]["pipeline"]["id"]
 
     jobs = a_d_l.get_jobs(session, 0, 10, "hours", 1)
-    assert len(jobs) == 0
+    assert len(jobs) == 2
 
 
 @mock.patch("dci.api.v1.components.v1_utils.datetime")
