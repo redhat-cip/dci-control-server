@@ -20,7 +20,7 @@ from sqlalchemy import sql
 from sqlalchemy import orm
 
 from dci.api.v1 import base, sso
-from dci.auth import check_passwords_equal
+from dci.auth import check_passwords_equal, decode_jwt
 from dci import dci_config
 from dci.common import exceptions as dci_exc
 from dciauth.request import AuthRequest
@@ -227,16 +227,20 @@ class OpenIDCAuth(BaseMechanism):
             __get_and_set_sso_public_key()
 
         try:
-            decoded_token = sso.decode_token(token, conf["SSO_PUBLIC_KEY"])
-        except (jwt_exc.DecodeError, ValueError) as e:
+            decoded_token = decode_jwt(
+                token, conf["SSO_PUBLIC_KEY"], conf["SSO_AUDIENCES"]
+            )
+        except (jwt_exc.DecodeError, TypeError, ValueError) as e:
             logging.debug(
                 "JWT token decode error: %s, will refresh sso public key and retry decode"
                 % str(e)
             )
             try:
                 __get_and_set_sso_public_key()
-                decoded_token = sso.decode_token(token, conf["SSO_PUBLIC_KEY"])
-            except (jwt_exc.DecodeError, ValueError) as e2:
+                decoded_token = decode_jwt(
+                    token, conf["SSO_PUBLIC_KEY"], conf["SSO_AUDIENCES"]
+                )
+            except (jwt_exc.DecodeError, TypeError, ValueError) as e2:
                 raise dci_exc.DCIException(
                     "JWT token decode error: %s" % str(e2), status_code=401
                 )

@@ -15,6 +15,9 @@
 # under the License.
 
 import jwt
+import json
+from jwt.algorithms import RSAAlgorithm
+from cryptography.hazmat.primitives import serialization
 from passlib.apps import custom_app_context as pwd_context
 
 
@@ -24,6 +27,13 @@ def hash_password(password):
 
 def check_passwords_equal(password, encrypted_password):
     return pwd_context.verify(password, encrypted_password)
+
+
+def jwk_to_pem(jwk):
+    return RSAAlgorithm.from_jwk(json.dumps(jwk)).public_bytes(
+        encoding=serialization.Encoding.PEM,
+        format=serialization.PublicFormat.SubjectPublicKeyInfo,
+    )
 
 
 def decode_jwt(access_token, pem_public_key, audience):

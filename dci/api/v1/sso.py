@@ -17,12 +17,9 @@
 import jwt
 import requests
 
-from dci import auth
 from dci import dci_config
 from dci.common import exceptions as dci_exc
-
-
-from jwt import exceptions as jwt_exc
+from dci import auth
 
 
 def get_public_key_from_token(token):
@@ -54,19 +51,5 @@ def get_public_key_from_token(token):
     keys = keys.json()["keys"]
     for k in keys:
         if k["kid"] == kid:
-            return k
+            return auth.jwk_to_pem(k)
     raise dci_exc.DCIException("kid '%s' from token not found in sso server" % kid)
-
-
-def decode_token(token, public_key):
-
-    conf = dci_config.CONFIG
-    try:
-        decoded_token = auth.decode_jwt(token, public_key, conf["SSO_AUDIENCES"])
-        return decoded_token
-    except (jwt_exc.DecodeError, TypeError):
-        raise dci_exc.DCIException("Invalid JWT token.", status_code=401)
-    except jwt_exc.ExpiredSignatureError:
-        raise dci_exc.DCIException(
-            "JWT token expired, please refresh.", status_code=401
-        )
