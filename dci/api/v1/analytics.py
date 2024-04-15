@@ -30,7 +30,6 @@ from dci.common.schemas import (
     analytics_task_components_coverage,
     analytics_tasks_junit,
     analytics_tasks_pipelines_status,
-    analytics_jobs,
     check_json_is_valid,
 )
 from dci.dci_config import CONFIG
@@ -254,22 +253,11 @@ def tasks_jobs(user):
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
-    args = flask.request.args.to_dict()
-    if "team_id" not in args:
-        raise dci_exc.DCIException("team_id argument missing")
     payload = flask.request.json
-    check_json_is_valid(analytics_jobs, payload)
-
-    default_limit = 200
-    payload["from"] = payload["offset"]
-    payload.pop("offset", None)
-
-    payload["size"] = min(payload["limit"], default_limit)
-    payload.pop("limit", None)
 
     try:
         res = requests.get(
-            "%s/analytics/jobs?team_id=%s" % (CONFIG["ANALYTICS_URL"], args["team_id"]),
+            "%s/analytics/jobs" % (CONFIG["ANALYTICS_URL"]),
             headers={"Content-Type": "application/json"},
             json=payload,
         )
