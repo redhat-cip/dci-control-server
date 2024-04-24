@@ -23,8 +23,6 @@ from dci.api.v1 import base, sso
 from dci.auth import check_passwords_equal, decode_jwt
 from dci import dci_config
 from dci.common import exceptions as dci_exc
-from dciauth.request import AuthRequest
-from dciauth.signature import Signature
 from dciauth.v2.headers import parse_headers
 from dciauth.v2.signature import is_valid
 from dci.db import models2
@@ -126,29 +124,26 @@ class BasicAuthMechanism(BaseMechanism):
 
 class HmacMechanism(BaseMechanism):
     def authenticate(self):
-        headers = self.request.headers
-        auth_request = AuthRequest(
-            method=self.request.method,
-            endpoint=self.request.path,
-            payload=self.request.get_json(silent=True),
-            headers=headers,
-            params=self.request.args.to_dict(flat=True),
-        )
-        hmac_signature = Signature(request=auth_request)
-        self.identity = self.build_identity(auth_request.get_client_info())
+        headers = parse_headers(self.request.headers)
+        if not headers:
+            raise dci_exc.DCIException(
+                "HmacMechanism failed: bad or incomplete headers.", status_code=400
+            )
+        self.identity = self.build_identity(headers)
         if self.identity is None:
             raise dci_exc.DCIException("identity does not exists.", status_code=401)
-        secret = self.identity.api_secret
-        if not hmac_signature.is_valid(secret):
-            raise dci_exc.DCIException(
-                "HmacMechanism failed: signature invalid",
-                status_code=401,
-            )
-        if hmac_signature.is_expired():
-            raise dci_exc.DCIException(
-                "HmacMechanism failed: signature expired",
-                status_code=401,
-            )
+        valid, error_message = is_valid(
+            {
+                "method": self.request.method,
+                "endpoint": self.request.path,
+                "data": self.request.data,
+                "params": self.request.args.to_dict(flat=True),
+            },
+            {"secret_key": self.identity.api_secret},
+            headers,
+        )
+        if not valid:
+            raise dci_exc.DCIException("HmacMechanism failed: %s" % error_message)
         if len(self.identity.teams_ids) > 0:
             self.check_team_is_active(self.identity.teams_ids[0])
         return True
@@ -180,33 +175,6 @@ class HmacMechanism(BaseMechanism):
                 "is_feeder": client_type == "feeder",
             }
         )
-
-
-class Hmac2Mechanism(HmacMechanism):
-    def authenticate(self):
-        headers = parse_headers(self.request.headers)
-        if not headers:
-            raise dci_exc.DCIException(
-                "Hmac2Mechanism failed: bad or incomplete headers.", status_code=400
-            )
-        self.identity = self.build_identity(headers)
-        if self.identity is None:
-            raise dci_exc.DCIException("identity does not exists.", status_code=401)
-        valid, error_message = is_valid(
-            {
-                "method": self.request.method,
-                "endpoint": self.request.path,
-                "data": self.request.data,
-                "params": self.request.args.to_dict(flat=True),
-            },
-            {"secret_key": self.identity.api_secret},
-            headers,
-        )
-        if not valid:
-            raise dci_exc.DCIException("Hmac2Mechanism failed: %s" % error_message)
-        if len(self.identity.teams_ids) > 0:
-            self.check_team_is_active(self.identity.teams_ids[0])
-        return True
 
 
 class OpenIDCAuth(BaseMechanism):
