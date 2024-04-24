@@ -219,8 +219,9 @@ class OpenIDCAuth(BaseMechanism):
 
         def __get_and_set_sso_public_key():
             public_key = sso.get_public_key_from_token(token)
-            if conf.get("SSO_PUBLIC_KEY") != public_key:
+            if public_key and public_key != conf.get("SSO_PUBLIC_KEY"):
                 logging.info("sso public key has been updated")
+                logging.debug(public_key)
                 conf["SSO_PUBLIC_KEY"] = public_key
 
         if not conf.get("SSO_PUBLIC_KEY"):
