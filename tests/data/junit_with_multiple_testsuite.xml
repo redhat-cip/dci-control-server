@@ -1,14 +1,14 @@
 <?xml version='1.0' encoding='utf-8'?>
 <testsuites errors="1" failures="1" tests="6" time="24">
     <testsuite errors="1" failures="0" name="testsuite 1" skipped="1" tests="3" time="4">
+        <properties>
+            <property name="testcase_2_property_1" value="tc2p1" />
+        </properties>
         <testcase classname="classname_1" name="testcase_1" time="1">
             <skipped message="skip message" type="skipped">test skipped</skipped>
         </testcase>
         <testcase classname="classname_1" name="testcase_2" time="1">
             <error message="error message" type="error">test in error</error>
-            <properties>
-                <property name="testcase_2_property_1" value="tc2p1" />
-            </properties>
         </testcase>
         <testcase classname="classname_2" name="testcase_3" time="2">
             <system-out>stdout preserve

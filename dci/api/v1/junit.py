@@ -60,7 +60,6 @@ def parse_testcase(testcase_xml):
             "failure",
             "system-out",
             "system-err",
-            "properties",
         ]:
             continue
         text = testcase_child.text
@@ -68,8 +67,6 @@ def parse_testcase(testcase_xml):
             testcase["stdout"] = text
         elif tag == "system-err":
             testcase["stderr"] = text
-        elif tag == "properties":
-            testcase["properties"] = parse_properties(testcase_child)
         else:
             testcase["action"] = tag
             testcase["message"] = testcase_child.get("message", None)
@@ -90,10 +87,12 @@ def parse_testsuite(testsuite_xml):
         "success": 0,
         "time": 0,
         "testcases": [],
+        "properties": [],
     }
     testsuite_duration = timedelta(seconds=0)
     for testcase_xml in testsuite_xml:
-        if testcase_xml.tag == "testcase":
+        tag = testcase_xml.tag
+        if tag == "testcase":
             testcase = parse_testcase(testcase_xml)
             testsuite_duration += timedelta(seconds=testcase["time"])
             testsuite["tests"] += 1
@@ -107,6 +106,8 @@ def parse_testsuite(testsuite_xml):
             else:
                 testsuite["success"] += 1
             testsuite["testcases"].append(testcase)
+        elif tag == "properties":
+            testsuite["properties"] = parse_properties(testcase_xml)
     testsuite["time"] = testsuite_duration.total_seconds()
     return testsuite
 

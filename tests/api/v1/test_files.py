@@ -377,6 +377,7 @@ def test_get_junit_file(_, user, job_user_id):
         "success": 2,
         "successfixes": 0,
         "regressions": 0,
+        "properties": [],
         "testcases": [
             {
                 "action": "failure",
