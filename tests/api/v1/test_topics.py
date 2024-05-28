@@ -303,23 +303,6 @@ def test_get_all_topics_with_where(admin, product):
         assert r["topics"][0]["id"] == t_id
 
 
-def test_get_topics_by_with_embed_authorization(admin, user, epm):
-    topics_admin = admin.get("/api/v1/topics?embed=teams")
-    assert topics_admin.status_code == 200
-    for t in topics_admin.data["topics"]:
-        assert t["teams"] != []
-
-    topics_epm = admin.get("/api/v1/topics?embed=teams")
-    assert topics_epm.status_code == 200
-    for t in topics_epm.data["topics"]:
-        assert t["teams"] != []
-
-    topics_user = user.get("/api/v1/topics?embed=teams")
-    assert topics_user.status_code == 200
-    for t in topics_user.data["topics"]:
-        assert t["teams"] == []
-
-
 def test_get_topic_by_id(admin, user, rhel_product):
     data = {
         "name": "tname",
@@ -336,17 +319,6 @@ def test_get_topic_by_id(admin, user, rhel_product):
 
     created_ct = created_ct.data
     assert created_ct["topic"]["id"] == pt_id
-
-
-# todo(gvincent): remove me because team.topics relationship will be removed
-def test_get_topic_by_id_with_embed_teams(admin, user, rhel_80_topic):
-    topics_admin = admin.get("/api/v1/topics/%s?embed=teams" % rhel_80_topic["id"])
-    assert topics_admin.status_code == 200
-    assert topics_admin.data["topic"]["teams"] == []
-
-    topics_user = user.get("/api/v1/topics/%s?embed=teams" % rhel_80_topic["id"])
-    assert topics_user.status_code == 200
-    assert topics_user.data["topic"]["teams"] == []
 
 
 def test_get_topic_not_found(admin):
@@ -484,118 +456,6 @@ def test_put_topics(admin, topic_id, product):
     assert gt.data["topic"]["next_topic"]["id"] == topic_id
 
 
-# Tests for topics and teams management
-def test_add_team_to_topic_and_get(admin, product):
-    # create a topic
-    data = {
-        "name": "tname",
-        "product_id": product["id"],
-        "component_types": ["type1", "type2"],
-    }
-    pt = admin.post("/api/v1/topics", data=data).data
-    pt_id = pt["topic"]["id"]
-
-    # create a team
-    data = {"name": "tname1"}
-    pc = admin.post("/api/v1/teams", data=data).data
-    team_id = pc["team"]["id"]
-
-    url = "/api/v1/topics/%s/teams" % pt_id
-    # add team to topic
-    data = {"team_id": team_id}
-    res = admin.post(url, data=data)
-    assert res.status_code == 201
-    add_data = res.data
-    assert add_data["topic_id"] == pt_id
-    assert add_data["team_id"] == team_id
-
-    # get teams from topic
-    team_from_topic = admin.get(url)
-    assert team_from_topic.status_code == 200
-    assert team_from_topic.data["_meta"]["count"] == 1
-    assert team_from_topic.data["teams"][0] == pc["team"]
-
-
-# Tests for topics and teams management
-def test_add_team_to_topic_and_get_as_user(admin, user, product):
-    # create a topic
-    data = {
-        "name": "tname",
-        "product_id": product["id"],
-        "component_types": ["type1", "type2"],
-    }
-    pt = admin.post("/api/v1/topics", data=data).data
-    pt_id = pt["topic"]["id"]
-
-    # create a team
-    data = {"name": "tname1"}
-    pc = admin.post("/api/v1/teams", data=data).data
-    team_id = pc["team"]["id"]
-
-    url = "/api/v1/topics/%s/teams" % pt_id
-    # add team to topic
-    data = {"team_id": team_id}
-    status_code = user.post(url, data=data).status_code
-    assert status_code == 401
-
-
-def test_delete_team_from_topic(admin, product):
-    # create a topic
-    data = {
-        "name": "tname",
-        "product_id": product["id"],
-        "component_types": ["type1", "type2"],
-    }
-    pt = admin.post("/api/v1/topics", data=data).data
-    pt_id = pt["topic"]["id"]
-
-    # create a team
-    data = {"name": "tname1"}
-    pc = admin.post("/api/v1/teams", data=data).data
-    team_id = pc["team"]["id"]
-
-    url = "/api/v1/topics/%s/teams" % pt_id
-    # add team to topic
-    data = {"team_id": team_id}
-    admin.post(url, data=data)
-
-    # delete team from topic
-    admin.delete("/api/v1/topics/%s/teams/%s" % (pt_id, team_id))
-    team_from_topic = admin.get(url).data
-    assert team_from_topic["_meta"]["count"] == 0
-
-    # verify team still exists on /teams
-    c = admin.get("/api/v1/teams/%s" % team_id)
-    assert c.status_code == 200
-
-
-def test_delete_team_from_topic_as_user(admin, user, product):
-    # create a topic
-    data = {
-        "name": "tname",
-        "product_id": product["id"],
-        "component_types": ["type1", "type2"],
-    }
-    pt = admin.post("/api/v1/topics", data=data).data
-    pt_id = pt["topic"]["id"]
-
-    # create a team
-    data = {"name": "tname1"}
-    pc = admin.post("/api/v1/teams", data=data).data
-    team_id = pc["team"]["id"]
-
-    url = "/api/v1/topics/%s/teams" % pt_id
-    # add team to topic
-    data = {"team_id": team_id}
-    admin.post(url, data=data)
-
-    # delete team from topic
-    status_code = user.delete(
-        "/api/v1/topics/%s/teams/%s" % (pt_id, team_id)
-    ).status_code
-    assert status_code == 401
-
-
 def test_remove_next_topic_from_topic(admin, topic_id, product):
     request = admin.post(
         "/api/v1/topics",
@@ -671,49 +531,6 @@ def test_success_get_topics_embed(admin, topic_id, product):
 
     result = admin.get("/api/v1/topics")
     assert result.data["topics"][0]["product"]["id"]
-
-
-def test_add_multiple_topic_and_get(admin, rhel_product, openstack_product):
-    # create a topic for rhel
-    data = {
-        "name": "tname",
-        "product_id": rhel_product["id"],
-        "component_types": ["type1", "type2"],
-    }
-    pt = admin.post("/api/v1/topics", data=data).data
-    pt_id = pt["topic"]["id"]
-
-    # create a topic for openstack
-    data2 = {
-        "name": "tname2",
-        "product_id": openstack_product["id"],
-        "component_types": ["type1", "type2"],
-    }
-    pt2 = admin.post("/api/v1/topics", data=data2).data
-    pt2_id = pt2["topic"]["id"]
-
-    # create a team
-    data = {"name": "tname1"}
-    pc = admin.post("/api/v1/teams", data=data).data
-    team_id = pc["team"]["id"]
-
-    url = "/api/v1/topics/%s/teams" % pt_id
-    # add team to topic
-    data = {"team_id": team_id}
-    res = admin.post(url, data=data)
-    assert res.status_code == 201
-    add_data = res.data
-    assert add_data["topic_id"] == pt_id
-    assert add_data["team_id"] == team_id
-
-    url = "/api/v1/topics/%s/teams" % pt2_id
-    # add team to topic2
-    data = {"team_id": team_id}
-    res = admin.post(url, data=data)
-    assert res.status_code == 201
-    add_data = res.data
-    assert add_data["topic_id"] == pt2_id
-    assert add_data["team_id"] == team_id
 
 
 def test_get_topic_by_id_export_control_true(

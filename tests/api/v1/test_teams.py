@@ -123,14 +123,6 @@ def test_get_all_teams_with_sort(admin):
     assert gts == db_teams
 
 
-def test_get_all_teams_with_embed(admin, rhel_81_topic, team_user_id):
-    admin.post(
-        "/api/v1/topics/%s/teams" % rhel_81_topic["id"], data={"team_id": team_user_id}
-    )
-    db_teams = admin.get("/api/v1/teams?embed=topics&where=name:user").data
-    assert db_teams["teams"][0]["topics"][0]["id"] == rhel_81_topic["id"]
-
-
 def test_get_team_by_id(admin):
     pt = admin.post("/api/v1/teams", data={"name": "pname"}).data
     pt_id = pt["team"]["id"]

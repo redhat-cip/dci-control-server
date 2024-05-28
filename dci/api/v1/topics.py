@@ -15,7 +15,6 @@
 # under the License.
 import flask
 from flask import json
-from sqlalchemy import exc as sa_exc
 import sqlalchemy.orm as sa_orm
 from sqlalchemy import sql
 
@@ -32,7 +31,6 @@ from dci.common.schemas import (
     create_topic_schema,
     update_topic_schema,
     check_and_get_args,
-    add_team_to_topic_schema,
 )
 from dci.common import utils
 from dci.db import declarative as d
@@ -68,7 +66,6 @@ def get_topic_by_id(user, topic_id):
         models2.Topic,
         topic_id,
         options=[
-            sa_orm.selectinload("teams"),
             sa_orm.joinedload("product", innerjoin=True),
             sa_orm.selectinload("next_topic"),
         ],
@@ -82,7 +79,6 @@ def get_topic_by_id(user, topic_id):
         and user.is_not_read_only_user()
     ):
         export_control.verify_access_to_topic(user, topic)
-        topic_serialized["teams"] = []
 
     return flask.Response(
         json.dumps({"topic": topic_serialized}),
@@ -108,8 +104,6 @@ def get_all_topics(user):
         q = q.filter(models2.Topic.product_id.in_(product_ids))
         if user.has_not_pre_release_access():
             q = q.filter(models2.Topic.export_control == True)  # noqa
-    else:
-        q = q.options(sa_orm.selectinload("teams"))
 
     q = d.handle_args(q, models2.Topic, args)
     nb_topics = q.count()
@@ -174,73 +168,6 @@ def get_topics_components(user, topic_id):
     topic = base.get_resource_orm(models2.Topic, topic_id)
     export_control.verify_access_to_topic(user, topic)
     return components.get_all_components(user, [topic_id])
-
-
-# teams set apis
-@api.route("/topics/<uuid:topic_id>/teams", methods=["POST"])
-@decorators.login_required
-def add_team_to_topic(user, topic_id):
-    if user.is_not_super_admin() and user.is_not_epm():
-        raise dci_exc.Unauthorized()
-
-    values = flask.request.json
-    check_json_is_valid(add_team_to_topic_schema, values)
-    team_id = values.get("team_id")
-
-    topic = base.get_resource_orm(models2.Topic, topic_id)
-    team = base.get_resource_orm(models2.Team, team_id)
-
-    try:
-        topic.teams.append(team)
-        flask.g.session.add(topic)
-        flask.g.session.commit()
-    except sa_exc.IntegrityError:
-        flask.g.session.rollback()
-        raise dci_exc.DCIException(message="conflict when adding team", status_code=409)
-
-    result = json.dumps({"topic_id": topic.id, "team_id": team.id})
-    return flask.Response(result, 201, content_type="application/json")
-
-
-@api.route("/topics/<uuid:topic_id>/teams/<uuid:team_id>", methods=["DELETE"])
-@decorators.login_required
-def delete_team_from_topic(user, topic_id, team_id):
-    if user.is_not_super_admin() and user.is_not_epm():
-        raise dci_exc.Unauthorized()
-
-    topic = base.get_resource_orm(models2.Topic, topic_id)
-    team = base.get_resource_orm(models2.Team, team_id)
-
-    try:
-        topic.teams.remove(team)
-        flask.g.session.add(topic)
-        flask.g.session.commit()
-    except sa_exc.IntegrityError:
-        flask.g.session.rollback()
-        raise dci_exc.DCIException(
-            message="conflict when removing team", status_code=409
-        )
-
-    return flask.Response(None, 204, content_type="application/json")
-
-
-# this is already provided by GET /topics/<uuid:topic_id> and will be removed
-@api.route("/topics/<uuid:topic_id>/teams", methods=["GET"])
-@decorators.login_required
-def get_all_teams_from_topic(user, topic_id):
-    if user.is_not_super_admin() and user.is_not_epm():
-        raise dci_exc.Unauthorized()
-
-    query = (
-        flask.g.session.query(models2.Team)
-        .filter(models2.Team.state != "archived")
-        .join(models2.Team.topics)
-        .filter(models2.Topic.id == topic_id)
-        .filter(models2.Topic.state != "archived")
-    )
-    teams = [t.serialize() for t in query.all()]
-
-    return flask.jsonify({"teams": teams, "_meta": {"count": len(teams)}})
 
 
 @api.route("/topics/<uuid:topic_id>/notifications", methods=["POST"])

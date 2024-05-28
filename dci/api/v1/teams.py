@@ -77,10 +77,8 @@ def get_all_teams(user):
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
         q = q.filter(models2.Team.id.in_(user.teams_ids))
 
-    q = (
-        q.filter(models2.Team.state != "archived")
-        .options(sa_orm.selectinload("topics"))
-        .options(sa_orm.selectinload("remotecis"))
+    q = q.filter(models2.Team.state != "archived").options(
+        sa_orm.selectinload("remotecis")
     )
     q = d.handle_args(q, models2.Team, args)
     nb_teams = q.count()
@@ -105,7 +103,6 @@ def get_team_by_id(user, t_id):
             .filter(models2.Team.state != "archived")
             .filter(models2.Team.id == t_id)
             .options(sa_orm.selectinload("remotecis"))
-            .options(sa_orm.selectinload("topics"))
             .one()
         )
     except sa_orm.exc.NoResultFound:

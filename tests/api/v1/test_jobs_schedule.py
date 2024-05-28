@@ -186,11 +186,10 @@ def _update_topic(admin, rhel_80_topic, data):
 
 
 def test_schedule_jobs_on_topic_inactive(
-    admin, remoteci_context, rhel_80_topic, rhel_80_component, team_user_id
+    admin, remoteci_context, rhel_80_topic, rhel_80_component
 ):
-    admin.post(
-        "/api/v1/topics/%s/teams" % rhel_80_topic["id"], data={"team_id": team_user_id}
-    )
+    assert rhel_80_component is not None
+
     rhel_80_topic = _update_topic(admin, rhel_80_topic, {"state": "inactive"})
     data = {"topic_id": rhel_80_topic["id"]}
     r = remoteci_context.post("/api/v1/jobs/schedule", data=data)

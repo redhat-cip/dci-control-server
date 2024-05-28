@@ -123,26 +123,6 @@ class User(dci_declarative.Mixin, Base):
         return super(User, self).serialize(ignore_columns=ignore_columns)
 
 
-JOINS_TOPICS_TEAMS = sa.Table(
-    "topics_teams",
-    Base.metadata,
-    sa.Column(
-        "topic_id",
-        pg.UUID(as_uuid=True),
-        sa.ForeignKey("topics.id", ondelete="CASCADE"),
-        nullable=False,
-        primary_key=True,
-    ),
-    sa.Column(
-        "team_id",
-        pg.UUID(as_uuid=True),
-        sa.ForeignKey("teams.id", ondelete="CASCADE"),
-        nullable=False,
-        primary_key=True,
-    ),
-)
-
-
 JOIN_PRODUCTS_TEAMS = sa.Table(
     "products_teams",
     Base.metadata,
@@ -211,9 +191,6 @@ class Team(dci_declarative.Mixin, Base):
     users = sa_orm.relationship("User", secondary=USERS_TEAMS, back_populates="team")
     remotecis = sa_orm.relationship("Remoteci", back_populates="team")
     feeders = sa_orm.relationship("Feeder", back_populates="team")
-    topics = sa_orm.relationship(
-        "Topic", secondary=JOINS_TOPICS_TEAMS, back_populates="teams"
-    )
     products = sa_orm.relationship(
         "Product", secondary=JOIN_PRODUCTS_TEAMS, back_populates="teams"
     )
@@ -275,9 +252,6 @@ class Topic(dci_declarative.Mixin, Base):
     )
     state = sa.Column(STATES, default="active")
     data = sa.Column(sa_utils.JSONType, default={})
-    teams = sa_orm.relationship(
-        "Team", secondary=JOINS_TOPICS_TEAMS, back_populates="topics"
-    )
     product = sa_orm.relationship("Product", back_populates="topics")
     next_topic = sa_orm.relationship("Topic", remote_side="Topic.id")
 
