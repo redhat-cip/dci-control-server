@@ -80,7 +80,7 @@ def generate_client(app, credentials=None, access_token=None):
             data = response.data
             if response.content_type == "application/json":
                 data = flask.json.loads(data or "{}")
-            if type(data) == six.binary_type:
+            if isinstance(data, six.binary_type):
                 data = data.decode("utf8")
             return Response(response.status_code, data, response.headers)
 
