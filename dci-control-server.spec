@@ -1,14 +1,6 @@
-%if 0%{?rhel} && 0%{?rhel} < 8
-%global with_python2 1
-%global python_sitelib %{python2_sitelib}
-%else
-%global with_python3 1
-%global python_sitelib %{python3_sitelib}
-%endif
-
 Name:           dci-control-server
 Version:        0.3.4
-Release:        1.VERS%{?dist}
+Release:        2.VERS%{?dist}
 Summary:        DCI control server
 License:        ASL 2.0
 URL:            https://github.com/redhat-cip/dci-control-server
@@ -20,31 +12,6 @@ Conflicts:      dci-common < %{version}
 Obsoletes:      dci-common
 Obsoletes:      dci-api < 0.2.2.2
 BuildRequires:  net-tools
-%if 0%{?with_python2}
-BuildRequires:  python2-devel
-BuildRequires:  rh-postgresql96-postgresql-devel
-BuildRequires:  rh-postgresql96
-BuildRequires:  pyOpenSSL
-BuildRequires:  python-alembic
-BuildRequires:  python-flask
-BuildRequires:  python-passlib
-BuildRequires:  python-psycopg2
-BuildRequires:  python-requests
-BuildRequires:  python-rpm-macros
-BuildRequires:  python-setuptools
-BuildRequires:  python-six
-BuildRequires:  python2-sqlalchemy
-BuildRequires:  python-sqlalchemy-utils
-BuildRequires:  python-tornado
-BuildRequires:  python-werkzeug
-BuildRequires:  python-zmq
-BuildRequires:  python-jwt
-BuildRequires:  python-dciauth
-BuildRequires:  dci-umb
-BuildRequires:  python2-pytest
-BuildRequires:  python2-rpm-macros
-BuildRequires:  python2-jsonschema
-%else
 BuildRequires:  python3-devel
 BuildRequires:  postgresql-devel
 BuildRequires:  postgresql-server
@@ -68,29 +35,8 @@ BuildRequires:  python3-pytest
 BuildRequires:  python3-rpm-macros
 BuildRequires:  python3-jsonschema
 BuildRequires:  python3-pyparsing
-%endif
 BuildRequires:  systemd
 BuildRequires:  zeromq
-%if 0%{?with_python2}
-Requires:       python2-pyOpenSSL
-Requires:       python2-alembic
-Requires:       python2-flask
-Requires:       python2-passlib
-Requires:       python-psycopg2
-Requires:       python2-requests
-Requires:       python2-six
-Requires:       python2-sqlalchemy
-Requires:       python-sqlalchemy-utils
-Requires:       python-tornado
-Requires:       python2-werkzeug
-Requires:       python2-zmq
-Requires:       python2-jwt
-Requires:       python2-dciauth
-Requires:       dci-umb
-Requires:       python2-jsonschema
-Requires:       pytz
-Requires:       zeromq
-%else
 Requires:       python3-pyOpenSSL
 Requires:       python3-alembic
 Requires:       python3-flask
@@ -108,8 +54,7 @@ Requires:       python3-dciauth
 Requires:       python3-jsonschema
 Requires:       python3-pytz
 Requires:       python3-boto3
-Requires:  python3-pyparsing
-%endif
+Requires:       python3-pyparsing
 Requires:       zeromq
 %{?systemd_requires}
 
@@ -121,48 +66,43 @@ The implementation of the DCI control server API.
 sed -i "s/==/>=/g" requirements.txt
 
 %build
-%if 0%{?with_python2}
-%py2_build
-%else
 %py3_build
-%endif
 
 %install
-%if 0%{?with_python2}
-%py2_install
-%else
 %py3_install
-%endif
 install -d %{buildroot}/%{_datarootdir}/dci-api
 install -d %{buildroot}%{_sysconfdir}/dci-api
 # NOTE(Gonéri): Preserve the original location of the wsgi.py file
-%{__ln_s} %{python_sitelib}/dci/wsgi.py %{buildroot}/%{_datarootdir}/dci-api/wsgi.py
+%{__ln_s} %{python3_sitelib}/dci/wsgi.py %{buildroot}/%{_datarootdir}/dci-api/wsgi.py
 # NOTE(Gonéri): Preserve the content of the configuration file when we
 # reinstall the package
-mv %{buildroot}/%{python_sitelib}/dci/settings.py %{buildroot}/%{_sysconfdir}/dci-api
-%{__ln_s} %{_sysconfdir}/dci-api/settings.py %{buildroot}/%{python_sitelib}/dci/settings.py
-rm -rf %{buildroot}/%{python_sitelib}/sample
+mv %{buildroot}/%{python3_sitelib}/dci/settings.py %{buildroot}/%{_sysconfdir}/dci-api
+%{__ln_s} %{_sysconfdir}/dci-api/settings.py %{buildroot}/%{python3_sitelib}/dci/settings.py
+rm -rf %{buildroot}/%{python3_sitelib}/sample
 install -p -D -m 644 dci/systemd/dci-worker.service %{buildroot}%{_unitdir}/dci-worker.service
 
 %files
 %{_bindir}/dci-dbsync
 %{_bindir}/dci-dbinit
 %license LICENSE
-%{python_sitelib}/dci
-%{python_sitelib}/*.egg-info
+%{python3_sitelib}/dci
+%{python3_sitelib}/*.egg-info
 %{_unitdir}/dci-worker.service
 %config(noreplace) %{_sysconfdir}/dci-api/settings.py
 %{_datarootdir}/dci-api/wsgi.py
 # NOTE(Gonéri): the content of settings.py is likely to evolve.
 # We don't want to end up with outdated cache on the hard drive.
 %exclude %{_sysconfdir}/dci-api/settings.py?
-%exclude %{python_sitelib}/dci/settings.py?
+%exclude %{python3_sitelib}/dci/settings.py?
 
 %changelog
-* Tue Feb 21 2023 Yassine Lamgarchal <ylamgarc@redhat.com> - 0.3.4
+* Wed Jun 05 2024 Guillaume Vincent <gvincent@redhat.com> - 0.3.4-2
+- Drop python 2 support
+
+* Tue Feb 21 2023 Yassine Lamgarchal <ylamgarc@redhat.com> - 0.3.4-1
 - Add pyparsing dependency
 
-* Tue Aug 30 2022 Cedric Lecomte <clecomte@redhat.com> - 0.3.3
+* Tue Aug 30 2022 Cedric Lecomte <clecomte@redhat.com> - 0.3.3-1
 - Remove all swift dependencies
 
 * Thu Jul 07 2022 Guillaume Vincent <gvincent@redhat.com> - 0.3.2-1
