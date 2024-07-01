@@ -21,6 +21,7 @@ import requests
 from requests.exceptions import ConnectionError
 import uuid
 
+from dci.analytics import query_es_dsl as qed
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import export_control
@@ -250,6 +251,51 @@ def tasks_pipelines_status(user):
 @api.route("/analytics/jobs", methods=["GET", "POST"])
 @decorators.login_required
 def tasks_jobs(user):
+    if user.is_not_super_admin() and user.is_not_epm():
+        raise dci_exc.Unauthorized()
+
+    payload = flask.request.json
+    query_string = payload["query"]
+    es_query = qed.build(query_string)
+    es_query["sort"] = [
+        {"created_at": {"order": "desc", "format": "strict_date_optional_time"}}
+    ]
+
+    try:
+        res = requests.get(
+            "%s/analytics/jobs" % (CONFIG["ANALYTICS_URL"]),
+            headers={"Content-Type": "application/json"},
+            json=es_query,
+        )
+        res_json = res.json()
+
+        if res.status_code == 200:
+            res_json["generated_query"] = es_query
+            return flask.jsonify(res_json)
+        else:
+            logger.error("analytics error: %s" % str(res.text))
+            return flask.Response(
+                json.dumps(
+                    {
+                        "error": "error with backend service: %s" % str(res.text),
+                        "generated_query": es_query,
+                    }
+                ),
+                res.status_code,
+                content_type="application/json",
+            )
+    except ConnectionError as e:
+        logger.error("analytics connection error: %s" % str(e))
+        return flask.Response(
+            json.dumps({"error": "connection error with backend service: %s" % str(e)}),
+            503,
+            content_type="application/json",
+        )
+
+
+@api.route("/analytics/jobs2", methods=["GET", "POST"])
+@decorators.login_required
+def tasks_jobs2(user):
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
