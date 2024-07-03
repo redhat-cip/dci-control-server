@@ -114,6 +114,11 @@ def test_jobs(rh_employee, app, remoteci_context, topic_user_id, components_user
     assert job_result.status_code == 200
 
 
+def test_nrt_red_hat_remoteci_can_see_all_jobs(red_hat_remoteci_context, job_user):
+    jobs = red_hat_remoteci_context.get("/api/v1/jobs?sort=created_at").data["jobs"]
+    assert [job["id"] for job in jobs] == [job_user["id"]]
+
+
 # JOBSTATES
 def test_jobstates(rh_employee, job_user_id, app):
     jobstates = rh_employee.get("/api/v1/jobs/%s/jobstates" % job_user_id)

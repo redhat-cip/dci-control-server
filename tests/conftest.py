@@ -258,6 +258,24 @@ def remoteci_user(user, team_user_id):
 
 
 @pytest.fixture
+def red_hat_remoteci(rh_employee, team_redhat_id):
+    data = {"name": "Red Hat remoteci", "team_id": team_redhat_id}
+    return rh_employee.post("/api/v1/remotecis", data=data).data["remoteci"]
+
+
+@pytest.fixture
+def red_hat_remoteci_context(app, red_hat_remoteci):
+    return utils.generate_token_based_client(
+        app,
+        {
+            "id": red_hat_remoteci["id"],
+            "api_secret": red_hat_remoteci["api_secret"],
+            "type": "remoteci",
+        },
+    )
+
+
+@pytest.fixture
 def remoteci_user_id(remoteci_user):
     return str(remoteci_user["id"])
 

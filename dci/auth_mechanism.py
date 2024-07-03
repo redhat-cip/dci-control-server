@@ -173,6 +173,7 @@ class HmacMechanism(BaseMechanism):
                 "api_secret": str(identity.api_secret),
                 "is_remoteci": client_type == "remoteci",
                 "is_feeder": client_type == "feeder",
+                "is_read_only_user": identity.team.id == flask.g.team_redhat_id,
             }
         )
 
