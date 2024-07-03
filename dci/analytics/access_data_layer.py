@@ -38,6 +38,11 @@ def get_jobs(session, offset, limit, unit, amount, status=None):
         .options(sa_orm.selectinload("files"))
         .options(sa_orm.selectinload("results"))
         .options(sa_orm.joinedload("pipeline", innerjoin=False))
+        .options(sa_orm.joinedload("remoteci", innerjoin=True))
+        .options(sa_orm.joinedload("topic", innerjoin=True))
+        .options(sa_orm.joinedload("product", innerjoin=True))
+        .options(sa_orm.joinedload("team", innerjoin=True))
+        .options(sa_orm.joinedload("keys_values", innerjoin=False))
     )
 
     query = query.offset(offset)
