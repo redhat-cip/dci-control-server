@@ -561,6 +561,7 @@ class Job(dci_declarative.Mixin, Base):
     results = sa_orm.relationship("TestsResult")
     remoteci = sa_orm.relationship("Remoteci")
     topic = sa_orm.relationship("Topic")
+    product = sa_orm.relationship("Product")
     team = sa_orm.relationship("Team")
     jobstates = sa_orm.relationship("Jobstate", order_by="Jobstate.created_at.asc()")
     files = sa_orm.relationship(

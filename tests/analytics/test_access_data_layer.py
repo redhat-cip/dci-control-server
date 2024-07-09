@@ -65,6 +65,7 @@ def test_get_jobs(
     assert "files" in jobs[0]
     assert "pipeline" in jobs[0]
     assert pipeline_id == jobs[0]["pipeline"]["id"]
+    assert "product" in jobs[0]
 
     jobs = a_d_l.get_jobs(session, 0, 10, "hours", 1)
     assert len(jobs) == 2
