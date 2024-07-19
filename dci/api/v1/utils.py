@@ -14,10 +14,10 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import datetime
 from OpenSSL import crypto
 
 from dci.common import utils
+from dci.common.time import get_utc_now
 from dci.db import models2
 
 
@@ -109,7 +109,7 @@ def common_values_dict():
     redoing this code everytime, this method ensures it is done only at
     one place.
     """
-    now = datetime.datetime.utcnow().isoformat()
+    now = get_utc_now().isoformat()
     etag = utils.gen_etag()
     values = {
         "id": utils.gen_uuid(),

@@ -15,7 +15,7 @@
 # under the License.
 
 from __future__ import unicode_literals
-from datetime import datetime as dt
+from datetime import datetime
 import mock
 import pytest
 import uuid
@@ -366,7 +366,7 @@ def test_create_component_with_tags(admin, topic_id):
 
 
 def test_create_component_with_release_at(admin, topic_id):
-    released_at = dt.utcnow().isoformat()
+    released_at = datetime.utcnow().isoformat()
     data = {
         "name": "pname",
         "type": "first_type",
@@ -431,7 +431,7 @@ def test_get_all_components_updated_after(admin, topic_id):
     assert len(db_all_cs["components"]) == 5
     component_2 = db_all_cs["components"][2]
 
-    updated_after = dt.utcnow().isoformat()
+    updated_after = datetime.utcnow().isoformat()
     db_all_cs = admin.get(
         "/api/v1/topics/%s/components?updated_after=%s&sort=created_at"
         % (topic_id, updated_after)
@@ -730,7 +730,7 @@ def test_update_component(admin, topic_id):
 
 
 def test_update_component_v2(admin, topic_id):
-    released_at = dt.utcnow().isoformat()
+    released_at = datetime.utcnow().isoformat()
     data = {
         "name": "RHEL-8.6.0-20211205.3",
         "version": "8.6.0-20211205.3",
@@ -746,7 +746,7 @@ def test_update_component_v2(admin, topic_id):
     assert component["released_at"] == released_at
     assert component["state"] == "inactive"
 
-    new_released_at = dt.utcnow().isoformat()
+    new_released_at = datetime.utcnow().isoformat()
     component["name"] = "RHEL-8.6.0-20211205.4"
     component["version"] = "8.6.0-20211205.4"
     component["url"] = "http://example.org/RHEL-8.6.0-20211205.4"

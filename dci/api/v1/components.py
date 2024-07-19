@@ -14,7 +14,6 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-import datetime
 import io
 import os
 
@@ -37,6 +36,7 @@ from dci.common.schemas import (
     check_and_get_args,
 )
 from dci.common import utils
+from dci.common.time import get_utc_now
 from dci.db import models2
 from dci.db import declarative
 from dci.db import migration_components
@@ -351,7 +351,7 @@ def upload_component_file(user, c_id):
             "id": file_id,
             "component_id": c_id,
             "name": file_id,
-            "created_at": datetime.datetime.utcnow().isoformat(),
+            "created_at": get_utc_now().isoformat(),
             "etag": s_file.get("etag", s_file.get("ETag")),
             "md5": s_file.get("etag", s_file.get("ChecksumSHA256")),
             "mime": s_file.get("content-type", s_file.get("ContentType")),

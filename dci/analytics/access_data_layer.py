@@ -14,20 +14,20 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 
-from datetime import datetime as dt, timedelta as td
+from datetime import timedelta
 import sqlalchemy.orm as sa_orm
 
 from dci.db import models2
+from dci.common.time import get_utc_now
 
 
 def get_jobs(session, offset, limit, unit, amount, status=None):
     delta = {unit: amount}
-
     query = session.query(models2.Job)
     if status:
         query = query.filter(models2.Job.status == status)
     query = query.filter(models2.Job.state != "archived")
-    query = query.filter(models2.Job.updated_at >= (dt.now() - td(**delta)))
+    query = query.filter(models2.Job.updated_at >= (get_utc_now() - timedelta(**delta)))
     query = query.order_by(models2.Job.updated_at.asc())
     query = query.from_self()
 
@@ -58,7 +58,9 @@ def get_components(session, offset, limit, unit, amount):
 
     query = session.query(models2.Component)
     query = query.filter(models2.Component.state != "archived")
-    query = query.filter(models2.Component.created_at >= (dt.now() - td(**delta)))
+    query = query.filter(
+        models2.Component.created_at >= (get_utc_now() - timedelta(**delta))
+    )
     query = query.order_by(models2.Component.created_at.asc())
 
     query = query.options(sa_orm.selectinload("jobs"))

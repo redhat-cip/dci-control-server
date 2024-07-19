@@ -21,8 +21,6 @@ from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 import sqlalchemy.orm as sa_orm
 
-from datetime import datetime
-
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import components
@@ -30,6 +28,7 @@ from dci.api.v1 import utils as v1_utils
 from dci.api.v1 import jobs_events
 from dci import decorators
 from dci.common import exceptions as dci_exc
+from dci.common.time import get_utc_now
 from dci.common.schemas import (
     check_json_is_valid,
     clean_json_with_schema,
@@ -50,10 +49,6 @@ from dci.api.v1 import jobstates
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_utc_now():
-    return datetime.utcnow()
 
 
 @api.route("/jobs", methods=["POST"])

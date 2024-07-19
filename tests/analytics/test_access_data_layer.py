@@ -59,25 +59,24 @@ def test_get_jobs(
 
     jobs = a_d_l.get_jobs(session, 0, 10, "hours", 3)
     assert len(jobs) == 4
-    assert "jobstates" in jobs[0]
-    assert "files" in jobs[0]["jobstates"][0]
-    assert "components" in jobs[0]
-    assert "files" in jobs[0]
-    assert "pipeline" in jobs[0]
-    assert pipeline_id == jobs[0]["pipeline"]["id"]
-    assert "product" in jobs[0]
+    job1 = [j for j in jobs if len(j["jobstates"]) > 0][0]
+    assert "jobstates" in job1
+    assert "files" in job1["jobstates"][0]
+    assert "components" in job1
+    assert "files" in job1
+    assert "pipeline" in job1
+    assert pipeline_id == job1["pipeline"]["id"]
+    assert "product" in job1
 
     jobs = a_d_l.get_jobs(session, 0, 10, "hours", 1)
     assert len(jobs) == 2
 
 
-@mock.patch("dci.api.v1.components.v1_utils.datetime")
-def test_get_components(m_datetime, session, admin, topic_id):
-    m_utcnow = mock.MagicMock()
-    m_datetime.datetime.utcnow.return_value = m_utcnow
-    m_utcnow.isoformat.return_value = (
-        datetime.datetime.utcnow() - datetime.timedelta(hours=2)
-    ).isoformat()
+@mock.patch("dci.api.v1.utils.get_utc_now")
+def test_get_components(m_get_utc_now, session, admin, topic_id):
+    m_get_utc_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(
+        hours=2
+    )
     for i in range(5):
         admin.post(
             "/api/v1/components",
