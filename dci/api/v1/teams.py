@@ -172,25 +172,28 @@ def put_team(user, t_id):
 def delete_team_by_id(user, t_id):
     # get If-Match header
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
-    base.get_resource_orm(models2.Team, t_id)
+    team = base.get_resource_orm(models2.Team, t_id)
 
     if user.is_not_super_admin():
         raise dci_exc.Unauthorized()
 
-    deleted_team = (
+    updated_rows = (
         flask.g.session.query(models2.Team)
         .filter(models2.Team.id == t_id)
         .filter(models2.Team.etag == if_match_etag)
         .update({"state": "archived"})
     )
-    flask.g.session.commit()
 
-    if not deleted_team:
+    if not updated_rows:
         flask.g.session.rollback()
         raise dci_exc.DCIException(
             message="delete failed, either team already deleted or etag not matched",
             status_code=409,
         )
+
+    [team.users.remove(user) for user in team.users]
+    flask.g.session.add(team)
+    flask.g.session.commit()
 
     try:
         for model in [models2.File, models2.Remoteci, models2.Job]:
