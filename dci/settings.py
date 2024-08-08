@@ -1,6 +1,6 @@
 # -*- encoding: utf-8 -*-
 #
-# Copyright 2015-2016 Red Hat, Inc.
+# Copyright 2015-2024 Red Hat, Inc.
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -115,3 +115,7 @@ SSO_URL = os.getenv("SSO_URL", "https://sso.redhat.com")
 SSO_REALM = os.getenv("SSO_REALM", "redhat-external")
 
 CERTIFICATION_URL = "https://access.stage.redhat.com/hydra/rest/cwe/xmlrpc/v2"
+
+RHDL_API_URL = "https://rhdl.distributed-ci.io/api/v1"
+
+REQUESTS_TIMEOUT = (3.0, 10.0)
