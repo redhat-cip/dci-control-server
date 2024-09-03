@@ -269,6 +269,38 @@ def test_delete_team_archive_dependencies(
     assert deleted_job.status_code == 404
 
 
+def test_deleted_team_has_no_users(admin, user_id, team_user_id):
+    pt = admin.post("/api/v1/teams", data={"name": "pname"})
+    pt_etag = pt.headers.get("ETag")
+    pt_id = pt.data["team"]["id"]
+    assert pt.status_code == 201
+
+    created_t = admin.get("/api/v1/teams/%s" % pt_id)
+    assert created_t.status_code == 200
+
+    pu = admin.post("/api/v1/teams/%s/users/%s" % (pt_id, user_id), data={})
+    assert pu.status_code == 201
+
+    uteams = admin.get("/api/v1/users/%s/teams" % user_id)
+    assert uteams.status_code == 200
+    assert len(uteams.data["teams"]) == 2
+    team_ids = {t["id"] for t in uteams.data["teams"]}
+    assert team_ids == set([pt_id, team_user_id])
+
+    deleted_t = admin.delete("/api/v1/teams/%s" % pt_id, headers={"If-match": pt_etag})
+    assert deleted_t.status_code == 204
+
+    uteams = admin.get("/api/v1/users/%s/teams" % user_id)
+    assert uteams.status_code == 200
+    assert len(uteams.data["teams"]) == 1
+    team_ids = {t["id"] for t in uteams.data["teams"]}
+    assert team_ids == set(
+        [
+            team_user_id,
+        ]
+    )
+
+
 # Tests for the isolation
 
 
