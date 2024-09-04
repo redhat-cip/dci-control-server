@@ -3,3 +3,4 @@ pytest
 dciclient
 flake8
 tox
+responses

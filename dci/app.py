@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #
-# Copyright (C) 2015-2016 Red Hat, Inc
+# Copyright (C) 2015-2024 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License"); you may
 # not use this file except in compliance with the License. You may obtain
@@ -14,6 +14,7 @@
 # License for the specific language governing permissions and limitations
 # under the License.
 from dci.api import v1 as api_v1
+from dci.api import v2 as api_v2
 from dci.common import exceptions
 from dci.common import utils
 from dci.db import models2
@@ -167,6 +168,7 @@ def create_app(param=None):
 
     # Registering REST API v1
     dci_app.register_blueprint(api_v1.api, url_prefix="/api/v1")
+    dci_app.register_blueprint(api_v2.api, url_prefix="/api/v2")
 
     # Registering custom encoder
     dci_app.json_encoder = utils.JSONEncoder
