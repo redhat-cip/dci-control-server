@@ -254,12 +254,16 @@ def tasks_jobs(user):
     if user.is_not_super_admin() and user.is_not_epm():
         raise dci_exc.Unauthorized()
 
+    args = flask.request.args.to_dict()
+    offset, limit = _handle_pagination(args)
     payload = flask.request.json
     query_string = payload["query"]
     es_query = qed.build(query_string)
     es_query["sort"] = [
         {"created_at": {"order": "desc", "format": "strict_date_optional_time"}}
     ]
+    es_query["from"] = offset
+    es_query["size"] = limit
 
     try:
         res = requests.get(
@@ -270,17 +274,11 @@ def tasks_jobs(user):
         res_json = res.json()
 
         if res.status_code == 200:
-            res_json["generated_query"] = es_query
             return flask.jsonify(res_json)
         else:
             logger.error("analytics error: %s" % str(res.text))
             return flask.Response(
-                json.dumps(
-                    {
-                        "error": "error with backend service: %s" % str(res.text),
-                        "generated_query": es_query,
-                    }
-                ),
+                json.dumps({"error": "error with backend service: %s" % str(res.text)}),
                 res.status_code,
                 content_type="application/json",
             )
