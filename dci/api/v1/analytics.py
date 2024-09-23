@@ -44,8 +44,8 @@ def _handle_pagination(args):
     limit_max = 200
     default_limit = 20
     default_offset = 0
-    offset = args.get("offset", default_offset)
-    limit = min(args.get("limit", default_limit), limit_max)
+    offset = int(args.get("offset", default_offset))
+    limit = min(int(args.get("limit", default_limit)), limit_max)
     return (offset, limit)
 
 
@@ -251,13 +251,12 @@ def tasks_pipelines_status(user):
 @api.route("/analytics/jobs", methods=["GET", "POST"])
 @decorators.login_required
 def tasks_jobs(user):
-    if user.is_not_super_admin() and user.is_not_epm():
+    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
         raise dci_exc.Unauthorized()
 
     args = flask.request.args.to_dict()
     offset, limit = _handle_pagination(args)
-    payload = flask.request.json
-    query_string = payload["query"]
+    query_string = args.get("query")
     es_query = qed.build(query_string)
     es_query["sort"] = [
         {"created_at": {"order": "desc", "format": "strict_date_optional_time"}}
