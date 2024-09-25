@@ -263,6 +263,17 @@ def tasks_jobs(user):
     ]
     es_query["from"] = offset
     es_query["size"] = limit
+    from_date = args.get("from")
+    to_date = args.get("to")
+    if from_date and to_date:
+        es_query["query"] = {
+            "bool": {
+                "filter": [
+                    {"range": {"created_at": {"gte": from_date, "lte": to_date}}},
+                    es_query["query"],
+                ]
+            }
+        }
 
     try:
         res = requests.get(

@@ -266,8 +266,8 @@ def test_build():
         }
     }
 
-    """ ret = qed.build(
-        "(components.type=cnf-certification-test) and (team.name not_in [telcoci, RedHat])"
+    ret = qed.build(
+        "((components.type=cnf-certification-test)) and ((team.name not_in [telcoci, RedHat]))"
     )
     assert ret == {
         "query": {
@@ -285,8 +285,10 @@ def test_build():
                         "nested": {
                             "path": "team",
                             "query": {
-                                "must_not": {
-                                    "terms": {"team.name": ["telcoci", "RedHat"]}
+                                "bool": {
+                                    "must_not": {
+                                        "terms": {"team.name": ["telcoci", "RedHat"]}
+                                    }
                                 }
                             },
                         }
@@ -295,12 +297,11 @@ def test_build():
             }
         }
     }
- """
 
 
 def test_query_1():
     ret = qed.build(
-        "(components.type=cnf-certification-test) and (components.name not_in [telcoci, Red Hat])"
+        "(components.type=cnf-certification-test) and (components.name not_in [telcoci, RedHat])"
     )
     assert ret == {
         "query": {
@@ -311,9 +312,11 @@ def test_query_1():
                         "filter": [
                             {"term": {"components.type": "cnf-certification-test"}},
                             {
-                                "must_not": {
-                                    "terms": {
-                                        "components.name": ["telcoci", "Red " "Hat"]
+                                "bool": {
+                                    "must_not": {
+                                        "terms": {
+                                            "components.name": ["telcoci", "RedHat"]
+                                        }
                                     }
                                 }
                             },

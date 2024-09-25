@@ -33,7 +33,7 @@ _comparison_operators = {"=", "!=", "<=" "<", ">=", ">"}
 _comparison_operators = pp.oneOf(" ".join(_comparison_operators))
 _comparison = _field + _comparison_operators + _value
 
-_membership_operators = {"not_in"}
+_membership_operators = {"not_in", "in"}
 _membership_operators = pp.oneOf(" ".join(_membership_operators))
 _membership_operation = _field + _membership_operators + pp.Group(_list)
 
@@ -58,7 +58,7 @@ def parse(q):
     return query.parseString(q).asList()
 
 
-def _generate_from_comparison_operators(parsed_query, handle_nested=False):
+def _generate_from_operators(parsed_query, handle_nested=False):
     operand_1 = parsed_query[0]
     operator = parsed_query[1]
     operand_2 = parsed_query[2]
@@ -77,10 +77,19 @@ def _generate_from_comparison_operators(parsed_query, handle_nested=False):
             return {
                 "nested": {
                     "path": operand_1.split(".")[0],
-                    "query": {"must_not": {"terms": {operand_1: operand_2}}},
+                    "query": {"bool": {"must_not": {"terms": {operand_1: operand_2}}}},
                 }
             }
-        return {"must_not": {"terms": {operand_1: operand_2}}}
+        return {"bool": {"must_not": {"terms": {operand_1: operand_2}}}}
+    elif operator == "in":
+        if handle_nested and "." in operand_1:
+            return {
+                "nested": {
+                    "path": operand_1.split(".")[0],
+                    "query": {"terms": {operand_1: operand_2}},
+                }
+            }
+        return {"bool": {"terms": {operand_1: operand_2}}}
 
 
 def _split_on_or(parsed_query):
@@ -108,95 +117,70 @@ def _is_nested_query(operands_1, operands_2=None):
     if (
         isinstance(operands_1, list)
         and isinstance(operands_1[0], list)
+        and isinstance(operands_1[0][0], str)
         and "." in operands_1[0][0]
     ):
         path = operands_1[0][0].split(".")[0]
-    """if path:
+    if path:
         for o in operands_1:
             if o[0].split(".")[0] != path:
                 return None
         if operands_2:
             for o in operands_2:
                 if o[0].split(".")[0] != path:
-                    return None """
+                    return None
     return path
 
 
 def _generate_es_query(parsed_query, handle_nested=True):
-    if (
-        len(parsed_query) <= 3
-        and isinstance(parsed_query, list)
-        and isinstance(parsed_query[0], str)
-    ):
-        return _generate_from_comparison_operators(parsed_query, handle_nested)
-    elif (
-        isinstance(parsed_query[0], list)
-        and len(parsed_query) == 1
-        and isinstance(parsed_query[0][0], str)
-    ):
-        return _generate_from_comparison_operators(parsed_query[0], handle_nested)
-    else:
-        if "or" in parsed_query:
-            left_operands, right_operands = _split_on_or(parsed_query)
-            if (
-                isinstance(left_operands, list)
-                and isinstance(left_operands[0], list)
-                and len(left_operands) == 1
-            ):
-                left_operands = left_operands[0]
-            if (
-                isinstance(right_operands, list)
-                and isinstance(right_operands[0], list)
-                and len(right_operands) == 1
-            ):
-                right_operands = right_operands[0]
-            path = _is_nested_query(left_operands, right_operands)
-            if path:
-                return {
-                    "nested": {
-                        "path": path,
-                        "query": {
-                            "bool": {
-                                "should": [
-                                    _generate_es_query(
-                                        left_operands, handle_nested=False
-                                    ),
-                                    _generate_es_query(
-                                        right_operands, handle_nested=False
-                                    ),
-                                ]
-                            }
-                        },
-                    }
+    if isinstance(parsed_query[0], str):
+        return _generate_from_operators(parsed_query, handle_nested)
+    if len(parsed_query) == 1:
+        return _generate_es_query(parsed_query[0], handle_nested)
+
+    if "or" in parsed_query:
+        left_operands, right_operands = _split_on_or(parsed_query)
+        path = _is_nested_query(left_operands, right_operands)
+        if path:
+            return {
+                "nested": {
+                    "path": path,
+                    "query": {
+                        "bool": {
+                            "should": [
+                                _generate_es_query(left_operands, handle_nested=False)
+                            ]
+                            + [_generate_es_query(right_operands, handle_nested=False)],
+                        }
+                    },
                 }
-            else:
-                return {
-                    "bool": {
-                        "should": [
-                            _generate_es_query(left_operands, handle_nested=False),
-                            _generate_es_query(right_operands, handle_nested=False),
-                        ]
-                    }
-                }
+            }
         else:
-            operands = _get_logical_operands(parsed_query)
-            path = _is_nested_query(operands)
-            if path:
-                return {
-                    "nested": {
-                        "path": path,
-                        "query": {
-                            "bool": {
-                                "filter": [
-                                    _generate_es_query(o, handle_nested=False)
-                                    for o in operands
-                                ]
-                            }
-                        },
-                    }
+            return {
+                "bool": {
+                    "should": [_generate_es_query(left_operands)]
+                    + [_generate_es_query(right_operands)],
                 }
-            else:
-                return {"bool": {"filter": [_generate_es_query(o) for o in operands]}}
+            }
+    else:
+        operands = _get_logical_operands(parsed_query)
+        path = _is_nested_query(operands)
+        if path:
+            return {
+                "nested": {
+                    "path": path,
+                    "query": {
+                        "bool": {
+                            "filter": [
+                                _generate_es_query(o, handle_nested=False)
+                                for o in operands
+                            ]
+                        }
+                    },
+                }
+            }
+        else:
+            return {"bool": {"filter": [_generate_es_query(o) for o in operands]}}
 
 
 def build(query):
