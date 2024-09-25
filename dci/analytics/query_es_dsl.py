@@ -89,7 +89,7 @@ def _generate_from_operators(parsed_query, handle_nested=False):
                     "query": {"terms": {operand_1: operand_2}},
                 }
             }
-        return {"bool": {"terms": {operand_1: operand_2}}}
+        return {"terms": {operand_1: operand_2}}
 
 
 def _split_on_or(parsed_query):
