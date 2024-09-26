@@ -18,7 +18,7 @@ import pyparsing as pp
 
 _field = pp.Word(pp.alphanums + "_" + ".")
 _value = pp.Word(pp.alphanums + "_" + "-" + "%" + "." + ":")
-_word = pp.Word(pp.alphanums + "_" + "-" + "." + " ")
+_word = pp.Word(pp.alphanums + "_" + "-" + "." + " " + ":")
 _comma = pp.Suppress(pp.Literal(","))
 _lp = pp.Suppress(pp.Literal("("))
 _rp = pp.Suppress(pp.Literal(")"))
