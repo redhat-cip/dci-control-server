@@ -22,8 +22,8 @@ import requests
 from dci import settings
 from dciauth.v2.headers import generate_headers
 
-DCI_HOST=settings.HOST
-DCI_PORT=settings.PORT
+DCI_HOST = settings.HOST
+DCI_PORT = settings.PORT
 DCI_LOGIN = os.environ.get("DCI_LOGIN", "admin")
 DCI_PASSWORD = os.environ.get("DCI_PASSWORD", "admin")
 DEFAULT_DCI_CS_URL = f"http://{DCI_HOST}:{DCI_PORT}"
@@ -185,19 +185,19 @@ def create_topics(products):
     osp16 = get_or_create_topic("OSP16", ["puddle"], openstack)
     osp13 = get_or_create_topic("OSP13", ["puddle"], openstack)
 
-    rhel88 = get_or_create_topic("RHEL-8.8", ["Compose"], rhel)
-    rhel92 = get_or_create_topic("RHEL-9.2", ["Compose"], rhel)
+    rhel96 = get_or_create_topic("RHEL-9.6", ["Compose"], rhel)
+    rhel10 = get_or_create_topic("RHEL-10.0", ["Compose"], rhel)
 
-    ocp413 = get_or_create_topic("OCP-4.13", ["puddle_ocp"], ocp)
-    ocp412 = get_or_create_topic("OCP-4.12", ["puddle_ocp"], ocp)
+    ocp418 = get_or_create_topic("OCP-4.18", ["puddle_ocp"], ocp)
+    ocp417 = get_or_create_topic("OCP-4.17", ["puddle_ocp"], ocp)
 
     return {
         "OSP16": osp16,
         "OSP13": osp13,
-        "RHEL-8.8": rhel88,
-        "RHEL-9.2": rhel92,
-        "OCP-4.13": ocp413,
-        "OCP-4.12": ocp412,
+        "RHEL-9.6": rhel96,
+        "RHEL-10.0": rhel10,
+        "OCP-4.18": ocp418,
+        "OCP-4.17": ocp417,
     }
 
 
@@ -223,8 +223,8 @@ def get_or_create_component(name, topic):
 
 def add_components_to_topics(topics):
     for component in [
-        {"name": "RHEL-9.2.0-20230125.12", "topic_name": "RHEL-9.2"},
-        {"name": "RHEL-8.8.0-20230125.0", "topic_name": "RHEL-8.8"},
+        {"name": "RHEL-10.0-20240924.1", "topic_name": "RHEL-10.0"},
+        {"name": "RHEL-9.6.0-20240924.1", "topic_name": "RHEL-9.6"},
     ]:
         topic_name = component["topic_name"]
         c = get_or_create_component(component["name"], topics[topic_name])
@@ -252,15 +252,15 @@ def create_jobs(topics, remotecis, teams):
     jobs = [
         {
             "team_id": teams["partner"]["id"],
-            "topic_id": topics["RHEL-8.8"]["id"],
-            "components": topics["RHEL-8.8"]["components_ids"],
+            "topic_id": topics["RHEL-9.6"]["id"],
+            "components": topics["RHEL-9.6"]["components_ids"],
             "tags": ["releng", "rhel"],
             "comment": "releng job comment",
         },
         {
             "team_id": teams["partner"]["id"],
-            "topic_id": topics["RHEL-9.2"]["id"],
-            "components": topics["RHEL-9.2"]["components_ids"],
+            "topic_id": topics["RHEL-10.0"]["id"],
+            "components": topics["RHEL-10.0"]["components_ids"],
             "tags": ["nightly", "rhel"],
         },
     ]
@@ -278,7 +278,8 @@ def create_jobs(topics, remotecis, teams):
             "secret_key": api_secret,
         }
         headers = generate_headers(request, credential)
-        requests.post("%s/api/v1/jobs" % DCI_CS_URL, headers=headers, json=job)
+        r = requests.post("%s/api/v1/jobs" % DCI_CS_URL, headers=headers, json=job)
+        r.raise_for_status()
 
     return get("jobs", PARTNER).json()["jobs"]
 
