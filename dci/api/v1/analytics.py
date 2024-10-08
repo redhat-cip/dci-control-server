@@ -275,6 +275,19 @@ def tasks_jobs(user):
             }
         }
 
+    _source = {}
+    excludes = args.get("excludes")
+    if excludes:
+        excludes = excludes.split(",")
+        _source["excludes"] = excludes
+    includes = args.get("includes")
+    if includes:
+        includes = includes.split(",")
+        _source["includes"] = includes
+
+    if _source:
+        es_query["_source"] = _source
+
     try:
         res = requests.get(
             "%s/analytics/jobs" % (CONFIG["ANALYTICS_URL"]),
