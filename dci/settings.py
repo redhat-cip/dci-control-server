@@ -116,6 +116,8 @@ SSO_REALM = os.getenv("SSO_REALM", "redhat-external")
 
 CERTIFICATION_URL = "https://access.stage.redhat.com/hydra/rest/cwe/xmlrpc/v2"
 
-RHDL_API_URL = "https://rhdl.distributed-ci.io/api/v1"
+RHDL_API_URL = "https://api.rhdl.distributed-ci.io/api/v1"
+RHDL_SERVICE_ACCOUNT_ACCESS_KEY = os.getenv("RHDL_SERVICE_ACCOUNT_ACCESS_KEY", "")
+RHDL_SERVICE_ACCOUNT_SECRET_KEY = os.getenv("RHDL_SERVICE_ACCOUNT_SECRET_KEY", "")
 
 REQUESTS_TIMEOUT = (3.0, 10.0)

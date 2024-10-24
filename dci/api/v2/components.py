@@ -27,6 +27,7 @@ from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.dci_config import CONFIG
 from dci.db import models2
+from dciauth.signature import HmacAuthBase
 
 
 logger = logging.getLogger(__name__)
@@ -51,9 +52,19 @@ def get_component_file_from_rhdl(user, c_id, filepath):
     rhdl_file_url = os.path.join(
         CONFIG["RHDL_API_URL"], "components", normalized_rhdl_component_filepath
     )
-
+    auth = HmacAuthBase(
+        access_key=CONFIG["RHDL_SERVICE_ACCOUNT_ACCESS_KEY"],
+        secret_key=CONFIG["RHDL_SERVICE_ACCOUNT_SECRET_KEY"],
+        region="us-east-1",
+        service="api",
+        service_key="aws4_request",
+        algorithm="AWS4-HMAC-SHA256",
+    )
     redirect = requests.get(
-        rhdl_file_url, allow_redirects=False, timeout=CONFIG["REQUESTS_TIMEOUT"]
+        rhdl_file_url,
+        allow_redirects=False,
+        auth=auth,
+        timeout=CONFIG["REQUESTS_TIMEOUT"],
     )
     if redirect.status_code != 302:
         raise dci_exc.DCIException(
