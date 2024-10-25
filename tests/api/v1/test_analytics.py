@@ -19,6 +19,9 @@ from __future__ import unicode_literals
 import mock
 from requests.exceptions import ConnectionError
 
+from dci.api.v1 import analytics
+from dci.analytics import query_es_dsl as qed
+
 
 @mock.patch("dci.api.v1.analytics.requests.get")
 def test_elasticsearch_ressource_not_found(
@@ -78,3 +81,41 @@ def test_tasks_jobs(user):
         data={"query": "my-query"},
     )
     assert res.status_code == 401
+
+
+def test_handle_es_sort():
+    res = analytics.handle_es_sort({"sort": "titi"})
+    assert res == [{"titi": {"order": "asc", "format": "strict_date_optional_time"}}]
+
+    res = analytics.handle_es_sort({"sort": "-titi"})
+    assert res == [{"titi": {"order": "desc", "format": "strict_date_optional_time"}}]
+
+    res = analytics.handle_es_sort({})
+    assert res == [
+        {"created_at": {"order": "desc", "format": "strict_date_optional_time"}}
+    ]
+
+
+def test_handle_es_timeframe():
+    query = qed.build("name=titi")
+    res = analytics.handle_es_timeframe(
+        query, {"from": "2024-01-01", "to": "2024-02-01"}
+    )
+    assert res == {
+        "bool": {
+            "filter": [
+                {"range": {"created_at": {"gte": "2024-01-01", "lte": "2024-02-01"}}},
+                query,
+            ]
+        }
+    }
+
+
+def test_handle_includes_excludes():
+    ret = analytics.handle_includes_excludes(
+        {"includes": "titi,tata", "excludes": "toto"}
+    )
+    assert ret == {"excludes": ["toto"], "includes": ["titi", "tata"]}
+
+    ret = analytics.handle_includes_excludes({})
+    assert ret == {}
