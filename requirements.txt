@@ -18,7 +18,7 @@ flask==1.1.1  # python-flask-1.1.1-1.el8.src.rpm centos-openstack-train
 jinja2==2.10.1  # python3-jinja2-2.10.1-5.el8_10.noarch
 markupsafe==0.23  # python3-markupsafe-0.23-19.el8.x86_64
 itsdangerous==0.24  # python3-itsdangerous-0.24-14.el8.noarch
-werkzeug==0.16.0  # python3-werkzeug-0.16.0-1.el8.noarch
+werkzeug==3.0.6  # python3-werkzeug-0.16.0-1.el8.noarch
 
 SQLAlchemy-Utils==0.34.2  # python-sqlalchemy-utils-0.34.2-2.el8.src.rpm centos-openstack-train
 
