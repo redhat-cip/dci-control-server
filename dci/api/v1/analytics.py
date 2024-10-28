@@ -272,6 +272,7 @@ def handle_es_timeframe(query, args):
                 ]
             }
         }
+    return query
 
 
 def handle_includes_excludes(args):
@@ -305,6 +306,8 @@ def build_es_query(args):
     if _source:
         es_query["_source"] = _source
 
+    return es_query
+
 
 @api.route("/analytics/jobs", methods=["GET", "POST"])
 @decorators.login_required
@@ -312,7 +315,7 @@ def tasks_jobs(user):
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
         raise dci_exc.Unauthorized()
 
-    es_query = build_es_query()
+    es_query = build_es_query(flask.request.args.to_dict())
 
     try:
         res = requests.get(

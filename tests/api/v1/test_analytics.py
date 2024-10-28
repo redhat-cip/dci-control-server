@@ -119,3 +119,74 @@ def test_handle_includes_excludes():
 
     ret = analytics.handle_includes_excludes({})
     assert ret == {}
+
+
+def test_build_es_query():
+    args = {
+        "offset": 10,
+        "limit": 10,
+        "query": "(((components.type=ocp) and (components.tags in [build:ga])) and ((components.type=f5-spk)) and (tags in [daily]))",
+        "sort": "-created_at",
+        "from": "2024-01-01",
+        "to": "2024-02-01",
+        "includes": "team,topic",
+        "excludes": "jobstates",
+    }
+    ret = analytics.build_es_query(args)
+    assert ret == {
+        "from": 10,
+        "size": 10,
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "range": {
+                            "created_at": {"gte": "2024-01-01", "lte": "2024-02-01"}
+                        }
+                    },
+                    {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "nested": {
+                                        "path": "components",
+                                        "query": {
+                                            "bool": {
+                                                "filter": [
+                                                    {
+                                                        "term": {
+                                                            "components.type": "ocp"
+                                                        }
+                                                    },
+                                                    {
+                                                        "terms": {
+                                                            "components.tags": [
+                                                                "build:ga"
+                                                            ]
+                                                        }
+                                                    },
+                                                ]
+                                            }
+                                        },
+                                    }
+                                },
+                                {
+                                    "nested": {
+                                        "path": "components",
+                                        "query": {
+                                            "term": {"components.type": "f5-spk"}
+                                        },
+                                    }
+                                },
+                                {"terms": {"tags": ["daily"]}},
+                            ]
+                        }
+                    },
+                ]
+            }
+        },
+        "sort": [
+            {"created_at": {"order": "desc", "format": "strict_date_optional_time"}}
+        ],
+        "_source": {"excludes": ["jobstates"], "includes": ["team", "topic"]},
+    }
