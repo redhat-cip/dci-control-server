@@ -40,7 +40,7 @@ from dci import decorators
 logger = logging.getLogger(__name__)
 
 
-def _handle_pagination(args):
+def handle_pagination(args):
     limit_max = 200
     default_limit = 20
     default_offset = 0
@@ -63,7 +63,7 @@ def tasks_duration_cumulated(user):
     export_control.verify_access_to_topic(user, topic)
 
     query = "q=topic_id:%s AND remoteci_id:%s" % (args["topic_id"], args["remoteci_id"])
-    offset, limit = _handle_pagination(args)
+    offset, limit = handle_pagination(args)
     try:
         res = requests.get(
             "%s/elasticsearch/tasks_duration_cumulated/_search?%s"
@@ -248,33 +248,33 @@ def tasks_pipelines_status(user):
         )
 
 
-@api.route("/analytics/jobs", methods=["GET", "POST"])
-@decorators.login_required
-def tasks_jobs(user):
-    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
-        raise dci_exc.Unauthorized()
+def handle_es_sort(args):
+    field = args.get("sort")
+    if not field:
+        return [
+            {"created_at": {"order": "desc", "format": "strict_date_optional_time"}}
+        ]
+    if field.startswith("-"):
+        return [{field[1:]: {"order": "desc", "format": "strict_date_optional_time"}}]
+    else:
+        return [{field: {"order": "asc", "format": "strict_date_optional_time"}}]
 
-    args = flask.request.args.to_dict()
-    offset, limit = _handle_pagination(args)
-    query_string = args.get("query")
-    es_query = qed.build(query_string)
-    es_query["sort"] = [
-        {"created_at": {"order": "desc", "format": "strict_date_optional_time"}}
-    ]
-    es_query["from"] = offset
-    es_query["size"] = limit
+
+def handle_es_timeframe(query, args):
     from_date = args.get("from")
     to_date = args.get("to")
     if from_date and to_date:
-        es_query["query"] = {
+        return {
             "bool": {
                 "filter": [
                     {"range": {"created_at": {"gte": from_date, "lte": to_date}}},
-                    es_query["query"],
+                    query,
                 ]
             }
         }
 
+
+def handle_includes_excludes(args):
     _source = {}
     excludes = args.get("excludes")
     if excludes:
@@ -284,9 +284,35 @@ def tasks_jobs(user):
     if includes:
         includes = includes.split(",")
         _source["includes"] = includes
+    return _source
 
+
+def build_es_query(args):
+    es_query = {}
+
+    offset, limit = handle_pagination(args)
+    es_query["from"] = offset
+    es_query["size"] = limit
+
+    query_string = args.get("query")
+    es_query["query"] = qed.build(query_string)
+
+    es_query["sort"] = handle_es_sort(args)
+
+    es_query["query"] = handle_es_timeframe(es_query["query"], args)
+
+    _source = handle_includes_excludes(args)
     if _source:
         es_query["_source"] = _source
+
+
+@api.route("/analytics/jobs", methods=["GET", "POST"])
+@decorators.login_required
+def tasks_jobs(user):
+    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
+        raise dci_exc.Unauthorized()
+
+    es_query = build_es_query()
 
     try:
         res = requests.get(

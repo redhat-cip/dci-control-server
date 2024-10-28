@@ -17,7 +17,7 @@
 import pyparsing as pp
 
 _field = pp.Word(pp.alphanums + "_" + ".")
-_value = pp.Word(pp.alphanums + "_" + "-" + "%" + "." + ":")
+_value = pp.Word(pp.alphanums + "_" + "-" + "%" + "." + ":" + "\\" + "*" + "?")
 _word = pp.Word(pp.alphanums + "_" + "-" + "." + " " + ":")
 _comma = pp.Suppress(pp.Literal(","))
 _lp = pp.Suppress(pp.Literal("("))
@@ -29,7 +29,7 @@ _rb = pp.Suppress(pp.Literal("]"))
 _comma_string = _comma + _word
 _list = _lb + _word + pp.ZeroOrMore(_comma_string) + _rb
 
-_comparison_operators = {"=", "!=", "<=" "<", ">=", ">"}
+_comparison_operators = {"=", "!=", "<=" "<", ">=", ">", "=~"}
 _comparison_operators = pp.oneOf(" ".join(_comparison_operators))
 _comparison = _field + _comparison_operators + _value
 
@@ -72,6 +72,16 @@ def _generate_from_operators(parsed_query, handle_nested=False):
                 }
             }
         return {"term": {operand_1: operand_2}}
+    elif operator == "=~":
+        return {
+            "regexp": {
+                operand_1: {
+                    "value": operand_2,
+                    "flags": "ALL",
+                    "case_insensitive": True,
+                }
+            }
+        }
     elif operator == "not_in":
         if handle_nested and "." in operand_1:
             return {
@@ -185,4 +195,4 @@ def _generate_es_query(parsed_query, handle_nested=True):
 
 def build(query):
     parsed_query = parse(query)
-    return {"query": _generate_es_query(parsed_query)}
+    return _generate_es_query(parsed_query)
