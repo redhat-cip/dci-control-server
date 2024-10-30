@@ -345,3 +345,41 @@ def test_query_build_regex():
             ]
         }
     }
+
+
+def test_query_build_comparison_operator():
+    ret = qed.build(
+        "(((keys_values.a>0) and (keys_values.a<10)) or ((keys_values.b>0) and (keys_values.b<=10)))"
+    )
+    assert ret == {
+        "bool": {
+            "should": [
+                {
+                    "nested": {
+                        "path": "keys_values",
+                        "query": {
+                            "bool": {
+                                "filter": [
+                                    {"range": {"keys_values.a": {"gt": "0"}}},
+                                    {"range": {"keys_values.a": {"lt": "10"}}},
+                                ]
+                            }
+                        },
+                    }
+                },
+                {
+                    "nested": {
+                        "path": "keys_values",
+                        "query": {
+                            "bool": {
+                                "filter": [
+                                    {"range": {"keys_values.b": {"gt": "0"}}},
+                                    {"range": {"keys_values.b": {"lte": "10"}}},
+                                ]
+                            }
+                        },
+                    }
+                },
+            ]
+        }
+    }

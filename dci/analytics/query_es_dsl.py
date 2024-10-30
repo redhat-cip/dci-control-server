@@ -29,7 +29,7 @@ _rb = pp.Suppress(pp.Literal("]"))
 _comma_string = _comma + _word
 _list = _lb + _word + pp.ZeroOrMore(_comma_string) + _rb
 
-_comparison_operators = {"=", "!=", "<=" "<", ">=", ">", "=~"}
+_comparison_operators = {"=", "!=", "<=", "<", ">=", ">", "=~"}
 _comparison_operators = pp.oneOf(" ".join(_comparison_operators))
 _comparison = _field + _comparison_operators + _value
 
@@ -58,6 +58,20 @@ def parse(q):
     return query.parseString(q).asList()
 
 
+_op_to_es_op = {"<": "lt", "<=": "lte", ">": "gt", ">=": "gte"}
+
+
+def _handle_comparison_operator(handle_nested, operator, operand_1, operand_2):
+    if handle_nested and "." in operand_1:
+        return {
+            "nested": {
+                "path": operand_1.split(".")[0],
+                "query": {"range": {operand_1: {_op_to_es_op[operator]: operand_2}}},
+            }
+        }
+    return {"range": {operand_1: {_op_to_es_op[operator]: operand_2}}}
+
+
 def _generate_from_operators(parsed_query, handle_nested=False):
     operand_1 = parsed_query[0]
     operator = parsed_query[1]
@@ -72,6 +86,10 @@ def _generate_from_operators(parsed_query, handle_nested=False):
                 }
             }
         return {"term": {operand_1: operand_2}}
+    if operator in _op_to_es_op.keys():
+        return _handle_comparison_operator(
+            handle_nested, operator, operand_1, operand_2
+        )
     elif operator == "=~":
         return {
             "regexp": {
