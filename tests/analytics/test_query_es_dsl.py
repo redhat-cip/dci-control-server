@@ -383,3 +383,51 @@ def test_query_build_comparison_operator():
             ]
         }
     }
+
+
+def test_nrt_query_build_nested_regexp():
+    ret = qed.build(
+        "((components.type=ocp) and (name=~.*upgrade.*) and (team.name=~Intel.+) and (topic.name=OCP-4.16)  and (tags in [daily]))"
+    )
+    assert ret == {
+        "bool": {
+            "filter": [
+                {
+                    "nested": {
+                        "path": "components",
+                        "query": {"term": {"components.type": "ocp"}},
+                    }
+                },
+                {
+                    "regexp": {
+                        "name": {
+                            "value": ".*upgrade.*",
+                            "flags": "ALL",
+                            "case_insensitive": True,
+                        }
+                    }
+                },
+                {
+                    "nested": {
+                        "path": "team",
+                        "query": {
+                            "regexp": {
+                                "team.name": {
+                                    "value": "Intel.+",
+                                    "flags": "ALL",
+                                    "case_insensitive": True,
+                                }
+                            }
+                        },
+                    }
+                },
+                {
+                    "nested": {
+                        "path": "topic",
+                        "query": {"term": {"topic.name": "OCP-4.16"}},
+                    }
+                },
+                {"terms": {"tags": ["daily"]}},
+            ]
+        }
+    }
