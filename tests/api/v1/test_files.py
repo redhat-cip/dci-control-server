@@ -451,7 +451,7 @@ def test_nrt_get_an_empty_junit_file(_, user, job_user_id):
 
 
 @mock.patch("dci.api.v1.notifications.job_dispatcher")
-def test_retrieve_junit2dict(job_dispatcher_mock, admin, job_user_id):
+def test_retrieve_junit(job_dispatcher_mock, admin, job_user_id):
     headers = {
         "DCI-NAME": "junit_file.xml",
         "DCI-JOB-ID": job_user_id,
