@@ -77,8 +77,7 @@ def get_previous_job_in_topic(job):
         return None
 
 
-def _get_previous_jsonunit(job, filename):
-    prev_job = get_previous_job_in_topic(job)
+def _get_previous_testsuites(prev_job, filename):
     if prev_job is None:
         return None
     query = flask.g.session.query(models2.TestsResult).filter(
@@ -93,14 +92,15 @@ def _get_previous_jsonunit(job, filename):
         return None
     test_file = base.get_resource_orm(models2.File, res.file_id)
     file_descriptor = get_file_descriptor(test_file)
-    return junit.parse_junit(file_descriptor)
+    return junit.get_testsuites_from_junit(file_descriptor)
 
 
-def _process_junit_file(values, junit_file, job):
-    jsonunit = junit.parse_junit(junit_file)
-    previous_jsonunit = _get_previous_jsonunit(job, values["name"])
-    testsuites = junit.add_regressions_and_successfix_to_tests(
-        previous_jsonunit, jsonunit
+def _calculate_and_save_test_results(values, junit_file, job):
+    prev_job = get_previous_job_in_topic(job)
+    previous_testsuites = _get_previous_testsuites(prev_job, values["name"])
+    testsuites = junit.get_testsuites_from_junit(junit_file)
+    testsuites = junit.update_testsuites_with_testcase_changes(
+        previous_testsuites, testsuites
     )
     tests_results = junit.calculate_test_results(testsuites)
 
@@ -199,7 +199,7 @@ def create_files(user):
     if new_file["mime"] == "application/junit":
         try:
             _, junit_file = store.get("files", file_path)
-            _process_junit_file(values, junit_file, job)
+            _calculate_and_save_test_results(values, junit_file, job)
         except xml.etree.ElementTree.ParseError as xmlerror:
             raise dci_exc.DCIException(message="Invalid XML: " + xmlerror.msg)
 
@@ -370,14 +370,21 @@ def get_junit_file(user, file_id):
     ):
         raise dci_exc.Unauthorized()
     junit_file = get_file_descriptor(file)
-    jsonunit = junit.parse_junit(junit_file)
+    testsuites = junit.get_testsuites_from_junit(junit_file)
     job = base.get_resource_orm(models2.Job, file.job_id)
-    previous_jsonunit = _get_previous_jsonunit(job, file.name)
-    testsuites = junit.add_regressions_and_successfix_to_tests(
-        previous_jsonunit, jsonunit
-    )
+    prev_job = get_previous_job_in_topic(job)
+    previous_testsuites = _get_previous_testsuites(prev_job, file.name)
+    previous_job_info = {"id": prev_job.id, "name": prev_job.name} if prev_job else None
     return flask.Response(
-        json.dumps({"testsuites": testsuites}),
+        json.dumps(
+            {
+                "job": {"id": job.id, "name": job.name},
+                "previous_job": previous_job_info,
+                "testsuites": junit.update_testsuites_with_testcase_changes(
+                    previous_testsuites, testsuites
+                ),
+            }
+        ),
         200,
         content_type="application/json",
     )

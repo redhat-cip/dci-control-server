@@ -368,6 +368,7 @@ def job_admin(admin_remoteci_context, rhel_80_topic, rhel_80_component):
 @pytest.fixture
 def job_user(remoteci_context, rhel_80_topic, rhel_80_component):
     data = {
+        "name": "test",
         "components_ids": [rhel_80_component["id"]],
         "topic_id": rhel_80_topic["id"],
     }

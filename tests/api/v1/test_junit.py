@@ -18,7 +18,7 @@ from io import BytesIO
 from dci.api.v1 import junit
 
 
-def test_parse_junit():
+def test_get_testsuites_from_junit():
     junit_file = BytesIO(
         """<?xml version='1.0' encoding='utf-8'?>
 <testsuites errors="1" failures="1" tests="6" time="24">
@@ -49,7 +49,7 @@ line returned</system-out>
             "utf-8"
         )
     )
-    assert junit.parse_junit(junit_file) == [
+    assert junit.get_testsuites_from_junit(junit_file) == [
         {
             "id": 0,
             "name": "testsuite 1",
@@ -156,49 +156,124 @@ line returned</system-out>
     ]
 
 
-def test_add_regressions_successfix():
-    junit_file_1 = BytesIO(
+def test_update_testcases_with_state_changes():
+    previous_junit_file = BytesIO(
         """<?xml version='1.0' encoding='utf-8'?>
-<testsuite errors="0" failures="1" name="testsuite_1" tests="3" time="30">
+<testsuite errors="0" failures="1" name="testsuite_1" tests="4" time="40">
     <testcase classname="classname_1" name="testcase_1" time="10">
         <failure type="Exception">Traceback</failure>
     </testcase>
     <testcase classname="classname_1" name="testcase_2" time="10" />
     <testcase classname="classname_1" name="testcase_3" time="10" />
+    <testcase classname="classname_1" name="testcase_4" time="10" />
 </testsuite>""".encode(
             "utf-8"
         )
     )
-    junit_file_2 = BytesIO(
+    junit_file = BytesIO(
         """<?xml version='1.0' encoding='utf-8'?>
-<testsuite errors="0" failures="2" name="testsuite_1" tests="3" time="33">
-    <testcase classname="classname_1" name="testcase_1" time="11" />
-    <testcase classname="classname_1" name="testcase_2" time="12">
+<testsuite errors="0" failures="1" name="testsuite_1" tests="4" time="40">
+    <testcase classname="classname_1" name="testcase_1" time="10" />
+    <testcase classname="classname_1" name="testcase_2" time="10">
         <failure type="Exception">Traceback</failure>
     </testcase>
-    <testcase classname="classname_1" name="testcase_3" time="10">
-        <failure type="Exception">Traceback</failure>
-    </testcase>
+    <testcase classname="classname_1" name="testcase_3" time="10" />
+    <testcase classname="classname_1" name="testcase_5" time="10" />
 </testsuite>""".encode(
             "utf-8"
         )
     )
 
-    old_junit = junit.parse_junit(junit_file_1)
-    new_junit = junit.parse_junit(junit_file_2)
+    previous_testsuites = junit.get_testsuites_from_junit(previous_junit_file)
+    testsuites = junit.get_testsuites_from_junit(junit_file)
+    testsuites = junit.update_testsuites_with_testcase_changes(
+        previous_testsuites, testsuites
+    )
+    assert testsuites[0]["testcases"] == [
+        {
+            "name": "testcase_1",
+            "classname": "classname_1",
+            "time": 10.0,
+            "action": "success",
+            "message": None,
+            "type": None,
+            "value": "",
+            "stdout": None,
+            "stderr": None,
+            "properties": [],
+            "successfix": True,
+            "regression": False,
+            "state": "RECOVERED",
+        },
+        {
+            "name": "testcase_2",
+            "classname": "classname_1",
+            "time": 10.0,
+            "action": "failure",
+            "message": None,
+            "type": "Exception",
+            "value": "Traceback",
+            "stdout": None,
+            "stderr": None,
+            "properties": [],
+            "successfix": False,
+            "regression": True,
+            "state": "REGRESSED",
+        },
+        {
+            "name": "testcase_3",
+            "classname": "classname_1",
+            "time": 10.0,
+            "action": "success",
+            "message": None,
+            "type": None,
+            "value": "",
+            "stdout": None,
+            "stderr": None,
+            "properties": [],
+            "successfix": False,
+            "regression": False,
+            "state": "UNCHANGED",
+        },
+        {
+            "name": "testcase_4",
+            "classname": "classname_1",
+            "time": 10.0,
+            "action": "success",
+            "message": None,
+            "type": None,
+            "value": "",
+            "stdout": None,
+            "stderr": None,
+            "properties": [],
+            "successfix": False,
+            "regression": False,
+            "state": "REMOVED",
+        },
+        {
+            "name": "testcase_5",
+            "classname": "classname_1",
+            "time": 10.0,
+            "action": "success",
+            "message": None,
+            "type": None,
+            "value": "",
+            "stdout": None,
+            "stderr": None,
+            "properties": [],
+            "successfix": False,
+            "regression": False,
+            "state": "ADDED",
+        },
+    ]
+    assert testsuites[0]["successfixes"] == 1
+    assert testsuites[0]["regressions"] == 1
+    assert testsuites[0]["additions"] == 1
+    assert testsuites[0]["deletions"] == 1
+    assert testsuites[0]["unchanged"] == 1
 
-    tests = junit.add_regressions_and_successfix_to_tests(old_junit, new_junit)
-    assert tests[0]["successfixes"] == 1
-    assert tests[0]["regressions"] == 2
-    assert tests[0]["testcases"][0]["regression"] is False
-    assert tests[0]["testcases"][0]["successfix"] is True
-    assert tests[0]["testcases"][1]["regression"] is True
-    assert tests[0]["testcases"][1]["successfix"] is False
-    assert tests[0]["testcases"][2]["regression"] is True
-    assert tests[0]["testcases"][2]["successfix"] is False
 
-
-def test_add_regressions_successfix_with_no_previous_junit():
+def test_update_testcases_with_state_changes_with_no_previous_junit():
     junit_file = BytesIO(
         """<?xml version='1.0' encoding='utf-8'?>
 <testsuite errors="0" failures="2" name="testsuite_1" tests="3" time="33">
@@ -214,20 +289,66 @@ def test_add_regressions_successfix_with_no_previous_junit():
         )
     )
 
-    old_junit = None
-    new_junit = junit.parse_junit(junit_file)
+    previous_testsuites = None
+    testsuites = junit.get_testsuites_from_junit(junit_file)
+    testsuites = junit.update_testsuites_with_testcase_changes(
+        previous_testsuites, testsuites
+    )
 
-    tests = junit.add_regressions_and_successfix_to_tests(old_junit, new_junit)
-    assert tests[0]["successfixes"] == 0
-    assert tests[0]["regressions"] == 0
-    assert tests[0]["testcases"][0]["regression"] is False
-    assert tests[0]["testcases"][0]["successfix"] is False
-    assert tests[0]["testcases"][1]["regression"] is False
-    assert tests[0]["testcases"][1]["successfix"] is False
-    assert tests[0]["testcases"][2]["regression"] is False
-    assert tests[0]["testcases"][2]["successfix"] is False
+    assert testsuites[0]["testcases"] == [
+        {
+            "name": "testcase_1",
+            "classname": "classname_1",
+            "time": 11.0,
+            "action": "success",
+            "message": None,
+            "type": None,
+            "value": "",
+            "stdout": None,
+            "stderr": None,
+            "properties": [],
+            "successfix": False,
+            "regression": False,
+            "state": "ADDED",
+        },
+        {
+            "name": "testcase_2",
+            "classname": "classname_1",
+            "time": 12.0,
+            "action": "failure",
+            "message": None,
+            "type": "Exception",
+            "value": "Traceback",
+            "stdout": None,
+            "stderr": None,
+            "properties": [],
+            "successfix": False,
+            "regression": False,
+            "state": "ADDED",
+        },
+        {
+            "name": "testcase_3",
+            "classname": "classname_1",
+            "time": 10.0,
+            "action": "failure",
+            "message": None,
+            "type": "Exception",
+            "value": "Traceback",
+            "stdout": None,
+            "stderr": None,
+            "properties": [],
+            "successfix": False,
+            "regression": False,
+            "state": "ADDED",
+        },
+    ]
+    assert testsuites[0]["successfixes"] == 0
+    assert testsuites[0]["regressions"] == 0
+    assert testsuites[0]["additions"] == 3
+    assert testsuites[0]["deletions"] == 0
+    assert testsuites[0]["unchanged"] == 0
 
 
-def test_nrt_parse_junit_with_an_empty_junit():
+def test_nrt_get_testsuites_from_junit_with_an_empty_junit():
     junit_file = BytesIO()
-    assert junit.parse_junit(junit_file) == []
+    assert junit.get_testsuites_from_junit(junit_file) == []

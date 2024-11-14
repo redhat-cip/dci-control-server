@@ -112,7 +112,7 @@ def parse_testsuite(testsuite_xml):
     return testsuite
 
 
-def parse_junit(file_descriptor):
+def get_testsuites_from_junit(file_descriptor):
     try:
         testsuites = []
         nb_of_testsuites = 0
@@ -135,36 +135,76 @@ def _get_unique_testcase_key(testsuite, testcase):
     return "%s:%s:%s" % (testsuite["name"], testcase["classname"], testcase["name"])
 
 
-def add_regressions_and_successfix_to_tests(testsuites1, testsuites2):
-    testcases_map = {}
-    if testsuites1:
-        for testsuite in testsuites1:
-            for testcase in testsuite["testcases"]:
-                testcase_key = _get_unique_testcase_key(testsuite, testcase)
-                testcases_map[testcase_key] = testcase
+def _compare_testsuites(testsuite1, testsuite2):
+    testcases1_map = {}
+    if testsuite1:
+        for testcase in testsuite1["testcases"]:
+            testcase_key = _get_unique_testcase_key(testsuite1, testcase)
+            testcases1_map[testcase_key] = testcase
 
+    testcases2_map = {}
+    for testcase in testsuite2["testcases"]:
+        testcase_key = _get_unique_testcase_key(testsuite2, testcase)
+        testcases2_map[testcase_key] = testcase
+
+    testcases1_keys = set(testcases1_map.keys())
+    testcases2_keys = set(testcases2_map.keys())
+
+    testcases = []
+    removed_testcases = testcases1_keys - testcases2_keys
+    for removed_testcase_key in removed_testcases:
+        testcase = testcases1_map[removed_testcase_key]
+        testcase["successfix"] = False  # tobedeleted
+        testcase["regression"] = False  # tobedeleted
+        testcase["state"] = "REMOVED"
+        testcases.append(testcase)
+
+    added_testcases = testcases2_keys - testcases1_keys
+    for added_testcase_key in added_testcases:
+        testcase = testcases2_map[added_testcase_key]
+        testcase["successfix"] = False  # tobedeleted
+        testcase["regression"] = False  # tobedeleted
+        testcase["state"] = "ADDED"
+        testcases.append(testcase)
+
+    successfixes = 0
+    regressions = 0
+    unchanged = 0
+    for testcase_key_in_both in testcases1_keys & testcases2_keys:
+        previous_testcase = testcases1_map[testcase_key_in_both]
+        testcase = testcases2_map[testcase_key_in_both]
+        testcase["successfix"] = False
+        testcase["regression"] = False
+        if previous_testcase["action"] == testcase["action"]:
+            testcase["state"] = "UNCHANGED"
+            unchanged += 1
+        else:
+            if previous_testcase["action"] == "success":
+                testcase["state"] = "REGRESSED"
+                testcase["regression"] = True  # tobedeleted
+                regressions += 1
+            else:
+                testcase["state"] = "RECOVERED"
+                testcase["successfix"] = True  # tobedeleted
+                successfixes += 1
+        testcases.append(testcase)
+
+    testsuite2["testcases"] = sorted(testcases, key=lambda d: d["name"])
+    testsuite2["successfixes"] = successfixes
+    testsuite2["regressions"] = regressions
+    testsuite2["additions"] = len(added_testcases)
+    testsuite2["deletions"] = len(removed_testcases)
+    testsuite2["unchanged"] = unchanged
+    return testsuite2
+
+
+def update_testsuites_with_testcase_changes(testsuites1, testsuites2):
+    testsuites1_map = {ts["name"]: ts for ts in testsuites1 or []}
+    testsuites = []
     for testsuite in testsuites2:
-        testsuite["successfixes"] = 0
-        testsuite["regressions"] = 0
-        for testcase in testsuite["testcases"]:
-            testcase["successfix"] = False
-            testcase["regression"] = False
-            testcase_key = _get_unique_testcase_key(testsuite, testcase)
-            if testcase_key not in testcases_map:
-                continue
-            prev_testcase = testcases_map[testcase_key]
-            # if switch from success to failure then it's a regression
-            if testcase["action"] == "failure":
-                if prev_testcase["action"] == "success":
-                    testcase["regression"] = True
-                    testsuite["regressions"] += 1
-            # if switch from either failure/regression to success its successfix
-            elif testcase["action"] == "success":
-                if prev_testcase["action"] == "failure":
-                    testcase["successfix"] = True
-                    testsuite["successfixes"] += 1
-
-    return testsuites2
+        previous_testsuite = testsuites1_map.get(testsuite["name"])
+        testsuites.append(_compare_testsuites(previous_testsuite, testsuite))
+    return testsuites
 
 
 def calculate_test_results(testsuites):

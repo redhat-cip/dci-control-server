@@ -358,20 +358,25 @@ def test_purge_failure(admin, user, job_user_id, team_user_id):
 
 
 @mock.patch("dci.api.v1.notifications.job_dispatcher")
-def test_get_junit_file(_, user, job_user_id):
+def test_get_junit_file(_, user, job_user):
     junit_id = t_utils.create_file(
         user,
-        job_user_id,
+        job_user["id"],
         "Tempest",
         tests_data.jobtest_one,
         "application/junit",
     )["id"]
-    testsuites = user.get("/api/v1/files/%s/junit" % junit_id).data["testsuites"]
-    assert len(testsuites) == 1
-    assert testsuites[0] == {
+    data = user.get("/api/v1/files/%s/junit" % junit_id).data
+    assert len(data["testsuites"]) == 1
+    assert data["job"]["id"] == job_user["id"]
+    assert data["job"]["name"] == job_user["name"]
+    assert data["previous_job"] is None
+    assert data["testsuites"][0] == {
+        "id": 0,
+        "additions": 3,
+        "deletions": 0,
         "errors": 0,
         "failures": 1,
-        "id": 0,
         "name": "Kikoolol1",
         "skipped": 0,
         "success": 2,
@@ -385,6 +390,7 @@ def test_get_junit_file(_, user, job_user_id):
                 "message": None,
                 "name": "test_1",
                 "properties": [],
+                "state": "ADDED",
                 "stderr": None,
                 "stdout": None,
                 "time": 30.0,
@@ -399,6 +405,7 @@ def test_get_junit_file(_, user, job_user_id):
                 "message": None,
                 "name": "test_2",
                 "properties": [],
+                "state": "ADDED",
                 "stderr": None,
                 "stdout": None,
                 "time": 40.0,
@@ -413,6 +420,7 @@ def test_get_junit_file(_, user, job_user_id):
                 "message": None,
                 "name": "test_3[id-2fc6822e-b5a8-42ed-967b-11d86e881ce3,smoke]",
                 "properties": [],
+                "state": "ADDED",
                 "stderr": None,
                 "stdout": None,
                 "time": 40.0,
@@ -424,6 +432,7 @@ def test_get_junit_file(_, user, job_user_id):
         ],
         "tests": 3,
         "time": 110.0,
+        "unchanged": 0,
     }
 
 
