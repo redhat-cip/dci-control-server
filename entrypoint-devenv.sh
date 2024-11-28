@@ -5,7 +5,7 @@ if ! python3 bin/dci-wait-for-db; then
     exit 0
 fi
 
-if ! python3 bin/dci-dbsync then
+if ! python3 bin/dci-dbinit; then
     echo "Unable to init the DB. Exiting." 1>&2
     exit 0
 fi
