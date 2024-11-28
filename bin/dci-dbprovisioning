@@ -20,7 +20,7 @@ import time
 
 import requests
 from dci import settings
-from dciauth.v2.headers import generate_headers
+from dciauth.signature import HmacAuthBase
 
 DCI_HOST = settings.HOST
 DCI_PORT = settings.PORT
@@ -267,18 +267,15 @@ def create_jobs(topics, remotecis, teams):
     client_id = remotecis["partner"]["id"]
     api_secret = remotecis["partner"]["api_secret"]
     for job in jobs:
-        request = {
-            "method": "POST",
-            "endpoint": "/api/v1/jobs",
-            "payload": job,
-            "host": f"{DCI_HOST}:{DCI_PORT}",
-        }
-        credential = {
-            "access_key": f"remoteci/{client_id}",
-            "secret_key": api_secret,
-        }
-        headers = generate_headers(request, credential)
-        r = requests.post("%s/api/v1/jobs" % DCI_CS_URL, headers=headers, json=job)
+        auth = HmacAuthBase(
+            access_key=f"remoteci/{client_id}",
+            secret_key=api_secret,
+            region="BHS3",
+            service="api",
+            service_key="dci2_request",
+            algorithm="DCI2-HMAC-SHA256",
+        )
+        r = requests.post("%s/api/v1/jobs" % DCI_CS_URL, auth=auth, json=job)
         r.raise_for_status()
 
     return get("jobs", PARTNER).json()["jobs"]
