@@ -126,6 +126,19 @@ def get_remotecis_by_team(user, team_id):
     return remotecis.get_all_remotecis(team.id)
 
 
+@api.route("/teams/<uuid:team_id>/products", methods=["GET"])
+@decorators.login_required
+def get_products_team_has_access_to(user, team_id):
+    if user.is_not_epm() and user.is_not_in_team(team_id):
+        raise dci_exc.Unauthorized()
+    team = base.get_resource_orm(models2.Team, team_id)
+    team_products = [p.serialize() for p in team.products]
+
+    return flask.jsonify(
+        {"products": team_products, "_meta": {"count": len(team_products)}}
+    )
+
+
 @api.route("/teams/<uuid:t_id>", methods=["PUT"])
 @decorators.login_required
 def put_team(user, t_id):

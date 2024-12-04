@@ -444,3 +444,15 @@ def test_create_and_update_team_with_has_pre_release_access_flag(admin, epm):
 
     team_updated = update_team_request.data["team"]
     assert team_updated["has_pre_release_access"]
+
+
+def test_get_products_team_has_access_to(admin, team_user_id, team_user_id2):
+    products_team_user_request = admin.get("/api/v1/teams/%s/products" % team_user_id)
+    assert products_team_user_request.status_code == 200
+    products = products_team_user_request.data["products"]
+    assert sorted([p["name"] for p in products]) == ["OpenStack", "RHEL"]
+
+    products_team_user2_request = admin.get("/api/v1/teams/%s/products" % team_user_id2)
+    assert products_team_user2_request.status_code == 200
+    products = products_team_user2_request.data["products"]
+    assert sorted([p["name"] for p in products]) == ["RHEL"]
