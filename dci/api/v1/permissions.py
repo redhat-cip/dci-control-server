@@ -84,3 +84,42 @@ def get_user_topic_ids(user):
     if user.has_not_pre_release_access():
         filters.append(models2.Topic.export_control == True)  # noqa
     return [t.id for t in base.get_resources_orm(models2.Topic, filters)]
+
+
+def get_components_access_teams_ids(teams_ids):
+    """A team can allow another team to see its components.
+    This method returns the list of teams ids that allowed teams_ids to see theirs components.
+    """
+    components_access_teams_ids = []
+    JTCA = models2.JOIN_TEAMS_COMPONENTS_ACCESS
+    for team_id in teams_ids:
+        query = flask.g.session.query(JTCA)
+        query = query.filter(JTCA.c.team_id == team_id)
+        teams_components_access = query.all()
+        if teams_components_access:
+            for tca in teams_components_access:
+                components_access_teams_ids.append(tca.access_team_id)
+    return components_access_teams_ids
+
+
+def verify_access_to_component(user, component):
+    component_team_id = component.team_id
+    if component_team_id is not None:
+        if user.is_not_in_team(component_team_id):
+            components_access_teams_ids = get_components_access_teams_ids(
+                user.teams_ids
+            )
+            if component_team_id not in components_access_teams_ids:
+                raise dci_exc.Unauthorized()
+    else:
+        topic = base.get_resource_orm(models2.Topic, component.topic_id)
+        verify_access_to_topic(user, topic)
+
+
+def can_delete_component(user, component):
+    component_team_id = component.team_id
+    if component_team_id is not None:
+        if user.is_not_in_team(component_team_id):
+            dci_exc.Unauthorized()
+    elif user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
+        raise dci_exc.Unauthorized()

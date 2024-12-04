@@ -21,7 +21,7 @@ from sqlalchemy import sql
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import components
-from dci.api.v1 import export_control
+from dci.api.v1 import permissions
 from dci.api.v1 import utils as v1_utils
 from dci import decorators
 from dci.common import exceptions as dci_exc
@@ -78,7 +78,7 @@ def get_topic_by_id(user, topic_id):
         and user.is_not_feeder()
         and user.is_not_read_only_user()
     ):
-        export_control.verify_access_to_topic(user, topic)
+        permissions.verify_access_to_topic(user, topic)
 
     return flask.Response(
         json.dumps({"topic": topic_serialized}),
@@ -100,7 +100,7 @@ def get_all_topics(user):
     )
 
     if user.is_not_super_admin() and user.is_not_read_only_user() and user.is_not_epm():
-        product_ids = export_control.get_user_product_ids(user)
+        product_ids = permissions.get_user_product_ids(user)
         q = q.filter(models2.Topic.product_id.in_(product_ids))
         if user.has_not_pre_release_access():
             q = q.filter(models2.Topic.export_control == True)  # noqa
@@ -166,21 +166,21 @@ def delete_topic_by_id(user, topic_id):
 @decorators.login_required
 def get_topics_components(user, topic_id):
     topic = base.get_resource_orm(models2.Topic, topic_id)
-    export_control.verify_access_to_topic(user, topic)
+    permissions.verify_access_to_topic(user, topic)
     return components.get_all_components(user, [topic_id])
 
 
 @api.route("/topics/<uuid:topic_id>/notifications", methods=["POST"])
 @decorators.login_required
 def subscribe_user_to_topic(user, topic_id):
-    t = base.get_resource_orm(models2.Topic, topic_id)
-    export_control.verify_access_to_topic(user, t)
-    ut = base.create_resource_orm(
+    topic = base.get_resource_orm(models2.Topic, topic_id)
+    permissions.verify_access_to_topic(user, topic)
+    user_topic = base.create_resource_orm(
         models2.UserTopic, {"user_id": user.id, "topic_id": topic_id}
     )
 
     return flask.Response(
-        json.dumps(ut),
+        json.dumps(user_topic),
         201,
         content_type="application/json",
     )

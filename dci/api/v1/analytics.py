@@ -24,7 +24,7 @@ import uuid
 from dci.analytics import query_es_dsl as qed
 from dci.api.v1 import api
 from dci.api.v1 import base
-from dci.api.v1 import export_control
+from dci.api.v1 import permissions
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
     analytics_task_duration_cumulated,
@@ -60,7 +60,7 @@ def tasks_duration_cumulated(user):
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
         if remoteci.team_id not in user.teams_ids:
             raise dci_exc.Unauthorized()
-    export_control.verify_access_to_topic(user, topic)
+    permissions.verify_access_to_topic(user, topic)
 
     query = "q=topic_id:%s AND remoteci_id:%s" % (args["topic_id"], args["remoteci_id"])
     offset, limit = handle_pagination(args)

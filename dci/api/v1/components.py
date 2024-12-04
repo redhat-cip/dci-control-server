@@ -24,8 +24,9 @@ from sqlalchemy import sql
 
 from dci.api.v1 import api, notifications
 from dci.api.v1 import base
-from dci.api.v1 import export_control
+from dci.api.v1 import permissions
 from dci.api.v1 import utils as v1_utils
+from dci.api.v2 import components as components_v2
 from dci import decorators
 from dci.common import exceptions as dci_exc
 from dci.common.schemas import (
@@ -45,42 +46,6 @@ import sqlalchemy.orm as sa_orm
 
 
 logger = logging.getLogger(__name__)
-
-
-def get_components_access_teams_ids(teams_ids):
-    components_access_teams_ids = []
-    JTCA = models2.JOIN_TEAMS_COMPONENTS_ACCESS
-    for team_id in teams_ids:
-        query = flask.g.session.query(JTCA)
-        query = query.filter(JTCA.c.team_id == team_id)
-        teams_components_access = query.all()
-        if teams_components_access:
-            for tca in teams_components_access:
-                components_access_teams_ids.append(tca.access_team_id)
-    return components_access_teams_ids
-
-
-def _verify_component_and_topic_access(user, component):
-    component_team_id = component.team_id
-    if component_team_id is not None:
-        if user.is_not_in_team(component_team_id):
-            components_access_teams_ids = get_components_access_teams_ids(
-                user.teams_ids
-            )
-            if component_team_id not in components_access_teams_ids:
-                raise dci_exc.Unauthorized()
-    else:
-        topic = base.get_resource_orm(models2.Topic, component.topic_id)
-        export_control.verify_access_to_topic(user, topic)
-
-
-def _verify_component_access_and_role(user, component):
-    component_team_id = component.team_id
-    if component_team_id is not None:
-        if user.is_not_in_team(component_team_id):
-            dci_exc.Unauthorized()
-    elif user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
-        raise dci_exc.Unauthorized()
 
 
 @api.route("/components", methods=["POST"])
@@ -135,7 +100,7 @@ def update_components(user, c_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     component = base.get_resource_orm(models2.Component, c_id, if_match_etag)
 
-    _verify_component_and_topic_access(user, component)
+    permissions.verify_access_to_component(user, component)
 
     initial_component_state = component.state
 
@@ -180,7 +145,9 @@ def get_all_components(user, topics_ids):
     )
 
     if user.is_not_super_admin() and user.is_not_feeder() and user.is_not_epm():
-        components_access_teams_ids = get_components_access_teams_ids(user.teams_ids)
+        components_access_teams_ids = permissions.get_components_access_teams_ids(
+            user.teams_ids
+        )
         query = query.filter(
             sql.or_(
                 models2.Component.team_id.in_(user.teams_ids),
@@ -201,7 +168,7 @@ def get_all_components(user, topics_ids):
 @api.route("/components", methods=["GET"])
 @decorators.login_required
 def get_components(user):
-    topics_ids = export_control.get_user_topic_ids(user)
+    topics_ids = permissions.get_user_topic_ids(user)
     return get_all_components(user, topics_ids)
 
 
@@ -211,7 +178,7 @@ def get_component_by_id(user, c_id):
     component = base.get_resource_orm(
         models2.Component, c_id, options=[sa_orm.selectinload("files")]
     )
-    _verify_component_and_topic_access(user, component)
+    permissions.verify_access_to_component(user, component)
 
     component_jobs_query = (
         flask.g.session.query(models2.Job)
@@ -242,7 +209,7 @@ def get_component_by_id(user, c_id):
 def delete_component_by_id(user, c_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     component = base.get_resource_orm(models2.Component, c_id, if_match_etag)
-    _verify_component_access_and_role(user, component)
+    permissions.can_delete_component(user, component)
     base.update_resource_orm(component, {"state": "archived"})
 
     return flask.Response(None, 204, content_type="application/json")
@@ -252,7 +219,7 @@ def delete_component_by_id(user, c_id):
 @decorators.login_required
 def list_components_files(user, c_id):
     component = base.get_resource_orm(models2.Component, c_id)
-    _verify_component_and_topic_access(user, component)
+    permissions.verify_access_to_component(user, component)
     args = check_and_get_args(flask.request.args.to_dict())
 
     query = flask.g.session.query(models2.Componentfile)
@@ -278,8 +245,9 @@ def list_components_files(user, c_id):
 @decorators.login_required
 def get_component_file_from_s3(user, c_id, filepath):
     component = base.get_resource_orm(models2.Component, c_id)
-    _verify_component_and_topic_access(user, component)
-
+    permissions.verify_access_to_component(user, component)
+    if component.tags and "rhdl" in component.tags:
+        return components_v2.get_component_file_from_rhdl(filepath, component)
     normalized_filepath = os.path.normpath("/" + filepath).lstrip("/")
     normalized_component_id_filepath = os.path.join(str(c_id), normalized_filepath)
     component_id_filepath = os.path.join(str(c_id), filepath)
@@ -302,19 +270,17 @@ def get_component_file_from_s3(user, c_id, filepath):
 @decorators.login_required
 def get_component_file_by_id(user, c_id, f_id):
     component = base.get_resource_orm(models2.Component, c_id)
-    _verify_component_and_topic_access(user, component)
+    permissions.verify_access_to_component(user, component)
 
     componentfile = base.get_resource_orm(models2.Componentfile, f_id)
-
-    res = flask.jsonify({"component_file": componentfile.serialize()})
-    return res
+    return flask.jsonify({"component_file": componentfile.serialize()})
 
 
 @api.route("/components/<uuid:c_id>/files/<uuid:f_id>/content", methods=["GET"])
 @decorators.login_required
 def download_component_file(user, c_id, f_id):
     component = base.get_resource_orm(models2.Component, c_id)
-    _verify_component_and_topic_access(user, component)
+    permissions.verify_access_to_component(user, component)
 
     store = flask.g.store
 
@@ -332,7 +298,7 @@ def download_component_file(user, c_id, f_id):
 @decorators.login_required
 def upload_component_file(user, c_id):
     component = base.get_resource_orm(models2.Component, c_id)
-    _verify_component_and_topic_access(user, component)
+    permissions.verify_access_to_component(user, component)
 
     if str(component.topic_id) not in v1_utils.user_topic_ids(flask.g.session, user):
         raise dci_exc.Unauthorized()
@@ -370,7 +336,7 @@ def upload_component_file(user, c_id):
 def delete_component_file(user, c_id, f_id):
     if_match_etag = utils.check_and_get_etag(flask.request.headers)
     component = base.get_resource_orm(models2.Component, c_id)
-    _verify_component_access_and_role(user, component)
+    permissions.can_delete_component(user, component)
     componentfile = base.get_resource_orm(models2.Componentfile, f_id, if_match_etag)
     base.update_resource_orm(componentfile, {"state": "archived"})
 

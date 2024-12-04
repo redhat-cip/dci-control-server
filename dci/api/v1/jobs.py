@@ -44,7 +44,7 @@ from dci.db import declarative
 from dci.db import models2
 
 from dci.api.v1 import files
-from dci.api.v1 import export_control
+from dci.api.v1 import permissions
 from dci.api.v1 import jobstates
 
 
@@ -97,7 +97,7 @@ def internal_create_jobs(user, values, components_ids=None):
     if topic.state != "active":
         msg = "Topic %s:%s not active." % (topic_id, topic.name)
         raise dci_exc.DCIException(msg, status_code=412)
-    export_control.verify_access_to_topic(user, topic)
+    permissions.verify_access_to_topic(user, topic)
 
     previous_job_id = values.get("previous_job_id")
     if previous_job_id:
@@ -119,7 +119,7 @@ def internal_create_jobs(user, values, components_ids=None):
             "previous_job_id": previous_job_id,
         }
     )
-    components_access_teams_ids = components.get_components_access_teams_ids(
+    components_access_teams_ids = permissions.get_components_access_teams_ids(
         user.teams_ids
     )
     # schedule
@@ -392,7 +392,7 @@ def add_component_to_job(user, job_id):
     j = base.get_resource_orm(models2.Job, job_id)
     component = base.get_resource_orm(models2.Component, values["id"])
 
-    components_access_teams_ids = components.get_components_access_teams_ids(
+    components_access_teams_ids = permissions.get_components_access_teams_ids(
         user.teams_ids
     )
 
