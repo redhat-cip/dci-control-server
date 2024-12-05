@@ -170,6 +170,15 @@ def test_attach_component_from_other_team_to_job(
             cmpt_found = True
     assert cmpt_found
 
+    r = user.delete("/api/v1/jobs/%s/components/%s" % (job_user_id, pc_id))
+    assert r.status_code == 201
+    cmpts = user.get("/api/v1/jobs/%s/components" % job_user_id).data["components"]
+    cmpt_found = False
+    for c in cmpts:
+        if c["id"] == pc_id:
+            cmpt_found = True
+    assert not cmpt_found
+
 
 def test_add_component_with_no_team_to_job(
     user, admin, team_user_id, topic_user_id, job_user_id
