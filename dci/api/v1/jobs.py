@@ -425,7 +425,7 @@ def remove_component_from_job(user, job_id, cmpt_id):
     j = base.get_resource_orm(models2.Job, job_id)
     component = base.get_resource_orm(models2.Component, cmpt_id)
 
-    if component.team_id and not user.is_in_team(component.team_id):
+    if user.is_not_in_team(j.team_id):
         raise dci_exc.Unauthorized()
 
     try:
