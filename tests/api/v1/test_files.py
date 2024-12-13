@@ -368,6 +368,8 @@ def test_get_junit_file(_, user, job_user):
     )["id"]
     data = user.get("/api/v1/files/%s/junit" % junit_id).data
     assert len(data["testsuites"]) == 1
+    assert data["id"] == junit_id
+    assert data["name"] == "Tempest"
     assert data["job"]["id"] == job_user["id"]
     assert data["job"]["name"] == job_user["name"]
     assert data["previous_job"] is None

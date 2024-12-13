@@ -378,6 +378,8 @@ def get_junit_file(user, file_id):
     return flask.Response(
         json.dumps(
             {
+                "id": str(file_id),
+                "name": file.name,
                 "job": {"id": job.id, "name": job.name},
                 "previous_job": previous_job_info,
                 "testsuites": junit.update_testsuites_with_testcase_changes(
