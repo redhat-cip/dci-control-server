@@ -17,8 +17,9 @@
 import pyparsing as pp
 
 _field = pp.Word(pp.alphanums + "_" + ".")
-_value = pp.Word(
+_word = pp.Word(
     pp.alphanums
+    + " "
     + "_"
     + "-"
     + "%"
@@ -33,7 +34,17 @@ _value = pp.Word(
     + "["
     + "]"
 )
-_word = pp.Word(pp.alphanums + "_" + "-" + "." + " " + ":")
+_value_with_quotes = pp.Suppress(pp.Literal("'")) + _word + pp.Suppress(pp.Literal("'"))
+_value_without_quotes = _word
+_value = _value_without_quotes | _value_with_quotes
+
+_value_for_list = pp.Word(pp.alphanums + "_" + "." + "-" + ":" + " ")
+_value_for_list_without_quotes = _value_for_list
+_value_for_list_with_quotes = (
+    pp.Suppress(pp.Literal("'")) + _value_for_list + pp.Suppress(pp.Literal("'"))
+)
+_value_for_list = _value_for_list_without_quotes | _value_for_list_with_quotes
+
 _comma = pp.Suppress(pp.Literal(","))
 _lp = pp.Suppress(pp.Literal("("))
 _rp = pp.Suppress(pp.Literal(")"))
@@ -41,8 +52,8 @@ _rp = pp.Suppress(pp.Literal(")"))
 _lb = pp.Suppress(pp.Literal("["))
 _rb = pp.Suppress(pp.Literal("]"))
 
-_comma_string = _comma + _word
-_list = _lb + _word + pp.ZeroOrMore(_comma_string) + _rb
+_comma_value = _comma + _value_for_list
+_list = _lb + _value_for_list + pp.ZeroOrMore(_comma_value) + _rb
 
 _comparison_operators = {"=", "!=", "<=", "<", ">=", ">", "=~"}
 _comparison_operators = pp.oneOf(" ".join(_comparison_operators))

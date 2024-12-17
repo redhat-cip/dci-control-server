@@ -315,7 +315,13 @@ def tasks_jobs(user):
     if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
         raise dci_exc.Unauthorized()
 
-    es_query = build_es_query(flask.request.args.to_dict())
+    args = flask.request.args.to_dict()
+
+    try:
+        es_query = build_es_query(args)
+    except Exception as e:
+        logger.error(f"error while building the elastic query: {e}")
+        raise dci_exc.DCIException("error while building the elastic query")
 
     try:
         res = requests.get(

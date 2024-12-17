@@ -75,12 +75,16 @@ def test_tasks_analytics_pipelines_status(user, team_admin_id):
     assert res.status_code == 401
 
 
-def test_tasks_jobs(user):
+def test_tasks_jobs(user, admin):
     res = user.get(
-        "/api/v1/analytics/jobs?team_id=foo",
-        data={"query": "my-query"},
+        "/api/v1/analytics/jobs?query=(a=b)",
     )
     assert res.status_code == 401
+
+    res = admin.get(
+        "/api/v1/analytics/jobs?query=foo",
+    )
+    assert res.status_code == 400
 
 
 def test_handle_es_sort():
