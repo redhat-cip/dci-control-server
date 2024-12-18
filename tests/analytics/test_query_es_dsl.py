@@ -431,3 +431,30 @@ def test_nrt_query_build_nested_regexp():
             ]
         }
     }
+
+
+def test_nrt_query_build_quoted_values():
+    ret = qed.build(
+        "(tags in [daily]) and (team.name in [rh-telco-ci,telco-ci-partner,'f5 - openshift'])"
+    )
+    assert ret == {
+        "bool": {
+            "filter": [
+                {"terms": {"tags": ["daily"]}},
+                {
+                    "nested": {
+                        "path": "team",
+                        "query": {
+                            "terms": {
+                                "team.name": [
+                                    "rh-telco-ci",
+                                    "telco-ci-partner",
+                                    "f5 - openshift",
+                                ]
+                            }
+                        },
+                    }
+                },
+            ]
+        }
+    }
