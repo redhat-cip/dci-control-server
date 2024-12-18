@@ -24,6 +24,9 @@ def test_parse_query_invalid():
     with pytest.raises(pp.ParseException):
         qed.parse("toto")
 
+    with pytest.raises(pp.ParseException):
+        qed.parse("(toto=titi) and (lol=mdr")
+
 
 def test_parse_query_valid():
     ret = qed.parse("f1=v1")

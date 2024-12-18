@@ -81,7 +81,7 @@ query << (
 
 
 def parse(q):
-    return query.parseString(q).asList()
+    return query.parseString(q, parseAll=True).asList()
 
 
 _op_to_es_op = {"<": "lt", "<=": "lte", ">": "gt", ">=": "gte"}

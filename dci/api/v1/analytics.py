@@ -321,7 +321,7 @@ def tasks_jobs(user):
         es_query = build_es_query(args)
     except Exception as e:
         logger.error(f"error while building the elastic query: {e}")
-        raise dci_exc.DCIException("error while building the elastic query")
+        raise dci_exc.DCIException("syntax error while parsing the query")
 
     try:
         res = requests.get(
