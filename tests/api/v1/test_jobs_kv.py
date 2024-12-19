@@ -82,3 +82,27 @@ def test_delete_from_job(remoteci_context, components_user_ids, topic_user_id):
     job = remoteci_context.get("/api/v1/jobs/%s" % job_id)
     job = job.data["job"]
     assert job["keys_values"] == []
+
+
+def test_job_updated_when_kv_added_deleted(remoteci_context, job_user_id):
+    job = remoteci_context.get("/api/v1/jobs/%s" % job_user_id).data["job"]
+    job_updated_at = job["updated_at"]
+
+    r = remoteci_context.post(
+        "/api/v1/jobs/%s/kv" % job_user_id,
+        data={"key": "mykey", "value": 123.123},
+    )
+    r.status_code == 201
+
+    job = remoteci_context.get("/api/v1/jobs/%s" % job_user_id).data["job"]
+    assert job["updated_at"] != job_updated_at
+
+    job_updated_at = job["updated_at"]
+    r = remoteci_context.delete(
+        "/api/v1/jobs/%s/kv" % job_user_id,
+        data={"key": "mykey"},
+    )
+    r.status_code == 204
+
+    job = remoteci_context.get("/api/v1/jobs/%s" % job_user_id).data["job"]
+    assert job["updated_at"] != job_updated_at

@@ -193,7 +193,8 @@ def create_files(user):
     result = {"file": new_file}
 
     # Update job duration if it's jobstate's file
-    base.update_resource_orm(job, {"duration": get_job_duration(job)})
+    if values.get("jobstate_id"):
+        base.update_resource_orm(job, {"duration": get_job_duration(job)})
     gc.collect()
 
     if new_file["mime"] == "application/junit":
@@ -202,6 +203,13 @@ def create_files(user):
             _calculate_and_save_test_results(values, junit_file, job)
         except xml.etree.ElementTree.ParseError as xmlerror:
             raise dci_exc.DCIException(message="Invalid XML: " + xmlerror.msg)
+
+    job.etag = utils.gen_etag()
+    try:
+        flask.g.session.commit()
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e), status_code=409)
 
     return flask.Response(json.dumps(result), 201, content_type="application/json")
 
@@ -277,8 +285,16 @@ def delete_file_by_id(user, file_id):
 
     if not user.is_in_team(file.team_id):
         raise dci_exc.Unauthorized()
-
     base.update_resource_orm(file, {"state": "archived"})
+
+    job = base.get_resource_orm(models2.Job, file.job_id)
+    job.etag = utils.gen_etag()
+    try:
+        flask.g.session.commit()
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e), status_code=409)
+
     return flask.Response(None, 204, content_type="application/json")
 
 

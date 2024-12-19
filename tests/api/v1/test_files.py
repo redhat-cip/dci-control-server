@@ -45,6 +45,25 @@ def test_create_files(user, jobstate_user_id):
     assert file["size"] == 7
 
 
+def test_job_update_on_creation_deletion_file(user, job_user_id):
+    job = user.get("/api/v1/jobs/%s" % job_user_id).data["job"]
+    job_updated_at = job["updated_at"]
+
+    file_id = t_utils.create_file(
+        user, job_user_id, "name", content="c", content_type="text/plain"
+    )["id"]
+
+    job = user.get("/api/v1/jobs/%s" % job_user_id).data["job"]
+    assert job_updated_at != job["updated_at"]
+
+    job_updated_at = job["updated_at"]
+
+    user.delete("/api/v1/files/%s" % str(file_id))
+
+    job = user.get("/api/v1/jobs/%s" % job_user_id).data["job"]
+    assert job_updated_at != job["updated_at"]
+
+
 def test_create_files_jobstate_id_and_job_id_missing(admin):
     file = admin.post("/api/v1/files", headers={"DCI-NAME": "file"}, data="content")
     assert file.status_code == 400
