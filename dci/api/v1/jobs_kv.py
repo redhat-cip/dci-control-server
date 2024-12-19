@@ -28,6 +28,7 @@ from dci.common.schemas import (
     create_job_kv_schema,
     delete_job_kv_schema,
 )
+from dci.common import utils
 from dci.db import models2
 
 
@@ -47,6 +48,13 @@ def add_kv_to_job(user, job_id):
 
     values["job_id"] = job_id
     jkv = base.create_resource_orm(models2.JobKeyValue, values)
+    job.etag = utils.gen_etag()
+
+    try:
+        flask.g.session.commit()
+    except Exception as e:
+        flask.g.session.rollback()
+        raise dci_exc.DCIException(message=str(e), status_code=409)
 
     return flask.Response(
         json.dumps({"kv": jkv}),
@@ -65,6 +73,8 @@ def delete_kv_from_job(user, job_id):
 
     if user.is_not_in_team(job.team_id) and user.is_not_epm():
         raise dci_exc.Unauthorized()
+
+    job.etag = utils.gen_etag()
 
     try:
         flask.g.session.query(models2.JobKeyValue).filter(
