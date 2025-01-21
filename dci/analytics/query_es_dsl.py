@@ -87,11 +87,15 @@ def parse(q):
 _op_to_es_op = {"<": "lt", "<=": "lte", ">": "gt", ">=": "gte"}
 
 
+def _get_prefix(operand):
+    return ".".join(operand.split(".")[:-1])
+
+
 def _handle_comparison_operator(handle_nested, operator, operand_1, operand_2):
     if handle_nested and "." in operand_1:
         return {
             "nested": {
-                "path": operand_1.split(".")[0],
+                "path": _get_prefix(operand_1),
                 "query": {"range": {operand_1: {_op_to_es_op[operator]: operand_2}}},
             }
         }
@@ -107,7 +111,7 @@ def _generate_from_operators(parsed_query, handle_nested=False):
         if handle_nested and "." in operand_1:
             return {
                 "nested": {
-                    "path": operand_1.split(".")[0],
+                    "path": _get_prefix(operand_1),
                     "query": {"term": {operand_1: operand_2}},
                 }
             }
@@ -127,13 +131,13 @@ def _generate_from_operators(parsed_query, handle_nested=False):
             }
         }
         if handle_nested and "." in operand_1:
-            return {"nested": {"path": operand_1.split(".")[0], "query": _regexp}}
+            return {"nested": {"path": _get_prefix(operand_1), "query": _regexp}}
         return _regexp
     elif operator == "not_in":
         if handle_nested and "." in operand_1:
             return {
                 "nested": {
-                    "path": operand_1.split(".")[0],
+                    "path": _get_prefix(operand_1),
                     "query": {"bool": {"must_not": {"terms": {operand_1: operand_2}}}},
                 }
             }
@@ -142,7 +146,7 @@ def _generate_from_operators(parsed_query, handle_nested=False):
         if handle_nested and "." in operand_1:
             return {
                 "nested": {
-                    "path": operand_1.split(".")[0],
+                    "path": _get_prefix(operand_1),
                     "query": {"terms": {operand_1: operand_2}},
                 }
             }
@@ -177,11 +181,8 @@ def _is_nested_query(operands_1, operands_2=None):
         and isinstance(operands_1[0][0], str)
         and "." in operands_1[0][0]
     ):
-        path = operands_1[0][0].split(".")[0]
+        path = _get_prefix(operands_1[0][0])
     if path:
-        for o in operands_1:
-            if o[0].split(".")[0] != path:
-                return None
         if operands_2:
             for o in operands_2:
                 if o[0].split(".")[0] != path:
@@ -190,9 +191,17 @@ def _is_nested_query(operands_1, operands_2=None):
 
 
 def _generate_es_query(parsed_query, handle_nested=True):
-    if isinstance(parsed_query[0], str):
+    if (
+        len(parsed_query) > 0
+        and isinstance(parsed_query, list)
+        and isinstance(parsed_query[0], str)
+    ):
         return _generate_from_operators(parsed_query, handle_nested)
-    if len(parsed_query) == 1:
+    if (
+        len(parsed_query) == 1
+        and isinstance(parsed_query, list)
+        and isinstance(parsed_query[0], list)
+    ):
         return _generate_es_query(parsed_query[0], handle_nested)
 
     if "or" in parsed_query:
@@ -223,17 +232,23 @@ def _generate_es_query(parsed_query, handle_nested=True):
         operands = _get_logical_operands(parsed_query)
         path = _is_nested_query(operands)
         if path:
+            first_element = operands[0]
+            _filter = [_generate_es_query(first_element, handle_nested=False)]
+            operands = operands[1:]
+            i = 0
+            while i < len(operands):
+                if path == _get_prefix(operands[i][0]):
+                    _filter.append(_generate_es_query(operands[i], handle_nested=False))
+                else:
+                    break
+                i += 1
+            if i < len(operands):
+                _filter.append(_generate_es_query(operands[i:], handle_nested=True))
+
             return {
                 "nested": {
                     "path": path,
-                    "query": {
-                        "bool": {
-                            "filter": [
-                                _generate_es_query(o, handle_nested=False)
-                                for o in operands
-                            ]
-                        }
-                    },
+                    "query": {"bool": {"filter": _filter}},
                 }
             }
         else:

@@ -390,24 +390,31 @@ def test_query_build_comparison_operator():
 
 def test_nrt_query_build_nested_regexp():
     ret = qed.build(
-        "((components.type=ocp) and (name=~.*upgrade.*) and (team.name=~Intel.+) and (topic.name=OCP-4.16)  and (tags in [daily]))"
+        "(name=~.*upgrade.*) and ((components.type=ocp) and (components.name=openshift)) and (team.name=~Intel.+) and (topic.name=OCP-4.16)  and (tags in [daily])"
     )
     assert ret == {
         "bool": {
             "filter": [
                 {
-                    "nested": {
-                        "path": "components",
-                        "query": {"term": {"components.type": "ocp"}},
+                    "regexp": {
+                        "name": {
+                            "case_insensitive": True,
+                            "flags": "ALL",
+                            "value": ".*upgrade.*",
+                        }
                     }
                 },
                 {
-                    "regexp": {
-                        "name": {
-                            "value": ".*upgrade.*",
-                            "flags": "ALL",
-                            "case_insensitive": True,
-                        }
+                    "nested": {
+                        "path": "components",
+                        "query": {
+                            "bool": {
+                                "filter": [
+                                    {"term": {"components.type": "ocp"}},
+                                    {"term": {"components.name": "openshift"}},
+                                ]
+                            }
+                        },
                     }
                 },
                 {
@@ -416,9 +423,9 @@ def test_nrt_query_build_nested_regexp():
                         "query": {
                             "regexp": {
                                 "team.name": {
-                                    "value": "Intel.+",
-                                    "flags": "ALL",
                                     "case_insensitive": True,
+                                    "flags": "ALL",
+                                    "value": "Intel.+",
                                 }
                             }
                         },
@@ -459,5 +466,49 @@ def test_nrt_query_build_quoted_values():
                     }
                 },
             ]
+        }
+    }
+
+
+def test_query_build_nested_field():
+    ret = qed.build(
+        "(tests.name='junit_e2e.xml') and (tests.testsuites.name='my_testsuite_1') and (tests.testsuites.testscases.name='my_testcase_1')"
+    )
+    assert ret == {
+        "nested": {
+            "path": "tests",
+            "query": {
+                "bool": {
+                    "filter": [
+                        {"term": {"tests.name": "junit_e2e.xml"}},
+                        {
+                            "nested": {
+                                "path": "tests.testsuites",
+                                "query": {
+                                    "bool": {
+                                        "filter": [
+                                            {
+                                                "term": {
+                                                    "tests.testsuites.name": "my_testsuite_1"
+                                                }
+                                            },
+                                            {
+                                                "nested": {
+                                                    "path": "tests.testsuites.testscases",
+                                                    "query": {
+                                                        "term": {
+                                                            "tests.testsuites.testscases.name": "my_testcase_1"
+                                                        }
+                                                    },
+                                                }
+                                            },
+                                        ]
+                                    }
+                                },
+                            }
+                        },
+                    ]
+                }
+            },
         }
     }
