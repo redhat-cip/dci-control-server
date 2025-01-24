@@ -29,6 +29,13 @@ import zmq
 from sqlalchemy import exc as sa_exc
 from sqlalchemy.orm import sessionmaker
 
+try:
+    import psycogreen.gevent
+
+    psycogreen.gevent.patch_psycopg()
+except ImportError:
+    pass
+
 logger = logging.getLogger(__name__)
 
 zmq_sender = None
