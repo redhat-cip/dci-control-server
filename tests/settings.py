@@ -62,5 +62,4 @@ dn/RsYEONbwQSjIfMPkvxF+8HQ==
 -----END PRIVATE KEY-----
 """
 
-SSO_URL = "http://keycloak:8080"
 SSO_REALM = "redhat-external"
