@@ -11,14 +11,14 @@ WORKDIR /opt/dci-control-server
 COPY requirements.txt setup.py /opt/dci-control-server/
 
 RUN microdnf update && \
-    microdnf -y install python3-pip python3-wheel && \
-    microdnf -y install python3-devel gcc postgresql-devel && \
-    pip3 --no-cache-dir install -r requirements.txt && \
-    microdnf -y remove python3-devel gcc postgresql-devel && \
-    microdnf -y clean all
+  microdnf -y install python3-pip python3-wheel && \
+  microdnf -y install python3-devel gcc postgresql-devel && \
+  pip3 --no-cache-dir install -r requirements.txt && \
+  microdnf -y remove python3-devel gcc postgresql-devel && \
+  microdnf -y clean all
 
 # install source after
-COPY entrypoint.sh /usr/local/sbin/
+COPY entrypoint-devenv.sh entrypoint.sh /usr/local/sbin/
 COPY gunicorn.conf.py /etc/
 
 COPY . /opt/dci-control-server/

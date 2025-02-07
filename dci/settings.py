@@ -85,7 +85,7 @@ ANALYTICS_URL = os.getenv("ANALYTICS_URL", "http://dci-analytics:2345")
 
 
 # Logging related parameters
-LOG_LEVEL = "INFO"
+LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 LOG_FORMAT = "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s"
 
 
