@@ -33,17 +33,30 @@ _word = pp.Word(
     + "}"
     + "["
     + "]"
+    + "/"
+    + "("
+    + ")"
+)
+_integer = pp.Word(pp.nums).setParseAction(lambda tokens: int(tokens[0]))
+
+
+def _int_or_float(v):
+    try:
+        return int(v)
+    except ValueError:
+        return float(v)
+
+
+_integer_or_float = pp.Word(pp.nums + "." + "-").setParseAction(
+    lambda tokens: _int_or_float(tokens[0])
 )
 _value_with_quotes = pp.Suppress(pp.Literal("'")) + _word + pp.Suppress(pp.Literal("'"))
-_value_without_quotes = _word
-_value = _value_without_quotes | _value_with_quotes
+_value = _integer_or_float | _value_with_quotes
 
 _value_for_list = pp.Word(pp.alphanums + "_" + "." + "-" + ":" + " ")
-_value_for_list_without_quotes = _value_for_list
-_value_for_list_with_quotes = (
+_value_for_list = (
     pp.Suppress(pp.Literal("'")) + _value_for_list + pp.Suppress(pp.Literal("'"))
 )
-_value_for_list = _value_for_list_without_quotes | _value_for_list_with_quotes
 
 _comma = pp.Suppress(pp.Literal(","))
 _lp = pp.Suppress(pp.Literal("("))

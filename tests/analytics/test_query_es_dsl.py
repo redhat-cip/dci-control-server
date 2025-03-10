@@ -29,30 +29,32 @@ def test_parse_query_invalid():
 
 
 def test_parse_query_valid():
-    ret = qed.parse("f1=v1")
+    ret = qed.parse("f1='v1'")
     assert ret == ["f1", "=", "v1"]
 
-    ret = qed.parse("(f1=v1)")
+    ret = qed.parse("(f1='v1')")
     assert ret == [["f1", "=", "v1"]]
 
-    ret = qed.parse("(f1=v1) and (f2=v2)")
+    ret = qed.parse("(f1='v1') and (f2='v2')")
     assert ret == [["f1", "=", "v1"], "and", ["f2", "=", "v2"]]
 
-    ret = qed.parse("((f1=v1) and (f2=v2)) or (f3=v3)")
+    ret = qed.parse("((f1='v1') and (f2='v2')) or (f3='v3')")
     assert ret == [
         [["f1", "=", "v1"], "and", ["f2", "=", "v2"]],
         "or",
         ["f3", "=", "v3"],
     ]
 
-    ret = qed.parse("((f1=v1) and (f2=v2)) or ((f3=v3) and (f4=v4))")
+    ret = qed.parse("((f1='v1') and (f2='v2')) or ((f3='v3') and (f4='v4'))")
     assert ret == [
         [["f1", "=", "v1"], "and", ["f2", "=", "v2"]],
         "or",
         [["f3", "=", "v3"], "and", ["f4", "=", "v4"]],
     ]
 
-    ret = qed.parse("((f1=v1) and ((f2=v2) or (f2=v22))) or ((f3=v3) and (f4=v4))")
+    ret = qed.parse(
+        "((f1='v1') and ((f2='v2') or (f2='v22'))) or ((f3='v3') and (f4='v4'))"
+    )
     assert ret == [
         [["f1", "=", "v1"], "and", [["f2", "=", "v2"], "or", ["f2", "=", "v22"]]],
         "or",
@@ -60,7 +62,7 @@ def test_parse_query_valid():
     ]
 
     ret = qed.parse(
-        "((f1=v1) and ((f2=v2) or (f2=v22))) or ((f3=v3) and ((f4=v4) or (f4=v44)))"
+        "((f1='v1') and ((f2='v2') or (f2='v22'))) or ((f3='v3') and ((f4='v4') or (f4='v44')))"
     )
     assert ret == [
         [["f1", "=", "v1"], "and", [["f2", "=", "v2"], "or", ["f2", "=", "v22"]]],
@@ -68,37 +70,31 @@ def test_parse_query_valid():
         [["f3", "=", "v3"], "and", [["f4", "=", "v4"], "or", ["f4", "=", "v44"]]],
     ]
 
-    ret = qed.parse("(f1=v1) and (name not_in [lol, kikoolol, lolipop])")
+    ret = qed.parse("(f1='v1') and (name not_in ['lol', 'kikoolol', 'lolipop'])")
     assert ret == [
         ["f1", "=", "v1"],
         "and",
         ["name", "not_in", ["lol", "kikoolol", "lolipop"]],
     ]
 
-    """
-    ret = qed.parse("(f1=v1) and (f2=v2) and (f3=v3) and (f4=v4)")
-    assert ret == [
-        ["f1", "=", "v1"],
-        "and",
-        ["f2", "=", "v2"],
-        "and",
-        ["f3", "=", "v3"],
-        "and",
-        ["f4", "=", "v4"],
-    ]"""
-
 
 def test_build():
-    ret = qed.build("f1=v1")
+    ret = qed.build("f1='v1'")
     assert ret == {"term": {"f1": "v1"}}
 
-    ret = qed.build("(f1=v1)")
+    ret = qed.build("f1='v1/v11'")
+    assert ret == {"term": {"f1": "v1/v11"}}
+
+    ret = qed.build("f1='(v11)v2'")
+    assert ret == {"term": {"f1": "(v11)v2"}}
+
+    ret = qed.build("(f1='v1')")
     assert ret == {"term": {"f1": "v1"}}
 
-    ret = qed.build("(f1=v1) and (f2=v2)")
+    ret = qed.build("(f1='v1') and (f2='v2')")
     assert ret == {"bool": {"filter": [{"term": {"f1": "v1"}}, {"term": {"f2": "v2"}}]}}
 
-    ret = qed.build("((f1=v1) and (f2=v2)) or (f3=v3)")
+    ret = qed.build("((f1='v1') and (f2='v2')) or (f3='v3')")
     assert ret == {
         "bool": {
             "should": [
@@ -108,7 +104,7 @@ def test_build():
         }
     }
 
-    ret = qed.build("((f1=v1) and (f2=v2)) or ((f3=v3) and (f4=v4))")
+    ret = qed.build("((f1='v1') and (f2='v2')) or ((f3='v3') and (f4='v4'))")
     assert ret == {
         "bool": {
             "should": [
@@ -118,7 +114,9 @@ def test_build():
         }
     }
 
-    ret = qed.build("((f1=v1) and ((f2=v2) or (f2=v22))) or ((f3=v3) and (f4=v4))")
+    ret = qed.build(
+        "((f1='v1') and ((f2='v2') or (f2='v22'))) or ((f3='v3') and (f4='v4'))"
+    )
     assert ret == {
         "bool": {
             "should": [
@@ -143,7 +141,7 @@ def test_build():
     }
 
     ret = qed.build(
-        "((f1=v1) and ((f2=v2) or (f2=v22))) or ((f3=v3) and ((f4=v4) or (f4=v44)))"
+        "((f1='v1') and ((f2='v2') or (f2='v22'))) or ((f3='v3') and ((f4='v4') or (f4='v44')))"
     )
     assert ret == {
         "bool": {
@@ -183,7 +181,7 @@ def test_build():
     }
 
     ret = qed.build(
-        "(name=vcp) and (((components.type=ocp) and (components.version=4.14.27)) and ((components.type=aspenmesh) and (components.version=1.18.7-am1)))"
+        "(name='vcp') and (((components.type='ocp') and (components.version='4.14.27')) and ((components.type='aspenmesh') and (components.version='1.18.7-am1')))"
     )
     assert ret == {
         "bool": {
@@ -238,7 +236,7 @@ def test_build():
     }
 
     ret = qed.build(
-        "((components.type=cnf-certification-test)) and ((team.name not_in [telcoci, RedHat]))"
+        "((components.type='cnf-certification-test')) and ((team.name not_in ['telcoci', 'RedHat']))"
     )
     assert ret == {
         "bool": {
@@ -270,7 +268,7 @@ def test_build():
 
 def test_query_1():
     ret = qed.build(
-        "(components.type=cnf-certification-test) and (components.name not_in [telcoci, RedHat])"
+        "(components.type='cnf-certification-test') and (components.name not_in ['telcoci', 'RedHat'])"
     )
     assert ret == {
         "nested": {
@@ -295,7 +293,7 @@ def test_query_1():
 
 def test_query_2():
 
-    ret = qed.build("components.type=cpt_type")
+    ret = qed.build("components.type='cpt_type'")
     assert ret == {
         "nested": {
             "path": "components",
@@ -306,7 +304,7 @@ def test_query_2():
 
 def test_query_build_regex():
     ret = qed.build(
-        "(((components.name=openshift-vanilla) and (components.type=ocp)) and ((components.type=netapp-trident) and (components.version=~v24\\.02.*)))"
+        "(((components.name='openshift-vanilla') and (components.type='ocp')) and ((components.type='netapp-trident') and (components.version=~'v24\\.02.*')))"
     )
     assert ret == {
         "bool": {
@@ -363,8 +361,8 @@ def test_query_build_comparison_operator():
                         "query": {
                             "bool": {
                                 "filter": [
-                                    {"range": {"keys_values.a": {"gt": "0"}}},
-                                    {"range": {"keys_values.a": {"lt": "10"}}},
+                                    {"range": {"keys_values.a": {"gt": 0}}},
+                                    {"range": {"keys_values.a": {"lt": 10}}},
                                 ]
                             }
                         },
@@ -376,8 +374,8 @@ def test_query_build_comparison_operator():
                         "query": {
                             "bool": {
                                 "filter": [
-                                    {"range": {"keys_values.b": {"gt": "0"}}},
-                                    {"range": {"keys_values.b": {"lte": "10"}}},
+                                    {"range": {"keys_values.b": {"gt": 0}}},
+                                    {"range": {"keys_values.b": {"lte": 10}}},
                                 ]
                             }
                         },
@@ -390,7 +388,7 @@ def test_query_build_comparison_operator():
 
 def test_nrt_query_build_nested_regexp():
     ret = qed.build(
-        "(name=~.*upgrade.*) and ((components.type=ocp) and (components.name=openshift)) and (team.name=~Intel.+) and (topic.name=OCP-4.16)  and (tags in [daily])"
+        "(name=~'.*upgrade.*') and ((components.type='ocp') and (components.name='openshift')) and (team.name=~'Intel.+') and (topic.name='OCP-4.16')  and (tags in ['daily'])"
     )
     assert ret == {
         "bool": {
@@ -445,7 +443,7 @@ def test_nrt_query_build_nested_regexp():
 
 def test_nrt_query_build_quoted_values():
     ret = qed.build(
-        "(tags in [daily]) and (team.name in [rh-telco-ci,telco-ci-partner,'f5 - openshift'])"
+        "(tags in ['daily']) and (team.name in ['rh-telco-ci','telco-ci-partner','f5 - openshift'])"
     )
     assert ret == {
         "bool": {
@@ -503,6 +501,34 @@ def test_query_build_nested_field():
                                                 }
                                             },
                                         ]
+                                    }
+                                },
+                            }
+                        },
+                    ]
+                }
+            },
+        }
+    }
+
+
+def test_nrt_complex_test_name():
+    ret = qed.build(
+        "(team.name='lol') and (tests.name='[sig-api-machinery] API_Server WRS-NonHyperShiftHOST-ROSA-ARO-OSD_CCS-Longduration-NonPreRelease-Author:xxia-Medium-25806-Force encryption key rotation for etcd datastore [Slow][Disruptive] [Serial]')"
+    )
+    assert ret == {
+        "nested": {
+            "path": "team",
+            "query": {
+                "bool": {
+                    "filter": [
+                        {"term": {"team.name": "lol"}},
+                        {
+                            "nested": {
+                                "path": "tests",
+                                "query": {
+                                    "term": {
+                                        "tests.name": "[sig-api-machinery] API_Server WRS-NonHyperShiftHOST-ROSA-ARO-OSD_CCS-Longduration-NonPreRelease-Author:xxia-Medium-25806-Force encryption key rotation for etcd datastore [Slow][Disruptive] [Serial]"
                                     }
                                 },
                             }

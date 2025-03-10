@@ -101,7 +101,7 @@ def test_handle_es_sort():
 
 
 def test_handle_es_timeframe():
-    query = qed.build("name=titi")
+    query = qed.build("name='titi'")
     res = analytics.handle_es_timeframe(
         query, {"from": "2024-01-01", "to": "2024-02-01"}
     )
@@ -129,7 +129,7 @@ def test_build_es_query():
     args = {
         "offset": 10,
         "limit": 10,
-        "query": "(((components.type=ocp) and (components.tags in [build:ga])) and ((components.type=f5-spk)) and (tags in [daily]))",
+        "query": "(((components.type='ocp') and (components.tags in ['build:ga'])) and ((components.type='f5-spk')) and (tags in ['daily']))",
         "sort": "-created_at",
         "from": "2024-01-01",
         "to": "2024-02-01",
