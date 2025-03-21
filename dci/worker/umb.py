@@ -80,7 +80,7 @@ def send_event_on_umb(event):
     messages = build_umb_messages(event)
     key_file = os.getenv("UMB_KEY_FILE_PATH", "/etc/pki/tls/private/umb.key")
     crt_file = os.getenv("UMB_CRT_FILE_PATH", "/etc/pki/tls/certs/umb.crt")
-    ca_file = os.getenv("UMB_CA_FILE_PATH", "/etc/pki/tls/certs/RH-IT-Root-CA.crt")
+    ca_file = os.getenv("UMB_CA_FILE_PATH", "/etc/pki/tls/certs/2022-IT-Root-CA.pem")
     brokers = os.environ.get("UMB_BROKERS", "amqps://umb.api.redhat.com:5671").split()
     for message in messages:
         try:

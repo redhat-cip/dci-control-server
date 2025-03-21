@@ -2,7 +2,7 @@ FROM registry.access.redhat.com/ubi8/ubi-minimal
 LABEL name="DCI API" version="0.1.0"
 LABEL maintainer="DCI Team <distributed-ci@redhat.com>"
 
-COPY sso/RH-IT-Root-CA.crt /etc/pki/ca-trust/source/anchors/RH-IT-Root-CA.crt
+COPY sso/RH-IT-Root-CA.crt sso/2022-IT-Root-CA.pem /etc/pki/ca-trust/source/anchors/
 RUN update-ca-trust
 
 WORKDIR /opt/dci-control-server
