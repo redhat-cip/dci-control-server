@@ -20,8 +20,10 @@ import os
 
 HOST = os.getenv("API_HOST", "127.0.0.1")
 PORT = int(os.getenv("API_PORT", "5000"))
-DEBUG = True
-JSONIFY_PRETTYPRINT_REGULAR = False
+DEBUG = os.getenv("API_DEBUG", "True").strip().capitalize() == "True"
+JSONIFY_PRETTYPRINT_REGULAR = (
+    os.getenv("JSONIFY_PRETTYPRINT_REGULAR ", "False").strip().capitalize() == "True"
+)
 
 # Database (SQLAlchemy) related parameters
 #
@@ -47,10 +49,12 @@ SQLALCHEMY_DATABASE_URI = os.getenv(
 # executed by SQLAlchemy. Useful while debugging and in
 # development. Turned off by default
 # --------
-SQLALCHEMY_ECHO = False
-SQLALCHEMY_NATIVE_UNICODE = True
-SQLALCHEMY_POOL_SIZE = 5
-SQLALCHEMY_MAX_OVERFLOW = 25
+SQLALCHEMY_ECHO = os.getenv("SQLALCHEMY_ECHO", "False").strip().capitalize() == "True"
+SQLALCHEMY_NATIVE_UNICODE = (
+    os.getenv("SQLALCHEMY_NATIVE_UNICODE", "True").strip().capitalize() == "True"
+)
+SQLALCHEMY_POOL_SIZE = int(os.getenv("SQLALCHEMY_POOL_SIZE", "5"))
+SQLALCHEMY_MAX_OVERFLOW = int(os.getenv("SQLALCHEMY_MAX_OVERFLOW", "25"))
 
 # Stores configuration, to store files and components
 # STORE
@@ -91,7 +95,7 @@ LOG_FORMAT = "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s"
 
 X_DOMAINS = "*"
 X_HEADERS = "Authorization, Content-Type, If-Match, ETag, X-Requested-With"
-MAX_CONTENT_LENGTH = 20 * 1024 * 1024
+MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH_MB", "20")) * 1024 * 1024
 
 FILES_UPLOAD_FOLDER = os.getenv(
     "FILES_UPLOAD_FOLDER", "/var/lib/dci-control-server/files"
@@ -104,10 +108,15 @@ SSO_READ_ONLY_GROUP = os.getenv("SSO_READ_ONLY_GROUP", "redhat:employees")
 SSO_URL = os.getenv("SSO_URL", "https://sso.redhat.com")
 SSO_REALM = os.getenv("SSO_REALM", "redhat-external")
 
-CERTIFICATION_URL = "https://access.stage.redhat.com/hydra/rest/cwe/xmlrpc/v2"
+CERTIFICATION_URL = os.getenv(
+    "SSO_CERTTIFICATION_URL", "https://access.stage.redhat.com/hydra/rest/cwe/xmlrpc/v2"
+)
 
-RHDL_API_URL = "https://api.rhdl.distributed-ci.io/api/v1"
+RHDL_API_URL = os.getenv("RHDL_API_URL", "https://api.rhdl.distributed-ci.io/api/v1")
 RHDL_SERVICE_ACCOUNT_ACCESS_KEY = os.getenv("RHDL_SERVICE_ACCOUNT_ACCESS_KEY", "")
 RHDL_SERVICE_ACCOUNT_SECRET_KEY = os.getenv("RHDL_SERVICE_ACCOUNT_SECRET_KEY", "")
 
-REQUESTS_TIMEOUT = (3.0, 10.0)
+REQUESTS_TIMEOUT = (
+    float(os.getenv("REQUESTS_TIMEOUT_CONNECT", "3.0")),
+    float(os.getenv("REQUESTS_TIMEOUT_READ", "10.0")),
+)
