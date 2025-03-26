@@ -89,16 +89,6 @@ LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 LOG_FORMAT = "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s"
 
 
-LAST_UPDATED = "updated_at"
-DATE_CREATED = "created_at"
-ID_FIELD = "id"
-ITEM_URL = (
-    'regex("[\.-a-z0-9]{8}-[-a-z0-9]{4}-' '[-a-z0-9]{4}-[-a-z0-9]{4}-[-a-z0-9]{12}")'
-)
-
-ITEM_LOOKUP_FIELD = "id"
-ETAG = "etag"
-URL_PREFIX = "api"
 X_DOMAINS = "*"
 X_HEADERS = "Authorization, Content-Type, If-Match, ETag, X-Requested-With"
 MAX_CONTENT_LENGTH = 20 * 1024 * 1024
