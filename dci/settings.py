@@ -50,6 +50,9 @@ SQLALCHEMY_DATABASE_URI = os.getenv(
 # development. Turned off by default
 # --------
 SQLALCHEMY_ECHO = os.getenv("SQLALCHEMY_ECHO", "False").strip().capitalize() == "True"
+SQLALCHEMY_RECORD_QUERIES = (
+    os.getenv("SQLALCHEMY_RECORD_QUERIES", "False").strip().capitalize() == "True"
+)
 SQLALCHEMY_NATIVE_UNICODE = (
     os.getenv("SQLALCHEMY_NATIVE_UNICODE", "True").strip().capitalize() == "True"
 )
@@ -109,7 +112,7 @@ SSO_URL = os.getenv("SSO_URL", "https://sso.redhat.com")
 SSO_REALM = os.getenv("SSO_REALM", "redhat-external")
 
 CERTIFICATION_URL = os.getenv(
-    "SSO_CERTTIFICATION_URL", "https://access.stage.redhat.com/hydra/rest/cwe/xmlrpc/v2"
+    "CERTIFICATION_URL", "https://access.stage.redhat.com/hydra/rest/cwe/xmlrpc/v2"
 )
 
 RHDL_API_URL = os.getenv("RHDL_API_URL", "https://api.rhdl.distributed-ci.io/api/v1")
