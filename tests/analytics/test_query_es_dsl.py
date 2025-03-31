@@ -538,3 +538,42 @@ def test_nrt_complex_test_name():
             },
         }
     }
+
+
+def test_nrt_nested_query():
+    ret = qed.build(
+        "(topic.name='OCP-4.19') and ((components.tags in ['build:dev']) and (components.name='OpenShift 4.19.0 ec.3'))"
+    )
+    assert ret == {
+        "nested": {
+            "path": "topic",
+            "query": {
+                "bool": {
+                    "filter": [
+                        {"term": {"topic.name": "OCP-4.19"}},
+                        {
+                            "nested": {
+                                "path": "components",
+                                "query": {
+                                    "bool": {
+                                        "filter": [
+                                            {
+                                                "terms": {
+                                                    "components.tags": ["build:dev"]
+                                                }
+                                            },
+                                            {
+                                                "term": {
+                                                    "components.name": "OpenShift 4.19.0 ec.3"
+                                                }
+                                            },
+                                        ]
+                                    }
+                                },
+                            }
+                        },
+                    ]
+                }
+            },
+        }
+    }
