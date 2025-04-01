@@ -248,6 +248,8 @@ def _generate_es_query(parsed_query, handle_nested=True):
             first_element = operands[0]
             _filter = [_generate_es_query(first_element, handle_nested=False)]
             operands = operands[1:]
+            if len(operands) == 1 and isinstance(operands[0][0], list):
+                operands = operands[0]
             i = 0
             while i < len(operands):
                 if path == _get_prefix(operands[i][0]):
