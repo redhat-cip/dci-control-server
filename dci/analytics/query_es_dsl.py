@@ -244,6 +244,13 @@ def _generate_es_query(parsed_query, handle_nested=True):
     else:
         operands = _get_logical_operands(parsed_query)
         path = _is_nested_query(operands)
+        if (
+            path
+            and len(operands) > 1
+            and (type(operands[0][0]) != type(operands[1][0]))
+        ):
+            path = None
+
         if path:
             first_element = operands[0]
             _filter = [_generate_es_query(first_element, handle_nested=False)]

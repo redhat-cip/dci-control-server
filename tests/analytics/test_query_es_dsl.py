@@ -545,35 +545,31 @@ def test_nrt_nested_query():
         "(topic.name='OCP-4.19') and ((components.tags in ['build:dev']) and (components.name='OpenShift 4.19.0 ec.3'))"
     )
     assert ret == {
-        "nested": {
-            "path": "topic",
-            "query": {
-                "bool": {
-                    "filter": [
-                        {"term": {"topic.name": "OCP-4.19"}},
-                        {
-                            "nested": {
-                                "path": "components",
-                                "query": {
-                                    "bool": {
-                                        "filter": [
-                                            {
-                                                "terms": {
-                                                    "components.tags": ["build:dev"]
-                                                }
-                                            },
-                                            {
-                                                "term": {
-                                                    "components.name": "OpenShift 4.19.0 ec.3"
-                                                }
-                                            },
-                                        ]
-                                    }
-                                },
+        "bool": {
+            "filter": [
+                {
+                    "nested": {
+                        "path": "topic",
+                        "query": {"term": {"topic.name": "OCP-4.19"}},
+                    }
+                },
+                {
+                    "nested": {
+                        "path": "components",
+                        "query": {
+                            "bool": {
+                                "filter": [
+                                    {"terms": {"components.tags": ["build:dev"]}},
+                                    {
+                                        "term": {
+                                            "components.name": "OpenShift 4.19.0 ec.3"
+                                        }
+                                    },
+                                ]
                             }
                         },
-                    ]
-                }
-            },
+                    }
+                },
+            ]
         }
     }
