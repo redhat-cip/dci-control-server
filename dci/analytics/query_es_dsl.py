@@ -97,7 +97,7 @@ def parse(q):
     return query.parseString(q, parseAll=True).asList()
 
 
-_op_to_es_op = {"<": "lt", "<=": "lte", ">": "gt", ">=": "gte"}
+_op_to_es_range_op = {"<": "lt", "<=": "lte", ">": "gt", ">=": "gte"}
 
 
 def _get_prefix(operand):
@@ -109,10 +109,12 @@ def _handle_comparison_operator(handle_nested, operator, operand_1, operand_2):
         return {
             "nested": {
                 "path": _get_prefix(operand_1),
-                "query": {"range": {operand_1: {_op_to_es_op[operator]: operand_2}}},
+                "query": {
+                    "range": {operand_1: {_op_to_es_range_op[operator]: operand_2}}
+                },
             }
         }
-    return {"range": {operand_1: {_op_to_es_op[operator]: operand_2}}}
+    return {"range": {operand_1: {_op_to_es_range_op[operator]: operand_2}}}
 
 
 def _generate_from_operators(parsed_query, handle_nested=False):
@@ -129,7 +131,7 @@ def _generate_from_operators(parsed_query, handle_nested=False):
                 }
             }
         return {"term": {operand_1: operand_2}}
-    if operator in _op_to_es_op.keys():
+    if operator in _op_to_es_range_op.keys():
         return _handle_comparison_operator(
             handle_nested, operator, operand_1, operand_2
         )
@@ -164,6 +166,15 @@ def _generate_from_operators(parsed_query, handle_nested=False):
                 }
             }
         return {"terms": {operand_1: operand_2}}
+    elif operator == "!=":
+        if handle_nested and "." in operand_1:
+            return {
+                "nested": {
+                    "path": _get_prefix(operand_1),
+                    "query": {"bool": {"must_not": {"term": {operand_1: operand_2}}}},
+                }
+            }
+        return {"bool": {"must_not": {"term": {operand_1: operand_2}}}}
 
 
 def _split_on_or(parsed_query):

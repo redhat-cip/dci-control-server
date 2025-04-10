@@ -573,3 +573,53 @@ def test_nrt_nested_query():
             ]
         }
     }
+
+
+def test_not_equal_on_testscases():
+    ret = qed.build(
+        "(tags in ['daily']) and (name='openshift-vz-sec') and (status='success') and (tests.name='junit_e2e') and ((tests.testsuites.testcases.name=~'.*SDN.*') and (tests.testsuites.testcases.action!='success'))"
+    )
+    assert ret == {
+        "bool": {
+            "filter": [
+                {"terms": {"tags": ["daily"]}},
+                {"term": {"name": "openshift-vz-sec"}},
+                {"term": {"status": "success"}},
+                {
+                    "nested": {
+                        "path": "tests",
+                        "query": {"term": {"tests.name": "junit_e2e"}},
+                    }
+                },
+                {
+                    "nested": {
+                        "path": "tests.testsuites.testcases",
+                        "query": {
+                            "bool": {
+                                "filter": [
+                                    {
+                                        "regexp": {
+                                            "tests.testsuites.testcases.name": {
+                                                "value": ".*SDN.*",
+                                                "flags": "ALL",
+                                                "case_insensitive": True,
+                                            }
+                                        }
+                                    },
+                                    {
+                                        "bool": {
+                                            "must_not": {
+                                                "term": {
+                                                    "tests.testsuites.testcases.action": "success"
+                                                }
+                                            }
+                                        }
+                                    },
+                                ]
+                            }
+                        },
+                    }
+                },
+            ]
+        }
+    }
