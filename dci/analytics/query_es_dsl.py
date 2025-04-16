@@ -100,15 +100,19 @@ def parse(q):
 _op_to_es_range_op = {"<": "lt", "<=": "lte", ">": "gt", ">=": "gte"}
 
 
-def _get_prefix(operand):
+def _get_nested_prefix(operand):
     return ".".join(operand.split(".")[:-1])
+
+
+def _get_root_prefix(operand):
+    return operand.split(".")[0]
 
 
 def _handle_comparison_operator(handle_nested, operator, operand_1, operand_2):
     if handle_nested and "." in operand_1:
         return {
             "nested": {
-                "path": _get_prefix(operand_1),
+                "path": _get_nested_prefix(operand_1),
                 "query": {
                     "range": {operand_1: {_op_to_es_range_op[operator]: operand_2}}
                 },
@@ -126,7 +130,7 @@ def _generate_from_operators(parsed_query, handle_nested=False):
         if handle_nested and "." in operand_1:
             return {
                 "nested": {
-                    "path": _get_prefix(operand_1),
+                    "path": _get_nested_prefix(operand_1),
                     "query": {"term": {operand_1: operand_2}},
                 }
             }
@@ -146,13 +150,13 @@ def _generate_from_operators(parsed_query, handle_nested=False):
             }
         }
         if handle_nested and "." in operand_1:
-            return {"nested": {"path": _get_prefix(operand_1), "query": _regexp}}
+            return {"nested": {"path": _get_nested_prefix(operand_1), "query": _regexp}}
         return _regexp
     elif operator == "not_in":
         if handle_nested and "." in operand_1:
             return {
                 "nested": {
-                    "path": _get_prefix(operand_1),
+                    "path": _get_nested_prefix(operand_1),
                     "query": {"bool": {"must_not": {"terms": {operand_1: operand_2}}}},
                 }
             }
@@ -161,7 +165,7 @@ def _generate_from_operators(parsed_query, handle_nested=False):
         if handle_nested and "." in operand_1:
             return {
                 "nested": {
-                    "path": _get_prefix(operand_1),
+                    "path": _get_nested_prefix(operand_1),
                     "query": {"terms": {operand_1: operand_2}},
                 }
             }
@@ -170,7 +174,7 @@ def _generate_from_operators(parsed_query, handle_nested=False):
         if handle_nested and "." in operand_1:
             return {
                 "nested": {
-                    "path": _get_prefix(operand_1),
+                    "path": _get_nested_prefix(operand_1),
                     "query": {"bool": {"must_not": {"term": {operand_1: operand_2}}}},
                 }
             }
@@ -205,7 +209,7 @@ def _is_nested_query(operands_1, operands_2=None):
         and isinstance(operands_1[0][0], str)
         and "." in operands_1[0][0]
     ):
-        path = _get_prefix(operands_1[0][0])
+        path = _get_nested_prefix(operands_1[0][0])
     if path:
         if operands_2:
             for o in operands_2:
@@ -258,10 +262,11 @@ def _generate_es_query(parsed_query, handle_nested=True):
         if (
             path
             and len(operands) > 1
-            and (type(operands[0][0]) != type(operands[1][0]))
-        ):
+            and isinstance(operands[0][0], str)
+            and isinstance(operands[1][0], str)
+            and _get_root_prefix(operands[0][0]) != _get_root_prefix(operands[1][0])
+        ) or (type(operands[0][0]) != type(operands[1][0])):
             path = None
-
         if path:
             first_element = operands[0]
             _filter = [_generate_es_query(first_element, handle_nested=False)]
@@ -270,7 +275,7 @@ def _generate_es_query(parsed_query, handle_nested=True):
                 operands = operands[0]
             i = 0
             while i < len(operands):
-                if path == _get_prefix(operands[i][0]):
+                if path == _get_nested_prefix(operands[i][0]):
                     _filter.append(_generate_es_query(operands[i], handle_nested=False))
                 else:
                     break

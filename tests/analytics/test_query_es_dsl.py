@@ -517,25 +517,20 @@ def test_nrt_complex_test_name():
         "(team.name='lol') and (tests.name='[sig-api-machinery] API_Server WRS-NonHyperShiftHOST-ROSA-ARO-OSD_CCS-Longduration-NonPreRelease-Author:xxia-Medium-25806-Force encryption key rotation for etcd datastore [Slow][Disruptive] [Serial]')"
     )
     assert ret == {
-        "nested": {
-            "path": "team",
-            "query": {
-                "bool": {
-                    "filter": [
-                        {"term": {"team.name": "lol"}},
-                        {
-                            "nested": {
-                                "path": "tests",
-                                "query": {
-                                    "term": {
-                                        "tests.name": "[sig-api-machinery] API_Server WRS-NonHyperShiftHOST-ROSA-ARO-OSD_CCS-Longduration-NonPreRelease-Author:xxia-Medium-25806-Force encryption key rotation for etcd datastore [Slow][Disruptive] [Serial]"
-                                    }
-                                },
+        "bool": {
+            "filter": [
+                {"nested": {"path": "team", "query": {"term": {"team.name": "lol"}}}},
+                {
+                    "nested": {
+                        "path": "tests",
+                        "query": {
+                            "term": {
+                                "tests.name": "[sig-api-machinery] API_Server WRS-NonHyperShiftHOST-ROSA-ARO-OSD_CCS-Longduration-NonPreRelease-Author:xxia-Medium-25806-Force encryption key rotation for etcd datastore [Slow][Disruptive] [Serial]"
                             }
                         },
-                    ]
-                }
-            },
+                    }
+                },
+            ]
         }
     }
 
@@ -620,6 +615,23 @@ def test_not_equal_on_testscases():
                         },
                     }
                 },
+            ]
+        }
+    }
+
+
+def test_nrt_nested_first():
+    ret = qed.build("(team.name='Lolipop') and (status='success')")
+    assert ret == {
+        "bool": {
+            "filter": [
+                {
+                    "nested": {
+                        "path": "team",
+                        "query": {"term": {"team.name": "Lolipop"}},
+                    }
+                },
+                {"term": {"status": "success"}},
             ]
         }
     }
