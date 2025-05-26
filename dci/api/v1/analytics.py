@@ -358,7 +358,7 @@ def tasks_jobs_autocomplete(user):
     args = flask.request.args.to_dict()
     autocomplete = {
         "field": args.get("field"),
-        "team_id": user.teams_ids[0],
+        "team_id": str(user.teams_ids[0]),
         "is_admin": args.get("is_admin", True),
         "size": args.get("size", 10),
     }
