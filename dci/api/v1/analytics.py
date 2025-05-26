@@ -349,6 +349,46 @@ def tasks_jobs(user):
         )
 
 
+@api.route("/analytics/jobs/autocomplete", methods=["GET", "POST"])
+@decorators.login_required
+def tasks_jobs_autocomplete(user):
+    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
+        raise dci_exc.Unauthorized()
+
+    args = flask.request.args.to_dict()
+    autocomplete = {
+        "field": args.get("field"),
+        "team_id": user.teams_ids[0],
+        "is_admin": args.get("is_admin", True),
+        "size": args.get("size", 10),
+    }
+
+    try:
+        res = requests.get(
+            "%s/analytics/jobs/autocomplete" % (CONFIG["ANALYTICS_URL"]),
+            headers={"Content-Type": "application/json"},
+            json=autocomplete,
+        )
+        res_json = res.json()
+
+        if res.status_code == 200:
+            return flask.jsonify(res_json)
+        else:
+            logger.error("analytics error: %s" % str(res.text))
+            return flask.Response(
+                json.dumps({"error": "error with backend service: %s" % str(res.text)}),
+                res.status_code,
+                content_type="application/json",
+            )
+    except ConnectionError as e:
+        logger.error("analytics connection error: %s" % str(e))
+        return flask.Response(
+            json.dumps({"error": "connection error with backend service: %s" % str(e)}),
+            503,
+            content_type="application/json",
+        )
+
+
 @api.route("/analytics/jobs2", methods=["GET", "POST"])
 @decorators.login_required
 def tasks_jobs2(user):
