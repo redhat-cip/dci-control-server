@@ -15,8 +15,8 @@
 # under the License.
 
 
-def test_get_identity_admin(admin, team_admin_id):
-    response = admin.get("/api/v1/identity")
+def test_get_identity_admin(client_admin, team_admin_id):
+    response = client_admin.get("/api/v1/identity")
     assert response.status_code == 200
     assert "identity" in response.data
     identity = response.data["identity"]
@@ -25,19 +25,19 @@ def test_get_identity_admin(admin, team_admin_id):
     assert identity["teams"][team_admin_id]["id"] == team_admin_id
 
 
-def test_get_identity_unauthorized(unauthorized):
-    response = unauthorized.get("/api/v1/identity")
+def test_get_identity_unauthorized(client_unauthorized):
+    response = client_unauthorized.get("/api/v1/identity")
     assert response.status_code == 401
 
 
-def test_get_identity_user(user, team_user_id):
-    response = user.get("/api/v1/identity")
+def test_get_identity_user(client_user1, team1_id):
+    response = client_user1.get("/api/v1/identity")
     assert response.status_code == 200
     assert "identity" in response.data
     identity = response.data["identity"]
-    assert identity["name"] == "user"
-    assert identity["teams"][team_user_id]["name"] == "user"
-    assert identity["teams"][team_user_id]["id"] == team_user_id
+    assert identity["name"] == "user1"
+    assert identity["teams"][team1_id]["name"] == "team1"
+    assert identity["teams"][team1_id]["id"] == team1_id
 
 
 def get_user(flask_user, name):
@@ -46,43 +46,43 @@ def get_user(flask_user, name):
     return get2.data["user"], get2.headers.get("ETag")
 
 
-def test_update_identity_password(admin, user):
-    user_data, user_etag = get_user(admin, "user")
+def test_update_identity_password(client_admin, client_user1):
+    user_data, user_etag = get_user(client_admin, "user1")
 
-    assert user.get("/api/v1/identity").status_code == 200
+    assert client_user1.get("/api/v1/identity").status_code == 200
 
     assert (
-        user.put(
+        client_user1.put(
             "/api/v1/identity",
-            data={"current_password": "user", "new_password": "password"},
+            data={"current_password": "user1", "new_password": "password"},
             headers={"If-match": user_etag},
         ).status_code
         == 200
     )
 
-    assert user.get("/api/v1/identity").status_code == 401
+    assert client_user1.get("/api/v1/identity").status_code == 401
 
-    user_data, user_etag = get_user(admin, "user")
+    user_data, user_etag = get_user(client_admin, "user1")
 
     assert (
-        admin.put(
+        client_admin.put(
             "/api/v1/users/%s" % user_data["id"],
-            data={"password": "user"},
+            data={"password": "user1"},
             headers={"If-match": user_etag},
         ).status_code
         == 200
     )
 
-    assert user.get("/api/v1/identity").status_code == 200
+    assert client_user1.get("/api/v1/identity").status_code == 200
 
 
-def test_update_current_user_current_password_wrong(admin, user):
-    user_data, user_etag = get_user(admin, "user")
+def test_update_current_user_current_password_wrong(client_admin, client_user1):
+    user_data, user_etag = get_user(client_admin, "user1")
 
-    assert user.get("/api/v1/identity").status_code == 200
+    assert client_user1.get("/api/v1/identity").status_code == 200
 
     assert (
-        user.put(
+        client_user1.put(
             "/api/v1/identity",
             data={"current_password": "wrong_password", "new_password": ""},
             headers={"If-match": user_etag},
@@ -90,35 +90,35 @@ def test_update_current_user_current_password_wrong(admin, user):
         == 400
     )
 
-    assert user.get("/api/v1/identity").status_code == 200
+    assert client_user1.get("/api/v1/identity").status_code == 200
 
 
-def test_update_current_user_new_password_empty(admin, user):
-    user_data, user_etag = get_user(admin, "user")
+def test_update_current_user_new_password_empty(client_admin, client_user1):
+    user_data, user_etag = get_user(client_admin, "user1")
 
-    assert user.get("/api/v1/identity").status_code == 200
+    assert client_user1.get("/api/v1/identity").status_code == 200
 
     assert (
-        user.put(
+        client_user1.put(
             "/api/v1/identity",
-            data={"current_password": "user", "new_password": ""},
+            data={"current_password": "user1", "new_password": ""},
             headers={"If-match": user_etag},
         ).status_code
         == 200
     )
 
-    assert user.get("/api/v1/identity").status_code == 200
+    assert client_user1.get("/api/v1/identity").status_code == 200
 
 
-def test_update_current_user(admin, user):
-    user_data, user_etag = get_user(admin, "user")
+def test_update_current_user(client_admin, client_user1):
+    user_data, user_etag = get_user(client_admin, "user1")
 
-    assert user.get("/api/v1/identity").status_code == 200
+    assert client_user1.get("/api/v1/identity").status_code == 200
 
-    me = user.put(
+    me = client_user1.put(
         "/api/v1/identity",
         data={
-            "current_password": "user",
+            "current_password": "user1",
             "new_password": "",
             "email": "new_email@example.org",
             "fullname": "New Name",
@@ -132,10 +132,10 @@ def test_update_current_user(admin, user):
     assert me.data["user"]["timezone"] == "Europe/Paris"
 
 
-def test_update_current_user_sso(rh_employee, app, admin):
-    assert rh_employee.get("/api/v1/identity").status_code == 200
-    user_data, user_etag = get_user(admin, "rh_employee")
-    me = rh_employee.put(
+def test_update_current_user_sso(client_rh_employee, app, client_admin):
+    assert client_rh_employee.get("/api/v1/identity").status_code == 200
+    user_data, user_etag = get_user(client_admin, "rh_employee")
+    me = client_rh_employee.put(
         "/api/v1/identity",
         data={
             "email": "new_email@example.org",

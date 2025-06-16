@@ -43,7 +43,7 @@ def identity_factory(
             "name": "name",
             "fullname": "fullname",
             "timezone": "UTC",
-            "email": "user@email.com",
+            "email": "user1@email.com",
             "etag": "2975580b-1915-41b7-9672-c16ccbcc1234",
             "is_super_admin": is_super_admin,
             "is_read_only_user": is_read_only_user,

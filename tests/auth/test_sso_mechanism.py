@@ -29,7 +29,7 @@ import pytest
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
 def test_sso_auth_verified(
     m_datetime,
-    admin,
+    client_admin,
     app,
     session,
     access_token,
@@ -44,7 +44,7 @@ def test_sso_auth_verified(
     m_datetime.utcnow.return_value = m_utcnow
     sso_headers = mock.Mock
     sso_headers.headers = {"Authorization": "Bearer %s" % access_token}
-    nb_users = len(admin.get("/api/v1/users").data["users"])
+    nb_users = len(client_admin.get("/api/v1/users").data["users"])
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
         flask.g.team_redhat_id = team_redhat_id
@@ -55,14 +55,19 @@ def test_sso_auth_verified(
         assert mech.identity.name == "dci"
         assert mech.identity.sso_username == "dci"
         assert mech.identity.email == "dci@distributed-ci.io"
-        nb_users_after_sso = len(admin.get("/api/v1/users").data["users"])
+        nb_users_after_sso = len(client_admin.get("/api/v1/users").data["users"])
         assert (nb_users + 1) == nb_users_after_sso
 
 
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
 @mock.patch("dci.auth_mechanism.sso.get_public_key_from_token")
 def test_sso_auth_verified_public_key_rotation(
-    m_get_public_key_from_token, m_datetime, user_sso, app, session, team_admin_id
+    m_get_public_key_from_token,
+    m_datetime,
+    sso_client_user1,
+    app,
+    session,
+    team_admin_id,
 ):
     sso_public_key = dci_config.CONFIG["SSO_PUBLIC_KEY"]
     dci_config.CONFIG["SSO_PUBLIC_KEY"] = "= non valid sso public key here ="
@@ -75,7 +80,7 @@ def test_sso_auth_verified_public_key_rotation(
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
         flask.g.session = session
-        teams = user_sso.get("/api/v1/users/me")
+        teams = sso_client_user1.get("/api/v1/users/me")
         assert teams.status_code == 200
     assert dci_config.CONFIG["SSO_PUBLIC_KEY"] == sso_public_key
 
@@ -83,7 +88,7 @@ def test_sso_auth_verified_public_key_rotation(
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
 def test_sso_auth_verified_rh_employee(
     m_datetime,
-    admin,
+    client_admin,
     app,
     session,
     access_token_rh_employee,
@@ -98,7 +103,7 @@ def test_sso_auth_verified_rh_employee(
     m_datetime.utcnow.return_value = m_utcnow
     sso_headers = mock.Mock
     sso_headers.headers = {"Authorization": "Bearer %s" % access_token_rh_employee}
-    nb_users = len(admin.get("/api/v1/users").data["users"])
+    nb_users = len(client_admin.get("/api/v1/users").data["users"])
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
         flask.g.team_redhat_id = team_redhat_id
@@ -109,10 +114,10 @@ def test_sso_auth_verified_rh_employee(
         assert mech.identity.name == "dci-rh"
         assert mech.identity.sso_username == "dci-rh"
         assert mech.identity.email == "dci-rh@redhat.com"
-        nb_users_after_sso = len(admin.get("/api/v1/users").data["users"])
+        nb_users_after_sso = len(client_admin.get("/api/v1/users").data["users"])
         assert (nb_users + 1) == nb_users_after_sso
         # users from redhat team
-        redhat_users = admin.get("/api/v1/teams/%s/users" % team_redhat_id).data[
+        redhat_users = client_admin.get("/api/v1/teams/%s/users" % team_redhat_id).data[
             "users"
         ]
         ro_user_found = False
@@ -124,7 +129,7 @@ def test_sso_auth_verified_rh_employee(
 
 def test_sso_auth_update_email_employee_with_preferred_username(
     app,
-    admin,
+    client_admin,
 ):
     with app.app_context():
         john_doe_token = generate_jwt(
@@ -144,7 +149,9 @@ def test_sso_auth_update_email_employee_with_preferred_username(
         john_doe_client = generate_client(app, access_token=john_doe_token)
         r = john_doe_client.get("/api/v1/identity")
         assert r.status_code == 200
-        jdoe = admin.get("/api/v1/users?where=email:jdoe@example.org").data["users"][0]
+        jdoe = client_admin.get("/api/v1/users?where=email:jdoe@example.org").data[
+            "users"
+        ][0]
         assert jdoe["email"] == "jdoe@example.org"
 
         john_doe_token = generate_jwt(
@@ -164,11 +171,13 @@ def test_sso_auth_update_email_employee_with_preferred_username(
         john_doe_client = generate_client(app, access_token=john_doe_token)
         r = john_doe_client.get("/api/v1/identity")
         assert r.status_code == 200
-        jdoe = admin.get("/api/v1/users?where=email:jdoe@redhat.com").data["users"][0]
+        jdoe = client_admin.get("/api/v1/users?where=email:jdoe@redhat.com").data[
+            "users"
+        ][0]
         assert jdoe["email"] == "jdoe@redhat.com"
 
 
-def test_user_creation_with_an_old_token(app, admin):
+def test_user_creation_with_an_old_token(app, client_admin):
     with app.app_context():
         john_doe_token = generate_jwt(
             {
@@ -188,7 +197,9 @@ def test_user_creation_with_an_old_token(app, admin):
         r = john_doe_client.get("/api/v1/identity")
         assert r.status_code == 200
 
-        jdoe = admin.get("/api/v1/users?where=email:jdoe@example.org").data["users"][0]
+        jdoe = client_admin.get("/api/v1/users?where=email:jdoe@example.org").data[
+            "users"
+        ][0]
         assert jdoe["name"] == "jdoe1@example.org"
         assert jdoe["fullname"] == "John Doe"
         assert jdoe["sso_username"] == "jdoe1@example.org"
@@ -196,7 +207,7 @@ def test_user_creation_with_an_old_token(app, admin):
         assert jdoe["email"] == "jdoe@example.org"
 
 
-def test_user_creation_with_a_new_token_without_scope_specified(app, admin):
+def test_user_creation_with_a_new_token_without_scope_specified(app, client_admin):
     with app.app_context():
         john_doe_token = generate_jwt(
             {
@@ -216,7 +227,9 @@ def test_user_creation_with_a_new_token_without_scope_specified(app, admin):
         r = john_doe_client.get("/api/v1/identity")
         assert r.status_code == 200
 
-        jdoe = admin.get("/api/v1/users?where=email:jdoe@example.org").data["users"][0]
+        jdoe = client_admin.get("/api/v1/users?where=email:jdoe@example.org").data[
+            "users"
+        ][0]
         assert jdoe["name"] == "jdoe1@example.org"
         assert jdoe["fullname"] == "John Doe"
         assert jdoe["sso_username"] == "jdoe1@example.org"
@@ -224,7 +237,7 @@ def test_user_creation_with_a_new_token_without_scope_specified(app, admin):
         assert jdoe["email"] == "jdoe@example.org"
 
 
-def test_user_creation_with_a_new_token_with_apidci_scope_specified(app, admin):
+def test_user_creation_with_a_new_token_with_apidci_scope_specified(app, client_admin):
     with app.app_context():
         john_doe_token = generate_jwt(
             {
@@ -246,7 +259,9 @@ def test_user_creation_with_a_new_token_with_apidci_scope_specified(app, admin):
         r = john_doe_client.get("/api/v1/identity")
         assert r.status_code == 200
 
-        jdoe = admin.get("/api/v1/users?where=email:jdoe@example.org").data["users"][0]
+        jdoe = client_admin.get("/api/v1/users?where=email:jdoe@example.org").data[
+            "users"
+        ][0]
         assert jdoe["name"] == "jdoe1@example.org"
         assert jdoe["fullname"] == "John Doe"
         assert jdoe["sso_username"] == "jdoe1@example.org"
@@ -255,7 +270,7 @@ def test_user_creation_with_a_new_token_with_apidci_scope_specified(app, admin):
 
 
 def test_user_creation_with_a_new_token_with_apidci_scope_specified_but_dci_audience_not_added(
-    app, admin
+    app, client_admin
 ):
     with app.app_context():
         john_doe_token = generate_jwt(
@@ -276,7 +291,9 @@ def test_user_creation_with_a_new_token_with_apidci_scope_specified_but_dci_audi
         r = john_doe_client.get("/api/v1/identity")
         assert r.status_code == 200
 
-        jdoe = admin.get("/api/v1/users?where=email:jdoe@example.org").data["users"][0]
+        jdoe = client_admin.get("/api/v1/users?where=email:jdoe@example.org").data[
+            "users"
+        ][0]
         assert jdoe["name"] == "jdoe1@example.org"
         assert jdoe["fullname"] == "John Doe"
         assert jdoe["sso_username"] == "jdoe1@example.org"
@@ -286,7 +303,7 @@ def test_user_creation_with_a_new_token_with_apidci_scope_specified_but_dci_audi
 
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
 def test_sso_auth_not_verified(
-    m_datetime, admin, app, session, access_token, team_admin_id
+    m_datetime, client_admin, app, session, access_token, team_admin_id
 ):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime.fromtimestamp(
@@ -297,7 +314,7 @@ def test_sso_auth_not_verified(
     access_token = access_token + "lol"
     sso_headers = mock.Mock
     sso_headers.headers = {"Authorization": "Bearer %s" % access_token}
-    nb_users = len(admin.get("/api/v1/users").data["users"])
+    nb_users = len(client_admin.get("/api/v1/users").data["users"])
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
         flask.g.session = session
@@ -305,12 +322,12 @@ def test_sso_auth_not_verified(
         with pytest.raises(dci_exc.DCIException):
             mech.authenticate()
         assert mech.identity is None
-        nb_users_after_sso = len(admin.get("/api/v1/users").data["users"])
+        nb_users_after_sso = len(client_admin.get("/api/v1/users").data["users"])
         assert nb_users == nb_users_after_sso
 
 
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
-def test_sso_auth_get_users(m_datetime, user_sso, app, session, team_admin_id):
+def test_sso_auth_get_users(m_datetime, sso_client_user1, app, session, team_admin_id):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime.fromtimestamp(
         1518653629
@@ -319,12 +336,14 @@ def test_sso_auth_get_users(m_datetime, user_sso, app, session, team_admin_id):
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
         flask.g.session = session
-        gusers = user_sso.get("/api/v1/users")
+        gusers = sso_client_user1.get("/api/v1/users")
         assert gusers.status_code == 401
 
 
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
-def test_sso_auth_get_current_user(m_datetime, user_sso, app, session, team_admin_id):
+def test_sso_auth_get_current_user(
+    m_datetime, sso_client_user1, app, session, team_admin_id
+):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime.fromtimestamp(
         1518653629
@@ -333,5 +352,5 @@ def test_sso_auth_get_current_user(m_datetime, user_sso, app, session, team_admi
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
         flask.g.session = session
-        request = user_sso.get("/api/v1/users/me?embed=team,remotecis")
+        request = sso_client_user1.get("/api/v1/users/me?embed=team,remotecis")
         assert request.status_code == 200

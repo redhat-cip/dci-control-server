@@ -13,44 +13,46 @@
 # under the License.
 
 
-def test_add_get_users_from_to_team(admin, team_id, user_id):
+def test_add_get_users_from_to_team(client_admin, team2_id, user1_id):
     # adding two users to the same team
-    users = admin.get("/api/v1/teams/%s/users" % team_id)
+    users = client_admin.get("/api/v1/teams/%s/users" % team2_id)
     current_len = len(users.data["users"])
 
-    pu = admin.post("/api/v1/teams/%s/users/%s" % (team_id, user_id), data={})
+    pu = client_admin.post("/api/v1/teams/%s/users/%s" % (team2_id, user1_id), data={})
     assert pu.status_code == 201
 
-    users = admin.get("/api/v1/teams/%s/users" % team_id)
+    users = client_admin.get("/api/v1/teams/%s/users" % team2_id)
     assert users.status_code == 200
     assert len(users.data["users"]) == (current_len + 1)
 
 
-def test_add_user_to_different_teams(admin, user_id, team_user_id, team_user_id2, user):
-    users = admin.get("/api/v1/teams/%s/users" % team_user_id)
+def test_add_user_to_different_teams(
+    client_admin, user1_id, team1_id, team2_id, client_user1
+):
+    users = client_admin.get("/api/v1/teams/%s/users" % team1_id)
     assert users.status_code == 200
-    assert user_id in [str(u["id"]) for u in users.data["users"]]
+    assert user1_id in [str(u["id"]) for u in users.data["users"]]
 
-    users = admin.get("/api/v1/teams/%s/users" % team_user_id2)
+    users = client_admin.get("/api/v1/teams/%s/users" % team2_id)
     assert users.status_code == 200
-    assert user_id not in [str(u["id"]) for u in users.data["users"]]
+    assert user1_id not in [str(u["id"]) for u in users.data["users"]]
 
-    pu = admin.post("/api/v1/teams/%s/users/%s" % (team_user_id2, user_id), data={})
+    pu = client_admin.post("/api/v1/teams/%s/users/%s" % (team2_id, user1_id), data={})
     assert pu.status_code == 201
 
-    users = admin.get("/api/v1/teams/%s/users" % team_user_id2)
+    users = client_admin.get("/api/v1/teams/%s/users" % team2_id)
     assert users.status_code == 200
-    assert user_id in [str(u["id"]) for u in users.data["users"]]
+    assert user1_id in [str(u["id"]) for u in users.data["users"]]
 
 
-def test_delete_user_from_team(admin, user_id, team_user_id):
-    users = admin.get("/api/v1/teams/%s/users" % team_user_id)
+def test_delete_user_from_team(client_admin, user1_id, team1_id):
+    users = client_admin.get("/api/v1/teams/%s/users" % team1_id)
     assert users.status_code == 200
-    assert user_id in [str(u["id"]) for u in users.data["users"]]
+    assert user1_id in [str(u["id"]) for u in users.data["users"]]
 
-    du = admin.delete("/api/v1/teams/%s/users/%s" % (team_user_id, user_id))
+    du = client_admin.delete("/api/v1/teams/%s/users/%s" % (team1_id, user1_id))
     assert du.status_code == 204
 
-    users = admin.get("/api/v1/teams/%s/users" % team_user_id)
+    users = client_admin.get("/api/v1/teams/%s/users" % team1_id)
     assert users.status_code == 200
-    assert user_id not in [str(u["id"]) for u in users.data["users"]]
+    assert user1_id not in [str(u["id"]) for u in users.data["users"]]

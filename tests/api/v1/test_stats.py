@@ -17,29 +17,39 @@ import mock
 
 
 @mock.patch("dci.api.v1.notifications.job_dispatcher")
-def test_get_stats(n, admin, job_admin, user, job_user, rhel_80_topic, product):
-    admin.post(
-        "/api/v1/jobstates", data={"job_id": job_admin["id"], "status": "failure"}
+def test_get_stats(
+    n,
+    client_admin,
+    team_admin_job,
+    client_user1,
+    team1_job,
+    rhel_80_topic,
+    rhel_product,
+):
+    client_admin.post(
+        "/api/v1/jobstates", data={"job_id": team_admin_job["id"], "status": "failure"}
     )
-    user.post("/api/v1/jobstates", data={"job_id": job_user["id"], "status": "success"})
-    assert admin.get("/api/v1/stats").data["stats"] == [
+    client_user1.post(
+        "/api/v1/jobstates", data={"job_id": team1_job["id"], "status": "success"}
+    )
+    assert client_admin.get("/api/v1/stats").data["stats"] == [
         {
-            "product": {"id": product["id"], "name": product["name"]},
+            "product": {"id": rhel_product["id"], "name": rhel_product["name"]},
             "percentageOfSuccess": 50,
             "nbOfSuccessfulJobs": 1,
             "nbOfJobs": 2,
             "jobs": [
                 {
-                    "id": job_user["id"],
+                    "id": team1_job["id"],
                     "remoteci_name": "user remoteci",
-                    "created_at": job_user["created_at"],
+                    "created_at": team1_job["created_at"],
                     "status": "success",
-                    "team_name": "user",
+                    "team_name": "team1",
                 },
                 {
-                    "id": job_admin["id"],
+                    "id": team_admin_job["id"],
                     "remoteci_name": "admin remoteci",
-                    "created_at": job_admin["created_at"],
+                    "created_at": team_admin_job["created_at"],
                     "status": "failure",
                     "team_name": "admin",
                 },
@@ -47,19 +57,19 @@ def test_get_stats(n, admin, job_admin, user, job_user, rhel_80_topic, product):
             "topic": {"id": rhel_80_topic["id"], "name": "RHEL-8.0"},
         }
     ]
-    assert user.get("/api/v1/stats").data["stats"] == [
+    assert client_user1.get("/api/v1/stats").data["stats"] == [
         {
-            "product": {"id": product["id"], "name": product["name"]},
+            "product": {"id": rhel_product["id"], "name": rhel_product["name"]},
             "percentageOfSuccess": 100,
             "nbOfSuccessfulJobs": 1,
             "nbOfJobs": 1,
             "jobs": [
                 {
-                    "id": job_user["id"],
+                    "id": team1_job["id"],
                     "remoteci_name": "user remoteci",
-                    "created_at": job_user["created_at"],
+                    "created_at": team1_job["created_at"],
                     "status": "success",
-                    "team_name": "user",
+                    "team_name": "team1",
                 }
             ],
             "topic": {"id": rhel_80_topic["id"], "name": "RHEL-8.0"},

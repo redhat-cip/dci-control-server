@@ -16,25 +16,25 @@
 from mock import ANY
 
 
-def test_create_team_store_a_log_in_audit_table(admin, epm, epm_id):
-    assert len(admin.get("/api/v1/audits").data["audits"]) == 0
-    epm.post("/api/v1/teams", data={"name": "partner"}).data["team"]
-    audits = admin.get("/api/v1/audits").data["audits"]
+def test_create_team_store_a_log_in_audit_table(client_admin, client_epm, epm):
+    assert len(client_admin.get("/api/v1/audits").data["audits"]) == 0
+    client_epm.post("/api/v1/teams", data={"name": "partner"}).data["team"]
+    audits = client_admin.get("/api/v1/audits").data["audits"]
     assert len(audits) == 1
     assert audits[0] == {
         "id": ANY,
-        "user_id": epm_id,
+        "user_id": epm["id"],
         "action": "create_teams",
         "created_at": ANY,
     }
 
 
-def test_audits_acls(admin, user):
-    pt = admin.post("/api/v1/teams", data={"name": "kikoolol"})
+def test_audits_acls(client_admin, client_user1):
+    pt = client_admin.post("/api/v1/teams", data={"name": "kikoolol"})
     assert pt.status_code == 201
 
-    gaudits = admin.get("/api/v1/audits")
+    gaudits = client_admin.get("/api/v1/audits")
     assert gaudits.status_code == 200
 
-    gaudits = user.get("/api/v1/audits")
+    gaudits = client_user1.get("/api/v1/audits")
     assert gaudits.status_code == 401

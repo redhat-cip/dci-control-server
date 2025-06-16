@@ -25,34 +25,34 @@ import uuid
 def test_get_jobs(
     m_get_utc_now,
     session,
-    remoteci_context,
-    components_user_ids,
-    topic_user_id,
-    team_user_id,
+    hmac_client_team1,
+    rhel_80_topic_id,
+    rhel_80_component_id,
+    team1_id,
 ):
     m_get_utc_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(
         hours=2
     )
 
-    pipeline = remoteci_context.post(
+    pipeline = hmac_client_team1.post(
         "/api/v1/pipelines",
-        data={"name": "pipeline1", "team_id": team_user_id},
+        data={"name": "pipeline1", "team_id": team1_id},
     )
     assert pipeline.status_code == 201
     pipeline_id = pipeline.data["pipeline"]["id"]
 
     jobs_ids = []
     data = {
-        "components": components_user_ids,
-        "topic_id": topic_user_id,
+        "components": [rhel_80_component_id],
+        "topic_id": rhel_80_topic_id,
         "pipeline_id": pipeline_id,
     }
     for _ in range(4):
-        j_id = remoteci_context.post("/api/v1/jobs", data=data).data["job"]["id"]
+        j_id = hmac_client_team1.post("/api/v1/jobs", data=data).data["job"]["id"]
         jobs_ids.append(j_id)
 
     for j_id in jobs_ids[:2]:
-        remoteci_context.post(
+        hmac_client_team1.post(
             "/api/v1/jobstates",
             data={"job_id": j_id, "comment": "kikoolol", "status": "running"},
         )
@@ -73,17 +73,17 @@ def test_get_jobs(
 
 
 @mock.patch("dci.api.v1.utils.get_utc_now")
-def test_get_components(m_get_utc_now, session, admin, topic_id):
+def test_get_components(m_get_utc_now, session, client_admin, rhel_80_topic_id):
     m_get_utc_now.return_value = datetime.datetime.utcnow() - datetime.timedelta(
         hours=2
     )
     for i in range(5):
-        admin.post(
+        client_admin.post(
             "/api/v1/components",
             data={
                 "name": "pname%s" % uuid.uuid4(),
                 "type": "gerrit_review",
-                "topic_id": topic_id,
+                "topic_id": rhel_80_topic_id,
             },
         )
 

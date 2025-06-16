@@ -21,23 +21,26 @@ import mock
 import datetime
 
 
-def test_api_with_unauthorized_credentials(unauthorized, topic_id):
+def test_api_with_unauthorized_credentials(client_unauthorized, rhel_80_topic_id):
     assert (
-        unauthorized.get("/api/v1/topics/%s/components" % topic_id).status_code == 401
+        client_unauthorized.get(
+            "/api/v1/topics/%s/components" % rhel_80_topic_id
+        ).status_code
+        == 401
     )
-    assert unauthorized.get("/api/v1/jobs").status_code == 401
-    assert unauthorized.get("/api/v1/remotecis").status_code == 401
-    assert unauthorized.get("/api/v1/teams").status_code == 401
-    assert unauthorized.get("/api/v1/users").status_code == 401
-    assert unauthorized.get("/api/v1/topics")
+    assert client_unauthorized.get("/api/v1/jobs").status_code == 401
+    assert client_unauthorized.get("/api/v1/remotecis").status_code == 401
+    assert client_unauthorized.get("/api/v1/teams").status_code == 401
+    assert client_unauthorized.get("/api/v1/users").status_code == 401
+    assert client_unauthorized.get("/api/v1/topics")
 
 
-def test_admin_required_success_when_admin(admin):
-    assert admin.post("/api/v1/teams", data={"name": "team"}).status_code == 201
+def test_admin_required_success_when_admin(client_admin):
+    assert client_admin.post("/api/v1/teams", data={"name": "team"}).status_code == 201
 
 
-def test_admin_required_fail_when_not_admin(user):
-    assert user.post("/api/v1/teams", data={"name": "team"}).status_code == 401
+def test_admin_required_fail_when_not_admin(client_user1):
+    assert client_user1.post("/api/v1/teams", data={"name": "team"}).status_code == 401
 
 
 # mock datetime so that the token is now considered as expired

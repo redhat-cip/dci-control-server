@@ -21,9 +21,9 @@ from dci import dci_config
 
 @responses.activate
 def test_get_component_file_from_rhdl_user_team_in_RHEL_with_released_component(
-    admin,
-    remoteci_context,
-    remoteci_user,
+    client_admin,
+    hmac_client_team1,
+    team1_remoteci,
     rhel_product,
     rhel_80_component,
 ):
@@ -49,14 +49,14 @@ def test_get_component_file_from_rhdl_user_team_in_RHEL_with_released_component(
         },
     )
 
-    r = remoteci_context.get(
+    r = hmac_client_team1.get(
         f"/api/v2/components/{rhel_80_component['id']}/files/.composeinfo"
     )
     assert r.status_code == 302
     assert r.headers["Location"] is not None
     assert responses.assert_call_count(rhdl_composeinfo_url, 1) is True
 
-    r = remoteci_context.head(
+    r = hmac_client_team1.head(
         f"/api/v2/components/{rhel_80_component['id']}/files/.composeinfo"
     )
     assert r.status_code == 302
@@ -65,17 +65,18 @@ def test_get_component_file_from_rhdl_user_team_in_RHEL_with_released_component(
     assert responses.assert_call_count(rhdl_composeinfo_url, 2) is True
 
     # delete product team permission
-    r = admin.delete(
-        "/api/v1/products/%s/teams/%s" % (rhel_product["id"], remoteci_user["team_id"]),
+    r = client_admin.delete(
+        "/api/v1/products/%s/teams/%s"
+        % (rhel_product["id"], team1_remoteci["team_id"]),
     )
     assert r.status_code == 204
 
-    r = remoteci_context.get(
+    r = hmac_client_team1.get(
         "/api/v1/components/%s/files/.composeinfo" % rhel_80_component["id"]
     )
     assert r.status_code == 401
 
-    r = remoteci_context.head(
+    r = hmac_client_team1.head(
         "/api/v1/components/%s/files/.composeinfo" % rhel_80_component["id"]
     )
     assert r.status_code == 401
@@ -83,7 +84,7 @@ def test_get_component_file_from_rhdl_user_team_in_RHEL_with_released_component(
 
 @responses.activate
 def test_get_files_list_from_rhdl_renames_files_list(
-    remoteci_context,
+    hmac_client_team1,
     rhel_80_component,
 ):
     rhdl_api_url = dci_config.CONFIG["RHDL_API_URL"]
@@ -97,7 +98,7 @@ def test_get_files_list_from_rhdl_renames_files_list(
         },
     )
 
-    r = remoteci_context.get(
+    r = hmac_client_team1.get(
         f"/api/v2/components/{rhel_80_component['id']}/files/dci_files_list.json"
     )
     assert r.status_code == 302

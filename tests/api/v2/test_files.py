@@ -19,24 +19,24 @@ from dci import dci_config
 from dci.stores import files_utils
 
 
-def test_get_file_content_from_s3(user, job_user_id, app):
+def test_get_file_content_from_s3(client_user1, team1_job_id, app):
 
     s3_endpoint_url = dci_config.CONFIG["STORE_S3_ENDPOINT_URL"]
     bucket = dci_config.CONFIG["STORE_FILES_CONTAINER"]
 
-    headers = {"DCI-JOB-ID": job_user_id, "DCI-NAME": "name1"}
-    pfile = user.post("/api/v1/files", headers=headers, data="kikoolol").data
+    headers = {"DCI-JOB-ID": team1_job_id, "DCI-NAME": "name1"}
+    pfile = client_user1.post("/api/v1/files", headers=headers, data="kikoolol").data
     file1_id = pfile["file"]["id"]
     file_path = files_utils.build_file_path(
         pfile["file"]["team_id"], pfile["file"]["job_id"], file1_id
     )
 
     # GET
-    r = user.get("/api/v2/files/%s/content" % file1_id)
+    r = client_user1.get("/api/v2/files/%s/content" % file1_id)
     assert r.status_code == 302
     assert r.headers["Location"].startswith(f"{s3_endpoint_url}/{bucket}/{file_path}")
 
     # HEAD
-    r = user.head("/api/v2/files/%s/content" % file1_id)
+    r = client_user1.head("/api/v2/files/%s/content" % file1_id)
     assert r.status_code == 302
     assert r.headers["Location"].startswith(f"{s3_endpoint_url}/{bucket}/{file_path}")

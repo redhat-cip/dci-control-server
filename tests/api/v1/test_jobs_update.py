@@ -15,7 +15,7 @@
 # under the License.
 
 
-def test_update_jobs(admin, remoteci_context, job_user_id, rhel_80_topic):
+def test_update_jobs(client_admin, hmac_client_team1, team1_job_id, rhel_80_topic):
     # test update schedule latest components
     data = {
         "name": "pname",
@@ -24,22 +24,22 @@ def test_update_jobs(admin, remoteci_context, job_user_id, rhel_80_topic):
         "topic_id": rhel_80_topic["id"],
         "state": "active",
     }
-    admin.post("/api/v1/components", data=data).data["component"]["id"]
+    client_admin.post("/api/v1/components", data=data).data["component"]["id"]
     data.update({"name": "pname1"})
-    latest_component_id = admin.post("/api/v1/components", data=data).data["component"][
-        "id"
-    ]
+    latest_component_id = client_admin.post("/api/v1/components", data=data).data[
+        "component"
+    ]["id"]
     data.update({"name": "pname2"})
 
-    r = remoteci_context.post("/api/v1/jobs/%s/update" % job_user_id)
+    r = hmac_client_team1.post("/api/v1/jobs/%s/update" % team1_job_id)
     assert r.status_code == 201
     update_job = r.data["job"]
 
-    assert update_job["update_previous_job_id"] == job_user_id
+    assert update_job["update_previous_job_id"] == team1_job_id
     assert update_job["topic_id"] == rhel_80_topic["id"]
 
-    updated_cmpts = admin.get("/api/v1/jobs/%s/components" % update_job["id"]).data[
-        "components"
-    ]
+    updated_cmpts = client_admin.get(
+        "/api/v1/jobs/%s/components" % update_job["id"]
+    ).data["components"]
     assert len(updated_cmpts) == 1
     assert updated_cmpts[0]["id"] == latest_component_id

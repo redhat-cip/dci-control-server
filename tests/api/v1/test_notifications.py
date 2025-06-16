@@ -22,23 +22,27 @@ import flask
 import mock
 
 
-def test_get_emails_from_remoteci(user, remoteci_user_id, app, engine, session):
-    r = user.post("/api/v1/remotecis/%s/users" % remoteci_user_id)
+def test_get_emails_from_remoteci(
+    client_user1, team1_remoteci_id, app, engine, session
+):
+    r = client_user1.post("/api/v1/remotecis/%s/users" % team1_remoteci_id)
     assert r.status_code == 201
 
     with app.app_context():
         flask.g.db_conn = engine.connect()
         flask.g.session = session
-        emails = notifications.get_emails_from_remoteci(remoteci_user_id)
+        emails = notifications.get_emails_from_remoteci(team1_remoteci_id)
         assert emails == ["user@example.org"]
 
 
-def test_get_emails_from_remoteci_deleted(user, remoteci_user_id, app, engine, session):
-    r = user.post("/api/v1/remotecis/%s/users" % remoteci_user_id)
+def test_get_emails_from_remoteci_deleted(
+    client_user1, team1_remoteci_id, app, engine, session
+):
+    r = client_user1.post("/api/v1/remotecis/%s/users" % team1_remoteci_id)
     assert r.status_code == 201
-    r = user.get("/api/v1/remotecis/%s" % remoteci_user_id)
-    r = user.delete(
-        "/api/v1/remotecis/%s" % remoteci_user_id,
+    r = client_user1.get("/api/v1/remotecis/%s" % team1_remoteci_id)
+    r = client_user1.delete(
+        "/api/v1/remotecis/%s" % team1_remoteci_id,
         headers={"If-match": r.data["remoteci"]["etag"]},
     )
     assert r.status_code == 204
@@ -46,23 +50,23 @@ def test_get_emails_from_remoteci_deleted(user, remoteci_user_id, app, engine, s
     with app.app_context():
         flask.g.db_conn = engine.connect()
         flask.g.session = session
-        emails = notifications.get_emails_from_remoteci(remoteci_user_id)
+        emails = notifications.get_emails_from_remoteci(team1_remoteci_id)
         assert emails == []
 
 
 @mock.patch("dci.api.v1.notifications.job_dispatcher")
-def test_get_job_event_on_job_error(mocked_disp, user, job_user_id):
+def test_get_job_event_on_job_error(mocked_disp, client_user1, team1_job_id):
     # set job to error status
-    data = {"job_id": job_user_id, "status": "error"}
-    user.post("/api/v1/jobstates", data=data)
-    job = user.get(
-        "/api/v1/jobs/%s?embed=components,topic,remoteci,results" % job_user_id
+    data = {"job_id": team1_job_id, "status": "error"}
+    client_user1.post("/api/v1/jobstates", data=data)
+    job = client_user1.get(
+        "/api/v1/jobs/%s?embed=components,topic,remoteci,results" % team1_job_id
     )
     job = job.data["job"]
     email_event = notifications.get_job_event(job, ["user@exameple.org"])
     assert email_event["event"] == "notification"
     assert email_event["emails"] == ["user@exameple.org"]
-    assert email_event["job_id"] == job_user_id
+    assert email_event["job_id"] == team1_job_id
     assert email_event["status"] == "error"
     assert email_event["topic_id"] == job["topic_id"]
     assert email_event["topic_name"] == job["topic"]["name"]
@@ -73,12 +77,12 @@ def test_get_job_event_on_job_error(mocked_disp, user, job_user_id):
 
 
 @mock.patch("dci.api.v1.notifications.job_dispatcher")
-def test_get_job_event_on_job_success(mocked_disp, user, job_user_id):
+def test_get_job_event_on_job_success(mocked_disp, client_user1, team1_job_id):
     # set job to error status
-    data = {"job_id": job_user_id, "status": "success"}
-    user.post("/api/v1/jobstates", data=data)
-    job = user.get(
-        "/api/v1/jobs/%s?embed=components,topic,remoteci,results" % job_user_id
+    data = {"job_id": team1_job_id, "status": "success"}
+    client_user1.post("/api/v1/jobstates", data=data)
+    job = client_user1.get(
+        "/api/v1/jobs/%s?embed=components,topic,remoteci,results" % team1_job_id
     )
     job = job.data["job"]
     email_event = notifications.get_job_event(job, ["user@exameple.org"])
@@ -110,7 +114,7 @@ https://www.distributed-ci.io/jobs/abc123
 
 
 @mock.patch("dci.api.v1.notifications.component_dispatcher")
-def test_new_component_created(mocked_disp, admin, topic_user_id):
+def test_new_component_created(mocked_disp, client_admin, rhel_80_topic_id):
     _arg = {}
 
     def side_effect(component):
@@ -122,31 +126,31 @@ def test_new_component_created(mocked_disp, admin, topic_user_id):
         "name": "pname",
         "type": "gerrit_review",
         "url": "http://example.com/",
-        "topic_id": topic_user_id,
+        "topic_id": rhel_80_topic_id,
         "state": "active",
     }
-    admin.post("/api/v1/components", data=data).data
+    client_admin.post("/api/v1/components", data=data).data
     mocked_disp.assert_called_once_with(_arg)
 
 
 def test_delete_a_remoteci_delete_the_associated_subscriptions(
-    user, user_id, team_user_id
+    client_user1, user1_id, team1_id
 ):
-    remoteci = user.post(
+    remoteci = client_user1.post(
         "/api/v1/remotecis",
-        data={"name": "My remoteci", "team_id": team_user_id},
+        data={"name": "My remoteci", "team_id": team1_id},
     ).data["remoteci"]
 
-    r = user.post("/api/v1/remotecis/%s/users" % remoteci["id"])
+    r = client_user1.post("/api/v1/remotecis/%s/users" % remoteci["id"])
     assert r.status_code == 201
 
-    r = user.delete(
+    r = client_user1.delete(
         "/api/v1/remotecis/%s" % remoteci["id"],
         headers={"If-match": remoteci["etag"]},
     )
     assert r.status_code == 204
 
-    subscribed_remotecis = user.get("/api/v1/users/%s/remotecis" % user_id).data[
-        "remotecis"
-    ]
+    subscribed_remotecis = client_user1.get(
+        "/api/v1/users/%s/remotecis" % user1_id
+    ).data["remotecis"]
     assert len(subscribed_remotecis) == 0

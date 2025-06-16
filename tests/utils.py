@@ -208,40 +208,40 @@ def provision(session):
     admin_user.team.append(admin_team)
     session.add(admin_user)
 
-    # Create user
-    user_team = models2.Team(name="user")
-    user = models2.User(
-        name="user",
-        sso_username="user",
-        password=auth.hash_password("user"),
-        fullname="User",
+    # Create user1
+    team1 = models2.Team(name="team1")
+    user1 = models2.User(
+        name="user1",
+        sso_username="user1",
+        password=auth.hash_password("user1"),
+        fullname="User 1",
         email="user@example.org",
     )
-    user.team.append(user_team)
-    session.add(user)
+    user1.team.append(team1)
+    session.add(user1)
 
-    # Create user 2
-    user2_team = models2.Team(name="user2")
+    # Create user2
+    team2 = models2.Team(name="team2")
     user2 = models2.User(
         name="user2",
         sso_username="user2",
         password=auth.hash_password("user2"),
-        fullname="User2",
+        fullname="User 2",
         email="user2@example.org",
     )
-    user2.team.append(user2_team)
+    user2.team.append(team2)
     session.add(user2)
 
-    # Create user 3
-    user3_team = models2.Team(name="user3")
+    # Create user3
+    team3 = models2.Team(name="team3")
     user3 = models2.User(
         name="user3",
         sso_username="user3",
         password=auth.hash_password("user3"),
-        fullname="User3",
+        fullname="User 3",
         email="user3@example.org",
     )
-    user3.team.append(user3_team)
+    user3.team.append(team3)
     session.add(user3)
 
     # Create user no team
@@ -285,9 +285,9 @@ def provision(session):
     allow_team_to_access_product(session, admin_team, rhel)
     allow_team_to_access_product(session, admin_team, openstack)
     allow_team_to_access_product(session, admin_team, openshift)
-    allow_team_to_access_product(session, user_team, rhel)
-    allow_team_to_access_product(session, user_team, openstack)
-    allow_team_to_access_product(session, user2_team, rhel)
+    allow_team_to_access_product(session, team1, rhel)
+    allow_team_to_access_product(session, team1, openstack)
+    allow_team_to_access_product(session, team2, rhel)
     allow_team_to_access_product(session, red_hat, rhel)
     allow_team_to_access_product(session, red_hat, openstack)
     allow_team_to_access_product(session, red_hat, openshift)

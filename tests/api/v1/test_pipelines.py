@@ -15,15 +15,15 @@
 # under the License.
 
 
-def test_create_and_get_pipeline(user, team_user_id):
-    pipeline = user.post(
+def test_create_and_get_pipeline(client_user1, team1_id):
+    pipeline = client_user1.post(
         "/api/v1/pipelines",
-        data={"name": "pipeline1", "team_id": team_user_id},
+        data={"name": "pipeline1", "team_id": team1_id},
     )
     assert pipeline.status_code == 201
     pipeline_id = pipeline.data["pipeline"]["id"]
 
-    get_pipeline = user.get("/api/v1/pipelines/%s" % pipeline_id)
+    get_pipeline = client_user1.get("/api/v1/pipelines/%s" % pipeline_id)
     assert get_pipeline.status_code == 200
     get_pipeline = get_pipeline.data["pipeline"]
     assert get_pipeline["id"] == pipeline_id
@@ -31,14 +31,14 @@ def test_create_and_get_pipeline(user, team_user_id):
 
 
 def test_jobs_schedule_with_pipeline(
-    remoteci_context, user, team_user_id, rhel_80_topic, rhel_80_component
+    hmac_client_team1, client_user1, team1_id, rhel_80_topic, rhel_80_component
 ):
-    pipeline = user.post(
+    pipeline = client_user1.post(
         "/api/v1/pipelines",
-        data={"name": "pipeline1", "team_id": team_user_id},
+        data={"name": "pipeline1", "team_id": team1_id},
     )
     pipeline_id = pipeline.data["pipeline"]["id"]
-    job_1 = remoteci_context.post(
+    job_1 = hmac_client_team1.post(
         "/api/v1/jobs/schedule",
         data={"pipeline_id": pipeline_id, "topic_id": rhel_80_topic["id"]},
     )
@@ -46,7 +46,7 @@ def test_jobs_schedule_with_pipeline(
     assert job_1.data["job"]["pipeline_id"] == pipeline_id
     job_1 = job_1.data["job"]
 
-    job_2 = remoteci_context.post(
+    job_2 = hmac_client_team1.post(
         "/api/v1/jobs/schedule",
         data={"pipeline_id": pipeline_id, "topic_id": rhel_80_topic["id"]},
     )
@@ -54,108 +54,108 @@ def test_jobs_schedule_with_pipeline(
     assert job_2.data["job"]["pipeline_id"] == pipeline_id
     job_2 = job_2.data["job"]
 
-    jobs_pipeline = remoteci_context.get("/api/v1/pipelines/%s/jobs" % pipeline_id)
+    jobs_pipeline = hmac_client_team1.get("/api/v1/pipelines/%s/jobs" % pipeline_id)
     jobs_pipeline = jobs_pipeline.data["jobs"]
     assert jobs_pipeline[0]["id"] == job_1["id"]
     assert jobs_pipeline[1]["id"] == job_2["id"]
 
 
 def test_jobs_create_with_pipeline(
-    remoteci_context, user, team_user_id, topic_user_id, components_ids
+    hmac_client_team1, client_user1, team1_id, rhel_80_topic_id, rhel_80_component_id
 ):
-    pipeline = user.post(
+    pipeline = client_user1.post(
         "/api/v1/pipelines",
-        data={"name": "pipeline1", "team_id": team_user_id},
+        data={"name": "pipeline1", "team_id": team1_id},
     )
     pipeline_id = pipeline.data["pipeline"]["id"]
-    job_1 = remoteci_context.post(
+    job_1 = hmac_client_team1.post(
         "/api/v1/jobs",
         data={
             "pipeline_id": pipeline_id,
-            "topic_id": topic_user_id,
-            "components": components_ids,
+            "topic_id": rhel_80_topic_id,
+            "components": [rhel_80_component_id],
         },
     )
     assert job_1.status_code == 201
     assert job_1.data["job"]["pipeline_id"] == pipeline_id
     job_1 = job_1.data["job"]
 
-    job_2 = remoteci_context.post(
+    job_2 = hmac_client_team1.post(
         "/api/v1/jobs",
         data={
             "pipeline_id": pipeline_id,
-            "topic_id": topic_user_id,
-            "components": components_ids,
+            "topic_id": rhel_80_topic_id,
+            "components": [rhel_80_component_id],
         },
     )
     assert job_2.status_code == 201
     assert job_2.data["job"]["pipeline_id"] == pipeline_id
     job_2 = job_2.data["job"]
 
-    jobs_pipeline = remoteci_context.get("/api/v1/pipelines/%s/jobs" % pipeline_id)
+    jobs_pipeline = hmac_client_team1.get("/api/v1/pipelines/%s/jobs" % pipeline_id)
     jobs_pipeline = jobs_pipeline.data["jobs"]
     assert jobs_pipeline[0]["id"] == job_1["id"]
     assert jobs_pipeline[1]["id"] == job_2["id"]
 
-    job_1 = remoteci_context.get("/api/v1/jobs/%s" % job_1["id"])
+    job_1 = hmac_client_team1.get("/api/v1/jobs/%s" % job_1["id"])
     job_1 = job_1.data["job"]
     assert "pipeline" in job_1
     assert job_1["pipeline"]["name"] == "pipeline1"
 
 
-def test_get_pipelines(remoteci_context, team_user_id):
+def test_get_pipelines(hmac_client_team1, team1_id):
     for _ in range(3):
-        pipeline = remoteci_context.post(
+        pipeline = hmac_client_team1.post(
             "/api/v1/pipelines",
             data={
                 "name": "pipeline1",
-                "team_id": team_user_id,
+                "team_id": team1_id,
             },
         )
         assert pipeline.status_code == 201
 
-    pipelines = remoteci_context.get("/api/v1/pipelines")
+    pipelines = hmac_client_team1.get("/api/v1/pipelines")
     assert len(pipelines.data["pipelines"]) == 3
 
 
-def test_update_pipeline(user, remoteci_context, team_user_id):
-    pipeline = remoteci_context.post(
+def test_update_pipeline(client_user1, hmac_client_team1, team1_id):
+    pipeline = hmac_client_team1.post(
         "/api/v1/pipelines",
-        data={"name": "pipeline1", "team_id": team_user_id},
+        data={"name": "pipeline1", "team_id": team1_id},
     )
     pipeline_id = pipeline.data["pipeline"]["id"]
     pipeline_etag = pipeline.data["pipeline"]["etag"]
     assert pipeline.status_code == 201
 
     updates = {"name": "pipeline2"}
-    update_pipeline = remoteci_context.put(
+    update_pipeline = hmac_client_team1.put(
         "/api/v1/pipelines/%s" % pipeline_id,
         headers={"If-match": pipeline_etag},
         data=updates,
     )
     assert update_pipeline.status_code == 200
 
-    get_pipeline = user.get("/api/v1/pipelines/%s" % pipeline_id)
+    get_pipeline = client_user1.get("/api/v1/pipelines/%s" % pipeline_id)
     assert get_pipeline.status_code == 200
     get_pipeline = get_pipeline.data["pipeline"]
     assert get_pipeline["name"] == "pipeline2"
 
 
-def test_delete_pipeline(remoteci_context, team_user_id):
-    pipeline = remoteci_context.post(
+def test_delete_pipeline(hmac_client_team1, team1_id):
+    pipeline = hmac_client_team1.post(
         "/api/v1/pipelines",
-        data={"name": "pipeline1", "team_id": team_user_id},
+        data={"name": "pipeline1", "team_id": team1_id},
     )
     pipeline_id = pipeline.data["pipeline"]["id"]
     pipeline_etag = pipeline.data["pipeline"]["etag"]
     assert pipeline.status_code == 201
 
-    delete_pipeline = remoteci_context.delete(
+    delete_pipeline = hmac_client_team1.delete(
         "/api/v1/pipelines/%s" % pipeline_id, headers={"If-match": pipeline_etag}
     )
     assert delete_pipeline.status_code == 204
 
-    get_pipeline = remoteci_context.get("/api/v1/pipelines/%s" % pipeline_id)
+    get_pipeline = hmac_client_team1.get("/api/v1/pipelines/%s" % pipeline_id)
     assert get_pipeline.status_code == 404
 
 
@@ -163,44 +163,49 @@ def test_delete_pipeline(remoteci_context, team_user_id):
 
 
 def test_get_pipeline_not_authorized(
-    user,
-    user2,
-    team_user_id,
+    client_user1,
+    client_user2,
+    team1_id,
 ):
-    pipeline = user.post(
+    pipeline = client_user1.post(
         "/api/v1/pipelines",
-        data={"name": "pipeline1", "team_id": team_user_id},
+        data={"name": "pipeline1", "team_id": team1_id},
     )
     assert pipeline.status_code == 201
     pipeline_id = pipeline.data["pipeline"]["id"]
 
-    get_pipeline = user.get("/api/v1/pipelines/%s" % pipeline_id)
+    get_pipeline = client_user1.get("/api/v1/pipelines/%s" % pipeline_id)
     assert get_pipeline.status_code == 200
 
-    get_pipeline = user2.get("/api/v1/pipelines/%s" % pipeline_id)
+    get_pipeline = client_user2.get("/api/v1/pipelines/%s" % pipeline_id)
     assert get_pipeline.status_code == 401
 
 
 def test_jobs_from_pipeline_not_authorized(
-    remoteci_context, user, team_user_id, rhel_80_topic, rhel_80_component, user2
+    hmac_client_team1,
+    client_user1,
+    team1_id,
+    rhel_80_topic,
+    rhel_80_component,
+    client_user2,
 ):
-    pipeline = user.post(
+    pipeline = client_user1.post(
         "/api/v1/pipelines",
-        data={"name": "pipeline1", "team_id": team_user_id},
+        data={"name": "pipeline1", "team_id": team1_id},
     )
     pipeline_id = pipeline.data["pipeline"]["id"]
-    job = remoteci_context.post(
+    job = hmac_client_team1.post(
         "/api/v1/jobs/schedule",
         data={"pipeline_id": pipeline_id, "topic_id": rhel_80_topic["id"]},
     )
     assert job.status_code == 201
-    get_pipeline = user2.get("/api/v1/pipelines/%s/jobs" % pipeline_id)
+    get_pipeline = client_user2.get("/api/v1/pipelines/%s/jobs" % pipeline_id)
     assert get_pipeline.status_code == 401
 
 
-def test_create_pipeline_for_another_team_not_authorized(user, team_user_id2):
-    pipeline = user.post(
+def test_create_pipeline_for_another_team_not_authorized(client_user1, team2_id):
+    pipeline = client_user1.post(
         "/api/v1/pipelines",
-        data={"name": "pipeline1", "team_id": team_user_id2},
+        data={"name": "pipeline1", "team_id": team2_id},
     )
     assert pipeline.status_code == 401

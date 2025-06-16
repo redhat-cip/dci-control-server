@@ -25,45 +25,47 @@ from dci.analytics import query_es_dsl as qed
 
 @mock.patch("dci.api.v1.analytics.requests.get")
 def test_elasticsearch_ressource_not_found(
-    mock_requests, admin, remoteci_id, topic_user_id
+    mock_requests, client_admin, team2_remoteci_id, rhel_80_topic_id
 ):
     mock_404 = mock.MagicMock()
     mock_404.status_code = 404
     mock_requests.return_value = mock_404
-    res = admin.get(
+    res = client_admin.get(
         "/api/v1/analytics/tasks_duration_cumulated?remoteci_id=%s&topic_id=%s"
-        % (remoteci_id, topic_user_id)
+        % (team2_remoteci_id, rhel_80_topic_id)
     )
     assert res.status_code == 404
 
 
 @mock.patch("dci.api.v1.analytics.requests.get")
-def test_elasticsearch_error(mock_requests, admin, remoteci_id, topic_user_id):
+def test_elasticsearch_error(
+    mock_requests, client_admin, team2_remoteci_id, rhel_80_topic_id
+):
     mock_error = mock.MagicMock()
     mock_error.status_code = 400
     mock_error.text = "error"
     mock_requests.return_value = mock_error
-    res = admin.get(
+    res = client_admin.get(
         "/api/v1/analytics/tasks_duration_cumulated?remoteci_id=%s&topic_id=%s"
-        % (remoteci_id, topic_user_id)
+        % (team2_remoteci_id, rhel_80_topic_id)
     )
     assert res.status_code == 400
 
 
 @mock.patch("dci.api.v1.analytics.requests.get")
 def test_elasticsearch_connection_error(
-    mock_requests, admin, remoteci_id, topic_user_id
+    mock_requests, client_admin, team2_remoteci_id, rhel_80_topic_id
 ):
     mock_requests.side_effect = ConnectionError()
-    res = admin.get(
+    res = client_admin.get(
         "/api/v1/analytics/tasks_duration_cumulated?remoteci_id=%s&topic_id=%s"
-        % (remoteci_id, topic_user_id)
+        % (team2_remoteci_id, rhel_80_topic_id)
     )
     assert res.status_code == 503
 
 
-def test_tasks_analytics_pipelines_status(user, team_admin_id):
-    res = user.post(
+def test_tasks_analytics_pipelines_status(client_user1, team_admin_id):
+    res = client_user1.post(
         "/api/v1/analytics/pipelines_status",
         data={
             "start_date": "1970-01-01",
@@ -75,13 +77,13 @@ def test_tasks_analytics_pipelines_status(user, team_admin_id):
     assert res.status_code == 401
 
 
-def test_tasks_jobs(user, admin):
-    res = user.get(
+def test_tasks_jobs(client_user1, client_admin):
+    res = client_user1.get(
         "/api/v1/analytics/jobs?query=(a=b)",
     )
     assert res.status_code == 401
 
-    res = admin.get(
+    res = client_admin.get(
         "/api/v1/analytics/jobs?query=foo",
     )
     assert res.status_code == 400

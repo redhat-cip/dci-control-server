@@ -27,34 +27,36 @@ from dci.common import exceptions as dci_exc
 
 
 @mock.patch("dci.api.v1.notifications.component_dispatcher")
-def test_create_components_active(mock_disp, admin, topic_id):
+def test_create_components_active(mock_disp, client_admin, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "gerrit_review",
         "url": "http://example.com/",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
         "state": "active",
     }
-    pc = admin.post("/api/v1/components", data=data).data
+    pc = client_admin.post("/api/v1/components", data=data).data
     pc_id = pc["component"]["id"]
-    gc = admin.get("/api/v1/components/%s" % pc_id).data
+    gc = client_admin.get("/api/v1/components/%s" % pc_id).data
     assert gc["component"]["name"] == "pname"
     assert gc["component"]["state"] == "active"
     mock_disp.assert_called()
 
 
 @mock.patch("dci.api.v1.notifications.component_dispatcher")
-def test_create_component_with_canonical_project_name(mock_disp, admin, topic_id):
+def test_create_component_with_canonical_project_name(
+    mock_disp, client_admin, rhel_80_topic_id
+):
     data = {
         "name": "4.12.0 2023-01-12",
         "canonical_project_name": "OpenShift 4.12.0 2023-01-12",
         "type": "ocp",
         "url": "quay.io/openshift-release-dev/ocp-release@sha256:4c5a7e26d707780be6466ddc9591865beb2e3baa5556432d23e8d57966a2dd18",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    pc = admin.post("/api/v1/components", data=data).data
+    pc = client_admin.post("/api/v1/components", data=data).data
     pc_id = pc["component"]["id"]
-    gc = admin.get("/api/v1/components/%s" % pc_id).data
+    gc = client_admin.get("/api/v1/components/%s" % pc_id).data
     assert gc["component"]["name"] == "4.12.0 2023-01-12"
     assert gc["component"]["canonical_project_name"] == "OpenShift 4.12.0 2023-01-12"
     assert gc["component"]["display_name"] == "OpenShift 4.12.0 2023-01-12"
@@ -69,16 +71,18 @@ def test_create_component_with_canonical_project_name(mock_disp, admin, topic_id
 
 
 @mock.patch("dci.api.v1.notifications.component_dispatcher")
-def test_create_component_without_canonical_project_name(mock_disp, admin, topic_id):
+def test_create_component_without_canonical_project_name(
+    mock_disp, client_admin, rhel_80_topic_id
+):
     data = {
         "name": "OpenShift 4.12.0",
         "type": "ocp",
         "url": "quay.io/openshift-release-dev/ocp-release@sha256:4c5a7e26d707780be6466ddc9591865beb2e3baa5556432d23e8d57966a2dd18",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    pc = admin.post("/api/v1/components", data=data).data
+    pc = client_admin.post("/api/v1/components", data=data).data
     pc_id = pc["component"]["id"]
-    gc = admin.get("/api/v1/components/%s" % pc_id).data
+    gc = client_admin.get("/api/v1/components/%s" % pc_id).data
     assert gc["component"]["name"] == "OpenShift 4.12.0"
     assert gc["component"]["canonical_project_name"] == ""
     assert gc["component"]["display_name"] == "OpenShift 4.12.0"
@@ -92,16 +96,16 @@ def test_create_component_without_canonical_project_name(mock_disp, admin, topic
 
 
 @mock.patch("dci.api.v1.notifications.component_dispatcher")
-def test_create_component_with_display_name(mock_disp, admin, topic_id):
+def test_create_component_with_display_name(mock_disp, client_admin, rhel_80_topic_id):
     data = {
         "display_name": "RHEL-8.6.0-20211205.3",
         "version": "8.6.0-20211205.3",
         "uid": "abc",
         "type": "compose",
         "url": "http://example.org/RHEL-8.6.0-20211205.3",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    component = admin.post("/api/v1/components", data=data).data["component"]
+    component = client_admin.post("/api/v1/components", data=data).data["component"]
     assert component["name"] == "RHEL-8.6.0-20211205.3"
     assert component["canonical_project_name"] == ""
     assert component["display_name"] == "RHEL-8.6.0-20211205.3"
@@ -115,46 +119,48 @@ def test_create_component_with_display_name(mock_disp, admin, topic_id):
     mock_disp.assert_called()
 
 
-def test_raise_an_error_if_name_and_display_name_are_absent(admin, topic_id):
+def test_raise_an_error_if_name_and_display_name_are_absent(
+    client_admin, rhel_80_topic_id
+):
     data = {
         "version": "8.6.0-20211205.3",
         "uid": "abc",
         "type": "compose",
         "url": "http://example.org/RHEL-8.6.0-20211205.3",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    r = admin.post("/api/v1/components", data=data)
+    r = client_admin.post("/api/v1/components", data=data)
     assert r.status_code == 400
 
 
-def test_raise_an_error_if_name_or_display_name_empty(admin, topic_id):
+def test_raise_an_error_if_name_or_display_name_empty(client_admin, rhel_80_topic_id):
     data = {
         "display_name": "",
         "type": "compose",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    r = admin.post("/api/v1/components", data=data)
+    r = client_admin.post("/api/v1/components", data=data)
     assert r.status_code == 400
     data = {
         "name": "",
         "type": "compose",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    r = admin.post("/api/v1/components", data=data)
+    r = client_admin.post("/api/v1/components", data=data)
     assert r.status_code == 400
 
 
 @mock.patch("dci.api.v1.notifications.component_dispatcher")
-def test_create_component_with_version(mock_disp, admin, topic_id):
+def test_create_component_with_version(mock_disp, client_admin, rhel_80_topic_id):
     data = {
         "name": "RHEL-8.6.0-20211205.3",
         "version": "8.6.0-20211205.3",
         "uid": "abc",
         "type": "compose",
         "url": "http://example.org/RHEL-8.6.0-20211205.3",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    component = admin.post("/api/v1/components", data=data).data["component"]
+    component = client_admin.post("/api/v1/components", data=data).data["component"]
     assert component["name"] == "RHEL-8.6.0-20211205.3"
     assert component["canonical_project_name"] == ""
     assert component["display_name"] == "RHEL-8.6.0-20211205.3"
@@ -169,18 +175,20 @@ def test_create_component_with_version(mock_disp, admin, topic_id):
 
 
 @mock.patch("dci.api.v1.notifications.component_dispatcher")
-def test_create_component_without_version_nor_display_name(mock_disp, admin, topic_id):
+def test_create_component_without_version_nor_display_name(
+    mock_disp, client_admin, rhel_80_topic_id
+):
     data = {
         "name": "dci-openshift-agent 0.5.0-1.202209222145git23657e82.el8",
         "canonical_project_name": "dci-openshift-agent 0.5.0-1.202209222145git23657e82.el8",
         "type": "git",
         "url": "http://example.org/doa0.5.0.1",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
         "state": "active",
     }
-    pc = admin.post("/api/v1/components", data=data).data
+    pc = client_admin.post("/api/v1/components", data=data).data
     pc_id = pc["component"]["id"]
-    gc = admin.get("/api/v1/components/%s" % pc_id).data
+    gc = client_admin.get("/api/v1/components/%s" % pc_id).data
     assert (
         gc["component"]["name"]
         == "dci-openshift-agent 0.5.0-1.202209222145git23657e82.el8"
@@ -200,119 +208,127 @@ def test_create_component_without_version_nor_display_name(mock_disp, admin, top
 
 
 @mock.patch("dci.api.v1.notifications.component_dispatcher")
-def test_create_components_inactive(mock_disp, admin, topic_id):
+def test_create_components_inactive(mock_disp, client_admin, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "gerrit_review",
         "url": "http://example.com/",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
         "state": "inactive",
     }
-    pc = admin.post("/api/v1/components", data=data).data
+    pc = client_admin.post("/api/v1/components", data=data).data
     pc_id = pc["component"]["id"]
-    gc = admin.get("/api/v1/components/%s" % pc_id).data
+    gc = client_admin.get("/api/v1/components/%s" % pc_id).data
     assert gc["component"]["name"] == "pname"
     assert gc["component"]["state"] == "inactive"
     mock_disp.assert_not_called()
 
 
-def test_create_component_lowercase_type(admin, topic_id):
+def test_create_component_lowercase_type(client_admin, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "GERRIT_REVIEW",
         "url": "http://example.com/",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
         "state": "active",
     }
-    component = admin.post("/api/v1/components", data=data).data["component"]
-    component = admin.get("/api/v1/components/%s" % component["id"]).data["component"]
+    component = client_admin.post("/api/v1/components", data=data).data["component"]
+    component = client_admin.get("/api/v1/components/%s" % component["id"]).data[
+        "component"
+    ]
     assert component["type"] == "gerrit_review"
 
 
-def test_create_components_already_exist(admin, topic_user_id):
-    data = {"name": "pname", "type": "gerrit_review", "topic_id": topic_user_id}
-    pstatus_code = admin.post("/api/v1/components", data=data).status_code
+def test_create_components_already_exist(client_admin, rhel_80_topic_id):
+    data = {"name": "pname", "type": "gerrit_review", "topic_id": rhel_80_topic_id}
+    pstatus_code = client_admin.post("/api/v1/components", data=data).status_code
     assert pstatus_code == 201
 
-    pstatus_code = admin.post("/api/v1/components", data=data).status_code
+    pstatus_code = client_admin.post("/api/v1/components", data=data).status_code
     assert pstatus_code == 409
 
 
-def test_create_components_with_same_name_on_different_topics(admin, topic_id, product):
-    data = {"name": "pname", "type": "gerrit_review", "topic_id": topic_id}
-    pstatus_code = admin.post("/api/v1/components", data=data).status_code
+def test_create_components_with_same_name_on_different_topics(
+    client_admin, rhel_80_topic_id, rhel_product
+):
+    data = {"name": "pname", "type": "gerrit_review", "topic_id": rhel_80_topic_id}
+    pstatus_code = client_admin.post("/api/v1/components", data=data).status_code
     assert pstatus_code == 201
 
-    topic2 = admin.post(
+    topic2 = client_admin.post(
         "/api/v1/topics",
         data={
             "name": "tname",
-            "product_id": product["id"],
+            "product_id": rhel_product["id"],
             "component_types": ["type1", "type2"],
         },
     ).data
     topic_id2 = topic2["topic"]["id"]
 
     data = {"name": "pname", "type": "gerrit_review", "topic_id": topic_id2}
-    pstatus_code = admin.post("/api/v1/components", data=data).status_code
+    pstatus_code = client_admin.post("/api/v1/components", data=data).status_code
     assert pstatus_code == 201
 
 
-def test_create_components_with_same_name_on_same_topics(admin, topic_user_id):
-    data = {"name": "pname", "type": "gerrit_review", "topic_id": topic_user_id}
-    pc1 = admin.post("/api/v1/components", data=data)
+def test_create_components_with_same_name_on_same_topics(
+    client_admin, rhel_80_topic_id
+):
+    data = {"name": "pname", "type": "gerrit_review", "topic_id": rhel_80_topic_id}
+    pc1 = client_admin.post("/api/v1/components", data=data)
     assert pc1.status_code == 201
 
-    pc2 = admin.post("/api/v1/components", data=data)
+    pc2 = client_admin.post("/api/v1/components", data=data)
     assert pc2.status_code == 409
 
 
 def test_name_topic_id_type_team_id_version_uniqueness(
-    user, topic_user_id, team_user_id
+    client_user1, rhel_80_topic_id, team1_id
 ):
     data = {
         "name": "pname",
         "type": "gerrit_review",
-        "topic_id": topic_user_id,
-        "team_id": team_user_id,
+        "topic_id": rhel_80_topic_id,
+        "team_id": team1_id,
     }
-    p = user.post("/api/v1/components", data=data)
+    p = client_user1.post("/api/v1/components", data=data)
     assert p.status_code == 201
 
-    p = user.post("/api/v1/components", data=data)
+    p = client_user1.post("/api/v1/components", data=data)
     assert p.status_code == 409
 
     data["version"] = "1.2.3"
-    p = user.post("/api/v1/components", data=data)
+    p = client_user1.post("/api/v1/components", data=data)
     assert p.status_code == 201
 
-    p = user.post("/api/v1/components", data=data)
+    p = client_user1.post("/api/v1/components", data=data)
     assert p.status_code == 409
 
 
 def test_create_components_with_same_name_on_same_topics_different_team(
-    user, user2, topic_user_id, team_user_id, team_user_id2
+    client_user1, client_user2, rhel_80_topic_id, team1_id, team2_id
 ):
     data = {
         "name": "pname",
         "type": "gerrit_review",
-        "topic_id": topic_user_id,
-        "team_id": team_user_id,
+        "topic_id": rhel_80_topic_id,
+        "team_id": team1_id,
     }
-    pstatus_code = user.post("/api/v1/components", data=data).status_code
+    pstatus_code = client_user1.post("/api/v1/components", data=data).status_code
     assert pstatus_code == 201
 
     data = {
         "name": "pname",
         "type": "gerrit_review",
-        "topic_id": topic_user_id,
-        "team_id": team_user_id2,
+        "topic_id": rhel_80_topic_id,
+        "team_id": team2_id,
     }
-    pstatus_code = user2.post("/api/v1/components", data=data).status_code
+    pstatus_code = client_user2.post("/api/v1/components", data=data).status_code
     assert pstatus_code == 201
 
 
-def test_recreate_components_with_same_name_on_same_topics(admin, topic_id):
+def test_recreate_components_with_same_name_on_same_topics(
+    client_admin, rhel_80_topic_id
+):
     """The goal of this test is to verify that we can:
     - create a component, delete it, then create another component with
       the same name as the previous one
@@ -320,43 +336,45 @@ def test_recreate_components_with_same_name_on_same_topics(admin, topic_id):
       component with the same name
     """
     for n in range(3):
-        data = {"name": "pouet", "type": "gerrit_review", "topic_id": topic_id}
-        result = admin.post("/api/v1/components", data=data)
+        data = {"name": "pouet", "type": "gerrit_review", "topic_id": rhel_80_topic_id}
+        result = client_admin.post("/api/v1/components", data=data)
         assert result.status_code == 201
 
-        result = admin.delete(
+        result = client_admin.delete(
             "/api/v1/components/%s" % result.data["component"]["id"],
             headers={"If-match": result.data["component"]["etag"]},
         )
         assert result.status_code == 204
 
 
-def test_create_components_with_same_name_and_different_type(admin, topic_id):
-    data = {"name": "pname", "type": "first_type", "topic_id": topic_id}
-    pstatus_code = admin.post("/api/v1/components", data=data).status_code
+def test_create_components_with_same_name_and_different_type(
+    client_admin, rhel_80_topic_id
+):
+    data = {"name": "pname", "type": "first_type", "topic_id": rhel_80_topic_id}
+    pstatus_code = client_admin.post("/api/v1/components", data=data).status_code
     assert pstatus_code == 201
 
-    data = {"name": "pname", "type": "second_type", "topic_id": topic_id}
-    pstatus_code = admin.post("/api/v1/components", data=data).status_code
+    data = {"name": "pname", "type": "second_type", "topic_id": rhel_80_topic_id}
+    pstatus_code = client_admin.post("/api/v1/components", data=data).status_code
     assert pstatus_code == 201
 
 
-def test_create_component_with_tags(admin, topic_id):
+def test_create_component_with_tags(client_admin, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "first_type",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
         "tags": ["tag1", "tag2"],
     }
-    r = admin.post("/api/v1/components", data=data)
+    r = client_admin.post("/api/v1/components", data=data)
     assert r.status_code == 201
 
     component = r.data["component"]
-    r = admin.get("/api/v1/components/%s" % component["id"])
+    r = client_admin.get("/api/v1/components/%s" % component["id"])
     assert r.status_code == 200
     assert r.data["component"]["tags"] == ["tag1", "tag2"]
 
-    r = admin.put(
+    r = client_admin.put(
         "/api/v1/components/%s" % component["id"],
         data={"state": "inactive"},
         headers={"If-match": component["etag"]},
@@ -365,108 +383,108 @@ def test_create_component_with_tags(admin, topic_id):
     assert r.data["component"]["tags"] == ["tag1", "tag2"]
 
 
-def test_create_component_with_release_at(admin, topic_id):
+def test_create_component_with_release_at(client_admin, rhel_80_topic_id):
     released_at = datetime.utcnow().isoformat()
     data = {
         "name": "pname",
         "type": "first_type",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
         "released_at": released_at,
     }
-    cmpt = admin.post("/api/v1/components", data=data)
+    cmpt = client_admin.post("/api/v1/components", data=data)
     assert cmpt.status_code == 201
 
-    cmpt = admin.get("/api/v1/components/%s" % cmpt.data["component"]["id"])
+    cmpt = client_admin.get("/api/v1/components/%s" % cmpt.data["component"]["id"])
     assert cmpt.status_code == 200
 
     assert cmpt.data["component"]["released_at"] == released_at
 
 
-def test_get_all_components_created_after(admin, topic_id):
+def test_get_all_components_created_after(client_admin, rhel_80_topic_id):
     created_after = int(time.time() * 1000)
     for i in range(5):
-        admin.post(
+        client_admin.post(
             "/api/v1/components",
             data={
                 "name": "pname%s" % uuid.uuid4(),
                 "type": "gerrit_review",
-                "topic_id": topic_id,
+                "topic_id": rhel_80_topic_id,
             },
         ).data
-    db_all_cs = admin.get(
+    db_all_cs = client_admin.get(
         "/api/v1/topics/%s/components?created_after=%s&sort=created_at"
-        % (topic_id, created_after)
+        % (rhel_80_topic_id, created_after)
     ).data
     assert len(db_all_cs["components"]) == 5
     component_2 = db_all_cs["components"][2]
 
     created_after = int(time.time() * 1000)
-    db_all_cs = admin.get(
+    db_all_cs = client_admin.get(
         "/api/v1/topics/%s/components?created_after=%s&sort=created_at"
-        % (topic_id, created_after)
+        % (rhel_80_topic_id, created_after)
     ).data
     assert len(db_all_cs["components"]) == 0
 
     created_after = component_2["created_at"]
-    db_all_cs = admin.get(
+    db_all_cs = client_admin.get(
         "/api/v1/topics/%s/components?created_after=%s&sort=created_at"
-        % (topic_id, created_after)
+        % (rhel_80_topic_id, created_after)
     ).data
     assert len(db_all_cs["components"]) == 3
 
 
-def test_get_all_components_updated_after(admin, topic_id):
+def test_get_all_components_updated_after(client_admin, rhel_80_topic_id):
     for i in range(5):
-        admin.post(
+        client_admin.post(
             "/api/v1/components",
             data={
                 "name": "pname%s" % uuid.uuid4(),
                 "type": "gerrit_review",
-                "topic_id": topic_id,
+                "topic_id": rhel_80_topic_id,
             },
         ).data
-    db_all_cs = admin.get(
-        "/api/v1/topics/%s/components?sort=created_at" % topic_id
+    db_all_cs = client_admin.get(
+        "/api/v1/topics/%s/components?sort=created_at" % rhel_80_topic_id
     ).data
     assert len(db_all_cs["components"]) == 5
     component_2 = db_all_cs["components"][2]
 
     updated_after = datetime.utcnow().isoformat()
-    db_all_cs = admin.get(
+    db_all_cs = client_admin.get(
         "/api/v1/topics/%s/components?updated_after=%s&sort=created_at"
-        % (topic_id, updated_after)
+        % (rhel_80_topic_id, updated_after)
     ).data
     assert len(db_all_cs["components"]) == 0
 
-    admin.put(
+    client_admin.put(
         "/api/v1/components/%s" % component_2["id"],
         headers={"If-match": component_2["etag"]},
         data={"name": "lol"},
     )
-    component_2 = admin.get("/api/v1/components/%s" % component_2["id"])
+    component_2 = client_admin.get("/api/v1/components/%s" % component_2["id"])
     updated_after = component_2.data["component"]["updated_at"]
-    db_all_cs = admin.get(
+    db_all_cs = client_admin.get(
         "/api/v1/topics/%s/components?updated_after=%s&sort=created_at"
-        % (topic_id, updated_after)
+        % (rhel_80_topic_id, updated_after)
     ).data
     assert len(db_all_cs["components"]) == 1
 
 
-def test_get_all_components(admin, topic_id):
+def test_get_all_components(client_admin, rhel_80_topic_id):
     created_c_ids = []
     for i in range(5):
-        pc = admin.post(
+        pc = client_admin.post(
             "/api/v1/components",
             data={
                 "name": "pname%s" % uuid.uuid4(),
                 "type": "gerrit_review",
-                "topic_id": topic_id,
+                "topic_id": rhel_80_topic_id,
             },
         ).data
         created_c_ids.append(pc["component"]["id"])
     created_c_ids.sort()
 
-    db_all_cs = admin.get("/api/v1/topics/%s/components" % topic_id).data
+    db_all_cs = client_admin.get("/api/v1/topics/%s/components" % rhel_80_topic_id).data
     db_all_cs = db_all_cs["components"]
     db_all_cs_ids = [db_ct["id"] for db_ct in db_all_cs]
     db_all_cs_ids.sort()
@@ -474,8 +492,8 @@ def test_get_all_components(admin, topic_id):
     assert db_all_cs_ids == created_c_ids
 
 
-def test_get_all_components_not_in_topic(admin, user, openstack_product):
-    topic = admin.post(
+def test_get_all_components_not_in_topic(client_admin, client_user1, openstack_product):
+    topic = client_admin.post(
         "/api/v1/topics",
         data={
             "name": "topic_test",
@@ -484,116 +502,122 @@ def test_get_all_components_not_in_topic(admin, user, openstack_product):
         },
     ).data
     topic_id = topic["topic"]["id"]
-    res = user.get("/api/v1/topics/%s/components" % topic_id)
+    res = client_user1.get("/api/v1/topics/%s/components" % topic_id)
     assert res.status_code == 401
     assert res.data["message"] == "Operation not authorized."
 
 
-def test_get_all_components_with_pagination(admin, topic_id):
+def test_get_all_components_with_pagination(client_admin, rhel_80_topic_id):
     # create 20 component types and check meta data count
     for i in range(20):
-        admin.post(
+        client_admin.post(
             "/api/v1/components",
             data={
                 "name": "pname%s" % uuid.uuid4(),
                 "type": "gerrit_review",
-                "topic_id": topic_id,
+                "topic_id": rhel_80_topic_id,
             },
         )
-    cs = admin.get("/api/v1/topics/%s/components" % topic_id).data
+    cs = client_admin.get("/api/v1/topics/%s/components" % rhel_80_topic_id).data
     assert cs["_meta"]["count"] == 20
 
     # verify limit and offset are working well
     for i in range(4):
-        cs = admin.get(
-            "/api/v1/topics/%s/components?limit=5&offset=%s" % (topic_id, (i * 5))
+        cs = client_admin.get(
+            "/api/v1/topics/%s/components?limit=5&offset=%s"
+            % (rhel_80_topic_id, (i * 5))
         ).data
         assert len(cs["components"]) == 5
 
     # if offset is out of bound, the api returns an empty list
-    cs = admin.get("/api/v1/topics/%s/components?limit=5&offset=300" % topic_id)
+    cs = client_admin.get(
+        "/api/v1/topics/%s/components?limit=5&offset=300" % rhel_80_topic_id
+    )
     assert cs.status_code == 200
     assert cs.data["components"] == []
 
 
-def test_get_all_components_with_where_and_query(admin, topic_id):
-    pc = admin.post(
+def test_get_all_components_with_where_and_query(client_admin, rhel_80_topic_id):
+    pc = client_admin.post(
         "/api/v1/components",
-        data={"name": "pname1", "type": "gerrit_review", "topic_id": topic_id},
+        data={"name": "pname1", "type": "gerrit_review", "topic_id": rhel_80_topic_id},
     ).data
     pc_id = pc["component"]["id"]
-    admin.post(
+    client_admin.post(
         "/api/v1/components",
-        data={"name": "pname2", "type": "gerrit_review", "topic_id": topic_id},
+        data={"name": "pname2", "type": "gerrit_review", "topic_id": rhel_80_topic_id},
     ).data
 
-    db_c = admin.get(
-        "/api/v1/topics/%s/components?where=id:%s" % (topic_id, pc_id)
+    db_c = client_admin.get(
+        "/api/v1/topics/%s/components?where=id:%s" % (rhel_80_topic_id, pc_id)
     ).data
     db_c_id = db_c["components"][0]["id"]
     assert db_c_id == pc_id
 
-    db_c = admin.get("/api/v1/topics/%s/components?where=name:pname1" % topic_id).data
+    db_c = client_admin.get(
+        "/api/v1/topics/%s/components?where=name:pname1" % rhel_80_topic_id
+    ).data
     db_c_id = db_c["components"][0]["id"]
     assert db_c_id == pc_id
     assert db_c["_meta"]["count"] == 1
 
-    db_c = admin.get(
-        "/api/v1/topics/%s/components?query=eq(name,pname1)" % topic_id
-    ).data
-    assert db_c["_meta"]["count"] == 1
-    db_c_id = db_c["components"][0]["id"]
-    assert db_c_id == pc_id
-
-    db_c = admin.get(
-        "/api/v1/topics/%s/components?query=and(eq(name,pname1),null(url))" % topic_id
+    db_c = client_admin.get(
+        "/api/v1/topics/%s/components?query=eq(name,pname1)" % rhel_80_topic_id
     ).data
     assert db_c["_meta"]["count"] == 1
     db_c_id = db_c["components"][0]["id"]
     assert db_c_id == pc_id
 
-    db_c = admin.get(
+    db_c = client_admin.get(
+        "/api/v1/topics/%s/components?query=and(eq(name,pname1),null(url))"
+        % rhel_80_topic_id
+    ).data
+    assert db_c["_meta"]["count"] == 1
+    db_c_id = db_c["components"][0]["id"]
+    assert db_c_id == pc_id
+
+    db_c = client_admin.get(
         "/api/v1/topics/%s/components?query=and(eq(name,pname1),not(null(url)))"
-        % topic_id
+        % rhel_80_topic_id
     ).data
     assert db_c["_meta"]["count"] == 0
 
-    db_c = admin.get(
+    db_c = client_admin.get(
         "/api/v1/topics/%s/components?query=and(eq(name,pname1),eq(type,gerrit_review),eq(topic_id,%s))"
-        % (topic_id, topic_id)
+        % (rhel_80_topic_id, rhel_80_topic_id)
     ).data
     db_c_id = db_c["components"][0]["id"]
     assert db_c_id == pc_id
     assert db_c["_meta"]["count"] == 1
 
 
-def test_nrt_get_all_components_with_new_line_in_where(admin, topic_id):
-    response = admin.get(
+def test_nrt_get_all_components_with_new_line_in_where(client_admin, rhel_80_topic_id):
+    response = client_admin.get(
         "/api/v1/topics/%s/components?sort=-created_at&where=name:RHOS-16.2-RHEL-8-20221005.n.1-\nASYNC,type:compose,state:active&limit=1&offset=0"
-        % topic_id
+        % rhel_80_topic_id
     )
     assert response.status_code == 200
 
 
-def test_where_invalid(admin, topic_id):
-    err = admin.get("/api/v1/topics/%s/components?where=id" % topic_id)
+def test_where_invalid(client_admin, rhel_80_topic_id):
+    err = client_admin.get("/api/v1/topics/%s/components?where=id" % rhel_80_topic_id)
 
     assert err.status_code == 400
     assert err.data["message"] == "Request malformed"
     assert err.data["payload"]["error"] == "where: 'id' is not a 'key value csv'"
 
 
-def test_get_component_by_id_or_name(admin, topic_id):
+def test_get_component_by_id_or_name(client_admin, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "gerrit_review",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    pc = admin.post("/api/v1/components", data=data).data
+    pc = client_admin.post("/api/v1/components", data=data).data
     pc_id = pc["component"]["id"]
 
     # get by uuid
-    created_ct = admin.get("/api/v1/components/%s" % pc_id)
+    created_ct = client_admin.get("/api/v1/components/%s" % pc_id)
     assert created_ct.status_code == 200
 
     created_ct = created_ct.data
@@ -601,146 +625,148 @@ def test_get_component_by_id_or_name(admin, topic_id):
 
 
 def test_nrt_get_component_by_id_return_list_of_jobs_only_from_team_of_the_user(
-    job_admin, admin, user
+    team_admin_job, client_admin, client_user1
 ):
-    component = admin.get("/api/v1/jobs/%s" % job_admin["id"]).data["job"][
+    component = client_admin.get("/api/v1/jobs/%s" % team_admin_job["id"]).data["job"][
         "components"
     ][0]
 
-    assert len(user.get("/api/v1/jobs").data["jobs"]) == 0
+    assert len(client_user1.get("/api/v1/jobs").data["jobs"]) == 0
     assert (
         len(
-            user.get("/api/v1/components/%s" % component["id"]).data["component"][
-                "jobs"
-            ]
+            client_user1.get("/api/v1/components/%s" % component["id"]).data[
+                "component"
+            ]["jobs"]
         )
         == 0
     )
 
 
 def test_nrt_get_component_by_id_return_list_of_jobs_if_rh_employee(
-    job_admin, admin, rh_employee
+    team_admin_job, client_admin, client_rh_employee
 ):
-    component = admin.get("/api/v1/jobs/%s" % job_admin["id"]).data["job"][
+    component = client_admin.get("/api/v1/jobs/%s" % team_admin_job["id"]).data["job"][
         "components"
     ][0]
 
-    assert len(rh_employee.get("/api/v1/jobs").data["jobs"]) == 1
-    jobs = rh_employee.get("/api/v1/components/%s" % component["id"]).data["component"][
-        "jobs"
-    ]
+    assert len(client_rh_employee.get("/api/v1/jobs").data["jobs"]) == 1
+    jobs = client_rh_employee.get("/api/v1/components/%s" % component["id"]).data[
+        "component"
+    ]["jobs"]
     assert len(jobs) == 1
-    assert jobs[0]["id"] == job_admin["id"]
+    assert jobs[0]["id"] == team_admin_job["id"]
 
 
-def test_get_component_not_found(admin):
-    result = admin.get("/api/v1/components/ptdr")
+def test_get_component_not_found(client_admin):
+    result = client_admin.get("/api/v1/components/ptdr")
     assert result.status_code == 404
 
 
-def test_delete_component_by_id(admin, feeder_context, topic_user_id):
-    data = {"name": "pname", "type": "gerrit_review", "topic_id": topic_user_id}
-    pc = feeder_context.post("/api/v1/components", data=data)
+def test_delete_component_by_id(client_admin, hmac_client_feeder, rhel_80_topic_id):
+    data = {"name": "pname", "type": "gerrit_review", "topic_id": rhel_80_topic_id}
+    pc = hmac_client_feeder.post("/api/v1/components", data=data)
     pc_id = pc.data["component"]["id"]
     assert pc.status_code == 201
 
-    created_ct = admin.get("/api/v1/components/%s" % pc_id)
+    created_ct = client_admin.get("/api/v1/components/%s" % pc_id)
     assert created_ct.status_code == 200
 
-    deleted_ct = admin.delete(
+    deleted_ct = client_admin.delete(
         "/api/v1/components/%s" % pc_id,
         headers={"If-match": pc.data["component"]["etag"]},
     )
     assert deleted_ct.status_code == 204
 
-    gct = admin.get("/api/v1/components/%s" % pc_id)
+    gct = client_admin.get("/api/v1/components/%s" % pc_id)
     assert gct.status_code == 404
 
 
-def test_get_all_components_with_sort(admin, topic_id):
+def test_get_all_components_with_sort(client_admin, rhel_80_topic_id):
     # create 4 components ordered by created time
     data = {
         "name": "pname1",
         "title": "aaa",
         "type": "gerrit_review",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    ct_1_1 = admin.post("/api/v1/components", data=data).data["component"]
+    ct_1_1 = client_admin.post("/api/v1/components", data=data).data["component"]
     data = {
         "name": "pname2",
         "title": "aaa",
         "type": "gerrit_review",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    ct_1_2 = admin.post("/api/v1/components", data=data).data["component"]
+    ct_1_2 = client_admin.post("/api/v1/components", data=data).data["component"]
     data = {
         "name": "pname3",
         "title": "bbb",
         "type": "gerrit_review",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    ct_2_1 = admin.post("/api/v1/components", data=data).data["component"]
+    ct_2_1 = client_admin.post("/api/v1/components", data=data).data["component"]
     data = {
         "name": "pname4",
         "title": "bbb",
         "type": "gerrit_review",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    ct_2_2 = admin.post("/api/v1/components", data=data).data["component"]
+    ct_2_2 = client_admin.post("/api/v1/components", data=data).data["component"]
 
-    cts = admin.get("/api/v1/topics/%s/components?sort=created_at" % topic_id).data
+    cts = client_admin.get(
+        "/api/v1/topics/%s/components?sort=created_at" % rhel_80_topic_id
+    ).data
     cts_id = [db_cts["id"] for db_cts in cts["components"]]
     assert cts_id == [ct_1_1["id"], ct_1_2["id"], ct_2_1["id"], ct_2_2["id"]]
 
     # sort by title first and then reverse by created_at
-    cts = admin.get(
-        "/api/v1/topics/%s/components?sort=title,-created_at" % topic_id
+    cts = client_admin.get(
+        "/api/v1/topics/%s/components?sort=title,-created_at" % rhel_80_topic_id
     ).data
     cts_id = [db_cts["id"] for db_cts in cts["components"]]
     assert cts_id == [ct_1_2["id"], ct_1_1["id"], ct_2_2["id"], ct_2_1["id"]]
 
 
-def test_delete_component_not_found(admin):
-    result = admin.delete(
+def test_delete_component_not_found(client_admin):
+    result = client_admin.delete(
         "/api/v1/components/%s" % uuid.uuid4(), headers={"If-match": "mdr"}
     )
     assert result.status_code == 404
 
 
-def test_update_component(admin, topic_id):
+def test_update_component(client_admin, rhel_80_topic_id):
     data = {
         "name": "pname1",
         "title": "aaa",
         "type": "gerrit_review",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
 
-    ct_1 = admin.post("/api/v1/components", data=data).data["component"]
+    ct_1 = client_admin.post("/api/v1/components", data=data).data["component"]
 
     # Active component
     url = "/api/v1/components/%s" % ct_1["id"]
     data = {"name": "cname2"}
     headers = {"If-match": ct_1["etag"]}
-    admin.put(url, data=data, headers=headers)
+    client_admin.put(url, data=data, headers=headers)
 
-    ct_2 = admin.get("/api/v1/components/%s" % ct_1["id"]).data["component"]
+    ct_2 = client_admin.get("/api/v1/components/%s" % ct_1["id"]).data["component"]
 
     assert ct_1["etag"] != ct_2["etag"]
     assert ct_2["name"] == "cname2"
 
 
-def test_update_component_v2(admin, topic_id):
+def test_update_component_v2(client_admin, rhel_80_topic_id):
     released_at = datetime.utcnow().isoformat()
     data = {
         "name": "RHEL-8.6.0-20211205.3",
         "version": "8.6.0-20211205.3",
         "type": "compose",
         "url": "http://example.org/RHEL-8.6.0-20211205.3",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
         "released_at": released_at,
         "state": "inactive",
     }
-    component = admin.post("/api/v1/components", data=data).data["component"]
+    component = client_admin.post("/api/v1/components", data=data).data["component"]
     assert component["name"] == "RHEL-8.6.0-20211205.3"
     assert component["version"] == "8.6.0-20211205.3"
     assert component["released_at"] == released_at
@@ -753,7 +779,7 @@ def test_update_component_v2(admin, topic_id):
     component["released_at"] = new_released_at
     component["state"] = "active"
 
-    updated_component = admin.put(
+    updated_component = client_admin.put(
         "/api/v1/components/%s" % component["id"],
         data=component,
         headers={"If-match": component["etag"]},
@@ -766,57 +792,59 @@ def test_update_component_v2(admin, topic_id):
 
 
 @mock.patch("dci.api.v1.notifications.component_dispatcher")
-def test_put_component_from_inactive_to_active(mock_disp, admin, user, topic_id):
+def test_put_component_from_inactive_to_active(
+    mock_disp, client_admin, client_user1, rhel_80_topic_id
+):
     data = {
         "name": "pname1",
         "title": "aaa",
         "type": "gerrit_review",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
         "state": "inactive",
     }
 
-    ct_1 = admin.post("/api/v1/components", data=data).data["component"]
+    ct_1 = client_admin.post("/api/v1/components", data=data).data["component"]
     mock_disp.assert_not_called()
 
     url = "/api/v1/components/%s" % ct_1["id"]
     data = {"name": "cname2", "state": "active"}
     headers = {"If-match": ct_1["etag"]}
-    admin.put(url, data=data, headers=headers)
+    client_admin.put(url, data=data, headers=headers)
     mock_disp.assert_called()
 
 
-def test_update_component_with_tags(admin, topic_id):
+def test_update_component_with_tags(client_admin, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "first_type",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
         "tags": ["tag1", "tag2"],
     }
-    cmpt = admin.post("/api/v1/components", data=data)
+    cmpt = client_admin.post("/api/v1/components", data=data)
     assert cmpt.status_code == 201
 
     etag = cmpt.data["component"]["etag"]
     data = {"tags": ["hihi", "haha"]}
-    admin.put(
+    client_admin.put(
         "/api/v1/components/%s" % cmpt.data["component"]["id"],
         data=data,
         headers={"If-match": etag},
     )
 
-    cmpt = admin.get("/api/v1/components/%s" % cmpt.data["component"]["id"])
+    cmpt = client_admin.get("/api/v1/components/%s" % cmpt.data["component"]["id"])
     assert cmpt.data["component"]["tags"] == ["hihi", "haha"]
 
 
-def test_update_component_lowercase_type(admin, topic_id):
+def test_update_component_lowercase_type(client_admin, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "GERRIT_REVIEW",
         "url": "http://example.com/",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
         "state": "active",
     }
-    component = admin.post("/api/v1/components", data=data).data["component"]
-    component = admin.put(
+    component = client_admin.post("/api/v1/components", data=data).data["component"]
+    component = client_admin.put(
         "/api/v1/components/%s" % component["id"],
         data={"type": "METADATA"},
         headers={"If-match": component["etag"]},
@@ -824,148 +852,148 @@ def test_update_component_lowercase_type(admin, topic_id):
     assert component["type"] == "metadata"
 
 
-def test_add_file_to_component(admin, topic_id):
+def test_add_file_to_component(client_admin, rhel_80_topic_id):
     def create_ct(name):
         data = {
             "name": name,
             "title": "aaa",
             "type": "gerrit_review",
-            "topic_id": topic_id,
+            "topic_id": rhel_80_topic_id,
         }
-        return admin.post("/api/v1/components", data=data).data["component"]
+        return client_admin.post("/api/v1/components", data=data).data["component"]
 
     ct_1 = create_ct("pname1")
     ct_2 = create_ct("pname2")
 
-    cts = admin.get("/api/v1/components/%s?embed=files" % ct_1["id"]).data
+    cts = client_admin.get("/api/v1/components/%s?embed=files" % ct_1["id"]).data
     assert len(cts["component"]["files"]) == 0
 
     url = "/api/v1/components/%s/files" % ct_1["id"]
-    c_file = admin.post(url, data="lol")
+    c_file = client_admin.post(url, data="lol")
     c_file_1_id = c_file.data["component_file"]["id"]
     url = "/api/v1/components/%s/files" % ct_2["id"]
-    c_file = admin.post(url, data="lol2")
+    c_file = client_admin.post(url, data="lol2")
     c_file_2_id = c_file.data["component_file"]["id"]
 
     assert c_file.status_code == 201
-    l_file = admin.get(url)
+    l_file = client_admin.get(url)
     assert l_file.status_code == 200
     assert l_file.data["_meta"]["count"] == 1
     assert l_file.data["component_files"][0]["component_id"] == ct_2["id"]
-    cts = admin.get("/api/v1/components/%s?embed=files" % ct_1["id"]).data
+    cts = client_admin.get("/api/v1/components/%s?embed=files" % ct_1["id"]).data
     assert len(cts["component"]["files"]) == 1
     assert cts["component"]["files"][0]["size"] == 5
 
-    cts = admin.get("/api/v1/components/%s/files" % ct_1["id"]).data
+    cts = client_admin.get("/api/v1/components/%s/files" % ct_1["id"]).data
     assert cts["component_files"][0]["id"] == c_file_1_id
 
-    cts = admin.get("/api/v1/components/%s/files" % ct_2["id"]).data
+    cts = client_admin.get("/api/v1/components/%s/files" % ct_2["id"]).data
     assert cts["component_files"][0]["id"] == c_file_2_id
 
 
-def test_download_file_from_component(admin, topic_id):
+def test_download_file_from_component(client_admin, rhel_80_topic_id):
     data = {
         "name": "pname1",
         "title": "aaa",
         "type": "gerrit_review",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    ct_1 = admin.post("/api/v1/components", data=data).data["component"]
+    ct_1 = client_admin.post("/api/v1/components", data=data).data["component"]
 
     url = "/api/v1/components/%s/files" % ct_1["id"]
     data = "lollollel"
-    c_file = admin.post(url, data=data).data["component_file"]
+    c_file = client_admin.post(url, data=data).data["component_file"]
 
     url = "/api/v1/components/%s/files/%s/content" % (ct_1["id"], c_file["id"])
-    d_file = admin.get(url)
+    d_file = client_admin.get(url)
     assert d_file.status_code == 200
     assert d_file.data == '"lollollel"'
 
 
-def test_delete_file_from_component(admin, topic_id):
+def test_delete_file_from_component(client_admin, rhel_80_topic_id):
     data = {
         "name": "pname1",
         "title": "aaa",
         "type": "gerrit_review",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
     }
-    ct_1 = admin.post("/api/v1/components", data=data).data["component"]
+    ct_1 = client_admin.post("/api/v1/components", data=data).data["component"]
 
     url = "/api/v1/components/%s/files" % ct_1["id"]
     data = "lol"
-    c_file = admin.post(url, data=data).data["component_file"]
+    c_file = client_admin.post(url, data=data).data["component_file"]
     url = "/api/v1/components/%s/files" % ct_1["id"]
-    g_files = admin.get(url)
+    g_files = client_admin.get(url)
     assert g_files.data["_meta"]["count"] == 1
 
     url = "/api/v1/components/%s/files/%s" % (ct_1["id"], c_file["id"])
-    d_file = admin.delete(url, headers={"If-match": c_file["etag"]})
+    d_file = client_admin.delete(url, headers={"If-match": c_file["etag"]})
     assert d_file.status_code == 204
 
     url = "/api/v1/components/%s/files" % ct_1["id"]
-    g_files = admin.get(url)
+    g_files = client_admin.get(url)
     assert g_files.data["_meta"]["count"] == 0
 
 
-def test_change_component_state(admin, topic_id):
+def test_change_component_state(client_admin, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "gerrit_review",
         "url": "http://example.com/",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
         "state": "active",
     }
-    pc = admin.post("/api/v1/components", data=data).data
+    pc = client_admin.post("/api/v1/components", data=data).data
     pc_id = pc["component"]["id"]
 
-    t = admin.get("/api/v1/components/" + pc_id).data["component"]
+    t = client_admin.get("/api/v1/components/" + pc_id).data["component"]
     data = {"state": "inactive"}
-    r = admin.put(
+    r = client_admin.put(
         "/api/v1/components/" + pc_id, data=data, headers={"If-match": t["etag"]}
     )
     assert r.status_code == 200
     assert r.data["component"]["state"] == "inactive"
 
 
-def test_change_component_to_invalid_state(admin, topic_id):
+def test_change_component_to_invalid_state(client_admin, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "gerrit_review",
         "url": "http://example.com/",
-        "topic_id": topic_id,
+        "topic_id": rhel_80_topic_id,
         "state": "active",
     }
-    pc = admin.post("/api/v1/components", data=data).data
+    pc = client_admin.post("/api/v1/components", data=data).data
     pc_id = pc["component"]["id"]
 
-    t = admin.get("/api/v1/components/" + pc_id).data["component"]
+    t = client_admin.get("/api/v1/components/" + pc_id).data["component"]
     data = {"state": "kikoolol"}
-    r = admin.put(
+    r = client_admin.put(
         "/api/v1/components/" + pc_id, data=data, headers={"If-match": t["etag"]}
     )
     assert r.status_code == 400
-    current_component = admin.get("/api/v1/components/" + pc_id)
+    current_component = client_admin.get("/api/v1/components/" + pc_id)
     assert current_component.status_code == 200
     assert current_component.data["component"]["state"] == "active"
 
 
-def test_component_success_update_field_by_field(admin, topic_id):
-    data = {"name": "pname", "type": "gerrit_review", "topic_id": topic_id}
-    c = admin.post("/api/v1/components", data=data).data["component"]
+def test_component_success_update_field_by_field(client_admin, rhel_80_topic_id):
+    data = {"name": "pname", "type": "gerrit_review", "topic_id": rhel_80_topic_id}
+    c = client_admin.post("/api/v1/components", data=data).data["component"]
 
-    admin.put(
+    client_admin.put(
         "/api/v1/components/%s" % c["id"],
         data={"state": "inactive"},
         headers={"If-match": c["etag"]},
     )
 
-    c = admin.get("/api/v1/components/%s" % c["id"]).data["component"]
+    c = client_admin.get("/api/v1/components/%s" % c["id"]).data["component"]
 
     assert c["name"] == "pname"
     assert c["state"] == "inactive"
     assert c["title"] == ""
 
-    c = admin.put(
+    c = client_admin.put(
         "/api/v1/components/%s" % c["id"],
         data={"name": "pname2"},
         headers={"If-match": c["etag"]},
@@ -975,13 +1003,13 @@ def test_component_success_update_field_by_field(admin, topic_id):
     assert c["state"] == "inactive"
     assert c["title"] == ""
 
-    admin.put(
+    client_admin.put(
         "/api/v1/components/%s" % c["id"],
         data={"title": "a new title"},
         headers={"If-match": c["etag"]},
     )
 
-    c = admin.get("/api/v1/components/%s" % c["id"]).data["component"]
+    c = client_admin.get("/api/v1/components/%s" % c["id"]).data["component"]
 
     assert c["name"] == "pname2"
     assert c["state"] == "inactive"
@@ -994,47 +1022,51 @@ def create_component(admin, topic_id, ct, name):
     return str(component["component"]["id"])
 
 
-def test_get_last_components_by_type(session, admin, topic):
+def test_get_last_components_by_type(session, client_admin, rhel_80_topic):
     components_ids = []
     for i in range(3):
-        cid = create_component(admin, topic["id"], "puddle_osp", "name-%s" % i)
+        cid = create_component(
+            client_admin, rhel_80_topic["id"], "puddle_osp", "name-%s" % i
+        )
         components_ids.append(cid)
 
     last_components = components.get_last_components_by_type(
-        ["puddle_osp"], topic_id=topic["id"], session=session
+        ["puddle_osp"], topic_id=rhel_80_topic["id"], session=session
     )
     assert str(last_components[0].id) == components_ids[-1]
 
 
-def test_verify_and_get_components_ids(session, admin, topic, topic_user_id):
+def test_verify_and_get_components_ids(
+    session, client_admin, rhel_80_topic, rhel_80_topic_id
+):
     # components types not valid
     with pytest.raises(dci_exc.DCIException):
         components.verify_and_get_components_ids(
-            topic["id"], [], ["puddle_osp"], session=session
+            rhel_80_topic["id"], [], ["puddle_osp"], session=session
         )
 
     with pytest.raises(dci_exc.DCIException):
         components.verify_and_get_components_ids(
-            topic["id"],
+            rhel_80_topic["id"],
             [str(uuid.uuid4())],
             ["puddle_osp"],
             session=session,
         )
 
     # duplicated component types
-    c1 = create_component(admin, topic_user_id, "type1", "n1")
-    c2 = create_component(admin, topic_user_id, "type1", "n2")
-    c3 = create_component(admin, topic_user_id, "type2", "n3")
+    c1 = create_component(client_admin, rhel_80_topic_id, "type1", "n1")
+    c2 = create_component(client_admin, rhel_80_topic_id, "type1", "n2")
+    c3 = create_component(client_admin, rhel_80_topic_id, "type2", "n3")
     with pytest.raises(dci_exc.DCIException):
         components.verify_and_get_components_ids(
-            topic_user_id,
+            rhel_80_topic_id,
             [c1, c2, c3],
             ["type_1", "type_2", "type_3"],
             session=session,
         )
 
     cids = components.verify_and_get_components_ids(
-        topic_user_id,
+        rhel_80_topic_id,
         [c1, c3],
         ["type_1", "type_2"],
         session=session,
@@ -1042,35 +1074,37 @@ def test_verify_and_get_components_ids(session, admin, topic, topic_user_id):
     assert set(cids) == {c1, c3}
 
 
-def test_purge(admin, components_user_ids, topic_user_id):
-    component_id = components_user_ids[0]
+def test_purge(client_admin, rhel_80_topic_id, rhel_80_component):
+    component_id = rhel_80_component["id"]
     store = dci_config.get_store()
 
     url = "/api/v1/components/%s/files" % component_id
-    c_file1 = admin.post(url, data="lol")
+    c_file1 = client_admin.post(url, data="lol")
     assert c_file1.status_code == 201
 
     path1 = files_utils.build_file_path(
-        topic_user_id, component_id, c_file1.data["component_file"]["id"]
+        rhel_80_topic_id, component_id, c_file1.data["component_file"]["id"]
     )
     store.get("components", path1)
 
     url = "/api/v1/components/%s/files" % component_id
-    c_file2 = admin.post(url, data="lol")
+    c_file2 = client_admin.post(url, data="lol")
     assert c_file2.status_code == 201
 
     path2 = files_utils.build_file_path(
-        topic_user_id, component_id, c_file2.data["component_file"]["id"]
+        rhel_80_topic_id, component_id, c_file2.data["component_file"]["id"]
     )
     store.get("components", path2)
 
-    component = admin.get("/api/v1/components/%s" % component_id).data["component"]
-    admin.delete(
+    component = client_admin.get("/api/v1/components/%s" % component_id).data[
+        "component"
+    ]
+    client_admin.delete(
         "/api/v1/components/%s" % component_id, headers={"If-match": component["etag"]}
     )
-    to_purge = admin.get("/api/v1/components/purge").data
+    to_purge = client_admin.get("/api/v1/components/purge").data
     assert len(to_purge["components"]) == 1
-    c_purged = admin.post("/api/v1/components/purge")
+    c_purged = client_admin.post("/api/v1/components/purge")
     assert c_purged.status_code == 204
 
     with pytest.raises(dci_exc.StoreException):
@@ -1079,197 +1113,209 @@ def test_purge(admin, components_user_ids, topic_user_id):
     with pytest.raises(dci_exc.StoreException):
         store.get("components", path2)
 
-    to_purge = admin.get("/api/v1/components/purge").data
+    to_purge = client_admin.get("/api/v1/components/purge").data
     assert len(to_purge["components"]) == 0
 
 
-def test_purge_failure(admin, components_user_ids, topic_user_id):
-    component_id = components_user_ids[0]
+def test_purge_failure(client_admin, rhel_80_topic_id, rhel_80_component):
+    component_id = rhel_80_component["id"]
 
     url = "/api/v1/components/%s/files" % component_id
-    c_file1 = admin.post(url, data="lol")
+    c_file1 = client_admin.post(url, data="lol")
     assert c_file1.status_code == 201
 
-    c_files = admin.get("/api/v1/components/%s/files" % component_id)
+    c_files = client_admin.get("/api/v1/components/%s/files" % component_id)
     assert len(c_files.data["component_files"]) == 1
 
-    component = admin.get("/api/v1/components/%s" % component_id).data["component"]
-    d_component = admin.delete(
+    component = client_admin.get("/api/v1/components/%s" % component_id).data[
+        "component"
+    ]
+    d_component = client_admin.delete(
         "/api/v1/components/%s" % component_id, headers={"If-match": component["etag"]}
     )
     assert d_component.status_code == 204
-    to_purge = admin.get("/api/v1/components/purge").data
+    to_purge = client_admin.get("/api/v1/components/purge").data
     assert len(to_purge["components"]) == 1
     # purge will fail
     with mock.patch("dci.stores.s3.S3.delete") as mock_delete:
         path1 = files_utils.build_file_path(
-            topic_user_id, component_id, c_file1.data["component_file"]["id"]
+            rhel_80_topic_id, component_id, c_file1.data["component_file"]["id"]
         )
         mock_delete.side_effect = dci_exc.StoreException("error")
-        purge_res = admin.post("/api/v1/components/purge")
+        purge_res = client_admin.post("/api/v1/components/purge")
         assert purge_res.status_code == 400
         store = dci_config.get_store()
         store.get("components", path1)
-        to_purge = admin.get("/api/v1/components/purge").data
+        to_purge = client_admin.get("/api/v1/components/purge").data
         assert len(to_purge["components"]) == 1
 
 
-def test_create_component_as_feeder(admin, topic_id, feeder_context):
-    data = {"name": "c1", "type": "snapshot", "topic_id": topic_id, "state": "active"}
-    c = feeder_context.post("/api/v1/components", data=data).data["component"]
-    component = admin.get("/api/v1/components/%s" % c["id"]).data["component"]
+def test_create_component_as_feeder(client_admin, rhel_80_topic_id, hmac_client_feeder):
+    data = {
+        "name": "c1",
+        "type": "snapshot",
+        "topic_id": rhel_80_topic_id,
+        "state": "active",
+    }
+    c = hmac_client_feeder.post("/api/v1/components", data=data).data["component"]
+    component = client_admin.get("/api/v1/components/%s" % c["id"]).data["component"]
     assert component["name"] == "c1"
     assert component["state"] == "active"
 
 
-def test_update_component_as_feeder(admin, topic_id, feeder_context):
-    data = {"name": "c1", "type": "snapshot", "topic_id": topic_id, "state": "active"}
-    c = feeder_context.post("/api/v1/components", data=data).data["component"]
-    feeder_context.put(
+def test_update_component_as_feeder(client_admin, rhel_80_topic_id, hmac_client_feeder):
+    data = {
+        "name": "c1",
+        "type": "snapshot",
+        "topic_id": rhel_80_topic_id,
+        "state": "active",
+    }
+    c = hmac_client_feeder.post("/api/v1/components", data=data).data["component"]
+    hmac_client_feeder.put(
         "/api/v1/components/%s" % c["id"],
         data={"type": "tar"},
         headers={"If-match": c["etag"]},
     )
-    component = admin.get("/api/v1/components/%s" % c["id"]).data["component"]
+    component = client_admin.get("/api/v1/components/%s" % c["id"]).data["component"]
     assert component["name"] == "c1"
     assert component["type"] == "tar"
 
 
 def test_create_component_not_allowed_for_user_and_remoteci(
-    user, remoteci_context, topic_user_id
+    client_user1, hmac_client_team1, rhel_80_topic_id
 ):
     data = {
         "name": "c1",
         "type": "snapshot",
-        "topic_id": topic_user_id,
+        "topic_id": rhel_80_topic_id,
         "state": "active",
     }
-    c = user.post("/api/v1/components", data=data)
+    c = client_user1.post("/api/v1/components", data=data)
     assert c.status_code == 401
-    c = remoteci_context.post("/api/v1/components", data=data)
+    c = hmac_client_team1.post("/api/v1/components", data=data)
     assert c.status_code == 401
 
 
 # ######### tests teams components
 
 
-def test_create_teams_components(user, team_user_id, topic_user_id):
+def test_create_teams_components(client_user1, team1_id, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "gerrit_review",
         "url": "http://example.com/",
-        "team_id": team_user_id,
-        "topic_id": topic_user_id,
+        "team_id": team1_id,
+        "topic_id": rhel_80_topic_id,
         "state": "active",
     }
-    pc = user.post("/api/v1/components", data=data).data
+    pc = client_user1.post("/api/v1/components", data=data).data
     pc_id = pc["component"]["id"]
 
-    gc = user.get("/api/v1/components/%s" % pc_id).data
+    gc = client_user1.get("/api/v1/components/%s" % pc_id).data
     assert gc["component"]["name"] == "pname"
     assert gc["component"]["state"] == "active"
 
 
-def test_get_all_teams_components(user, team_user_id, topic_user_id):
+def test_get_all_teams_components(client_user1, team1_id, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "gerrit_review",
         "url": "http://example.com/",
-        "team_id": team_user_id,
-        "topic_id": topic_user_id,
+        "team_id": team1_id,
+        "topic_id": rhel_80_topic_id,
         "state": "active",
     }
-    pc = user.post("/api/v1/components", data=data).data
+    pc = client_user1.post("/api/v1/components", data=data).data
     pc_id = pc["component"]["id"]
-    cmpts = user.get(
-        "/api/v1/topics/%s/components?where=team_id:%s" % (topic_user_id, team_user_id)
+    cmpts = client_user1.get(
+        "/api/v1/topics/%s/components?where=team_id:%s" % (rhel_80_topic_id, team1_id)
     ).data
     assert cmpts["components"][0]["id"] == pc_id
 
 
-def test_update_teams_components(user, team_user_id, topic_user_id):
+def test_update_teams_components(client_user1, team1_id, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "gerrit_review",
         "url": "http://example.com/",
-        "team_id": team_user_id,
-        "topic_id": topic_user_id,
+        "team_id": team1_id,
+        "topic_id": rhel_80_topic_id,
         "state": "active",
     }
-    pc = user.post("/api/v1/components", data=data).data
+    pc = client_user1.post("/api/v1/components", data=data).data
     pc_id = pc["component"]["id"]
     etag = pc["component"]["etag"]
-    user.put(
+    client_user1.put(
         "/api/v1/components/%s" % pc_id,
         data={"name": "pname2"},
         headers={"If-match": etag},
     )
-    gc = user.get("/api/v1/components/%s" % pc_id).data
+    gc = client_user1.get("/api/v1/components/%s" % pc_id).data
     assert gc["component"]["name"] == "pname2"
 
 
-def test_delete_teams_components(user, team_user_id, topic_user_id):
+def test_delete_teams_components(client_user1, team1_id, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "gerrit_review",
         "url": "http://example.com/",
-        "team_id": team_user_id,
-        "topic_id": topic_user_id,
+        "team_id": team1_id,
+        "topic_id": rhel_80_topic_id,
         "state": "active",
     }
-    pc = user.post("/api/v1/components", data=data).data
+    pc = client_user1.post("/api/v1/components", data=data).data
     pc_id = pc["component"]["id"]
 
-    gc = user.get("/api/v1/components/%s" % pc_id)
+    gc = client_user1.get("/api/v1/components/%s" % pc_id)
     assert gc.status_code == 200
 
-    gc = user.delete(
+    gc = client_user1.delete(
         "/api/v1/components/%s" % pc_id, headers={"If-match": pc["component"]["etag"]}
     )
     assert gc.status_code == 204
 
-    gc = user.get("/api/v1/components/%s" % pc_id)
+    gc = client_user1.get("/api/v1/components/%s" % pc_id)
     assert gc.status_code == 404
 
 
-def test_filter_teams_components_by_tag(user, team_user_id, topic_user_id):
+def test_filter_teams_components_by_tag(client_user1, team1_id, rhel_80_topic_id):
     data = {
         "name": "pname",
         "type": "mytest",
-        "team_id": team_user_id,
-        "topic_id": topic_user_id,
+        "team_id": team1_id,
+        "topic_id": rhel_80_topic_id,
         "tags": ["tag1", "common"],
     }
-    user.post("/api/v1/components", data=data).data
+    client_user1.post("/api/v1/components", data=data).data
 
     data = {
         "name": "pname",
         "type": "mylib",
-        "team_id": team_user_id,
-        "topic_id": topic_user_id,
+        "team_id": team1_id,
+        "topic_id": rhel_80_topic_id,
         "tags": ["tag2", "common"],
     }
-    user.post("/api/v1/components", data=data).data
+    client_user1.post("/api/v1/components", data=data).data
 
-    res = user.get(
+    res = client_user1.get(
         "/api/v1/topics/%s/components?where=tags:tag1,team_id:%s"
-        % (topic_user_id, team_user_id)
+        % (rhel_80_topic_id, team1_id)
     )
     assert len(res.data["components"]) == 1
     assert "tag1" in res.data["components"][0]["tags"]
     assert "tag2" not in res.data["components"][0]["tags"]
 
-    res = user.get(
+    res = client_user1.get(
         "/api/v1/topics/%s/components?query=and(contains(tags,tag1),eq(team_id,%s))"
-        % (topic_user_id, team_user_id)
+        % (rhel_80_topic_id, team1_id)
     )
     assert len(res.data["components"]) == 1
     assert "tag1" in res.data["components"][0]["tags"]
     assert "tag2" not in res.data["components"][0]["tags"]
 
-    res = user.get(
+    res = client_user1.get(
         "/api/v1/topics/%s/components?where=tags:common,team_id:%s"
-        % (topic_user_id, team_user_id)
+        % (rhel_80_topic_id, team1_id)
     )
     assert len(res.data["components"]) == 2
     assert "common" in res.data["components"][0]["tags"]
@@ -1277,173 +1323,179 @@ def test_filter_teams_components_by_tag(user, team_user_id, topic_user_id):
 
 
 def test_teams_components_isolation(
-    user, user2, topic_user_id, team_user_id, team_user_id2
+    client_user1, client_user2, rhel_80_topic_id, team1_id, team2_id
 ):
     data = {
         "name": "pname",
         "type": "mytest",
-        "topic_id": topic_user_id,
-        "team_id": team_user_id,
+        "topic_id": rhel_80_topic_id,
+        "team_id": team1_id,
     }
-    pc = user.post("/api/v1/components", data=data)
+    pc = client_user1.post("/api/v1/components", data=data)
     assert pc.status_code == 201
 
-    components = user.get(
-        "/api/v1/topics/%s/components?where=team_id:%s" % (topic_user_id, team_user_id)
+    components = client_user1.get(
+        "/api/v1/topics/%s/components?where=team_id:%s" % (rhel_80_topic_id, team1_id)
     ).data
-    assert components["components"][0]["team_id"] == team_user_id
+    assert components["components"][0]["team_id"] == team1_id
 
     data = {
         "name": "pname",
         "type": "mytest",
-        "topic_id": topic_user_id,
-        "team_id": team_user_id2,
+        "topic_id": rhel_80_topic_id,
+        "team_id": team2_id,
     }
-    pc = user.post("/api/v1/components", data=data)
+    pc = client_user1.post("/api/v1/components", data=data)
     assert pc.status_code == 401
-    pc = user2.post("/api/v1/components", data=data)
+    pc = client_user2.post("/api/v1/components", data=data)
     assert pc.status_code == 201
 
-    components = user2.get(
-        "/api/v1/topics/%s/components?where=team_id:%s" % (topic_user_id, team_user_id)
+    components = client_user2.get(
+        "/api/v1/topics/%s/components?where=team_id:%s" % (rhel_80_topic_id, team1_id)
     )
     assert components.status_code == 200
     assert components.data["components"] == []
-    components = user2.get(
-        "/api/v1/topics/%s/components?where=team_id:%s" % (topic_user_id, team_user_id2)
+    components = client_user2.get(
+        "/api/v1/topics/%s/components?where=team_id:%s" % (rhel_80_topic_id, team2_id)
     )
     assert components.status_code == 200
-    assert components.data["components"][0]["team_id"] == team_user_id2
+    assert components.data["components"][0]["team_id"] == team2_id
 
 
 def test_components_access_of_other_teams(
-    admin, user, user2, topic_user_id, team_user_id, team_user_id2, team_user_id3
+    client_admin,
+    client_user1,
+    client_user2,
+    rhel_80_topic_id,
+    team1_id,
+    team2_id,
+    team3_id,
 ):
     # create a component associated to team_user_id
     data = {
         "name": "pname",
         "type": "mytest",
-        "topic_id": topic_user_id,
-        "team_id": team_user_id,
+        "topic_id": rhel_80_topic_id,
+        "team_id": team1_id,
     }
-    pc = user.post("/api/v1/components", data=data)
+    pc = client_user1.post("/api/v1/components", data=data)
     assert pc.status_code == 201
 
-    components = user.get(
-        "/api/v1/topics/%s/components?where=team_id:%s" % (topic_user_id, team_user_id)
+    components = client_user1.get(
+        "/api/v1/topics/%s/components?where=team_id:%s" % (rhel_80_topic_id, team1_id)
     ).data
-    assert components["components"][0]["team_id"] == team_user_id
+    assert components["components"][0]["team_id"] == team1_id
 
     # create a component associated to team_user_id2
     data = {
         "name": "pname",
         "type": "mytest",
-        "topic_id": topic_user_id,
-        "team_id": team_user_id2,
+        "topic_id": rhel_80_topic_id,
+        "team_id": team2_id,
     }
-    pc = user2.post("/api/v1/components", data=data)
+    pc = client_user2.post("/api/v1/components", data=data)
     assert pc.status_code == 201
 
     # user doesn't have access to team_user_id2's components
-    components = user.get(
-        "/api/v1/topics/%s/components?where=team_id:%s" % (topic_user_id, team_user_id2)
+    components = client_user1.get(
+        "/api/v1/topics/%s/components?where=team_id:%s" % (rhel_80_topic_id, team2_id)
     )
     assert components.status_code == 200
     assert components.data["components"] == []
 
-    permissions = admin.get("/api/v1/teams/%s/permissions/components" % team_user_id)
+    permissions = client_admin.get("/api/v1/teams/%s/permissions/components" % team1_id)
     assert permissions.data["teams"] == []
 
     # team_user_id has now access to the components of team_user_id2
-    cat = admin.post(
-        "/api/v1/teams/%s/permissions/components" % team_user_id,
-        data={"teams_ids": [team_user_id2]},
+    cat = client_admin.post(
+        "/api/v1/teams/%s/permissions/components" % team1_id,
+        data={"teams_ids": [team2_id]},
     )
     assert cat.status_code == 201
 
     # don't raise errors if the permission is already set
     # team_user_id has now access to the components of team_user_id2 and team_user_id3
-    cat = admin.post(
-        "/api/v1/teams/%s/permissions/components" % team_user_id,
-        data={"teams_ids": [team_user_id2, team_user_id3]},
+    cat = client_admin.post(
+        "/api/v1/teams/%s/permissions/components" % team1_id,
+        data={"teams_ids": [team2_id, team3_id]},
     )
     assert cat.status_code == 201
 
-    permissions = admin.get("/api/v1/teams/%s/permissions/components" % team_user_id)
-    assert permissions.data["teams"][0]["id"] in {team_user_id2, team_user_id3}
-    assert permissions.data["teams"][1]["id"] in {team_user_id2, team_user_id3}
+    permissions = client_admin.get("/api/v1/teams/%s/permissions/components" % team1_id)
+    assert permissions.data["teams"][0]["id"] in {team2_id, team3_id}
+    assert permissions.data["teams"][1]["id"] in {team2_id, team3_id}
 
-    components = user.get(
-        "/api/v1/topics/%s/components?where=team_id:%s" % (topic_user_id, team_user_id2)
+    components = client_user1.get(
+        "/api/v1/topics/%s/components?where=team_id:%s" % (rhel_80_topic_id, team2_id)
     )
     assert components.status_code == 200
-    assert components.data["components"][0]["team_id"] == team_user_id2
+    assert components.data["components"][0]["team_id"] == team2_id
 
     # team_user_id has no longer access to the components of team_user_id2 and team_user_id3
-    cat = admin.delete(
-        "/api/v1/teams/%s/permissions/components" % team_user_id,
-        data={"teams_ids": [team_user_id2, team_user_id3]},
+    cat = client_admin.delete(
+        "/api/v1/teams/%s/permissions/components" % team1_id,
+        data={"teams_ids": [team2_id, team3_id]},
     )
     assert cat.status_code == 204
 
-    permissions = admin.get("/api/v1/teams/%s/permissions/components" % team_user_id)
+    permissions = client_admin.get("/api/v1/teams/%s/permissions/components" % team1_id)
     assert permissions.data["teams"] == []
 
-    components = user.get(
-        "/api/v1/topics/%s/components?where=team_id:%s" % (topic_user_id, team_user_id2)
+    components = client_user1.get(
+        "/api/v1/topics/%s/components?where=team_id:%s" % (rhel_80_topic_id, team2_id)
     )
     assert components.status_code == 200
     assert components.data["components"] == []
 
     # test unable to add permission to the same team
-    cat = admin.post(
-        "/api/v1/teams/%s/permissions/components" % team_user_id,
-        data={"teams_ids": [team_user_id, team_user_id2]},
+    cat = client_admin.post(
+        "/api/v1/teams/%s/permissions/components" % team1_id,
+        data={"teams_ids": [team1_id, team2_id]},
     )
     assert cat.status_code == 201
 
-    permissions = admin.get("/api/v1/teams/%s/permissions/components" % team_user_id)
+    permissions = client_admin.get("/api/v1/teams/%s/permissions/components" % team1_id)
     assert permissions.status_code == 200
     assert len(permissions.data["teams"]) == 1
-    assert permissions.data["teams"][0]["id"] == team_user_id2
+    assert permissions.data["teams"][0]["id"] == team2_id
 
 
 def test_components_access_by_id(
-    admin, user, user2, topic_user_id, team_user_id, team_user_id2
+    client_admin, client_user1, client_user2, rhel_80_topic_id, team1_id, team2_id
 ):
     data = {
         "name": "pname",
         "type": "mytest",
-        "topic_id": topic_user_id,
-        "team_id": team_user_id,
+        "topic_id": rhel_80_topic_id,
+        "team_id": team1_id,
     }
-    pc = user.post("/api/v1/components", data=data)
+    pc = client_user1.post("/api/v1/components", data=data)
     assert pc.status_code == 201
 
     data = {
         "name": "pname",
         "type": "mytest",
-        "topic_id": topic_user_id,
-        "team_id": team_user_id2,
+        "topic_id": rhel_80_topic_id,
+        "team_id": team2_id,
     }
-    pc = user2.post("/api/v1/components", data=data)
+    pc = client_user2.post("/api/v1/components", data=data)
     assert pc.status_code == 201
     pc_team_user_id2 = pc.data["component"]["id"]
 
-    c = user2.get("/api/v1/components/%s" % pc_team_user_id2)
+    c = client_user2.get("/api/v1/components/%s" % pc_team_user_id2)
     assert c.status_code == 200
 
-    c = user.get("/api/v1/components/%s" % pc_team_user_id2)
+    c = client_user1.get("/api/v1/components/%s" % pc_team_user_id2)
     assert c.status_code == 401
 
     # team_user_id has now access to the components of team_user_id2
-    cat = admin.post(
-        "/api/v1/teams/%s/permissions/components" % team_user_id,
-        data={"teams_ids": [team_user_id2]},
+    cat = client_admin.post(
+        "/api/v1/teams/%s/permissions/components" % team1_id,
+        data={"teams_ids": [team2_id]},
     )
     assert cat.status_code == 201
 
-    c = user.get("/api/v1/components/%s" % pc_team_user_id2)
+    c = client_user1.get("/api/v1/components/%s" % pc_team_user_id2)
     assert c.status_code == 200
 
 
@@ -1451,13 +1503,13 @@ def test_components_access_by_id(
 
 
 def test_get_component_file_from_s3_user_team_in_RHEL_with_released_component(
-    admin,
-    remoteci_context,
-    remoteci_user,
+    client_admin,
+    hmac_client_team1,
+    team1_remoteci,
     rhel_product,
     rhel_80_component,
 ):
-    r = remoteci_context.get(
+    r = hmac_client_team1.get(
         "/api/v1/components/%s/files/.composeinfo" % rhel_80_component["id"]
     )
     assert r.status_code == 302
@@ -1468,7 +1520,7 @@ def test_get_component_file_from_s3_user_team_in_RHEL_with_released_component(
         f"{s3_endpoint_url}/{bucket}/{rhel_80_component['id']}/.composeinfo"
     )
 
-    r = remoteci_context.head(
+    r = hmac_client_team1.head(
         "/api/v1/components/%s/files/.composeinfo" % rhel_80_component["id"]
     )
     assert r.status_code == 302
@@ -1477,42 +1529,43 @@ def test_get_component_file_from_s3_user_team_in_RHEL_with_released_component(
     )
 
     # delete product team permission
-    r = admin.delete(
-        "/api/v1/products/%s/teams/%s" % (rhel_product["id"], remoteci_user["team_id"]),
+    r = client_admin.delete(
+        "/api/v1/products/%s/teams/%s"
+        % (rhel_product["id"], team1_remoteci["team_id"]),
     )
     assert r.status_code == 204
 
-    r = remoteci_context.get(
+    r = hmac_client_team1.get(
         "/api/v1/components/%s/files/.composeinfo" % rhel_80_component["id"]
     )
     assert r.status_code == 401
 
-    r = remoteci_context.head(
+    r = hmac_client_team1.head(
         "/api/v1/components/%s/files/.composeinfo" % rhel_80_component["id"]
     )
     assert r.status_code == 401
 
 
 def test_get_component_file_from_s3_user_team_in_RHEL_with_pre_release_component(
-    admin,
-    remoteci_context,
-    team_user,
+    client_admin,
+    hmac_client_team1,
+    team1,
     rhel_81_component,
 ):
-    r = remoteci_context.get(
+    r = hmac_client_team1.get(
         "/api/v1/components/%s/files/compose/BaseOS/x86_64/images/SHA256SUM"
         % rhel_81_component["id"]
     )
     assert r.status_code == 401
 
-    r = admin.put(
-        "/api/v1/teams/%s" % team_user["id"],
+    r = client_admin.put(
+        "/api/v1/teams/%s" % team1["id"],
         data={"has_pre_release_access": True},
-        headers={"If-match": team_user["etag"]},
+        headers={"If-match": team1["etag"]},
     )
     assert r.status_code == 200
 
-    r = remoteci_context.get(
+    r = hmac_client_team1.get(
         "/api/v1/components/%s/files/compose/BaseOS/x86_64/images/SHA256SUM"
         % rhel_81_component["id"]
     )
@@ -1526,31 +1579,31 @@ def test_get_component_file_from_s3_user_team_in_RHEL_with_pre_release_component
 
 
 def test_get_component_file_from_s3_user_team_in_RHEL81(
-    admin,
-    remoteci_context,
-    team_user,
+    client_admin,
+    hmac_client_team1,
+    team1,
     rhel_product,
     rhel_81_component,
 ):
-    r = remoteci_context.get(
+    r = hmac_client_team1.get(
         "/api/v1/components/%s/files/COMPOSE_ID" % rhel_81_component["id"]
     )
     assert r.status_code == 401
 
-    r = admin.post(
+    r = client_admin.post(
         "/api/v1/products/%s/teams" % rhel_product["id"],
-        data={"team_id": team_user["id"]},
+        data={"team_id": team1["id"]},
     )
     assert r.status_code == 201
 
-    r = admin.put(
-        "/api/v1/teams/%s" % team_user["id"],
+    r = client_admin.put(
+        "/api/v1/teams/%s" % team1["id"],
         data={"has_pre_release_access": True},
-        headers={"If-match": team_user["etag"]},
+        headers={"If-match": team1["etag"]},
     )
     assert r.status_code == 200
 
-    r = remoteci_context.get(
+    r = hmac_client_team1.get(
         "/api/v1/components/%s/files/COMPOSE_ID" % rhel_81_component["id"]
     )
     assert r.status_code == 302
@@ -1563,27 +1616,27 @@ def test_get_component_file_from_s3_user_team_in_RHEL81(
 
 
 def test_get_component_file_from_s3_return_400_if_transversal_attack(
-    remoteci_context, rhel_80_component, rhel_81_component
+    hmac_client_team1, rhel_80_component, rhel_81_component
 ):
-    r = remoteci_context.get(
+    r = hmac_client_team1.get(
         "/api/v1/components/%s/files/COMPOSE_ID" % rhel_81_component["id"]
     )
     assert r.status_code == 401
 
-    r = remoteci_context.get(
+    r = hmac_client_team1.get(
         "/api/v1/components/%s/files/COMPOSE_ID" % rhel_80_component["id"]
     )
     assert r.status_code == 302
 
-    r = remoteci_context.get(
+    r = hmac_client_team1.get(
         "/api/v1/components/%s/files/../%s/COMPOSE_ID"
         % (rhel_80_component["id"], rhel_81_component["id"])
     )
     assert r.status_code == 400
 
 
-def test_default_components_sort_is_by_released_at(admin, openshift_410_topic):
-    r = admin.post(
+def test_default_components_sort_is_by_released_at(client_admin, openshift_410_topic):
+    r = client_admin.post(
         "/api/v1/components",
         data={
             "name": "OpenShift 4.10.50",
@@ -1593,7 +1646,7 @@ def test_default_components_sort_is_by_released_at(admin, openshift_410_topic):
         },
     )
     assert r.status_code == 201
-    r = admin.post(
+    r = client_admin.post(
         "/api/v1/components",
         data={
             "name": "OpenShift 4.10.49",
@@ -1603,7 +1656,7 @@ def test_default_components_sort_is_by_released_at(admin, openshift_410_topic):
         },
     )
     assert r.status_code == 201
-    components = admin.get(
+    components = client_admin.get(
         "/api/v1/topics/%s/components" % openshift_410_topic["id"],
     ).data["components"]
     assert components[0]["name"] == "OpenShift 4.10.50"
@@ -1611,70 +1664,70 @@ def test_default_components_sort_is_by_released_at(admin, openshift_410_topic):
 
 
 def test_get_components_without_any_permissions(
-    admin,
-    remoteci_context,
+    client_admin,
+    hmac_client_team1,
     rhel_81_component,
     rhel_80_component,
 ):
-    r = remoteci_context.get("/api/v1/components")
+    r = hmac_client_team1.get("/api/v1/components")
     assert r.status_code == 200
     assert len(r.data["components"]) == 1
     assert r.data["components"][0]["id"] == rhel_80_component["id"]
 
-    r = admin.get("/api/v1/components")
+    r = client_admin.get("/api/v1/components")
     assert r.status_code == 200
     components_ids = [c["id"] for c in r.data["components"]]
     assert components_ids == [rhel_80_component["id"], rhel_81_component["id"]]
 
 
 def test_get_components_with_pre_release_access(
-    admin,
-    remoteci_context,
-    team_user,
+    client_admin,
+    hmac_client_team1,
+    team1,
     rhel_81_component,
     rhel_80_component,
 ):
-    r = remoteci_context.get("/api/v1/components")
+    r = hmac_client_team1.get("/api/v1/components")
     assert r.status_code == 200
     assert len(r.data["components"]) == 1
     assert r.data["components"][0]["id"] == rhel_80_component["id"]
 
-    r = admin.put(
-        "/api/v1/teams/%s" % team_user["id"],
+    r = client_admin.put(
+        "/api/v1/teams/%s" % team1["id"],
         data={"has_pre_release_access": True},
-        headers={"If-match": team_user["etag"]},
+        headers={"If-match": team1["etag"]},
     )
     assert r.status_code == 200
 
-    r = remoteci_context.get("/api/v1/components")
+    r = hmac_client_team1.get("/api/v1/components")
     assert r.status_code == 200
     components_ids = [c["id"] for c in r.data["components"]]
     assert components_ids == [rhel_80_component["id"], rhel_81_component["id"]]
 
 
 def test_get_components_sort(
-    admin,
+    client_admin,
     rhel_81_component,
     rhel_80_component,
 ):
-    r = admin.get("/api/v1/components?sort=-created_at")
+    r = client_admin.get("/api/v1/components?sort=-created_at")
     assert r.status_code == 200
     components_ids = [c["id"] for c in r.data["components"]]
     assert components_ids == [rhel_80_component["id"], rhel_81_component["id"]]
 
-    r = admin.get("/api/v1/components?sort=created_at")
+    r = client_admin.get("/api/v1/components?sort=created_at")
     assert r.status_code == 200
     components_ids = [c["id"] for c in r.data["components"]]
     assert components_ids == [rhel_81_component["id"], rhel_80_component["id"]]
 
 
 def test_get_components_with_teams_component(
-    remoteci_context,
-    team_user,
+    hmac_client_team1,
+    team1,
     rhel_80_topic,
     rhel_80_component,
 ):
-    r = remoteci_context.get("/api/v1/components")
+    r = hmac_client_team1.get("/api/v1/components")
     assert r.status_code == 200
     assert len(r.data["components"]) == 1
     assert r.data["components"][0]["id"] == rhel_80_component["id"]
@@ -1683,37 +1736,37 @@ def test_get_components_with_teams_component(
         "name": "Kernel module",
         "type": "kernel_module",
         "topic_id": rhel_80_topic["id"],
-        "team_id": team_user["id"],
+        "team_id": team1["id"],
     }
-    r = remoteci_context.post("/api/v1/components", data=data)
+    r = hmac_client_team1.post("/api/v1/components", data=data)
     assert r.status_code == 201
     team_component = r.data["component"]
 
-    r = remoteci_context.get("/api/v1/components")
+    r = hmac_client_team1.get("/api/v1/components")
     assert r.status_code == 200
     components_ids = [c["id"] for c in r.data["components"]]
     assert components_ids == [team_component["id"], rhel_80_component["id"]]
 
 
 def test_a_user_cant_access_another_user_component(
-    user, topic_user_id, team_user_id, user2
+    client_user1, rhel_80_topic_id, team1_id, client_user2
 ):
-    assert user.get("/api/v1/components").data["components"] == []
-    assert user2.get("/api/v1/components").data["components"] == []
+    assert client_user1.get("/api/v1/components").data["components"] == []
+    assert client_user2.get("/api/v1/components").data["components"] == []
 
     data = {
         "name": "Kernel module",
         "type": "kernel_module",
-        "topic_id": topic_user_id,
-        "team_id": team_user_id,
+        "topic_id": rhel_80_topic_id,
+        "team_id": team1_id,
     }
-    r = user.post("/api/v1/components", data=data)
+    r = client_user1.post("/api/v1/components", data=data)
     assert r.status_code == 201
     user_component = r.data["component"]
 
-    r = user.get("/api/v1/components")
+    r = client_user1.get("/api/v1/components")
     assert r.status_code == 200
     assert len(r.data["components"]) == 1
     assert r.data["components"][0]["id"] == user_component["id"]
 
-    assert user2.get("/api/v1/components").data["components"] == []
+    assert client_user2.get("/api/v1/components").data["components"] == []

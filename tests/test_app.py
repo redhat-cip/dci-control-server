@@ -25,12 +25,12 @@ from dci import dci_config
 from dci.db import models2
 
 
-def test_cors_preflight(admin):
+def test_cors_preflight(client_admin):
     headers = {
         "Origin": "http://foo.example",
         "Access-Control-Request-Method": "POST",
     }
-    resp = admin.options("/api/v1", headers=headers)
+    resp = client_admin.options("/api/v1", headers=headers)
     headers = resp.headers
 
     allowed_headers = "Authorization, Content-Type, If-Match, ETag, " "X-Requested-With"
@@ -41,8 +41,8 @@ def test_cors_preflight(admin):
     assert headers["Access-Control-Allow-Methods"] == "GET, POST, PUT, DELETE"
 
 
-def test_cors_headers(admin):
-    resp = admin.get("/api/v1/jobs")
+def test_cors_headers(client_admin):
+    resp = client_admin.get("/api/v1/jobs")
     assert resp.headers["Access-Control-Allow-Origin"] == "*"
 
 

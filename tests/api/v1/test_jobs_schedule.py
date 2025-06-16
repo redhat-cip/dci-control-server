@@ -15,13 +15,13 @@
 # under the License.
 
 
-def test_schedule_jobs(remoteci_context, rhel_80_topic, rhel_80_component):
+def test_schedule_jobs(hmac_client_team1, rhel_80_topic, rhel_80_component):
     headers = {
         "User-Agent": "python-dciclient",
         "Client-Version": "python-dciclient_0.1.0",
     }
     data = {"topic_id": rhel_80_topic["id"]}
-    r = remoteci_context.post("/api/v1/jobs/schedule", headers=headers, data=data)
+    r = hmac_client_team1.post("/api/v1/jobs/schedule", headers=headers, data=data)
     assert r.status_code == 201
     job = r.data["job"]
     assert job["topic_id"] == rhel_80_topic["id"]
@@ -30,7 +30,7 @@ def test_schedule_jobs(remoteci_context, rhel_80_topic, rhel_80_component):
 
 
 def test_schedule_jobs_with_teams_components(
-    admin, remoteci_context, rhel_80_topic, rhel_80_component, team_id
+    client_admin, hmac_client_team1, rhel_80_topic, rhel_80_component, team2_id
 ):
     # remoteci_context does not belongs to team_id
     data = {
@@ -39,35 +39,40 @@ def test_schedule_jobs_with_teams_components(
         "url": "http://example.com/",
         "topic_id": rhel_80_topic["id"],
         "state": "active",
-        "team_id": team_id,
+        "team_id": team2_id,
     }
-    pc = admin.post("/api/v1/components", data=data)
+    pc = client_admin.post("/api/v1/components", data=data)
     assert pc.status_code == 201
 
     data = {"topic_id": rhel_80_topic["id"]}
-    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    r = hmac_client_team1.post("/api/v1/jobs/schedule", data=data)
     assert r.status_code == 201
     job_id = r.data["job"]["id"]
-    job = remoteci_context.get("/api/v1/jobs/%s" % job_id).data["job"]
+    job = hmac_client_team1.get("/api/v1/jobs/%s" % job_id).data["job"]
     assert job["components"][0]["name"] != "pname"
     assert job["components"][0]["team_id"] is None
 
 
 def test_schedule_jobs_with_components_ids(
-    user, remoteci_context, rhel_80_topic, rhel_80_component
+    client_user1, hmac_client_team1, rhel_80_topic, rhel_80_component
 ):
-    components = user.get("/api/v1/topics/%s/components" % rhel_80_topic["id"]).data[
-        "components"
-    ]
+    components = client_user1.get(
+        "/api/v1/topics/%s/components" % rhel_80_topic["id"]
+    ).data["components"]
     assert len(components) == 1
     assert components[0]["id"] == rhel_80_component["id"]
     data = {"topic_id": rhel_80_topic["id"], "components_ids": [components[0]["id"]]}
-    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    r = hmac_client_team1.post("/api/v1/jobs/schedule", data=data)
     assert r.status_code == 201
 
 
 def test_schedule_teams_components_access(
-    admin, remoteci_context, rhel_80_topic, rhel_80_component, team_id, team_user_id
+    client_admin,
+    hmac_client_team1,
+    rhel_80_topic,
+    rhel_80_component,
+    team2_id,
+    team1_id,
 ):
     # remoteci_context does not belongs to team_id
     data = {
@@ -76,41 +81,41 @@ def test_schedule_teams_components_access(
         "url": "http://example.com/",
         "topic_id": rhel_80_topic["id"],
         "state": "active",
-        "team_id": team_id,
+        "team_id": team2_id,
     }
-    pc = admin.post("/api/v1/components", data=data)
+    pc = client_admin.post("/api/v1/components", data=data)
     assert pc.status_code == 201
     pc_id = pc.data["component"]["id"]
 
     data = {"topic_id": rhel_80_topic["id"], "components_ids": [pc_id]}
-    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    r = hmac_client_team1.post("/api/v1/jobs/schedule", data=data)
     assert r.status_code == 401
 
-    cat = admin.post(
-        "/api/v1/teams/%s/permissions/components" % team_user_id,
-        data={"teams_ids": [team_id]},
+    cat = client_admin.post(
+        "/api/v1/teams/%s/permissions/components" % team1_id,
+        data={"teams_ids": [team2_id]},
     )
     assert cat.status_code == 201
 
     data = {"topic_id": rhel_80_topic["id"], "components_ids": [pc_id]}
-    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    r = hmac_client_team1.post("/api/v1/jobs/schedule", data=data)
     assert r.status_code == 201
     job_id = r.data["job"]["id"]
-    job = remoteci_context.get("/api/v1/jobs/%s" % job_id).data["job"]
+    job = hmac_client_team1.get("/api/v1/jobs/%s" % job_id).data["job"]
     assert job["components"][0]["name"] == "pname"
-    assert job["components"][0]["team_id"] == team_id
+    assert job["components"][0]["team_id"] == team2_id
 
 
 def test_schedule_jobs_with_previous_job_id(
-    remoteci_context, rhel_80_topic, rhel_80_component
+    hmac_client_team1, rhel_80_topic, rhel_80_component
 ):
-    r = remoteci_context.post(
+    r = hmac_client_team1.post(
         "/api/v1/jobs/schedule", data={"topic_id": rhel_80_topic["id"]}
     )
     assert r.status_code == 201
     job1 = r.data["job"]
     assert job1["topic_id"] == rhel_80_topic["id"]
-    r = remoteci_context.post(
+    r = hmac_client_team1.post(
         "/api/v1/jobs/schedule",
         data={"topic_id": rhel_80_topic["id"], "previous_job_id": job1["id"]},
     )
@@ -128,53 +133,53 @@ def _update_remoteci(admin, id, etag, data):
 
 
 def test_schedule_jobs_on_remoteci_inactive(
-    admin, remoteci_context, rhel_80_topic, rhel_80_component
+    client_admin, hmac_client_team1, rhel_80_topic, rhel_80_component
 ):
-    remoteci = remoteci_context.get("/api/v1/identity").data["identity"]
-    remoteci["etag"] = admin.get("/api/v1/remotecis/%s" % remoteci["id"]).data[
+    remoteci = hmac_client_team1.get("/api/v1/identity").data["identity"]
+    remoteci["etag"] = client_admin.get("/api/v1/remotecis/%s" % remoteci["id"]).data[
         "remoteci"
     ]["etag"]
 
     remoteci = _update_remoteci(
-        admin, remoteci["id"], remoteci["etag"], {"state": "inactive"}
+        client_admin, remoteci["id"], remoteci["etag"], {"state": "inactive"}
     )
     data = {"topic_id": rhel_80_topic["id"]}
-    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    r = hmac_client_team1.post("/api/v1/jobs/schedule", data=data)
     assert r.status_code != 201
 
     remoteci = _update_remoteci(
-        admin, remoteci["id"], remoteci["etag"], {"state": "active"}
+        client_admin, remoteci["id"], remoteci["etag"], {"state": "active"}
     )
     data = {"topic_id": rhel_80_topic["id"]}
-    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    r = hmac_client_team1.post("/api/v1/jobs/schedule", data=data)
     assert r.status_code == 201
 
 
 def test_schedule_jobs_on_remoteci_team_inactive(
-    admin, remoteci_context, rhel_80_topic, rhel_80_component, team_user_id
+    client_admin, hmac_client_team1, rhel_80_topic, rhel_80_component, team1_id
 ):
-    team_etag = admin.get("/api/v1/teams/%s" % team_user_id).data["team"]["etag"]
-    r = admin.put(
-        "/api/v1/teams/%s" % team_user_id,
+    team_etag = client_admin.get("/api/v1/teams/%s" % team1_id).data["team"]["etag"]
+    r = client_admin.put(
+        "/api/v1/teams/%s" % team1_id,
         headers={"If-match": team_etag},
         data={"state": "inactive"},
     )
     assert r.status_code == 200
 
     data = {"topic_id": rhel_80_topic["id"]}
-    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    r = hmac_client_team1.post("/api/v1/jobs/schedule", data=data)
     assert r.status_code == 412
 
-    team_etag = admin.get("/api/v1/teams/%s" % team_user_id).data["team"]["etag"]
-    r = admin.put(
-        "/api/v1/teams/%s" % team_user_id,
+    team_etag = client_admin.get("/api/v1/teams/%s" % team1_id).data["team"]["etag"]
+    r = client_admin.put(
+        "/api/v1/teams/%s" % team1_id,
         headers={"If-match": team_etag},
         data={"state": "active"},
     )
     assert r.status_code == 200
 
     data = {"topic_id": rhel_80_topic["id"]}
-    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    r = hmac_client_team1.post("/api/v1/jobs/schedule", data=data)
     assert r.status_code == 201
 
 
@@ -186,16 +191,16 @@ def _update_topic(admin, rhel_80_topic, data):
 
 
 def test_schedule_jobs_on_topic_inactive(
-    admin, remoteci_context, rhel_80_topic, rhel_80_component
+    client_admin, hmac_client_team1, rhel_80_topic, rhel_80_component
 ):
     assert rhel_80_component is not None
 
-    rhel_80_topic = _update_topic(admin, rhel_80_topic, {"state": "inactive"})
+    rhel_80_topic = _update_topic(client_admin, rhel_80_topic, {"state": "inactive"})
     data = {"topic_id": rhel_80_topic["id"]}
-    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    r = hmac_client_team1.post("/api/v1/jobs/schedule", data=data)
     assert r.status_code == 412
 
-    rhel_80_topic = _update_topic(admin, rhel_80_topic, {"state": "active"})
+    rhel_80_topic = _update_topic(client_admin, rhel_80_topic, {"state": "active"})
     data = {"topic_id": rhel_80_topic["id"]}
-    r = remoteci_context.post("/api/v1/jobs/schedule", data=data)
+    r = hmac_client_team1.post("/api/v1/jobs/schedule", data=data)
     assert r.status_code == 201
