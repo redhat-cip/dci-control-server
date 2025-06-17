@@ -45,16 +45,16 @@ def test_admin_required_fail_when_not_admin(client_user1):
 
 # mock datetime so that the token is now considered as expired
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
-def test_decode_jwt(m_datetime, access_token):
+def test_decode_jwt(m_datetime, access_token_user1):
     pubkey = dci_config.CONFIG["SSO_PUBLIC_KEY"]
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime.fromtimestamp(
         1505564918
     ).timetuple()
     m_datetime.utcnow.return_value = m_utcnow
-    decoded_jwt = auth.decode_jwt(access_token, pubkey, "dci")
-    assert decoded_jwt["username"] == "dci"
-    assert decoded_jwt["email"] == "dci@distributed-ci.io"
+    decoded_jwt = auth.decode_jwt(access_token_user1, pubkey, "dci")
+    assert decoded_jwt["username"] == "user1"
+    assert decoded_jwt["email"] == "user1@example.org"
 
 
 def test_jwk_to_pem():

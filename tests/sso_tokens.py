@@ -1,14 +1,15 @@
-_doc_access_token_user = """
+# Generate TOKEN using website like https://token.dev/
+# Copy new public and private keys in tests/settings.py
+_doc_access_token_user1 = """
 {
   "alg": "RS256",
-  "typ": "JWT",
-  "kid": "uQxsQppsKoobFh3HNtkuWoRjFdu0cktF-Sy4eWE5xy4"
+  "typ": "JWT"
 }
 {
   "jti": "d485ceb4-4d5a-4b07-888f-f933486ace15",
-  "exp": 1518653829,
+  "exp": 1781681817,
   "nbf": 0,
-  "iat": 1518653529,
+  "iat": 1750145817,
   "iss": "http://localhost:8180/auth/realms/redhat-external",
   "aud": "dci",
   "sub": "3272474d-a083-4e37-9426-867aa6a46ed6",
@@ -34,25 +35,65 @@ _doc_access_token_user = """
       ]
     }
   },
-  "email": "dci@distributed-ci.io",
-  "username": "dci"
+  "email": "user1@example.org",
+  "username": "user1"
 }
 """
 
-ACCESS_TOKEN_USER = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InVReHNRcHBzS29vYkZoM0hOdGt1V29SakZkdTBja3RGLVN5NGVXRTV4eTQifQ.eyJqdGkiOiJkNDg1Y2ViNC00ZDVhLTRiMDctODg4Zi1mOTMzNDg2YWNlMTUiLCJleHAiOjE1MTg2NTM4MjksIm5iZiI6MCwiaWF0IjoxNTE4NjUzNTI5LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgxODAvYXV0aC9yZWFsbXMvcmVkaGF0LWV4dGVybmFsIiwiYXVkIjoiZGNpIiwic3ViIjoiMzI3MjQ3NGQtYTA4My00ZTM3LTk0MjYtODY3YWE2YTQ2ZWQ2IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiZGNpIiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiYjc3NGQ3ZWEtMmMzMi00NGE3LTkxYTgtMWI3YzhmZjk4NzA2IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgwMDAiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwiZW1haWwiOiJkY2lAZGlzdHJpYnV0ZWQtY2kuaW8iLCJ1c2VybmFtZSI6ImRjaSJ9.uC3dVVYgdfaMw7oB4dOZvvF4pETKCqumN4c9uK_WYk37Pz_S_e5gnLJGD_uhpsUqW4YiozSzKTn6acCRBjjffwKTtCinO7uThjriqkDHUiYFWmxu6J24Yk4C8TJktaBYlU-uN661N7BfYknxdN9sFNSH5SpVgDw4DoQYW462taDk4bDOhhTv_MWX-f1gac2bn-TUVc9_pad50T_vyaKD0lcDuB6fe28nkk1m1pToonze1GCuJEFcnI8m1UEl48oM4k8qWXLYAT5ngQQ8_XMO8AlnMfwH26wXeU1bPWXk1STPmyCfD6IplV_dQmVekGfzf3gsPZ1L-Oc2uRu-FiiELA"
+ACCESS_TOKEN_USER1 = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkNDg1Y2ViNC00ZDVhLTRiMDctODg4Zi1mOTMzNDg2YWNlMTUiLCJleHAiOjE3ODE2ODE4MTcsIm5iZiI6MCwiaWF0IjoxNzUwMTQ1ODE3LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgxODAvYXV0aC9yZWFsbXMvcmVkaGF0LWV4dGVybmFsIiwiYXVkIjoiZGNpIiwic3ViIjoiMzI3MjQ3NGQtYTA4My00ZTM3LTk0MjYtODY3YWE2YTQ2ZWQ2IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiZGNpIiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiYjc3NGQ3ZWEtMmMzMi00NGE3LTkxYTgtMWI3YzhmZjk4NzA2IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgwMDAiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwiZW1haWwiOiJ1c2VyMUBleGFtcGxlLm9yZyIsInVzZXJuYW1lIjoidXNlcjEifQ.QC0RWsR6_UGzIpeMKlV60FodUsiqu9go4BfdT8jd85FcgHiMLJkCO_jhKtlfaMILImQSzcGjNOpBYZWHjdgo3IHVPLsP1rvknNtxSdjU8XQMzvfmjoT_ZUYeiRIcDU2YgJd0cN1AjUxxAuDYNEjS-L_TFW3KPyl9RUsMK0bb9GmxMG1JplWncfFeG9kd2-Fva0jdMvH4WPu5DNkYQ3ky3p5_OQVycUBncBYcM04Uz2Fj4WiBc9TqqIN4uzATj67AOfSpNsw6NCNOL2s3M5RtPQq2_ja24DcxESI48grKv_i5SEKSei9y83937ShbE45x1bT8dWceEvbajTnueqA24A"
 
-_doc_access_token_rh_employee = """
-
+_doc_access_token_user4 = """
 {
   "alg": "RS256",
-  "typ": "JWT",
-  "kid": "uQxsQppsKoobFh3HNtkuWoRjFdu0cktF-Sy4eWE5xy4"
+  "typ": "JWT"
+}
+{
+  "jti": "d485ceb4-4d5a-4b07-888f-f933486ace15",
+  "exp": 1781681817,
+  "nbf": 0,
+  "iat": 1750145817,
+  "iss": "http://localhost:8180/auth/realms/redhat-external",
+  "aud": "dci",
+  "sub": "3272474d-a083-4e37-9426-867aa6a46ed6",
+  "typ": "Bearer",
+  "azp": "dci",
+  "auth_time": 0,
+  "session_state": "b774d7ea-2c32-44a7-91a8-1b7c8ff98706",
+  "acr": "1",
+  "allowed-origins": [
+    "http://localhost:8000"
+  ],
+  "realm_access": {
+    "roles": [
+      "uma_authorization"
+    ]
+  },
+  "resource_access": {
+    "account": {
+      "roles": [
+        "manage-account",
+        "manage-account-links",
+        "view-profile"
+      ]
+    }
+  },
+  "email": "user4@example.org",
+  "username": "user4"
+}
+"""
+
+ACCESS_TOKEN_USER4 = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJkNDg1Y2ViNC00ZDVhLTRiMDctODg4Zi1mOTMzNDg2YWNlMTUiLCJleHAiOjE3ODE2ODE4MTcsIm5iZiI6MCwiaWF0IjoxNzUwMTQ1ODE3LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgxODAvYXV0aC9yZWFsbXMvcmVkaGF0LWV4dGVybmFsIiwiYXVkIjoiZGNpIiwic3ViIjoiMzI3MjQ3NGQtYTA4My00ZTM3LTk0MjYtODY3YWE2YTQ2ZWQ2IiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiZGNpIiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiYjc3NGQ3ZWEtMmMzMi00NGE3LTkxYTgtMWI3YzhmZjk4NzA2IiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgwMDAiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbInVtYV9hdXRob3JpemF0aW9uIl19LCJyZXNvdXJjZV9hY2Nlc3MiOnsiYWNjb3VudCI6eyJyb2xlcyI6WyJtYW5hZ2UtYWNjb3VudCIsIm1hbmFnZS1hY2NvdW50LWxpbmtzIiwidmlldy1wcm9maWxlIl19fSwiZW1haWwiOiJ1c2VyNEBleGFtcGxlLm9yZyIsInVzZXJuYW1lIjoidXNlcjQifQ.JyjuZncNs0Sxs-GvakxsXWQ01IeniIVY8Or6HQtSQd3GMUD7F9Ibocm-g7-sMqc1GfRvYA89g7Kj0L6mmoe3NpNObxoxP5HKabElnmkYuL7ocyjU7KhNpePV0dn6gE20jH8efWpIf0jLLCmdpcG3TPZZ532tCHLQcyjlfE5L_UzFBvHPrXJrr-SxixqauxTth0moZ7UOPx3Aj4YW8UD54AgK3soKmkOGXyeRVC2edp0iDMJ1tfxQqWifZyXhMUEXvoAp0slR7fXxa2WrYQALBAyJeTOu3F3qa4dIifux48Lo9KGe7ibuMnHVFSQ52JPgMe10CC_3NF7Ukz27sVDYrA"
+
+_doc_access_token_rh_employee = """
+{
+  "alg": "RS256",
+  "typ": "JWT"
 }
 {
   "jti": "9717d8b3-73d9-4b6e-be8f-fc9fe9a24454",
-  "exp": 1518654295,
+  "exp": 1781681817,
   "nbf": 0,
-  "iat": 1518653995,
+  "iat": 1750145817,
   "iss": "http://localhost:8180/auth/realms/redhat-external",
   "aud": "dci",
   "sub": "ddf4ce78-6682-4df2-bbbc-f2e61fe576e0",
@@ -79,9 +120,9 @@ _doc_access_token_rh_employee = """
       ]
     }
   },
-  "email": "dci-rh@redhat.com",
-  "username": "dci-rh"
+  "email": "rh_employee@redhat.com",
+  "username": "rh_employee"
 }
 """
 
-ACCESS_TOKEN_READ_ONLY_USER = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCIsImtpZCI6InVReHNRcHBzS29vYkZoM0hOdGt1V29SakZkdTBja3RGLVN5NGVXRTV4eTQifQ.eyJqdGkiOiI5NzE3ZDhiMy03M2Q5LTRiNmUtYmU4Zi1mYzlmZTlhMjQ0NTQiLCJleHAiOjE1MTg2NTQyOTUsIm5iZiI6MCwiaWF0IjoxNTE4NjUzOTk1LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgxODAvYXV0aC9yZWFsbXMvcmVkaGF0LWV4dGVybmFsIiwiYXVkIjoiZGNpIiwic3ViIjoiZGRmNGNlNzgtNjY4Mi00ZGYyLWJiYmMtZjJlNjFmZTU3NmUwIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiZGNpIiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiODVhZTc3YTAtODdlYi00YzVkLTkzOGUtOTBmMjUxYTIwNzFlIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgwMDAiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbInJlZGhhdDplbXBsb3llZXMiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sImVtYWlsIjoiZGNpLXJoQHJlZGhhdC5jb20iLCJ1c2VybmFtZSI6ImRjaS1yaCJ9.mO69Kp2PzI3ul-Ruf3uXtX1ysjxZczUaJnsyWdnJFyvbn0VA9s1LwVg0mfcMlpm_gETQ-pt1-eAvj-RPF8h-CKNaiTzNFcM1J9c-1v2L_2Z5mBpA56_z8apI7qBThaUYoiuYn2emNIgbv-qZYz_YPgoApVUMvJhQhJ1U2aHcD7t0sV52POu79M0h32W1A089iYlFhfdM5SG9gytIKOfdXSaksHMte4IwMz34PNgGkduhtLO4VhdadRAve1FeyFxOaTWTQcn2c_91nRzaTGvzUlbnBk3eFxH7Fgvwb4HWs3zoifbdqfJAfuoUSHNwOzW73wiNYk75GRkBrMgv4PmN3A"
+ACCESS_TOKEN_RH_EMPLOYEE = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiI5NzE3ZDhiMy03M2Q5LTRiNmUtYmU4Zi1mYzlmZTlhMjQ0NTQiLCJleHAiOjE3ODE2ODE4MTcsIm5iZiI6MCwiaWF0IjoxNzUwMTQ1ODE3LCJpc3MiOiJodHRwOi8vbG9jYWxob3N0OjgxODAvYXV0aC9yZWFsbXMvcmVkaGF0LWV4dGVybmFsIiwiYXVkIjoiZGNpIiwic3ViIjoiZGRmNGNlNzgtNjY4Mi00ZGYyLWJiYmMtZjJlNjFmZTU3NmUwIiwidHlwIjoiQmVhcmVyIiwiYXpwIjoiZGNpIiwiYXV0aF90aW1lIjowLCJzZXNzaW9uX3N0YXRlIjoiODVhZTc3YTAtODdlYi00YzVkLTkzOGUtOTBmMjUxYTIwNzFlIiwiYWNyIjoiMSIsImFsbG93ZWQtb3JpZ2lucyI6WyJodHRwOi8vbG9jYWxob3N0OjgwMDAiXSwicmVhbG1fYWNjZXNzIjp7InJvbGVzIjpbInJlZGhhdDplbXBsb3llZXMiLCJ1bWFfYXV0aG9yaXphdGlvbiJdfSwicmVzb3VyY2VfYWNjZXNzIjp7ImFjY291bnQiOnsicm9sZXMiOlsibWFuYWdlLWFjY291bnQiLCJtYW5hZ2UtYWNjb3VudC1saW5rcyIsInZpZXctcHJvZmlsZSJdfX0sImVtYWlsIjoicmhfZW1wbG95ZWVAcmVkaGF0LmNvbSIsInVzZXJuYW1lIjoicmhfZW1wbG95ZWUifQ.Uc4wOqmpLAlEpC6obFfsmPYkWiBsSBv8DwP9nqnZ5KRWgIG3B8lj3aiUbeKNOLgf5C0o0uJikK0l6_VOO_Djy20fOOkog6AVG7bNkQIN2mIj1-U7s-S9NizxGdDkcc7la-x79yR0jEk39TRw8nyPWREJ8rl5KL7_7NosrRaGXxPszHVWM9Dfr-YzlymOtp5vFwXeKY_iF-4MNOcnMi0dfGPoDyrtCPnfjZbVxlkIddHuNkyGmBQI6lNbCycrLl1oORvZADN4J118yzYznWzVWzFWwh5bnahZfbjfy2kIhnSiunqIb68ebq4FIExKAlTErxcRo3yCRPSRzCoZEv21pg"

@@ -110,7 +110,7 @@ def get_all_products(user):
                 _JPT.c.team_id.in_(user.teams_ids),
             ),
         )
-
+    q = q.distinct()
     nb_products = q.count()
     q = d.handle_pagination(q, args)
     products = q.all()

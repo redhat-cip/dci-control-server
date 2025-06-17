@@ -203,7 +203,7 @@ def provision(session):
         sso_username="admin",
         password=auth.hash_password("admin"),
         fullname="Admin",
-        email="admin@example.org",
+        email="admin@distributed-ci.io",
     )
     admin_user.team.append(admin_team)
     session.add(admin_user)
@@ -215,7 +215,7 @@ def provision(session):
         sso_username="user1",
         password=auth.hash_password("user1"),
         fullname="User 1",
-        email="user@example.org",
+        email="user1@example.org",
     )
     user1.team.append(team1)
     session.add(user1)

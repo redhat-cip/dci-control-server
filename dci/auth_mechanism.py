@@ -15,6 +15,7 @@
 # under the License.
 
 import flask
+import uuid
 from sqlalchemy import exc as sa_exc
 from sqlalchemy import sql
 from sqlalchemy import orm
@@ -56,6 +57,12 @@ class BaseMechanism(object):
         except orm.exc.NoResultFound:
             return None
 
+    def get_scoped_team_id(self):
+        scoped_team_id = self.request.headers.get("X-Dci-Team-Id")
+        if scoped_team_id:
+            return uuid.UUID(scoped_team_id)
+        return None
+
     def identity_from_user(self, user):
         user_info = {
             # UUID to str
@@ -74,16 +81,20 @@ class BaseMechanism(object):
         is_read_only_user = False
         is_epm_user = False
         user_teams = {}
+        scoped_team_id = self.get_scoped_team_id()
         for user_team in user.team:
-            if user_team.id == flask.g.team_admin_id:
+            team_id = user_team.id
+            if team_id == flask.g.team_admin_id:
                 is_super_admin = True
-            if user_team.id == flask.g.team_redhat_id:
+            if team_id == flask.g.team_redhat_id:
                 is_read_only_user = True
-            if user_team.id == flask.g.team_epm_id:
+            if team_id == flask.g.team_epm_id:
                 is_epm_user = True
+            if scoped_team_id and scoped_team_id != team_id:
+                continue
             # TODO (gvincent): use user_team.serialize()
-            user_teams[user_team.id] = {
-                "id": user_team.id,
+            user_teams[team_id] = {
+                "id": team_id,
                 "name": user_team.name,
                 "has_pre_release_access": user_team.has_pre_release_access,
             }

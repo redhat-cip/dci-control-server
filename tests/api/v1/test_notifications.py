@@ -32,7 +32,7 @@ def test_get_emails_from_remoteci(
         flask.g.db_conn = engine.connect()
         flask.g.session = session
         emails = notifications.get_emails_from_remoteci(team1_remoteci_id)
-        assert emails == ["user@example.org"]
+        assert emails == ["user1@example.org"]
 
 
 def test_get_emails_from_remoteci_deleted(
@@ -63,9 +63,9 @@ def test_get_job_event_on_job_error(mocked_disp, client_user1, team1_job_id):
         "/api/v1/jobs/%s?embed=components,topic,remoteci,results" % team1_job_id
     )
     job = job.data["job"]
-    email_event = notifications.get_job_event(job, ["user@exameple.org"])
+    email_event = notifications.get_job_event(job, ["user1@example.org"])
     assert email_event["event"] == "notification"
-    assert email_event["emails"] == ["user@exameple.org"]
+    assert email_event["emails"] == ["user1@example.org"]
     assert email_event["job_id"] == team1_job_id
     assert email_event["status"] == "error"
     assert email_event["topic_id"] == job["topic_id"]
@@ -85,7 +85,7 @@ def test_get_job_event_on_job_success(mocked_disp, client_user1, team1_job_id):
         "/api/v1/jobs/%s?embed=components,topic,remoteci,results" % team1_job_id
     )
     job = job.data["job"]
-    email_event = notifications.get_job_event(job, ["user@exameple.org"])
+    email_event = notifications.get_job_event(job, ["user1@example.org"])
     assert email_event is None
 
 

@@ -147,21 +147,34 @@ def client_rh_employee(app):
 
 # SSO clients
 @pytest.fixture
-def sso_client_user1(app, access_token):
-    client = utils.generate_client(app, access_token=access_token)
+def sso_client_user1(app, access_token_user1):
+    client = utils.generate_client(app, access_token=access_token_user1)
     # first call, it create the user in the database
     client.get("/api/v1/users/me")
     return client
 
 
 @pytest.fixture
-def access_token():
-    return sso_tokens.ACCESS_TOKEN_USER
+def sso_client_user4(app, access_token_user4):
+    client = utils.generate_client(app, access_token=access_token_user4)
+    # first call, it create the user in the database
+    client.get("/api/v1/users/me")
+    return client
+
+
+@pytest.fixture
+def access_token_user1():
+    return sso_tokens.ACCESS_TOKEN_USER1
+
+
+@pytest.fixture
+def access_token_user4():
+    return sso_tokens.ACCESS_TOKEN_USER4
 
 
 @pytest.fixture
 def access_token_rh_employee():
-    return sso_tokens.ACCESS_TOKEN_READ_ONLY_USER
+    return sso_tokens.ACCESS_TOKEN_RH_EMPLOYEE
 
 
 # HMAC clients
@@ -227,6 +240,16 @@ def user_no_team(client_admin):
 @pytest.fixture
 def user1_id(client_user1):
     return client_user1.get("/api/v1/users/me").data["user"]["id"]
+
+
+@pytest.fixture
+def user3_id(client_user3):
+    return client_user3.get("/api/v1/users/me").data["user"]["id"]
+
+
+@pytest.fixture
+def user4_id(sso_client_user4):
+    return sso_client_user4.get("/api/v1/users/me").data["user"]["id"]
 
 
 # Teams

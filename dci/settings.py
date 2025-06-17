@@ -97,7 +97,9 @@ LOG_FORMAT = "[%(asctime)s] %(levelname)-8s %(name)-12s %(message)s"
 
 
 X_DOMAINS = "*"
-X_HEADERS = "Authorization, Content-Type, If-Match, ETag, X-Requested-With"
+X_HEADERS = (
+    "Authorization, Content-Type, If-Match, ETag, X-Requested-With, X-Dci-Team-Id"
+)
 MAX_CONTENT_LENGTH = int(os.getenv("MAX_CONTENT_LENGTH_MB", "20")) * 1024 * 1024
 
 FILES_UPLOAD_FOLDER = os.getenv(

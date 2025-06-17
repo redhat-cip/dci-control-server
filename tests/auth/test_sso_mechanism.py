@@ -32,7 +32,7 @@ def test_sso_auth_verified(
     client_admin,
     app,
     session,
-    access_token,
+    access_token_user4,
     team_admin_id,
     team_redhat_id,
     team_epm_id,
@@ -43,7 +43,7 @@ def test_sso_auth_verified(
     ).timetuple()
     m_datetime.utcnow.return_value = m_utcnow
     sso_headers = mock.Mock
-    sso_headers.headers = {"Authorization": "Bearer %s" % access_token}
+    sso_headers.headers = {"Authorization": "Bearer %s" % access_token_user4}
     nb_users = len(client_admin.get("/api/v1/users").data["users"])
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
@@ -52,9 +52,9 @@ def test_sso_auth_verified(
         flask.g.session = session
         mech = authm.OpenIDCAuth(sso_headers)
         assert mech.authenticate()
-        assert mech.identity.name == "dci"
-        assert mech.identity.sso_username == "dci"
-        assert mech.identity.email == "dci@distributed-ci.io"
+        assert mech.identity.name == "user4"
+        assert mech.identity.sso_username == "user4"
+        assert mech.identity.email == "user4@example.org"
         nb_users_after_sso = len(client_admin.get("/api/v1/users").data["users"])
         assert (nb_users + 1) == nb_users_after_sso
 
@@ -111,18 +111,19 @@ def test_sso_auth_verified_rh_employee(
         flask.g.session = session
         mech = authm.OpenIDCAuth(sso_headers)
         assert mech.authenticate()
-        assert mech.identity.name == "dci-rh"
-        assert mech.identity.sso_username == "dci-rh"
-        assert mech.identity.email == "dci-rh@redhat.com"
+        assert mech.identity.name == "rh_employee"
+        assert mech.identity.sso_username == "rh_employee"
+        assert mech.identity.email == "rh_employee@redhat.com"
         nb_users_after_sso = len(client_admin.get("/api/v1/users").data["users"])
-        assert (nb_users + 1) == nb_users_after_sso
+        # rh_employee user already exists
+        assert nb_users == nb_users_after_sso
         # users from redhat team
         redhat_users = client_admin.get("/api/v1/teams/%s/users" % team_redhat_id).data[
             "users"
         ]
         ro_user_found = False
         for iu in redhat_users:
-            if iu["name"] == "dci-rh" and iu["email"] == "dci-rh@redhat.com":
+            if iu["name"] == "rh_employee" and iu["email"] == "rh_employee@redhat.com":
                 ro_user_found = True
         assert ro_user_found
 
@@ -303,7 +304,7 @@ def test_user_creation_with_a_new_token_with_apidci_scope_specified_but_dci_audi
 
 @mock.patch("jwt.api_jwt.datetime", spec=datetime.datetime)
 def test_sso_auth_not_verified(
-    m_datetime, client_admin, app, session, access_token, team_admin_id
+    m_datetime, client_admin, app, session, access_token_user1, team_admin_id
 ):
     m_utcnow = mock.MagicMock()
     m_utcnow.utctimetuple.return_value = datetime.datetime.fromtimestamp(
@@ -311,9 +312,9 @@ def test_sso_auth_not_verified(
     ).timetuple()
     m_datetime.utcnow.return_value = m_utcnow
     # corrupt access_token
-    access_token = access_token + "lol"
+    access_token_user1 = access_token_user1 + "lol"
     sso_headers = mock.Mock
-    sso_headers.headers = {"Authorization": "Bearer %s" % access_token}
+    sso_headers.headers = {"Authorization": "Bearer %s" % access_token_user1}
     nb_users = len(client_admin.get("/api/v1/users").data["users"])
     with app.app_context():
         flask.g.team_admin_id = team_admin_id
