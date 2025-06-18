@@ -227,14 +227,29 @@ def hmac_client_feeder(app, team1_feeder):
 
 # Users
 @pytest.fixture
+def admin(client_admin):
+    return client_admin.get("/api/v1/users/me").data["user"]
+
+
+@pytest.fixture
+def admin_id(admin):
+    return admin["id"]
+
+
+@pytest.fixture
 def epm(client_epm):
     return client_epm.get("/api/v1/users/me").data["user"]
 
 
 @pytest.fixture
+def epm_id(epm):
+    return epm["id"]
+
+
+@pytest.fixture
 def user_no_team(client_admin):
     r = client_admin.get("/api/v1/users?where=name:user_no_team")
-    return dict(r.data["users"][0])
+    return r.data["users"][0]
 
 
 @pytest.fixture
@@ -250,6 +265,16 @@ def user3_id(client_user3):
 @pytest.fixture
 def user4_id(sso_client_user4):
     return sso_client_user4.get("/api/v1/users/me").data["user"]["id"]
+
+
+@pytest.fixture
+def rh_employee(client_rh_employee):
+    return client_rh_employee.get("/api/v1/users/me").data["user"]
+
+
+@pytest.fixture
+def rh_employee_id(rh_employee):
+    return rh_employee["id"]
 
 
 # Teams

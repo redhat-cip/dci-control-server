@@ -58,9 +58,15 @@ class BaseMechanism(object):
             return None
 
     def get_scoped_team_id(self):
-        scoped_team_id = self.request.headers.get("X-Dci-Team-Id")
-        if scoped_team_id:
-            return uuid.UUID(scoped_team_id)
+        try:
+            scoped_team_id = self.request.headers.get("X-Dci-Team-Id")
+            if scoped_team_id:
+                return uuid.UUID(scoped_team_id)
+        except ValueError as exception:
+            logging.debug(f"get_scoped_team_id error: {exception}")
+            raise dci_exc.DCIException(
+                f"X-Dci-Team-Id: {scoped_team_id} is not a valid UUID", status_code=400
+            )
         return None
 
     def identity_from_user(self, user):
@@ -87,9 +93,9 @@ class BaseMechanism(object):
             if team_id == flask.g.team_admin_id:
                 is_super_admin = True
             if team_id == flask.g.team_redhat_id:
-                is_read_only_user = True
+                is_read_only_user = scoped_team_id is None or scoped_team_id == team_id
             if team_id == flask.g.team_epm_id:
-                is_epm_user = True
+                is_epm_user = scoped_team_id is None or scoped_team_id == team_id
             if scoped_team_id and scoped_team_id != team_id:
                 continue
             # TODO (gvincent): use user_team.serialize()
@@ -98,6 +104,9 @@ class BaseMechanism(object):
                 "name": user_team.name,
                 "has_pre_release_access": user_team.has_pre_release_access,
             }
+
+        if scoped_team_id and scoped_team_id not in user_teams and not is_super_admin:
+            raise dci_exc.Unauthorized()
 
         user_info["teams"] = user_teams
         user_info["is_super_admin"] = is_super_admin

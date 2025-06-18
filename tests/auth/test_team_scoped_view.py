@@ -59,3 +59,90 @@ def test_x_dci_team_id_header_filter_view_sso(
         ).data["_meta"]["count"]
         == 1
     )
+
+
+def test_nrt_read_only_user_flag_is_also_filtered_with_x_dci_team_id_header(
+    client_admin, client_rh_employee, rh_employee_id, team_redhat_id, team3_id
+):
+    assert client_rh_employee.get("/api/v1/products").data["_meta"]["count"] == 3
+    assert (
+        client_rh_employee.get(
+            "/api/v1/products", headers={"X-Dci-Team-Id": team_redhat_id}
+        ).data["_meta"]["count"]
+        == 3
+    )
+    add_rh_employee_to_team3 = client_admin.post(
+        "/api/v1/teams/%s/users/%s" % (team3_id, rh_employee_id), data={}
+    )
+    assert add_rh_employee_to_team3.status_code == 201
+    assert (
+        client_rh_employee.get(
+            "/api/v1/products", headers={"X-Dci-Team-Id": team3_id}
+        ).data["_meta"]["count"]
+        == 0
+    )
+
+
+def test_nrt_epm_flag_is_also_filtered_with_x_dci_team_id_header(
+    client_admin, client_epm, epm_id, team_epm_id, team3_id
+):
+    assert client_epm.get("/api/v1/products").data["_meta"]["count"] == 3
+    assert (
+        client_epm.get("/api/v1/products", headers={"X-Dci-Team-Id": team_epm_id}).data[
+            "_meta"
+        ]["count"]
+        == 3
+    )
+    add_epm_to_team3 = client_admin.post(
+        "/api/v1/teams/%s/users/%s" % (team3_id, epm_id), data={}
+    )
+    assert add_epm_to_team3.status_code == 201
+    assert (
+        client_epm.get("/api/v1/products", headers={"X-Dci-Team-Id": team3_id}).data[
+            "_meta"
+        ]["count"]
+        == 0
+    )
+
+
+def test_nrt_admin_flag_is_not_filtering_view_with_x_dci_team_id_header(
+    client_admin, team_admin_id, admin_id, team3_id
+):
+    assert client_admin.get("/api/v1/products").data["_meta"]["count"] == 3
+    assert (
+        client_admin.get(
+            "/api/v1/products", headers={"X-Dci-Team-Id": team_admin_id}
+        ).data["_meta"]["count"]
+        == 3
+    )
+    add_epm_to_team3 = client_admin.post(
+        "/api/v1/teams/%s/users/%s" % (team3_id, admin_id), data={}
+    )
+    assert add_epm_to_team3.status_code == 201
+    assert (
+        client_admin.get("/api/v1/products", headers={"X-Dci-Team-Id": team3_id}).data[
+            "_meta"
+        ]["count"]
+        == 3
+    )
+
+
+def test_x_dci_team_id_header_with_team_admin_id_raised_unauthorized(
+    client_user3, team_admin_id
+):
+    assert client_user3.get("/api/v1/products").data["_meta"]["count"] == 0
+    assert (
+        client_user3.get(
+            "/api/v1/products", headers={"X-Dci-Team-Id": team_admin_id}
+        ).status_code
+        == 401
+    )
+
+
+def test_x_dci_team_id_header_not_an_uuid_raised_exception(client_user1):
+    assert (
+        client_user1.get(
+            "/api/v1/products", headers={"X-Dci-Team-Id": "not an uuid"}
+        ).status_code
+        == 400
+    )
