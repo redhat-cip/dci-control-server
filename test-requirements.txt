@@ -4,3 +4,4 @@ dciclient
 flake8
 tox
 responses
+importlib-metadata==4.8.3

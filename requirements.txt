@@ -26,7 +26,7 @@ passlib==1.7.2  # python-passlib-1.7.2-1.el8.src.rpm epel
 python-qpid-proton==0.35.0  # qpid-proton-0.35.0-2.el8.src.rpm epel
 pyzmq==19.0.0;python_version<="3.6"  # python-zmq-19.0.0-1.el8.src.rpm epel
 pyzmq;python_version>"3.6"
-
+kombu==5.1.0
 boto3==1.15.15  # python3-boto3-1.15.15-1.el8.src.rpm epel
 
 dciauth  # ignore: package from dci use the latest version

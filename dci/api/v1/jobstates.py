@@ -20,6 +20,7 @@ from dci.common.time import get_job_duration
 import flask
 from flask import json
 
+from dci.analytics import access_data_layer as a_d_l
 from dci.api.v1 import api
 from dci.api.v1 import base
 from dci.api.v1 import jobs_events
@@ -97,6 +98,8 @@ def create_jobstates(user):
             job_serialized["id"], values["status"], job_serialized["topic_id"]
         )
         notifications.job_dispatcher(job_serialized)
+        job = a_d_l.get_job_by_id(flask.g.session, job_id)
+        notifications.publish({"event": "job_finished", "job": job})
 
     result = json.dumps({"jobstate": created_js})
     return flask.Response(result, 201, content_type="application/json")

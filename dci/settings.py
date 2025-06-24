@@ -86,6 +86,8 @@ DEFAULT_ZMQ_CONN = "tcp://{zmq_host}:{zmq_port}".format(
 )
 ZMQ_CONN = os.getenv("ZMQ_CONN", DEFAULT_ZMQ_CONN)
 
+# AMQP Connection
+AMQP_BROKER_URL = os.getenv("AMQP_BROKER_URL", "amqp://guest:guest@rabbitmq:5672//")
 
 # Analytics
 ANALYTICS_URL = os.getenv("ANALYTICS_URL", "http://dci-analytics:2345")

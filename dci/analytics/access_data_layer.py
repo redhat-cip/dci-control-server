@@ -52,6 +52,28 @@ def get_jobs(session, offset, limit, unit, amount, status=None):
     return jobs
 
 
+def get_job_by_id(session, job_id):
+    query = session.query(models2.Job)
+    query = query.filter(models2.Job.id == job_id)
+    query = query.from_self()
+
+    query = (
+        query.options(sa_orm.selectinload("components"))
+        .options(sa_orm.selectinload("jobstates"))
+        .options(sa_orm.selectinload("jobstates.files"))
+        .options(sa_orm.selectinload("files"))
+        .options(sa_orm.selectinload("results"))
+        .options(sa_orm.joinedload("pipeline", innerjoin=False))
+        .options(sa_orm.joinedload("remoteci", innerjoin=True))
+        .options(sa_orm.joinedload("topic", innerjoin=True))
+        .options(sa_orm.joinedload("product", innerjoin=True))
+        .options(sa_orm.joinedload("team", innerjoin=True))
+        .options(sa_orm.joinedload("keys_values", innerjoin=False))
+    )
+
+    return query.one().serialize(ignore_columns=["data"])
+
+
 def get_components(session, offset, limit, unit, amount):
     delta = {unit: amount}
 

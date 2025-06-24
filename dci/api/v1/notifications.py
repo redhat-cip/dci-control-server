@@ -15,11 +15,15 @@
 # under the License.
 import json
 import flask
+import logging
+import socket
 
 from dci.api.v1 import base
 from dci.common import exceptions as dci_exc
 from dci.common import utils
 from dci.db import models2
+
+logger = logging.getLogger(__name__)
 
 
 def format_job_mail_message(mesg):
@@ -190,3 +194,10 @@ def job_dispatcher(job):
 
 def component_dispatcher(component):
     _handle_component_event(component)
+
+
+def publish(payload):
+    try:
+        flask.g.messaging.publish(payload)
+    except (OSError, socket.gaierror, Exception) as e:
+        logger.error("error while trying to publish a message: %s", str(e))
