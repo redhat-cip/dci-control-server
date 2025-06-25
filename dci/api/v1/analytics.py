@@ -288,7 +288,7 @@ def handle_includes_excludes(args):
     return _source
 
 
-def build_es_query(args):
+def build_es_query(args, teams_ids=None):
     es_query = {}
 
     offset, limit = handle_pagination(args)
@@ -297,10 +297,24 @@ def build_es_query(args):
 
     query_string = args.get("query")
     es_query["query"] = qed.build(query_string)
+    es_query["query"] = handle_es_timeframe(es_query["query"], args)
+    if teams_ids:
+        es_query["query"] = {
+            "bool": {
+                "filter": [
+                    {
+                        "bool": {
+                            "should": [
+                                {"term": {"team_id": str(t_id)}} for t_id in teams_ids
+                            ]
+                        }
+                    },
+                    es_query["query"],
+                ]
+            }
+        }
 
     es_query["sort"] = handle_es_sort(args)
-
-    es_query["query"] = handle_es_timeframe(es_query["query"], args)
 
     _source = handle_includes_excludes(args)
     if _source:
@@ -312,13 +326,14 @@ def build_es_query(args):
 @api.route("/analytics/jobs", methods=["GET", "POST"])
 @decorators.login_required
 def tasks_jobs(user):
-    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
-        raise dci_exc.Unauthorized()
-
     args = flask.request.args.to_dict()
 
+    teams_ids = None
+    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
+        teams_ids = user.teams_ids
+
     try:
-        es_query = build_es_query(args)
+        es_query = build_es_query(args, teams_ids)
     except Exception as e:
         logger.error(f"error while building the elastic query: {e}")
         raise dci_exc.DCIException("syntax error while parsing the query")

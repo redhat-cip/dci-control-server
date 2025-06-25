@@ -18,6 +18,7 @@ from __future__ import unicode_literals
 
 import mock
 from requests.exceptions import ConnectionError
+import uuid
 
 from dci.api.v1 import analytics
 from dci.analytics import query_es_dsl as qed
@@ -78,11 +79,6 @@ def test_tasks_analytics_pipelines_status(client_user1, team_admin_id):
 
 
 def test_tasks_jobs(client_user1, client_admin):
-    res = client_user1.get(
-        "/api/v1/analytics/jobs?query=(a=b)",
-    )
-    assert res.status_code == 401
-
     res = client_admin.get(
         "/api/v1/analytics/jobs?query=foo",
     )
@@ -185,6 +181,58 @@ def test_build_es_query():
                                     }
                                 },
                                 {"terms": {"tags": ["daily"]}},
+                            ]
+                        }
+                    },
+                ]
+            }
+        },
+        "sort": [
+            {"created_at": {"order": "desc", "format": "strict_date_optional_time"}}
+        ],
+        "_source": {"excludes": ["jobstates"], "includes": ["team", "topic"]},
+    }
+
+
+def test_build_es_query_with_teams():
+    args = {
+        "offset": 10,
+        "limit": 10,
+        "query": "(name='toto')",
+        "sort": "-created_at",
+        "from": "2024-01-01",
+        "to": "2024-02-01",
+        "includes": "team,topic",
+        "excludes": "jobstates",
+    }
+    teams_ids = [uuid.uuid4(), uuid.uuid4()]
+    ret = analytics.build_es_query(args, teams_ids)
+    assert ret == {
+        "from": 10,
+        "size": 10,
+        "query": {
+            "bool": {
+                "filter": [
+                    {
+                        "bool": {
+                            "should": [
+                                {"term": {"team_id": str(teams_ids[0])}},
+                                {"term": {"team_id": str(teams_ids[1])}},
+                            ]
+                        }
+                    },
+                    {
+                        "bool": {
+                            "filter": [
+                                {
+                                    "range": {
+                                        "created_at": {
+                                            "gte": "2024-01-01",
+                                            "lte": "2024-02-01",
+                                        }
+                                    }
+                                },
+                                {"term": {"name": "toto"}},
                             ]
                         }
                     },
