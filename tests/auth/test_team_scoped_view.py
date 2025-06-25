@@ -105,7 +105,7 @@ def test_nrt_epm_flag_is_also_filtered_with_x_dci_team_id_header(
     )
 
 
-def test_nrt_admin_flag_is_not_filtering_view_with_x_dci_team_id_header(
+def test_nrt_admin_flag_is_filtering_view_with_x_dci_team_id_header(
     client_admin, team_admin_id, admin_id, team3_id
 ):
     assert client_admin.get("/api/v1/products").data["_meta"]["count"] == 3
@@ -123,7 +123,7 @@ def test_nrt_admin_flag_is_not_filtering_view_with_x_dci_team_id_header(
         client_admin.get("/api/v1/products", headers={"X-Dci-Team-Id": team3_id}).data[
             "_meta"
         ]["count"]
-        == 3
+        == 0
     )
 
 
