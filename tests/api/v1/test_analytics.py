@@ -244,3 +244,15 @@ def test_build_es_query_with_teams():
         ],
         "_source": {"excludes": ["jobstates"], "includes": ["team", "topic"]},
     }
+
+
+def test_build_autocompletion_query():
+    args = {"field": "field"}
+    res = analytics.build_autocompletion_query(
+        args, "6e6b1cbc-9e0d-49fd-8cff-9ebf37caf147"
+    )
+    assert res == {
+        "field": "field",
+        "team_id": "6e6b1cbc-9e0d-49fd-8cff-9ebf37caf147",
+        "size": 10,
+    }

@@ -364,19 +364,19 @@ def tasks_jobs(user):
         )
 
 
+def build_autocompletion_query(args, team_id):
+    return {
+        "field": args.get("field"),
+        "team_id": team_id,
+        "size": args.get("size", 10),
+    }
+
+
 @api.route("/analytics/jobs/autocomplete", methods=["GET", "POST"])
 @decorators.login_required
 def tasks_jobs_autocomplete(user):
-    if user.is_not_super_admin() and user.is_not_epm() and user.is_not_read_only_user():
-        raise dci_exc.Unauthorized()
-
     args = flask.request.args.to_dict()
-    autocomplete = {
-        "field": args.get("field"),
-        "team_id": str(user.teams_ids[0]),
-        "is_admin": args.get("is_admin", True),
-        "size": args.get("size", 10),
-    }
+    autocomplete = build_autocompletion_query(args, str(user.teams_ids[0]), False)
 
     try:
         res = requests.get(
