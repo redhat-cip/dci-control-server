@@ -256,3 +256,14 @@ def test_build_autocompletion_query():
         "team_id": "6e6b1cbc-9e0d-49fd-8cff-9ebf37caf147",
         "size": 10,
     }
+
+
+@mock.patch("dci.api.v1.analytics.requests.get")
+def test_autocomplete_field(mock_requests, client_user1):
+    mock_autocomplete = mock.MagicMock()
+    mock_autocomplete.status_code = 200
+    mock_autocomplete.json.return_value = ["job1", "job2"]
+    mock_requests.return_value = mock_autocomplete
+    res = client_user1.get("/api/v1/analytics/jobs/autocomplete?field=name")
+    assert res.status_code == 200
+    assert res.data == ["job1", "job2"]

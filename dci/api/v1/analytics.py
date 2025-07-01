@@ -376,7 +376,7 @@ def build_autocompletion_query(args, team_id):
 @decorators.login_required
 def tasks_jobs_autocomplete(user):
     args = flask.request.args.to_dict()
-    autocomplete = build_autocompletion_query(args, str(user.teams_ids[0]), False)
+    autocomplete = build_autocompletion_query(args, str(user.teams_ids[0]))
 
     try:
         res = requests.get(
