@@ -178,7 +178,6 @@ def get_component_by_id(user, c_id):
     component = base.get_resource_orm(
         models2.Component, c_id, options=[sa_orm.selectinload("files")]
     )
-    permissions.verify_access_to_component(user, component)
 
     component_jobs_query = (
         flask.g.session.query(models2.Job)
@@ -190,6 +189,7 @@ def get_component_by_id(user, c_id):
     )
 
     if user.is_not_super_admin() and user.is_not_read_only_user() and user.is_not_epm():
+        permissions.verify_access_to_component(user, component)
         component_jobs_query = component_jobs_query.filter(
             models2.Job.team_id.in_(user.teams_ids)
         )

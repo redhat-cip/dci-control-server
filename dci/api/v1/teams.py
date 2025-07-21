@@ -94,7 +94,12 @@ def get_all_teams(user):
 @decorators.login_required
 def get_team_by_id(user, t_id):
     base.get_resource_orm(models2.Team, t_id)
-    if user.is_not_in_team(t_id) and user.is_not_epm():
+    if (
+        user.is_not_in_team(t_id)
+        and user.is_not_epm()
+        and user.is_not_read_only_user()
+        and user.is_not_super_admin()
+    ):
         raise dci_exc.Unauthorized()
 
     try:

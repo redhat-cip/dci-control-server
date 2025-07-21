@@ -127,7 +127,7 @@ def test_get_all_teams_with_sort(client_admin):
     assert gts == db_teams
 
 
-def test_get_team_by_id(client_admin):
+def test_get_team_by_id(client_admin, client_rh_employee):
     pt = client_admin.post("/api/v1/teams", data={"name": "pname"}).data
     pt_id = pt["team"]["id"]
 
@@ -137,6 +137,9 @@ def test_get_team_by_id(client_admin):
 
     created_t = created_t.data
     assert created_t["team"]["id"] == pt_id
+
+    created_t = client_rh_employee.get("/api/v1/teams/%s" % pt_id)
+    assert created_t.status_code == 200
 
 
 def test_get_team_not_found(client_admin):

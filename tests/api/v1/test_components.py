@@ -1199,7 +1199,9 @@ def test_create_component_not_allowed_for_user_and_remoteci(
 # ######### tests teams components
 
 
-def test_create_teams_components(client_user1, team1_id, rhel_80_topic_id):
+def test_create_teams_components(
+    client_user1, team1_id, rhel_80_topic_id, client_rh_employee
+):
     data = {
         "name": "pname",
         "type": "gerrit_review",
@@ -1212,6 +1214,10 @@ def test_create_teams_components(client_user1, team1_id, rhel_80_topic_id):
     pc_id = pc["component"]["id"]
 
     gc = client_user1.get("/api/v1/components/%s" % pc_id).data
+    assert gc["component"]["name"] == "pname"
+    assert gc["component"]["state"] == "active"
+
+    gc = client_rh_employee.get("/api/v1/components/%s" % pc_id).data
     assert gc["component"]["name"] == "pname"
     assert gc["component"]["state"] == "active"
 
