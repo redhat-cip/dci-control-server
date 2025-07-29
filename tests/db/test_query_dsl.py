@@ -72,3 +72,12 @@ def test_nrt_query_ordering():
         ["eq", "state", "active"],
         ["contains", "tags", "nightly"],
     ]
+
+
+def test_nrt_query_with_url():
+    ret = query_dsl.parse(
+        "eq(url,https://github.com/dci-labs/partner-lab-config/pull/63)"
+    )
+    assert ret == [
+        ["eq", "url", "https://github.com/dci-labs/partner-lab-config/pull/63"]
+    ]
