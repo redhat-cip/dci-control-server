@@ -635,3 +635,24 @@ def test_nrt_nested_first():
             ]
         }
     }
+
+
+def test_nested_extra():
+    ret = qed.build(
+        "(extra.kernel.sno.version='5.14.0-570.32.1.el9_6.x86_64') and (name='lol') and (team.name='Lolipop')"
+    )
+
+    assert ret == {
+        "bool": {
+            "filter": [
+                {"term": {"extra.kernel.sno.version": "5.14.0-570.32.1.el9_6.x86_64"}},
+                {"term": {"name": "lol"}},
+                {
+                    "nested": {
+                        "path": "team",
+                        "query": {"term": {"team.name": "Lolipop"}},
+                    }
+                },
+            ]
+        }
+    }

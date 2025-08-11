@@ -126,6 +126,9 @@ def _generate_from_operators(parsed_query, handle_nested=False):
     operator = parsed_query[1]
     operand_2 = parsed_query[2]
 
+    if isinstance(operand_1, str) and operand_1.startswith("extra."):
+        handle_nested = False
+
     if operator == "=":
         if handle_nested and "." in operand_1:
             return {
@@ -215,6 +218,8 @@ def _is_nested_query(operands_1, operands_2=None):
             for o in operands_2:
                 if o[0].split(".")[0] != path:
                     return None
+        if path.startswith("extra."):
+            return None
     return path
 
 
