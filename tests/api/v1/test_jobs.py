@@ -1004,3 +1004,44 @@ def test_nrt_get_then_put_on_job_with_no_error(client_user1, team1_job_id):
         headers={"If-match": job["etag"]},
     )
     assert r.status_code == 200
+
+
+def test_nrt_empty_tags_are_filtered_out_when_creating_a_job(
+    hmac_client_team1, rhel_80_topic_id, rhel_80_component_id
+):
+    data = {
+        "components": [rhel_80_component_id],
+        "topic_id": rhel_80_topic_id,
+        "tags": ["tag1", "", "  ", "tag2", None, "tag3"],
+    }
+    job = hmac_client_team1.post("/api/v1/jobs", data=data)
+    job_id = job.data["job"]["id"]
+
+    assert job.status_code == 201
+
+    job = hmac_client_team1.get("/api/v1/jobs/%s" % job_id).data["job"]
+    expected_tags = ["tag1", "tag2", "tag3"]
+    assert job["tags"] == expected_tags
+
+
+def test_nrt_empty_tags_are_filtered_out_when_updating_a_job(
+    hmac_client_team1, team1_job_id
+):
+    r = hmac_client_team1.get("/api/v1/jobs/%s" % team1_job_id)
+    assert r.status_code == 200
+    job = r.data["job"]
+
+    update_data = {
+        "tags": ["tag1", "", "  ", "tag2", None, "tag3"],
+    }
+
+    r = hmac_client_team1.put(
+        "/api/v1/jobs/%s" % team1_job_id,
+        data=update_data,
+        headers={"If-match": job["etag"]},
+    )
+    assert r.status_code == 200
+
+    updated_job = r.data["job"]
+    expected_tags = ["tag1", "tag2", "tag3"]
+    assert updated_job["tags"] == expected_tags

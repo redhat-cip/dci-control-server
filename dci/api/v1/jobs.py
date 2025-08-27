@@ -119,6 +119,7 @@ def internal_create_jobs(user, values, components_ids=None):
             "previous_job_id": previous_job_id,
         }
     )
+    values = utils._filter_empty_tags(values)
     components_access_teams_ids = permissions.get_components_access_teams_ids(
         user.teams_ids
     )
@@ -517,6 +518,8 @@ def update_job_by_id(user, job_id):
 
     if user.is_not_in_team(job.team_id) and user.is_not_epm():
         raise dci_exc.Unauthorized()
+
+    values = utils._filter_empty_tags(values)
 
     # Update jobstate if needed
     status = values.get("status")

@@ -89,3 +89,9 @@ def check_and_get_etag(headers):
             "'If-match' header must be provided", status_code=412
         )
     return if_match_etag
+
+
+def _filter_empty_tags(values):
+    if "tags" in values and values["tags"]:
+        values["tags"] = [tag for tag in values["tags"] if tag and str(tag).strip()]
+    return values
