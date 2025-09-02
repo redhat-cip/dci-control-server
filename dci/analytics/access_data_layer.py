@@ -29,6 +29,8 @@ def get_jobs(session, offset, limit, unit, amount, status=None):
     query = query.filter(models2.Job.state != "archived")
     query = query.filter(models2.Job.updated_at >= (get_utc_now() - timedelta(**delta)))
     query = query.order_by(models2.Job.updated_at.asc())
+    query = query.offset(offset)
+    query = query.limit(limit)
     query = query.from_self()
 
     query = (
@@ -44,9 +46,6 @@ def get_jobs(session, offset, limit, unit, amount, status=None):
         .options(sa_orm.joinedload("team", innerjoin=True))
         .options(sa_orm.joinedload("keys_values", innerjoin=False))
     )
-
-    query = query.offset(offset)
-    query = query.limit(limit)
 
     jobs = [j.serialize(ignore_columns=["data"]) for j in query.all()]
 
