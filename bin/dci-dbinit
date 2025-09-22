@@ -76,8 +76,11 @@ def main():
     conf = dci_config.CONFIG
     db_uri = conf["SQLALCHEMY_DATABASE_URI"]
 
-    if not sa_funcs.database_exists(db_uri):
-        sa_funcs.create_database(db_uri)
+    try:
+        if not sa_funcs.database_exists(db_uri):
+            sa_funcs.create_database(db_uri)
+    except:
+        pass
 
     dci_alembic.sync()
     engine = sqlalchemy.create_engine(db_uri)
