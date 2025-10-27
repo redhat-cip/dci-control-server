@@ -1,3 +1,6 @@
+⚠️ **Note:** This project has been migrated to a new repository.
+Please visit the new location [here](https://github.com/distributedci/dci-control-server).
+
 # Distributed CI control server
 
 ![](https://img.shields.io/badge/license-Apache2.0-blue.svg?style=flat) ![](https://img.shields.io/badge/python-2.7,3.5-green.svg?style=flat)
